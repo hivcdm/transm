@@ -34,8 +34,8 @@ OBJS = source/util/ticpp/ticpp.o \
 	source/entities/Male.o \
 	source/entities/Person.o \
 	source/data/Enum.o \
-	source/cepacBridge/ParseCepacInput.o \
-	source/cepacBridge/cepac_api.o \
+	source/cepacbridge/ParseCepacInput.o \
+	source/cepacbridge/cepac_api.o \
 	source/Constants.o \
 	source/Population.o \
 	source/PopulationParams.o \
