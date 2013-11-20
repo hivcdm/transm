@@ -1,0 +1,10 @@
+build/
+binaries/
+*.sdf
+*.suo
+*.opensdf
+*.vcxproj.user
+*.o
+#*#
+*~
+.DS_Store

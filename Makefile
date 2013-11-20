@@ -6,79 +6,79 @@ VERSION = 332
 EXE = transm$(VERSION)
 
 #header files
-HEADERS = src/util/ticpp/*.h src/util/rand/*.h src/util/*.h src/statistics/*.h src/graphViz/*.h src/entities/entitypool/bucket/*.h src/entities/entitypool/*.h \
-	src/entities/classifiers/*.h src/entities/behaviors/*.h src/entities/*.h src/data/*.h src/cepacBridge/*.h src/*.h src/CEPAC/*.h
+HEADERS = source/util/ticpp/*.h source/util/rand/*.h source/util/*.h source/statistics/*.h source/graphviz/*.h source/entities/entitypool/bucket/*.h source/entities/entitypool/*.h \
+	source/entities/classifiers/*.h source/entities/behaviors/*.h source/entities/*.h source/data/*.h source/cepacbridge/*.h source/*.h source/cepac/*.h
 
 # src and .o directories. Add to here when a new file has been added
-OBJS = src/util/ticpp/ticpp.o \
-	src/util/ticpp/tinystr.o \
-	src/util/ticpp/tinyxml.o \
-	src/util/ticpp/tinyxmlerror.o \
-	src/util/ticpp/tinyxmlparser.o \
-	src/util/rand/RandomNums.o \
-	src/util/Util.o	\
-	src/statistics/InfectionsTracker.o \
-	src/statistics/PopStats.o \
-	src/statistics/CostsTracker.o	\
-	src/statistics/TransmissionSummaryStats.o	\
-	src/graphViz/graphVizParse.o \
-	src/entities/entitypool/bucket/BucketAge.o \
-	src/entities/entitypool/bucket/BucketSexualMixing.o \
-	src/entities/entitypool/bucket/DmgProfileBucket.o \
-	src/entities/entitypool/bucket/FullVector.o \
-	src/entities/entitypool/EntityPool.o \
-	src/entities/classifiers/DmgProfile.o \
-	src/entities/classifiers/SexualPartnership.o \
-	src/entities/behaviors/SexualBehaviorParams.o \
-	src/entities/Female.o \
-	src/entities/Male.o \
-	src/entities/Person.o \
-	src/data/Enum.o \
-	src/cepacBridge/ParseCepacInput.o \
-	src/cepacBridge/cepac_api.o \
-	src/Constants.o \
-	src/Population.o \
-	src/PopulationParams.o \
-	src/Sim.o \
-	src/CEPAC/AcuteOIUpdater.o	\
-	src/CEPAC/BeginMonthUpdater.o	\
-	src/CEPAC/BehaviorUpdater.o	\
-	src/CEPAC/CD4HVLUpdater.o	\
-	src/CEPAC/CD4TestUpdater.o	\
-	src/CEPAC/CepacUtil.o	\
-	src/CEPAC/CHRMsUpdater.o	\
-	src/CEPAC/ClinicVisitUpdater.o	\
-	src/CEPAC/DrugEfficacyUpdater.o	\
-	src/CEPAC/DrugToxicityUpdater.o	\
-	src/CEPAC/EndMonthUpdater.o	\
-	src/CEPAC/HIVInfectionUpdater.o	\
-	src/CEPAC/HIVTestingUpdater.o	\
-	src/CEPAC/HVLTestUpdater.o	\
-	src/CEPAC/MortalityUpdater.o	\
-	src/CEPAC/mtrand.o	\
-	src/CEPAC/Patient.o	\
-	src/CEPAC/RunStats.o	\
-	src/CEPAC/SimContext.o	\
-	src/CEPAC/StateUpdater.o	\
-	src/CEPAC/SummaryStats.o	\
-	src/CEPAC/TBDiseaseUpdater.o	\
-	src/CEPAC/Tracer.o 
+OBJS = source/util/ticpp/ticpp.o \
+	source/util/ticpp/tinystr.o \
+	source/util/ticpp/tinyxml.o \
+	source/util/ticpp/tinyxmlerror.o \
+	source/util/ticpp/tinyxmlparser.o \
+	source/util/rand/RandomNums.o \
+	source/util/Util.o	\
+	source/statistics/InfectionsTracker.o \
+	source/statistics/PopStats.o \
+	source/statistics/CostsTracker.o	\
+	source/statistics/TransmissionSummaryStats.o	\
+	source/graphviz/graphVizParse.o \
+	source/entities/entitypool/bucket/BucketAge.o \
+	source/entities/entitypool/bucket/BucketSexualMixing.o \
+	source/entities/entitypool/bucket/DmgProfileBucket.o \
+	source/entities/entitypool/bucket/FullVector.o \
+	source/entities/entitypool/EntityPool.o \
+	source/entities/classifiers/DmgProfile.o \
+	source/entities/classifiers/SexualPartnership.o \
+	source/entities/behaviors/SexualBehaviorParams.o \
+	source/entities/Female.o \
+	source/entities/Male.o \
+	source/entities/Person.o \
+	source/data/Enum.o \
+	source/cepacBridge/ParseCepacInput.o \
+	source/cepacBridge/cepac_api.o \
+	source/Constants.o \
+	source/Population.o \
+	source/PopulationParams.o \
+	source/Sim.o \
+	source/cepac/AcuteOIUpdater.o	\
+	source/cepac/BeginMonthUpdater.o	\
+	source/cepac/BehaviorUpdater.o	\
+	source/cepac/CD4HVLUpdater.o	\
+	source/cepac/CD4TestUpdater.o	\
+	source/cepac/CepacUtil.o	\
+	source/cepac/CHRMsUpdater.o	\
+	source/cepac/ClinicVisitUpdater.o	\
+	source/cepac/DrugEfficacyUpdater.o	\
+	source/cepac/DrugToxicityUpdater.o	\
+	source/cepac/EndMonthUpdater.o	\
+	source/cepac/HIVInfectionUpdater.o	\
+	source/cepac/HIVTestingUpdater.o	\
+	source/cepac/HVLTestUpdater.o	\
+	source/cepac/MortalityUpdater.o	\
+	source/cepac/mtrand.o	\
+	source/cepac/Patient.o	\
+	source/cepac/RunStats.o	\
+	source/cepac/SimContext.o	\
+	source/cepac/StateUpdater.o	\
+	source/cepac/SummaryStats.o	\
+	source/cepac/TBDiseaseUpdater.o	\
+	source/cepac/Tracer.o 
 
-GUI_OBJS = $(OBJS) src/GUI/widgets/statusWidget.o \
-	src/GUI/widgets/verticalStatusWidget.o \
-	src/GUI/DisplayBox.o \
-	src/GUI/main.o \
-	src/GUI/dialogs/SetupBatchStatsDialog.o 
+GUI_OBJS = $(OBJS) source/gui/widgets/statusWidget.o \
+	source/gui/widgets/verticalStatusWidget.o \
+	source/gui/DisplayBox.o \
+	source/gui/main.o \
+	source/gui/dialogs/SetupBatchStatsDialog.o 
 
-CONSOLE_OBJS = $(OBJS) src/main.o
+CONSOLE_OBJS = $(OBJS) source/main.o
 
 #compiler and related flags
 CXX = g++
 CXXFLAGS = -I.
 LDFLAGS = -lm
 #Note: This is a temp directory on the cluster until they update to a newer version of boost
-BOOST_CXXFLAGS = -I/shr/home/th841/boost/boost_1_44_0
-BOOST_LDFLAGS = -L/usr/lib -lboost_regex
+BOOST_CXXFLAGS = -Ithirdparty/boost/1.55.0
+BOOST_LDFLAGS = -Lthirdparty/boost/1.55.0/stage/lib -lboost_regex
 BOOST_MAC_CXXFLAGS = -I/usr/local/include/boost_1_36_0
 BOOST_MAC_LDFLAGS = -L/usr/local/lib -lboost_regex-xgcc40-mt
 #For now we are going to ignore the WX_**FLAGS because we are only using the Makefile for console versions
@@ -131,7 +131,7 @@ gui_debug : $(GUI_OBJS)
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $(EXE)
 
 clean : 
-	rm -f src/*.o src/cepacBridge/*.o src/data/*.o src/entities/*.o src/entities/behaviors/*.o src/entities/classifiers/*.o src/entities/entitypool/*.o src/entities/entitypool/bucket/*.o src/graphViz/*.o src/statistics/*.o src/util/*.o src/util/rand/*.o src/util/ticpp/*.o src/GUI/*.o src/GUI/widgets/*.o src/GUI/dialogs/*.o src/CEPAC/*.o
+	rm -f source/*.o source/cepacbridge/*.o source/data/*.o source/entities/*.o source/entities/behaviors/*.o source/entities/classifiers/*.o source/entities/entitypool/*.o source/entities/entitypool/bucket/*.o source/graphviz/*.o source/statistics/*.o source/util/*.o source/util/rand/*.o source/util/ticpp/*.o source/gui/*.o source/gui/widgets/*.o source/gui/dialogs/*.o source/cepac/*.o
 	rm -f $(EXE) $(EXE).exe
 
 
