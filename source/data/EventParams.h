@@ -1,4 +1,4 @@
-#pragma once
+#pragma once;
 
 #include <iostream>
 #include <fstream>
@@ -6,9 +6,9 @@
 #include "../util/rand/RandomNums.h"
 #include "../Constants.h"
 #if !defined( CONSOLE )
-#include "../gui/DisplayBox.h"
+#include "../GUI/DisplayBox.h"
 #endif
-#include "../cepac/include.h"
+#include "../CEPAC/include.h"
 
 //these are found in Constants.h
 enum DebugLevel;

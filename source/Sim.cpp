@@ -21,13 +21,13 @@ using namespace ticpp;
 //END ADD
 #include "./Constants.h"
 #include "./Population.h"
-#include "./cepacbridge/cepac_api.h"
-#include "./cepacbridge/ParseCepacInput.h"
-#include "./graphviz/graphVizParse.h"
+#include "./cepacBridge/cepac_api.h"
+#include "./cepacBridge/ParseCepacInput.h"
+#include "./graphViz/graphVizParse.h"
 #include "./data/EventParams.h"
 #include "./entities/classifiers/DmgProfile.h"
 #include "./util/Util.h"
-#include "./cepac/include.h"
+#include "./CEPAC/include.h"
 #include "boost/lexical_cast.hpp"
 
 

@@ -3,7 +3,7 @@
 #include "Female.h"
 #include "./classifiers/SexualPartnership.h"
 #include "./../Constants.h"
-#include "./../cepacbridge/cepac_api.h"
+#include "./../cepacBridge/cepac_api.h"
 #include "./../data/EventParams.h"
 #include "./../util/Util.h"
 #include "./../util/rand/RandomNums.h"

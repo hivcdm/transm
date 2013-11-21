@@ -1,5 +1,5 @@
 #include "Male.h"
-#include "../cepacbridge/cepac_api.h"
+#include "../cepacBridge/cepac_api.h"
 #include "./classifiers/SexualPartnership.h"
 #include "./behaviors/SexualBehaviorParams.h"
 #include "./entitypool/EntityPool.h"
