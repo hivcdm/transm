@@ -10,8 +10,8 @@
 #include <iostream>
 #include <vector>
 #include <set>
-#include "../CEPAC/Patient.h"
-#include "../graphViz/graphVizParse.h"
+#include "../cepac/Patient.h"
+#include "../graphviz/graphVizParse.h"
 
 class InfectionsTracker;
 

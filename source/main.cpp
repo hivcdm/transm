@@ -7,7 +7,7 @@
 
 #define CONSOLE
 
-#include "CEPAC/include.h"
+#include "cepac/include.h"
 #include "util/Util.h"
 #include "statistics/TransmissionSummaryStats.h"
 #include "Sim.h"

@@ -12,7 +12,7 @@
 #include "./entities/entitypool/EntityPool.h"
 #include "./util/rand/RandomNums.h"
 #include "./util/ticpp/ticpp.h"
-#include "./graphViz/graphVizParse.h"
+#include "./graphviz/graphVizParse.h"
 
 enum DebugLevel;
 class Sim;
