@@ -79,11 +79,6 @@ bool DmgProfileBucket::exists(Person *_person){
 	return this->simpleEntityIndex->exists(_person);
 }
 
-unsigned long DmgProfileBucket::getNumRisk(Person::RiskLevel risk) {
-	assert(this->simpleEntityIndex != NULL);
-	return this->simpleEntityIndex->getNumRisk(risk);
-}
-
 unsigned long DmgProfileBucket::getNumInfected() {
 	assert(this->simpleEntityIndex != NULL);
 	return this->simpleEntityIndex->getNumInfected();

@@ -67,8 +67,10 @@ void EntityPool::printBucketLabels(ostream& _outStream, bool _printPropInfected)
 		if(_printPropInfected)
 			_outStream << *(bucket->getLabel()) << " (Infected)" << Constants::TAB;
 		_outStream << (*bucket->getLabel()) << " (Total)" << Constants::TAB;
-		_outStream << (*bucket->getLabel()) << " (HR)" << Constants::TAB;
-		_outStream << (*bucket->getLabel()) << " (LR)" << Constants::TAB;
+		if( DmgProfile::get(bucket->getProfileID(), DmgProfile::SEXUAL_ACTIVITY_STATUS) == DmgProfile::SA){
+			_outStream << (*bucket->getLabel()) << " (HR)" << Constants::TAB;
+			_outStream << (*bucket->getLabel()) << " (LR)" << Constants::TAB;
+		}
 		currBucketIndex++;
 	} //while(currBucketIndex < this->entityBuckets->size()) {
 }
@@ -111,11 +113,12 @@ void EntityPool::printBucketSizes(ostream& _outStream, string _prefix, bool _pri
 
 		//print out # people in current DmgProfileBucket
 		long bucketSize = bucket->size();
-		//long high_risk = bucket->getNumHighRisk();
-		long high_risk = bucket->getNumRisk(Person::HIGH);
 		_outStream << bucketSize << Constants::TAB;
-		_outStream << high_risk << Constants::TAB;
-		_outStream << bucketSize - high_risk << Constants::TAB;
+		if( DmgProfile::get(bucket->getProfileID(), DmgProfile::SEXUAL_ACTIVITY_STATUS) == DmgProfile::SA){
+			long bucketSizeHR = ((BucketSexualMixing *) bucket)->sizeRisk(Person::HIGH);
+			long bucketSizeLR = ((BucketSexualMixing *) bucket)->sizeRisk(Person::LOW);
+			_outStream << bucketSizeHR << Constants::TAB << bucketSizeLR << Constants::TAB;
+		}
 
 		_totalSize += bucketSize;
 		_totalInfected += numInfected;

@@ -150,17 +150,6 @@ bool BucketSexualMixing::exists(Person *_person){
 	return this->personsByAge->at(correctIndex)->exists(_person);
 }
 
-//counts number of high risk people this EntityPool
-unsigned long BucketSexualMixing::getNumRisk(Person::RiskLevel risk) {
-	BucketAllAges::iterator ageBucketIter;
-	unsigned long totalRisk = 0;
-	//go through each Index and get # high risk
-	for ( ageBucketIter = personsByAge->begin(); ageBucketIter != personsByAge->end(); ageBucketIter++) {
-		totalRisk += (*ageBucketIter)->getNumRisk(risk);
-	}
-	return totalRisk;
-}
-
 //counts number of infected people this EntityPool
 unsigned long BucketSexualMixing::getNumInfected() {
 	BucketAllAges::iterator ageBucketIter;

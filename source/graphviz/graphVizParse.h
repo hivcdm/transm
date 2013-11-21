@@ -8,7 +8,7 @@
 #ifndef GRAPHVIZPARSE_H_
 #define GRAPHVIZPARSE_H_
 #include <boost/config.hpp>
-#include <boost/regex.hpp>
+//#include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
 #include <vector>
 #include <string>

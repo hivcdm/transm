@@ -65,6 +65,7 @@ public:
 	static const string UNDERSCORE;
 	static const string TAB;
 	static const string TABTAB;
+	static const string SPACE;
 
 	static const string BatchStatFileName[ENDBatchStatsVariables];
 	//----------< End String Constants >------------------//

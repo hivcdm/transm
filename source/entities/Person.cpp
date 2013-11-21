@@ -293,6 +293,25 @@ int Person::getNumPartners(SexualPartnership::Type _type){
 	return this->partners[_type].size();
 }
 
+int Person::getNumPartners(SexualPartnership::Type _type, bool sameRisk){
+	int numPartners = 0;
+	for (list<SexualPartnership*>::iterator partnerIter = this->partners[_type].begin(); partnerIter != this->partners[_type].end(); partnerIter++){
+		Person * partner;
+		if((*partnerIter)->getPartner1() == this) {
+			partner = (*partnerIter)->getPartner2();
+		}
+		else{
+			partner = (*partnerIter)->getPartner1();
+		}
+		bool isSameRisk = this->risk==partner->getRiskLevel();
+		if (isSameRisk == sameRisk){
+			numPartners+=1;
+		}
+	}
+	
+	return numPartners;
+}
+
 int Person::getNumPartnersInHistory(SexualPartnership::Type _type){
 	return this->numPartnersInHistory[_type];
 }
@@ -440,28 +459,6 @@ bool Person::isAlive() const{
 	}
 	return !this->death;
 }
-
-/**
- * Retrieve the number of partners with the given risk level.
- **/
-int Person::getNumPartners(SexualPartnership::Type partnershipType, RiskLevel risk) {
-
-    // iterate through each partnership and count the number with the given
-    // risk.  Make sure we compare against the partner's risk, not our own.
-    int count = 0;
-
-    list<SexualPartnership*>::iterator iter = this->partners[partnershipType].begin();
-    list<SexualPartnership*>::iterator endIter = this->partners[partnershipType].end();
-    while(iter != endIter) {
-        if((*iter)->getOtherPartner(this)->getRiskLevel() == risk) {
-            count++;
-        }
-        iter++;
-    }
-    return count;
-}
-
-
 
 bool Person::isPartneredWith(Person *_p) {
 	assert( (_p!=NULL) );

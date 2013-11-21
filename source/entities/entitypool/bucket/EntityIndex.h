@@ -69,8 +69,6 @@ public :
 	unsigned long getNumInfected();
 	unsigned long getNumInfected(int generation);
 
-	unsigned long getNumRisk(Person::RiskLevel risk);
-
 	//will index a new person
 	bool insert(Person *_person);
 
@@ -407,21 +405,6 @@ typename EntityIndex<_PSC, _KeyValType>::CPPIterator EntityIndex<_PSC,_KeyValTyp
 	}  //if ( personsWithKey.first != this->personMultiMap.end()) {
 
 	this->personMultiMap.end();
-}
-
-template <Person::SelectingCriteria _PSC, class _KeyValType>
-unsigned long EntityIndex<_PSC,_KeyValType>::getNumRisk(Person::RiskLevel risk) {
-	unsigned long numRisk = 0;
-	//iterates through all elements
-	//EntityIndex<_PSC, _KeyValType>::
-	CPPIterator iter = this->personMultiMap.begin();
-	while(iter != this->personMultiMap.end()) {
-		if ((iter->second)->getRiskLevel() == risk) {
-                    numRisk++;
-                }
-		iter++;
-	} //while(iter != this->personMultiMap.end()) {
-	return numRisk;
 }
 
 template <Person::SelectingCriteria _PSC, class _KeyValType>

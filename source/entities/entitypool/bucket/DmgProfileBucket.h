@@ -68,7 +68,6 @@ public:
 	//counts number of infected people this EntityPool
 	virtual unsigned long getNumInfected();
 	virtual unsigned long getNumInfected(int generation);
-	virtual unsigned long getNumRisk(Person::RiskLevel risk);
 
 	//this adds member into the pool
 	//  _toInsert - the Person being added to the pool.

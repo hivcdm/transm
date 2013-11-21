@@ -125,8 +125,6 @@ public :
 	//TESTED
 	unsigned long size();
 
-	unsigned long getNumRisk(Person::RiskLevel risk);
-
 	//-------------< End inherited from class DmgProfileBucket >---------------------//
 	//-------------< Begin iterator methods >------------------//
 	//TESTED

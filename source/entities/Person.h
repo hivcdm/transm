@@ -256,10 +256,14 @@ public:
 	int getGenerationOfInfection();
 
 	/**
-	 * returns the number of partners by partnership type
-         **/
+	*	returns the number of partners by partnership type
+	*/
 	int getNumPartners(SexualPartnership::Type);
-	int getNumPartners(SexualPartnership::Type, RiskLevel);
+
+	/**
+	*	returns the number of partners by partnership type that are either the samerisk or different
+	*/
+	int getNumPartners(SexualPartnership::Type, bool);
 
 	/**
 	* returns the number of partners in history

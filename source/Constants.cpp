@@ -5,6 +5,7 @@ string const Constants::BLANK = "";
 string const Constants::COLON = ":";
 string const Constants::TAB = "\t";
 string const Constants::TABTAB = "\t\t";
+string const Constants::SPACE = " ";
 string const Constants::UNDERSCORE = "_";
 string const Constants::BatchStatFileName[ENDBatchStatsVariables] = {"prevalence", "SAprevalence", "incidence", "populationSize", "numberInfected", "newInfections"};
 bool const Constants::SHOULD_NOT_BE_CALLING_ME = false;
