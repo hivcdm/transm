@@ -77,8 +77,8 @@ CXX = g++
 CXXFLAGS = -I.
 LDFLAGS = -lm
 #Note: This is a temp directory on the cluster until they update to a newer version of boost
-BOOST_CXXFLAGS = -Ithirdparty/boost/1.55.0
-BOOST_LDFLAGS = -Lthirdparty/boost/1.55.0/stage/lib -lboost_regex
+BOOST_CXXFLAGS = -I/shr/home/th841/boost/boost_1_44_0
+BOOST_LDFLAGS = -L/usr/lib -lboost_regex
 BOOST_MAC_CXXFLAGS = -I/usr/local/include/boost_1_36_0
 BOOST_MAC_LDFLAGS = -L/usr/local/lib -lboost_regex-xgcc40-mt
 #For now we are going to ignore the WX_**FLAGS because we are only using the Makefile for console versions
