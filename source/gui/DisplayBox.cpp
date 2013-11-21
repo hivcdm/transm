@@ -21,7 +21,7 @@
 #include <wx/dir.h>
 #include <wx/regex.h>
 
-#include "../CEPAC/include.h"
+#include "../cepac/include.h"
 #include "../util/Util.h"
 #include "../statistics/TransmissionSummaryStats.h"
 

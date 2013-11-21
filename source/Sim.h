@@ -3,7 +3,7 @@
 #include "./util/ticpp/ticpp.h"
 #include "./data/EventParams.h"
 #if !defined(CONSOLE)
-#include "./GUI/DisplayBox.h"
+#include "./gui/DisplayBox.h"
 #endif
 #include "./statistics/PopStats.h"
 using namespace ticpp;

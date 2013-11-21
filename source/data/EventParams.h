@@ -6,9 +6,9 @@
 #include "../util/rand/RandomNums.h"
 #include "../Constants.h"
 #if !defined( CONSOLE )
-#include "../GUI/DisplayBox.h"
+#include "../gui/DisplayBox.h"
 #endif
-#include "../CEPAC/include.h"
+#include "../cepac/include.h"
 
 //these are found in Constants.h
 enum DebugLevel;
