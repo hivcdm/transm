@@ -1,4 +1,4 @@
-#ifndef WIN23
+#ifndef WIN32
 #include <unistd.h>
 #endif
 #include "include.h"
