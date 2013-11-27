@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 	CepacUtil::changeDirectoryToInputs();
 	std::cout << "Running File: " << Util::transmFilesToRun[i] << std::endl;
 	//Console version will not use GraphViz and will use random seed by result
-	Sim *s = new Sim(Util::transmFilesToRun[i], false, false);
+	Sim *s = new Sim(Util::transmFilesToRun[i], false, true);
 	if (!(s->getError()))
 	{
 	    //Run the simulation the desired number of time steps
