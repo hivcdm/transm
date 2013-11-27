@@ -1,5 +1,3 @@
-#pragma once
-
 /**
 This file contains the implementations for the methods of EntityPool
 ***/

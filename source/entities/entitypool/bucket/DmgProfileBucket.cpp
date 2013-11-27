@@ -1,5 +1,3 @@
-#pragma once
-
 #include "DmgProfileBucket.h"
 #include "../../Person.h"
 #include <assert.h>
@@ -59,18 +57,22 @@ Person* DmgProfileBucket::drawMember(RandomNums& _randomNums, Person *_chooser,S
 	return this->drawMember(_randomNums, _partnershipType,_remove);
 }
 
-bool DmgProfileBucket::erase(Person *_person){
-	assert(this->simpleEntityIndex != NULL);
-	assert(_person!=NULL);
-	try{
+bool DmgProfileBucket::erase(Person *_person)
+{
+    assert(this->simpleEntityIndex != NULL);
+    assert(_person != NULL);
+    try
+    {
 	return this->simpleEntityIndex->erase(_person);
-}
-			catch (std::out_of_range& e) {
-				std::cout << "Out of range: " << e.what() << "\n";
-			}
-			catch (std::exception& e) {
-				std::cout << "Some other exception: " << e.what() << "\n";
-			}
+    }
+    catch (std::out_of_range& e) {
+	std::cout << "Out of range: " << e.what() << "\n";
+    }
+    catch (std::exception& e) {
+	std::cout << "Some other exception: " << e.what() << "\n";
+    }
+
+    return false;
 }
 
 bool DmgProfileBucket::exists(Person *_person){

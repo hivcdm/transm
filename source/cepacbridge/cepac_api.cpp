@@ -5,8 +5,6 @@
  *      Author: errhode
  */
 
-#pragma once
-
 #if defined(__APPLE__)
 #include <dlfcn.h>
 #endif

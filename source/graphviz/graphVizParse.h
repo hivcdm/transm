@@ -21,12 +21,10 @@ using namespace boost;
 /** class GraphVizParse {
 
 public :
-	/**
 	Performs the final preprocessing of graphViz files by appending the edges to the node files for each time step with
 	the appropriate edge weights (solid for current time, invis for other times)
 	@param _inputFile path to CEPAC file
 	@author errhode
-	**
 	GraphVizParse(int _timeSteps, std::string _simName);
 
 }; */

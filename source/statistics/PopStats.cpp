@@ -214,7 +214,6 @@ void PopStats::processPostMaxTimeDeath(Person *_p){
 }
 
 void PopStats::printLMStats(std::ostream &_outStream) {
-	assert( _outStream != NULL);
 	long infectedDeaths = this->lifeStats->getStat(PopStats::TOTAL_HIV_POS_DTHS);
 	long uninfectedDeaths = this->lifeStats->getStat(PopStats::TOTAL_HIV_NEG_DTHS);
 	long totalDeaths = infectedDeaths + uninfectedDeaths;

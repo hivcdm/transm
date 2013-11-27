@@ -33,22 +33,24 @@ DmgProfileBucket(_id, _bucketLabel, false) {
 	}
 }
 
-BucketSexualMixing::~BucketSexualMixing() {
-	//it looks like the members will be destructed...?
-	//delete entitiesByAge;
-	BucketAllAges::iterator agesIter;
-	//BucketAllAges::iterator agesIterCopy;
-	//go through each BucketAge and delete it
-	for (agesIter = personsByAge->begin(); agesIter != personsByAge->end(); 1) {
-		(*agesIter)->clear();
-		//Copy it over and increment
-		BucketAge *bucketAgeToDelete = (*agesIter);
-		agesIter = personsByAge->erase(agesIter);
-		delete bucketAgeToDelete;
-	}
+BucketSexualMixing::~BucketSexualMixing()
+{
+    //it looks like the members will be destructed...?
+    //delete entitiesByAge;
+    BucketAllAges::iterator agesIter = personsByAge->begin();
+    //BucketAllAges::iterator agesIterCopy;
+    //go through each BucketAge and delete it
+    while(agesIter != personsByAge->end())
+    {
+	(*agesIter)->clear();
+	//Copy it over and increment
+	BucketAge *bucketAgeToDelete = (*agesIter);
+	agesIter = personsByAge->erase(agesIter);
+	delete bucketAgeToDelete;
+    }
 
-	personsByAge->clear();
-	delete personsByAge;
+    personsByAge->clear();
+    delete personsByAge;
 }
 
 

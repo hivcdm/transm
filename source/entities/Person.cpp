@@ -1229,15 +1229,16 @@ void Person::deletePersonWithoutDeleting(){
 
 /**** End constructors, destructors, initializers *****/
 
-int Person::getCEPACSimContextIndex(EventParams& _eventParams){
-	_eventParams.currTime;
-	int returnValue = 0;
-	for (int i = 0; i < Constants::NUMBER_OF_CEPAC_FILES; i++){
-		if (_eventParams.currTime > _eventParams.timesToSwitchSimContext[i])
-			returnValue = i;
-	}
-
-	return returnValue;
+int Person::getCEPACSimContextIndex(EventParams& _eventParams)
+{
+    int returnValue = 0;
+    for (int i = 0; i < Constants::NUMBER_OF_CEPAC_FILES; i++)
+    {
+	if (_eventParams.currTime > _eventParams.timesToSwitchSimContext[i])
+	    returnValue = i;
+    }
+    
+    return returnValue;
 }
 
 //----------------< End Methods for Person >-------------------//
