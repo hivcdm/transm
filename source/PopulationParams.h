@@ -44,7 +44,7 @@ class Params
     DebugLevel debugLevel;
 
     int maxTime;			//make timesteps to this simulation (in months)
-    long initSize ;
+    long initSize;
     string cepacInputFile;
     //Per month per person based on WHI data
     double birthRate;
@@ -67,7 +67,7 @@ class Params
     int CSWEndAgeMth[DmgProfile::ENDGender];
 
     //prevalence parameters stratified by age.
-    std::vector<AgeBucketPrevalenceInfo*> initialAgeBuckets;
+    std::vector<AgeBucketPrevalenceInfo *> initialAgeBuckets;
 
     //holds the population-level parameters for population of males and the population of females
     const Male::SubPopParams *maleParams;
