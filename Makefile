@@ -116,7 +116,8 @@ console_mac : LDFLAGS += $(BOOST_MAC_LDFLAGS)
 console_mac : $(CONSOLE_OBJS)
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $(EXE)
 
-console_debug : CXXFLAGS += -g -O0 $(BOOST_CXXFLAGS)
+console_debug : CXXFLAGS += -DCONSOLE -g -O0 $(BOOST_CXXFLAGS)
+console_debug : LDFLAGS += $(BOOST_LDFLAGS)
 console_debug : $(CONSOLE_OBJS)
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $(EXE)
 

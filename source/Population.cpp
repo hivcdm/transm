@@ -675,13 +675,7 @@ void Population::updatePartnerships(EventParams &_eventParams)
 		Person *wasInfected = (*newlyInfectedIter == initiator) ? infectedMe : initiator;
 		//Adds person to the untreated pool if using rollout
 		if (_eventParams.useRollout){
-		    //add person in random position in the list
-		    list <Person*>::iterator untIt=this->rolloutUntreatedPool.begin();
-		    int randomIndex=_eventParams.randomNums.randInt(this->rolloutUntreatedPool.size());
-		    for (int i=0;i<randomIndex;i++){
-			untIt++;
-		    }
-		    this->rolloutUntreatedPool.insert(untIt,wasUninfected);
+		    this->rolloutUntreatedPool.push_front(wasUninfected);
 		}
 		if (_eventParams.outputTrace[EventParams::EVENTS]){
 		    this->popStats->recordIncidentInfection(_eventParams, _eventParams.currTime,
@@ -1087,13 +1081,7 @@ void Population::applyIncidentPrevalence(EventParams &_eventParams){
 
 		//Adds person to the untreated pool if using rollout
 		if (_eventParams.useRollout){
-		    //add person in random position in the list
-		    list <Person*>::iterator untIt=this->rolloutUntreatedPool.begin();
-		    int randomIndex=_eventParams.randomNums.randInt(this->rolloutUntreatedPool.size());
-		    for (int i=0;i<randomIndex;i++){
-			untIt++;
-		    }
-		    this->rolloutUntreatedPool.insert(untIt,p);
+		    this->rolloutUntreatedPool.push_front(p);
 		}
 		if(p->getDmgProfile()->get(p->getDmgProfile()->getProfileID(),DmgProfile::SEXUAL_ACTIVITY_STATUS)!=DmgProfile::NA){
 		    ((BucketSexualMixing*)this->entities->getBucket(p->getDmgProfile()->getProfileID()))->increaseInfected(p);
@@ -1150,16 +1138,8 @@ void Population::applyIncidentPrevalence(EventParams &_eventParams){
 		if (oldStatus != p->hivStatus)
 		    ((BucketSexualMixing*) this->entities->getBucket(p->getDmgProfile()->getProfileID()))->changeHIVStatus(p,oldStatus, p->hivStatus);
 
-
-		//Adds person to the untreated pool if using rollout
 		if (_eventParams.useRollout){
-		    //add person in random position in the list
-		    list <Person*>::iterator untIt=this->rolloutUntreatedPool.begin();
-		    int randomIndex=_eventParams.randomNums.randInt(this->rolloutUntreatedPool.size());
-		    for (int i=0;i<randomIndex;i++){
-			untIt++;
-		    }
-		    this->rolloutUntreatedPool.insert(untIt,p);
+		    this->rolloutUntreatedPool.push_front(p);
 		}
 		if(p->getDmgProfile()->get(p->getDmgProfile()->getProfileID(),DmgProfile::SEXUAL_ACTIVITY_STATUS)!=DmgProfile::NA){
 		    ((BucketSexualMixing*)this->entities->getBucket(p->getDmgProfile()->getProfileID()))->increaseInfected(p);
@@ -1243,13 +1223,14 @@ void Population::applyARTRollout(EventParams &_eventParams){
 	if (checkOiHist || checkCd4 || checkCd4OiHist || checkHvl ||checkCd4Hvl)
 	{
 	    //loop through people in the untreated pool to check for their eligibility
-	    std::list<Person*>::iterator untIter=this->rolloutUntreatedPool.begin();
-	    while(untIter!=this->rolloutUntreatedPool.end())
+	    while(newSlots > 0 && !this->rolloutUntreatedPool.empty())
 	    {
-		if (newSlots==0)
-		{
-		    break;
+		list <Person*>::iterator untIter=this->rolloutUntreatedPool.begin();
+		int randomIndex=_eventParams.randomNums.randInt(this->rolloutUntreatedPool.size() - 1);
+		for (int i=0;i<randomIndex;i++){
+		    untIter++;
 		}
+
 		Person *untPerson = *untIter;
 
 		bool movePerson = false;
@@ -1317,12 +1298,8 @@ void Population::applyARTRollout(EventParams &_eventParams){
 		    this->rolloutTreatedPool.push_back(untPerson);
 		    //change simcontext for new treated person
 		    this->rolloutTreatedPool.back()->setSimContext(_eventParams.treatedContext);
-		    untIter=this->rolloutUntreatedPool.erase(untIter);
+		    this->rolloutUntreatedPool.erase(untIter);
 		    newSlots--;
-		}
-		else
-		{
-		    untIter++;
 		}
 	    }
 	}
