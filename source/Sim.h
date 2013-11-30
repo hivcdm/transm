@@ -9,6 +9,7 @@
 
 class Population;
 class InfectionsTracker;
+class DisplayBox;
 
 class Sim
 {
@@ -63,12 +64,8 @@ public:
 
     EventParams *getEventParams();
 
-    Sim(string _paramsXML,
-#if !defined( CONSOLE )
-	DisplayBox *dbox,
-#endif
-	bool _genGraphViz = false, bool useFixedSeed = false);		//creates a simulation object
+    Sim(string _paramsXML, DisplayBox *dbox, bool _genGraphViz = false);		//creates a simulation object
 
-    ~Sim(void);
+    ~Sim();
 };
 

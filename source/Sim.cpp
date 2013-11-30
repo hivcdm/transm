@@ -39,14 +39,17 @@
 #include <crtdbg.h>
 #endif // _MSC_VER
 
-Sim::Sim(std::string _paramsXML,
-#if !defined( CONSOLE )
-	 DisplayBox *dbox,
-#endif
-	 bool _genGraphViz, bool useFixedSeed)
-{
-#if defined(TESTING)
 
+#if defined(WIN32) || defined(_WIN32) 
+const char PATH_SEPARATOR = '\\';
+#else 
+const char PATH_SEPARATOR = '/';
+#endif
+
+class DisplayBox;
+
+void test()
+{
     const std::string bucketLabel = "foo";
     int i;
     int j;
@@ -184,22 +187,24 @@ Sim::Sim(std::string _paramsXML,
 
       p->print(std::cout, "He drew this person: ");*/
     std::cout << "Size of bsMix is now " << bsMix.size() << std::endl;
+}
 
-#else
-
-#if !defined ( CONSOLE )
-    //Setting the displaybox to write to for text controls... a quick note: this->eventParams.displaybox->textctrl->Update() must be called each time you use the print out as a stream in order to update in real time
+Sim::Sim(std::string _paramsXML, DisplayBox *dbox, bool _genGraphViz)
+{
+#if !defined( CONSOLE )
+    //Setting the displaybox to write to for text controls
+    //note: this->eventParams.displaybox->textctrl->Update() must be called each time you use the print out as a stream in order to update in real time
+    //this is only used for GUI builds
     this->eventParams.displaybox = dbox;
 #endif
+
     //Character to seperate directories / for linux, mac and \ for windows
-    std::string dirSepChar = "\\";
-#if defined ( CONSOLE )
-    dirSepChar = "/";
-#endif
+    std::string dirSepChar = PATH_SEPARATOR;
 
     //Remove the .xml and the directory from _paramsXML to get the sim name
-    this->eventParams.simName = _paramsXML.substr(_paramsXML.find_last_of("/\\") + 1);
+    this->eventParams.simName = _paramsXML.substr(_paramsXML.find_last_of(dirSepChar) + 1);
     this->eventParams.simName = this->eventParams.simName.substr(0, this->eventParams.simName.length() - 4);
+
     size_t simNameLength = this->eventParams.simName.length();
     size_t seqStartIndex = this->eventParams.simName.rfind("_seq01");
 
@@ -221,7 +226,7 @@ Sim::Sim(std::string _paramsXML,
 	    std::ifstream inputFile;
 	    //boost::filesystem::path fullpath(_paramsXML);
 	    //boost::filesystem::path newpath = fullpath.parent_path()/ (this->eventParams.simName+"_seq"+positionString+".xml");
-	    std::string filename = _paramsXML.substr(0, _paramsXML.find_last_of("/\\")) + dirSepChar + this->eventParams.simName + "_seq" + positionString + ".xml";
+	    std::string filename = _paramsXML.substr(0, _paramsXML.find_last_of(dirSepChar)) + dirSepChar + this->eventParams.simName + "_seq" + positionString + ".xml";
 #if defined( CONSOLE )
 	    filename = this->eventParams.simName + "_seq" + positionString + ".xml";
 #endif
@@ -277,6 +282,8 @@ Sim::Sim(std::string _paramsXML,
     // Load a document
     ticpp::Document doc(_paramsXML);
 
+    bool useFixedSeed = false;
+
     try
     {
 	doc.LoadFile();
@@ -284,6 +291,9 @@ Sim::Sim(std::string _paramsXML,
 	this->eventParams.displayOut("Simulation Parameters\n");
 
 	ticpp::Element *simParams = doc.FirstChildElement("simulation");
+
+	useFixedSeed = simParams->FirstChildElement("enableFixedSeed", false)->GetText<int>();
+	this->eventParams.displayOut(useFixedSeed ? "Using fixed seed" : "Not using fixed seed");
 
 	double inputVersion = simParams->FirstChildElement("inputVersion")->GetText<double>();
 	this->eventParams.displayOut("Input Version =");
@@ -539,7 +549,6 @@ Sim::Sim(std::string _paramsXML,
 
 
     doc.Clear();
-#endif//#if(TESTING)
 }
 
 Sim::~Sim(void)
