@@ -48,6 +48,7 @@ const char PATH_SEPARATOR = '/';
 
 class DisplayBox;
 
+/*
 void test()
 {
     const std::string bucketLabel = "foo";
@@ -156,7 +157,7 @@ void test()
 
 
     std::cout << "Number of infected persons: " << bsMix.getNumInfected() << std::endl;
-/*
+*
   Person *p;
   for (i = 0; i < 11; i++){
   p = bsMix.drawMember(this->eventParams.randomNums, &m, SexualPartnership::STEADY, false);
@@ -169,7 +170,7 @@ void test()
   std::cout << "Number of random marbles is " << bsMix.sizeRandom() << std::endl;
   std::cout << "Number of high risk marbles is " << bsMix.sizeRisk(Person::HIGH) << std::endl;
   std::cout << "Number of low risk marbles is " << bsMix.sizeRisk(Person::LOW) << std::endl;
-  std::cout << "Number of random marbles (alt) is " << bsMix.sizeRisk(Person::ENDRiskLevel) << std::endl;*/
+  std::cout << "Number of random marbles (alt) is " << bsMix.sizeRisk(Person::ENDRiskLevel) << std::endl;/
 
     std::cout << "*************************" << std::endl;
     //bsMix.print(std::cout, "Before aging: ");
@@ -182,12 +183,13 @@ void test()
     }
     //bsMix.print(std::cout, "Left in: ");
 
-    /*Person *p = bsMix.drawMember(this->eventParams.randomNums, &m, SexualPartnership::STEADY, false);
+    *Person *p = bsMix.drawMember(this->eventParams.randomNums, &m, SexualPartnership::STEADY, false);
       m.print(std::cout, "Man is: ");
 
-      p->print(std::cout, "He drew this person: ");*/
+      p->print(std::cout, "He drew this person: ");*
     std::cout << "Size of bsMix is now " << bsMix.size() << std::endl;
 }
+*/
 
 Sim::Sim(std::string _paramsXML, DisplayBox *dbox, bool _genGraphViz)
 {
@@ -199,7 +201,7 @@ Sim::Sim(std::string _paramsXML, DisplayBox *dbox, bool _genGraphViz)
 #endif
 
     //Character to seperate directories / for linux, mac and \ for windows
-    std::string dirSepChar = PATH_SEPARATOR;
+    std::string dirSepChar = std::string(1, PATH_SEPARATOR);
 
     //Remove the .xml and the directory from _paramsXML to get the sim name
     this->eventParams.simName = _paramsXML.substr(_paramsXML.find_last_of(dirSepChar) + 1);

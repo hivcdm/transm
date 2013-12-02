@@ -71,6 +71,7 @@ GUI_OBJS = $(OBJS) source/gui/widgets/statusWidget.o \
 	source/gui/dialogs/SetupBatchStatsDialog.o 
 
 CONSOLE_OBJS = $(OBJS) source/main.o
+TEST_OBJS = $(OBJS)
 
 #compiler and related flags
 CXX = g++
@@ -105,6 +106,10 @@ BOOST_MAC_LDFLAGS = -L/usr/local/lib -lboost_regex-xgcc40-mt
 ##################
 
 all : console
+
+test : CXXFLAGS += -DCONSOLE -O3
+test : $(TEST_OBJS)
+	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -I ~/Downloads/cxxtest-4.3/ -I source/ test/tests.cpp -o cdm_test
 
 console : CXXFLAGS += -DCONSOLE -O3 $(BOOST_CXXFLAGS)
 console : LDFLAGS += $(BOOST_LDFLAGS)
