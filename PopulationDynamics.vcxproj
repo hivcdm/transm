@@ -39,7 +39,12 @@
     <ClInclude Include="source\cepac\SummaryStats.h" />
     <ClInclude Include="source\cepac\TBDiseaseUpdater.h" />
     <ClInclude Include="source\cepac\Tracer.h" />
-    <ClInclude Include="source\Constants.h" />
+    <ClInclude Include="source\core\Constants.h" />
+    <ClInclude Include="source\core\Population.h" />
+    <ClInclude Include="source\core\PopulationParams.h" />
+    <ClInclude Include="source\core\Sim.h" />
+    <ClInclude Include="source\core\test\PopulationTest.h" />
+    <ClInclude Include="source\core\test\SimTest.h" />
     <ClInclude Include="source\data\Enum.h" />
     <ClInclude Include="source\data\EventParams.h" />
     <ClInclude Include="source\entities\behaviors\SexualBehaviorParams.h" />
@@ -54,23 +59,26 @@
     <ClInclude Include="source\entities\Female.h" />
     <ClInclude Include="source\entities\Male.h" />
     <ClInclude Include="source\entities\Person.h" />
+    <ClInclude Include="source\entities\test\PersonTest.h" />
     <ClInclude Include="source\graphviz\graphVizParse.h" />
     <ClInclude Include="source\gui\dialogs\SetupBatchStatsDialog.h" />
     <ClInclude Include="source\gui\DisplayBox.h" />
     <ClInclude Include="source\gui\main.h" />
     <ClInclude Include="source\gui\widgets\statusWidget.h" />
     <ClInclude Include="source\gui\widgets\verticalStatusWidget.h" />
-    <ClInclude Include="source\Population.h" />
-    <ClInclude Include="source\PopulationParams.h" />
-    <ClInclude Include="source\Sim.h" />
     <ClInclude Include="source\statistics\CostsTracker.h" />
     <ClInclude Include="source\statistics\InfectionsTracker.h" />
     <ClInclude Include="source\statistics\PopStats.h" />
     <ClInclude Include="source\statistics\StatsRecord.h" />
+    <ClInclude Include="source\statistics\test\CostsTrackerTest.h" />
+    <ClInclude Include="source\statistics\test\InfectionsTrackerTest.h" />
     <ClInclude Include="source\statistics\TransmissionSummaryStats.h" />
     <ClInclude Include="source\util\rand\Distributions.h" />
     <ClInclude Include="source\util\rand\IsaacRand.h" />
     <ClInclude Include="source\util\rand\RandomNums.h" />
+    <ClInclude Include="source\util\test\TestRand.h" />
+    <ClInclude Include="source\util\test\TestUtil.h" />
+    <ClInclude Include="source\util\test\TestXml.h" />
     <ClInclude Include="source\util\ticpp\ticpp.h" />
     <ClInclude Include="source\util\ticpp\ticpprc.h" />
     <ClInclude Include="source\util\ticpp\tinystr.h" />
@@ -104,7 +112,10 @@
     <ClCompile Include="source\cepac\SummaryStats.cpp" />
     <ClCompile Include="source\cepac\TBDiseaseUpdater.cpp" />
     <ClCompile Include="source\cepac\Tracer.cpp" />
-    <ClCompile Include="source\Constants.cpp" />
+    <ClCompile Include="source\core\Constants.cpp" />
+    <ClCompile Include="source\core\Population.cpp" />
+    <ClCompile Include="source\core\PopulationParams.cpp" />
+    <ClCompile Include="source\core\Sim.cpp" />
     <ClCompile Include="source\data\Enum.cpp" />
     <ClCompile Include="source\entities\behaviors\SexualBehaviorParams.cpp" />
     <ClCompile Include="source\entities\classifiers\DmgProfile.cpp" />
@@ -123,9 +134,6 @@
     <ClCompile Include="source\gui\main.cpp" />
     <ClCompile Include="source\gui\widgets\statusWidget.cpp" />
     <ClCompile Include="source\gui\widgets\verticalStatusWidget.cpp" />
-    <ClCompile Include="source\Population.cpp" />
-    <ClCompile Include="source\PopulationParams.cpp" />
-    <ClCompile Include="source\Sim.cpp" />
     <ClCompile Include="source\statistics\CostsTracker.cpp" />
     <ClCompile Include="source\statistics\InfectionsTracker.cpp" />
     <ClCompile Include="source\statistics\PopStats.cpp" />
@@ -200,7 +208,7 @@ copy $(wxpath)\lib\vc100_dll\wxmsw30ud_adv_vc100.dll $(SolutionDir)binaries\$(Co
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(boostpath)\include;$(wxpath)\include\msvc;$(wxpath)\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(cxxtestpath);$(boostpath)\include;$(wxpath)\include\msvc;$(wxpath)\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;WXUSINGDLL;wxMSVC_VERSION_AUTO;__WXMSW__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>

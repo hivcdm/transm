@@ -109,20 +109,29 @@
     <Filter Include="Source Files\util\rand">
       <UniqueIdentifier>{1f7ebe1e-121d-4a96-baad-c57990097a24}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\core">
+      <UniqueIdentifier>{9badd95f-a58b-4c62-b0ab-d1566166a3bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\core">
+      <UniqueIdentifier>{34811d09-60dc-4031-8392-2c6f0f1c2920}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\core\test">
+      <UniqueIdentifier>{5cf3283e-731a-4d52-8e4f-6915831f6101}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\entities\test">
+      <UniqueIdentifier>{eb33e00f-8919-40ec-87f3-ba9847d36a2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cepac\test">
+      <UniqueIdentifier>{433deebe-cc80-417c-adb4-b9965d8c828f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\statistics\test">
+      <UniqueIdentifier>{42f4acd2-03e3-4310-8ca4-e0cd584d3be3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\util\test">
+      <UniqueIdentifier>{8f0bb6fc-9268-41b0-aa00-ac3415fd51ed}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="source\Sim.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\Constants.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\Population.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\PopulationParams.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\cepac\Tracer.h">
       <Filter>Header Files\cepac</Filter>
     </ClInclude>
@@ -309,20 +318,44 @@
     <ClInclude Include="resources\resource.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\core\Constants.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\core\Population.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\core\PopulationParams.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\core\Sim.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\core\test\PopulationTest.h">
+      <Filter>Header Files\core\test</Filter>
+    </ClInclude>
+    <ClInclude Include="source\core\test\SimTest.h">
+      <Filter>Header Files\core\test</Filter>
+    </ClInclude>
+    <ClInclude Include="source\util\test\TestRand.h">
+      <Filter>Header Files\util\test</Filter>
+    </ClInclude>
+    <ClInclude Include="source\util\test\TestUtil.h">
+      <Filter>Header Files\util\test</Filter>
+    </ClInclude>
+    <ClInclude Include="source\util\test\TestXml.h">
+      <Filter>Header Files\util\test</Filter>
+    </ClInclude>
+    <ClInclude Include="source\statistics\test\CostsTrackerTest.h">
+      <Filter>Header Files\statistics\test</Filter>
+    </ClInclude>
+    <ClInclude Include="source\statistics\test\InfectionsTrackerTest.h">
+      <Filter>Header Files\statistics\test</Filter>
+    </ClInclude>
+    <ClInclude Include="source\entities\test\PersonTest.h">
+      <Filter>Header Files\entities\test</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\Sim.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\Constants.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\Population.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\PopulationParams.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\cepac\Tracer.cpp">
       <Filter>Source Files\cepac</Filter>
     </ClCompile>
@@ -484,6 +517,18 @@
     </ClCompile>
     <ClCompile Include="source\util\rand\RandomNums.cpp">
       <Filter>Source Files\util\rand</Filter>
+    </ClCompile>
+    <ClCompile Include="source\core\Constants.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\core\Population.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\core\PopulationParams.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\core\Sim.cpp">
+      <Filter>Source Files\core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
