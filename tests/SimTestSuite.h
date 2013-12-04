@@ -1,6 +1,6 @@
 #include <cxxtest/TestSuite.h>
 
-#include "../Sim.h"
+#include "../source/Sim.h"
 
 class SimTestSuite : public CxxTest::TestSuite
 {

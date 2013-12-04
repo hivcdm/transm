@@ -1,5 +1,6 @@
-build/
-binaries/
+Debug/
+Test/
+Release/
 *.sdf
 *.suo
 *.opensdf

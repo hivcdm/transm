@@ -1,6 +1,6 @@
 #include <cxxtest/TestSuite.h>
 
-#include "../entities/entitypool/EntityPool.h"
+#include "../source/entities/entitypool/EntityPool.h"
 
 class EntityPoolTestSuite : public CxxTest::TestSuite
 {

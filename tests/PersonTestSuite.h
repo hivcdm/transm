@@ -1,7 +1,7 @@
 #include <cxxtest/TestSuite.h>
 
-#include "../entities/Person.h"
-#include "../statistics/InfectionsTracker.h"
+#include "../source/entities/Person.h"
+#include "../source/statistics/InfectionsTracker.h"
 
 class PersonTestSuite : public CxxTest::TestSuite
 {

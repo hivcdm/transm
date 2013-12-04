@@ -1,6 +1,6 @@
 #include <cxxtest/TestSuite.h>
 
-#include "../statistics/CostsTracker.h"
+#include "../source/statistics/CostsTracker.h"
 
 class CostsTrackerTestSuite : public CxxTest::TestSuite
 {

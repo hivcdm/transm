@@ -1,6 +1,6 @@
 #include <cxxtest/TestSuite.h>
 
-#include "../entities/Female.h"
+#include "../source/entities/Female.h"
 
 class FemaleTestSuite : public CxxTest::TestSuite
 {

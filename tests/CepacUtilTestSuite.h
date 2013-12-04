@@ -1,6 +1,6 @@
 #include <cxxtest/TestSuite.h>
 
-#include "../cepac/CepacUtil.h"
+#include "../source/cepac/CepacUtil.h"
 
 class CepacUtilTestSuite : public CxxTest::TestSuite
 {

@@ -1,6 +1,6 @@
 #include <cxxtest/TestSuite.h>
 
-#include "../Population.h"
+#include "../source/Population.h"
 
 class PopulationTestSuite : public CxxTest::TestSuite
 {

@@ -1,6 +1,6 @@
 #include <cxxtest/TestSuite.h>
 
-#include "../util/Util.h"
+#include "../source/util/Util.h"
 
 class UtilTestSuite : public CxxTest::TestSuite
 {

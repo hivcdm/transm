@@ -20,12 +20,12 @@ int main( int argc, char *argv[] ) {
     return status;
 }
 bool suite_PersonTestSuite_init = false;
-#include "C:\Users\taf656\Desktop\Development\cdm\source\tests\PersonTestSuite.h"
+#include "C:\Users\taf656\Desktop\Development\cdm\tests\PersonTestSuite.h"
 
 static PersonTestSuite suite_PersonTestSuite;
 
 static CxxTest::List Tests_PersonTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_PersonTestSuite( "C:/Users/taf656/Desktop/Development/cdm/source/tests/PersonTestSuite.h", 6, "PersonTestSuite", suite_PersonTestSuite, Tests_PersonTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_PersonTestSuite( "C:/Users/taf656/Desktop/Development/cdm/workspaces/VS2010/../../tests/PersonTestSuite.h", 6, "PersonTestSuite", suite_PersonTestSuite, Tests_PersonTestSuite );
 
 static class TestDescription_suite_PersonTestSuite_testConstructorsDestructors : public CxxTest::RealTestDescription {
 public:
@@ -69,12 +69,12 @@ public:
  void runTest() { suite_PersonTestSuite.testComplexGettersAndSetters(); }
 } testDescription_suite_PersonTestSuite_testComplexGettersAndSetters;
 
-#include "C:\Users\taf656\Desktop\Development\cdm\source\tests\PopulationTestSuite.h"
+#include "C:\Users\taf656\Desktop\Development\cdm\tests\PopulationTestSuite.h"
 
 static PopulationTestSuite suite_PopulationTestSuite;
 
 static CxxTest::List Tests_PopulationTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_PopulationTestSuite( "C:/Users/taf656/Desktop/Development/cdm/source/tests/PopulationTestSuite.h", 5, "PopulationTestSuite", suite_PopulationTestSuite, Tests_PopulationTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_PopulationTestSuite( "C:/Users/taf656/Desktop/Development/cdm/workspaces/VS2010/../../tests/PopulationTestSuite.h", 5, "PopulationTestSuite", suite_PopulationTestSuite, Tests_PopulationTestSuite );
 
 static class TestDescription_suite_PopulationTestSuite_testConstructorsDestructors : public CxxTest::RealTestDescription {
 public:
@@ -82,12 +82,12 @@ public:
  void runTest() { suite_PopulationTestSuite.testConstructorsDestructors(); }
 } testDescription_suite_PopulationTestSuite_testConstructorsDestructors;
 
-#include "C:\Users\taf656\Desktop\Development\cdm\source\tests\SimTestSuite.h"
+#include "C:\Users\taf656\Desktop\Development\cdm\tests\SimTestSuite.h"
 
 static SimTestSuite suite_SimTestSuite;
 
 static CxxTest::List Tests_SimTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_SimTestSuite( "C:/Users/taf656/Desktop/Development/cdm/source/tests/SimTestSuite.h", 5, "SimTestSuite", suite_SimTestSuite, Tests_SimTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_SimTestSuite( "C:/Users/taf656/Desktop/Development/cdm/workspaces/VS2010/../../tests/SimTestSuite.h", 5, "SimTestSuite", suite_SimTestSuite, Tests_SimTestSuite );
 
 static class TestDescription_suite_SimTestSuite_testConstructorsDestructors : public CxxTest::RealTestDescription {
 public:

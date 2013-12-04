@@ -1,6 +1,6 @@
 #include <cxxtest/TestSuite.h>
 
-#include "../util/XMLUtil.h"
+#include "../source/util/XMLUtil.h"
 
 class XmlUtilTestSuite : public CxxTest::TestSuite
 {

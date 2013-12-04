@@ -1,6 +1,6 @@
 #include <cxxtest/TestSuite.h>
 
-#include "../statistics/InfectionsTracker.h"
+#include "../source/statistics/InfectionsTracker.h"
 
 class InfectionsTrackerTestSuite : public CxxTest::TestSuite
 {
