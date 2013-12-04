@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C++ Express 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PopulationDynamics", "PopulationDynamics.vcxproj", "{8A9BB30F-A383-45EE-969F-F5571799D1BA}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PopulationDynamics_Test", "PopulationDynamics_Test.vcxproj", "{1A15E2F8-B773-4840-944F-06C4FAE496E6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -13,6 +15,10 @@ Global
 		{8A9BB30F-A383-45EE-969F-F5571799D1BA}.Debug|Win32.Build.0 = Debug|Win32
 		{8A9BB30F-A383-45EE-969F-F5571799D1BA}.Release|Win32.ActiveCfg = Release|Win32
 		{8A9BB30F-A383-45EE-969F-F5571799D1BA}.Release|Win32.Build.0 = Release|Win32
+		{1A15E2F8-B773-4840-944F-06C4FAE496E6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1A15E2F8-B773-4840-944F-06C4FAE496E6}.Debug|Win32.Build.0 = Debug|Win32
+		{1A15E2F8-B773-4840-944F-06C4FAE496E6}.Release|Win32.ActiveCfg = Release|Win32
+		{1A15E2F8-B773-4840-944F-06C4FAE496E6}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

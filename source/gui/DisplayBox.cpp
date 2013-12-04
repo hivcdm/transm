@@ -201,7 +201,7 @@ void DisplayBox::OnRun(wxCommandEvent& event){
 		*(this->summaryText) << wxT("Running File: ") << filename << wxT("\n");
 		//Run simulation on selected file
 		*(this->textctrl) << wxT("Running simulation...\n");
-		Sim *s = new Sim(filesToRun[i], this, this->graphicsCheckbox->GetValue(), this->useFixedSeedCheckbox->GetValue());
+		Sim *s = new Sim(filesToRun[i], this, this->graphicsCheckbox->GetValue());
 
 		//TODO: Change this to a general try-catch statement above?  Will need to change the constructor to throw the exception
 		if (!(s->getError())){

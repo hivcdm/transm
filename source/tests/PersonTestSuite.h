@@ -1,12 +1,21 @@
 #include <cxxtest/TestSuite.h>
 
-#include "../Person.h"
-#include "../../core/Constants.h"
-#include "../../statistics/InfectionsTracker.h"
+#include "../entities/Person.h"
+#include "../statistics/InfectionsTracker.h"
 
-class PersonTest : public CxxTest::TestSuite
+class PersonTestSuite : public CxxTest::TestSuite
 {
 public:
+	PersonTestSuite()
+	{
+
+	}
+
+	~PersonTestSuite()
+	{
+
+	}
+
     void testConstructorsDestructors()
     {
 		Person p1;
@@ -77,7 +86,7 @@ public:
 
 		EntityPool *pool = NULL;
 		Person *partner = p.choosePartner((SexualPartnership::Type)0, pool, true);
-		Person *partner = p.choosePartner((SexualPartnership::Type)0, pool, false);
+		Person *partner2 = p.choosePartner((SexualPartnership::Type)0, pool, false);
 
 		Person testMatchPerson;
 		p.possibleMatch((SexualPartnership::Type)0, &testMatchPerson);
