@@ -7,6 +7,7 @@
 
 #ifndef PLAYGROUND_H_
 #define PLAYGROUND_H_
+#ifndef CONSOLE
 #include <wx/wx.h>
 #include <wx/aboutdlg.h>
 #include <iostream>
@@ -70,5 +71,6 @@ public:
 
 };
 
+#endif
 #endif /* PLAYGROUND_H_ */
 

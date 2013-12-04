@@ -75,6 +75,7 @@
     <ClCompile Include="..\..\..\source\util\Util.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\resources\resource.h" />
     <ClInclude Include="..\..\..\source\cepacbridge\cepac_api.h" />
     <ClInclude Include="..\..\..\source\cepacbridge\ParseCepacInput.h" />
     <ClInclude Include="..\..\..\source\cepac\AcuteOIUpdater.h" />
@@ -141,6 +142,12 @@
     <ClInclude Include="..\..\..\source\util\Util.h" />
     <ClInclude Include="..\..\..\source\util\XMLUtil.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\..\resources\resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\resources\trans1.ico" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{05C9E4D0-0FB8-4284-B88B-89D00552E5A7}</ProjectGuid>
     <RootNamespace>PopulationDynamics</RootNamespace>
@@ -192,7 +199,10 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;WXUSINGDLL;wxMSVC_VERSION_AUTO;__WXMSW__;__WXDEBUG__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CONSOLE;_CRT_SECURE_NO_WARNINGS;WIN32;WXUSINGDLL;wxMSVC_VERSION_AUTO;__WXMSW__;__WXDEBUG__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(boostpath)\include</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ShowIncludes>false</ShowIncludes>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

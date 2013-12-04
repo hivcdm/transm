@@ -168,21 +168,6 @@
     <ClCompile Include="..\..\..\source\graphviz\graphVizParse.cpp">
       <Filter>graphviz</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\gui\main.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\gui\DisplayBox.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\gui\widgets\statusWidget.cpp">
-      <Filter>gui\widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\gui\widgets\verticalStatusWidget.cpp">
-      <Filter>gui\widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\gui\dialogs\SetupBatchStatsDialog.cpp">
-      <Filter>gui\dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\statistics\CostsTracker.cpp">
       <Filter>statistics</Filter>
     </ClCompile>
@@ -215,6 +200,21 @@
     </ClCompile>
     <ClCompile Include="..\..\..\source\util\rand\RandomNums.cpp">
       <Filter>util\rand</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\DisplayBox.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\main.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\widgets\statusWidget.cpp">
+      <Filter>gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\widgets\verticalStatusWidget.cpp">
+      <Filter>gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\dialogs\SetupBatchStatsDialog.cpp">
+      <Filter>gui\dialogs</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\Constants.cpp" />
     <ClCompile Include="..\..\..\source\Population.cpp" />
@@ -348,21 +348,6 @@
     <ClInclude Include="..\..\..\source\graphviz\graphVizParse.h">
       <Filter>graphviz</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\gui\main.h">
-      <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\gui\DisplayBox.h">
-      <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\gui\widgets\statusWidget.h">
-      <Filter>gui\widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\gui\widgets\verticalStatusWidget.h">
-      <Filter>gui\widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\gui\dialogs\SetupBatchStatsDialog.h">
-      <Filter>gui\dialogs</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\statistics\CostsTracker.h">
       <Filter>statistics</Filter>
     </ClInclude>
@@ -405,9 +390,37 @@
     <ClInclude Include="..\..\..\source\util\rand\Distributions.h">
       <Filter>util\rand</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\resources\resource.h">
+      <Filter>resources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\DisplayBox.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\main.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\widgets\statusWidget.h">
+      <Filter>gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\widgets\verticalStatusWidget.h">
+      <Filter>gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\dialogs\SetupBatchStatsDialog.h">
+      <Filter>gui\dialogs</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\source\Constants.h" />
     <ClInclude Include="..\..\..\source\Population.h" />
     <ClInclude Include="..\..\..\source\PopulationParams.h" />
     <ClInclude Include="..\..\..\source\Sim.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\..\resources\resource.rc">
+      <Filter>resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\resources\trans1.ico">
+      <Filter>resources</Filter>
+    </None>
   </ItemGroup>
 </Project>

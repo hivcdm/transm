@@ -34,7 +34,7 @@ void Util::findInputFiles(){
     string fileName;
 
     //get the list of files that we have to process
-    transmFilesToRun->clear();
+    transmFilesToRun.clear();
     do {
 	fileName = (char *) tFileInfo.name;
 	transmFilesToRun.push_back(fileName);

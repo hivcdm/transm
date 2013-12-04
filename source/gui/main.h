@@ -7,6 +7,7 @@
 
 #ifndef MAIN_H_
 #define MAIN_H_
+#ifndef CONSOLE
 
 #include <wx/wx.h>
 
@@ -16,5 +17,5 @@ class MyApp : public wxApp
     virtual bool OnInit();
 };
 
-
+#endif
 #endif /* MAIN_H_ */

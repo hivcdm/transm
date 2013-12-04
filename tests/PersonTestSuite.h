@@ -35,6 +35,14 @@ public:
 		p.resetLatestUnformedPartnerships(SexualPartnership::CASUAL);
 	}
 
+	void testDeath()
+	{
+		Person p;
+		p.death = false;
+		RandomNums randomNums;
+		p.rollForDeath(randomNums);
+	}
+
 	void testRolls()
 	{
 		Person p;
@@ -44,7 +52,6 @@ public:
 		std::list<Person*> newlyInfected;
 		InfectionsTracker infTrack;
 
-		p.rollForDeath(randomNums);
 		p.rollForBecomeSexWorker(params, false, 0.0);
 		p.rerollRiskGroup(params);
 		p.rollForAgeDifference((SexualPartnership::Type)0, randomNums);
@@ -85,8 +92,9 @@ public:
 		p.removePartnership(&partnership);
 
 		EntityPool *pool = NULL;
-		Person *partner = p.choosePartner((SexualPartnership::Type)0, pool, true);
-		Person *partner2 = p.choosePartner((SexualPartnership::Type)0, pool, false);
+		Person *partner = NULL;
+		partner = p.choosePartner((SexualPartnership::Type)0, pool, true);
+		partner = p.choosePartner((SexualPartnership::Type)0, pool, false);
 
 		Person testMatchPerson;
 		p.possibleMatch((SexualPartnership::Type)0, &testMatchPerson);

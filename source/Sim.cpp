@@ -1,9 +1,6 @@
 #define TIXML_USE_TICPP
 //Comment me out to create console version of model
-#define USEGUI
-//Comment me out to run the model!
-//Comment me back in to run a test suite instead of a full blown simulation
-//#define TESTING
+//#define USEGUI
 
 #include "Sim.h"
 

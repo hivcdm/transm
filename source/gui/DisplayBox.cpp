@@ -5,6 +5,8 @@
  *      Author: errhode
  */
 
+#ifndef CONSOLE
+
 #include <iostream>
 #include <stdlib.h>
 #include <stdio.h>
@@ -434,3 +436,4 @@ void DisplayBox::OnSetupBatchStats(wxCommandEvent& WXUNUSED(event)){
 	*(this->summaryText) << wxT("\n");
 }
 
+#endif

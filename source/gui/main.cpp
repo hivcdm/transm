@@ -5,6 +5,8 @@
  *      Author: errhode
  */
 
+#ifndef CONSOLE
+
 //Reinclude and compile in visual C++ in debug mode if you want to do memory leak detection
 /*#include <vld.h>
 #include <vldapi.h>*/
@@ -32,3 +34,5 @@ bool MyApp::OnInit()
 
     return true;
 }
+
+#endif

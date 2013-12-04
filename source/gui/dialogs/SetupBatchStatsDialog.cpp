@@ -5,6 +5,8 @@
  *      Author: errhode
  */
 
+#ifndef CONSOLE
+
 #include "SetupBatchStatsDialog.h"
 #include "../DisplayBox.h"
 
@@ -70,3 +72,5 @@ SetupBatchStatsDialog::SetupBatchStatsDialog(const wxString & title, DisplayBox 
 	 Destroy();
 
 }
+
+#endif

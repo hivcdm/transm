@@ -39,33 +39,39 @@ public:
  void runTest() { suite_PersonTestSuite.testReseters(); }
 } testDescription_suite_PersonTestSuite_testReseters;
 
+static class TestDescription_suite_PersonTestSuite_testDeath : public CxxTest::RealTestDescription {
+public:
+ TestDescription_suite_PersonTestSuite_testDeath() : CxxTest::RealTestDescription( Tests_PersonTestSuite, suiteDescription_PersonTestSuite, 38, "testDeath" ) {}
+ void runTest() { suite_PersonTestSuite.testDeath(); }
+} testDescription_suite_PersonTestSuite_testDeath;
+
 static class TestDescription_suite_PersonTestSuite_testRolls : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_PersonTestSuite_testRolls() : CxxTest::RealTestDescription( Tests_PersonTestSuite, suiteDescription_PersonTestSuite, 38, "testRolls" ) {}
+ TestDescription_suite_PersonTestSuite_testRolls() : CxxTest::RealTestDescription( Tests_PersonTestSuite, suiteDescription_PersonTestSuite, 46, "testRolls" ) {}
  void runTest() { suite_PersonTestSuite.testRolls(); }
 } testDescription_suite_PersonTestSuite_testRolls;
 
 static class TestDescription_suite_PersonTestSuite_testFullVector : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_PersonTestSuite_testFullVector() : CxxTest::RealTestDescription( Tests_PersonTestSuite, suiteDescription_PersonTestSuite, 67, "testFullVector" ) {}
+ TestDescription_suite_PersonTestSuite_testFullVector() : CxxTest::RealTestDescription( Tests_PersonTestSuite, suiteDescription_PersonTestSuite, 74, "testFullVector" ) {}
  void runTest() { suite_PersonTestSuite.testFullVector(); }
 } testDescription_suite_PersonTestSuite_testFullVector;
 
 static class TestDescription_suite_PersonTestSuite_testMutators : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_PersonTestSuite_testMutators() : CxxTest::RealTestDescription( Tests_PersonTestSuite, suiteDescription_PersonTestSuite, 79, "testMutators" ) {}
+ TestDescription_suite_PersonTestSuite_testMutators() : CxxTest::RealTestDescription( Tests_PersonTestSuite, suiteDescription_PersonTestSuite, 86, "testMutators" ) {}
  void runTest() { suite_PersonTestSuite.testMutators(); }
 } testDescription_suite_PersonTestSuite_testMutators;
 
 static class TestDescription_suite_PersonTestSuite_testBasicGettersAndSetters : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_PersonTestSuite_testBasicGettersAndSetters() : CxxTest::RealTestDescription( Tests_PersonTestSuite, suiteDescription_PersonTestSuite, 95, "testBasicGettersAndSetters" ) {}
+ TestDescription_suite_PersonTestSuite_testBasicGettersAndSetters() : CxxTest::RealTestDescription( Tests_PersonTestSuite, suiteDescription_PersonTestSuite, 103, "testBasicGettersAndSetters" ) {}
  void runTest() { suite_PersonTestSuite.testBasicGettersAndSetters(); }
 } testDescription_suite_PersonTestSuite_testBasicGettersAndSetters;
 
 static class TestDescription_suite_PersonTestSuite_testComplexGettersAndSetters : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_PersonTestSuite_testComplexGettersAndSetters() : CxxTest::RealTestDescription( Tests_PersonTestSuite, suiteDescription_PersonTestSuite, 138, "testComplexGettersAndSetters" ) {}
+ TestDescription_suite_PersonTestSuite_testComplexGettersAndSetters() : CxxTest::RealTestDescription( Tests_PersonTestSuite, suiteDescription_PersonTestSuite, 146, "testComplexGettersAndSetters" ) {}
  void runTest() { suite_PersonTestSuite.testComplexGettersAndSetters(); }
 } testDescription_suite_PersonTestSuite_testComplexGettersAndSetters;
 

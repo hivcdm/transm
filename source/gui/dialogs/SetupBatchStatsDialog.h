@@ -7,6 +7,7 @@
 
 #ifndef SETUPPOPSTATSDIALOG_H_
 #define SETUPPOPSTATSDIALOG_H_
+#ifndef CONSOLE
 
 #include <wx/wx.h>
 #include "../../Constants.h"
@@ -27,6 +28,5 @@ public:
 
 };
 
-
-
+#endif
 #endif /* SETUPPOPSTATSDIALOG_H_ */
