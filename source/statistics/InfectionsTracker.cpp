@@ -143,8 +143,8 @@ double InfectionsTracker::getSAPrev(Population* _population){
 	NAProfile.set(DmgProfile::SEXUAL_ACTIVITY_STATUS, DmgProfile::NA);
 	vector<DmgProfile::ProfileID> NAProfileIDs;
 	NAProfile.selectProfileIDs(NAProfileIDs,NULL);
-	for (int i = 0; i < NAProfileIDs.size(); i++){
-		for (int j = 0; j < this->NUMBER_GENERATIONS_TO_TRACE; j++)
+	for (size_t i = 0; i < NAProfileIDs.size(); i++){
+		for (size_t j = 0; j < this->NUMBER_GENERATIONS_TO_TRACE; j++)
 			totalInfectedSA -= this->currPrevalentInfections[NAProfileIDs[i]][j];
 	}
 
@@ -217,9 +217,11 @@ void InfectionsTracker::initializeIncidentInfectionsByAge(vector<boost::tuple<lo
 /*
  * Records a new exposure regardless of whether an infection happened or not
  */
-void InfectionsTracker::recordExposure(long _time, const Person *_infector){
+void InfectionsTracker::recordExposure(long _time, const Person *_infector)
+{
 	/** Reset counter for incident infections and exposures for current timestep if this is the first time an InfectionsTracker function has been called */
-	if(_time > this->currTimeStep) {
+	if(_time > static_cast<long>(this->currTimeStep))
+	{
 		resetIncidentInfections(_time);
 	}
 
@@ -236,7 +238,8 @@ void InfectionsTracker::recordIncidentInfection(long _time, SexualPartnership::T
 	assert(_partnershipType < SexualPartnership::ENDType);
 
 	//reset counter for incident infections and exposures for current timestep
-	if(_time > this->currTimeStep) {
+	if(_time > static_cast<long>(this->currTimeStep))
+	{
 		resetIncidentInfections(_time);
 	}
 
@@ -331,7 +334,7 @@ void InfectionsTracker::recordCD4AtTransmission(ostream &_outStream){
 
 }
 
-void InfectionsTracker::setPrevalentInfections(long _time, unsigned long _prevalenceByBucket[DmgProfile::TotalNumBuckets][NUMBER_GENERATIONS_TO_TRACE], const vector <boost::tuple<long, int, int> > & _prevalenceByAgeMale, const vector <boost::tuple<long, int, int> > & _prevalenceByAgeFemale, unsigned long _prevalenceByRiskGenderEmployment[Person::ENDRiskLevel][DmgProfile::ENDGender][DmgProfile::ENDEmployment]) {
+void InfectionsTracker::setPrevalentInfections(long /*_time*/, unsigned long _prevalenceByBucket[DmgProfile::TotalNumBuckets][NUMBER_GENERATIONS_TO_TRACE], const vector <boost::tuple<long, int, int> > & _prevalenceByAgeMale, const vector <boost::tuple<long, int, int> > & _prevalenceByAgeFemale, unsigned long _prevalenceByRiskGenderEmployment[Person::ENDRiskLevel][DmgProfile::ENDGender][DmgProfile::ENDEmployment]) {
 	DmgProfile::ProfileID currProfileID = DmgProfile::MIN;
 	while(currProfileID <= DmgProfile::MAX) {
 		for (int i = 0; i < this->NUMBER_GENERATIONS_TO_TRACE; i++)
@@ -588,7 +591,7 @@ int InfectionsTracker::printInfections(EventParams& _eventParams, long _time, os
 
 
 	//if no incident infections happened during this time, then make sure that we have 0 in the currTime incident infections and exposures
-	if(_time > this->currTimeStep) {
+	if(_time > static_cast<long>(this->currTimeStep)) {
 		resetIncidentInfections(_time);
 	}
 
@@ -656,9 +659,12 @@ int InfectionsTracker::printInfections(EventParams& _eventParams, long _time, os
 	NAProfile.set(DmgProfile::SEXUAL_ACTIVITY_STATUS, DmgProfile::NA);
 	vector<DmgProfile::ProfileID> NAProfileIDs;
 	NAProfile.selectProfileIDs(NAProfileIDs,NULL);
-	for (int i = 0; i < NAProfileIDs.size(); i++){
-		for (int j = 0; j < this->NUMBER_GENERATIONS_TO_TRACE; j++)
+	for (size_t i = 0; i < NAProfileIDs.size(); i++)
+	{
+		for (size_t j = 0; j < this->NUMBER_GENERATIONS_TO_TRACE; j++)
+		{
 			totalInfectedSA -= this->currPrevalentInfections[NAProfileIDs[i]][j];
+		}
 	}
 
 	double currPrevalenceSA = (totalInfectedSA)/(double)currSAPopSize;
@@ -699,8 +705,10 @@ int InfectionsTracker::printInfections(EventParams& _eventParams, long _time, os
 	GenderProfile.set(DmgProfile::GENDER, DmgProfile::MALE);
 	vector<DmgProfile::ProfileID> GenderProfileIDs;
 	GenderProfile.selectProfileIDs(GenderProfileIDs, NULL);
-	for (int i = 0; i < GenderProfileIDs.size(); i++){
-		for (int j = 0; j < this->NUMBER_GENERATIONS_TO_TRACE; j++){
+	for (size_t i = 0; i < GenderProfileIDs.size(); i++)
+	{
+		for (size_t j = 0; j < this->NUMBER_GENERATIONS_TO_TRACE; j++)
+		{
 			totalInfectedGender[DmgProfile::MALE] += this->currPrevalentInfections[GenderProfileIDs[i]][j];
 		}
 	}
@@ -709,9 +717,12 @@ int InfectionsTracker::printInfections(EventParams& _eventParams, long _time, os
 	GenderProfile.set(DmgProfile::GENDER, DmgProfile::FEMALE);
 	GenderProfileIDs.clear();
 	GenderProfile.selectProfileIDs(GenderProfileIDs, NULL);
-	for (int i = 0; i < GenderProfileIDs.size(); i++){
-		for (int j = 0; j < this->NUMBER_GENERATIONS_TO_TRACE; j++)
+	for (size_t i = 0; i < GenderProfileIDs.size(); i++)
+	{
+		for (size_t j = 0; j < this->NUMBER_GENERATIONS_TO_TRACE; j++)
+		{
 			totalInfectedGender[DmgProfile::FEMALE] += this->currPrevalentInfections[GenderProfileIDs[i]][j];
+		}
 	}
 
 	//Actually print the size and infections by gender
@@ -734,37 +745,48 @@ int InfectionsTracker::printInfections(EventParams& _eventParams, long _time, os
 	CSWProfile.set(DmgProfile::EMPLOYMENT, DmgProfile::CSW);
 	vector<DmgProfile::ProfileID> CSWProfileIDs;
 	CSWProfile.selectProfileIDs(CSWProfileIDs,NULL);
-	for (int i = 0; i < CSWProfileIDs.size(); i++){
-		for (int j = 0; j < this->NUMBER_GENERATIONS_TO_TRACE; j++)
+	for (size_t i = 0; i < CSWProfileIDs.size(); i++)
+	{
+		for (size_t j = 0; j < this->NUMBER_GENERATIONS_TO_TRACE; j++)
+		{
 			totalInfectedCSW += this->currPrevalentInfections[CSWProfileIDs[i]][j];
+		}
 	}
 	_outStream << this->currPrevalentInfectionsRiskGenderEmployment[Person::HIGH][DmgProfile::MALE][DmgProfile::CSW] + this->currPrevalentInfectionsRiskGenderEmployment[Person::HIGH][DmgProfile::FEMALE][DmgProfile::CSW] << Constants::TAB << this->currPrevalentInfectionsRiskGenderEmployment[Person::LOW][DmgProfile::MALE][DmgProfile::CSW] + this->currPrevalentInfectionsRiskGenderEmployment[Person::LOW][DmgProfile::FEMALE][DmgProfile::CSW] << Constants::TAB << this->currPrevalentInfectionsRiskGenderEmployment[Person::HIGH][DmgProfile::MALE][DmgProfile::NON_CSW] << Constants::TAB << this->currPrevalentInfectionsRiskGenderEmployment[Person::HIGH][DmgProfile::FEMALE][DmgProfile::NON_CSW]<< Constants::TAB << this->currPrevalentInfectionsRiskGenderEmployment[Person::LOW][DmgProfile::MALE][DmgProfile::NON_CSW] << Constants::TAB << this->currPrevalentInfectionsRiskGenderEmployment[Person::LOW][DmgProfile::FEMALE][DmgProfile::NON_CSW] << Constants::TAB;
 
 	//We're hard wiring 6 (Prev + 5) generations of reporting for now
 	int totalInfectedByGeneration[NUMBER_GENERATIONS_TO_TRACE];
-	for (int i = 0; i < this->NUMBER_GENERATIONS_TO_TRACE; i++){
+	for (int i = 0; i < this->NUMBER_GENERATIONS_TO_TRACE; i++)
+	{
 		totalInfectedByGeneration[i] = 0;
-		for (int j = 0; j < DmgProfile::TotalNumBuckets; j++){
+		for (int j = 0; j < DmgProfile::TotalNumBuckets; j++)
+		{
 			totalInfectedByGeneration[i] += this->currPrevalentInfections[j][i];
 		}
 	}
 	//write out number of infections by generation (7 tabs)
-	for (int i = 0; i < this->NUMBER_GENERATIONS_TO_TRACE; i++){
+	for (int i = 0; i < this->NUMBER_GENERATIONS_TO_TRACE; i++)
+	{
 		_outStream << totalInfectedByGeneration[i] << Constants::TAB;
 	}
 
 	/** Print out exposures and infections by viral load */
 	_outStream << Constants::TAB;
 	for (int i = 0; i < Person::ENDHVLStrata; i++)
+	{
 		_outStream << this->currTimeExposures[i] << Constants::TAB;
+	}
 	_outStream << Constants::TAB;
 	for (int i = 0; i < Person::ENDHVLStrata; i++)
+	{
 		_outStream << this->currTimeStepIncidentInfs[i] << Constants::TAB;
+	}
 
 	//Print out incident infections by age and gender and risk
 	int incidentInfsMale = 0;
 	int incidentInfsFemale = 0;
-	for (int i = 0; i < numAgeRanges; i++){
+	for (int i = 0; i < numAgeRanges; i++)
+	{
 		_outStream << boost::tuples::get<Population::AGE_RANGE_SIZE>(this->currTimeStepIncidentInfsAgeMale.at(i))+ boost::tuples::get<Population::AGE_RANGE_SIZE>(this->currTimeStepIncidentInfsAgeFemale.at(i))<< Constants::TAB;
 		incidentInfsMale+=boost::tuples::get<Population::AGE_RANGE_SIZE>(this->currTimeStepIncidentInfsAgeMale.at(i));
 		incidentInfsFemale+=boost::tuples::get<Population::AGE_RANGE_SIZE>(this->currTimeStepIncidentInfsAgeFemale.at(i));
@@ -772,22 +794,27 @@ int InfectionsTracker::printInfections(EventParams& _eventParams, long _time, os
 	_outStream << incidentInfsMale << Constants::TAB << incidentInfsFemale << Constants::TAB;
 	_outStream << this->currTimeStepIncidentInfsRiskGenderEmployment[Person::HIGH][DmgProfile::MALE][DmgProfile::CSW] + this->currTimeStepIncidentInfsRiskGenderEmployment[Person::HIGH][DmgProfile::FEMALE][DmgProfile::CSW] << Constants::TAB << this->currTimeStepIncidentInfsRiskGenderEmployment[Person::LOW][DmgProfile::MALE][DmgProfile::CSW] + this->currTimeStepIncidentInfsRiskGenderEmployment[Person::LOW][DmgProfile::FEMALE][DmgProfile::CSW] << Constants::TAB << this->currTimeStepIncidentInfsRiskGenderEmployment[Person::HIGH][DmgProfile::MALE][DmgProfile::NON_CSW] << Constants::TAB << this->currTimeStepIncidentInfsRiskGenderEmployment[Person::HIGH][DmgProfile::FEMALE][DmgProfile::NON_CSW]<< Constants::TAB << this->currTimeStepIncidentInfsRiskGenderEmployment[Person::LOW][DmgProfile::MALE][DmgProfile::NON_CSW] << Constants::TAB << this->currTimeStepIncidentInfsRiskGenderEmployment[Person::LOW][DmgProfile::FEMALE][DmgProfile::NON_CSW] << Constants::TAB;
 
-	for (int i = 0; i < numAgeRanges; i++){
+	for (int i = 0; i < numAgeRanges; i++)
+	{
 		_outStream << boost::tuples::get<Population::AGE_RANGE_SIZE>(this->currTimeStepIncidentInfsAgeMale.at(i)) << Constants::TAB;
 	}
-	for (int i = 0; i < numAgeRanges; i++){
+	for (int i = 0; i < numAgeRanges; i++)
+	{
 		_outStream << boost::tuples::get<Population::AGE_RANGE_SIZE>(this->currTimeStepIncidentInfsAgeFemale.at(i))<< Constants::TAB;
 	}
 
 	// Print out incident infections by relationship type
 	_outStream << Constants::TAB;
-	for (int partnershipType = 0; partnershipType < SexualPartnership::ENDType; partnershipType++){
+	for (int partnershipType = 0; partnershipType < SexualPartnership::ENDType; partnershipType++)
+	{
 		int infectionsByType = 0;
 		//tally all the infections that happened with partnershipType for all possible infector and infected DmgProfiles
 		list<DmgProfile::ProfileID>::iterator infectorProfileID = this->profileIDsForDetailedTrace.begin();
-			while(infectorProfileID != this->profileIDsForDetailedTrace.end()) {
+			while(infectorProfileID != this->profileIDsForDetailedTrace.end())
+			{
 				list<DmgProfile::ProfileID>::iterator infectedProfileID = this->profileIDsForDetailedTrace.begin();
-				while(infectedProfileID != this->profileIDsForDetailedTrace.end()) {
+				while(infectedProfileID != this->profileIDsForDetailedTrace.end())
+				{
 					infectionsByType += this->incidentInfections[partnershipType][*infectorProfileID][*infectedProfileID];
 					infectedProfileID++;
 				} //while(infectorProfileID < this->profileIDsForDetailedTrace.end()) {
@@ -802,12 +829,15 @@ int InfectionsTracker::printInfections(EventParams& _eventParams, long _time, os
 	//write out all incident infections that happened in history
 	// only ProfileID's in profileIDsForDetailedTrace are included
 	list<DmgProfile::ProfileID>::iterator infectorProfileID = this->profileIDsForDetailedTrace.begin();
-	while(infectorProfileID != this->profileIDsForDetailedTrace.end()) {
+	while(infectorProfileID != this->profileIDsForDetailedTrace.end())
+	{
 		list<DmgProfile::ProfileID>::iterator infectedProfileID = this->profileIDsForDetailedTrace.begin();
-		while(infectedProfileID != this->profileIDsForDetailedTrace.end()) {
+		while(infectedProfileID != this->profileIDsForDetailedTrace.end())
+		{
 			//tally all the infections that happened from curr infectorProfileID -> curr infectedProfileID
 			unsigned long infs = 0;
-			for(int partnershipType = 0; partnershipType < SexualPartnership::ENDType; ++partnershipType) {
+			for(int partnershipType = 0; partnershipType < SexualPartnership::ENDType; ++partnershipType)
+			{
 				infs += this->incidentInfections[partnershipType][*infectorProfileID][*infectedProfileID];
 			}
 			_outStream << infs << Constants::TAB;
@@ -817,37 +847,47 @@ int InfectionsTracker::printInfections(EventParams& _eventParams, long _time, os
 	} //while(infectedProfileID < this->profileIDsForDetailedTrace.end()) {
 
 	//write out all incident infections that happened in history stratified by age and gender and risk
-	for (int i = 0; i < numAgeRanges; i++){
+	for (int i = 0; i < numAgeRanges; i++)
+	{
 		_outStream << boost::tuples::get<Population::AGE_RANGE_SIZE>(this->totalIncidentInfsAge.at(i)) << Constants::TAB;
 	}
+
 	_outStream << this->totalIncidentInfsGender[DmgProfile::MALE] << Constants::TAB << this->totalIncidentInfsGender[DmgProfile::FEMALE] << Constants::TAB;
 	_outStream << this->totalIncidentInfsRiskGenderEmployment[Person::HIGH][DmgProfile::MALE][DmgProfile::CSW] + this->totalIncidentInfsRiskGenderEmployment[Person::HIGH][DmgProfile::FEMALE][DmgProfile::CSW] << Constants::TAB << this->totalIncidentInfsRiskGenderEmployment[Person::LOW][DmgProfile::MALE][DmgProfile::CSW] + this->totalIncidentInfsRiskGenderEmployment[Person::LOW][DmgProfile::FEMALE][DmgProfile::CSW] << Constants::TAB << this->totalIncidentInfsRiskGenderEmployment[Person::HIGH][DmgProfile::MALE][DmgProfile::NON_CSW] << Constants::TAB << this->totalIncidentInfsRiskGenderEmployment[Person::HIGH][DmgProfile::FEMALE][DmgProfile::NON_CSW]<< Constants::TAB << this->totalIncidentInfsRiskGenderEmployment[Person::LOW][DmgProfile::MALE][DmgProfile::NON_CSW] << Constants::TAB << this->totalIncidentInfsRiskGenderEmployment[Person::LOW][DmgProfile::FEMALE][DmgProfile::NON_CSW] << Constants::TAB;
 
 	//write out age of infection for incident infections that month (mean and SD)
 	_outStream << Constants::TAB;
 
-	for (int i = 0; i < DmgProfile::ENDGender; i++){
-		if (this->currTimeStepNumInfectedGender[i] != 0){
+	for (int i = 0; i < DmgProfile::ENDGender; i++)
+	{
+		if (this->currTimeStepNumInfectedGender[i] != 0)
+		{
 			double ageMean = this->currTimeStepAgeInfectionSumGender[i]/(double) this->currTimeStepNumInfectedGender[i];
 			double ageSD = sqrt(this->currTimeStepAgeInfectionSumSqGender[i]/(double) this->currTimeStepNumInfectedGender[i] - ageMean*ageMean);
 			_outStream << ageMean << Constants::TAB << ageSD << Constants::TAB;
 		}
-		else{
+		else
+		{
 			_outStream << "N/A" << Constants::TAB << "N/A" << Constants::TAB;
 		}
 	}
 	
 	double numInfectedCSW = 0;
-	for (int i = 0; i < Person::ENDRiskLevel; i++){
-		for (int j = 0; j < DmgProfile::ENDGender; j++){
+	for (int i = 0; i < Person::ENDRiskLevel; i++)
+	{
+		for (int j = 0; j < DmgProfile::ENDGender; j++)
+		{
 			numInfectedCSW += this->currTimeStepNumInfectedRiskGenderEmployment[i][j][DmgProfile::CSW];
 		}
 	}
-	if (numInfectedCSW != 0){
+	if (numInfectedCSW != 0)
+	{
 		double ageSumCSW  = 0;
 		double ageSumSqCSW = 0;
-		for (int i = 0; i < Person::ENDRiskLevel; i++){
-			for (int j = 0; j < DmgProfile::ENDGender; j++){
+		for (int i = 0; i < Person::ENDRiskLevel; i++)
+		{
+			for (int j = 0; j < DmgProfile::ENDGender; j++)
+			{
 				ageSumCSW += this->currTimeStepAgeInfectionSumRiskGenderEmployment[i][j][DmgProfile::CSW];
 				ageSumSqCSW += this->currTimeStepAgeInfectionSumSqRiskGenderEmployment[i][j][DmgProfile::CSW];
 			}
@@ -856,19 +896,24 @@ int InfectionsTracker::printInfections(EventParams& _eventParams, long _time, os
 		double ageSDCSW = sqrt(ageSumSqCSW/numInfectedCSW - ageMeanCSW * ageMeanCSW);
 		_outStream << ageMeanCSW << Constants::TAB << ageSDCSW << Constants::TAB;
 	}
-	else{
+	else
+	{
 		_outStream << "N/A" << Constants::TAB << "N/A" << Constants::TAB;
 	}
 
-	for (int i = Person::ENDRiskLevel-1; i >= 0; i--){
+	for (int i = Person::ENDRiskLevel-1; i >= 0; i--)
+	{
 		double numInfected = 0;
-		for (int j = 0; j < DmgProfile::ENDGender; j++){
+		for (int j = 0; j < DmgProfile::ENDGender; j++)
+		{
 			numInfected += this->currTimeStepNumInfectedRiskGenderEmployment[i][j][DmgProfile::CSW];
 		}
-		if (numInfected != 0){
+		if (numInfected != 0)
+		{
 			double ageSum  = 0;
 			double ageSumSq = 0;
-			for (int j = 0; j < DmgProfile::ENDGender; j++){
+			for (int j = 0; j < DmgProfile::ENDGender; j++)
+			{
 				ageSum += this->currTimeStepAgeInfectionSumRiskGenderEmployment[i][j][DmgProfile::CSW];
 				ageSumSq += this->currTimeStepAgeInfectionSumSqRiskGenderEmployment[i][j][DmgProfile::CSW];
 			}
@@ -876,15 +921,19 @@ int InfectionsTracker::printInfections(EventParams& _eventParams, long _time, os
 			double ageSD = sqrt(ageSumSq/numInfected - ageMean*ageMean);
 			_outStream << ageMean << Constants::TAB << ageSD << Constants::TAB;
 		}
-		else{
+		else
+		{
 			_outStream << "N/A" << Constants::TAB << "N/A" << Constants::TAB;
 		}
 	}
 
-	for (int i = Person::ENDRiskLevel-1; i >= 0; i--){
-		for (int j = 0; j < DmgProfile::ENDGender; j++){
+	for (int i = Person::ENDRiskLevel-1; i >= 0; i--)
+	{
+		for (int j = 0; j < DmgProfile::ENDGender; j++)
+		{
 			double numInfected = this->currTimeStepNumInfectedRiskGenderEmployment[i][j][DmgProfile::NON_CSW];
-			if (numInfected != 0){
+			if (numInfected != 0)
+			{
 				double ageSum  = this->currTimeStepAgeInfectionSumRiskGenderEmployment[i][j][DmgProfile::NON_CSW];
 				double ageSumSq = this->currTimeStepAgeInfectionSumSqRiskGenderEmployment[i][j][DmgProfile::NON_CSW];
 
@@ -892,12 +941,12 @@ int InfectionsTracker::printInfections(EventParams& _eventParams, long _time, os
 				double ageSD = sqrt(ageSumSq/numInfected - ageMean*ageMean);
 				_outStream << ageMean << Constants::TAB << ageSD << Constants::TAB;
 			}
-			else{
+			else
+			{
 				_outStream << "N/A" << Constants::TAB << "N/A" << Constants::TAB;
 			}
 		}
 	}
-
 
 	_outStream << endl;
 

@@ -193,19 +193,19 @@ void Population::Params::loadXML(ticpp::Element *_populationXML, EventParams &_e
 	for (int i = 0; i < DmgProfile::ENDGender; i++)
 	{
 	    totalPopulationproportionages[i] = 0.0;
-	    for(int ageBucketNum = 0; ageBucketNum < initialAgeBuckets.size(); ageBucketNum++)
+	    for(size_t ageBucketNum = 0; ageBucketNum < initialAgeBuckets.size(); ageBucketNum++)
 	    {
 		totalPopulationproportionages[i] = totalPopulationproportionages[i] + this->initialAgeBuckets.at(ageBucketNum)->proportionOfPopulation[i];
 	    }
 		
 	    //normalize each proportionage value so that the sum of them == 1
-	    for(int ageBucketNum = 0; ageBucketNum < initialAgeBuckets.size(); ageBucketNum++)
+	    for(size_t ageBucketNum = 0; ageBucketNum < initialAgeBuckets.size(); ageBucketNum++)
 	    {
 		this->initialAgeBuckets.at(ageBucketNum)->proportionOfPopulation[i] = this->initialAgeBuckets.at(ageBucketNum)->proportionOfPopulation[i]/totalPopulationproportionages[i];
 	    }
 	}
 
-	for(int ageBucketNum = 0; ageBucketNum < initialAgeBuckets.size(); ageBucketNum++)
+	for(size_t ageBucketNum = 0; ageBucketNum < initialAgeBuckets.size(); ageBucketNum++)
 	{
 	    this->initialAgeBuckets.at(ageBucketNum)->print(_eventParams);
 	}

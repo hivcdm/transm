@@ -213,13 +213,14 @@ void PopStats::processPostMaxTimeDeath(Person *_p){
 
 }
 
-void PopStats::printLMStats(std::ostream &_outStream) {
-	long infectedDeaths = this->lifeStats->getStat(PopStats::TOTAL_HIV_POS_DTHS);
-	long uninfectedDeaths = this->lifeStats->getStat(PopStats::TOTAL_HIV_NEG_DTHS);
+void PopStats::printLMStats(std::ostream &_outStream)
+{
+	long infectedDeaths = static_cast<long>(this->lifeStats->getStat(PopStats::TOTAL_HIV_POS_DTHS));
+	long uninfectedDeaths = static_cast<long>(this->lifeStats->getStat(PopStats::TOTAL_HIV_NEG_DTHS));
 	long totalDeaths = infectedDeaths + uninfectedDeaths;
 
-	long infectedPersons = this->lifeStats->getStat(PopStats::TOTAL_HIV_POS);
-	long uninfectedPersons = this->lifeStats->getStat(PopStats::TOTAL_HIV_NEG);
+	long infectedPersons = static_cast<long>(this->lifeStats->getStat(PopStats::TOTAL_HIV_POS));
+	long uninfectedPersons = static_cast<long>(this->lifeStats->getStat(PopStats::TOTAL_HIV_NEG));
 	long totalPersons = infectedPersons + uninfectedPersons;
 
 	string invalid("----");
@@ -231,7 +232,8 @@ void PopStats::printLMStats(std::ostream &_outStream) {
 
 	_outStream << "Total Deaths\t" << totalDeaths << endl;
 
-	if (uninfectedDeaths > 0) {
+	if (uninfectedDeaths > 0)
+	{
 		assert(Constants::TODO_DEF);
 //		double infectivity = this->infectionStats->getStat( PopStats::TOTAL_EXPOSED_BUT_NOT_INFECTED) / (this->infectionStats->getStat( PopStats::TOTAL_EXPOSED_BUT_NOT_INFECTED) + infectedDeaths);
 	//	_outStream << "Crude infectivity\t" << infectivity << endl;
@@ -668,8 +670,8 @@ void PopStats::recordPrevalenceAndIncidence(long currTime, double _prevalence, d
 			statistics->timeOfStats = currTime;
 			statistics->prevalence = _prevalence;
 			statistics->incidence  = _incidence;
-			statistics->SAprevalence = _SAprevalence;
-			statistics->cumulativeNumberDead = this->lifeStats->getStat(PopStats::TOTAL_HIV_NEG_DTHS) + this->lifeStats->getStat(PopStats::TOTAL_HIV_POS_DTHS);
+			statistics->SAprevalence = static_cast<long>(_SAprevalence);
+			statistics->cumulativeNumberDead = static_cast<long>(this->lifeStats->getStat(PopStats::TOTAL_HIV_NEG_DTHS) + this->lifeStats->getStat(PopStats::TOTAL_HIV_POS_DTHS));
 			this->selectedSummaryStats.push_back(statistics);
 			return;
 		}

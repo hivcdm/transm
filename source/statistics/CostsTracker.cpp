@@ -51,11 +51,15 @@ double CostsTracker::getTotalCostsPerSource(CostsTracker::CostSources _costSourc
 }
 
 //Total costs for each time step
-double CostsTracker::getTotalCostsPerTime(long _time){
-	if (_time >= allCosts.size()){
+double CostsTracker::getTotalCostsPerTime(long _time)
+{
+	if (static_cast<size_t>(_time) >= allCosts.size())
+	{
 		//Default to 0 if time hasn't occurred
 		return 0;
-	} else {
+	}
+	else
+	{
 		return this->allCosts.at(_time)->getTotalCosts();
 	}
 }
@@ -63,7 +67,8 @@ double CostsTracker::getTotalCostsPerTime(long _time){
 //Total costs of all sources
 double CostsTracker::getTotalCosts(){
 	double totalCost = 0;
-	for (int i = 0; i < CostsTracker::EndCostSources; i++){
+	for (int i = 0; i < CostsTracker::EndCostSources; i++)
+	{
 		totalCost += this->totalCosts[i];
 	}
 	return totalCost;
@@ -72,7 +77,8 @@ double CostsTracker::getTotalCosts(){
 //Add a cost
 void CostsTracker::addCost(double _cost, CostsTracker::CostSources _costSource, long _currTime){
 	//Check to see if a MonthlyCost already exists for this time
-	while (_currTime >= this->allCosts.size()){
+	while (static_cast<size_t>(_currTime) >= this->allCosts.size())
+	{
 		//Else create one
 		MonthlyCosts* monthlyCosts = new MonthlyCosts();
 		this->allCosts.push_back(monthlyCosts);
@@ -91,7 +97,7 @@ void CostsTracker::printCosts(std::ostream &_outStream){
 	this->printCostHeaders(_outStream);
 
 	//Print out each month
-	for (long month = 0; month < this->allCosts.size(); month++){
+	for (size_t month = 0; month < this->allCosts.size(); month++){
 		//Print time
 		_outStream << month << "\t";
 

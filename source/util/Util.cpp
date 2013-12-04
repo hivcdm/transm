@@ -74,35 +74,51 @@ unsigned int Util::convertTime(TimeGranularity _from, TimeGranularity _to, doubl
 {
     assert (_val >= 0);
 
-    switch(_from) {
-    case DAY :
-	if( _to == DAY)
-	    return (int)_val;
-	else if( _to == MONTH)
-	    return (int)floor(_val*Util::dayToMonthMult);
-	else if (_to == YEAR)
-	    return (int)floor(_val*Util::dayToYearMult);
-	break;
-    case MONTH:
-	if( _to == DAY)
-	    return (int)_val*30;
-	else if( _to == MONTH)
-	    return (int)_val;
-	else if(_to == YEAR)
-	    return (int)floor(_val*Util::monthToYearMult);
-    case YEAR:
-	if( _to == DAY)
-	    return (int)_val*365;
-	else if(_to == MONTH)
-	    return (int)_val*12;
-	else if(_to == YEAR)
-	    return (int)_val;
-    default:
-	cerr << "convertToTime - invalid time granularity..." << _from << " or " << _to << endl;
-	Util::exitWithPrompt(INVALID_TIME_GRANULARITY);
-    }
+	unsigned int converted_value = 0;
 
-    return -1;
+	if(_from == DAY && _to == DAY)
+	{
+		converted_value = (int)_val;
+	}
+	else if(_from == DAY && _to == MONTH)
+	{
+		converted_value = (int)floor(_val*Util::dayToMonthMult);
+	}
+	else if(_from == DAY && _to == YEAR)
+	{
+		converted_value = (int)floor(_val*Util::dayToYearMult);
+	}
+	else if(_from == MONTH && _to == DAY)
+	{
+		converted_value = (int)_val*30;
+	}
+	else if(_from == MONTH && _to == MONTH)
+	{
+		converted_value = (int)_val;
+	}
+	else if(_from == MONTH && _to == YEAR)
+	{
+		converted_value = (int)floor(_val*Util::monthToYearMult);
+	}
+	else if(_from == YEAR && _to == DAY)
+	{
+		converted_value = (int)_val*365;
+	}
+	else if(_from == YEAR && _to == MONTH)
+	{
+		converted_value = (int)_val*12;
+	}
+	else if(_from == YEAR && _to == YEAR)
+	{
+		converted_value = (int)_val;
+	}
+	else
+	{
+		cerr << "convertToTime - invalid time granularity..." << _from << " or " << _to << endl;
+		Util::exitWithPrompt(INVALID_TIME_GRANULARITY);
+	}
+
+	return converted_value;
 }
 
 
@@ -121,14 +137,14 @@ void Util::normalize( vector<double> &_weights) {
     double total = 0;
 
     //see what the values currently total to
-    for(int i = 0; i < _weights.size(); i++)
+    for(unsigned int i = 0; i < _weights.size(); i++)
 	total += _weights.at(i);
 
     //we want to divide by the total, but division is slow. so we will multiply by the inverse
     total = 1 / total;
 
     //normalize each proportionate value so that the sum of them ~ 1
-    for(int i = 0; i < _weights.size(); i++)
+    for(unsigned int i = 0; i < _weights.size(); i++)
 	_weights.at(i) = _weights.at(i) * total;
 }
 

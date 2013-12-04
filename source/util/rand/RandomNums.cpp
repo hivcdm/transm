@@ -2,12 +2,14 @@
 #include "../Util.h"
 #include <ctime>
 //-----------< Begin Constructors >-----------------//
-RandomNums::RandomNums() {
-	this->mtRand.seed(time(NULL));
+RandomNums::RandomNums()
+{
+	this->mtRand.seed(static_cast<uint32_t>(time(NULL)));
 	this->mtRand_OneOverMaxMult = 1.0/mtRand.max();
 }
 
-RandomNums::RandomNums(unsigned long _seed) {
+RandomNums::RandomNums(unsigned long _seed)
+{
 	this->reset(_seed);
 	this->mtRand_OneOverMaxMult = 1.0/mtRand.max();
 }
@@ -23,7 +25,7 @@ int RandomNums::chooseIndex(const vector<double> &_indexProbabilities) {
 
 	double choice = this->rand();	//this is dice roll to see which pool we will draw from
 	double cumulativeProb = 0;				//this stores CDF for the current index
-	int currIndex;	//the index that we are currently considering
+	size_t currIndex;	//the index that we are currently considering
 
 	//cycle through vector until the CDF is greater than than what we rolled
 	for(currIndex = 0; currIndex < _indexProbabilities.size()-1; currIndex++ ) {
@@ -37,7 +39,7 @@ int RandomNums::chooseIndex(const vector<double> &_indexProbabilities) {
 		currIndex--;
 	}
 
-	return currIndex;
+	return static_cast<int>(currIndex);
 }
 
 bool RandomNums::chance(double _probability) {
@@ -129,19 +131,25 @@ double ShiftedLogNormalDist::getMean() const{
 	return exp(mu+((sigma*sigma)/2))+shift;
 }
 
-unsigned long int RandomNums::randNorm_NaturalNum(const NormalDist &_normDist){
+unsigned long int RandomNums::randNorm_NaturalNum(const NormalDist &_normDist)
+{
 	assert ( _normDist.stddev >= 0);
 
-	if( (_normDist.mean == 0) && (_normDist.stddev == 0)) return 0;
+	if( (_normDist.mean == 0) && (_normDist.stddev == 0))
+	{
+		return 0;
+	}
 
 	int tries = 1000;
-	do {
+	do 
+	{
 		double rd = RandomNums::randNorm(_normDist);
-		if(rd >= 0){
+		if(rd >= 0)
+		{
 			//Return a double as an int will always return the floor of the double.  We want to round to the nearest integer.
 			//Adding 0.5 assures that the floor of the new number will be the nearest integer of the old number
 			rd = rd + 0.5;
-			return rd;
+			return static_cast<unsigned long>(rd);
 		}
 		tries--;
 	} while(tries > 0);

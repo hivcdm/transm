@@ -51,7 +51,7 @@ void TransmissionSummaryStats::addPopStats(PopStats *popStats, EventParams *even
 	//summary->numCohorts = popSummary->numCohorts;
 	summary->selectedSummaryStats = new std::vector<PopStats::SingleTimeStats*>(popStats->getSelectedSummaryStats()->begin(), popStats->getSelectedSummaryStats()->end());
 	
-	for (int i = 0; i < summary->selectedSummaryStats->size(); i++){
+	for (size_t i = 0; i < summary->selectedSummaryStats->size(); i++){
 		summary->timeToRecord[i] = summary->selectedSummaryStats->at(i)->timeOfStats;
 	}
 	summary->LMsAverage = popStats->lifeStats->getStat(PopStats::TOTAL_LM)/(popStats->lifeStats->getStat(PopStats::TOTAL_HIV_POS) + popStats->lifeStats->getStat(PopStats::TOTAL_HIV_NEG));
@@ -67,7 +67,8 @@ void TransmissionSummaryStats::addPopStats(PopStats *popStats, EventParams *even
 } /* end addRunStats */
 
 /* writeSummariesFile appends the summary information to the popstats.out file */
-void TransmissionSummaryStats::writeSummariesFile() {
+void TransmissionSummaryStats::writeSummariesFile()
+{
 	// Open the popstats file and write header if needed
 	CepacUtil::changeDirectoryToResults();
 
@@ -75,8 +76,8 @@ void TransmissionSummaryStats::writeSummariesFile() {
 	writeSummariesFileHeader();
 
 	// Loop over the individual run summaries of the summaries vector
-	int j;
-	for (vector<TransmissionSummary *>::iterator i = this->summaries.begin(); i != this->summaries.end(); i++) {
+	for (vector<TransmissionSummary *>::iterator i = this->summaries.begin(); i != this->summaries.end(); i++)
+	{
 		TransmissionSummary *summary = *i;
 		this->summaryStatsStream << summary->runName << "\t";
 		this->summaryStatsStream << summary->LMsAverage << "\t";
@@ -85,7 +86,8 @@ void TransmissionSummaryStats::writeSummariesFile() {
 		this->summaryStatsStream << summary->HIVPosSurvivalAverage << "\t";
 		this->summaryStatsStream << summary->AverageNumberOfPeopleEachPersonInfects << "\t";
 
-		for (j = 0; j < summary->selectedSummaryStats->size(); j++){
+		for (size_t j = 0; j < summary->selectedSummaryStats->size(); j++)
+		{
 			PopStats::SingleTimeStats *singleTimeStat = summary->selectedSummaryStats->at(j);
 			this->summaryStatsStream << singleTimeStat->timeOfStats << "\t";
 			this->summaryStatsStream << singleTimeStat->prevalence << "\t";
@@ -93,6 +95,7 @@ void TransmissionSummaryStats::writeSummariesFile() {
 			this->summaryStatsStream << singleTimeStat->incidence << "\t";
 			this->summaryStatsStream << singleTimeStat->cumulativeNumberDead << "\t";
 		}
+
 		this->summaryStatsStream << std::endl;
 	}
 
