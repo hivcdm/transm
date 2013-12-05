@@ -132,8 +132,8 @@ Sim::Sim(std::string _paramsXML, DisplayBox *dbox, bool _genGraphViz)
 
 		ticpp::Element *simParams = doc.FirstChildElement("simulation");
 
-		useFixedSeed = simParams->FirstChildElement("enableFixedSeed", false)->GetText<int>() != 0;
-		this->eventParams.displayOut(useFixedSeed ? "Using fixed seed" : "Not using fixed seed");
+		//useFixedSeed = simParams->FirstChildElement("enableFixedSeed", false)->GetText<int>() != 0;
+		//this->eventParams.displayOut(useFixedSeed ? "Using fixed seed" : "Not using fixed seed");
 
 		double inputVersion = simParams->FirstChildElement("inputVersion")->GetText<double>();
 		this->eventParams.displayOut("Input Version =");

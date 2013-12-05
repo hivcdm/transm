@@ -1,0 +1,410 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\..\source\Constants.cpp" />
+    <ClCompile Include="..\..\..\source\Population.cpp" />
+    <ClCompile Include="..\..\..\source\PopulationParams.cpp" />
+    <ClCompile Include="..\..\..\source\Sim.cpp" />
+    <ClCompile Include="..\..\..\source\util\Util.cpp">
+      <Filter>util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\util\rand\RandomNums.cpp">
+      <Filter>util\rand</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\util\ticpp\ticpp.cpp">
+      <Filter>util\ticpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\util\ticpp\tinystr.cpp">
+      <Filter>util\ticpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\util\ticpp\tinyxml.cpp">
+      <Filter>util\ticpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\util\ticpp\tinyxmlerror.cpp">
+      <Filter>util\ticpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\util\ticpp\tinyxmlparser.cpp">
+      <Filter>util\ticpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\statistics\CostsTracker.cpp">
+      <Filter>statistics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\statistics\InfectionsTracker.cpp">
+      <Filter>statistics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\statistics\PopStats.cpp">
+      <Filter>statistics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\statistics\TransmissionSummaryStats.cpp">
+      <Filter>statistics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\DisplayBox.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\main.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\widgets\statusWidget.cpp">
+      <Filter>gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\widgets\verticalStatusWidget.cpp">
+      <Filter>gui\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\dialogs\SetupBatchStatsDialog.cpp">
+      <Filter>gui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\graphviz\graphVizParse.cpp">
+      <Filter>graphviz</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\entities\Female.cpp">
+      <Filter>entities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\entities\Male.cpp">
+      <Filter>entities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\entities\Person.cpp">
+      <Filter>entities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\entities\behaviors\SexualBehaviorParams.cpp">
+      <Filter>entities\behaviors</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\entities\classifiers\DmgProfile.cpp">
+      <Filter>entities\classifiers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\entities\classifiers\SexualPartnership.cpp">
+      <Filter>entities\classifiers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\entities\entitypool\EntityPool.cpp">
+      <Filter>entities\entitypool</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\entities\entitypool\bucket\BucketAge.cpp">
+      <Filter>entities\entitypool\bucket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\entities\entitypool\bucket\BucketSexualMixing.cpp">
+      <Filter>entities\entitypool\bucket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\entities\entitypool\bucket\DmgProfileBucket.cpp">
+      <Filter>entities\entitypool\bucket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\entities\entitypool\bucket\FullVector.cpp">
+      <Filter>entities\entitypool\bucket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\data\Enum.cpp">
+      <Filter>data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepacbridge\ParseCepacInput.cpp">
+      <Filter>cepacbridge</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepacbridge\cepac_api.cpp">
+      <Filter>cepacbridge</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepac\RunStats.cpp">
+      <Filter>cepac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepac\SimContext.cpp">
+      <Filter>cepac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepac\StateUpdater.cpp">
+      <Filter>cepac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepac\SummaryStats.cpp">
+      <Filter>cepac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepac\TBDiseaseUpdater.cpp">
+      <Filter>cepac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepac\Tracer.cpp">
+      <Filter>cepac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepac\AcuteOIUpdater.cpp">
+      <Filter>cepac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepac\BeginMonthUpdater.cpp">
+      <Filter>cepac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepac\BehaviorUpdater.cpp">
+      <Filter>cepac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepac\CD4HVLUpdater.cpp">
+      <Filter>cepac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepac\CD4TestUpdater.cpp">
+      <Filter>cepac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepac\CepacUtil.cpp">
+      <Filter>cepac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepac\CHRMsUpdater.cpp">
+      <Filter>cepac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepac\ClinicVisitUpdater.cpp">
+      <Filter>cepac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepac\DrugEfficacyUpdater.cpp">
+      <Filter>cepac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepac\DrugToxicityUpdater.cpp">
+      <Filter>cepac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepac\EndMonthUpdater.cpp">
+      <Filter>cepac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepac\HIVInfectionUpdater.cpp">
+      <Filter>cepac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepac\HIVTestingUpdater.cpp">
+      <Filter>cepac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepac\HVLTestUpdater.cpp">
+      <Filter>cepac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepac\MortalityUpdater.cpp">
+      <Filter>cepac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepac\mtrand.cpp">
+      <Filter>cepac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepac\Patient.cpp">
+      <Filter>cepac</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\source\Constants.h" />
+    <ClInclude Include="..\..\..\source\Population.h" />
+    <ClInclude Include="..\..\..\source\PopulationParams.h" />
+    <ClInclude Include="..\..\..\source\Sim.h" />
+    <ClInclude Include="..\..\..\source\util\Util.h">
+      <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\util\XMLUtil.h">
+      <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\util\rand\Distributions.h">
+      <Filter>util\rand</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\util\rand\IsaacRand.h">
+      <Filter>util\rand</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\util\rand\RandomNums.h">
+      <Filter>util\rand</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\util\ticpp\ticpp.h">
+      <Filter>util\ticpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\util\ticpp\ticpprc.h">
+      <Filter>util\ticpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\util\ticpp\tinystr.h">
+      <Filter>util\ticpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\util\ticpp\tinyxml.h">
+      <Filter>util\ticpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\statistics\CostsTracker.h">
+      <Filter>statistics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\statistics\InfectionsTracker.h">
+      <Filter>statistics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\statistics\PopStats.h">
+      <Filter>statistics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\statistics\StatsRecord.h">
+      <Filter>statistics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\statistics\TransmissionSummaryStats.h">
+      <Filter>statistics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\DisplayBox.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\main.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\widgets\statusWidget.h">
+      <Filter>gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\widgets\verticalStatusWidget.h">
+      <Filter>gui\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\dialogs\SetupBatchStatsDialog.h">
+      <Filter>gui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\graphviz\graphVizParse.h">
+      <Filter>graphviz</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\entities\Female.h">
+      <Filter>entities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\entities\Male.h">
+      <Filter>entities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\entities\Person.h">
+      <Filter>entities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\entities\behaviors\SexualBehaviorParams.h">
+      <Filter>entities\behaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\entities\classifiers\DmgProfile.h">
+      <Filter>entities\classifiers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\entities\classifiers\SexualPartnership.h">
+      <Filter>entities\classifiers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\entities\entitypool\EntityPool.h">
+      <Filter>entities\entitypool</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\entities\entitypool\bucket\BucketAge.h">
+      <Filter>entities\entitypool\bucket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\entities\entitypool\bucket\BucketSexualMixing.h">
+      <Filter>entities\entitypool\bucket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\entities\entitypool\bucket\DmgProfileBucket.h">
+      <Filter>entities\entitypool\bucket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\entities\entitypool\bucket\EntityIndex.h">
+      <Filter>entities\entitypool\bucket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\entities\entitypool\bucket\FullVector.h">
+      <Filter>entities\entitypool\bucket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\data\Enum.h">
+      <Filter>data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\data\EventParams.h">
+      <Filter>data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepacbridge\ParseCepacInput.h">
+      <Filter>cepacbridge</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepacbridge\cepac_api.h">
+      <Filter>cepacbridge</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\Patient.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\Resource.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\RunStats.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\SimContext.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\StateUpdater.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\SummaryStats.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\TBDiseaseUpdater.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\Tracer.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\AcuteOIUpdater.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\BeginMonthUpdater.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\BehaviorUpdater.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\CD4HVLUpdater.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\CD4TestUpdater.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\CepacUtil.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\CHRMsUpdater.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\ClinicVisitUpdater.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\DrugEfficacyUpdater.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\DrugToxicityUpdater.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\EndMonthUpdater.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\HIVInfectionUpdater.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\HIVTestingUpdater.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\HVLTestUpdater.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\include.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\MortalityUpdater.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepac\mtrand.h">
+      <Filter>cepac</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="util">
+      <UniqueIdentifier>{890bec23-e955-4cdc-b205-75dc062a8fb0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="util\rand">
+      <UniqueIdentifier>{3cc184c9-9714-4ea9-ba95-7e71ac201754}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="util\ticpp">
+      <UniqueIdentifier>{a35fabb2-4a8a-4645-8886-633d26782f89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="statistics">
+      <UniqueIdentifier>{7625ecdd-1071-492b-bbb7-54b57e273e60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gui">
+      <UniqueIdentifier>{5dc5ba8f-e1e4-47a9-aeba-d0d72c267dbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gui\dialogs">
+      <UniqueIdentifier>{543173ed-0c62-411d-8b1b-9266aed3a309}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gui\widgets">
+      <UniqueIdentifier>{5073d1ee-d170-4407-9f16-c1da3d272fa1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="graphviz">
+      <UniqueIdentifier>{04a4213e-f156-4ff3-8fe6-9542b4671120}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entities">
+      <UniqueIdentifier>{104382c7-9999-475b-a689-e3e07bf9e459}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entities\behaviors">
+      <UniqueIdentifier>{c32c2a88-3575-4b9a-83d8-d3f690a02179}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entities\classifiers">
+      <UniqueIdentifier>{db695985-18d4-4894-8cb8-cf2b314f066a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entities\entitypool">
+      <UniqueIdentifier>{911666c7-800c-4dda-b3e9-65de0b2b700c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entities\entitypool\bucket">
+      <UniqueIdentifier>{dd1eed5c-5888-4312-bda4-63754631c0a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="data">
+      <UniqueIdentifier>{72297d5f-6496-44b7-a8ff-2be780409983}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cepacbridge">
+      <UniqueIdentifier>{00bfc982-b836-43fa-a6f8-7ebd524ecf8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cepac">
+      <UniqueIdentifier>{20ae97b2-7f6b-4cb9-aab7-9040b284aef7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
