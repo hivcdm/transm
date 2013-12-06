@@ -91,6 +91,11 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(boostpath)\lib\lib64-msvc-12.0;$(wxpath)\lib\vc120_x64_dll</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>copy $(wxpath)\lib\vc120_x64_dll\wxbase30ud_vc120_x64.dll $(SolutionDir)$(Platform)\$(Configuration)\
+copy $(wxpath)\lib\vc120_x64_dll\wxmsw30ud_adv_vc120_x64.dll $(SolutionDir)$(Platform)\$(Configuration)\
+copy $(wxpath)\lib\vc120_x64_dll\wxmsw30ud_core_vc120_x64.dll $(SolutionDir)$(Platform)\$(Configuration)\</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
