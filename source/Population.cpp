@@ -426,6 +426,7 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 
 				this->processDeath(_eventParams,p,calculateLE);
 				if(_eventParams.useRollout){
+				    self->mergeUntreatedNewlyAdded();
 					//Remove people from the treated/untreated pool if they die
 					std::list<Person*>::iterator untIter=this->rolloutUntreatedPool.begin();
 					bool haveRemoved=false;
@@ -483,6 +484,7 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 				this->processDeath(_eventParams,p,calculateLE);
 				totalDied++;
 				if(_eventParams.useRollout){
+				    self->mergeUntreatedNewlyAdded();
 					//Remove people from the treated/untreated pool if they die
 					std::list<Person*>::iterator untIter=this->rolloutUntreatedPool.begin();
 					bool haveRemoved=false;
@@ -679,7 +681,7 @@ void Population::updatePartnerships(EventParams &_eventParams)
 				Person *wasInfected = (*newlyInfectedIter == initiator) ? infectedMe : initiator;
 				//Adds person to the untreated pool if using rollout
 				if (_eventParams.useRollout){
-					this->rolloutUntreatedPool.push_front(wasUninfected);
+					this->rolloutUntreatedPoolNewlyAdded.push_back(wasUninfected);
 				}
 				if (_eventParams.outputTrace[EventParams::EVENTS]){
 					this->popStats->recordIncidentInfection(_eventParams, _eventParams.currTime,
@@ -1092,7 +1094,7 @@ void Population::applyIncidentPrevalence(EventParams &_eventParams){
 
 				//Adds person to the untreated pool if using rollout
 				if (_eventParams.useRollout){
-					this->rolloutUntreatedPool.push_front(p);
+					this->rolloutUntreatedPoolNewlyAdded.push_back(p);
 				}
 				if(p->getDmgProfile()->get(p->getDmgProfile()->getProfileID(),DmgProfile::SEXUAL_ACTIVITY_STATUS)!=DmgProfile::NA){
 					((BucketSexualMixing*)this->entities->getBucket(p->getDmgProfile()->getProfileID()))->increaseInfected(p);
@@ -1150,7 +1152,7 @@ void Population::applyIncidentPrevalence(EventParams &_eventParams){
 					((BucketSexualMixing*) this->entities->getBucket(p->getDmgProfile()->getProfileID()))->changeHIVStatus(p,oldStatus, p->hivStatus);
 
 				if (_eventParams.useRollout){
-					this->rolloutUntreatedPool.push_front(p);
+					this->rolloutUntreatedPoolNewlyAdded.push_back(p);
 				}
 				if(p->getDmgProfile()->get(p->getDmgProfile()->getProfileID(),DmgProfile::SEXUAL_ACTIVITY_STATUS)!=DmgProfile::NA){
 					((BucketSexualMixing*)this->entities->getBucket(p->getDmgProfile()->getProfileID()))->increaseInfected(p);
@@ -1209,113 +1211,133 @@ void Population::applyRolloutContext(EventParams &_eventParams,int time)
 	}
 }
 
-void Population::applyARTRollout(EventParams &_eventParams){
-	//calculate absolute number of slots opening up this month
-	int numUntreated = this->rolloutUntreatedPool.size();
-	int numTreated = this->rolloutTreatedPool.size();
-	int totalSlots = static_cast<int>((numUntreated + numTreated) * _eventParams.currentRolloutProportion);
-	int newSlots = totalSlots - numTreated;
-
-	//no available slots
-	if (newSlots<=0)
+void Populatoin::mergeUntreatedNewlyAdded()
+{
+    if(this->rolloutUntreatedPoolNewlyAdded.size())
+    {
+	// Modern Fisher-Yates shuffle -- O(n)
+	// We do this to avoid bias due to insertion order in rolloutUntreatedPool
+	for(size_t i = this->rolloutUntreatedPoolNewlyAdded.size(); i > 0; --i)
 	{
-		return;
+	    j = _eventParams.randomNums.randInt(0, i);
+	    std::swap(this->rolloutUntreatedPoolNewlyAdded[j], this->rolloutUntreatedPoolNewlyAdded[i]);
 	}
+	this->rolloutUntreatedPool.insert(this->rolloutUntreatedPool.begin(),
+					  this->rolloutUntreatedPoolNewlyAdded.begin(),
+					  this->rolloutUntreatedPoolNewlyAdded.end());
+	this->rolloutUntreatedPoolNewlyAdded.clear();
+    }
+}
 
-	//loop through the eligibility rankings
-	for (int currentRank=1;currentRank<=5;currentRank++)
+void Population::applyARTRollout(EventParams &_eventParams)
+{    
+    self->mergeUntreatedNewlyAdded();
+
+    //calculate absolute number of slots opening up this month
+    int numUntreated = this->rolloutUntreatedPool.size();
+    int numTreated = this->rolloutTreatedPool.size();
+    int totalSlots = static_cast<int>((numUntreated + numTreated) * _eventParams.currentRolloutProportion);
+    int newSlots = totalSlots - numTreated;
+
+    //no available slots
+    if (newSlots <= 0)
+    {
+	return;
+    }
+
+    //loop through the eligibility rankings
+    for (int currentRank = 1; currentRank <= 5; currentRank++)
+    {
+	bool checkOiHist = currentRank==_eventParams.rolloutEligibility.oiHistRank;
+	bool checkCd4 = currentRank==_eventParams.rolloutEligibility.cd4Rank;
+	bool checkCd4OiHist = currentRank==_eventParams.rolloutEligibility.cd4OiHistRank;
+	bool checkHvl = currentRank==_eventParams.rolloutEligibility.hvlRank;
+	bool checkCd4Hvl = currentRank==_eventParams.rolloutEligibility.cd4HvlRank;
+
+	if (checkOiHist || checkCd4 || checkCd4OiHist || checkHvl ||checkCd4Hvl)
 	{
-		bool checkOiHist=(currentRank==_eventParams.rolloutEligibility.oiHistRank);
-		bool checkCd4=(currentRank==_eventParams.rolloutEligibility.cd4Rank);
-		bool checkCd4OiHist=(currentRank==_eventParams.rolloutEligibility.cd4OiHistRank);
-		bool checkHvl=(currentRank==_eventParams.rolloutEligibility.hvlRank);
-		bool checkCd4Hvl=(currentRank==_eventParams.rolloutEligibility.cd4HvlRank);
+	    list <Person*>::iterator untIter=this->rolloutUntreatedPool.begin();
 
-		if (checkOiHist || checkCd4 || checkCd4OiHist || checkHvl ||checkCd4Hvl)
+	    //loop through people in the untreated pool to check for their eligibility
+	    while(newSlots > 0 && untIter != this->rolloutUntreatedPool.end())
+	    {
+		bool movePerson = false;
+		Person *untPerson = *untIter;
+
+		if(checkOiHist)
 		{
-			//loop through people in the untreated pool to check for their eligibility
-			while(newSlots > 0 && !this->rolloutUntreatedPool.empty())
+		    int numMatchingOIs = 0;
+		    for (int oiNum=0;oiNum<Constants::NUMBER_OF_OIS;oiNum++)
+		    {
+			if (_eventParams.rolloutEligibility.oiHistOIs[oiNum] && untPerson->oiHistory[oiNum])
 			{
-				list <Person*>::iterator untIter=this->rolloutUntreatedPool.begin();
-				int randomIndex=_eventParams.randomNums.randInt(this->rolloutUntreatedPool.size() - 1);
-				for (int i=0;i<randomIndex;i++){
-					untIter++;
-				}
-
-				Person *untPerson = *untIter;
-
-				bool movePerson = false;
-				if(checkOiHist)
-				{
-					int numMatchingOIs = 0;
-					for (int oiNum=0;oiNum<Constants::NUMBER_OF_OIS;oiNum++)
-					{
-						if (_eventParams.rolloutEligibility.oiHistOIs[oiNum] && untPerson->oiHistory[oiNum])
-						{
-							numMatchingOIs++;
-						}
-					}
-
-					if (numMatchingOIs>=_eventParams.rolloutEligibility.oiHistNumToStart)
-					{
-						movePerson = true;
-					}
-				}
-				if(checkCd4)
-				{
-					if(untPerson->cd4 >= _eventParams.rolloutEligibility.cd4Bounds[Constants::LOWER] && untPerson->cd4 <= _eventParams.rolloutEligibility.cd4Bounds[Constants::UPPER])
-					{
-						movePerson=true;
-					}
-				}
-				if(checkCd4OiHist)
-				{
-					int numMatchingOIs = 0;
-					for (int oiNum=0;oiNum<Constants::NUMBER_OF_OIS;oiNum++)
-					{
-						if (_eventParams.rolloutEligibility.cd4OiHistOIs[oiNum] && untPerson->oiHistory[oiNum])
-						{
-							numMatchingOIs++;
-						}
-					}
-
-					if(untPerson->cd4 >= _eventParams.rolloutEligibility.cd4OiHistCd4Bounds[Constants::LOWER] && untPerson->cd4 <= _eventParams.rolloutEligibility.cd4OiHistCd4Bounds[Constants::UPPER] && numMatchingOIs>=1)
-					{
-						movePerson=true;
-					}
-				}
-				if(checkHvl)
-				{
-					Person::HVLStrata currHvl = untPerson->currentTrueHvl;
-					if((int)currHvl >= _eventParams.rolloutEligibility.hvlBounds[Constants::LOWER] && (int)currHvl <= _eventParams.rolloutEligibility.hvlBounds[Constants::UPPER])
-					{
-						movePerson=true;
-					}
-				}
-				if(checkCd4Hvl)
-				{
-					Person::HVLStrata currHvl = untPerson->currentTrueHvl;
-					double currCd4 = untPerson->cd4;
-
-					if(currCd4 >= _eventParams.rolloutEligibility.cd4HvlCd4Bounds[Constants::LOWER] && currCd4<=_eventParams.rolloutEligibility.cd4HvlCd4Bounds[Constants::UPPER] && currHvl>=_eventParams.rolloutEligibility.cd4HvlHvlBounds[Constants::LOWER] && currHvl<=_eventParams.rolloutEligibility.cd4HvlHvlBounds[Constants::UPPER])
-					{
-						movePerson=true;
-					}
-				}
-
-				//move person from untreated to treated pool if eligible
-				if(movePerson)
-				{
-					this->rolloutTreatedPool.push_back(untPerson);
-					//change simcontext for new treated person
-					this->rolloutTreatedPool.back()->setSimContext(_eventParams.treatedContext);
-					this->rolloutUntreatedPool.erase(untIter);
-					newSlots--;
-				}
+			    numMatchingOIs++;
 			}
+		    }
+
+		    if (numMatchingOIs>=_eventParams.rolloutEligibility.oiHistNumToStart)
+		    {
+			movePerson = true;
+		    }
+		}
+		if(checkCd4)
+		{
+		    if(untPerson->cd4 >= _eventParams.rolloutEligibility.cd4Bounds[Constants::LOWER] && untPerson->cd4 <= _eventParams.rolloutEligibility.cd4Bounds[Constants::UPPER])
+		    {
+			movePerson=true;
+		    }
+		}
+		if(checkCd4OiHist)
+		{
+		    int numMatchingOIs = 0;
+		    for (int oiNum=0;oiNum<Constants::NUMBER_OF_OIS;oiNum++)
+		    {
+			if (_eventParams.rolloutEligibility.cd4OiHistOIs[oiNum] && untPerson->oiHistory[oiNum])
+			{
+			    numMatchingOIs++;
+			}
+		    }
+
+		    if(untPerson->cd4 >= _eventParams.rolloutEligibility.cd4OiHistCd4Bounds[Constants::LOWER] && untPerson->cd4 <= _eventParams.rolloutEligibility.cd4OiHistCd4Bounds[Constants::UPPER] && numMatchingOIs>=1)
+		    {
+			movePerson=true;
+		    }
+		}
+		if(checkHvl)
+		{
+		    Person::HVLStrata currHvl = untPerson->currentTrueHvl;
+		    if((int)currHvl >= _eventParams.rolloutEligibility.hvlBounds[Constants::LOWER] && (int)currHvl <= _eventParams.rolloutEligibility.hvlBounds[Constants::UPPER])
+		    {
+			movePerson=true;
+		    }
+		}
+		if(checkCd4Hvl)
+		{
+		    Person::HVLStrata currHvl = untPerson->currentTrueHvl;
+		    double currCd4 = untPerson->cd4;
+
+		    if(currCd4 >= _eventParams.rolloutEligibility.cd4HvlCd4Bounds[Constants::LOWER] && currCd4<=_eventParams.rolloutEligibility.cd4HvlCd4Bounds[Constants::UPPER] && currHvl>=_eventParams.rolloutEligibility.cd4HvlHvlBounds[Constants::LOWER] && currHvl<=_eventParams.rolloutEligibility.cd4HvlHvlBounds[Constants::UPPER])
+		    {
+			movePerson=true;
+		    }
 		}
 
+		//move person from untreated to treated pool if eligible
+		if(movePerson)
+		{
+		    this->rolloutTreatedPool.push_back(untPerson);
+		    //change simcontext for new treated person
+		    this->rolloutTreatedPool.back()->setSimContext(_eventParams.treatedContext);
+		    untIter = this->rolloutUntreatedPool.erase(untIter);
+		    newSlots--;
+		}
+		else
+		{
+		    untIter++;
+		}
+	    }
 	}
+    }
 }
 
 bool Population::passesPartnershipCalibration(EventParams &_eventParams)

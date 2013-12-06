@@ -65,6 +65,7 @@ class Population
     std::vector<boost::tuple<long, int, int> > currSizeByAgeRangeFemale;
     /** The people who are infected but still untreated (Only used for rollout)
      */
+    std::vector<Person *> rolloutUntreatedPoolNewlyAdded;
     std::list<Person *> rolloutUntreatedPool;
 
     /**The people who are currently being treated (Only used for rollout)
@@ -226,6 +227,8 @@ private:
       @param _deceased pointer to deceased person
     */
     void processDeath(EventParams &_eventParams, Person *_p, bool calculateLE);
+
+    void mergeRolloutUntreatedNewlyAdded();
 
 //-----------< END helper methods  >--------------------//
 
