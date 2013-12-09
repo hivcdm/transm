@@ -19,24 +19,28 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\tests\CepacUtilTestSuite.h" />
-    <ClInclude Include="..\..\..\tests\CostsTrackerTestSuite.h" />
-    <ClInclude Include="..\..\..\tests\EntityPoolTestSuite.h" />
-    <ClInclude Include="..\..\..\tests\FemaleTestSuite.h" />
-    <ClInclude Include="..\..\..\tests\InfectionsTrackerTestSuite.h" />
-    <ClInclude Include="..\..\..\tests\MaleTestSuite.h" />
-    <ClInclude Include="..\..\..\tests\PatientTestSuite.h" />
-    <ClInclude Include="..\..\..\tests\PersonTestSuite.h" />
-    <ClInclude Include="..\..\..\tests\PopulationTestSuite.h" />
-    <ClInclude Include="..\..\..\tests\RandTestSuite.h" />
-    <ClInclude Include="..\..\..\tests\SimContextTestSuite.h" />
-    <ClInclude Include="..\..\..\tests\SimTestSuite.h" />
-    <ClInclude Include="..\..\..\tests\UtilTestSuite.h" />
-    <ClInclude Include="..\..\..\tests\XmlUtilTestSuite.h" />
+    <ClInclude Include="..\..\..\source\tests\CepacUtilTestSuite.h" />
+    <ClInclude Include="..\..\..\source\tests\CostsTrackerTestSuite.h" />
+    <ClInclude Include="..\..\..\source\tests\EntityPoolTestSuite.h" />
+    <ClInclude Include="..\..\..\source\tests\FemaleTestSuite.h" />
+    <ClInclude Include="..\..\..\source\tests\InfectionsTrackerTestSuite.h" />
+    <ClInclude Include="..\..\..\source\tests\MaleTestSuite.h" />
+    <ClInclude Include="..\..\..\source\tests\PatientTestSuite.h" />
+    <ClInclude Include="..\..\..\source\tests\PersonTestSuite.h" />
+    <ClInclude Include="..\..\..\source\tests\PopulationTestSuite.h" />
+    <ClInclude Include="..\..\..\source\tests\RandTestSuite.h" />
+    <ClInclude Include="..\..\..\source\tests\SimContextTestSuite.h" />
+    <ClInclude Include="..\..\..\source\tests\SimTestSuite.h" />
+    <ClInclude Include="..\..\..\source\tests\UtilTestSuite.h" />
+    <ClInclude Include="..\..\..\source\tests\XmlUtilTestSuite.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\source\tests\all-tests-autogen.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4562F51A-A950-4B82-8872-16C57801DB56}</ProjectGuid>
     <RootNamespace>PopulationDynamics_Test</RootNamespace>
+    <ProjectName>PopulationDynamics.Test</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

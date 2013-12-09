@@ -738,20 +738,26 @@ Person* Person::sexualActivity(Person *_p, int _numActs, SexualPartnership::Type
 	Person *infected = this->isInfected() ? this : _p;
 	Person *uninfected = this->isInfected() ? _p : this;
 
-	/** Regardless of infection, record the exposure */
-	infTrack->recordExposure(_eventParams.currTime, infected);
-
 	bool transmissionOccured = false;
-	for (int i = 0; i < _numActs; i++){
+	for (int i = 0; i < _numActs; i++)
+	{
+		/** Regardless of infection, record the exposure */
+		infTrack->recordExposure(_eventParams.currTime, infected);
+
 		//force of infection from infected to uninfected
 		double foifPerEvent = infected->getFOI(uninfected, _partnershipType, _eventParams);
+
 		//If a condom was used, increase the number of condoms used for each person by numActs
-		if (infected->getCondomUsedLastFOICalculation()){
+		if (infected->getCondomUsedLastFOICalculation())
+		{
 			this->incrementCondomsUsedThisMonth(_numActs);
 			_p->incrementCondomsUsedThisMonth(_numActs);
 		}
-		if(_eventParams.randomNums.chance(foifPerEvent))
+
+		if (_eventParams.randomNums.chance(foifPerEvent))
+		{
 			transmissionOccured = true;
+		}
 	}
 
 	//perform _numActs and see whether someone gets infected
