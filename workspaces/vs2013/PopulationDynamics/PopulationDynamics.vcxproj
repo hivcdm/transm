@@ -30,7 +30,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -43,7 +43,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -84,17 +84,16 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(boostpath)\include;$(wxpath)\include\msvc;$(wxpath)\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>TIXML_USE_TICPP;_CRT_SECURE_NO_WARNINGS;WIN32;WXUSINGDLL;wxMSVC_VERSION_AUTO;__WXMSW__;__WXDEBUG__;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(boostpath)\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>TIXML_USE_TICPP;_CRT_SECURE_NO_WARNINGS;WIN32;CONSOLE;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(boostpath)\lib\lib64-msvc-12.0;$(wxpath)\lib\vc120_x64_dll</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(wxpath)\lib\vc120_x64_dll\wxbase30ud_vc120_x64.dll $(SolutionDir)$(Platform)\$(Configuration)\
-copy $(wxpath)\lib\vc120_x64_dll\wxmsw30ud_adv_vc120_x64.dll $(SolutionDir)$(Platform)\$(Configuration)\
-copy $(wxpath)\lib\vc120_x64_dll\wxmsw30ud_core_vc120_x64.dll $(SolutionDir)$(Platform)\$(Configuration)\</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -121,18 +120,17 @@ copy $(wxpath)\lib\vc120_x64_dll\wxmsw30ud_core_vc120_x64.dll $(SolutionDir)$(Pl
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(boostpath)\include;$(wxpath)\include\msvc;$(wxpath)\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>TIXML_USE_TICPP;_CRT_SECURE_NO_WARNINGS;WIN32;WXUSINGDLL;wxMSVC_VERSION_AUTO;__WXMSW__;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TIXML_USE_TICPP;_CRT_SECURE_NO_WARNINGS;WIN32;CONSOLE;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(boostpath)\lib\lib64-msvc-12.0;$(wxpath)\lib\vc120_x64_dll</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(boostpath)\lib\lib64-msvc-12.0</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(wxpath)\lib\vc120_x64_dll\wxbase30u_vc120_x64.dll $(SolutionDir)$(Platform)\$(Configuration)\
-copy $(wxpath)\lib\vc120_x64_dll\wxmsw30u_adv_vc120_x64.dll $(SolutionDir)$(Platform)\$(Configuration)\
-copy $(wxpath)\lib\vc120_x64_dll\wxmsw30u_core_vc120_x64.dll $(SolutionDir)$(Platform)\$(Configuration)\</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -203,6 +201,11 @@ copy $(wxpath)\lib\vc120_x64_dll\wxmsw30u_core_vc120_x64.dll $(SolutionDir)$(Pla
     <ClInclude Include="..\..\..\source\util\ticpp\tinyxml.h" />
     <ClInclude Include="..\..\..\source\util\Util.h" />
     <ClInclude Include="..\..\..\source\util\XMLUtil.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Cepac\Cepac.vcxproj">
+      <Project>{51c7e2db-a80c-4cf7-b741-7ed60e361cfd}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
