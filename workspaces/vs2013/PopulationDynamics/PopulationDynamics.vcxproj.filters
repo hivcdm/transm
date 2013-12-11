@@ -80,9 +80,6 @@
     <ClCompile Include="..\..\..\source\cepacbridge\ParseCepacInput.cpp">
       <Filter>cepacbridge</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\cepacbridge\cepac_api.cpp">
-      <Filter>cepacbridge</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\Constants.h" />
@@ -177,9 +174,6 @@
       <Filter>data</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\cepacbridge\ParseCepacInput.h">
-      <Filter>cepacbridge</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\cepacbridge\cepac_api.h">
       <Filter>cepacbridge</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\util\Timer.h">

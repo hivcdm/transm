@@ -1,13 +1,13 @@
 #include "Person.h"
 #include "Male.h"
 #include "Female.h"
-#include "./classifiers/SexualPartnership.h"
-#include "./../Constants.h"
-#include "./../cepacbridge/cepac_api.h"
-#include "./../data/EventParams.h"
-#include "./../util/Util.h"
-#include "./../util/rand/RandomNums.h"
+#include "classifiers/SexualPartnership.h"
+#include "../Constants.h"
+#include "../data/EventParams.h"
+#include "../util/Util.h"
+#include "../util/rand/RandomNums.h"
 #include "../statistics/InfectionsTracker.h"
+
 class EntityPool;
 
 long Person::idCounter = 0;

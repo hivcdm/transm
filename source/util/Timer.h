@@ -16,7 +16,7 @@ class SimulationTimer
 public:
 	void Start()
 	{
-#ifdef __LINUX__ || __APPLE__
+#if defined(__LINUX__) || defined(__APPLE__)
 		gettimeofday(&start, NULL);
 #else
 		LARGE_INTEGER ticksPerSecond;
@@ -31,7 +31,7 @@ public:
 
 	double GetTime()
 	{
-#ifdef __LINUX__ || __APPLE__
+#if defined(__LINUX__) || defined(__APPLE__)
 		gettimeofday(&now, NULL);
 		return (now.tv_sec - start.tv_sec) * 1000000 + (now.tv_usec - start.tv_usec);
 #else
@@ -41,7 +41,7 @@ public:
 	}
 
 private:
-#ifdef __LINUX__ || __APPLE__
+#if defined(__LINUX__) || defined(__APPLE__)
 	struct timeval start;
 	struct timeval now;
 #elif defined(_WIN32)

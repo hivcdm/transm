@@ -1,12 +1,13 @@
+#include <vector>
+
 #include "Male.h"
-#include "../cepacbridge/cepac_api.h"
-#include "./classifiers/SexualPartnership.h"
-#include "./behaviors/SexualBehaviorParams.h"
-#include "./entitypool/EntityPool.h"
+#include "classifiers/SexualPartnership.h"
+#include "behaviors/SexualBehaviorParams.h"
+#include "entitypool/EntityPool.h"
 #include "../util/Util.h"
 #include "../util/XMLUtil.h"
 #include "../util/rand/RandomNums.h"
-#include <vector>
+
 using namespace std;
 
 //-----------------< Begin population-level parameters for males >-----------------------/

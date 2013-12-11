@@ -19,7 +19,6 @@ const char PATH_SEPARATOR = '/';
 
 #include "Constants.h"
 #include "Population.h"
-#include "cepacbridge/cepac_api.h"
 #include "cepacbridge/ParseCepacInput.h"
 #include "graphviz/graphVizParse.h"
 #include "data/EventParams.h"
