@@ -428,8 +428,15 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 
 				if (_eventParams.useRollout)
 				{
-					this->mergeRolloutUntreatedQueue(_eventParams);
-
+				    std::vector<Person *>::iterator poolQueueIterator;
+				    poolQueueIterator = std::find(this->rolloutUntreatedPoolQueue.begin(), this->rolloutUntreatedPoolQueue.end(), p);
+				    
+				    if(poolQueueIterator != this->rolloutUntreatedPoolQueue.end())
+				    {
+					this->rolloutUntreatedPoolQueue.erase(poolQueueIterator);
+				    }
+				    else
+				    {
 					//Remove people from the treated/untreated pool if they die
 					std::list<Person *>::iterator poolIterator;
 					poolIterator = std::find(this->rolloutUntreatedPool.begin(), this->rolloutUntreatedPool.end(), p);
@@ -446,6 +453,7 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 							this->rolloutTreatedPool.erase(poolIterator);
 						}
 					}
+				    }
 				}
 
 				totalDied++;
@@ -478,8 +486,15 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 
 				if (_eventParams.useRollout)
 				{
-					this->mergeRolloutUntreatedQueue(_eventParams);
-
+				    std::vector<Person *>::iterator poolQueueIterator;
+				    poolQueueIterator = std::find(this->rolloutUntreatedPoolQueue.begin(), this->rolloutUntreatedPoolQueue.end(), p);
+				    
+				    if(poolQueueIterator != this->rolloutUntreatedPoolQueue.end())
+				    {
+					this->rolloutUntreatedPoolQueue.erase(poolQueueIterator);
+				    }
+				    else
+				    {
 					//Remove people from the treated/untreated pool if they die
 					std::list<Person *>::iterator poolIterator;
 					poolIterator = std::find(this->rolloutUntreatedPool.begin(), this->rolloutUntreatedPool.end(), p);
@@ -496,6 +511,7 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 							this->rolloutTreatedPool.erase(poolIterator);
 						}
 					}
+				    }
 				}
 				//removePersonFromAll returns iterator to next person in list...
 				//no need to increment
@@ -1217,10 +1233,8 @@ void Population::mergeRolloutUntreatedQueue(EventParams &_eventParams)
 
 void Population::applyARTRollout(EventParams &_eventParams)
 {
-	this->mergeRolloutUntreatedQueue(_eventParams);
-
 	//calculate absolute number of slots opening up this month
-	int numUntreated = this->rolloutUntreatedPool.size();
+    int numUntreated = this->rolloutUntreatedPool.size() + this->rolloutUntreatedPoolQueue.size();
 	int numTreated = this->rolloutTreatedPool.size();
 	int totalSlots = static_cast<int>((numUntreated + numTreated) * _eventParams.currentRolloutProportion);
 	int newSlots = totalSlots - numTreated;
@@ -1230,6 +1244,8 @@ void Population::applyARTRollout(EventParams &_eventParams)
 	{
 		return;
 	}
+
+	this->mergeRolloutUntreatedQueue(_eventParams);
 
 	//loop through the eligibility rankings
 	for (int currentRank = 1; currentRank <= 5; currentRank++)

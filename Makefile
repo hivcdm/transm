@@ -1,9 +1,9 @@
 ###
 #
 #Determines the name of the executables. Change for each new version
-VERSION = 332
+VERSION = 3.33a
 
-EXE = transm$(VERSION)
+EXE = PopulationDynamics$(VERSION)
 
 #header files
 HEADERS = source/util/ticpp/*.h source/util/rand/*.h source/util/*.h source/statistics/*.h source/graphviz/*.h source/entities/entitypool/bucket/*.h source/entities/entitypool/*.h source/entities/classifiers/*.h source/entities/behaviors/*.h source/entities/*.h source/data/*.h source/cepacbridge/*.h source/*.h source/cepac/*.h
@@ -69,22 +69,12 @@ GUI_OBJS = $(OBJS) source/gui/widgets/statusWidget.o \
 	source/gui/main.o \
 	source/gui/dialogs/SetupBatchStatsDialog.o 
 
-CONSOLE_OBJS = $(OBJS) source/main.o
+CONSOLE_OBJS = $(OBJS) source/main_cli.o
 
 #compiler and related flags
 CXX = g++
 CXXFLAGS = -I.
 LDFLAGS = -lm
-#Note: This is a temp directory on the cluster until they update to a newer version of boost
-BOOST_CXXFLAGS = -I/shr/home/th841/boost/boost_1_44_0
-BOOST_LDFLAGS = -L/usr/lib -lboost_regex
-BOOST_MAC_CXXFLAGS = -I/usr/local/include/boost_1_36_0
-BOOST_MAC_LDFLAGS = -L/usr/local/lib -lboost_regex-xgcc40-mt
-#For now we are going to ignore the WX_**FLAGS because we are only using the Makefile for console versions
-#WX_CXXFLAGS = -I/usr/local/lib/wx/include/msw-ansi-release-static-2.8 -I/usr/local/include/wx-2.8 -D__WXMSW__
-#WX_LDFLAGS = -L/usr/local/lib -Wl,--subsystem,windows -mwindows /usr/local/lib/libwx_msw_richtext-2.8.a /usr/local/lib/libwx_msw_aui-2.8.a /usr/local/lib/libwx_msw_xrc-2.8.a /usr/local/lib/libwx_msw_qa-2.8.a /usr/local/lib/libwx_msw_html-2.8.a /usr/local/lib/libwx_msw_adv-2.8.a /usr/local/lib/libwx_msw_core-2.8.a /usr/local/lib/libwx_base_xml-2.8.a /usr/local/lib/libwx_base_net-2.8.a /usr/local/lib/libwx_base-2.8.a /usr/local/lib/boost_regex-mgw-mt.a -lwxregex-2.8 -lwxexpat-2.8 -lwxtiff-2.8 -lwxjpeg-2.8 -lwxpng-2.8 -lwxzlib-2.8 -lrpcrt4 -loleaut32 -lole32 -luuid -lwinspool -lwinmm -lshell32 -lcomctl32 -lcomdlg32 -lctl3d32 -ladvapi32 -lwsock32 -lgdi32 
-#WX_CXXFLAGS_DEBUG = -I/usr/local/lib/wx/include/msw-ansi-debug-static-2.8 -I/usr/local/include/wx-2.8 -D__WXDEBUG__ -D__WXMSW__
-#WX_LDFLAGS_DEBUG = -L/usr/local/lib -Wl,--subsystem,windows -mwindows /usr/local/lib/libwx_mswd_richtext-2.8.a /usr/local/lib/libwx_mswd_aui-2.8.a /usr/local/lib/libwx_mswd_xrc-2.8.a /usr/local/lib/libwx_mswd_qa-2.8.a /usr/local/lib/libwx_mswd_html-2.8.a /usr/local/lib/libwx_mswd_adv-2.8.a /usr/local/lib/libwx_mswd_core-2.8.a /usr/local/lib/libwx_based_xml-2.8.a /usr/local/lib/libwx_based_net-2.8.a /usr/local/lib/libwx_based-2.8.a /usr/local/lib/boost_regex-mgw-mt-d.a -lwxregexd-2.8 -lwxexpatd-2.8 -lwxtiffd-2.8 -lwxjpegd-2.8 -lwxpngd-2.8 -lwxzlibd-2.8 -lrpcrt4 -loleaut32 -lole32 -luuid -lwinspool -lwinmm -lshell32 -lcomctl32 -lcomdlg32 -lctl3d32 -ladvapi32 -lwsock32 -lgdi32 
 
 #rules for compiling C and CPP files
 .SUFFIXES: .c .cpp
@@ -110,23 +100,9 @@ console : LDFLAGS += $(BOOST_LDFLAGS)
 console : $(CONSOLE_OBJS)
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $(EXE)
 
-console_mac : CXXFLAGS += -DCONSOLE -O3 $(BOOST_MAC_CXXFLAGS)
-console_mac : LDFLAGS += $(BOOST_MAC_LDFLAGS)
-console_mac : $(CONSOLE_OBJS)
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $(EXE)
-
-console_debug : CXXFLAGS += -g -O0 $(BOOST_CXXFLAGS)
-console_debug : $(CONSOLE_OBJS)
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $(EXE)
-
-gui : CXXFLAGS += -O3 $(BOOST_CXXFLAGS) $(WX_CXXFLAGS)
-gui : LDFLAGS += $(WX_LDFLAGS)
+gui : CXXFLAGS += `wx-config --cxxflags` -D__WXDEBUG__
+gui : LDFLAGS += `wx-config --libs`
 gui : $(GUI_OBJS)
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $(EXE)
-
-gui_debug : CXXFLAGS += -g -O0 $(BOOST_CXXFLAGS) $(WX_CXXFLAGS_DEBUG)
-gui_debug : LDFLAGS += $(WX_LDFLAGS_DEBUG)
-gui_debug : $(GUI_OBJS)
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $(EXE)
 
 clean : 
