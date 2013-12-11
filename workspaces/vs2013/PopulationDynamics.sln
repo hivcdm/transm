@@ -9,8 +9,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PopulationDynamics.Test", "
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PopulationDynamics.Gui", "PopulationDynamics.Gui\PopulationDynamics.Gui.vcxproj", "{8C6C2499-79CA-49B6-813C-65B31A3AF1CD}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PopulationDynamics.Mpi", "PopulationDynamics.Mpi\PopulationDynamics.Mpi.vcxproj", "{734CF020-D5A1-4087-A1E7-E7A7BC9F14A6}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PopulationDynamics.Cli", "PopulationDynamics.Cli\PopulationDynamics.Cli.vcxproj", "{F9DB8BF0-6786-442C-8EAC-515125135D7E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Cepac", "Cepac\Cepac.vcxproj", "{51C7E2DB-A80C-4CF7-B741-7ED60E361CFD}"
@@ -59,17 +57,6 @@ Global
 		{8C6C2499-79CA-49B6-813C-65B31A3AF1CD}.Release|Win32.ActiveCfg = Release|Win32
 		{8C6C2499-79CA-49B6-813C-65B31A3AF1CD}.Release|Win32.Build.0 = Release|Win32
 		{8C6C2499-79CA-49B6-813C-65B31A3AF1CD}.Release|x64.ActiveCfg = Release|x64
-		{734CF020-D5A1-4087-A1E7-E7A7BC9F14A6}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{734CF020-D5A1-4087-A1E7-E7A7BC9F14A6}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{734CF020-D5A1-4087-A1E7-E7A7BC9F14A6}.Debug|Win32.ActiveCfg = Debug|Win32
-		{734CF020-D5A1-4087-A1E7-E7A7BC9F14A6}.Debug|Win32.Build.0 = Debug|Win32
-		{734CF020-D5A1-4087-A1E7-E7A7BC9F14A6}.Debug|x64.ActiveCfg = Debug|x64
-		{734CF020-D5A1-4087-A1E7-E7A7BC9F14A6}.Debug|x64.Build.0 = Debug|x64
-		{734CF020-D5A1-4087-A1E7-E7A7BC9F14A6}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{734CF020-D5A1-4087-A1E7-E7A7BC9F14A6}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{734CF020-D5A1-4087-A1E7-E7A7BC9F14A6}.Release|Win32.ActiveCfg = Release|Win32
-		{734CF020-D5A1-4087-A1E7-E7A7BC9F14A6}.Release|Win32.Build.0 = Release|Win32
-		{734CF020-D5A1-4087-A1E7-E7A7BC9F14A6}.Release|x64.ActiveCfg = Release|x64
 		{F9DB8BF0-6786-442C-8EAC-515125135D7E}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
 		{F9DB8BF0-6786-442C-8EAC-515125135D7E}.Debug|Mixed Platforms.Build.0 = Debug|Win32
 		{F9DB8BF0-6786-442C-8EAC-515125135D7E}.Debug|Win32.ActiveCfg = Debug|Win32
