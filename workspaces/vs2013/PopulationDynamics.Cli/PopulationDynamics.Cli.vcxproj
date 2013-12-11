@@ -126,15 +126,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\source\main_cli.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Cepac\Cepac.vcxproj">
       <Project>{51c7e2db-a80c-4cf7-b741-7ed60e361cfd}</Project>
     </ProjectReference>
     <ProjectReference Include="..\PopulationDynamics\PopulationDynamics.vcxproj">
       <Project>{dec9ac53-5217-490a-8fcb-ca552f7e6112}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\source\main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

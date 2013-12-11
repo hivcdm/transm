@@ -25,6 +25,7 @@ const char PATH_SEPARATOR = '/';
 #include "data/EventParams.h"
 #include "entities/classifiers/DmgProfile.h"
 #include "util/Util.h"
+#include "util/Timer.h"
 #include "cepac/include.h"
 
 class DisplayBox;
@@ -471,12 +472,15 @@ void Sim::run(int _numSteps)
 		/*if (this->eventParams.genGraphViz)
 		this->currPopulation->printGraphVizNodes(this->eventParams); */
 
+		SimulationTimer timer;
+		timer.Start();
+
 		//this is the main loop for each timestep
 		for (int t = startTime; t<= stepsToRun+startTime-1; t++)
 		{
 			//this is used measure the general compute performance of the simulation
 			//  records the time that the timestep was started
-			time_t begin = time (NULL);
+			double begin = timer.GetTime();
 
 			if (this->eventParams.useRollout)
 			{
@@ -486,13 +490,18 @@ void Sim::run(int _numSteps)
 			long totalSize = this->timeStep();
 
 			//keeps track of the time it takes to run 1 timestep of this model
-			time_t end = time (NULL);
+			double end = timer.GetTime();
+			std::ostringstream elapsedStringStream;
+			elapsedStringStream.precision(3);
+			elapsedStringStream << std::fixed << (end - begin);
+			std::string elapsedString = elapsedStringStream.str();
+
 			//int timeElapsed = end - begin;
 			this->eventParams.displayOut("Timestep(");
 			std::string timeString = boost::lexical_cast<std::string>(t);
 			this->eventParams.displayOut(timeString.c_str());
 			this->eventParams.displayOut("): compute time elapsed = ");
-			this->eventParams.displayOut(boost::lexical_cast<std::string>((int)(end - begin)).c_str());
+			this->eventParams.displayOut(elapsedString.c_str());
 			this->eventParams.displayOut(". size = ");
 			this->eventParams.displayOut(boost::lexical_cast<std::string>(totalSize).c_str());
 			this->eventParams.displayOut("\n");

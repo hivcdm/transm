@@ -199,6 +199,7 @@
     <ClInclude Include="..\..\..\source\util\ticpp\ticpprc.h" />
     <ClInclude Include="..\..\..\source\util\ticpp\tinystr.h" />
     <ClInclude Include="..\..\..\source\util\ticpp\tinyxml.h" />
+    <ClInclude Include="..\..\..\source\util\Timer.h" />
     <ClInclude Include="..\..\..\source\util\Util.h" />
     <ClInclude Include="..\..\..\source\util\XMLUtil.h" />
   </ItemGroup>

@@ -182,6 +182,9 @@
     <ClInclude Include="..\..\..\source\cepacbridge\cepac_api.h">
       <Filter>cepacbridge</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\util\Timer.h">
+      <Filter>util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="util">
