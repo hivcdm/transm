@@ -71,7 +71,6 @@ unsigned long InfectionsTracker::getCurrTimeStepIncidentInfsTotal(){
 	return infections;
 }
 
-
 double InfectionsTracker::calculateAnnualIncidence(){
 	assert(this->lastTwelveIncidenceRates.size() == 12);
 	deque<double>::iterator it;
@@ -674,7 +673,7 @@ int InfectionsTracker::printInfections(EventParams& _eventParams, long _time, os
 	if (_eventParams.BatchStatsStream[PREVALENCESA].is_open())
 		_eventParams.BatchStatsStream[PREVALENCESA] << currPrevalenceSA << Constants::TAB;
 
-	_population->popStats->recordPrevalenceAndIncidence(_time, currPrevalence, currPrevalenceSA, incidence);
+	_population->popStats->recordPrevalenceAndIncidence(_time, currPrevalence, currPrevalenceSA, incidence, currSAPopSize, getCurrTimeStepIncidentInfsTotal(), totalInfectedSA);
 
 	//Multiply by 100 and round to nearest integer for graphical output
 	int intPrevalence = (int) (100 * currPrevalence + 0.5);

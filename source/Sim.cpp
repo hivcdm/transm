@@ -381,6 +381,11 @@ Sim::Sim(std::string _paramsXML, DisplayBox *dbox, bool _genGraphViz)
 		//  in that case, we'll have to change the PopulationParams to not put the values in the static Male, Female, and SteadyCouple fields
 		this->currPopulation = new Population(this->eventParams, simParams->FirstChildElement("population"),simParams->FirstChildElement("lifeExpectancyOutput"), simParams->FirstChildElement("partnerAcqOutput"),this->maxTime);
 
+		if (this->eventParams.monthOf1990 > 0)
+		{
+			this->currPopulation->popStats->enableShiftedOutcomes(this->eventParams.monthOf1990);
+		}
+
 		//GRAPHVIZHERE
 		if (_genGraphViz)
 		{
@@ -623,6 +628,10 @@ void Sim::run(int _numSteps)
 		this->currPopulation->popStats->costsTracker.printCosts(this->eventParams.traceStreams[EventParams::COST]);
 	}
 
+	if (this->eventParams.outputTrace[EventParams::SHIFTEDOUTCOMES])
+	{
+		this->currPopulation->popStats->printShiftedOutcomes(this->eventParams.traceStreams[EventParams::SHIFTEDOUTCOMES]);
+	}
 
 	//finalize and print CEPAC output, but only if at least one patient went through CEPAC
 	try

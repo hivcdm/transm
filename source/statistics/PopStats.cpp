@@ -18,7 +18,10 @@ const char *PopStats::LifeStatsStr[PopStats::ENDLifeStats] = {
 const int NUM_LE_CAT=12; //number of life expectancy categories
 const char* lifeExpectancyStrs[NUM_LE_CAT] = {"Age(yr)","raw deaths","raw pop","n","deaths","death rate","midpoint survivorship","total remaining time","life expectancy", "median LE", "median LE Standard Error", "median LE Confidence Bounds"};
 
-PopStats::PopStats(long maxTime,ticpp::Element* _LEOutputNode, ticpp::Element* _partAcqOutputNode) {
+PopStats::PopStats(long maxTime,ticpp::Element* _LEOutputNode, ticpp::Element* _partAcqOutputNode) :
+	calculateShiftedOutcomes(false),
+	monthOf1990(0)
+{
 
 	enumClass = new EnumCls<PopStats::LifeStats>(PopStats::LifeStatsStr, PopStats::ENDLifeStats);
 	lifeStats = new StatsRecord<PopStats::LifeStats, BaseEnumCls::NULL_ENUM>(enumClass);
@@ -559,6 +562,54 @@ void PopStats::printLEStats(std::ostream &_outStream,long currTime){
 	}
 }
 
+void PopStats::printShiftedOutcomes(std::ostream &_outStream)
+{
+	assert(calculateShiftedOutcomes);
+	
+	std::vector<PopStats::SingleTimeStats *>::iterator statsIterator;
+	PopStats::SingleTimeStats yearStats, januaryStats;
+	int year = 1990;
+	for (statsIterator = selectedSummaryStats.begin(); statsIterator != selectedSummaryStats.end(); statsIterator++)
+	{
+		PopStats::SingleTimeStats monthStats = **statsIterator;
+
+		if (monthStats.timeOfStats < monthOf1990)
+		{
+			continue;
+		}
+
+		if (monthStats.timeOfStats == monthOf1990)
+		{
+			_outStream << "Shifted Outcomes" << std::endl;
+			_outStream << Constants::TAB << Constants::TAB << Constants::TAB << "Number Infected" << std::endl;
+			_outStream << "Year" << Constants::TAB << "SA Pop Size" << Constants::TAB << "Incident" << Constants::TAB << "Prevalent" << Constants::TAB << "SA Prevalence" << Constants::TAB << "Annual Incidence" << std::endl;
+		}
+
+		if ((monthStats.timeOfStats - monthOf1990) % 12 == 0)
+		{
+			yearStats = monthStats;
+			januaryStats = monthStats;
+		}
+		else
+		{
+			yearStats.saPopSize += monthStats.saPopSize;
+			yearStats.monthlyIncident += monthStats.monthlyIncident;
+		}
+
+		if ((monthStats.timeOfStats - monthOf1990) % 12 == 11)
+		{
+			double saPrevalence = static_cast<double>(januaryStats.monthlyPrevalent) / januaryStats.saPopSize;
+			double yearlyIncidence = static_cast<double>(yearStats.monthlyIncident) / yearStats.saPopSize * 12;
+			_outStream << year++ << Constants::TAB << januaryStats.saPopSize << Constants::TAB << yearStats.monthlyIncident << Constants::TAB << yearStats.monthlyPrevalent << Constants::TAB << saPrevalence << Constants::TAB << yearlyIncidence << std::endl;
+		}
+	}
+}
+
+void PopStats::printArtRolloutStats(std::ostream &_outStream)
+{
+
+}
+
 void PopStats::printPartAcqStats(std::ostream &_outStream,long currTime){
 	assert(this->selectedPartAcqStats != NULL);
 
@@ -604,7 +655,7 @@ void PopStats::recordIncidentInfection(EventParams& _eventParams, long _time, Se
 }
 
 long PopStats::getNextTimeToRecord(long currTime){
-	long nextTime = ULONG_MAX;
+	int nextTime = std::numeric_limits<int>().max();
 	for (int i=0; i < NUM_TIMES_TO_RECORD; i++){
 		if (this->timeToRecord[i] < nextTime && this->timeToRecord[i] >= currTime){
 			nextTime = this->timeToRecord[i];
@@ -662,24 +713,35 @@ bool PopStats::isTimeToPrintLE(long currTime){
 
 	return false;
 }
-void PopStats::recordPrevalenceAndIncidence(long currTime, double _prevalence, double _SAprevalence, double _incidence){
-	for (int i=0; i < NUM_TIMES_TO_RECORD; i++){
-		if (this->timeToRecord[i] == currTime){
 
+void PopStats::enableShiftedOutcomes(int monthOf1990)
+{
+	calculateShiftedOutcomes = true;
+	this->monthOf1990 = monthOf1990;
+}
+
+void PopStats::recordPrevalenceAndIncidence(long currTime, double _prevalence, double _SAprevalence, double _incidence, int saPopSize, int monthlyIncident, int monthlyPrevalent)
+{
+	for (int i=0; i < NUM_TIMES_TO_RECORD; i++)
+	{
+		if (this->timeToRecord[i] == currTime || (calculateShiftedOutcomes && currTime >= monthOf1990))
+		{
 			SingleTimeStats* statistics = new SingleTimeStats();
 			statistics->timeOfStats = currTime;
 			statistics->prevalence = _prevalence;
 			statistics->incidence  = _incidence;
 			statistics->SAprevalence = static_cast<long>(_SAprevalence);
 			statistics->cumulativeNumberDead = static_cast<long>(this->lifeStats->getStat(PopStats::TOTAL_HIV_NEG_DTHS) + this->lifeStats->getStat(PopStats::TOTAL_HIV_POS_DTHS));
+			statistics->saPopSize = saPopSize;
+			statistics->monthlyIncident = monthlyIncident;
+			statistics->monthlyPrevalent = monthlyPrevalent;
 			this->selectedSummaryStats.push_back(statistics);
 			return;
 		}
 	}
 }
 
-
-
-std::vector<PopStats::SingleTimeStats*>* PopStats::getSelectedSummaryStats(){
+std::vector<PopStats::SingleTimeStats*>* PopStats::getSelectedSummaryStats()
+{
 	return &(this->selectedSummaryStats);
 }

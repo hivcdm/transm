@@ -40,13 +40,16 @@ public:
 	static const char *LifeStatsStr[PopStats::ENDLifeStats];
 
 
-	class SingleTimeStats {
-	public:
+	struct SingleTimeStats
+	{
 		long timeOfStats;
 		double prevalence;
 		double SAprevalence; 	//Prevalence of sexually active population only
 		double incidence; 		//TODO: Incidence will be an average over the 12 months leading up to the given time point
 		long cumulativeNumberDead;	//Total number of persons who have died since time 0
+		int saPopSize;
+		int monthlyIncident;
+		int monthlyPrevalent;
 	};
 
 	class SingleLEStats{
@@ -111,6 +114,9 @@ private:
 
 	std::vector<SingleTimeStats*> selectedSummaryStats;
 
+	int monthOf1990;
+	bool calculateShiftedOutcomes;
+
 	//TODO: Is this necessary?
 	//long cumulativeNumberDead; //This is a running tally of the total number of persons who have died during the course of the simulation
 
@@ -138,15 +144,17 @@ public:
 	//processes a death that occurs after maxTime (for average life expectancy stats)
 	void processPostMaxTimeDeath(Person *_p);
 
-	//prints stats for life months
 	void printLMStats(std::ostream &_outStream);
 
 	void printLEStats(std::ostream &_outStream,long currTime);
 
 	void printPartAcqStats(std::ostream &_outStream, long currTime);
 
-	//prints survivalStats
 	void printSurvivalStats(std::ostream &_outStream);
+
+	void printShiftedOutcomes(std::ostream &_outStream);
+
+	void printArtRolloutStats(std::ostream &_outStream);
 
 	//records an incident infection (calls InfectionTracker's method)
 	void recordIncidentInfection(EventParams& _eventParams, long _time, SexualPartnership::Type _partnershipType, const Person *_infector, const Person *_infected, bool _print, ostream &_traceOutStream);
@@ -165,6 +173,8 @@ public:
 	//returns true if currTime is in timeToRecordPartAcq
 	bool isTimeToRecordPartAcq(long currTime);
 
-	void recordPrevalenceAndIncidence(long currTime, double _prevalence, double _SAprevalence, double _incidence);
+	void recordPrevalenceAndIncidence(long currTime, double _prevalence, double _SAprevalence, double _incidence, int saPopSize, int monthlyIncident, int monthlyPrevalent);
 	std::vector<PopStats::SingleTimeStats*>* getSelectedSummaryStats();
+
+	void enableShiftedOutcomes(int monthOf1990);
 };

@@ -49,10 +49,22 @@ void TransmissionSummaryStats::addPopStats(PopStats *popStats, EventParams *even
 	//summary->runDate = eventParams.
 	//summary->runTime = popSummary->runTime;
 	//summary->numCohorts = popSummary->numCohorts;
-	summary->selectedSummaryStats = new std::vector<PopStats::SingleTimeStats*>(popStats->getSelectedSummaryStats()->begin(), popStats->getSelectedSummaryStats()->end());
+	summary->selectedSummaryStats = new std::vector<PopStats::SingleTimeStats*>();
 	
-	for (size_t i = 0; i < summary->selectedSummaryStats->size(); i++){
-		summary->timeToRecord[i] = summary->selectedSummaryStats->at(i)->timeOfStats;
+	int time = popStats->getNextTimeToRecord(0);
+	std::vector<PopStats::SingleTimeStats*>::iterator statsIterator = popStats->getSelectedSummaryStats()->begin();
+	while (time > 0 && statsIterator != popStats->getSelectedSummaryStats()->end())
+	{
+		while (statsIterator != popStats->getSelectedSummaryStats()->end() && (*statsIterator)->timeOfStats < time)
+		{
+			statsIterator++;
+		}
+		if (statsIterator != popStats->getSelectedSummaryStats()->end())
+		{
+			summary->timeToRecord[summary->selectedSummaryStats->size()] = time;
+			summary->selectedSummaryStats->push_back(*statsIterator);
+			time = popStats->getNextTimeToRecord(time + 1);
+		}
 	}
 	summary->LMsAverage = popStats->lifeStats->getStat(PopStats::TOTAL_LM)/(popStats->lifeStats->getStat(PopStats::TOTAL_HIV_POS) + popStats->lifeStats->getStat(PopStats::TOTAL_HIV_NEG));
 	summary->HIVPosLMAverage = popStats->lifeStats->getStat(PopStats::TOTAL_HIV_POS_LM)/popStats->lifeStats->getStat(PopStats::TOTAL_HIV_POS) ;
