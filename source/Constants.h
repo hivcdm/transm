@@ -80,7 +80,7 @@ public:
     static const int NUMBER_OF_OIS = 15;
 
     //Used to keep track of how many trace files there are
-    static const int NUMBER_OF_TRACE_FILES = 12;
+    static const int NUMBER_OF_TRACE_FILES = 14;
 
     //used to index the upper or lower bound cd4StrataRanges + hv1StrataRanges
     static const int LOWER = 0;

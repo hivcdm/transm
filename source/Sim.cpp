@@ -122,8 +122,6 @@ Sim::Sim(std::string _paramsXML, DisplayBox *dbox, bool _genGraphViz)
 	// Load a document
 	ticpp::Document doc(_paramsXML);
 
-	bool useFixedSeed = true;
-
 	try
 	{
 		doc.LoadFile();
@@ -132,9 +130,19 @@ Sim::Sim(std::string _paramsXML, DisplayBox *dbox, bool _genGraphViz)
 
 		ticpp::Element *simParams = doc.FirstChildElement("simulation");
 
-		//useFixedSeed = simParams->FirstChildElement("enableFixedSeed", false)->GetText<int>() != 0;
-		//this->eventParams.displayOut(useFixedSeed ? "Using fixed seed" : "Not using fixed seed");
-		//this->eventParams.displayOut("\n");
+		int fixedSeed = simParams->FirstChildElement("fixedSeed")->GetText<int>();
+		std::stringstream seedMessage;
+		if (fixedSeed == -1)
+			seedMessage << "Using random seed";
+		else if (fixedSeed == 0)
+			seedMessage << "Using default fixed seed";
+		else
+			seedMessage << "Using fixed seed = " << fixedSeed;
+		seedMessage << std::endl;
+		std::string seedMessageStr = seedMessage.str();
+		this->eventParams.displayOut(seedMessageStr.c_str());
+
+		this->eventParams.monthOf1990 = simParams->FirstChildElement("monthOf1990")->GetText<int>();
 
 		double inputVersion = simParams->FirstChildElement("inputVersion")->GetText<double>();
 		this->eventParams.displayOut("Input Version =");
@@ -168,7 +176,7 @@ Sim::Sim(std::string _paramsXML, DisplayBox *dbox, bool _genGraphViz)
 		}
 
 		//save which trace files to output
-		std::string traceIDs[] = {"population", "infection", "partnership", "survival", "cost", "clinical", "events", "health", "singleperson", "le","partacq", "calibStats"};
+		std::string traceIDs[] = {"population", "infection", "partnership", "survival", "cost", "clinical", "events", "health", "singleperson", "le","partacq", "calibStats", "artRollout", "shiftedOutcomes"};
 		for (int i = 0; i < Constants::NUMBER_OF_TRACE_FILES; i++)
 		{
 			this->eventParams.outputTrace[i] = simParams->FirstChildElement("writeTrace")->FirstChildElement(traceIDs[i])->GetText<int>() != 0;
@@ -275,13 +283,13 @@ Sim::Sim(std::string _paramsXML, DisplayBox *dbox, bool _genGraphViz)
 
 		//Set up CEPAC output (runStats)
 
-		//if using fixed seed, reset the random number generator
-		CepacUtil::setRandomSeedType(!useFixedSeed);
-		if (useFixedSeed)
+		CepacUtil::setRandomSeedType(fixedSeed == -1);
+		if (fixedSeed > -1)
 		{
 			//Seed is Minnesota Twins retired numbers... yes, I am a dork
-			this->eventParams.randomNums.reset(36291434);
+			this->eventParams.randomNums.reset(fixedSeed == 0 ? 36291434 : fixedSeed);
 		}
+
 		if (this->eventParams.useRollout)
 		{
 			this->eventParams.cepacRunStats = new RunStats(this->eventParams.simName,this->eventParams.rolloutSimContexts[0]->rolloutSimContext);
@@ -329,6 +337,8 @@ Sim::Sim(std::string _paramsXML, DisplayBox *dbox, bool _genGraphViz)
 		this->eventParams.numNewbornsToTrace = simParams->FirstChildElement("numberNewbornsToTrace")->GetText<int>();
 		this->eventParams.monthTraceNewborns = simParams->FirstChildElement("monthTraceNewborns")->GetText<int>();
 		this->eventParams.numNewbornsTraced = 0;
+
+		this->eventParams.tracePrevalentCases = simParams->FirstChildElement("tracePrevalentCases")->GetText<int>() != 0;
 
 		if (this->eventParams.calibrationInputs.useCalibration)
 		{

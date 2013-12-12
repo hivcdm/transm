@@ -38,6 +38,8 @@ class EventParams {
 			LE,
 			PARTACQ,
 			CALIBSTATS,
+			ARTROLLOUT,
+			SHIFTEDOUTCOMES,
 			ENDTraceFiles
 		};
 		/**
@@ -144,6 +146,8 @@ class EventParams {
 		//Sim name -- primarily used for generating names of GraphViz files and CEPAC output files; will be name of input sheet minus .xml
 		std::string simName;
 
+		int monthOf1990;
+
 		//--------- CEPAC related objects -------------//
 		//CEPAC related simContext (input)
 		vector<SimContext*> cepacSimContexts;
@@ -208,6 +212,8 @@ class EventParams {
 		int monthTraceNewborns;
 		//keeps track of how many newborns have been traced
 		int numNewbornsTraced;
+
+		bool tracePrevalentCases;
 
 		//Concurrency Definitions
 		ConcurrencyDef* concurrencyDef[Constants::NUMBER_CONCURRENCY_DEFS];
