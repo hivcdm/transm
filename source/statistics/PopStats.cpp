@@ -20,7 +20,8 @@ const char* lifeExpectancyStrs[NUM_LE_CAT] = {"Age(yr)","raw deaths","raw pop","
 
 PopStats::PopStats(long maxTime,ticpp::Element* _LEOutputNode, ticpp::Element* _partAcqOutputNode) :
 	calculateShiftedOutcomes(false),
-	monthOf1990(0)
+	monthOf1990(0),
+	yearlyTestsByResult(4)
 {
 	enumClass = new EnumCls<PopStats::LifeStats>(PopStats::LifeStatsStr, PopStats::ENDLifeStats);
 	lifeStats = new StatsRecord<PopStats::LifeStats, BaseEnumCls::NULL_ENUM>(enumClass);
@@ -565,6 +566,8 @@ void PopStats::printShiftedOutcomes(std::ostream &_outStream, int year)
 {
 	assert(calculateShiftedOutcomes);
 
+	std::string testTypes[] = {"True Positive", "False Positive", "True Negative", "False Negative"};
+
 	if (year == 1990)
 	{
 		_outStream << "Shifted Outcomes" << std::endl;
@@ -575,7 +578,7 @@ void PopStats::printShiftedOutcomes(std::ostream &_outStream, int year)
 		_outStream << "Number Infected";
 		_outStream << Constants::TAB;
 		_outStream << Constants::TAB;
-		_outStream << "Testing";
+		_outStream << "Screening Results";
 		_outStream << std::endl;
 
 		_outStream << "Year";
@@ -592,10 +595,11 @@ void PopStats::printShiftedOutcomes(std::ostream &_outStream, int year)
 		_outStream << Constants::TAB;
 		_outStream << "Total Tests";
 		_outStream << Constants::TAB;
-		_outStream << "Negative Tests";
-		_outStream << Constants::TAB;
-		_outStream << "Positive Tests";
-		_outStream << Constants::TAB;
+		for(int i = 0; i < SimContext::TEST_RESULT_NUM; i++)
+		{
+			_outStream << testTypes[i];
+			_outStream << Constants::TAB;
+		}
 		_outStream << "Unique Eligible";
 		_outStream << Constants::TAB;
 		_outStream << "Unique Treated";
@@ -619,10 +623,11 @@ void PopStats::printShiftedOutcomes(std::ostream &_outStream, int year)
 	_outStream << Constants::TAB;
 	_outStream << yearlyTests;
 	_outStream << Constants::TAB;
-	_outStream << yearlyNegativeTests;
-	_outStream << Constants::TAB;
-	_outStream << yearlyPositiveTests;
-	_outStream << Constants::TAB;
+	for(int i = 0; i < SimContext::TEST_RESULT_NUM; i++)
+	{
+		_outStream << yearlyTestsByResult[i];
+		_outStream << Constants::TAB;
+	}
 	_outStream << uniqueYearlyEligible.size();
 	_outStream << Constants::TAB;
 	_outStream << uniqueYearlyTreated.size();

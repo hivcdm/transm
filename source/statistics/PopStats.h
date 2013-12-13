@@ -120,10 +120,9 @@ private:
 	int yearlyCumulativeSexuallyActivePopSize;
 	int yearlyIncidentInfections;
 	int yearlyTests;
-	int yearlyPositiveTests;
-	int yearlyNegativeTests;
 	std::set<Person *> uniqueYearlyEligible;
 	std::set<Person *> uniqueYearlyTreated;
+	std::vector<int> yearlyTestsByResult;
 
 	//TODO: Is this necessary?
 	//long cumulativeNumberDead; //This is a running tally of the total number of persons who have died during the course of the simulation
@@ -189,11 +188,13 @@ public:
 		yearStartPrevalentInfections = prevalentCases;
 	}
 
-	void recordTestStats(int numTests, int numPositiveTests, int numNegativeTests)
+	void recordTestStats(int numTests, const std::vector<int> &numTestsByResult)
 	{
 		yearlyTests += numTests;
-		yearlyPositiveTests += numPositiveTests;
-		yearlyNegativeTests += numNegativeTests;
+		for(int i = 0; i < SimContext::TEST_RESULT_NUM; i++)
+		{
+			yearlyTestsByResult[i] += numTestsByResult[i];
+		}
 	}
 
 	void recordEligiblePerson(Person *person)
@@ -218,8 +219,7 @@ public:
 		yearlyCumulativeSexuallyActivePopSize = 0;
 		yearlyIncidentInfections = 0;
 		yearlyTests = 0;
-		yearlyPositiveTests = 0;
-		yearlyNegativeTests = 0;
+		std::fill(yearlyTestsByResult.begin(), yearlyTestsByResult.end(), 0);
 		uniqueYearlyEligible.clear();
 		uniqueYearlyTreated.clear();
 	}

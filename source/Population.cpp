@@ -1375,6 +1375,20 @@ void Population::recordARTRolloutStats(EventParams &_eventParams)
 			popStats->recordTreatment(*treatedIterator);
 		}
 
+		int numTests = _eventParams.cepacRunStats->getHIVScreening()->numAcceptTest;
+		std::vector<int> numTestsByResult(SimContext::TEST_RESULT_NUM, 0);
+		for(int i = 0; i < SimContext::TEST_RESULT_NUM; i++)
+		{
+			numTestsByResult[i] += _eventParams.cepacRunStats->getHIVScreening()->numTestResultsPrevalentType[i];
+			numTestsByResult[i] += _eventParams.cepacRunStats->getHIVScreening()->numTestResultsIncidentType[i];
+			numTestsByResult[i] += _eventParams.cepacRunStats->getHIVScreening()->numTestResultsHIVNegativeType[i];
+		}
+
+		if(numTests)
+		{
+			popStats->recordTestStats(numTests, numTestsByResult);
+		}
+
 		if(month == 11)
 		{
 			popStats->printShiftedOutcomes(_eventParams.traceStreams[EventParams::SHIFTEDOUTCOMES], year);
