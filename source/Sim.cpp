@@ -539,6 +539,10 @@ void Sim::run(int _numSteps)
 			{
 				this->currPopulation->printClinical(this->eventParams,this->currTime, this->eventParams.traceStreams[EventParams::CLINICAL]);
 			}
+			if(eventParams.outputTrace[EventParams::SHIFTEDOUTCOMES]) //For now, this must come after infectionsTracker.printInfections as it is what calculate prevalence
+			{
+				currPopulation->recordARTRolloutStats(eventParams);
+			}
 
 			if (this->eventParams.calibrationInputs.useCalibration && this->eventParams.calibrationInputs.monthOfCalibration == t)
 			{
@@ -626,11 +630,6 @@ void Sim::run(int _numSteps)
 	if (this->eventParams.outputTrace[EventParams::COST])
 	{
 		this->currPopulation->popStats->costsTracker.printCosts(this->eventParams.traceStreams[EventParams::COST]);
-	}
-
-	if (this->eventParams.outputTrace[EventParams::SHIFTEDOUTCOMES])
-	{
-		this->currPopulation->popStats->printShiftedOutcomes(this->eventParams.traceStreams[EventParams::SHIFTEDOUTCOMES]);
 	}
 
 	//finalize and print CEPAC output, but only if at least one patient went through CEPAC
@@ -1015,10 +1014,12 @@ long Sim::timeStep()
 	}
 
 	this->currPopulation->updatePhysicalState(this->eventParams,recordLE,firstMonthToRecord);
+
 	if (this->eventParams.useRollout)
 	{
 		this->currPopulation->applyARTRollout(this->eventParams);
 	}
+
 	this->currPopulation->births(this->eventParams);
 
 	if (lastMonthToRecord)
@@ -1026,7 +1027,7 @@ long Sim::timeStep()
 		this->currPopulation->updateAgeBucketsLE();
 		if (this->eventParams.outputTrace[EventParams::LE])
 		{
-			this->currPopulation->popStats->printLEStats(this->eventParams.traceStreams[EventParams::LE],this->currTime);
+			this->currPopulation->popStats->printLEStats(this->eventParams.traceStreams[EventParams::LE], currTime);
 		}
 		delete this->currPopulation->popStats->selectedLEStats;
 		this->currPopulation->popStats->selectedLEStats=NULL;

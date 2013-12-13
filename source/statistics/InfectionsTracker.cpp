@@ -673,6 +673,8 @@ int InfectionsTracker::printInfections(EventParams& _eventParams, long _time, os
 	if (_eventParams.BatchStatsStream[PREVALENCESA].is_open())
 		_eventParams.BatchStatsStream[PREVALENCESA] << currPrevalenceSA << Constants::TAB;
 
+
+	//TODO: this should be done somewhere else, so we're not relying on side effects to record information
 	_population->popStats->recordPrevalenceAndIncidence(_time, currPrevalence, currPrevalenceSA, incidence, currSAPopSize, getCurrTimeStepIncidentInfsTotal(), totalInfectedSA);
 
 	//Multiply by 100 and round to nearest integer for graphical output

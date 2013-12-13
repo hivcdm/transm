@@ -22,7 +22,6 @@ PopStats::PopStats(long maxTime,ticpp::Element* _LEOutputNode, ticpp::Element* _
 	calculateShiftedOutcomes(false),
 	monthOf1990(0)
 {
-
 	enumClass = new EnumCls<PopStats::LifeStats>(PopStats::LifeStatsStr, PopStats::ENDLifeStats);
 	lifeStats = new StatsRecord<PopStats::LifeStats, BaseEnumCls::NULL_ENUM>(enumClass);
 	survivalStats = new SurvivalStats();
@@ -562,47 +561,72 @@ void PopStats::printLEStats(std::ostream &_outStream,long currTime){
 	}
 }
 
-void PopStats::printShiftedOutcomes(std::ostream &_outStream)
+void PopStats::printShiftedOutcomes(std::ostream &_outStream, int year)
 {
 	assert(calculateShiftedOutcomes);
-	
-	std::vector<PopStats::SingleTimeStats *>::iterator statsIterator;
-	PopStats::SingleTimeStats yearStats, januaryStats;
-	int year = 1990;
-	for (statsIterator = selectedSummaryStats.begin(); statsIterator != selectedSummaryStats.end(); statsIterator++)
+
+	if (year == 1990)
 	{
-		PopStats::SingleTimeStats monthStats = **statsIterator;
+		_outStream << "Shifted Outcomes" << std::endl;
 
-		if (monthStats.timeOfStats < monthOf1990)
-		{
-			continue;
-		}
+		_outStream << Constants::TAB;
+		_outStream << Constants::TAB;
+		_outStream << Constants::TAB; 
+		_outStream << "Number Infected";
+		_outStream << Constants::TAB;
+		_outStream << Constants::TAB;
+		_outStream << "Testing";
+		_outStream << std::endl;
 
-		if (monthStats.timeOfStats == monthOf1990)
-		{
-			_outStream << "Shifted Outcomes" << std::endl;
-			_outStream << Constants::TAB << Constants::TAB << Constants::TAB << "Number Infected" << std::endl;
-			_outStream << "Year" << Constants::TAB << "SA Pop Size" << Constants::TAB << "Incident" << Constants::TAB << "Prevalent" << Constants::TAB << "SA Prevalence" << Constants::TAB << "Annual Incidence" << std::endl;
-		}
-
-		if ((monthStats.timeOfStats - monthOf1990) % 12 == 0)
-		{
-			yearStats = monthStats;
-			januaryStats = monthStats;
-		}
-		else
-		{
-			yearStats.saPopSize += monthStats.saPopSize;
-			yearStats.monthlyIncident += monthStats.monthlyIncident;
-		}
-
-		if ((monthStats.timeOfStats - monthOf1990) % 12 == 11)
-		{
-			double saPrevalence = static_cast<double>(januaryStats.monthlyPrevalent) / januaryStats.saPopSize;
-			double yearlyIncidence = static_cast<double>(yearStats.monthlyIncident) / yearStats.saPopSize * 12;
-			_outStream << year++ << Constants::TAB << januaryStats.saPopSize << Constants::TAB << yearStats.monthlyIncident << Constants::TAB << yearStats.monthlyPrevalent << Constants::TAB << saPrevalence << Constants::TAB << yearlyIncidence << std::endl;
-		}
+		_outStream << "Year";
+		_outStream << Constants::TAB;
+		_outStream << "SA Pop Size";
+		_outStream << Constants::TAB;
+		_outStream << "Incident";
+		_outStream << Constants::TAB;
+		_outStream << "Prevalent";
+		_outStream << Constants::TAB;
+		_outStream << "SA Prevalence";
+		_outStream << Constants::TAB;
+		_outStream << "Annual Incidence";
+		_outStream << Constants::TAB;
+		_outStream << "Total Tests";
+		_outStream << Constants::TAB;
+		_outStream << "Negative Tests";
+		_outStream << Constants::TAB;
+		_outStream << "Positive Tests";
+		_outStream << Constants::TAB;
+		_outStream << "Unique Eligible";
+		_outStream << Constants::TAB;
+		_outStream << "Unique Treated";
+		_outStream << std::endl;
 	}
+
+	double yearStartPrevalence = static_cast<double>(this->yearStartPrevalentInfections) / yearStartSexuallyActivePopSize;
+	double yearlyIncidence = static_cast<double>(yearlyIncidentInfections) / yearlyCumulativeSexuallyActivePopSize * 12;
+
+	_outStream << year;
+	_outStream << Constants::TAB;
+	_outStream << yearStartSexuallyActivePopSize;
+	_outStream << Constants::TAB;
+	_outStream << yearlyIncidentInfections;
+	_outStream << Constants::TAB;
+	_outStream << yearStartPrevalentInfections;
+	_outStream << Constants::TAB;
+	_outStream << yearStartPrevalence;
+	_outStream << Constants::TAB;
+	_outStream << yearlyIncidence;
+	_outStream << Constants::TAB;
+	_outStream << yearlyTests;
+	_outStream << Constants::TAB;
+	_outStream << yearlyNegativeTests;
+	_outStream << Constants::TAB;
+	_outStream << yearlyPositiveTests;
+	_outStream << Constants::TAB;
+	_outStream << uniqueYearlyEligible.size();
+	_outStream << Constants::TAB;
+	_outStream << uniqueYearlyTreated.size();
+	_outStream << std::endl;
 }
 
 void PopStats::printArtRolloutStats(std::ostream &_outStream)
@@ -718,13 +742,14 @@ void PopStats::enableShiftedOutcomes(int monthOf1990)
 {
 	calculateShiftedOutcomes = true;
 	this->monthOf1990 = monthOf1990;
+	resetYear(1990);
 }
 
 void PopStats::recordPrevalenceAndIncidence(long currTime, double _prevalence, double _SAprevalence, double _incidence, int saPopSize, int monthlyIncident, int monthlyPrevalent)
 {
 	for (int i=0; i < NUM_TIMES_TO_RECORD; i++)
 	{
-		if (this->timeToRecord[i] == currTime || (calculateShiftedOutcomes && currTime >= monthOf1990))
+		if (this->timeToRecord[i] == currTime)
 		{
 			SingleTimeStats* statistics = new SingleTimeStats();
 			statistics->timeOfStats = currTime;
@@ -732,12 +757,19 @@ void PopStats::recordPrevalenceAndIncidence(long currTime, double _prevalence, d
 			statistics->incidence  = _incidence;
 			statistics->SAprevalence = static_cast<long>(_SAprevalence);
 			statistics->cumulativeNumberDead = static_cast<long>(this->lifeStats->getStat(PopStats::TOTAL_HIV_NEG_DTHS) + this->lifeStats->getStat(PopStats::TOTAL_HIV_POS_DTHS));
-			statistics->saPopSize = saPopSize;
-			statistics->monthlyIncident = monthlyIncident;
-			statistics->monthlyPrevalent = monthlyPrevalent;
 			this->selectedSummaryStats.push_back(statistics);
-			return;
+			break;
 		}
+	}
+
+	if(calculateShiftedOutcomes && currTime >= monthOf1990)
+	{
+		if((currTime - monthOf1990) % 12 == 0)
+		{
+			recordYearStartStats(saPopSize, monthlyPrevalent);
+		}
+		yearlyIncidentInfections += monthlyIncident;
+		yearlyCumulativeSexuallyActivePopSize += saPopSize;
 	}
 }
 

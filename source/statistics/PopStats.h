@@ -1,5 +1,8 @@
 #pragma once
 
+#include <fstream>
+#include <vector>
+#include <unordered_map>
 
 #include "StatsRecord.h"
 #include "InfectionsTracker.h"
@@ -7,8 +10,6 @@
 #include "../data/Enum.h"
 #include "../entities/classifiers/SexualPartnership.h"
 #include "../util/ticpp/ticpp.h"
-#include <fstream>
-#include <vector>
 
 class Person;
 
@@ -47,9 +48,6 @@ public:
 		double SAprevalence; 	//Prevalence of sexually active population only
 		double incidence; 		//TODO: Incidence will be an average over the 12 months leading up to the given time point
 		long cumulativeNumberDead;	//Total number of persons who have died since time 0
-		int saPopSize;
-		int monthlyIncident;
-		int monthlyPrevalent;
 	};
 
 	class SingleLEStats{
@@ -116,6 +114,16 @@ private:
 
 	int monthOf1990;
 	bool calculateShiftedOutcomes;
+	int relativeYear;
+	int yearStartPrevalentInfections;
+	int yearStartSexuallyActivePopSize;
+	int yearlyCumulativeSexuallyActivePopSize;
+	int yearlyIncidentInfections;
+	int yearlyTests;
+	int yearlyPositiveTests;
+	int yearlyNegativeTests;
+	std::set<Person *> uniqueYearlyEligible;
+	std::set<Person *> uniqueYearlyTreated;
 
 	//TODO: Is this necessary?
 	//long cumulativeNumberDead; //This is a running tally of the total number of persons who have died during the course of the simulation
@@ -152,7 +160,7 @@ public:
 
 	void printSurvivalStats(std::ostream &_outStream);
 
-	void printShiftedOutcomes(std::ostream &_outStream);
+	void printShiftedOutcomes(std::ostream &_outStream, int currTime);
 
 	void printArtRolloutStats(std::ostream &_outStream);
 
@@ -174,7 +182,45 @@ public:
 	bool isTimeToRecordPartAcq(long currTime);
 
 	void recordPrevalenceAndIncidence(long currTime, double _prevalence, double _SAprevalence, double _incidence, int saPopSize, int monthlyIncident, int monthlyPrevalent);
+
+	void recordYearStartStats(int sexuallyActivePopSize, int prevalentCases)
+	{
+		yearStartSexuallyActivePopSize = sexuallyActivePopSize;
+		yearStartPrevalentInfections = prevalentCases;
+	}
+
+	void recordTestStats(int numTests, int numPositiveTests, int numNegativeTests)
+	{
+		yearlyTests += numTests;
+		yearlyPositiveTests += numPositiveTests;
+		yearlyNegativeTests += numNegativeTests;
+	}
+
+	void recordEligiblePerson(Person *person)
+	{
+		uniqueYearlyEligible.insert(person);
+	}
+
+	void recordTreatment(Person *person)
+	{
+		uniqueYearlyTreated.insert(person);
+	}
+
 	std::vector<PopStats::SingleTimeStats*>* getSelectedSummaryStats();
 
 	void enableShiftedOutcomes(int monthOf1990);
+
+	void resetYear(int newYear)
+	{
+		relativeYear = newYear;
+		yearStartPrevalentInfections = 0;
+		yearStartSexuallyActivePopSize = 0;
+		yearlyCumulativeSexuallyActivePopSize = 0;
+		yearlyIncidentInfections = 0;
+		yearlyTests = 0;
+		yearlyPositiveTests = 0;
+		yearlyNegativeTests = 0;
+		uniqueYearlyEligible.clear();
+		uniqueYearlyTreated.clear();
+	}
 };
