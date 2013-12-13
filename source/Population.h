@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <boost/tuple/tuple.hpp>
+#include <unordered_map>
 
 #include "entities/Person.h"
 #include "entities/Male.h"
@@ -91,6 +92,9 @@ class Population
      //  use pre-existing normalization and random index chooser functions. */
     std::vector<double> eligibleBucketWeights[SexualPartnership::ENDType];
 
+	std::deque<Person *> eligibleForTreatment;
+
+	void recordARTRolloutStats(EventParams &_eventParams);
 
 public:
     PopStats *popStats;	//tallies the statistics that the population generates throughout the simulation
@@ -145,6 +149,10 @@ public:
      * Checks to see if there is a new cepac input file to apply to certain portions of the population if rollout is being used
      */
     void applyRolloutContext(EventParams &_eventParams, int time);
+
+	void determineEligibility(const EventParams::RolloutEligibility &criteria);
+
+	void startTreatment(Person *person, SimContext *treatedContext);
 
     /*
      * Applies Treatment to certain portions of the population if ART Rollout is turned on
