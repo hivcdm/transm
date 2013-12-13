@@ -1371,6 +1371,7 @@ void Population::recordARTRolloutStats(EventParams &_eventParams)
 
 		for(std::list<Person *>::iterator treatedIterator = rolloutTreatedPool.begin(); treatedIterator != rolloutTreatedPool.end(); treatedIterator++)
 		{
+			popStats->recordEligiblePerson(*treatedIterator);
 			popStats->recordTreatment(*treatedIterator);
 		}
 
