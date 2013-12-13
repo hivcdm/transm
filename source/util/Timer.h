@@ -5,7 +5,7 @@
 #include <string>
 #include <stdint.h>
 
-#ifdef __Linux__
+#if defined(__LINUX__) || defined(__APPLE__)
 #include <sys/time.h>
 #else
 #include <Windows.h>

@@ -34,7 +34,6 @@ OBJS = source/util/ticpp/ticpp.o \
 	source/entities/Person.o \
 	source/data/Enum.o \
 	source/cepacbridge/ParseCepacInput.o \
-	source/cepacbridge/cepac_api.o \
 	source/Constants.o \
 	source/Population.o \
 	source/PopulationParams.o \
@@ -69,7 +68,7 @@ GUI_OBJS = $(OBJS) source/gui/widgets/statusWidget.o \
 	source/gui/main.o \
 	source/gui/dialogs/SetupBatchStatsDialog.o 
 
-CONSOLE_OBJS = $(OBJS) source/main_cli.o
+CONSOLE_OBJS = $(OBJS) source/main.o
 
 #compiler and related flags
 CXX = g++
