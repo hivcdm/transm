@@ -527,28 +527,28 @@ void Person::printCurrentPartners(ostream& _outStream, string _prefix) {
 void Person::saveState(ostream & _outStream, long currTime) {
 	_outStream << "id:" << this->id << "," << endl; //id
 	this->dmgProfile.saveState(_outStream); //dmg profile
-	_outStream << "curBktID:" << this->currentBucketID << "," <<endl; //bucket id (contains same information as dmgprofile)
+	_outStream << "curBktID:" << this->currentBucketID << "," << endl; //bucket id (contains same information as dmgprofile)
 
 	//save all the sexual partnerships
 	_outStream << "partners:[";
-	bool firstPartner=true;
-	for (int i=0; i < SexualPartnership::ENDType; i++){ //loop through partnership types
-		for (list<SexualPartnership*>::iterator it=this->partners[i].begin();it != this->partners[i].end(); it++){ //loop through all partners
-			if (!firstPartner)
+	bool firstPartner = true;
+	for(int i = 0; i < SexualPartnership::ENDType; i++){ //loop through partnership types
+		for(list<SexualPartnership*>::iterator it = this->partners[i].begin(); it != this->partners[i].end(); it++){ //loop through all partners
+			if(!firstPartner)
 				_outStream << ",";
-			firstPartner=false;
+			firstPartner = false;
 			(*it)->saveState(_outStream, this->id, currTime);
 		}
 	}
-	_outStream << "]," <<endl;
+	_outStream << "]," << endl;
 
 	_outStream << "partnerHist:[";
-	firstPartner=true;
-	for (int i=0; i < SexualPartnership::ENDType; i++){ //loop through partnership types
-		if (!firstPartner)
+	firstPartner = true;
+	for(int i = 0; i < SexualPartnership::ENDType; i++){ //loop through partnership types
+		if(!firstPartner)
 			_outStream << ",";
-		firstPartner=false;
-		_outStream << this->numPartnersInHistory[i];		
+		firstPartner = false;
+		_outStream << this->numPartnersInHistory[i];
 	}
 	_outStream << "]," << endl;
 
@@ -561,29 +561,29 @@ void Person::saveState(ostream & _outStream, long currTime) {
 	_outStream << "hvl:" << this->hvl; //hvl in transmission includes primary and late stage
 
 	//patient data
-	if (this->wentThroughCEPAC){
-		_outStream << "," << endl;
-		this->cepacPatient->saveState(_outStream);
-	}
+	//	if (this->wentThroughCEPAC){
+	//		_outStream << "," << endl;
+	//		this->cepacPatient->saveState(_outStream);
+	//}
 	/*
 	//save the full vector indices of person
 	_outStream << "fvInd:[";
 	bool firstFV=true;
 	for (map<FullVector*, vector<unsigned int> >::iterator it=this->FVindices.begin(); it != this->FVindices.end(); it++){ //loop over all Full Vectors
-		if (!firstFV)
-			_outStream << ",";
-		firstFV=false;
-		//full vector id and indices of person in fv
-		_outStream << "{" << "fvID:" << (*it).first->getID() << ",ind:[";
-		bool firstIndex=true;
-		vector <unsigned int> * indicesPtr=&(*it).second;
-		for (vector <unsigned int>::iterator indIter=indicesPtr->begin(); indIter != indicesPtr->end(); indIter++){
-			if (!firstIndex)
-				_outStream << ",";
-			firstIndex=false;
-			_outStream << *indIter;
-		}
-		_outStream << "]}";
+	if (!firstFV)
+	_outStream << ",";
+	firstFV=false;
+	//full vector id and indices of person in fv
+	_outStream << "{" << "fvID:" << (*it).first->getID() << ",ind:[";
+	bool firstIndex=true;
+	vector <unsigned int> * indicesPtr=&(*it).second;
+	for (vector <unsigned int>::iterator indIter=indicesPtr->begin(); indIter != indicesPtr->end(); indIter++){
+	if (!firstIndex)
+	_outStream << ",";
+	firstIndex=false;
+	_outStream << *indIter;
+	}
+	_outStream << "]}";
 	}
 	_outStream << "]";
 	*/
