@@ -66,7 +66,7 @@ class Population
     std::vector<boost::tuple<long, int, int> > currSizeByAgeRangeFemale;
     /** The people who are infected but still untreated (Only used for rollout)
      */
-    std::vector<Person *> rolloutUntreatedPoolQueue;
+    //std::vector<Person *> rolloutUntreatedPoolQueue;
     std::list<Person *> rolloutUntreatedPool;
 
     /**The people who are currently being treated (Only used for rollout)
@@ -92,7 +92,7 @@ class Population
      //  use pre-existing normalization and random index chooser functions. */
     std::vector<double> eligibleBucketWeights[SexualPartnership::ENDType];
 
-	std::deque<Person *> eligibleForTreatment;
+	std::vector<Person *> eligibleForTreatment;
 
 	void recordARTRolloutStats(EventParams &_eventParams);
 
@@ -235,8 +235,6 @@ private:
       @param _deceased pointer to deceased person
     */
     void processDeath(EventParams &_eventParams, Person *_p, bool calculateLE);
-
-	void mergeRolloutUntreatedQueue(EventParams &_eventParams);
 
 //-----------< END helper methods  >--------------------//
 

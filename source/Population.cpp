@@ -428,15 +428,6 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 
 				if (_eventParams.useRollout)
 				{
-				    std::vector<Person *>::iterator poolQueueIterator;
-				    poolQueueIterator = std::find(this->rolloutUntreatedPoolQueue.begin(), this->rolloutUntreatedPoolQueue.end(), p);
-				    
-				    if(poolQueueIterator != this->rolloutUntreatedPoolQueue.end())
-				    {
-					this->rolloutUntreatedPoolQueue.erase(poolQueueIterator);
-				    }
-				    else
-				    {
 					//Remove people from the treated/untreated pool if they die
 					std::list<Person *>::iterator poolIterator;
 					poolIterator = std::find(this->rolloutUntreatedPool.begin(), this->rolloutUntreatedPool.end(), p);
@@ -453,7 +444,6 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 							this->rolloutTreatedPool.erase(poolIterator);
 						}
 					}
-				    }
 				}
 
 				totalDied++;
@@ -486,15 +476,6 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 
 				if (_eventParams.useRollout)
 				{
-				    std::vector<Person *>::iterator poolQueueIterator;
-				    poolQueueIterator = std::find(this->rolloutUntreatedPoolQueue.begin(), this->rolloutUntreatedPoolQueue.end(), p);
-				    
-				    if(poolQueueIterator != this->rolloutUntreatedPoolQueue.end())
-				    {
-					this->rolloutUntreatedPoolQueue.erase(poolQueueIterator);
-				    }
-				    else
-				    {
 					//Remove people from the treated/untreated pool if they die
 					std::list<Person *>::iterator poolIterator;
 					poolIterator = std::find(this->rolloutUntreatedPool.begin(), this->rolloutUntreatedPool.end(), p);
@@ -511,7 +492,6 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 							this->rolloutTreatedPool.erase(poolIterator);
 						}
 					}
-				    }
 				}
 				//removePersonFromAll returns iterator to next person in list...
 				//no need to increment
@@ -681,7 +661,7 @@ void Population::updatePartnerships(EventParams &_eventParams)
 				//Adds person to the untreated pool if using rollout
 				if (_eventParams.useRollout)
 				{
-					this->rolloutUntreatedPoolQueue.push_back(wasUninfected);
+					this->rolloutUntreatedPool.push_back(wasUninfected);
 				}
 				if (_eventParams.outputTrace[EventParams::EVENTS]){
 					this->popStats->recordIncidentInfection(_eventParams, _eventParams.currTime,
@@ -1095,7 +1075,7 @@ void Population::applyIncidentPrevalence(EventParams &_eventParams){
 				//Adds person to the untreated pool if using rollout
 				if (_eventParams.useRollout)
 				{
-					this->rolloutUntreatedPoolQueue.push_back(p);
+					this->rolloutUntreatedPool.push_back(p);
 				}
 				if (p->getDmgProfile()->get(p->getDmgProfile()->getProfileID(), DmgProfile::SEXUAL_ACTIVITY_STATUS) != DmgProfile::NA){
 					((BucketSexualMixing*)this->entities->getBucket(p->getDmgProfile()->getProfileID()))->increaseInfected(p);
@@ -1154,7 +1134,7 @@ void Population::applyIncidentPrevalence(EventParams &_eventParams){
 
 				if (_eventParams.useRollout)
 				{
-					this->rolloutUntreatedPoolQueue.push_back(p);
+					this->rolloutUntreatedPool.push_back(p);
 				}
 				if (p->getDmgProfile()->get(p->getDmgProfile()->getProfileID(), DmgProfile::SEXUAL_ACTIVITY_STATUS) != DmgProfile::NA){
 					((BucketSexualMixing*)this->entities->getBucket(p->getDmgProfile()->getProfileID()))->increaseInfected(p);
@@ -1213,24 +1193,6 @@ void Population::applyRolloutContext(EventParams &_eventParams, int time)
 	}
 }
 
-void Population::mergeRolloutUntreatedQueue(EventParams &_eventParams)
-{
-	if (this->rolloutUntreatedPoolQueue.size())
-	{
-		// Modern Fisher-Yates shuffle -- O(n)
-		// We do this to avoid bias due to insertion order in rolloutUntreatedPool
-		for (size_t i = this->rolloutUntreatedPoolQueue.size() - 1; i > 0; --i)
-		{
-			int j = _eventParams.randomNums.randInt(0, i);
-			std::swap(this->rolloutUntreatedPoolQueue[j], this->rolloutUntreatedPoolQueue[i]);
-		}
-		this->rolloutUntreatedPool.insert(this->rolloutUntreatedPool.begin(),
-			this->rolloutUntreatedPoolQueue.begin(),
-			this->rolloutUntreatedPoolQueue.end());
-		this->rolloutUntreatedPoolQueue.clear();
-	}
-}
-
 void Population::determineEligibility(const EventParams::RolloutEligibility &criteria)
 {
 	eligibleForTreatment.clear();
@@ -1253,6 +1215,12 @@ void Population::determineEligibility(const EventParams::RolloutEligibility &cri
 			{
 				bool isEligible = false;
 				Person *untPerson = *untIter;
+
+				if(std::find(eligibleForTreatment.begin(), eligibleForTreatment.end(), untPerson) != eligibleForTreatment.end())
+				{
+					untIter++;
+					continue;
+				}
 
 				if(checkOiHist)
 				{
@@ -1337,7 +1305,7 @@ void Population::startTreatment(Person *person, SimContext *treatedContext)
 void Population::applyARTRollout(EventParams &_eventParams)
 {
 	//calculate absolute number of slots opening up this month
-	int numUntreated = rolloutUntreatedPool.size() + rolloutUntreatedPoolQueue.size();
+	int numUntreated = rolloutUntreatedPool.size();
 	int numTreated = rolloutTreatedPool.size();
 	int totalSlots = static_cast<int>((numUntreated + numTreated) * _eventParams.currentRolloutProportion);
 	int newSlots = totalSlots - numTreated;
@@ -1345,13 +1313,14 @@ void Population::applyARTRollout(EventParams &_eventParams)
 	//no available slots
 	if(newSlots > 0)
 	{
-		mergeRolloutUntreatedQueue(_eventParams);
 		determineEligibility(_eventParams.rolloutEligibility);
 
 		while(newSlots > 0 && !eligibleForTreatment.empty())
 		{
-			startTreatment(eligibleForTreatment.front(), _eventParams.treatedContext);
-			eligibleForTreatment.pop_front();
+			int randomEligible = _eventParams.randomNums.randInt(0, eligibleForTreatment.size() - 1);
+			startTreatment(eligibleForTreatment[randomEligible], _eventParams.treatedContext);
+			std::swap(eligibleForTreatment[randomEligible], eligibleForTreatment[eligibleForTreatment.size() - 1]);
+			eligibleForTreatment.pop_back();
 			--newSlots;
 		}
 	}
@@ -1364,7 +1333,7 @@ void Population::recordARTRolloutStats(EventParams &_eventParams)
 		int year = 1990 + (_eventParams.currTime - _eventParams.monthOf1990) / 12;
 		int month = (_eventParams.currTime - _eventParams.monthOf1990) % 12;
 
-		for(std::deque<Person *>::iterator eligibleIterator = eligibleForTreatment.begin(); eligibleIterator != eligibleForTreatment.end(); eligibleIterator++)
+		for(std::vector<Person *>::iterator eligibleIterator = eligibleForTreatment.begin(); eligibleIterator != eligibleForTreatment.end(); eligibleIterator++)
 		{
 			popStats->recordEligiblePerson(*eligibleIterator);
 		}
