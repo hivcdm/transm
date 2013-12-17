@@ -1,6 +1,6 @@
 #include <cxxtest/TestSuite.h>
 
-#include "../source/cepac/SimContext.h"
+#include "../cepac/SimContext.h"
 
 class SimContextTestSuite : public CxxTest::TestSuite
 {

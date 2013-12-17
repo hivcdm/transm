@@ -1,6 +1,6 @@
 #include <cxxtest/TestSuite.h>
 
-#include "../source/util/rand/RandomNums.h"
+#include "../util/rand/RandomNums.h"
 
 class RandTestSuite : public CxxTest::TestSuite
 {

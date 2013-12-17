@@ -1,6 +1,6 @@
 #include <cxxtest/TestSuite.h>
 
-#include "../source/cepac/Patient.h"
+#include "../cepac/Patient.h"
 
 class PatientTestSuite : public CxxTest::TestSuite
 {
