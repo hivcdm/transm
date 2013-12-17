@@ -30,7 +30,7 @@ verticalStatusWidget::verticalStatusWidget(wxPanel *parent, int id, int *trackin
 
 }
 
-void verticalStatusWidget::OnPaint(wxPaintEvent& event)
+void verticalStatusWidget::OnPaint(wxPaintEvent& WXUNUSED(event))
 {
 
 
@@ -76,7 +76,7 @@ void verticalStatusWidget::OnPaint(wxPaintEvent& event)
   dc.DrawRotatedText(this->label, 16, (vsize + 1)*step/2 + size.GetWidth()/2, 90.0);
 }
 
-void verticalStatusWidget::OnSize(wxSizeEvent& event)
+void verticalStatusWidget::OnSize(wxSizeEvent& WXUNUSED(event))
 {
   Refresh();
 }

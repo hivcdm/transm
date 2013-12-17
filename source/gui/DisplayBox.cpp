@@ -159,7 +159,7 @@ DisplayBox::DisplayBox(const wxString& title)
  Centre();
 }
 
-void DisplayBox::OnRun(wxCommandEvent& event){
+void DisplayBox::OnRun(wxCommandEvent& WXUNUSED(event)){
 	if (this->graphicsCheckbox->GetValue()){
 		*(this->summaryText) << wxT("WARNING: GraphViz files will be generated!  If your input file has a starting cohort size greater than 100 or a birth rate greater than 0, no GraphViz files will be generated.\n");
 	}
@@ -360,8 +360,14 @@ info.SetDescription(_("An agent based model of HIV transmission"));
 info.AddDeveloper(_("the CEPAC Research Group"));
 info.AddDeveloper(_("Massachusetts General Hospital"));
 info.AddDeveloper(_("Harvard School of Public Health"));
-info.SetCopyright(wxT("\u00A9 2008-2010"));
-
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4428)
+#endif
+info.SetCopyright(wxT("\u00A9 2008-2014"));
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 wxAboutBox(info);
 
 }

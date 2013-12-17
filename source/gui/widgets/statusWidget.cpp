@@ -29,7 +29,7 @@ StatusWidget::StatusWidget(wxPanel *parent, int id, int *trackingVariable, wxStr
 
 }
 
-void StatusWidget::OnPaint(wxPaintEvent& event)
+void StatusWidget::OnPaint(wxPaintEvent& WXUNUSED(event))
 {
 
 
@@ -71,7 +71,7 @@ void StatusWidget::OnPaint(wxPaintEvent& event)
   dc.DrawText(this->label, 5*step - size.GetWidth()/2, 16);
 }
 
-void StatusWidget::OnSize(wxSizeEvent& event)
+void StatusWidget::OnSize(wxSizeEvent& WXUNUSED(event))
 {
   Refresh();
 }
