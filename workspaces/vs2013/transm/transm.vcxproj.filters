@@ -80,6 +80,7 @@
     <ClCompile Include="..\..\..\source\cepacbridge\ParseCepacInput.cpp">
       <Filter>cepacbridge</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\Constants.h" />
