@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="dialogs">
+      <UniqueIdentifier>{7442b51e-a959-493e-9ed9-c3ada4583c96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="widgets">
+      <UniqueIdentifier>{7e416b42-b826-4bf0-9f08-afa9a0a62a33}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\source\gui\dialogs\SetupBatchStatsDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\widgets\statusWidget.cpp">
+      <Filter>widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\widgets\verticalStatusWidget.cpp">
+      <Filter>widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\DisplayBox.cpp" />
+    <ClCompile Include="..\..\..\source\gui\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\source\gui\dialogs\SetupBatchStatsDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\main.h" />
+    <ClInclude Include="..\..\..\source\gui\widgets\statusWidget.h">
+      <Filter>widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\widgets\verticalStatusWidget.h">
+      <Filter>widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\DisplayBox.h" />
+  </ItemGroup>
+</Project>
