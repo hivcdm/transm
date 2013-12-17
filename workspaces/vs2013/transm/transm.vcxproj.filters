@@ -81,6 +81,12 @@
       <Filter>cepacbridge</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\main.cpp" />
+    <ClCompile Include="..\..\..\source\statistics\ArtTestingTracker.cpp">
+      <Filter>statistics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\statistics\TabularOutput.cpp">
+      <Filter>statistics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\Constants.h" />
@@ -179,6 +185,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\util\Timer.h">
       <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\statistics\ArtTestingTracker.h">
+      <Filter>statistics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\statistics\TabularOutput.h">
+      <Filter>statistics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

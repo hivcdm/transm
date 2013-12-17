@@ -810,13 +810,16 @@ double Person::updateHealthStatus(EventParams& _eventParams) {
 		}
 	}
 
+	offeredTest = false;
+	acceptedTest = false;
+	testResult = SimContext::TEST_TRUE_NEG;
 
-	//if this person is infected with AIDS and is still alive
-	//no longer matters since HIV negs go through CEPAC too
-	//if(this->isInfected()) {
+	RunStats::HIVScreening hivScreeningBefore = *_eventParams.cepacRunStats->getHIVScreening();
 
 	//run this person's patient info one month forward in CEPAC
 	this->cepacPatient->simulateMonth();
+
+	RunStats::HIVScreening hivScreeningAfter = *_eventParams.cepacRunStats->getHIVScreening();
 
 	//Update this patient's costs
 	costThisMonth = this->cepacPatient->getGeneralState()->costsDiscounted - this->CEPACcosts;
@@ -879,6 +882,25 @@ double Person::updateHealthStatus(EventParams& _eventParams) {
 		}
 
 	}//if (isInfected)
+
+	if(isInfected())
+	{
+		for(int i = 0; i < SimContext::TEST_RESULT_NUM; i++)
+		{
+			if(hivScreeningBefore.numTestsHIVState[i] > hivScreeningBefore.numTe
+		}
+	}
+
+	if(hivScreeningAfter.numRefuseTest > hivScreeningBefore.numRefuseTest)
+	{
+		offeredTest = true;
+	}
+
+	if(hivScreeningAfter.numAcceptTest > hivScreeningBefore.numAcceptTest)
+	{
+		offeredTest = true;
+		acceptedTest = true;
+	}
 
 	return costThisMonth;
 }

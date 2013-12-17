@@ -338,6 +338,21 @@ public:
 	//Return true if a condom was used the last time FOI was called
 	bool getCondomUsedLastFOICalculation();
 
+	SimContext::TEST_RESULT getTestResult()
+	{
+		return testResult;
+	}
+
+	bool getOfferedTest()
+	{
+		return offeredTest;
+	}
+
+	bool getAcceptedTest()
+	{
+		return acceptedTest;
+	}
+
 
 	//---------------< END Physical-state related methods >------------------------//
 
@@ -612,5 +627,7 @@ private:
 	//Return the current index of which SimContext should be used to update the health of a patient
 	int getCEPACSimContextIndex(EventParams& _eventParams);
 
-
+	bool offeredTest;
+	bool acceptedTest;
+	SimContext::TEST_RESULT testResult;
 };

@@ -18,6 +18,7 @@
 #include "statistics/CostsTracker.h"
 #include "util/rand/RandomNums.h"
 #include "util/Util.h"
+#include "statistics/ArtTestingTracker.h"
 
 /***
 Data needed :
@@ -680,6 +681,30 @@ void Population::updatePartnerships(EventParams &_eventParams)
 	} //for (p_Iter = this->entities->begin(DmgProfile::MALE); p_Iter != this->entities->end(DmgProfile::MALE); p_Iter++)
 	//Ends the second pass through (i.e. the sex acts pass through)
 
+	ArtTestingTracker artTracker;
+	if(_eventParams.outputTrace[EventParams::ARTROLLOUT])
+	{
+		for(int gender = DmgProfile::MALE; gender < DmgProfile::ENDGender; gender++){
+			std::list<Person*>::iterator p_Iter = this->entities->begin((DmgProfile::Gender) gender);
+			while(p_Iter != this->entities->end((DmgProfile::Gender) gender)) {
+				Person *p = *p_Iter;
+
+				if(p->getOfferedTest())
+				{
+					if(p.getAcceptedTest())
+					{
+						artTracker.recordAcceptedTest(p, p->getTestResult());
+					}
+					else
+					{
+						artTracker.recordRejectedTest(p);
+					}
+				}
+				
+				p_Iter++;
+			}
+		}
+	}
 
 	//print out results to traces
 	for (SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::ENDType; ++type) {
