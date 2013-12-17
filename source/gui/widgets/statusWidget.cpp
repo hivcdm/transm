@@ -5,8 +5,6 @@
  *      Author: errhode
  */
 
-#ifndef CONSOLE
-
 #include <iostream>
 #include <stdlib.h>
 #include <stdio.h>
@@ -78,4 +76,4 @@ void StatusWidget::OnSize(wxSizeEvent& event)
   Refresh();
 }
 
-#endif
+

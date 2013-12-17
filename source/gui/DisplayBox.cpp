@@ -5,8 +5,6 @@
  *      Author: errhode
  */
 
-#ifndef CONSOLE
-
 #include <iostream>
 #include <stdlib.h>
 #include <stdio.h>
@@ -89,12 +87,8 @@ DisplayBox::DisplayBox(const wxString& title)
  summaryText = new wxTextCtrl(mainPanel, -1, wxT("CEPAC Transmission Model\n Go to File->Open to select your folder of inputs\n"), wxPoint(-1,-1), wxSize(), wxTE_MULTILINE);
 
 //Graphics checkbox: value is false (don't generate) by default
- this->graphicsCheckbox = new wxCheckBox(checkboxPanel, ID_CHECKBOX, wxT("Generate GraphViz files: See \"Help - Generating GraphViz\" for more information"), wxPoint(0, 20));
+ this->graphicsCheckbox = new wxCheckBox(checkboxPanel, ID_CHECKBOX, wxT("Generate GraphViz files: See \"Help - Generating GraphViz\" for more information"), wxPoint(0, 0));
  this->graphicsCheckbox->SetValue(false);
-
-//Fixed seed checkbox: value is false (random seed) by default
- this->useFixedSeedCheckbox = new wxCheckBox(checkboxPanel, ID_FIXEDSEED, wxT("Use a fixed seed to generate random numbers"), wxPoint(0, 0));
- this->useFixedSeedCheckbox->SetValue(false);
 
  //Add two buttons to buttonsPanel
  wxBoxSizer *hButtonBox = new wxBoxSizer(wxHORIZONTAL);
@@ -189,7 +183,7 @@ void DisplayBox::OnRun(wxCommandEvent& event){
 	//Create the results directory (for CEPAC output) and CEPAC popstats file
 	CepacUtil::createResultsDirectory();
 	SummaryStats *cepacSummaryStats = new SummaryStats("cepacPopstats.out");
-	//TransmissionSummaryStats *transSummaryStats = new TransmissionSummaryStats("summaryStats.out");
+	TransmissionSummaryStats *transSummaryStats = new TransmissionSummaryStats("summaryStats.out");
 
 	double totalFiles = (double) this->filesToRun.size();
 	int i;
@@ -203,21 +197,21 @@ void DisplayBox::OnRun(wxCommandEvent& event){
 		*(this->summaryText) << wxT("Running File: ") << filename << wxT("\n");
 		//Run simulation on selected file
 		*(this->textctrl) << wxT("Running simulation...\n");
-		//Sim *s = new Sim(filesToRun[i], this, this->graphicsCheckbox->GetValue());
+		Sim *s = new Sim(filesToRun[i], this, this->graphicsCheckbox->GetValue());
 
 		//TODO: Change this to a general try-catch statement above?  Will need to change the constructor to throw the exception
-		//if (!(s->getError())){
+		if (!(s->getError())){
 			//Run the simulation the desired number of time steps
-			//s->run(s->getMaxTime());
+			s->run(s->getMaxTime());
 			
 			//Get CEPAC runStats from eventsParams and add to cepacSummaryStats
-			//cepacSummaryStats->addRunStats(s->getCEPACRunStats());
+			cepacSummaryStats->addRunStats(s->getCEPACRunStats());
 
 			//Get transmission popStats and add to transSummaryStats
-			//transSummaryStats->addPopStats(s->getPopStats(), s->getEventParams());
+			transSummaryStats->addPopStats(s->getPopStats(), s->getEventParams());
 
-			//delete s;
-		//}
+			delete s;
+		}
 
 		*(this->textctrl) << wxT("Done!\n");
 		this->percentCompleted = (100 * (i + 1))/totalFiles + 0.5;
@@ -228,8 +222,8 @@ void DisplayBox::OnRun(wxCommandEvent& event){
 	//Finalize CEPAC summary stats and print the popstats file
 	cepacSummaryStats->finalizeStats();
 	try {
-		//cepacSummaryStats->writeSummariesFile();
-		//transSummaryStats->writeSummariesFile();
+		cepacSummaryStats->writeSummariesFile();
+		transSummaryStats->writeSummariesFile();
 	}
 	catch (string errorString) {
 		wxString wxErrorString(errorString.c_str(), wxConvUTF8);
@@ -237,7 +231,7 @@ void DisplayBox::OnRun(wxCommandEvent& event){
 	}
 
 	delete cepacSummaryStats;
-	//delete transSummaryStats;
+	delete transSummaryStats;
 
 	//Clear files to run once they've been run
 	this->filesToRun.clear();
@@ -358,7 +352,7 @@ void DisplayBox::OnAbout(wxCommandEvent& WXUNUSED(event))
 {
 wxAboutDialogInfo info;
 stringstream Version;
-Version << "Version " << /*Util::MODEL_VERSION*/"44a" << " (input sheet version " << /*Util::INPUT_VERSION*/"44a" << ", CEPAC version " << CepacUtil::CEPAC_VERSION_STRING << " (input version " << CepacUtil::CEPAC_INPUT_VERSION << "))";
+Version << "Version " << Util::MODEL_VERSION << " (input sheet version " << Util::INPUT_VERSION << ", CEPAC version " << CepacUtil::CEPAC_VERSION_STRING << " (input version "<< CepacUtil::CEPAC_INPUT_VERSION << "))";
 wxString wxVersion(Version.str().c_str(), wxConvUTF8);
 info.SetName(_("CEPAC Population Dynamics"));
 info.SetVersion(wxVersion);
@@ -436,4 +430,3 @@ void DisplayBox::OnSetupBatchStats(wxCommandEvent& WXUNUSED(event)){
 	*(this->summaryText) << wxT("\n");
 }
 
-#endif

@@ -5,8 +5,6 @@
  *      Author: errhode
  */
 
-#ifndef CONSOLE
-
 //Reinclude and compile in visual C++ in debug mode if you want to do memory leak detection
 /*#include <vld.h>
 #include <vldapi.h>*/
@@ -26,7 +24,7 @@ IMPLEMENT_APP(MyApp)
 bool MyApp::OnInit()
 {
 	stringstream DisplayBoxHeader;
-	DisplayBoxHeader << "CEPAC Population Model Version " << ""/*Util::MODEL_VERSION*/;
+	DisplayBoxHeader << "CEPAC Population Model Version " << Util::MODEL_VERSION;
 	wxString wxDisplayBoxHeader(DisplayBoxHeader.str().c_str(), wxConvUTF8);
 
     DisplayBox *sizer = new DisplayBox(wxDisplayBoxHeader);
@@ -34,5 +32,3 @@ bool MyApp::OnInit()
 
     return true;
 }
-
-#endif

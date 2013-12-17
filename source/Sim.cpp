@@ -9,6 +9,7 @@
 #ifdef WIN32
 #include <io.h>
 #define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
 #include <crtdbg.h>
 const char PATH_SEPARATOR = '\\';
 #else 

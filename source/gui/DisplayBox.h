@@ -7,7 +7,6 @@
 
 #ifndef PLAYGROUND_H_
 #define PLAYGROUND_H_
-#ifndef CONSOLE
 #include <wx/wx.h>
 #include <wx/aboutdlg.h>
 #include <iostream>
@@ -31,7 +30,6 @@ public:
   wxTextCtrl *textctrl;
   wxTextCtrl *summaryText;
   wxCheckBox *graphicsCheckbox;
-  wxCheckBox *useFixedSeedCheckbox;
   verticalStatusWidget *prevalenceWidget;
   verticalStatusWidget *incidenceWidget;
   StatusWidget *totalProgressWidget;
@@ -71,6 +69,5 @@ public:
 
 };
 
-#endif
 #endif /* PLAYGROUND_H_ */
 

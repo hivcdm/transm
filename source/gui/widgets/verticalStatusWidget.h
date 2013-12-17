@@ -7,7 +7,6 @@
 
 #ifndef VERTICALSTATUSWIDGET_H_
 #define VERTICALSTATUSWIDGET_H_
-#ifndef CONSOLE
 
 #include <wx/wx.h>
 #include <iostream>
@@ -41,5 +40,4 @@ public:
 
 };
 
-#endif
 #endif /* VERTICALSTATUSWIDGET_H_ */

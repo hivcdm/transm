@@ -7,7 +7,6 @@
 
 #ifndef STATUSWIDGET_H_
 #define STATUSWIDGET_H_
-#ifndef CONSOLE
 
 #include <wx/wx.h>
 #include <iostream>
@@ -29,5 +28,5 @@ public:
 
 };
 
-#endif
+
 #endif /* STATUSWIDGET_H_ */
