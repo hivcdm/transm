@@ -634,11 +634,6 @@ void PopStats::printShiftedOutcomes(std::ostream &_outStream, int year)
 	_outStream << std::endl;
 }
 
-void PopStats::printArtRolloutStats(std::ostream &_outStream)
-{
-
-}
-
 void PopStats::printPartAcqStats(std::ostream &_outStream,long currTime){
 	assert(this->selectedPartAcqStats != NULL);
 
@@ -781,4 +776,42 @@ void PopStats::recordPrevalenceAndIncidence(long currTime, double _prevalence, d
 std::vector<PopStats::SingleTimeStats*>* PopStats::getSelectedSummaryStats()
 {
 	return &(this->selectedSummaryStats);
+}
+
+void PopStats::recordYearStartStats(int sexuallyActivePopSize, int prevalentCases)
+{
+	yearStartSexuallyActivePopSize = sexuallyActivePopSize;
+	yearStartPrevalentInfections = prevalentCases;
+}
+
+void PopStats::recordTestStats(int numTests, const std::vector<int> &numTestsByResult)
+{
+	yearlyTests += numTests;
+	for(int i = 0; i < SimContext::TEST_RESULT_NUM; i++)
+	{
+		yearlyTestsByResult[i] += numTestsByResult[i];
+	}
+}
+
+void PopStats::recordEligiblePerson(Person *person)
+{
+	uniqueYearlyEligible.insert(person);
+}
+
+void PopStats::recordTreatment(Person *person)
+{
+	uniqueYearlyTreated.insert(person);
+}
+
+void PopStats::resetYear(int newYear)
+{
+	relativeYear = newYear;
+	yearStartPrevalentInfections = 0;
+	yearStartSexuallyActivePopSize = 0;
+	yearlyCumulativeSexuallyActivePopSize = 0;
+	yearlyIncidentInfections = 0;
+	yearlyTests = 0;
+	std::fill(yearlyTestsByResult.begin(), yearlyTestsByResult.end(), 0);
+	uniqueYearlyEligible.clear();
+	uniqueYearlyTreated.clear();
 }

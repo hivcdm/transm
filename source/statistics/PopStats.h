@@ -161,8 +161,6 @@ public:
 
 	void printShiftedOutcomes(std::ostream &_outStream, int currTime);
 
-	void printArtRolloutStats(std::ostream &_outStream);
-
 	//records an incident infection (calls InfectionTracker's method)
 	void recordIncidentInfection(EventParams& _eventParams, long _time, SexualPartnership::Type _partnershipType, const Person *_infector, const Person *_infected, bool _print, ostream &_traceOutStream);
 
@@ -182,45 +180,12 @@ public:
 
 	void recordPrevalenceAndIncidence(long currTime, double _prevalence, double _SAprevalence, double _incidence, int saPopSize, int monthlyIncident, int monthlyPrevalent);
 
-	void recordYearStartStats(int sexuallyActivePopSize, int prevalentCases)
-	{
-		yearStartSexuallyActivePopSize = sexuallyActivePopSize;
-		yearStartPrevalentInfections = prevalentCases;
-	}
-
-	void recordTestStats(int numTests, const std::vector<int> &numTestsByResult)
-	{
-		yearlyTests += numTests;
-		for(int i = 0; i < SimContext::TEST_RESULT_NUM; i++)
-		{
-			yearlyTestsByResult[i] += numTestsByResult[i];
-		}
-	}
-
-	void recordEligiblePerson(Person *person)
-	{
-		uniqueYearlyEligible.insert(person);
-	}
-
-	void recordTreatment(Person *person)
-	{
-		uniqueYearlyTreated.insert(person);
-	}
+	void enableShiftedOutcomes(int monthOf1990);
+	void resetYear(int newYear);
+	void recordYearStartStats(int sexuallyActivePopSize, int prevalentCases);
+	void recordTestStats(int numTests, const std::vector<int> &numTestsByResult);
+	void recordEligiblePerson(Person *person);
+	void recordTreatment(Person *person);
 
 	std::vector<PopStats::SingleTimeStats*>* getSelectedSummaryStats();
-
-	void enableShiftedOutcomes(int monthOf1990);
-
-	void resetYear(int newYear)
-	{
-		relativeYear = newYear;
-		yearStartPrevalentInfections = 0;
-		yearStartSexuallyActivePopSize = 0;
-		yearlyCumulativeSexuallyActivePopSize = 0;
-		yearlyIncidentInfections = 0;
-		yearlyTests = 0;
-		std::fill(yearlyTestsByResult.begin(), yearlyTestsByResult.end(), 0);
-		uniqueYearlyEligible.clear();
-		uniqueYearlyTreated.clear();
-	}
 };
