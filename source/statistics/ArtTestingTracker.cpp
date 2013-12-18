@@ -19,11 +19,11 @@ ArtTestingTracker::~ArtTestingTracker()
 
 void ArtTestingTracker::recordTest(Person *person, bool accepted, bool returned, SimContext::TEST_RESULT result)
 {
-	++numTestsOffered;
+	numTestsOffered++;
 
 	if(accepted)
 	{
-		++numTestsAccepted;
+		numTestsAccepted++;
 
 		if(returned)
 		{
@@ -32,8 +32,8 @@ void ArtTestingTracker::recordTest(Person *person, bool accepted, bool returned,
 			int genderIndex = demographicProfile->get(DmgProfile::GENDER);
 			int employmentIndex = demographicProfile->get(DmgProfile::EMPLOYMENT);
 
-			++numTestsByBucket[riskIndex][genderIndex][employmentIndex];
-			++numTestsByResult[result];
+			numTestsByBucket[riskIndex][genderIndex][employmentIndex]++;
+			numTestsByResult[result]++;
 		}
 	}
 }
@@ -60,37 +60,39 @@ void ArtTestingTracker::printArtRolloutOutcomes(int time, std::ostream &_outStre
 
 void ArtTestingTracker::buildHeader(const std::vector<std::pair<int, int> > &ageRanges)
 {
-	SetHeaderCell(0, 0, "ART Rollout Outcomes");
-	SetHeaderCell(2, 0, "Females");
-	SetHeaderCell(10, 0, "Males");
-	SetHeaderCell(20, 0, "CD4 Count");
-	SetHeaderCell(1, 0, "Non-Sexually Active Population");
-	SetHeaderCell(2, 0, "Sexually Active Population");
-	SetHeaderCell(10, 0, "Non-Sexually Active Population");
-	SetHeaderCell(11, 0, "Sexually Active Population");
-	SetHeaderCell(15, 0, "Risk Group");
-	SetHeaderCell(16, 0, "Female");
-	SetHeaderCell(18, 0, "Male");
-	SetHeaderCell(19, 0, "Test Result");
+	SetHeaderCell(1, 1, "ART Rollout Outcomes");
 
-	SetHeaderCell(1, 2, "All ages");
-	for(size_t i = 0; i < ageRanges.size(); ++i)
+	SetHeaderCell(1, 3, "Time");
+	SetHeaderCell(2, 3, "Population Size");
+
+	SetHeaderCell(3, 1, "Number of Tests");
+
+	SetHeaderCell(3, 2, "Totals");
+	SetHeaderCell(3, 3, "Offered");
+	SetHeaderCell(4, 3, "Accepted");
+	SetHeaderCell(5, 3, "Returned for Results");
+
+	SetHeaderCell(6, 2, "Gender");
+	SetHeaderCell(6, 3, "Females");
+	SetHeaderCell(7, 3, "Males");
+
+	int column = 8;
+	for(int genderIndex = 0; genderIndex < 2; genderIndex++, column += (ageRanges.size() + 1))
 	{
-		std::stringstream rangeString;
-		rangeString << std::get<0>(ageRanges[i]) << "-" << std::get<1>(ageRanges[i]);
-		SetHeaderCell(2, 2, rangeString.str());
-	}
+		SetHeaderCell(column, 1, genderIndex == 0 ? "Females" : "Males");
 
-	SetHeaderCell(1, 2, "All ages");
-	for(size_t i = 0; i < ageRanges.size(); ++i)
-	{
-		std::stringstream rangeString;
-		rangeString << std::get<0>(ageRanges[i]) << "-" << std::get<1>(ageRanges[i]);
-		SetHeaderCell(2, 2, rangeString.str());
-	}
+		SetHeaderCell(column, 2, "Non-Sexually Active Population");
+		SetHeaderCell(column, 3, "All ages");
+		//TODO: print all ages here
 
-	SetHeaderCell(20, 2, "Number of Test Offered");
-	SetHeaderCell(20, 2, "Number of Test Accepted");
+		SetHeaderCell(column + 1, 2, "Sexually Active Population");
+		for(size_t i = 0; i < ageRanges.size(); ++i)
+		{
+			std::stringstream rangeString;
+			rangeString << std::get<0>(ageRanges[i]) << "-" << std::get<1>(ageRanges[i]);
+			SetHeaderCell(column + 1 + i, 3, rangeString.str());
+		}
+	}
 }
 
 void ArtTestingTracker::buildNumTestsHeader()
@@ -112,6 +114,20 @@ void ArtTestingTracker::Reset()
 {
 	numTestsOffered = 0;
 	numTestsAccepted = 0;
-	std::fill(&numTestsByBucket[0][0][0], &numTestsByBucket[0][0][0] + sizeof(numTestsByBucket), 0);
-	std::fill(&numTestsByResult[0], &numTestsByResult[0] + SimContext::TEST_RESULT_NUM, 0);
+
+	for(int riskIndex = 0; riskIndex < Person::ENDRiskLevel; ++riskIndex)
+	{
+		for(int genderIndex = 0; genderIndex < DmgProfile::ENDGender; ++genderIndex)
+		{
+			for(int employmentIndex = 0; employmentIndex < DmgProfile::ENDGender; ++employmentIndex)
+			{
+				numTestsByBucket[riskIndex][genderIndex][employmentIndex] = 0;
+			}
+		}
+	}
+
+	for(int resultIndex = 0; resultIndex < SimContext::TEST_RESULT_NUM; ++resultIndex)
+	{
+		numTestsByResult[resultIndex] = 0;
+	}
 }

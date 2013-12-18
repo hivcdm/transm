@@ -468,6 +468,10 @@ void Sim::run(int _numSteps)
 	{
 		this->currPopulation->printPopulation(this->eventParams, this->currTime,this->eventParams.traceStreams[EventParams::POPULATION]);
 	}
+	if(eventParams.outputTrace[EventParams::ARTROLLOUT])
+	{
+		currPopulation->printARTRolloutOutcomes(eventParams, eventParams.traceStreams[EventParams::ARTROLLOUT]);
+	}
 
 	if (this->eventParams.debugLevel == DEBUG1)
 	{
