@@ -6,9 +6,9 @@
 using namespace std;
 
 //declare strings of Enums
-const char* demographicStrs[DmgProfile::ENDDemographic] = {"SEXUAL_ACTIVITY_STATUS", "GENDER", "SEXUAL_ORIENTATION", "RELATIONSHIP_STATUS", "EMPLOYMENT"};
+const std::string demographicStrs[DmgProfile::ENDDemographic] = {"SEXUAL_ACTIVITY_STATUS", "GENDER", "SEXUAL_ORIENTATION", "RELATIONSHIP_STATUS", "EMPLOYMENT"};
 //fix this... not all dmgProfile will only have 2 choices
-const char* enumStrs[DmgProfile::ENDDemographic][2] = {
+const std::string enumStrs[DmgProfile::ENDDemographic][2] = {
 	{"SA","NA"},
 	{"MALE", "FEMALE"},
 	{"HETERO","HOMO"},

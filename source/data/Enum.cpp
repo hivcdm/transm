@@ -9,7 +9,7 @@ BaseEnumCls::BaseEnumCls() {
 	initialized = false;
 }
 
-BaseEnumCls::BaseEnumCls(const char* _strs[], unsigned int _numEnums) {
+BaseEnumCls::BaseEnumCls(const std::string _strs[], unsigned int _numEnums) {
 	this->init(_strs, _numEnums);
 }
 
@@ -72,7 +72,7 @@ unsigned int BaseEnumCls::getNumEnums() const{
 /**
 Stores the string representation of enum E
 **/
-void BaseEnumCls::init(const char** _strs, unsigned int _numEnums) {
+void BaseEnumCls::init(const std::string _strs[], unsigned int _numEnums) {
 	initialized = true;
 
 	this->numEnums = _numEnums;

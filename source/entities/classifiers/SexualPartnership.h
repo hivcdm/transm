@@ -35,7 +35,7 @@ public :
 	static EnumCls<Type> TypeEnum;
 
 	//contains the string representations of
-	static const char* TypeEnumStrs[ENDType];
+	static const std::string TypeEnumStrs[ENDType];
 
 protected :
 

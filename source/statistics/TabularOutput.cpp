@@ -58,8 +58,8 @@ void TabularOutput::PrintRow(std::ostream &outStream, bool clearAfterWriting)
 
 void TabularOutput::SetHeaderCell(int column, int row, const std::string &value)
 {
-	assert(column > 0);
-	assert(row > 0);
+	assert(column > -1);
+	assert(row > -1);
 
 	numHeaderRows = std::max<int>(row, numHeaderRows);
 	numColumns = std::max<int>(column, numColumns);
