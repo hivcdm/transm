@@ -353,6 +353,11 @@ public:
 		return acceptedTest;
 	}
 
+	bool getReturnedForResults()
+	{
+		return returnedForResults;
+	}
+
 
 	//---------------< END Physical-state related methods >------------------------//
 
@@ -629,5 +634,6 @@ private:
 
 	bool offeredTest;
 	bool acceptedTest;
+	bool returnedForResults;
 	SimContext::TEST_RESULT testResult;
 };

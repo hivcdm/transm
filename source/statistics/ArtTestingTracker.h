@@ -17,13 +17,12 @@ public:
 	ArtTestingTracker();
 	~ArtTestingTracker();
 
-	void recordAcceptedTest(Person *person, SimContext::TEST_RESULT result);
-	void recordRejectedTest(Person *person);
+	void recordTest(Person *person, bool accepted, bool returned, SimContext::TEST_RESULT result);
 
-	void printArtRolloutOutcomes(std::ostream &_outStream, EventParams &_eventParams, Population *_population);
+	void printArtRolloutOutcomes(int time, std::ostream &_outStream, Population *_population);
 
 private:
-	static const char *RISK_GROUP_NAMES[];
+	//static const char *RISK_GROUP_NAMES[];
 
 	int numTestsOffered;
 	int numTestsAccepted;

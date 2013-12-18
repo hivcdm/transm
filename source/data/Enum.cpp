@@ -82,7 +82,10 @@ void BaseEnumCls::init(const char** _strs, unsigned int _numEnums) {
 
 	//save all the strings
 	for(size_t i = 0; i < this->numEnums; i++)
-		this->strs.push_back(string(_strs[i]));
+	{
+		std::string to_push = _strs[i];
+		this->strs.push_back(to_push);
+	}
 
 	//make an extra space for wildcard
 	this->strs.push_back("*");

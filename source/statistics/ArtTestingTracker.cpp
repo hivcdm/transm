@@ -3,9 +3,9 @@
 #include "../entities/Person.h"
 #include "../cepac/SimContext.h"
 
-const char *ArtTestingTracker::RISK_GROUP_NAMES[] = {
-	"CSW High Risk", "CSW Low Risk", "Non-CSW High Risk Male", "Non-CSW High Risk Female", "Non-CSW Low Risk Male", "Non-CSW Low Risk Female"
-};
+//const char *ArtTestingTracker::RISK_GROUP_NAMES[] = {
+//	"CSW High Risk", "CSW Low Risk", "Non-CSW High Risk Male", "Non-CSW High Risk Female", "Non-CSW Low Risk Male", "Non-CSW Low Risk Female"
+//};
 
 ArtTestingTracker::ArtTestingTracker()
 {
@@ -17,27 +17,28 @@ ArtTestingTracker::~ArtTestingTracker()
 
 }
 
-void ArtTestingTracker::recordAcceptedTest(Person *person, SimContext::TEST_RESULT result)
+void ArtTestingTracker::recordTest(Person *person, bool accepted, bool returned, SimContext::TEST_RESULT result)
 {
 	++numTestsOffered;
 
-	int riskIndex = person->getRiskLevel();
-	const DmgProfile *demographicProfile = person->getDmgProfile();
-	int genderIndex = demographicProfile->get(DmgProfile::GENDER);
-	int employmentIndex = demographicProfile->get(DmgProfile::EMPLOYMENT);
+	if(accepted)
+	{
+		++numTestsAccepted;
 
-	++numTestsByBucket[riskIndex][genderIndex][employmentIndex];
-	++numTestsAccepted;
+		if(returned)
+		{
+			int riskIndex = person->getRiskLevel();
+			const DmgProfile *demographicProfile = person->getDmgProfile();
+			int genderIndex = demographicProfile->get(DmgProfile::GENDER);
+			int employmentIndex = demographicProfile->get(DmgProfile::EMPLOYMENT);
 
-	++numTestsByResult[result];
+			++numTestsByBucket[riskIndex][genderIndex][employmentIndex];
+			++numTestsByResult[result];
+		}
+	}
 }
 
-void ArtTestingTracker::recordRejectedTest(Person *person)
-{
-	++numTestsOffered;
-}
-
-void ArtTestingTracker::printArtRolloutOutcomes(std::ostream &_outStream, EventParams &_eventParams, Population *_population)
+void ArtTestingTracker::printArtRolloutOutcomes(int time, std::ostream &_outStream, Population *_population)
 {
 	std::vector<std::pair<int, int> > ageRanges;
 	std::vector< boost::tuple<long, int, int> > currSizeByAgeRange = _population->getSizeByAgeRange();
@@ -50,7 +51,7 @@ void ArtTestingTracker::printArtRolloutOutcomes(std::ostream &_outStream, EventP
 		ageRanges.push_back(std::make_pair(minAge, maxAge));
 	}
 
-	if(_eventParams.currTime == 0)
+	if(time == 0)
 	{
 		buildHeader(ageRanges);
 		PrintHeader(_outStream);

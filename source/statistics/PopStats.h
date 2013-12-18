@@ -1,12 +1,13 @@
 #pragma once
 
 #include <fstream>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
-#include "StatsRecord.h"
-#include "InfectionsTracker.h"
+#include "ArtTestingTracker.h"
 #include "CostsTracker.h"
+#include "InfectionsTracker.h"
+#include "StatsRecord.h"
 #include "../data/Enum.h"
 #include "../entities/classifiers/SexualPartnership.h"
 #include "../util/ticpp/ticpp.h"
@@ -137,6 +138,8 @@ public:
 	InfectionsTracker infectionsTracker;	//tallies infections and generates statistics
 
 	CostsTracker costsTracker;			//tallies all costs
+
+	ArtTestingTracker artTracker; // records art rollout outcomes
 
 	EnumCls<PopStats::LifeStats> *enumClass; //used in lifeStats; declared here so that deletion is possible
 

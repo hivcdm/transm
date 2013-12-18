@@ -812,7 +812,8 @@ double Person::updateHealthStatus(EventParams& _eventParams) {
 
 	offeredTest = false;
 	acceptedTest = false;
-	testResult = SimContext::TEST_TRUE_NEG;
+	returnedForResults = false;
+	testResult = (SimContext::TEST_RESULT)0;
 
 	RunStats::HIVScreening hivScreeningBefore = *_eventParams.cepacRunStats->getHIVScreening();
 
@@ -826,80 +827,86 @@ double Person::updateHealthStatus(EventParams& _eventParams) {
 	this->CEPACcosts = this->cepacPatient->getGeneralState()->costsDiscounted;
 
 	//update HVL and CD4 for this Person if they are infected
-	if (this->isInfected()){
+	if(this->isInfected()){
 		this->cd4 = this->cepacPatient->getDiseaseState()->currTrueCD4;
 
 		//update HVL state
 		SimContext::HVL_STRATA hvlStrata = this->cepacPatient->getDiseaseState()->currTrueHVLStrata;
-		if (hvlStrata == SimContext::HVL_VLO)
+		if(hvlStrata == SimContext::HVL_VLO)
 			this->hvl = HVL_ZERO;		//0-20
-		else if (hvlStrata == SimContext::HVL__LO)
+		else if(hvlStrata == SimContext::HVL__LO)
 			this->hvl = HVL_ONE;		//21-500
-		else if (hvlStrata == SimContext::HVL_MLO)
+		else if(hvlStrata == SimContext::HVL_MLO)
 			this->hvl = HVL_TWO;		//501-3000
-		else if (hvlStrata == SimContext::HVL_MED)
+		else if(hvlStrata == SimContext::HVL_MED)
 			this->hvl = HVL_THREE;		//3001-10000
-		else if (hvlStrata == SimContext::HVL_MHI)
+		else if(hvlStrata == SimContext::HVL_MHI)
 			this->hvl = HVL_FOUR;		//10001-30000
-		else if (hvlStrata == SimContext::HVL__HI)
+		else if(hvlStrata == SimContext::HVL__HI)
 			this->hvl = HVL_FIVE;		//30001-100000
-		else if (hvlStrata == SimContext::HVL_VHI)
+		else if(hvlStrata == SimContext::HVL_VHI)
 			this->hvl = HVL_SIX;		//100000+
 		else{
 			cerr << "Invalid CEPAC API infection state: " << *(SimContext::HVL_STRATA_STRS[hvlStrata]);
 			Util::exitWithPrompt(-1);
 		}
 
-		this->currentTrueHvl=this->hvl;
+		this->currentTrueHvl = this->hvl;
 
-		if (this->cepacPatient->getDiseaseState()->infectedHIVState == SimContext::HIV_INF_ACUTE_SYN){
+		if(this->cepacPatient->getDiseaseState()->infectedHIVState == SimContext::HIV_INF_ACUTE_SYN){
 			this->hvl = HVL_PRIMARY;
-			if (this->cepacPatient->getMonitoringState()->isDetectedHIVPositive)
+			if(this->cepacPatient->getMonitoringState()->isDetectedHIVPositive)
 				this->hivStatus = OBSERVED_ACUTE;
 			else
 				this->hivStatus = UNOBSERVED_ACUTE;
 		}
 		//Late stage is defined as having failed the last ART regimen (or having no art regimens to start with) and a CD4 <= 50
-		else if ((!(this->cepacPatient->getARTState()->hasNextRegimenAvailable) &&
-				(!(this->cepacPatient->getARTState()->isOnART) || this->cepacPatient->getARTState()->hasObservedFailure)) &&
-				this->cepacPatient->getDiseaseState()->currTrueCD4 <= 50){
+		else if((!(this->cepacPatient->getARTState()->hasNextRegimenAvailable) &&
+			(!(this->cepacPatient->getARTState()->isOnART) || this->cepacPatient->getARTState()->hasObservedFailure)) &&
+			this->cepacPatient->getDiseaseState()->currTrueCD4 <= 50){
 			this->hvl = HVL_LATESTAGE;
-			if (this->cepacPatient->getMonitoringState()->isDetectedHIVPositive)
+			if(this->cepacPatient->getMonitoringState()->isDetectedHIVPositive)
 				this->hivStatus = OBSERVED_LATESTAGE;
 			else
 				this->hivStatus = UNOBSERVED_LATESTAGE;
 		}
 		else{
-			if (this->cepacPatient->getMonitoringState()->isDetectedHIVPositive)
+			if(this->cepacPatient->getMonitoringState()->isDetectedHIVPositive)
 				this->hivStatus = OBSERVED_CHRONIC;
 			else
 				this->hivStatus = UNOBSERVED_CHRONIC;
 		}
 
 		//Update OI History
-		for (int i=0;i<Constants::NUMBER_OF_OIS;i++){
-			this->oiHistory[i]=this->cepacPatient->getDiseaseState()->hasTrueOIHistory[i];
+		for(int i = 0; i < Constants::NUMBER_OF_OIS; i++){
+			this->oiHistory[i] = this->cepacPatient->getDiseaseState()->hasTrueOIHistory[i];
 		}
+	}
 
-	}//if (isInfected)
+	offeredTest = hivScreeningAfter.numAcceptTest > hivScreeningBefore.numAcceptTest || hivScreeningAfter.numRefuseTest > hivScreeningBefore.numRefuseTest;
+	acceptedTest = offeredTest && hivScreeningAfter.numAcceptTest > hivScreeningBefore.numAcceptTest;
+	returnedForResults = hivScreeningAfter.numReturnForResults > hivScreeningBefore.numReturnForResults;
 
-	if(isInfected())
+	if(returnedForResults)
 	{
-		for(int i = 0; i < SimContext::TEST_RESULT_NUM; i++)
+		if(hivScreeningAfter.numTestResultsHIVNegativeType[SimContext::TEST_FALSE_POS] > hivScreeningBefore.numTestResultsHIVNegativeType[SimContext::TEST_FALSE_POS])
 		{
-			if(hivScreeningBefore.numTestsHIVState[i] > hivScreeningBefore.numTe
+			testResult = SimContext::TEST_FALSE_POS;
 		}
-	}
-
-	if(hivScreeningAfter.numRefuseTest > hivScreeningBefore.numRefuseTest)
-	{
-		offeredTest = true;
-	}
-
-	if(hivScreeningAfter.numAcceptTest > hivScreeningBefore.numAcceptTest)
-	{
-		offeredTest = true;
-		acceptedTest = true;
+		else if(hivScreeningAfter.numTestResultsPrevalentType[SimContext::TEST_TRUE_POS] > hivScreeningBefore.numTestResultsPrevalentType[SimContext::TEST_TRUE_POS] ||
+			(hivScreeningAfter.numTestResultsIncidentType[SimContext::TEST_TRUE_POS] > hivScreeningBefore.numTestResultsIncidentType[SimContext::TEST_TRUE_POS]))
+		{
+			testResult = SimContext::TEST_TRUE_POS;
+		}
+		else if(hivScreeningAfter.numTestResultsHIVNegativeType[SimContext::TEST_TRUE_POS] > hivScreeningBefore.numTestResultsHIVNegativeType[SimContext::TEST_TRUE_POS])
+		{
+			testResult = SimContext::TEST_TRUE_POS;
+		}
+		else if(hivScreeningAfter.numTestResultsPrevalentType[SimContext::TEST_FALSE_NEG] > hivScreeningBefore.numTestResultsPrevalentType[SimContext::TEST_FALSE_NEG] ||
+			(hivScreeningAfter.numTestResultsIncidentType[SimContext::TEST_FALSE_NEG] > hivScreeningBefore.numTestResultsIncidentType[SimContext::TEST_FALSE_NEG]))
+		{
+			testResult = SimContext::TEST_FALSE_NEG;
+		}
 	}
 
 	return costThisMonth;
