@@ -542,7 +542,11 @@ void Sim::run(int _numSteps)
 			}
 			if(eventParams.outputTrace[EventParams::SHIFTEDOUTCOMES]) //For now, this must come after infectionsTracker.printInfections as it is what calculate prevalence
 			{
-				currPopulation->recordARTRolloutStats(eventParams);
+				currPopulation->recordShiftedOutcomes(eventParams, eventParams.traceStreams[EventParams::SHIFTEDOUTCOMES]);
+			}
+			if(eventParams.outputTrace[EventParams::ARTROLLOUT])
+			{
+				currPopulation->printARTRolloutOutcomes(eventParams, eventParams.traceStreams[EventParams::ARTROLLOUT]);
 			}
 
 			if (this->eventParams.calibrationInputs.useCalibration && this->eventParams.calibrationInputs.monthOfCalibration == t)

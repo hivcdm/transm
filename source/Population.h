@@ -94,8 +94,6 @@ class Population
 
 	std::vector<Person *> eligibleForTreatment;
 
-	void recordARTRolloutStats(EventParams &_eventParams);
-
 public:
     PopStats *popStats;	//tallies the statistics that the population generates throughout the simulation
 
@@ -275,10 +273,14 @@ private:
     **/
     void printClinical(EventParams &_eventParams, long _time, std::ostream &_outStream);
 
+    void printARTRolloutOutcomes(EventParams &_eventParams, std::ostream &_outStream);
+
     /**
        this is called at specified time points to record the partner frequency
     **/
     void recordPartAcqFreq();
+
+    void recordShiftedOutcomes(EventParams &_eventParams, std::ostream &_outStream);
 
 //-----------< END getters,setters, and print functions >--------------------//
 

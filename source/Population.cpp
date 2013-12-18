@@ -695,11 +695,6 @@ void Population::updatePartnerships(EventParams &_eventParams)
 				p_Iter++;
 			}
 		}
-
-		ArtTestingTracker &t = popStats->artTracker;
-		std::fstream *streams = _eventParams.traceStreams;
-		int time = 0;// _eventParams.currTime;
-		t.printArtRolloutOutcomes(time, *(streams + 12), this);
 	}
 
 	//print out results to traces
@@ -752,7 +747,6 @@ void Population::updatePartnerships(EventParams &_eventParams)
 		}
 	}
 }
-
 
 /**
 Iterates through current entities in the population and returns a total number of people
@@ -1347,7 +1341,7 @@ void Population::applyARTRollout(EventParams &_eventParams)
 	}
 }
 
-void Population::recordARTRolloutStats(EventParams &_eventParams)
+void Population::recordShiftedOutcomes(EventParams &_eventParams, std::ostream &_outStream)
 {
 	if(_eventParams.monthOf1990 <= _eventParams.currTime)
 	{
@@ -1381,7 +1375,7 @@ void Population::recordARTRolloutStats(EventParams &_eventParams)
 
 		if(month == 11)
 		{
-			popStats->printShiftedOutcomes(_eventParams.traceStreams[EventParams::SHIFTEDOUTCOMES], year);
+			popStats->printShiftedOutcomes(_outStream, year);
 			popStats->resetYear(year + 1);
 		}
 	}
@@ -2995,6 +2989,11 @@ void Population::saveState(std::ostream &_outStream, long currTime)
 		}//while (p_Iter != this->entities->end(gender))
 
 	}//	for (DmgProfile::Gender gend = DmgProfile::MALE; gend < DmgProfile::ENDGender; gend++){
+}
+
+void Population::printARTRolloutOutcomes(EventParams &_eventParams, std::ostream &_outStream)
+{
+	popStats->artTracker.printArtRolloutOutcomes(_eventParams.currTime, _outStream, this);
 }
 
 /**

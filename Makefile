@@ -60,7 +60,9 @@ OBJS = source/util/ticpp/ticpp.o \
 	source/cepac/StateUpdater.o	\
 	source/cepac/SummaryStats.o	\
 	source/cepac/TBDiseaseUpdater.o	\
-	source/cepac/Tracer.o 
+	source/cepac/Tracer.o \
+	source/statistics/ArtTestingTracker.o \
+	source/statistics/TabularOutput.o
 
 GUI_OBJS = $(OBJS) source/gui/widgets/statusWidget.o \
 	source/gui/widgets/verticalStatusWidget.o \
@@ -72,7 +74,7 @@ CONSOLE_OBJS = $(OBJS) source/main.o
 
 #compiler and related flags
 CXX = g++
-CXXFLAGS = -I.
+CXXFLAGS = -I. -O0 -g
 LDFLAGS = -lm
 
 #rules for compiling C and CPP files
