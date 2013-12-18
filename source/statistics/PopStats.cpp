@@ -4,7 +4,7 @@
 #include <vector>
 #include <boost/math/special_functions/erf.hpp>
 
-const char *PopStats::LifeStatsStr[PopStats::ENDLifeStats] = {
+const std::string PopStats::LifeStatsStr[PopStats::ENDLifeStats] = {
 	"TOTAL_LM",
 	"TOTAL_HIV_NEG_LM",
 	"TOTAL_HIV_NEG_DTHS",
@@ -23,7 +23,12 @@ PopStats::PopStats(long maxTime,ticpp::Element* _LEOutputNode, ticpp::Element* _
 	monthOf1990(0),
 	yearlyTestsByResult(4)
 {
-	enumClass = new EnumCls<PopStats::LifeStats>(PopStats::LifeStatsStr, PopStats::ENDLifeStats);
+	//TODO: I have no idea why this is neccesary, but there was a heap corruption and this fixes it... (Thomas 12/18/2013)
+	//A better solution can surely be found.
+	std::string lifeStatsStrCopy[PopStats::ENDLifeStats];
+	std::copy(PopStats::LifeStatsStr, PopStats::LifeStatsStr + PopStats::ENDLifeStats, lifeStatsStrCopy);
+
+	enumClass = new EnumCls<PopStats::LifeStats>(lifeStatsStrCopy, PopStats::ENDLifeStats);
 	lifeStats = new StatsRecord<PopStats::LifeStats, BaseEnumCls::NULL_ENUM>(enumClass);
 	survivalStats = new SurvivalStats();
 

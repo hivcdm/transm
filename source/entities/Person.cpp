@@ -17,7 +17,7 @@ int Person::numTracesSoFar = 0;
 //TODO: But maybe they shouldn't?
 vector<double> Person::probDeathNatCauses[DmgProfile::ENDGender];
 
-const char *Person::StatsStr[Person::STAT_ENDStats] = {
+const std::string Person::StatsStr[Person::STAT_ENDStats] = {
 		"TOTAL_LM",
 		"HIV_NEG_LM_INSIM",
 		"HIV_POS_POSTINFECT_LM_INSIM",

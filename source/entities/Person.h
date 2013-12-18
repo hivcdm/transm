@@ -113,7 +113,7 @@ public:
 		STAT_ENDStats
 	};
 	//string representations of enum Stats
-	static const char *StatsStr[STAT_ENDStats];
+	static const std::string StatsStr[STAT_ENDStats];
 	//this is a enum class wrapper that has helpful enum-related functions
 	static EnumCls<Stats> StatsEnum;
 	//this is a type declaration of a class that keeps track of statistics defined in enum Stats

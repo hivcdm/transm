@@ -39,7 +39,7 @@ public:
 		ENDLifeStats
 	};
 
-	static const char *LifeStatsStr[PopStats::ENDLifeStats];
+	static const std::string LifeStatsStr[PopStats::ENDLifeStats];
 
 
 	struct SingleTimeStats
