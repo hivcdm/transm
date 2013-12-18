@@ -21,7 +21,14 @@ void TabularOutput::PrintHeader(std::ostream &outStream)
 		for(int column = 0; column < numColumns; ++column)
 		{
 			Coordinate currentPosition(row, column);
-			outStream << header.count(currentPosition) ? header[currentPosition] : Constants::TAB;
+			if(header.count(currentPosition))
+			{
+				outStream << header[currentPosition];
+			}
+			if(column < numColumns - 1)
+			{
+				outStream << Constants::TAB;
+			}
 		}
 
 		outStream << std::endl;
@@ -59,7 +66,7 @@ void TabularOutput::SetHeaderCell(int column, int row, const std::string &value)
 
 	currentRow.resize(numColumns);
 
-	header.emplace(Coordinate(row, column), value);
+	header[Coordinate(row, column)] = value;
 }
 
 void TabularOutput::PushElement(const std::string &element)
