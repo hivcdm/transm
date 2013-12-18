@@ -1026,7 +1026,7 @@ long Sim::timeStep()
 
 	if (this->eventParams.useRollout)
 	{
-		this->currPopulation->applyARTRollout(this->eventParams);
+		currPopulation->applyARTRollout(eventParams);
 	}
 
 	this->currPopulation->births(this->eventParams);

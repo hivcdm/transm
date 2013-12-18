@@ -452,7 +452,7 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 
 			Person::HIVStatus oldStatus = p->hivStatus;
 			//update their health status
-			double CEPACcost = p->updateHealthStatus(_eventParams);
+			double CEPACcost = p->updateHealthStatus(_eventParams, &popStats->artTracker);
 			if (oldStatus != p->hivStatus){
 				if (p->getDmgProfile()->get(p->getDmgProfile()->getProfileID(), DmgProfile::SEXUAL_ACTIVITY_STATUS) != DmgProfile::NA){
 					((BucketSexualMixing*) this->entities->getBucket(p->getDmgProfile()->getProfileID()))->changeHIVStatus(p, oldStatus, p->hivStatus);
@@ -679,23 +679,6 @@ void Population::updatePartnerships(EventParams &_eventParams)
 		this->popStats->costsTracker.addCost(initiator->getCondomsUsedThisMonth()*this->popWideParams.costs[CostsTracker::CONDOMS], CostsTracker::CONDOMS, _eventParams.currTime);
 	} //for (p_Iter = this->entities->begin(DmgProfile::MALE); p_Iter != this->entities->end(DmgProfile::MALE); p_Iter++)
 	//Ends the second pass through (i.e. the sex acts pass through)
-
-	if(_eventParams.outputTrace[EventParams::ARTROLLOUT])
-	{
-		for(int gender = DmgProfile::MALE; gender < DmgProfile::ENDGender; gender++)
-		{
-			std::list<Person*>::iterator p_Iter = this->entities->begin((DmgProfile::Gender) gender);
-			while(p_Iter != this->entities->end((DmgProfile::Gender) gender))
-			{
-				Person *p = *p_Iter;
-				if(p->getOfferedTest())
-				{
-					popStats->artTracker.recordTest(p, p->getAcceptedTest(), p->getReturnedForResults(), p->getTestResult());
-				}
-				p_Iter++;
-			}
-		}
-	}
 
 	//print out results to traces
 	for (SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::ENDType; ++type) {

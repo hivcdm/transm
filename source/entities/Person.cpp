@@ -7,6 +7,7 @@
 #include "../util/Util.h"
 #include "../util/rand/RandomNums.h"
 #include "../statistics/InfectionsTracker.h"
+#include "../statistics/ArtTestingTracker.h"
 
 class EntityPool;
 
@@ -788,8 +789,7 @@ Person* Person::sexualActivity(Person *_p, int _numActs, SexualPartnership::Type
 	return NULL;
 }
 
-double Person::updateHealthStatus(EventParams& _eventParams) {
-
+double Person::updateHealthStatus(EventParams& _eventParams, ArtTestingTracker *testTracker) {
 	//if this person has died, then don't update.
 	if (!this->isAlive())
 		return 0;
@@ -809,11 +809,6 @@ double Person::updateHealthStatus(EventParams& _eventParams) {
 			this->cepacPatient->setSimContext(_eventParams.cepacSimContexts[this->getCEPACSimContextIndex(_eventParams)]);
 		}
 	}
-
-	offeredTest = false;
-	acceptedTest = false;
-	returnedForResults = false;
-	testResult = (SimContext::TEST_RESULT)0;
 
 	RunStats::HIVScreening hivScreeningBefore = *_eventParams.cepacRunStats->getHIVScreening();
 
@@ -883,9 +878,10 @@ double Person::updateHealthStatus(EventParams& _eventParams) {
 		}
 	}
 
-	offeredTest = hivScreeningAfter.numAcceptTest > hivScreeningBefore.numAcceptTest || hivScreeningAfter.numRefuseTest > hivScreeningBefore.numRefuseTest;
-	acceptedTest = offeredTest && hivScreeningAfter.numAcceptTest > hivScreeningBefore.numAcceptTest;
-	returnedForResults = hivScreeningAfter.numReturnForResults > hivScreeningBefore.numReturnForResults;
+	bool offeredTest = hivScreeningAfter.numAcceptTest > hivScreeningBefore.numAcceptTest || hivScreeningAfter.numRefuseTest > hivScreeningBefore.numRefuseTest;
+	bool acceptedTest = offeredTest && hivScreeningAfter.numAcceptTest > hivScreeningBefore.numAcceptTest;
+	bool returnedForResults = hivScreeningAfter.numReturnForResults > hivScreeningBefore.numReturnForResults;
+	SimContext::TEST_RESULT testResult = (SimContext::TEST_RESULT)0;
 
 	if(returnedForResults)
 	{
@@ -906,6 +902,14 @@ double Person::updateHealthStatus(EventParams& _eventParams) {
 			(hivScreeningAfter.numTestResultsIncidentType[SimContext::TEST_FALSE_NEG] > hivScreeningBefore.numTestResultsIncidentType[SimContext::TEST_FALSE_NEG]))
 		{
 			testResult = SimContext::TEST_FALSE_NEG;
+		}
+	}
+
+	if(_eventParams.outputTrace[EventParams::ARTROLLOUT])
+	{
+		if(offeredTest)
+		{
+			testTracker->recordTest(this, acceptedTest, returnedForResults, testResult);
 		}
 	}
 

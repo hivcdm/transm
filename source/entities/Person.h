@@ -14,6 +14,7 @@
 #include "../graphviz/graphVizParse.h"
 
 class InfectionsTracker;
+class ArtTestingTracker;
 
 using namespace std;
 
@@ -311,7 +312,7 @@ public:
 	//update health status of HIV infected people -- i.e. cd4, hvl, art, etc.
 	//  in version 1, this information is taken from CEPAC model
 	// @returns: costs (accrued in CEPAC) of updating health
-	double updateHealthStatus(EventParams& _eventParams);
+	double updateHealthStatus(EventParams& _eventParams, ArtTestingTracker *testTracker);
 
 	//Call this after all transmission/population dynamics are done.
 	//Runs infected through CEPAC until they die and adds their LM etc to CEPAC stats
@@ -337,27 +338,6 @@ public:
 
 	//Return true if a condom was used the last time FOI was called
 	bool getCondomUsedLastFOICalculation();
-
-	SimContext::TEST_RESULT getTestResult()
-	{
-		return testResult;
-	}
-
-	bool getOfferedTest()
-	{
-		return offeredTest;
-	}
-
-	bool getAcceptedTest()
-	{
-		return acceptedTest;
-	}
-
-	bool getReturnedForResults()
-	{
-		return returnedForResults;
-	}
-
 
 	//---------------< END Physical-state related methods >------------------------//
 
@@ -631,9 +611,4 @@ public:
 private:
 	//Return the current index of which SimContext should be used to update the health of a patient
 	int getCEPACSimContextIndex(EventParams& _eventParams);
-
-	bool offeredTest;
-	bool acceptedTest;
-	bool returnedForResults;
-	SimContext::TEST_RESULT testResult;
 };
