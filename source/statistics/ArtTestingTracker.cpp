@@ -13,7 +13,10 @@ const std::string ArtTestingTracker::RISK_GROUP_NAMES[] =
 	"Non-CSW Low Risk Female"
 };
 
-ArtTestingTracker::ArtTestingTracker()
+ArtTestingTracker::ArtTestingTracker() :
+    numTestsOffered(0),
+    numTestsAccepted(0),
+    numTestsReturnedFor(0)
 {
 	Reset();
 }
@@ -154,7 +157,7 @@ void ArtTestingTracker::buildRow(int time, Population *_population)
 		PushElement(time);
 	}
 
-	PushElement(_population->getSize());
+	PushElement(static_cast<int>(_population->getSize()));
 	PushElement(numTestsOffered);
 	PushElement(numTestsAccepted);
 	PushElement(numTestsReturnedFor);
@@ -210,10 +213,6 @@ void ArtTestingTracker::buildRow(int time, Population *_population)
 
 void ArtTestingTracker::Reset()
 {
-	numTestsOffered = 0;
-	numTestsAccepted = 0;
-	numTestsReturnedFor = 0;
-
 	testsByBucketCounter.Clear();
 
 	for(int resultIndex = 0; resultIndex < SimContext::TEST_RESULT_NUM; ++resultIndex)

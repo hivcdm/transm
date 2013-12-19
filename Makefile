@@ -74,7 +74,7 @@ CONSOLE_OBJS = $(OBJS) source/main.o
 
 #compiler and related flags
 CXX = g++
-CXXFLAGS = -I. -O0 -g
+CXXFLAGS = -I. -O3 -Wall
 LDFLAGS = -lm
 
 #rules for compiling C and CPP files
@@ -96,7 +96,7 @@ LDFLAGS = -lm
 
 all : console
 
-console : CXXFLAGS += -DCONSOLE -O3 $(BOOST_CXXFLAGS)
+console : CXXFLAGS += -DCONSOLE $(BOOST_CXXFLAGS)
 console : LDFLAGS += $(BOOST_LDFLAGS)
 console : $(CONSOLE_OBJS)
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $(EXE)

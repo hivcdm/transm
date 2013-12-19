@@ -33,6 +33,8 @@ private:
 	int numTestsReturnedFor;
 	int numTestsByResult[SimContext::TEST_RESULT_NUM];
 	BucketCounter testsByBucketCounter;
+	BucketCounter eligibleByBucketCounter;
+	BucketCounter enrolledByBucketCounter;
 
 	std::vector<std::pair<int, int> > ageRanges;
 

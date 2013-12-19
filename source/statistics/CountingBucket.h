@@ -43,7 +43,8 @@ struct CountingBucket
 
 	std::array<int, 7> toArray() const
 	{
-		return std::array<int, 7> {{sexualActivityStatus, gender, sexualOrientation, relationshipStatus, employment, riskLevel, ageGroup}};
+	    std::array<int, 7> a = {{sexualActivityStatus, gender, sexualOrientation, relationshipStatus, employment, riskLevel, ageGroup}};
+	    return a;
 	}
 
 	std::array<std::vector<int>, 7> toCartesianArray(const CountingBucket &endBucket) const
