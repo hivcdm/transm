@@ -3,9 +3,15 @@
 #include "../entities/Person.h"
 #include "../cepac/SimContext.h"
 
-//const char *ArtTestingTracker::RISK_GROUP_NAMES[] = {
-//	"CSW High Risk", "CSW Low Risk", "Non-CSW High Risk Male", "Non-CSW High Risk Female", "Non-CSW Low Risk Male", "Non-CSW Low Risk Female"
-//};
+const std::string ArtTestingTracker::RISK_GROUP_NAMES[] = 
+{
+	"CSW High Risk", 
+	"CSW Low Risk",
+	"Non-CSW High Risk Male",
+	"Non-CSW High Risk Female",
+	"Non-CSW Low Risk Male",
+	"Non-CSW Low Risk Female"
+};
 
 ArtTestingTracker::ArtTestingTracker()
 {
@@ -15,6 +21,22 @@ ArtTestingTracker::ArtTestingTracker()
 ArtTestingTracker::~ArtTestingTracker()
 {
 
+}
+
+void ArtTestingTracker::SetAgeRanges(const std::vector<boost::tuple<long, int, int> > &ageRangeSizes)
+{
+	ageRanges.clear();
+
+	int numAgeRanges = static_cast<int>(ageRangeSizes.size());
+
+	for(int i = 0; i < numAgeRanges; ++i)
+	{
+		int minAge = boost::tuples::get<Population::MIN_AGE_IN_MONTHS>(ageRangeSizes.at(i));
+		int maxAge = boost::tuples::get<Population::MAX_AGE_IN_MONTHS>(ageRangeSizes.at(i));
+		ageRanges.push_back(std::make_pair(minAge, maxAge));
+	}
+
+	testsByBucketCounter.SetNumAgeGroups(numAgeRanges);
 }
 
 void ArtTestingTracker::recordTest(Person *person, bool accepted, bool returned, SimContext::TEST_RESULT result)
@@ -27,12 +49,30 @@ void ArtTestingTracker::recordTest(Person *person, bool accepted, bool returned,
 
 		if(returned)
 		{
-			int riskIndex = person->getRiskLevel();
-			const DmgProfile *demographicProfile = person->getDmgProfile();
-			int genderIndex = demographicProfile->get(DmgProfile::GENDER);
-			int employmentIndex = demographicProfile->get(DmgProfile::EMPLOYMENT);
+			numTestsReturnedFor++;
 
-			numTestsByBucket[riskIndex][genderIndex][employmentIndex]++;
+			int age = person->getAge(MONTH);
+			int ageRangeIndex = -1;
+			for(size_t i = 0; i < ageRanges.size(); ++i)
+			{
+				if(age >= ageRanges[i].first && age <= ageRanges[i].second)
+				{
+					ageRangeIndex = i;
+				}
+			}
+			assert(ageRangeIndex != -1);
+
+			const DmgProfile *demographicProfile = person->getDmgProfile();
+			
+			CountingBucket bucket(static_cast<DmgProfile::SexualActivityStatus>(demographicProfile->get(DmgProfile::SEXUAL_ACTIVITY_STATUS)),
+				static_cast<DmgProfile::Gender>(demographicProfile->get(DmgProfile::GENDER)),
+				static_cast<DmgProfile::SexualOrientation>(demographicProfile->get(DmgProfile::SEXUAL_ORIENTATION)),
+				static_cast<DmgProfile::RelationshipStatus>(demographicProfile->get(DmgProfile::RELATIONSHIP_STATUS)),
+				static_cast<DmgProfile::Employment>(demographicProfile->get(DmgProfile::EMPLOYMENT)),
+				person->getRiskLevel(),
+				ageRangeIndex);
+
+			testsByBucketCounter.Increment(bucket);
 			numTestsByResult[result]++;
 		}
 	}
@@ -40,25 +80,18 @@ void ArtTestingTracker::recordTest(Person *person, bool accepted, bool returned,
 
 void ArtTestingTracker::printArtRolloutOutcomes(int time, std::ostream &_outStream, Population *_population)
 {
-	std::vector<std::pair<int, int> > ageRanges;
-	std::vector< boost::tuple<long, int, int> > currSizeByAgeRange = _population->getSizeByAgeRange();
-	int numAgeRanges = currSizeByAgeRange.size();
-
-	for(int i = 0; i < numAgeRanges; ++i)
-	{
-		int minAge = boost::tuples::get<Population::MIN_AGE_IN_MONTHS>(currSizeByAgeRange.at(i));
-		int maxAge = boost::tuples::get<Population::MAX_AGE_IN_MONTHS>(currSizeByAgeRange.at(i));
-		ageRanges.push_back(std::make_pair(minAge, maxAge));
-	}
-
 	if(time == 0)
 	{
-		buildHeader(ageRanges);
+		buildHeader();
 		PrintHeader(_outStream);
 	}
+
+	buildRow(time, _population);
+	PrintRow(_outStream);
+	Reset();
 }
 
-void ArtTestingTracker::buildHeader(const std::vector<std::pair<int, int> > &ageRanges)
+void ArtTestingTracker::buildHeader()
 {
 	SetHeaderCell(1, 1, "ART Rollout Outcomes");
 
@@ -110,21 +143,78 @@ void ArtTestingTracker::buildNumEnrolledHeader()
 
 }
 
+void ArtTestingTracker::buildRow(int time, Population *_population)
+{
+	if(time == 0)
+	{
+		PushElement("init");
+	}
+	else
+	{
+		PushElement(time);
+	}
+
+	PushElement(_population->getSize());
+	PushElement(numTestsOffered);
+	PushElement(numTestsAccepted);
+	PushElement(numTestsReturnedFor);
+	PushElement(testsByBucketCounter.GetCount(CountingBucket(DmgProfile::ENDSexualActivityStatus,
+		DmgProfile::FEMALE,
+		DmgProfile::ENDSexualOrientation,
+		DmgProfile::ENDRelationshipStatus,
+		DmgProfile::ENDEmployment,
+		Person::ENDRiskLevel,
+		ageRanges.size())));
+	PushElement(testsByBucketCounter.GetCount(CountingBucket(DmgProfile::ENDSexualActivityStatus,
+		DmgProfile::MALE,
+		DmgProfile::ENDSexualOrientation,
+		DmgProfile::ENDRelationshipStatus,
+		DmgProfile::ENDEmployment,
+		Person::ENDRiskLevel,
+		ageRanges.size())));
+	PushElement(testsByBucketCounter.GetCount(CountingBucket(DmgProfile::NA,
+		DmgProfile::FEMALE,
+		DmgProfile::ENDSexualOrientation,
+		DmgProfile::ENDRelationshipStatus,
+		DmgProfile::ENDEmployment,
+		Person::ENDRiskLevel,
+		ageRanges.size())));
+	for(int i = 0; i < ageRanges.size(); i++)
+	{
+		PushElement(testsByBucketCounter.GetCount(CountingBucket(DmgProfile::SA,
+			DmgProfile::FEMALE,
+			DmgProfile::ENDSexualOrientation,
+			DmgProfile::ENDRelationshipStatus,
+			DmgProfile::ENDEmployment,
+			Person::ENDRiskLevel,
+			i)));
+	}
+	PushElement(testsByBucketCounter.GetCount(CountingBucket(DmgProfile::NA,
+		DmgProfile::MALE,
+		DmgProfile::ENDSexualOrientation,
+		DmgProfile::ENDRelationshipStatus,
+		DmgProfile::ENDEmployment,
+		Person::ENDRiskLevel,
+		ageRanges.size())));
+	for(int i = 0; i < ageRanges.size(); i++)
+	{
+		PushElement(testsByBucketCounter.GetCount(CountingBucket(DmgProfile::SA,
+			DmgProfile::MALE,
+			DmgProfile::ENDSexualOrientation,
+			DmgProfile::ENDRelationshipStatus,
+			DmgProfile::ENDEmployment,
+			Person::ENDRiskLevel,
+			i)));
+	}
+}
+
 void ArtTestingTracker::Reset()
 {
 	numTestsOffered = 0;
 	numTestsAccepted = 0;
+	numTestsReturnedFor = 0;
 
-	for(int riskIndex = 0; riskIndex < Person::ENDRiskLevel; ++riskIndex)
-	{
-		for(int genderIndex = 0; genderIndex < DmgProfile::ENDGender; ++genderIndex)
-		{
-			for(int employmentIndex = 0; employmentIndex < DmgProfile::ENDGender; ++employmentIndex)
-			{
-				numTestsByBucket[riskIndex][genderIndex][employmentIndex] = 0;
-			}
-		}
-	}
+	testsByBucketCounter.Clear();
 
 	for(int resultIndex = 0; resultIndex < SimContext::TEST_RESULT_NUM; ++resultIndex)
 	{

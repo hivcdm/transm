@@ -192,6 +192,12 @@
     <ClInclude Include="..\..\..\source\statistics\TabularOutput.h">
       <Filter>statistics</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\statistics\CountingBucket.h">
+      <Filter>statistics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\statistics\BucketCounter.h">
+      <Filter>statistics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="util">

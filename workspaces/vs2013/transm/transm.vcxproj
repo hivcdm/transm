@@ -192,7 +192,9 @@
     <ClInclude Include="..\..\..\source\PopulationParams.h" />
     <ClInclude Include="..\..\..\source\Sim.h" />
     <ClInclude Include="..\..\..\source\statistics\ArtTestingTracker.h" />
+    <ClInclude Include="..\..\..\source\statistics\BucketCounter.h" />
     <ClInclude Include="..\..\..\source\statistics\CostsTracker.h" />
+    <ClInclude Include="..\..\..\source\statistics\CountingBucket.h" />
     <ClInclude Include="..\..\..\source\statistics\InfectionsTracker.h" />
     <ClInclude Include="..\..\..\source\statistics\PopStats.h" />
     <ClInclude Include="..\..\..\source\statistics\StatsRecord.h" />

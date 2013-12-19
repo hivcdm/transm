@@ -2,8 +2,10 @@
 
 #include <iostream>
 #include <string>
+#include <boost/tuple/tuple.hpp>
 
 #include "TabularOutput.h"
+#include "BucketCounter.h"
 #include "../cepac/include.h"
 #include "../entities/Person.h"
 #include "../data/EventParams.h"
@@ -17,25 +19,32 @@ public:
 	ArtTestingTracker();
 	~ArtTestingTracker();
 
+	void SetAgeRanges(const std::vector<boost::tuple<long, int, int> > &ageGroupSizes);
+
 	void recordTest(Person *person, bool accepted, bool returned, SimContext::TEST_RESULT result);
 
 	void printArtRolloutOutcomes(int time, std::ostream &_outStream, Population *_population);
 
 private:
-	//static const char *RISK_GROUP_NAMES[];
+	static const std::string RISK_GROUP_NAMES[];
 
 	int numTestsOffered;
 	int numTestsAccepted;
-	int numTestsByBucket[Person::ENDRiskLevel][DmgProfile::ENDGender][DmgProfile::ENDEmployment];
+	int numTestsReturnedFor;
 	int numTestsByResult[SimContext::TEST_RESULT_NUM];
+	BucketCounter testsByBucketCounter;
 
-	void buildHeader(const std::vector<std::pair<int, int> > &ageRanges);
+	std::vector<std::pair<int, int> > ageRanges;
+
+	void buildHeader();
 
 	void buildNumTestsHeader();
 
 	void buildNumEligibleHeader();
 
 	void buildNumEnrolledHeader();
+
+	void buildRow(int time, Population *_population);
 
 	void Reset();
 };

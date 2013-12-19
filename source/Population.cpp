@@ -111,6 +111,8 @@ Population::Population(EventParams &_eventParams, ticpp::Element *_popParamsNode
 		j++;
 	} //for(ageBucket = 0...
 
+	popStats->artTracker.SetAgeRanges(currSizeByAgeRange);
+
 	if (_eventParams.outputTrace[EventParams::SINGLEPERSON])
 	{
 		_eventParams.traceStreams[EventParams::SINGLEPERSON] << endl << "Now creating initial partnerships... " << endl;

@@ -43,6 +43,8 @@ public:
 	void PrintHeader(std::ostream &outStream);
 	void PrintRow(std::ostream &outStream, bool clearAfterWriting = true);
 	void SetHeaderCell(int column, int row, const std::string &value);
+	void PushElement(int element);
+	void PushElement(double element);
 	void PushElement(const std::string &element);
 	void PushEmptyElement();
 	void ClearRow();
