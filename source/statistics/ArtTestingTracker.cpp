@@ -53,32 +53,20 @@ void ArtTestingTracker::recordTest(Person *person, bool accepted, bool returned,
 		if(returned)
 		{
 			numTestsReturnedFor++;
-
-			int age = person->getAge(MONTH);
-			int ageRangeIndex = -1;
-			for(size_t i = 0; i < ageRanges.size(); ++i)
-			{
-				if(age >= ageRanges[i].first && age <= ageRanges[i].second)
-				{
-					ageRangeIndex = i;
-				}
-			}
-			assert(ageRangeIndex != -1);
-
-			const DmgProfile *demographicProfile = person->getDmgProfile();
-			
-			CountingBucket bucket(static_cast<DmgProfile::SexualActivityStatus>(demographicProfile->get(DmgProfile::SEXUAL_ACTIVITY_STATUS)),
-				static_cast<DmgProfile::Gender>(demographicProfile->get(DmgProfile::GENDER)),
-				static_cast<DmgProfile::SexualOrientation>(demographicProfile->get(DmgProfile::SEXUAL_ORIENTATION)),
-				static_cast<DmgProfile::RelationshipStatus>(demographicProfile->get(DmgProfile::RELATIONSHIP_STATUS)),
-				static_cast<DmgProfile::Employment>(demographicProfile->get(DmgProfile::EMPLOYMENT)),
-				person->getRiskLevel(),
-				ageRangeIndex);
-
-			testsByBucketCounter.Increment(bucket);
+			testsByBucketCounter.Increment(CountingBucket(person, ageRanges));
 			numTestsByResult[result]++;
 		}
 	}
+}
+
+void ArtTestingTracker::recordEligiblePerson(Person *person)
+{
+	eligibleByBucketCounter.Increment(CountingBucket(person, ageRanges));
+}
+
+void ArtTestingTracker::recordTreatedPerson(Person *person)
+{
+	enrolledByBucketCounter.Increment(CountingBucket(person, ageRanges));
 }
 
 void ArtTestingTracker::printArtRolloutOutcomes(int time, std::ostream &_outStream, Population *_population)
@@ -119,7 +107,63 @@ void ArtTestingTracker::buildHeader()
 
 		SetHeaderCell(column, 2, "Non-Sexually Active Population");
 		SetHeaderCell(column, 3, "All ages");
-		//TODO: print all ages here
+
+		SetHeaderCell(column + 1, 2, "Sexually Active Population");
+		for(size_t i = 0; i < ageRanges.size(); ++i)
+		{
+			std::stringstream rangeString;
+			rangeString << std::get<0>(ageRanges[i]) << "-" << std::get<1>(ageRanges[i]);
+			SetHeaderCell(column + 1 + i, 3, rangeString.str());
+		}
+	}
+
+	for(int testResultIndex = 0; testResultIndex < SimContext::TEST_RESULT_NUM; ++testResultIndex, ++column)
+	{
+		SetHeaderCell(column, 3, SimContext::TEST_RESULT_STRS[testResultIndex]);
+	}
+
+	SetHeaderCell(column, 1, "Number Eligible");
+
+	//SetHeaderCell(column, 3, "Total");
+
+	SetHeaderCell(column, 2, "Gender");
+	SetHeaderCell(column, 3, "Females");
+	SetHeaderCell(column + 1, 3, "Males");
+
+	column += 2;
+
+	for(int genderIndex = 0; genderIndex < 2; genderIndex++, column += (ageRanges.size() + 1))
+	{
+		SetHeaderCell(column, 1, genderIndex == 0 ? "Females" : "Males");
+
+		SetHeaderCell(column, 2, "Non-Sexually Active Population");
+		SetHeaderCell(column, 3, "All ages");
+
+		SetHeaderCell(column + 1, 2, "Sexually Active Population");
+		for(size_t i = 0; i < ageRanges.size(); ++i)
+		{
+			std::stringstream rangeString;
+			rangeString << std::get<0>(ageRanges[i]) << "-" << std::get<1>(ageRanges[i]);
+			SetHeaderCell(column + 1 + i, 3, rangeString.str());
+		}
+	}
+
+	SetHeaderCell(column, 1, "Number Enrolled in ART");
+
+	//SetHeaderCell(column, 3, "Total");
+
+	SetHeaderCell(column, 2, "Gender");
+	SetHeaderCell(column, 3, "Females");
+	SetHeaderCell(column + 1, 3, "Males");
+
+	column += 2;
+
+	for(int genderIndex = 0; genderIndex < 2; genderIndex++, column += (ageRanges.size() + 1))
+	{
+		SetHeaderCell(column, 1, genderIndex == 0 ? "Females" : "Males");
+
+		SetHeaderCell(column, 2, "Non-Sexually Active Population");
+		SetHeaderCell(column, 3, "All ages");
 
 		SetHeaderCell(column + 1, 2, "Sexually Active Population");
 		for(size_t i = 0; i < ageRanges.size(); ++i)
@@ -161,53 +205,83 @@ void ArtTestingTracker::buildRow(int time, Population *_population)
 	PushElement(numTestsOffered);
 	PushElement(numTestsAccepted);
 	PushElement(numTestsReturnedFor);
-	PushElement(testsByBucketCounter.GetCount(CountingBucket(DmgProfile::ENDSexualActivityStatus,
-		DmgProfile::FEMALE,
-		DmgProfile::ENDSexualOrientation,
-		DmgProfile::ENDRelationshipStatus,
-		DmgProfile::ENDEmployment,
-		Person::ENDRiskLevel,
-		ageRanges.size())));
-	PushElement(testsByBucketCounter.GetCount(CountingBucket(DmgProfile::ENDSexualActivityStatus,
-		DmgProfile::MALE,
-		DmgProfile::ENDSexualOrientation,
-		DmgProfile::ENDRelationshipStatus,
-		DmgProfile::ENDEmployment,
-		Person::ENDRiskLevel,
-		ageRanges.size())));
-	PushElement(testsByBucketCounter.GetCount(CountingBucket(DmgProfile::NA,
-		DmgProfile::FEMALE,
-		DmgProfile::ENDSexualOrientation,
-		DmgProfile::ENDRelationshipStatus,
-		DmgProfile::ENDEmployment,
-		Person::ENDRiskLevel,
-		ageRanges.size())));
-	for(int i = 0; i < ageRanges.size(); i++)
+
+	CountingBucket bucket = CountingBucket(DmgProfile::ENDSexualActivityStatus, DmgProfile::ENDGender, DmgProfile::ENDSexualOrientation,
+		DmgProfile::ENDRelationshipStatus, DmgProfile::ENDEmployment, Person::ENDRiskLevel, ageRanges.size());
+
+	bucket.gender = DmgProfile::FEMALE;
+	PushElement(testsByBucketCounter.GetCount(bucket));
+	bucket.gender = DmgProfile::MALE;
+	PushElement(testsByBucketCounter.GetCount(bucket));
+
+	bucket.sexualActivityStatus = DmgProfile::NA;
+	PushElement(testsByBucketCounter.GetCount(bucket));
+
+	bucket.sexualActivityStatus = DmgProfile::SA;
+	bucket.gender = DmgProfile::FEMALE;
+	for(bucket.ageGroup = 0; bucket.ageGroup < ageRanges.size(); ++bucket.ageGroup)
 	{
-		PushElement(testsByBucketCounter.GetCount(CountingBucket(DmgProfile::SA,
-			DmgProfile::FEMALE,
-			DmgProfile::ENDSexualOrientation,
-			DmgProfile::ENDRelationshipStatus,
-			DmgProfile::ENDEmployment,
-			Person::ENDRiskLevel,
-			i)));
+		PushElement(testsByBucketCounter.GetCount(bucket));
 	}
-	PushElement(testsByBucketCounter.GetCount(CountingBucket(DmgProfile::NA,
-		DmgProfile::MALE,
-		DmgProfile::ENDSexualOrientation,
-		DmgProfile::ENDRelationshipStatus,
-		DmgProfile::ENDEmployment,
-		Person::ENDRiskLevel,
-		ageRanges.size())));
-	for(int i = 0; i < ageRanges.size(); i++)
+
+	bucket.gender = DmgProfile::MALE;
+	PushElement(testsByBucketCounter.GetCount(CountingBucket(bucket)));
+	for(bucket.ageGroup = 0; bucket.ageGroup < ageRanges.size(); ++bucket.ageGroup)
 	{
-		PushElement(testsByBucketCounter.GetCount(CountingBucket(DmgProfile::SA,
-			DmgProfile::MALE,
-			DmgProfile::ENDSexualOrientation,
-			DmgProfile::ENDRelationshipStatus,
-			DmgProfile::ENDEmployment,
-			Person::ENDRiskLevel,
-			i)));
+		PushElement(testsByBucketCounter.GetCount(bucket));
+	}
+
+	for(int i = 0; i < SimContext::TEST_RESULT_NUM; ++i)
+	{
+		PushElement(numTestsByResult[i]);
+	}
+
+	bucket.sexualActivityStatus = DmgProfile::ENDSexualActivityStatus;
+	bucket.gender = DmgProfile::FEMALE;
+	bucket.ageGroup = ageRanges.size();
+	PushElement(eligibleByBucketCounter.GetCount(bucket));
+	bucket.gender = DmgProfile::MALE;
+	PushElement(eligibleByBucketCounter.GetCount(bucket));
+
+	bucket.sexualActivityStatus = DmgProfile::NA;
+	PushElement(eligibleByBucketCounter.GetCount(bucket));
+
+	bucket.sexualActivityStatus = DmgProfile::SA;
+	bucket.gender = DmgProfile::FEMALE;
+	for(bucket.ageGroup = 0; bucket.ageGroup < ageRanges.size(); ++bucket.ageGroup)
+	{
+		PushElement(eligibleByBucketCounter.GetCount(bucket));
+	}
+
+	bucket.gender = DmgProfile::MALE;
+	PushElement(testsByBucketCounter.GetCount(CountingBucket(bucket)));
+	for(bucket.ageGroup = 0; bucket.ageGroup < ageRanges.size(); ++bucket.ageGroup)
+	{
+		PushElement(eligibleByBucketCounter.GetCount(bucket));
+	}
+
+	bucket.sexualActivityStatus = DmgProfile::ENDSexualActivityStatus;
+	bucket.gender = DmgProfile::FEMALE;
+	bucket.ageGroup = ageRanges.size();
+	PushElement(enrolledByBucketCounter.GetCount(bucket));
+	bucket.gender = DmgProfile::MALE;
+	PushElement(enrolledByBucketCounter.GetCount(bucket));
+
+	bucket.sexualActivityStatus = DmgProfile::NA;
+	PushElement(enrolledByBucketCounter.GetCount(bucket));
+
+	bucket.sexualActivityStatus = DmgProfile::SA;
+	bucket.gender = DmgProfile::FEMALE;
+	for(bucket.ageGroup = 0; bucket.ageGroup < ageRanges.size(); ++bucket.ageGroup)
+	{
+		PushElement(enrolledByBucketCounter.GetCount(bucket));
+	}
+
+	bucket.gender = DmgProfile::MALE;
+	PushElement(testsByBucketCounter.GetCount(CountingBucket(bucket)));
+	for(bucket.ageGroup = 0; bucket.ageGroup < ageRanges.size(); ++bucket.ageGroup)
+	{
+		PushElement(enrolledByBucketCounter.GetCount(bucket));
 	}
 }
 

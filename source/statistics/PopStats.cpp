@@ -796,11 +796,13 @@ void PopStats::recordTestStats(int numTests, const std::vector<int> &numTestsByR
 void PopStats::recordEligiblePerson(Person *person)
 {
 	uniqueYearlyEligible.insert(person);
+	artTracker.recordEligiblePerson(person);
 }
 
 void PopStats::recordTreatment(Person *person)
 {
 	uniqueYearlyTreated.insert(person);
+	artTracker.recordTreatedPerson(person);
 }
 
 void PopStats::resetYear(int newYear)

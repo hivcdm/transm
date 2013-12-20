@@ -18,7 +18,8 @@ public:
 				  DmgProfile::ENDRelationshipStatus,
 				  DmgProfile::ENDEmployment,
 				  Person::ENDRiskLevel,
-				  numAgeGroups)
+				  numAgeGroups,
+				  Person::ENDCD4Strata)
 	{
 	}
 
@@ -74,8 +75,8 @@ private:
 
 		while(true)
 		{
-			std::array<int, 7> result;
-			for(int i = 0; i < 7; i++)
+			std::array<int, NUM_COUNTING_BUCKET_PARAMETERS> result;
+			for(int i = 0; i < NUM_COUNTING_BUCKET_PARAMETERS; i++)
 			{
 				result[i] = *cartesianIterators[i].me;
 			}

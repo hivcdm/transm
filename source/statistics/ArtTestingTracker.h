@@ -23,6 +23,10 @@ public:
 
 	void recordTest(Person *person, bool accepted, bool returned, SimContext::TEST_RESULT result);
 
+	void recordEligiblePerson(Person *person);
+
+	void recordTreatedPerson(Person *person);
+
 	void printArtRolloutOutcomes(int time, std::ostream &_outStream, Population *_population);
 
 private:
