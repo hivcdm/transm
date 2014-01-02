@@ -1068,6 +1068,10 @@ void Population::applyIncidentPrevalence(EventParams &_eventParams){
 				//toReturn->cepacPatient is initialized HERE for prevalent cases
 
 				Person::HIVStatus oldStatus = p->hivStatus;
+				if(_eventParams.tracePrevalentCases)
+				{
+					p->setToBeTraced();
+				}
 				p->becomeInfected(Constants::PREVALENT_INFECTION, _eventParams);
 				if (oldStatus != p->hivStatus)
 					((BucketSexualMixing*) this->entities->getBucket(p->getDmgProfile()->getProfileID()))->changeHIVStatus(p, oldStatus, p->hivStatus);
@@ -1128,6 +1132,10 @@ void Population::applyIncidentPrevalence(EventParams &_eventParams){
 				//toReturn->cepacPatient is initialized HERE for prevalent cases
 
 				Person::HIVStatus oldStatus = p->hivStatus;
+				if(_eventParams.tracePrevalentCases)
+				{
+					p->setToBeTraced();
+				}
 				p->becomeInfected(Constants::PREVALENT_INFECTION, _eventParams);
 				if (oldStatus != p->hivStatus)
 					((BucketSexualMixing*) this->entities->getBucket(p->getDmgProfile()->getProfileID()))->changeHIVStatus(p, oldStatus, p->hivStatus);

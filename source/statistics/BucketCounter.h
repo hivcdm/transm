@@ -1,151 +1,99 @@
-#pragma once
-
-#include <array>
+#include <string>
 #include <unordered_map>
-#include <vector>
+#include <utility>
 
-#include "CountingBucket.h"
+#include "../entities/Person.h"
+#include "../util/sqlite/sqlite3.h"
+
+static int sqliteCallback(void *result, int argc, char **argv, char **azColName);
 
 class BucketCounter
 {
-	typedef std::unordered_map<CountingBucket, int> CountMap;
-
 public:
-	BucketCounter(int numAgeGroups = 1) :
-		endBucket(DmgProfile::ENDSexualActivityStatus, 
-		          DmgProfile::ENDGender,
-				  DmgProfile::ENDSexualOrientation,
-				  DmgProfile::ENDRelationshipStatus,
-				  DmgProfile::ENDEmployment,
-				  Person::ENDRiskLevel,
-				  numAgeGroups,
-				  Person::ENDCD4Strata)
+	BucketCounter() : db(NULL), connected(false), ageRanges(0), previousResult(0)
 	{
+		OpenConnection();
+		CreateTable();
 	}
 
-	~BucketCounter() {}
-
-	void SetNumAgeGroups(int numAgeGroups)
+	~BucketCounter() 
 	{
-		endBucket.ageGroup = numAgeGroups;
+		CloseConnection();
 	}
 
-	void Increment(const CountingBucket &bucket)
+	int GetCount(DmgProfile::SexualActivityStatus sexualActivityStatus, DmgProfile::Gender gender, DmgProfile::SexualOrientation sexualOrientation,
+		DmgProfile::RelationshipStatus relationshipStatus, DmgProfile::Employment employment, Person::RiskLevel riskLevel, int ageGroup,
+		Person::CD4Strata cd4Stratum);
+
+	int GetCount()
 	{
-		countMap[bucket]++;
+		return GetCount(DmgProfile::ENDSexualActivityStatus, DmgProfile::ENDGender, DmgProfile::ENDSexualOrientation, 
+			DmgProfile::ENDRelationshipStatus, DmgProfile::ENDEmployment, Person::ENDRiskLevel, -1, Person::ENDCD4Strata);
 	}
 
-	int GetCount(const CountingBucket &bucket)
+	int GetCountByGender(DmgProfile::Gender gender)
 	{
-		int count = 0;
-
-		std::vector<CartesianIterators> cartesianIterators;
-		auto bucketArray = bucket.toCartesianArray(endBucket);
-		std::vector<CountingBucket> resultSet;
-
-		for(auto bucketArrayIterator = bucketArray.begin(); bucketArrayIterator != bucketArray.end(); ++bucketArrayIterator)
-		{
-			CartesianIterators currentIterators = {bucketArrayIterator->begin(), bucketArrayIterator->end(), bucketArrayIterator->begin()};
-			cartesianIterators.push_back(currentIterators);
-		}
-
-		while(true)
-		{
-			std::array<int, NUM_COUNTING_BUCKET_PARAMETERS> result;
-			for(int i = 0; i < NUM_COUNTING_BUCKET_PARAMETERS; i++)
-			{
-				result[i] = *cartesianIterators[i].me;
-			}
-			
-			if(countMap.find(CountingBucket(result)) != countMap.end())
-			{
-				count += countMap[CountingBucket(result)];
-			}
-
-			for(auto cartesianIterator = cartesianIterators.begin();;)
-			{
-				++(cartesianIterator->me);
-				if(cartesianIterator->me == cartesianIterator->end)
-				{
-					if(cartesianIterator + 1 == cartesianIterators.end())
-					{
-						return count;
-					}
-					else
-					{
-						cartesianIterator->me = cartesianIterator->begin;
-						++cartesianIterator;
-					}
-				}
-				else 
-				{
-					break;
-				}
-			}
-		}
-
-		return count;
+		return GetCount(DmgProfile::ENDSexualActivityStatus, gender, DmgProfile::ENDSexualOrientation,
+			DmgProfile::ENDRelationshipStatus, DmgProfile::ENDEmployment, Person::ENDRiskLevel, -1, Person::ENDCD4Strata);
 	}
 
-	void Clear()
+	int GetCountByGenderSexualActivity(DmgProfile::Gender gender, DmgProfile::SexualActivityStatus sexualActivityStatus)
 	{
-		countMap.clear();
+		return GetCount(sexualActivityStatus, gender, DmgProfile::ENDSexualOrientation,
+			DmgProfile::ENDRelationshipStatus, DmgProfile::ENDEmployment, Person::ENDRiskLevel, -1, Person::ENDCD4Strata);
 	}
+
+	int GetCountByGenderSexualActivityAge(DmgProfile::Gender gender, DmgProfile::SexualActivityStatus sexualActivityStatus, int ageGroup)
+	{
+		return GetCount(sexualActivityStatus, gender, DmgProfile::ENDSexualOrientation,
+			DmgProfile::ENDRelationshipStatus, DmgProfile::ENDEmployment, Person::ENDRiskLevel, ageGroup, Person::ENDCD4Strata);
+	}
+
+	int GetCountByCd4(Person::CD4Strata cd4Stratum)
+	{
+		return GetCount(DmgProfile::ENDSexualActivityStatus, DmgProfile::ENDGender, DmgProfile::ENDSexualOrientation,
+			DmgProfile::ENDRelationshipStatus, DmgProfile::ENDEmployment, Person::ENDRiskLevel, -1, cd4Stratum);
+	}
+
+	int GetCountByRiskGroup(Person::RiskLevel riskLevel, DmgProfile::Gender gender, DmgProfile::Employment employment)
+	{
+		return GetCount(DmgProfile::ENDSexualActivityStatus, gender, DmgProfile::ENDSexualOrientation,
+			DmgProfile::ENDRelationshipStatus, employment, riskLevel, -1, Person::ENDCD4Strata);
+	}
+
+	void Increment(Person *person);
+
+	void Callback(int argc, char **argv, char **columnName);
+
+	void SetAgeRanges(const std::vector<std::pair<int, int> > &ageRanges);
+
+	void Reset();
 
 private:
-	struct CartesianIterators
-	{
-		std::vector<int>::const_iterator begin;
-		std::vector<int>::const_iterator end;
-		std::vector<int>::const_iterator me;
-	};
+	int GetCount(Person *person);
 
-	std::vector<CountingBucket> GenerateCartesianProduct(const CountingBucket &bucket)
-	{
-		std::vector<CartesianIterators> cartesianIterators;
-		auto bucketArray = bucket.toCartesianArray(endBucket);
-		std::vector<CountingBucket> resultSet;
+	void BuildWhere(Person *person, std::stringstream &query);
 
-		for(auto bucketArrayIterator = bucketArray.begin(); bucketArrayIterator != bucketArray.end(); ++bucketArrayIterator)
-		{
-			CartesianIterators currentIterators = {bucketArrayIterator->begin(), bucketArrayIterator->end(), bucketArrayIterator->begin()};
-			cartesianIterators.push_back(currentIterators);
-		}
+	void BuildWhere(DmgProfile::SexualActivityStatus sexualActivityStatus, DmgProfile::Gender gender, DmgProfile::SexualOrientation sexualOrientation,
+		DmgProfile::RelationshipStatus relationshipStatus, DmgProfile::Employment employment, Person::RiskLevel riskLevel, int ageGroup,
+		Person::CD4Strata cd4Stratum, std::stringstream &query);
 
-		while(true)
-		{
-			std::array<int, NUM_COUNTING_BUCKET_PARAMETERS> result;
-			for(int i = 0; i < NUM_COUNTING_BUCKET_PARAMETERS; i++)
-			{
-				result[i] = *cartesianIterators[i].me;
-			}
-			resultSet.push_back(CountingBucket(result));
+	void CreateTable();
 
-			for(auto cartesianIterator = cartesianIterators.begin();;)
-			{
-				++(cartesianIterator->me);
-				if(cartesianIterator->me == cartesianIterator->end)
-				{
-					if(cartesianIterator + 1 == cartesianIterators.end())
-					{
-						return resultSet;
-					}
-					else
-					{
-						cartesianIterator->me = cartesianIterator->begin;
-						++cartesianIterator;
-					}
-				}
-				else 
-				{
-					break;
-				}
-			}
-		}
+	void OpenConnection();
 
-		return resultSet;
-	}
+	void CloseConnection();
 
-	CountMap countMap;
-	CountingBucket endBucket;
+	bool InsertBucket(Person *person);
+
+	bool BucketExists(Person *person);
+
+	bool ExecuteQuery(const std::string &query);
+
+	bool ExecuteQuery(const std::string &query, int &result);
+
+	sqlite3 *db;
+	bool connected;
+	std::vector<std::pair<int, int> > ageRanges;
+	int previousResult;
 };

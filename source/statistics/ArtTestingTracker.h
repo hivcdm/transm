@@ -44,12 +44,6 @@ private:
 
 	void buildHeader();
 
-	void buildNumTestsHeader();
-
-	void buildNumEligibleHeader();
-
-	void buildNumEnrolledHeader();
-
 	void buildRow(int time, Population *_population);
 
 	void Reset();

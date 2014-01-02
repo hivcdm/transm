@@ -5,12 +5,12 @@
 
 const std::string ArtTestingTracker::RISK_GROUP_NAMES[] = 
 {
-	"CSW High Risk", 
-	"CSW Low Risk",
-	"Non-CSW High Risk Male",
-	"Non-CSW High Risk Female",
-	"Non-CSW Low Risk Male",
-	"Non-CSW Low Risk Female"
+	"Non-CSW Low-Risk Male",
+	"Non-CSW Low-Risk Female",
+	"Non-CSW High-Risk Male",
+	"Non-CSW High-Risk Female",
+	"CSW Low-Risk Female",
+	"CSW High-Risk Female"
 };
 
 ArtTestingTracker::ArtTestingTracker() :
@@ -39,7 +39,9 @@ void ArtTestingTracker::SetAgeRanges(const std::vector<boost::tuple<long, int, i
 		ageRanges.push_back(std::make_pair(minAge, maxAge));
 	}
 
-	testsByBucketCounter.SetNumAgeGroups(numAgeRanges);
+	testsByBucketCounter.SetAgeRanges(ageRanges);
+	eligibleByBucketCounter.SetAgeRanges(ageRanges);
+	enrolledByBucketCounter.SetAgeRanges(ageRanges);
 }
 
 void ArtTestingTracker::recordTest(Person *person, bool accepted, bool returned, SimContext::TEST_RESULT result)
@@ -53,7 +55,7 @@ void ArtTestingTracker::recordTest(Person *person, bool accepted, bool returned,
 		if(returned)
 		{
 			numTestsReturnedFor++;
-			testsByBucketCounter.Increment(CountingBucket(person, ageRanges));
+			testsByBucketCounter.Increment(person);
 			numTestsByResult[result]++;
 		}
 	}
@@ -61,12 +63,12 @@ void ArtTestingTracker::recordTest(Person *person, bool accepted, bool returned,
 
 void ArtTestingTracker::recordEligiblePerson(Person *person)
 {
-	eligibleByBucketCounter.Increment(CountingBucket(person, ageRanges));
+	eligibleByBucketCounter.Increment(person);
 }
 
 void ArtTestingTracker::recordTreatedPerson(Person *person)
 {
-	enrolledByBucketCounter.Increment(CountingBucket(person, ageRanges));
+	enrolledByBucketCounter.Increment(person);
 }
 
 void ArtTestingTracker::printArtRolloutOutcomes(int time, std::ostream &_outStream, Population *_population)
@@ -97,13 +99,13 @@ void ArtTestingTracker::buildHeader()
 	SetHeaderCell(5, 3, "Returned for Results");
 
 	SetHeaderCell(6, 2, "Gender");
-	SetHeaderCell(6, 3, "Females");
-	SetHeaderCell(7, 3, "Males");
+	SetHeaderCell(6, 3, "Males");
+	SetHeaderCell(7, 3, "Females");
 
 	int column = 8;
 	for(int genderIndex = 0; genderIndex < 2; genderIndex++, column += (ageRanges.size() + 1))
 	{
-		SetHeaderCell(column, 1, genderIndex == 0 ? "Females" : "Males");
+		SetHeaderCell(column, 1, genderIndex == 0 ? "Males" : "Females");
 
 		SetHeaderCell(column, 2, "Non-Sexually Active Population");
 		SetHeaderCell(column, 3, "All ages");
@@ -117,10 +119,21 @@ void ArtTestingTracker::buildHeader()
 		}
 	}
 
+	SetHeaderCell(column, 2, "CD4 Stratum");
+
 	for(int cd4StratumIndex = 0; cd4StratumIndex < Person::ENDCD4Strata; ++cd4StratumIndex, ++column)
 	{
 		SetHeaderCell(column, 3, SimContext::CD4_STRATA_STRS[cd4StratumIndex]);
 	}
+
+	SetHeaderCell(column, 2, "Risk Group");
+
+	for(int riskGroupIndex = 0; riskGroupIndex < 6; ++riskGroupIndex, ++column)
+	{
+		SetHeaderCell(column, 3, RISK_GROUP_NAMES[riskGroupIndex]);
+	}
+
+	SetHeaderCell(column, 2, "Test Result");
 
 	for(int testResultIndex = 0; testResultIndex < SimContext::TEST_RESULT_NUM; ++testResultIndex, ++column)
 	{
@@ -130,14 +143,14 @@ void ArtTestingTracker::buildHeader()
 	SetHeaderCell(column, 1, "Number Eligible");
 
 	SetHeaderCell(column, 2, "Gender");
-	SetHeaderCell(column, 3, "Females");
-	SetHeaderCell(column + 1, 3, "Males");
+	SetHeaderCell(column, 3, "Males");
+	SetHeaderCell(column + 1, 3, "Females");
 
 	column += 2;
 
 	for(int genderIndex = 0; genderIndex < 2; genderIndex++, column += (ageRanges.size() + 1))
 	{
-		SetHeaderCell(column, 1, genderIndex == 0 ? "Females" : "Males");
+		SetHeaderCell(column, 1, genderIndex == 0 ? "Males" : "Females");
 
 		SetHeaderCell(column, 2, "Non-Sexually Active Population");
 		SetHeaderCell(column, 3, "All ages");
@@ -149,21 +162,33 @@ void ArtTestingTracker::buildHeader()
 			rangeString << std::get<0>(ageRanges[i]) << "-" << std::get<1>(ageRanges[i]);
 			SetHeaderCell(column + 1 + i, 3, rangeString.str());
 		}
+	}
+
+	SetHeaderCell(column, 2, "CD4 Stratum");
+
+	for(int cd4StratumIndex = 0; cd4StratumIndex < Person::ENDCD4Strata; ++cd4StratumIndex, ++column)
+	{
+		SetHeaderCell(column, 3, SimContext::CD4_STRATA_STRS[cd4StratumIndex]);
+	}
+
+	SetHeaderCell(column, 2, "Risk Group");
+
+	for(int riskGroupIndex = 0; riskGroupIndex < 6; ++riskGroupIndex, ++column)
+	{
+		SetHeaderCell(column, 3, RISK_GROUP_NAMES[riskGroupIndex]);
 	}
 
 	SetHeaderCell(column, 1, "Number Enrolled in ART");
 
-	//SetHeaderCell(column, 3, "Total");
-
 	SetHeaderCell(column, 2, "Gender");
-	SetHeaderCell(column, 3, "Females");
-	SetHeaderCell(column + 1, 3, "Males");
+	SetHeaderCell(column, 3, "Males");
+	SetHeaderCell(column + 1, 3, "Females");
 
 	column += 2;
 
 	for(int genderIndex = 0; genderIndex < 2; genderIndex++, column += (ageRanges.size() + 1))
 	{
-		SetHeaderCell(column, 1, genderIndex == 0 ? "Females" : "Males");
+		SetHeaderCell(column, 1, genderIndex == 0 ? "Males" : "Females");
 
 		SetHeaderCell(column, 2, "Non-Sexually Active Population");
 		SetHeaderCell(column, 3, "All ages");
@@ -176,21 +201,20 @@ void ArtTestingTracker::buildHeader()
 			SetHeaderCell(column + 1 + i, 3, rangeString.str());
 		}
 	}
-}
 
-void ArtTestingTracker::buildNumTestsHeader()
-{
+	SetHeaderCell(column, 2, "CD4 Stratum");
 
-}
+	for(int cd4StratumIndex = 0; cd4StratumIndex < Person::ENDCD4Strata; ++cd4StratumIndex, ++column)
+	{
+		SetHeaderCell(column, 3, SimContext::CD4_STRATA_STRS[cd4StratumIndex]);
+	}
 
-void ArtTestingTracker::buildNumEligibleHeader()
-{
+	SetHeaderCell(column, 2, "Risk Group");
 
-}
-
-void ArtTestingTracker::buildNumEnrolledHeader()
-{
-
+	for(int riskGroupIndex = 0; riskGroupIndex < 6; ++riskGroupIndex, ++column)
+	{
+		SetHeaderCell(column, 3, RISK_GROUP_NAMES[riskGroupIndex]);
+	}
 }
 
 void ArtTestingTracker::buildRow(int time, Population *_population)
@@ -209,98 +233,128 @@ void ArtTestingTracker::buildRow(int time, Population *_population)
 	PushElement(numTestsAccepted);
 	PushElement(numTestsReturnedFor);
 
-	CountingBucket bucket = CountingBucket(DmgProfile::ENDSexualActivityStatus, DmgProfile::ENDGender, DmgProfile::ENDSexualOrientation,
-		DmgProfile::ENDRelationshipStatus, DmgProfile::ENDEmployment, Person::ENDRiskLevel, ageRanges.size(), Person::ENDCD4Strata);
-
-	bucket.gender = DmgProfile::FEMALE;
-	PushElement(testsByBucketCounter.GetCount(bucket));
-	bucket.gender = DmgProfile::MALE;
-	PushElement(testsByBucketCounter.GetCount(bucket));
-
-	bucket.sexualActivityStatus = DmgProfile::NA;
-	PushElement(testsByBucketCounter.GetCount(bucket));
-
-	bucket.sexualActivityStatus = DmgProfile::SA;
-	bucket.gender = DmgProfile::FEMALE;
-	for(bucket.ageGroup = 0; bucket.ageGroup < ageRanges.size(); ++bucket.ageGroup)
+	for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
 	{
-		PushElement(testsByBucketCounter.GetCount(bucket));
+		PushElement(testsByBucketCounter.GetCountByGender(gender));
 	}
 
-	bucket.gender = DmgProfile::MALE;
-	PushElement(testsByBucketCounter.GetCount(CountingBucket(bucket)));
-	for(bucket.ageGroup = 0; bucket.ageGroup < ageRanges.size(); ++bucket.ageGroup)
+	for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
 	{
-		PushElement(testsByBucketCounter.GetCount(bucket));
+		PushElement(testsByBucketCounter.GetCountByGenderSexualActivity(gender, DmgProfile::NA));
+
+		for(int ageGroup = 0; ageGroup < ageRanges.size(); ++ageGroup)
+		{
+			PushElement(testsByBucketCounter.GetCountByGenderSexualActivityAge(gender, DmgProfile::SA, ageGroup));
+		}
 	}
 
-	bucket.gender = DmgProfile::ENDGender;
-	bucket.sexualActivityStatus = DmgProfile::ENDSexualActivityStatus;
-	for(bucket.cd4Stratum = (Person::CD4Strata)0; bucket.cd4Stratum < Person::ENDCD4Strata; ++bucket.cd4Stratum)
+	for(Person::CD4Strata cd4Stratum = static_cast<Person::CD4Strata>(0); cd4Stratum < Person::ENDCD4Strata; ++cd4Stratum)
 	{
-		PushElement(testsByBucketCounter.GetCount(bucket));
+		PushElement(testsByBucketCounter.GetCountByCd4(cd4Stratum));
 	}
 
-	
+	for(DmgProfile::Employment employment = static_cast<DmgProfile::Employment>(0); employment < DmgProfile::ENDEmployment; ++employment)
+	{
+		for(Person::RiskLevel riskLevel = static_cast<Person::RiskLevel>(0); riskLevel < Person::ENDRiskLevel; ++riskLevel)
+		{
+			for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
+			{
+				// We don't include Male CSWs for now
+				if(gender == DmgProfile::MALE && employment == DmgProfile::CSW)
+				{
+					continue;
+				}
+
+				PushElement(testsByBucketCounter.GetCountByRiskGroup(riskLevel, gender, employment));
+			}
+		}
+	}
 
 	for(int i = 0; i < SimContext::TEST_RESULT_NUM; ++i)
 	{
 		PushElement(numTestsByResult[i]);
 	}
 
-	bucket.gender = DmgProfile::FEMALE;
-	bucket.ageGroup = ageRanges.size();
-	PushElement(eligibleByBucketCounter.GetCount(bucket));
-	bucket.gender = DmgProfile::MALE;
-	PushElement(eligibleByBucketCounter.GetCount(bucket));
-
-	bucket.sexualActivityStatus = DmgProfile::NA;
-	PushElement(eligibleByBucketCounter.GetCount(bucket));
-
-	bucket.sexualActivityStatus = DmgProfile::SA;
-	bucket.gender = DmgProfile::FEMALE;
-	for(bucket.ageGroup = 0; bucket.ageGroup < ageRanges.size(); ++bucket.ageGroup)
+	for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
 	{
-		PushElement(eligibleByBucketCounter.GetCount(bucket));
+		PushElement(eligibleByBucketCounter.GetCountByGender(gender));
 	}
 
-	bucket.gender = DmgProfile::MALE;
-	PushElement(testsByBucketCounter.GetCount(CountingBucket(bucket)));
-	for(bucket.ageGroup = 0; bucket.ageGroup < ageRanges.size(); ++bucket.ageGroup)
+	for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
 	{
-		PushElement(eligibleByBucketCounter.GetCount(bucket));
+		PushElement(eligibleByBucketCounter.GetCountByGenderSexualActivity(gender, DmgProfile::NA));
+
+		for(int ageGroup = 0; ageGroup < ageRanges.size(); ++ageGroup)
+		{
+			PushElement(eligibleByBucketCounter.GetCountByGenderSexualActivityAge(gender, DmgProfile::SA, ageGroup));
+		}
 	}
 
-	bucket.sexualActivityStatus = DmgProfile::ENDSexualActivityStatus;
-	bucket.gender = DmgProfile::FEMALE;
-	bucket.ageGroup = ageRanges.size();
-	PushElement(enrolledByBucketCounter.GetCount(bucket));
-	bucket.gender = DmgProfile::MALE;
-	PushElement(enrolledByBucketCounter.GetCount(bucket));
-
-	bucket.sexualActivityStatus = DmgProfile::NA;
-	PushElement(enrolledByBucketCounter.GetCount(bucket));
-
-	bucket.sexualActivityStatus = DmgProfile::SA;
-	bucket.gender = DmgProfile::FEMALE;
-	for(bucket.ageGroup = 0; bucket.ageGroup < ageRanges.size(); ++bucket.ageGroup)
+	for(Person::CD4Strata cd4Stratum = static_cast<Person::CD4Strata>(0); cd4Stratum < Person::ENDCD4Strata; ++cd4Stratum)
 	{
-		PushElement(enrolledByBucketCounter.GetCount(bucket));
+		PushElement(eligibleByBucketCounter.GetCountByCd4(cd4Stratum));
 	}
 
-	bucket.gender = DmgProfile::MALE;
-	PushElement(testsByBucketCounter.GetCount(CountingBucket(bucket)));
-	for(bucket.ageGroup = 0; bucket.ageGroup < ageRanges.size(); ++bucket.ageGroup)
+	for(DmgProfile::Employment employment = static_cast<DmgProfile::Employment>(0); employment < DmgProfile::ENDEmployment; ++employment)
 	{
-		PushElement(enrolledByBucketCounter.GetCount(bucket));
+		for(Person::RiskLevel riskLevel = static_cast<Person::RiskLevel>(0); riskLevel < Person::ENDRiskLevel; ++riskLevel)
+		{
+			for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
+			{
+				// We don't include Male CSWs for now
+				if(gender == DmgProfile::MALE && employment == DmgProfile::CSW)
+				{
+					continue;
+				}
+
+				PushElement(eligibleByBucketCounter.GetCountByRiskGroup(riskLevel, gender, employment));
+			}
+		}
+	}
+
+	for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
+	{
+		PushElement(enrolledByBucketCounter.GetCountByGender(gender));
+	}
+
+	for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
+	{
+		PushElement(enrolledByBucketCounter.GetCountByGenderSexualActivity(gender, DmgProfile::NA));
+
+		for(int ageGroup = 0; ageGroup < ageRanges.size(); ++ageGroup)
+		{
+			PushElement(enrolledByBucketCounter.GetCountByGenderSexualActivityAge(gender, DmgProfile::SA, ageGroup));
+		}
+	}
+
+	for(Person::CD4Strata cd4Stratum = static_cast<Person::CD4Strata>(0); cd4Stratum < Person::ENDCD4Strata; ++cd4Stratum)
+	{
+		PushElement(enrolledByBucketCounter.GetCountByCd4(cd4Stratum));
+	}
+
+	for(DmgProfile::Employment employment = static_cast<DmgProfile::Employment>(0); employment < DmgProfile::ENDEmployment; ++employment)
+	{
+		for(Person::RiskLevel riskLevel = static_cast<Person::RiskLevel>(0); riskLevel < Person::ENDRiskLevel; ++riskLevel)
+		{
+			for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
+			{
+				// We don't include Male CSWs for now
+				if(gender == DmgProfile::MALE && employment == DmgProfile::CSW)
+				{
+					continue;
+				}
+
+				PushElement(enrolledByBucketCounter.GetCountByRiskGroup(riskLevel, gender, employment));
+			}
+		}
 	}
 }
 
 void ArtTestingTracker::Reset()
 {
-	testsByBucketCounter.Clear();
-	eligibleByBucketCounter.Clear();
-	enrolledByBucketCounter.Clear();
+	testsByBucketCounter.Reset();
+	eligibleByBucketCounter.Reset();
+	enrolledByBucketCounter.Reset();
 
 	for(int resultIndex = 0; resultIndex < SimContext::TEST_RESULT_NUM; ++resultIndex)
 	{
