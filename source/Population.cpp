@@ -1324,6 +1324,17 @@ void Population::applyARTRollout(EventParams &_eventParams)
 			--newSlots;
 		}
 	}
+
+	for(std::vector<Person *>::iterator eligibleIterator = eligibleForTreatment.begin(); eligibleIterator != eligibleForTreatment.end(); eligibleIterator++)
+	{
+		popStats->recordEligiblePerson(*eligibleIterator);
+	}
+
+	for(std::list<Person *>::iterator treatedIterator = rolloutTreatedPool.begin(); treatedIterator != rolloutTreatedPool.end(); treatedIterator++)
+	{
+		popStats->recordEligiblePerson(*treatedIterator); // treated people are technically eligible too
+		popStats->recordTreatment(*treatedIterator);
+	}
 }
 
 void Population::recordShiftedOutcomes(EventParams &_eventParams, std::ostream &_outStream)
@@ -1332,17 +1343,6 @@ void Population::recordShiftedOutcomes(EventParams &_eventParams, std::ostream &
 	{
 		int year = 1990 + (_eventParams.currTime - _eventParams.monthOf1990) / 12;
 		int month = (_eventParams.currTime - _eventParams.monthOf1990) % 12;
-
-		for(std::vector<Person *>::iterator eligibleIterator = eligibleForTreatment.begin(); eligibleIterator != eligibleForTreatment.end(); eligibleIterator++)
-		{
-			popStats->recordEligiblePerson(*eligibleIterator);
-		}
-
-		for(std::list<Person *>::iterator treatedIterator = rolloutTreatedPool.begin(); treatedIterator != rolloutTreatedPool.end(); treatedIterator++)
-		{
-			popStats->recordEligiblePerson(*treatedIterator);
-			popStats->recordTreatment(*treatedIterator);
-		}
 
 		int numTests = _eventParams.cepacRunStats->getHIVScreening()->numAcceptTest;
 		std::vector<int> numTestsByResult(SimContext::TEST_RESULT_NUM, 0);

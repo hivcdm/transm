@@ -35,7 +35,8 @@ struct CountingBucket
 		relationshipStatus(static_cast<DmgProfile::RelationshipStatus>(array[3])),
 		employment(static_cast<DmgProfile::Employment>(array[4])),
 		riskLevel(static_cast<Person::RiskLevel>(array[5])),
-		ageGroup(array[6]) {}
+		ageGroup(array[6]),
+		cd4Stratum(static_cast<Person::CD4Strata>(array[7])) {}
 
 	CountingBucket(Person *person, const std::vector<std::pair<int, int> > &ageRanges)
 	{
@@ -58,7 +59,7 @@ struct CountingBucket
 			}
 		}
 		assert(ageGroup != -1);
-		cd4Stratum = person->cd
+		cd4Stratum = person->getCd4Stratum();
 	}
 
 	DmgProfile::SexualActivityStatus sexualActivityStatus;
@@ -72,7 +73,7 @@ struct CountingBucket
 
 	std::array<int, NUM_COUNTING_BUCKET_PARAMETERS> toArray() const
 	{
-		std::array<int, NUM_COUNTING_BUCKET_PARAMETERS> a = {{sexualActivityStatus, gender, sexualOrientation, relationshipStatus, employment, riskLevel, ageGroup}};
+		std::array<int, NUM_COUNTING_BUCKET_PARAMETERS> a = {{sexualActivityStatus, gender, sexualOrientation, relationshipStatus, employment, riskLevel, ageGroup, cd4Stratum}};
 	    return a;
 	}
 

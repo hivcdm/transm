@@ -87,8 +87,8 @@ void TabularOutput::PushElement(double element)
 
 void TabularOutput::PushElement(const std::string &element)
 {
+	assert(currentColumn < numColumns);
 	currentRow[currentColumn++] = element;
-	assert(currentColumn <= numColumns);
 }
 
 void TabularOutput::PushEmptyElement()

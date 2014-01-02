@@ -38,13 +38,52 @@ public:
 	int GetCount(const CountingBucket &bucket)
 	{
 		int count = 0;
-		for(auto &filter : GenerateCartesianProduct(bucket))
+
+		std::vector<CartesianIterators> cartesianIterators;
+		auto bucketArray = bucket.toCartesianArray(endBucket);
+		std::vector<CountingBucket> resultSet;
+
+		for(auto bucketArrayIterator = bucketArray.begin(); bucketArrayIterator != bucketArray.end(); ++bucketArrayIterator)
 		{
-			if(countMap.find(filter) != countMap.end())
+			CartesianIterators currentIterators = {bucketArrayIterator->begin(), bucketArrayIterator->end(), bucketArrayIterator->begin()};
+			cartesianIterators.push_back(currentIterators);
+		}
+
+		while(true)
+		{
+			std::array<int, NUM_COUNTING_BUCKET_PARAMETERS> result;
+			for(int i = 0; i < NUM_COUNTING_BUCKET_PARAMETERS; i++)
 			{
-				count += countMap[filter];
+				result[i] = *cartesianIterators[i].me;
+			}
+			
+			if(countMap.find(CountingBucket(result)) != countMap.end())
+			{
+				count += countMap[CountingBucket(result)];
+			}
+
+			for(auto cartesianIterator = cartesianIterators.begin();;)
+			{
+				++(cartesianIterator->me);
+				if(cartesianIterator->me == cartesianIterator->end)
+				{
+					if(cartesianIterator + 1 == cartesianIterators.end())
+					{
+						return count;
+					}
+					else
+					{
+						cartesianIterator->me = cartesianIterator->begin;
+						++cartesianIterator;
+					}
+				}
+				else 
+				{
+					break;
+				}
 			}
 		}
+
 		return count;
 	}
 
@@ -103,6 +142,8 @@ private:
 				}
 			}
 		}
+
+		return resultSet;
 	}
 
 	CountMap countMap;

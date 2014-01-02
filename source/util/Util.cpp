@@ -15,8 +15,8 @@
 #include <glob.h>
 #endif
 
-const double Util::MODEL_VERSION = 3.32;
-const double Util::INPUT_VERSION = 3.32;
+const double Util::MODEL_VERSION = 3.33;
+const double Util::INPUT_VERSION = 3.33;
 
 double Util::dayToMonthMult = 1.0/30;
 double Util::dayToYearMult = 1.0/365;

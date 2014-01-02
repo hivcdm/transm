@@ -40,6 +40,20 @@ void Person::ageOneTimeUnit() {
 	age++;
 }
 
+Person::CD4Strata Person::getCd4Stratum()
+{
+	switch(cepacPatient->getDiseaseState()->currTrueCD4Strata)
+	{
+	case SimContext::CD4_VLO: return CD4_ZERO;
+	case SimContext::CD4__LO: return CD4_ONE;
+	case SimContext::CD4_MLO: return CD4_TWO;
+	case SimContext::CD4_MHI: return CD4_THREE;
+	case SimContext::CD4__HI: return CD4_FOUR;
+	case SimContext::CD4_VHI: return CD4_FIVE;
+	default: return ENDCD4Strata;
+	}
+}
+
 Person* Person::allPartnerSexualActivity(EventParams& _eventParams,SexualPartnership::Type _partnershipType, list<Person*> &_newlyInfected, InfectionsTracker *infTrack) {
 	assert( _partnershipType < SexualPartnership::ENDType);
 

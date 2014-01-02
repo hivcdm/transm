@@ -117,14 +117,17 @@ void ArtTestingTracker::buildHeader()
 		}
 	}
 
+	for(int cd4StratumIndex = 0; cd4StratumIndex < Person::ENDCD4Strata; ++cd4StratumIndex, ++column)
+	{
+		SetHeaderCell(column, 3, SimContext::CD4_STRATA_STRS[cd4StratumIndex]);
+	}
+
 	for(int testResultIndex = 0; testResultIndex < SimContext::TEST_RESULT_NUM; ++testResultIndex, ++column)
 	{
 		SetHeaderCell(column, 3, SimContext::TEST_RESULT_STRS[testResultIndex]);
 	}
 
 	SetHeaderCell(column, 1, "Number Eligible");
-
-	//SetHeaderCell(column, 3, "Total");
 
 	SetHeaderCell(column, 2, "Gender");
 	SetHeaderCell(column, 3, "Females");
@@ -207,7 +210,7 @@ void ArtTestingTracker::buildRow(int time, Population *_population)
 	PushElement(numTestsReturnedFor);
 
 	CountingBucket bucket = CountingBucket(DmgProfile::ENDSexualActivityStatus, DmgProfile::ENDGender, DmgProfile::ENDSexualOrientation,
-		DmgProfile::ENDRelationshipStatus, DmgProfile::ENDEmployment, Person::ENDRiskLevel, ageRanges.size());
+		DmgProfile::ENDRelationshipStatus, DmgProfile::ENDEmployment, Person::ENDRiskLevel, ageRanges.size(), Person::ENDCD4Strata);
 
 	bucket.gender = DmgProfile::FEMALE;
 	PushElement(testsByBucketCounter.GetCount(bucket));
@@ -231,12 +234,20 @@ void ArtTestingTracker::buildRow(int time, Population *_population)
 		PushElement(testsByBucketCounter.GetCount(bucket));
 	}
 
+	bucket.gender = DmgProfile::ENDGender;
+	bucket.sexualActivityStatus = DmgProfile::ENDSexualActivityStatus;
+	for(bucket.cd4Stratum = (Person::CD4Strata)0; bucket.cd4Stratum < Person::ENDCD4Strata; ++bucket.cd4Stratum)
+	{
+		PushElement(testsByBucketCounter.GetCount(bucket));
+	}
+
+	
+
 	for(int i = 0; i < SimContext::TEST_RESULT_NUM; ++i)
 	{
 		PushElement(numTestsByResult[i]);
 	}
 
-	bucket.sexualActivityStatus = DmgProfile::ENDSexualActivityStatus;
 	bucket.gender = DmgProfile::FEMALE;
 	bucket.ageGroup = ageRanges.size();
 	PushElement(eligibleByBucketCounter.GetCount(bucket));
@@ -288,6 +299,8 @@ void ArtTestingTracker::buildRow(int time, Population *_population)
 void ArtTestingTracker::Reset()
 {
 	testsByBucketCounter.Clear();
+	eligibleByBucketCounter.Clear();
+	enrolledByBucketCounter.Clear();
 
 	for(int resultIndex = 0; resultIndex < SimContext::TEST_RESULT_NUM; ++resultIndex)
 	{

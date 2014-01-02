@@ -229,6 +229,8 @@ public:
 	bool oiHistory[Constants::NUMBER_OF_OIS]; //OI HIstory
 	DeathStatus deathStatus;
 
+	CD4Strata getCd4Stratum();
+
 	//This is for keeping dead people around for graph printing reasons
 	//It mimics the destructor without destroying the Person object.
 	void deletePersonWithoutDeleting();
