@@ -360,4 +360,8 @@ void ArtTestingTracker::Reset()
 	{
 		numTestsByResult[resultIndex] = 0;
 	}
+
+	numTestsOffered = 0;
+	numTestsAccepted = 0;
+	numTestsReturnedFor = 0;
 }
