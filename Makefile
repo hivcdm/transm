@@ -1,12 +1,12 @@
 ###
 #
 #Determines the name of the executables. Change for each new version
-VERSION = 3.33a
+VERSION = 333a
 
-EXE = PopulationDynamics$(VERSION)
+EXE = transm$(VERSION)
 
 #header files
-HEADERS = source/util/ticpp/*.h source/util/rand/*.h source/util/*.h source/statistics/*.h source/graphviz/*.h source/entities/entitypool/bucket/*.h source/entities/entitypool/*.h source/entities/classifiers/*.h source/entities/behaviors/*.h source/entities/*.h source/data/*.h source/cepacbridge/*.h source/*.h source/cepac/*.h
+HEADERS = source/util/ticpp/*.h source/util/rand/*.h source/util/*.h source/statistics/*.h source/graphviz/*.h source/entities/entitypool/bucket/*.h source/entities/entitypool/*.h source/entities/classifiers/*.h source/entities/behaviors/*.h source/entities/*.h source/data/*.h source/cepacbridge/*.h source/*.h source/cepac/*.h source/util/sqlite/*.h
 
 # src and .o directories. Add to here when a new file has been added
 OBJS = source/util/ticpp/ticpp.o \
@@ -61,8 +61,10 @@ OBJS = source/util/ticpp/ticpp.o \
 	source/cepac/SummaryStats.o	\
 	source/cepac/TBDiseaseUpdater.o	\
 	source/cepac/Tracer.o \
-	source/statistics/ArtTestingTracker.o \
-	source/statistics/TabularOutput.o
+	source/statistics/ArtRolloutTracker.o \
+	source/statistics/TabularOutput.o \
+	source/statistics/BucketCounter.o \
+	source/util/sqlite/sqlite3.o
 
 GUI_OBJS = $(OBJS) source/gui/widgets/statusWidget.o \
 	source/gui/widgets/verticalStatusWidget.o \
@@ -73,15 +75,17 @@ GUI_OBJS = $(OBJS) source/gui/widgets/statusWidget.o \
 CONSOLE_OBJS = $(OBJS) source/main.o
 
 #compiler and related flags
+CC = gcc
+CFLAGS = -I. -O3 -Wall -D__LINUX__
 CXX = g++
-CXXFLAGS = -I. -O3 -Wall
-LDFLAGS = -lm
+CXXFLAGS = -I. -O3 -Wall -std=c++0x -D__LINUX__
+LDFLAGS = -lm -ldl -lpthread
 
 #rules for compiling C and CPP files
 .SUFFIXES: .c .cpp
 
 %.o : %.c $(HEADERS)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 %.o: %.cpp $(HEADERS)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
@@ -107,7 +111,7 @@ gui : $(GUI_OBJS)
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $(EXE)
 
 clean : 
-	rm -f source/*.o source/cepacbridge/*.o source/data/*.o source/entities/*.o source/entities/behaviors/*.o source/entities/classifiers/*.o source/entities/entitypool/*.o source/entities/entitypool/bucket/*.o source/graphviz/*.o source/statistics/*.o source/util/*.o source/util/rand/*.o source/util/ticpp/*.o source/gui/*.o source/gui/widgets/*.o source/gui/dialogs/*.o source/cepac/*.o
-	rm -f $(EXE) $(EXE).exe
+	rm -f source/*.o source/cepacbridge/*.o source/data/*.o source/entities/*.o source/entities/behaviors/*.o source/entities/classifiers/*.o source/entities/entitypool/*.o source/entities/entitypool/bucket/*.o source/graphviz/*.o source/statistics/*.o source/util/*.o source/util/rand/*.o source/util/ticpp/*.o source/gui/*.o source/gui/widgets/*.o source/gui/dialogs/*.o source/cepac/*.o source/util/sqlite/*.o
+	rm -f $(EXE)
 
 

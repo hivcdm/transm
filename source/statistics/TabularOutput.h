@@ -1,9 +1,11 @@
 #pragma once
 
+#include <fstream>
+#include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 #include <boost/functional/hash.hpp>
-#include <fstream>
 
 typedef std::pair<int, int> Coordinate;
 
