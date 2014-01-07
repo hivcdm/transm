@@ -512,11 +512,11 @@ void Sim::run(int _numSteps)
 			//  records the time that the timestep was started
 			double begin = timer.GetTime();
 
-			if (this->eventParams.useRollout)
+			if (eventParams.useRollout)
 			{
-				//if using art rollout switch the default cepac files for the treated and untreated pools
-				this->currPopulation->applyRolloutContext(this->eventParams,this->currTime);
+				currPopulation->applyRolloutContext(eventParams, t);
 			}
+
 			long totalSize = this->timeStep();
 
 			//keeps track of the time it takes to run 1 timestep of this model
@@ -890,18 +890,6 @@ bool Sim::setRolloutSimContexts(ticpp::Element *rolloutInterventionNode)
 			ParseCepacInput cepacInput(fileName);
 			cepacInput.getNonAIDSDeath(Person::probDeathNatCauses[DmgProfile::MALE], Person::probDeathNatCauses[DmgProfile::FEMALE]);
 		}
-	}
-
-	ticpp::Element *rolloutTimesNode = rolloutInterventionNode->FirstChildElement("rolloutTimeToApply");
-	//Only iterates through Element nodes with value "ElementValue"
-	ticpp::Iterator<ticpp::Element> rolloutTimeNode("treatmentTime");
-
-	for (rolloutTimeNode = rolloutTimeNode.begin(rolloutTimesNode); rolloutTimeNode != rolloutTimeNode.end(); rolloutTimeNode++)
-	{
-		int timeToApply;
-		(*rolloutTimeNode).FirstChildElement("time")->GetTextOrDefault<int>(&timeToApply,-1);
-
-		this->eventParams.rolloutTimes.push_back(new EventParams::RolloutTime(timeToApply));
 	}
 
 	ticpp::Element *eligNodes = rolloutInterventionNode->FirstChildElement("rolloutEligibility");

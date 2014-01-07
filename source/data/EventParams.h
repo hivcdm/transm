@@ -56,15 +56,6 @@ class EventParams {
 		};
 
 		/**
-		this structure stores the times that treatment is availible and to what proportion of the population for use with rollout
-		*/
-		class RolloutTime{
-			public:
-				int timeToApply;
-				RolloutTime(int t){timeToApply=t;}
-		};
-
-		/**
 		this structure stores the definintion fo concurrency
 		*/
 		class ConcurrencyDef{
@@ -154,7 +145,6 @@ class EventParams {
 
 		//CEPAC input files for Rollout
 		vector<RolloutContext*> rolloutSimContexts;
-		vector<RolloutTime*> rolloutTimes;
 		RolloutEligibility rolloutEligibility;
 		//Cepac files for storing current population groups (only if using rollout)
 		SimContext* untreatedContext;
@@ -294,11 +284,7 @@ class EventParams {
 				this->rolloutSimContexts.pop_back();
 				delete sc;
 			}
-			while(this->rolloutTimes.size() > 0){
-				RolloutTime * rt=this->rolloutTimes.back();
-				this->rolloutTimes.pop_back();
-				delete rt;
-			}
+
 			delete this->cepacTracer;
 
 			for (int i = 0; i < Constants::NUMBER_CONCURRENCY_DEFS; i++){
