@@ -145,6 +145,17 @@ Sim::Sim(std::string _paramsXML, DisplayBox *dbox, bool _genGraphViz)
 
 		this->eventParams.monthOf1990 = simParams->FirstChildElement("monthOf1990")->GetText<int>();
 
+		int proportionYear = 2002;
+		ticpp::Iterator<ticpp::Element> proportionIterator;
+		for(proportionIterator = proportionIterator.begin(simParams->FirstChildElement("targetRolloutProportions"));
+			proportionIterator != proportionIterator.end();
+			++proportionIterator)
+		{
+			int year = boost::lexical_cast<int>(proportionIterator.Get()->GetAttribute("year"));
+			assert(year == proportionYear++);
+			eventParams.targetYearlyRolloutProportions.push_back(proportionIterator.Get()->GetText<double>());
+		}
+
 		double inputVersion = simParams->FirstChildElement("inputVersion")->GetText<double>();
 		this->eventParams.displayOut("Input Version =");
 		this->eventParams.displayOut(boost::lexical_cast<std::string>(inputVersion).c_str());
@@ -875,7 +886,7 @@ bool Sim::setRolloutSimContexts(ticpp::Element *rolloutInterventionNode)
 
 		//From the first file only, get the death tables for non-AIDS death
 		if (fileNumber == 0)
-		{
+		{ 
 			ParseCepacInput cepacInput(fileName);
 			cepacInput.getNonAIDSDeath(Person::probDeathNatCauses[DmgProfile::MALE], Person::probDeathNatCauses[DmgProfile::FEMALE]);
 		}
@@ -888,11 +899,9 @@ bool Sim::setRolloutSimContexts(ticpp::Element *rolloutInterventionNode)
 	for (rolloutTimeNode = rolloutTimeNode.begin(rolloutTimesNode); rolloutTimeNode != rolloutTimeNode.end(); rolloutTimeNode++)
 	{
 		int timeToApply;
-		double proportionOfPopulation;
 		(*rolloutTimeNode).FirstChildElement("time")->GetTextOrDefault<int>(&timeToApply,-1);
-		(*rolloutTimeNode).FirstChildElement("propOfPop")->GetTextOrDefault<double>(&proportionOfPopulation,0.0);
 
-		this->eventParams.rolloutTimes.push_back(new EventParams::RolloutTime(timeToApply,proportionOfPopulation));
+		this->eventParams.rolloutTimes.push_back(new EventParams::RolloutTime(timeToApply));
 	}
 
 	ticpp::Element *eligNodes = rolloutInterventionNode->FirstChildElement("rolloutEligibility");

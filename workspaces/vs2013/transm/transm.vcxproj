@@ -123,7 +123,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(boostpath)\include;$(wxpath)\include\msvc;$(wxpath)\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>TIXML_USE_TICPP;_CRT_SECURE_NO_WARNINGS;WIN32;CONSOLE;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TIXML_USE_TICPP;_CRT_SECURE_NO_WARNINGS;WIN32;WXUSINGDLL;wxMSVC_VERSION_AUTO;__WXMSW__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4703</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -156,7 +157,7 @@
     <ClCompile Include="..\..\..\source\Population.cpp" />
     <ClCompile Include="..\..\..\source\PopulationParams.cpp" />
     <ClCompile Include="..\..\..\source\Sim.cpp" />
-    <ClCompile Include="..\..\..\source\statistics\ArtTestingTracker.cpp" />
+    <ClCompile Include="..\..\..\source\statistics\ArtRolloutTracker.cpp" />
     <ClCompile Include="..\..\..\source\statistics\BucketCounter.cpp" />
     <ClCompile Include="..\..\..\source\statistics\CostsTracker.cpp" />
     <ClCompile Include="..\..\..\source\statistics\InfectionsTracker.cpp" />
@@ -193,7 +194,7 @@
     <ClInclude Include="..\..\..\source\Population.h" />
     <ClInclude Include="..\..\..\source\PopulationParams.h" />
     <ClInclude Include="..\..\..\source\Sim.h" />
-    <ClInclude Include="..\..\..\source\statistics\ArtTestingTracker.h" />
+    <ClInclude Include="..\..\..\source\statistics\ArtRolloutTracker.h" />
     <ClInclude Include="..\..\..\source\statistics\BucketCounter.h" />
     <ClInclude Include="..\..\..\source\statistics\CostsTracker.h" />
     <ClInclude Include="..\..\..\source\statistics\InfectionsTracker.h" />

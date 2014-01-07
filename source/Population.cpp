@@ -6,6 +6,7 @@
 #include <vector>
 #include <assert.h>
 #include <math.h>
+#include <unordered_set>
 #include <boost/lexical_cast.hpp>
 
 #include "Population.h"
@@ -28,7 +29,8 @@ unsigned int Population::idCounter = 0;
 /**
 Creates an initial population of folks
 **/
-Population::Population(EventParams &_eventParams, ticpp::Element *_popParamsNode, ticpp::Element *_LEOutputNode, ticpp::Element *_partAcqOutputNode, long _maxTime)
+Population::Population(EventParams &_eventParams, ticpp::Element *_popParamsNode, ticpp::Element *_LEOutputNode, ticpp::Element *_partAcqOutputNode, long _maxTime) :
+    rankedForTreatment(5)
 {
 	assert(_popParamsNode != NULL);
 	assert(_LEOutputNode != NULL);
@@ -459,6 +461,11 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 				if (p->getDmgProfile()->get(p->getDmgProfile()->getProfileID(), DmgProfile::SEXUAL_ACTIVITY_STATUS) != DmgProfile::NA){
 					((BucketSexualMixing*) this->entities->getBucket(p->getDmgProfile()->getProfileID()))->changeHIVStatus(p, oldStatus, p->hivStatus);
 				}
+			}
+
+			if(p->isOnArt())
+			{
+				popStats->recordTreatment(p);
 			}
 
 			//Update cost
@@ -1186,24 +1193,11 @@ void Population::applyRolloutContext(EventParams &_eventParams, int time)
 			}
 		}
 	}
-
-
-	//switch the proportion of infected recieving rollout
-	for (vector <EventParams::RolloutTime*>::iterator rolloutTimeIter = _eventParams.rolloutTimes.begin(); rolloutTimeIter != _eventParams.rolloutTimes.end(); rolloutTimeIter++)
-	{
-		EventParams::RolloutTime *rolloutTime = *rolloutTimeIter;
-		assert(rolloutTime != NULL);
-		assert(rolloutTime->proportionOfPop >= 0);
-		if (rolloutTime->timeToApply == time)
-		{
-			_eventParams.currentRolloutProportion = rolloutTime->proportionOfPop;
-		}
-	}
 }
 
-void Population::determineEligibility(const EventParams::RolloutEligibility &criteria)
+void Population::determineRankings(const EventParams::RolloutEligibility &criteria)
 {
-	eligibleForTreatment.clear();
+	std::unordered_set<Person *> rankedPeople;
 
 	//loop through the eligibility rankings
 	for(int currentRank = 1; currentRank <= 5; ++currentRank)
@@ -1213,6 +1207,8 @@ void Population::determineEligibility(const EventParams::RolloutEligibility &cri
 		bool checkCd4OiHist = currentRank == criteria.cd4OiHistRank;
 		bool checkHvl = currentRank == criteria.hvlRank;
 		bool checkCd4Hvl = currentRank == criteria.cd4HvlRank;
+
+		rankedForTreatment[currentRank - 1].clear();
 
 		if(checkOiHist || checkCd4 || checkCd4OiHist || checkHvl || checkCd4Hvl)
 		{
@@ -1224,7 +1220,7 @@ void Population::determineEligibility(const EventParams::RolloutEligibility &cri
 				bool isEligible = false;
 				Person *untPerson = *untIter;
 
-				if(std::find(eligibleForTreatment.begin(), eligibleForTreatment.end(), untPerson) != eligibleForTreatment.end())
+				if(rankedPeople.find(untPerson) != rankedPeople.end())
 				{
 					untIter++;
 					continue;
@@ -1290,7 +1286,9 @@ void Population::determineEligibility(const EventParams::RolloutEligibility &cri
 
 				if(isEligible)
 				{
-					eligibleForTreatment.push_back(untPerson);
+					rankedForTreatment[currentRank - 1].push_back(untPerson);
+					rankedPeople.insert(untPerson);
+					popStats->recordEligiblePerson(untPerson);
 				}
 
 				untIter++;
@@ -1312,36 +1310,42 @@ void Population::startTreatment(Person *person, SimContext *treatedContext)
 
 void Population::applyARTRollout(EventParams &_eventParams)
 {
-	//calculate absolute number of slots opening up this month
-	int numUntreated = rolloutUntreatedPool.size();
 	int numTreated = rolloutTreatedPool.size();
-	int totalSlots = static_cast<int>((numUntreated + numTreated) * _eventParams.currentRolloutProportion);
+	double currentRolloutProportion = _eventParams.interpolateMonthlyRolloutProportion();
+	int totalSlots = static_cast<int>(getSize() * currentRolloutProportion);
 	int newSlots = totalSlots - numTreated;
 
-	//no available slots
+	if(totalSlots > 0)
+	{
+		determineRankings(_eventParams.rolloutEligibility);
+	}
+
 	if(newSlots > 0)
 	{
-		determineEligibility(_eventParams.rolloutEligibility);
-
-		while(newSlots > 0 && !eligibleForTreatment.empty())
+		for(auto rankingIterator = rankedForTreatment.begin(); rankingIterator != rankedForTreatment.end(); ++rankingIterator)
 		{
-			int randomEligible = _eventParams.randomNums.randInt(0, eligibleForTreatment.size() - 1);
-			startTreatment(eligibleForTreatment[randomEligible], _eventParams.treatedContext);
-			std::swap(eligibleForTreatment[randomEligible], eligibleForTreatment[eligibleForTreatment.size() - 1]);
-			eligibleForTreatment.pop_back();
-			--newSlots;
+			std::vector<Person *> currentRankingBucket = *rankingIterator;
+
+			while(newSlots > 0 && !currentRankingBucket.empty())
+			{
+				int randomPersonIndex = _eventParams.randomNums.randInt(0, currentRankingBucket.size() - 1);
+				startTreatment(currentRankingBucket[randomPersonIndex], _eventParams.treatedContext);
+
+				if(randomPersonIndex != currentRankingBucket.size() - 1)
+				{
+					std::swap(currentRankingBucket[randomPersonIndex], currentRankingBucket.back());
+				}
+
+				currentRankingBucket.pop_back();
+
+				--newSlots;
+			}
 		}
 	}
 
-	for(std::vector<Person *>::iterator eligibleIterator = eligibleForTreatment.begin(); eligibleIterator != eligibleForTreatment.end(); eligibleIterator++)
+	for(auto treatedIterator = rolloutTreatedPool.begin(); treatedIterator != rolloutTreatedPool.end(); ++treatedIterator)
 	{
-		popStats->recordEligiblePerson(*eligibleIterator);
-	}
-
-	for(std::list<Person *>::iterator treatedIterator = rolloutTreatedPool.begin(); treatedIterator != rolloutTreatedPool.end(); treatedIterator++)
-	{
-		popStats->recordEligiblePerson(*treatedIterator); // treated people are technically eligible too
-		popStats->recordTreatment(*treatedIterator);
+		popStats->recordEnrollment(*treatedIterator);
 	}
 }
 

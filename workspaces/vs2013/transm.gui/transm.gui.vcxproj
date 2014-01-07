@@ -125,6 +125,7 @@ copy $(wxpath)\lib\vc120_x64_dll\wxmsw30ud_core_vc120_x64.dll $(SolutionDir)$(Pl
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(boostpath)\lib\lib64-msvc-12.0;$(wxpath)\lib\vc120_x64_dll</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>copy $(wxpath)\lib\vc120_x64_dll\wxbase30u_vc120_x64.dll $(SolutionDir)$(Platform)\$(Configuration)\

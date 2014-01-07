@@ -243,13 +243,15 @@ Person* BucketSexualMixing::getRandomPerson(RandomNums& _randomNums, unsigned in
 	}
 
 	//use the randPick to determine which AgeBucket to draw from
-	unsigned long randPick = _randomNums.randInt(0,numMarbles-1);
+	int randPick = _randomNums.randInt(0,numMarbles-1);
 	//keep looping through all the indexes within personsByAge until we get the one that contains the randPick'th person with age between [_ageLowerBound, _ageUpperBound]
 	currIndex = minIndex;
-	while (currIndex <= maxIndex) {
+	while (currIndex <= maxIndex)
+	{
 		//if we're at the right AgeBucket
-		if(randPick < this->personsByAge->at(currIndex)->numChoices(riskToDraw)) {
-			BucketAge *ageBucket = this->personsByAge->at(currIndex);
+		if(randPick < personsByAge->at(currIndex)->numChoices(riskToDraw))
+		{
+			BucketAge *ageBucket = personsByAge->at(currIndex);
 			Person *p = ageBucket->drawMember(_randomNums, _risk, _partnershipType,(riskToDraw == Person::ENDRiskLevel), _remove);
 			//we have to tell the person that they are not part of a bucket anymore
 			if(_remove && p) {
@@ -258,7 +260,7 @@ Person* BucketSexualMixing::getRandomPerson(RandomNums& _randomNums, unsigned in
 			return p;
 
 		}
-		randPick -= this->personsByAge->at(currIndex)->numChoices(riskToDraw);
+		randPick -= personsByAge->at(currIndex)->numChoices(riskToDraw);
 		currIndex++;
 	}
 

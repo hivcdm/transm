@@ -43,7 +43,8 @@ Person* DmgProfileBucket::drawMember(RandomNums& _randomNums, SexualPartnership:
 	return removed;
 }
 
-Person* DmgProfileBucket::drawMember(RandomNums& _randomNums, Person *_chooser,SexualPartnership::Type _partnershipType, bool _remove) {
+Person* DmgProfileBucket::drawMember(RandomNums& _randomNums, Person */*_chooser*/,SexualPartnership::Type _partnershipType, bool _remove)
+{
 	//we have to implement the more complicated drawing process
 	//This is done in BucketSexualMixing
 	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
@@ -54,7 +55,7 @@ Person* DmgProfileBucket::drawMember(RandomNums& _randomNums, Person *_chooser,S
 		removed->setCurrBucketProfileID(DmgProfile::END);
 	}
 */
-	return this->drawMember(_randomNums, _partnershipType,_remove);
+	return drawMember(_randomNums, _partnershipType,_remove);
 }
 
 bool DmgProfileBucket::erase(Person *_person)

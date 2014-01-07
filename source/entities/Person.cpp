@@ -7,7 +7,7 @@
 #include "../util/Util.h"
 #include "../util/rand/RandomNums.h"
 #include "../statistics/InfectionsTracker.h"
-#include "../statistics/ArtTestingTracker.h"
+#include "../statistics/ArtRolloutTracker.h"
 
 class EntityPool;
 
@@ -803,7 +803,7 @@ Person* Person::sexualActivity(Person *_p, int _numActs, SexualPartnership::Type
 	return NULL;
 }
 
-double Person::updateHealthStatus(EventParams& _eventParams, ArtTestingTracker *testTracker) {
+double Person::updateHealthStatus(EventParams& _eventParams, ArtRolloutTracker *testTracker) {
 	//if this person has died, then don't update.
 	if (!this->isAlive())
 		return 0;
@@ -1329,7 +1329,7 @@ double Person::getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPart
 	return 0.0;
 }
 
-double Person::rollForAgeDifference(SexualPartnership::Type _partnershipType, RandomNums& _randomNums){
+double Person::rollForAgeDifference(SexualPartnership::Type /*_partnershipType*/, RandomNums &/*_randomNums*/){
 	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
 	cerr << "Person::rollForAgeDifference()" << endl;
 	return 0.0;
@@ -1341,30 +1341,30 @@ double Person::getTransmissionCoeff() {
 	return 0.0;
 }
 
-bool Person::possibleMatch(SexualPartnership::Type _partnershipType, Person *_p) {
+bool Person::possibleMatch(SexualPartnership::Type /*_partnershipType*/, Person */*_p*/) {
 	cerr << "Called Person::possibleMatch()" << endl;
 	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
 	return false;
 }
 
-int Person::rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNums& _randomNums, Person *_p){
+int Person::rollForNewPartnershipDuration(SexualPartnership::Type /*_partnershipType*/, RandomNums &/*_randomNums*/, Person */*_p*/){
 	cerr << "Called Person::rollForNewPartnershipDuration()" << endl;
 	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
 	return false;
 }
 
-int Person::rollForNumPartners(RandomNums& _randomNums, SexualPartnership::Type _partnershipType) {
+int Person::rollForNumPartners(RandomNums &/*_randomNums*/, SexualPartnership::Type /*_partnershipType*/)
+{
 	cerr << "Called Person::rollForNumPartners()" << endl;
 	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
 	return false;
-
 }
 
-int Person::rollNumEventsPerPartner(Person *_p, RandomNums& _randomNums, SexualPartnership::Type _partnershipType){
+int Person::rollNumEventsPerPartner(Person */*_p*/, RandomNums &/*_randomNums*/, SexualPartnership::Type /*_partnershipType*/)
+{
 	cerr << "Called Person::rollNumEventsPerPartner()" << endl;
 	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
 	return false;
-
 }
 
 

@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "ArtTestingTracker.h"
+#include "ArtRolloutTracker.h"
 #include "CostsTracker.h"
 #include "InfectionsTracker.h"
 #include "StatsRecord.h"
@@ -122,11 +122,9 @@ private:
 	int yearlyIncidentInfections;
 	int yearlyTests;
 	std::set<Person *> uniqueYearlyEligible;
+	std::set<Person *> uniqueYearlyEnrolled;
 	std::set<Person *> uniqueYearlyTreated;
 	std::vector<int> yearlyTestsByResult;
-
-	//TODO: Is this necessary?
-	//long cumulativeNumberDead; //This is a running tally of the total number of persons who have died during the course of the simulation
 
 public:
 
@@ -139,7 +137,7 @@ public:
 
 	CostsTracker costsTracker;			//tallies all costs
 
-	ArtTestingTracker artTracker; // records art rollout outcomes
+	ArtRolloutTracker artTracker; // records art rollout outcomes
 
 	EnumCls<PopStats::LifeStats> *enumClass; //used in lifeStats; declared here so that deletion is possible
 
@@ -188,6 +186,7 @@ public:
 	void recordYearStartStats(int sexuallyActivePopSize, int prevalentCases);
 	void recordTestStats(int numTests, const std::vector<int> &numTestsByResult);
 	void recordEligiblePerson(Person *person);
+	void recordEnrollment(Person *person);
 	void recordTreatment(Person *person);
 
 	std::vector<PopStats::SingleTimeStats*>* getSelectedSummaryStats();

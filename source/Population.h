@@ -66,7 +66,6 @@ class Population
     std::vector<boost::tuple<long, int, int> > currSizeByAgeRangeFemale;
     /** The people who are infected but still untreated (Only used for rollout)
      */
-    //std::vector<Person *> rolloutUntreatedPoolQueue;
     std::list<Person *> rolloutUntreatedPool;
 
     /**The people who are currently being treated (Only used for rollout)
@@ -92,7 +91,7 @@ class Population
      //  use pre-existing normalization and random index chooser functions. */
     std::vector<double> eligibleBucketWeights[SexualPartnership::ENDType];
 
-	std::vector<Person *> eligibleForTreatment;
+	std::vector<std::vector<Person *> > rankedForTreatment;
 
 public:
     PopStats *popStats;	//tallies the statistics that the population generates throughout the simulation
@@ -147,8 +146,6 @@ public:
      * Checks to see if there is a new cepac input file to apply to certain portions of the population if rollout is being used
      */
     void applyRolloutContext(EventParams &_eventParams, int time);
-
-	void determineEligibility(const EventParams::RolloutEligibility &criteria);
 
 	void startTreatment(Person *person, SimContext *treatedContext);
 
@@ -233,6 +230,8 @@ private:
       @param _deceased pointer to deceased person
     */
     void processDeath(EventParams &_eventParams, Person *_p, bool calculateLE);
+
+	void determineRankings(const EventParams::RolloutEligibility &criteria);
 
 //-----------< END helper methods  >--------------------//
 

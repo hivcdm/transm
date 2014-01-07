@@ -600,9 +600,11 @@ void PopStats::printShiftedOutcomes(std::ostream &_outStream, int year)
 			_outStream << testTypes[i];
 			_outStream << Constants::TAB;
 		}
-		_outStream << "Unique Eligible";
+		_outStream << "Number Eligible for Treatment";
 		_outStream << Constants::TAB;
-		_outStream << "Unique Treated";
+		_outStream << "Number Acessing Treatment";
+		_outStream << Constants::TAB;
+		_outStream << "Number Enrolled in ART";
 		_outStream << std::endl;
 	}
 
@@ -629,6 +631,8 @@ void PopStats::printShiftedOutcomes(std::ostream &_outStream, int year)
 		_outStream << Constants::TAB;
 	}
 	_outStream << uniqueYearlyEligible.size();
+	_outStream << Constants::TAB;
+	_outStream << uniqueYearlyEnrolled.size();
 	_outStream << Constants::TAB;
 	_outStream << uniqueYearlyTreated.size();
 	_outStream << std::endl;
@@ -799,10 +803,15 @@ void PopStats::recordEligiblePerson(Person *person)
 	artTracker.recordEligiblePerson(person);
 }
 
+void PopStats::recordEnrollment(Person *person)
+{
+	uniqueYearlyEnrolled.insert(person);
+}
+
 void PopStats::recordTreatment(Person *person)
 {
 	uniqueYearlyTreated.insert(person);
-	artTracker.recordTreatedPerson(person);
+	artTracker.recordTreatment(person);
 }
 
 void PopStats::resetYear(int newYear)
@@ -813,7 +822,8 @@ void PopStats::resetYear(int newYear)
 	yearlyCumulativeSexuallyActivePopSize = 0;
 	yearlyIncidentInfections = 0;
 	yearlyTests = 0;
-	std::fill(yearlyTestsByResult.begin(), yearlyTestsByResult.end(), 0);
+	yearlyTestsByResult.assign(yearlyTestsByResult.size(), 0);
 	uniqueYearlyEligible.clear();
 	uniqueYearlyTreated.clear();
+	uniqueYearlyEnrolled.clear();
 }

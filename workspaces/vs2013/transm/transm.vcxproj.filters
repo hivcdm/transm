@@ -81,9 +81,6 @@
       <Filter>cepacbridge</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\main.cpp" />
-    <ClCompile Include="..\..\..\source\statistics\ArtTestingTracker.cpp">
-      <Filter>statistics</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\statistics\TabularOutput.cpp">
       <Filter>statistics</Filter>
     </ClCompile>
@@ -91,6 +88,9 @@
       <Filter>util\sqlite</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\statistics\BucketCounter.cpp">
+      <Filter>statistics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\statistics\ArtRolloutTracker.cpp">
       <Filter>statistics</Filter>
     </ClCompile>
   </ItemGroup>
@@ -192,9 +192,6 @@
     <ClInclude Include="..\..\..\source\util\Timer.h">
       <Filter>util</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\statistics\ArtTestingTracker.h">
-      <Filter>statistics</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\statistics\TabularOutput.h">
       <Filter>statistics</Filter>
     </ClInclude>
@@ -205,6 +202,9 @@
       <Filter>util\sqlite</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\statistics\BucketCounter.h">
+      <Filter>statistics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\statistics\ArtRolloutTracker.h">
       <Filter>statistics</Filter>
     </ClInclude>
   </ItemGroup>

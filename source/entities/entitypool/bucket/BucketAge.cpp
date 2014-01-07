@@ -129,8 +129,10 @@ BucketAge::BucketAge(DmgProfile::ProfileID BinID, unsigned int popID, const doub
 	//				- if a key is chosen where there are no entities, choose the next
 	//					key w/ members in it
 	//TESTED... without random number generator
-	Person* BucketAge::drawMember(RandomNums& _randomNums, Person::RiskLevel _riskLevel, SexualPartnership::Type _partnershipType, bool _use_random, bool _remove){
-		if (this->numPersons == 0){
+	Person *BucketAge::drawMember(RandomNums& _randomNums, Person::RiskLevel _riskLevel, SexualPartnership::Type /*_partnershipType*/, bool _use_random, bool _remove)
+	{
+		if (this->numPersons == 0)
+		{
 			return NULL;
 		}
 		FullVector *toDrawFrom;

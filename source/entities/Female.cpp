@@ -11,14 +11,14 @@
 Female::SubPopParams::SubPopParams() {
 }
 
-Female::SubPopParams::SubPopParams(ticpp::Element* _femaleParams, EventParams &_eventParams) {
+Female::SubPopParams::SubPopParams(ticpp::Element *_femaleParams, EventParams &_eventParams)
+{
 	this->loadParamsXML(_femaleParams, _eventParams);
 }
 
 
-int Female::SubPopParams::loadParamsXML(ticpp::Element* _femaleParams, EventParams &_eventParams){
-	//cout << "Female::loadParamsXML(...)" << endl;
-
+int Female::SubPopParams::loadParamsXML(ticpp::Element *_femaleParams, EventParams &/*_eventParams*/)
+{
 	try {
 		//get behavioral params
 		ticpp::Element* behaviorElem = _femaleParams->FirstChildElement("behavior");
@@ -145,11 +145,13 @@ double Female::getFOI(Person *_p, SexualPartnership::Type _partnershipType, Even
 }
 
 //currently, females don't have much of a choice. Edit these functions to give them ability have have partner preferences
-double Female::getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const {
+double Female::getMinPartnerSelectVal(Person::SelectingCriteria /*_PSC*/, SexualPartnership::Type /*_partnershipType*/) const
+{
 		return Util::getMin<unsigned int>();
 }
 
-double Female::getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const {
+double Female::getMaxPartnerSelectVal(Person::SelectingCriteria /*_PSC*/, SexualPartnership::Type /*_partnershipType*/) const
+{
 	return Util::getMax<unsigned int>();
 }
 

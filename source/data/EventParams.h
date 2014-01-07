@@ -61,8 +61,7 @@ class EventParams {
 		class RolloutTime{
 			public:
 				int timeToApply;
-				double proportionOfPop;
-				RolloutTime(int t,double prop){timeToApply=t;proportionOfPop=prop;}
+				RolloutTime(int t){timeToApply=t;}
 		};
 
 		/**
@@ -132,14 +131,15 @@ class EventParams {
 			double thresholdPrevMult;
 		};
 
-		inline EventParams() {
+		inline EventParams()
+		{
 			currTime = 0;  
 			genGraphViz = false; 
 			useRollout=false; 
-			untreatedContext=NULL;
-			treatedContext=NULL;
-			currentRolloutProportion=0.0;
-		} //randomNums.reset(3131961357);}
+			untreatedContext = NULL;
+			treatedContext = NULL;
+		}
+
 		//current internal clock for a particular Population
 		long currTime;
 
@@ -159,9 +159,6 @@ class EventParams {
 		//Cepac files for storing current population groups (only if using rollout)
 		SimContext* untreatedContext;
 		SimContext* treatedContext;
-		
-		//Proportion of infected people that should be getting treatment each month through ART Rollout
-		double currentRolloutProportion;
 
 		//If we are using rollout use the cepac files specified in the ART rollout section
 		bool useRollout;
@@ -220,6 +217,34 @@ class EventParams {
 		//prints BatchStats files for each of up to five variables as determined by user input
 		std::fstream BatchStatsStream[ENDBatchStatsVariables];
 
+		std::vector<double> targetYearlyRolloutProportions;
+
+		double interpolateMonthlyRolloutProportion()
+		{
+			int monthOf2002 = monthOf1990 + 12 * 12;
+
+			if(currTime < monthOf2002)
+			{
+				return 0;
+			}
+			else
+			{
+				int yearRelativeTo2002 = (currTime - monthOf2002) / 12;
+
+				if(yearRelativeTo2002 < targetYearlyRolloutProportions.size() - 1)
+				{
+					double currentYearTargetProportion = targetYearlyRolloutProportions[yearRelativeTo2002];
+					double nextYearTargetProportion = targetYearlyRolloutProportions[yearRelativeTo2002 + 1];
+					double x = ((currTime - monthOf1990) % 12) / 12.0;
+					return currentYearTargetProportion + (nextYearTargetProportion - currentYearTargetProportion) * x;
+				}
+				else
+				{
+					return targetYearlyRolloutProportions.back();
+				}
+			}
+		}
+
 #if !defined( CONSOLE )
 		//Used for printing to GUI output
 		DisplayBox *displaybox;
@@ -234,11 +259,6 @@ class EventParams {
 			std::cout << message;
 #endif
 		}
-
-		//TODO: Get rid of me!
-		//For generating graphVizOutput
-		//std::fstream graphVizNodes;
-		//std::fstream graphVizedges;
 
 		DebugLevel debugLevel;		//determines how much output is printed to the traces
 		RandomNums randomNums;		//random number generator that is used throughout the simulation

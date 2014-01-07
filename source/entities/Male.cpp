@@ -42,7 +42,7 @@ int Male::SubPopParams::loadParamsXML(ticpp::Element* _maleParams, EventParams &
 		bool useMultiplierForHighRiskAcqRates = false;
 		try {
 			useMultiplierForHighRiskAcqRates = (behaviorElem->FirstChildElement("UseHighRiskMultiplier")->GetText<int>() == 1);
-		} catch(ticpp::Exception& _e) {
+		} catch(ticpp::Exception&) {
 			useMultiplierForHighRiskAcqRates = false;
 		}
 
@@ -50,21 +50,21 @@ int Male::SubPopParams::loadParamsXML(ticpp::Element* _maleParams, EventParams &
 		double highRiskAcqRateMultiplier;
 		try {
 			highRiskAcqRateMultiplier = behaviorElem->FirstChildElement("HighRiskAcqRateMultiplier")->GetText<double>();
-		} catch(ticpp::Exception& _e) {
+		} catch(ticpp::Exception&) {
 			highRiskAcqRateMultiplier = 1;
 		}
 
 		bool useMultiplierForHighRiskCSW = false;
 		try{
 			useMultiplierForHighRiskCSW = (behaviorElem->FirstChildElement("UseCSWHighRiskMultiplier")->GetText<int>() == 1);
-		}catch(ticpp::Exception& _e) {
+		}catch(ticpp::Exception&) {
 			useMultiplierForHighRiskCSW = false;
 		}
 
 		double highRiskAcqRateMultiplierCSW;
 		try {
 			highRiskAcqRateMultiplierCSW = behaviorElem->FirstChildElement("CSWHighRiskAcqRateMultiplier")->GetText<double>();
-		} catch(ticpp::Exception& _e) {
+		} catch(ticpp::Exception &) {
 			highRiskAcqRateMultiplierCSW = 1;
 		}
 

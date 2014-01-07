@@ -192,16 +192,20 @@ Person * EntityIndex<_PSC,_KeyValType>::JavaStyleIterator::next(){
 
 //removes from the collection the last element returned by the iterator
 template <Person::SelectingCriteria _PSC, class _KeyValType>
-bool EntityIndex<_PSC,_KeyValType>::JavaStyleIterator::remove() {
+bool EntityIndex<_PSC,_KeyValType>::JavaStyleIterator::remove()
+{
 	//remove the person that was most recently returned by the iterator
-	if(!this->currRemoved && (currElement != end)) {
-		bool isInfected = (this->currElement->second)->isInfected();
+	if(!this->currRemoved && (currElement != end))
+	{
 		//user is removing first element, the we have to do a special adjustment
-		if(this->currElement == this->nextElement) {
+		if(this->currElement == this->nextElement)
+		{
 			this->nextElement++;
 			this->index->personMultiMap.erase(currElement);
 			this->currElement = this->nextElement;
-		} else {
+		}
+		else
+		{
 			this->index->personMultiMap.erase(currElement);
 		}
 
@@ -262,7 +266,7 @@ void EntityIndex<_PSC,_KeyValType>::clear() {
 
 
 template <Person::SelectingCriteria _PSC, class _KeyValType>
-Person* EntityIndex<_PSC,_KeyValType>::drawMember(RandomNums& _randomNums, SexualPartnership::Type _partnershipType, bool _remove) {
+Person* EntityIndex<_PSC,_KeyValType>::drawMember(RandomNums& _randomNums, SexualPartnership::Type /*_partnershipType*/, bool _remove) {
 
 	//assume that everyone in this pool has an equal shot at being chosen
 	int numPotentials = this->size();

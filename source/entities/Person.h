@@ -14,7 +14,7 @@
 #include "../graphviz/graphVizParse.h"
 
 class InfectionsTracker;
-class ArtTestingTracker;
+class ArtRolloutTracker;
 
 using namespace std;
 
@@ -314,7 +314,7 @@ public:
 	//update health status of HIV infected people -- i.e. cd4, hvl, art, etc.
 	//  in version 1, this information is taken from CEPAC model
 	// @returns: costs (accrued in CEPAC) of updating health
-	double updateHealthStatus(EventParams& _eventParams, ArtTestingTracker *testTracker);
+	double updateHealthStatus(EventParams& _eventParams, ArtRolloutTracker *testTracker);
 
 	//Call this after all transmission/population dynamics are done.
 	//Runs infected through CEPAC until they die and adds their LM etc to CEPAC stats
@@ -576,6 +576,8 @@ public:
 	void resetLatestUnformedPartnerships(SexualPartnership::Type type);
 
 	GraphVizGraphElements::personNode* getPersonNode(){ return this->graphNode; }
+
+	bool isOnArt() { return cepacPatient && cepacPatient->getARTState()->isOnART; }
 
 	//-----------------< END getters, setters, and helper methods >--------------//
 

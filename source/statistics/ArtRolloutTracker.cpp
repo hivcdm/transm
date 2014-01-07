@@ -1,9 +1,9 @@
-#include "ArtTestingTracker.h"
+#include "ArtRolloutTracker.h"
 #include "../Population.h"
 #include "../entities/Person.h"
 #include "../cepac/SimContext.h"
 
-const std::string ArtTestingTracker::RISK_GROUP_NAMES[] = 
+const std::string ArtRolloutTracker::RISK_GROUP_NAMES[] = 
 {
 	"Non-CSW Low-Risk Male",
 	"Non-CSW Low-Risk Female",
@@ -13,20 +13,21 @@ const std::string ArtTestingTracker::RISK_GROUP_NAMES[] =
 	"CSW High-Risk Female"
 };
 
-ArtTestingTracker::ArtTestingTracker() :
+ArtRolloutTracker::ArtRolloutTracker() :
     numTestsOffered(0),
     numTestsAccepted(0),
-    numTestsReturnedFor(0)
+    numTestsReturnedFor(0),
+	numTestsByResult(SimContext::TEST_RESULT_NUM)
 {
 	Reset();
 }
 
-ArtTestingTracker::~ArtTestingTracker()
+ArtRolloutTracker::~ArtRolloutTracker()
 {
 
 }
 
-void ArtTestingTracker::SetAgeRanges(const std::vector<boost::tuple<long, int, int> > &ageRangeSizes)
+void ArtRolloutTracker::SetAgeRanges(const std::vector<boost::tuple<long, int, int> > &ageRangeSizes)
 {
 	ageRanges.clear();
 
@@ -41,10 +42,10 @@ void ArtTestingTracker::SetAgeRanges(const std::vector<boost::tuple<long, int, i
 
 	testsByBucketCounter.SetAgeRanges(ageRanges);
 	eligibleByBucketCounter.SetAgeRanges(ageRanges);
-	enrolledByBucketCounter.SetAgeRanges(ageRanges);
+	treatedByBucketCounter.SetAgeRanges(ageRanges);
 }
 
-void ArtTestingTracker::recordTest(Person *person, bool accepted, bool returned, SimContext::TEST_RESULT result)
+void ArtRolloutTracker::recordTest(Person *person, bool accepted, bool returned, SimContext::TEST_RESULT result)
 {
 	numTestsOffered++;
 
@@ -61,17 +62,17 @@ void ArtTestingTracker::recordTest(Person *person, bool accepted, bool returned,
 	}
 }
 
-void ArtTestingTracker::recordEligiblePerson(Person *person)
+void ArtRolloutTracker::recordEligiblePerson(Person *person)
 {
 	eligibleByBucketCounter.Increment(person);
 }
 
-void ArtTestingTracker::recordTreatedPerson(Person *person)
+void ArtRolloutTracker::recordTreatment(Person *person)
 {
-	enrolledByBucketCounter.Increment(person);
+	treatedByBucketCounter.Increment(person);
 }
 
-void ArtTestingTracker::printArtRolloutOutcomes(int time, std::ostream &_outStream, Population *_population)
+void ArtRolloutTracker::printArtRolloutOutcomes(int time, std::ostream &_outStream, Population *_population)
 {
 	if(time == 0)
 	{
@@ -84,7 +85,7 @@ void ArtTestingTracker::printArtRolloutOutcomes(int time, std::ostream &_outStre
 	Reset();
 }
 
-void ArtTestingTracker::buildHeader()
+void ArtRolloutTracker::buildHeader()
 {
 	SetHeaderCell(1, 1, "ART Rollout Outcomes");
 
@@ -140,7 +141,7 @@ void ArtTestingTracker::buildHeader()
 		SetHeaderCell(column, 3, SimContext::TEST_RESULT_STRS[testResultIndex]);
 	}
 
-	SetHeaderCell(column, 1, "Number Eligible");
+	SetHeaderCell(column, 1, "Number Eligible for Treatment");
 
 	SetHeaderCell(column, 2, "Gender");
 	SetHeaderCell(column, 3, "Males");
@@ -217,7 +218,7 @@ void ArtTestingTracker::buildHeader()
 	}
 }
 
-void ArtTestingTracker::buildRow(int time, Population *_population)
+void ArtRolloutTracker::buildRow(int time, Population *_population)
 {
 	if(time == 0)
 	{
@@ -314,22 +315,22 @@ void ArtTestingTracker::buildRow(int time, Population *_population)
 
 	for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
 	{
-		PushElement(enrolledByBucketCounter.GetCountByGender(gender));
+		PushElement(treatedByBucketCounter.GetCountByGender(gender));
 	}
 
 	for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
 	{
-		PushElement(enrolledByBucketCounter.GetCountByGenderSexualActivity(gender, DmgProfile::NA));
+		PushElement(treatedByBucketCounter.GetCountByGenderSexualActivity(gender, DmgProfile::NA));
 
 		for(int ageGroup = 0; ageGroup < ageRanges.size(); ++ageGroup)
 		{
-			PushElement(enrolledByBucketCounter.GetCountByGenderSexualActivityAge(gender, DmgProfile::SA, ageGroup));
+			PushElement(treatedByBucketCounter.GetCountByGenderSexualActivityAge(gender, DmgProfile::SA, ageGroup));
 		}
 	}
 
 	for(Person::CD4Strata cd4Stratum = static_cast<Person::CD4Strata>(0); cd4Stratum < Person::ENDCD4Strata; ++cd4Stratum)
 	{
-		PushElement(enrolledByBucketCounter.GetCountByCd4(cd4Stratum));
+		PushElement(treatedByBucketCounter.GetCountByCd4(cd4Stratum));
 	}
 
 	for(DmgProfile::Employment employment = static_cast<DmgProfile::Employment>(0); employment < DmgProfile::ENDEmployment; ++employment)
@@ -344,17 +345,17 @@ void ArtTestingTracker::buildRow(int time, Population *_population)
 					continue;
 				}
 
-				PushElement(enrolledByBucketCounter.GetCountByRiskGroup(riskLevel, gender, employment));
+				PushElement(treatedByBucketCounter.GetCountByRiskGroup(riskLevel, gender, employment));
 			}
 		}
 	}
 }
 
-void ArtTestingTracker::Reset()
+void ArtRolloutTracker::Reset()
 {
 	testsByBucketCounter.Reset();
 	eligibleByBucketCounter.Reset();
-	enrolledByBucketCounter.Reset();
+	treatedByBucketCounter.Reset();
 
 	for(int resultIndex = 0; resultIndex < SimContext::TEST_RESULT_NUM; ++resultIndex)
 	{

@@ -149,83 +149,67 @@ void EntityPool::printBucketSizes(ostream& _outStream, string _prefix, bool _pri
 	}
 }
 
-bool EntityPool::removeEntity(Person *_person) {
+bool EntityPool::removeEntity(Person *_person)
+{
 	assert(_person != NULL);
 
-	bool removed;
+	bool removed = false;
 
 	//bucket will take care of the _person->setCurrBucketProfileID(DmgProfile::END)
-
 	DmgProfile::ProfileID personProfID = _person->getCurrBucketProfileID();
 
-/*	if (personProfID >= DmgProfile::END){
-		cout << "OH, THE HORRORS!  personProfID is not a valid DmgProfile!" << endl;
-		if (!_person->inCorrectDmgProfileBucket()){
-			cout << "SHE (" << _person->getID() << ") IS IN THE WRONG PLACE!" << endl;
-			cout << "Her profile should be " << *(_person->getDmgProfile()->toString()) << endl;
-			//cout << "But she is in " << DmgProfile::toString(personProfID) << endl;
-		}
-	}*/
-	//ERINWASHERE
-	if (personProfID >= DmgProfile::END){
+	if (personProfID >= DmgProfile::END)
+	{
 		removed = false;
 	}
-	else{
-		try{
-			removed = this->getBucket(personProfID)->erase(_person);
+	else
+	{
+		try
+		{
+			removed = getBucket(personProfID)->erase(_person);
 		}
-		catch (std::out_of_range& e) {
+		catch (std::out_of_range &e)
+		{
 
 			std::cerr << "Trying to remove person from DMG Profile Bucket resulted in an out of range exception: " << e.what() << "\n";
 			std::cerr << "If this person is of maximum age, they were probably already removed and you can disregard this message." << endl;
 			_person->print(cerr, "Person attempted to remove: ");
 		}
-		catch (std::exception& e) {
+		catch (std::exception &e)
+		{
 			std::cerr << "Trying to remove person from DMG Profile Bucket resulted in an exception: " << e.what() << "\n";
 		}
 	}
-	//cout << "... okay!" << endl;
 
 	return removed;
 }
 
 
-bool EntityPool::refreshDmgProfileBucket(Person *_person, list<Person*>::iterator *_p_Iter, bool forceRefresh) {
+bool EntityPool::refreshDmgProfileBucket(Person *_person, list<Person*>::iterator */*_p_Iter*/, bool forceRefresh)
+{
 	assert(_person != NULL);
 
 	bool success = false;
 
-	if (!forceRefresh){
+	if (!forceRefresh)
+	{
 		//Don't want to waste time calling this if person is just going to be removed from and re-added to the same bucket
 		assert(_person->getCurrBucketProfileID() != _person->getDmgProfile()->getProfileID());
 	}
 
-	//if we are provided with a DmgProfileBucket::JIterator, then use this for faster removal
-	/*if(_p_Iter) {
-		//make sure person was not removed already
-		assert( !(*(*_p_Iter))->alreadyRemoved());
-		//if (!(*_p_Iter)->alreadyRemoved()){
-			//iterator should take care of the _person->setCurrBucketProfileID(DmgProfile::END)
-			success = (*(*_p_Iter))->remove();
-		//}
-		else{
-			cout << "!! refreshDmgProfileBucket is trying to remove someone from a bucket they've already been removed from" << endl;
-			cout << "  !! person has profile:" << *(_person->getDmgProfile()->toString()) << endl;
-		}
-	} else {*/
-		//assert(_person->getCurrBucketProfileID() != DmgProfile::END);
-		try {
-			success = this->removeEntity(_person);
-		}
-		catch (std::out_of_range& e) {
-			std::cout << "Trying to remove a person threw an out of range error (current profile ID is DmgProfile::END?): " << e.what() << "\n";
-		}
-		catch (std::exception& e) {
-			std::cout << "Trying to remove a person threw an exception: " << e.what() << "\n";
-		}
-	//}
+	try
+	{
+		success = this->removeEntity(_person);
+	}
+	catch(std::out_of_range &e)
+	{
+		std::cout << "Trying to remove a person threw an out of range error (current profile ID is DmgProfile::END?): " << e.what() << "\n";
+	}
+	catch(std::exception &e)
+	{
+		std::cout << "Trying to remove a person threw an exception: " << e.what() << "\n";
+	}
 
-	//return true if we successfully removed and added this person
 	return success && this->addEntity(_person);
 }
 
@@ -463,7 +447,6 @@ EntityPool::EntityPool(int _SAEntAgeMths, unsigned int _popID, const double _ass
 	DmgProfile selector;
 	//contains the BucketID's of the buckets we want to use in this simulation
 	std::vector<DmgProfile::ProfileID> validBucketIDs;
-	int numNABuckets = 0;
 
 	//we only want 2 NA buckets (male, female)  b/c they aren't involved in sexual mixing
 	//so instantiate 2 of the NA Buckets (NA, Hetero, nonCSW

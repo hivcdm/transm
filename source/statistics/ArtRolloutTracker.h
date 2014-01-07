@@ -13,11 +13,11 @@
 class Person;
 class Population;
 
-class ArtTestingTracker : protected TabularOutput
+class ArtRolloutTracker : protected TabularOutput
 {
 public:
-	ArtTestingTracker();
-	~ArtTestingTracker();
+	ArtRolloutTracker();
+	~ArtRolloutTracker();
 
 	void SetAgeRanges(const std::vector<boost::tuple<long, int, int> > &ageGroupSizes);
 
@@ -25,7 +25,7 @@ public:
 
 	void recordEligiblePerson(Person *person);
 
-	void recordTreatedPerson(Person *person);
+	void recordTreatment(Person *person);
 
 	void printArtRolloutOutcomes(int time, std::ostream &_outStream, Population *_population);
 
@@ -35,10 +35,10 @@ private:
 	int numTestsOffered;
 	int numTestsAccepted;
 	int numTestsReturnedFor;
-	int numTestsByResult[SimContext::TEST_RESULT_NUM];
+	std::vector<int> numTestsByResult;
 	BucketCounter testsByBucketCounter;
 	BucketCounter eligibleByBucketCounter;
-	BucketCounter enrolledByBucketCounter;
+	BucketCounter treatedByBucketCounter;
 
 	std::vector<std::pair<int, int> > ageRanges;
 
