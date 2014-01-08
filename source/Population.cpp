@@ -1288,7 +1288,6 @@ void Population::determineRankings(const EventParams::RolloutEligibility &criter
 				{
 					rankedForTreatment[currentRank - 1].push_back(untPerson);
 					rankedPeople.insert(untPerson);
-					popStats->recordEligiblePerson(untPerson);
 				}
 
 				untIter++;
@@ -1343,8 +1342,18 @@ void Population::applyARTRollout(EventParams &_eventParams)
 		}
 	}
 
+	for(auto rankingIterator = rankedForTreatment.begin(); rankingIterator != rankedForTreatment.end(); ++rankingIterator)
+	{
+		std::vector<Person *> currentRankingBucket = *rankingIterator;
+		for(auto bucketIterator = currentRankingBucket.begin(); bucketIterator != currentRankingBucket.end(); ++bucketIterator)
+		{
+			popStats->recordEligiblePerson(*bucketIterator);
+		}
+	}
+
 	for(auto treatedIterator = rolloutTreatedPool.begin(); treatedIterator != rolloutTreatedPool.end(); ++treatedIterator)
 	{
+		popStats->recordEligiblePerson(*treatedIterator);
 		popStats->recordEnrollment(*treatedIterator);
 	}
 }
