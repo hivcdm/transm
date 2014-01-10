@@ -1,12 +1,10 @@
 #pragma once
 
-#include <vector>
-#include <string>
 #include <assert.h>
 #include <iostream>
+#include <string>
 #include <typeinfo>
-
-using namespace std;
+#include <vector>
 
 #include "../data/Enum.h"
 
@@ -32,7 +30,7 @@ template<typename PointStatIDs, typename StratifiedStatIDs>
 class StatsRecord {
 
 	//any stats that can be represented as a single value
-	vector<double> singleValStats;
+	std::vector<double> singleValStats;
 	EnumCls<PointStatIDs> *statIDEnumCls;
 
 	/*
@@ -56,7 +54,7 @@ public:
 	//StatsRecord( EnumCls<PointStatIDs> *statIDEnumCls, EnumCls<StratifiedStatIDs> *stratifiedStatID, size_t _stratifiedStatDims[]);
 	~StatsRecord();
 
-	void print(ostream& _outStream);
+	void print(std::ostream& _outStream);
 	//------------< Begin Single value stats methods >---------------------//
 
 
@@ -190,7 +188,7 @@ StatsRecord<PointStatIDs,StratifiedStatIDs>::StatsRecord(  EnumCls<PointStatIDs>
 */
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
-void StatsRecord<PointStatIDs,StratifiedStatIDs>::print(ostream& _outStream){
+void StatsRecord<PointStatIDs, StratifiedStatIDs>::print(std::ostream& _outStream){
 	//print out single value stats
 	for (PointStatIDs i = PointStatIDs(0); i < this->statIDEnumCls->getNumEnums(); ++i) {
 		this->statIDEnumCls->appendEnumStr(_outStream, i);

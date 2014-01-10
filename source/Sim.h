@@ -1,11 +1,11 @@
 #pragma once
 
-#include "./util/ticpp/ticpp.h"
-#include "./data/EventParams.h"
-#if !defined(CONSOLE)
-#include "./gui/DisplayBox.h"
+#include "data/EventParams.h"
+#ifndef CONSOLE
+#include "gui/DisplayBox.h"
 #endif
-#include "./statistics/PopStats.h"
+#include "statistics/PopStats.h"
+#include "util/ticpp/ticpp.h"
 
 class Population;
 class InfectionsTracker;
@@ -13,59 +13,67 @@ class DisplayBox;
 
 class Sim
 {
+public:
+	Sim(std::string xmlFile, DisplayBox *dbox);		//creates a simulation object
+
+	~Sim();
+
+	void run(int numSteps);
+
+	bool getError();				//returns XMLerror
+
+	int getMaxTime();				//returns this->maxTime
+
+	RunStats *getCEPACRunStats();	//returns this->eventParams.cepacRunStats for adding to the general popstats
+
+	PopStats *getPopStats(); //returns this->population->popStats information for creating popStats-like file for transmission output
+
+	EventParams *getEventParams();
+
 private:
-    //-----------------< Start data fields >--------------------//
-
-    //TODO: Does it really make sense to use long instead of int here?
-    /** current time in the simulation */
-    long currTime;
-
-    /** time to end simulation */
-    long maxTime;
-
-    /**number of months to run this file in a sequence*/
-    long seqRunTime;
-
-    /** pointer to current population */
-    Population *currPopulation;
-
-    /** housekeeping parameters that are universal to each event in the simulation */
-    EventParams eventParams;
-
-    /** True if there was an error parsing the XML input file */
-    bool XMLerror;					//
-
-    //-----------------< End data fields >--------------------//
-
-    //Returns true if all simContexts loaded correctly
+    /** Returns true if all simContexts loaded correctly */
     bool setCEPACSimContexts(ticpp::Element *cepacInterventionNode);
+
+	/** */
     bool setRolloutSimContexts(ticpp::Element *rolloutInterventionNode);
 
-    //Sets the Non aids death from a cepac simcontext
+    /** Sets the Non aids death from a cepac simcontext */
     void setNonAidsDeathFromCepac(SimContext *cepacSimContext, std::vector<double> &_maleProbs , std::vector<double> &_femaleProbs);
 
-    long timeStep();		//perform one timestep of simulation
-    bool loadNextInput();  //loads the next set of input files if seq: returns false if no next input
-    bool isSeq; //determines whether this simulation is a sequence of .xml files 
-    long seqPos; //position in sequence
-    long numInSeq; //number of total files in sequence
-    long delayPrevalence;//number of months to delay application of initial prevalence inputs
+	/** perform one timestep of simulation */
+    int timeStep();
 
-public:
-    void run(int _numSteps);
+	/** loads the next set of input files if seq: returns false if no next input */
+    bool loadNextInput();
 
-    bool getError();				//returns XMLerror
+	/** current time in the simulation */
+	int currTime;
 
-    long getMaxTime();				//returns this->maxTime
+	/** time to end simulation */
+	int maxTime;
 
-    RunStats* getCEPACRunStats();	//returns this->eventParams.cepacRunStats for adding to the general popstats
+	/** number of months to run this file in a sequence*/
+	int seqRunTime;
 
-    PopStats* getPopStats(); //returns this->population->popStats information for creating popStats-like file for transmission output
+	/** pointer to current population */
+	Population *currPopulation;
 
-    EventParams *getEventParams();
+	/** housekeeping parameters that are universal to each event in the simulation */
+	EventParams eventParams;
 
-    Sim(string _paramsXML, DisplayBox *dbox, bool _genGraphViz = false);		//creates a simulation object
+	/** True if there was an error parsing the XML input file */
+	bool XMLerror;
 
-    ~Sim();
+	/** determines whether this simulation is a sequence of .xml files */
+    bool isSeq;
+
+	/** position in sequence */
+    int seqPos;
+
+	/** number of total files in sequence */
+    int numInSeq;
+
+	/** number of months to delay application of initial prevalence inputs */
+    int delayPrevalence;
 };
 

@@ -20,7 +20,7 @@ RandomNums::RandomNums(unsigned long _seed)
 //-----------< Begin rand num functions >-----------------//
 
 
-int RandomNums::chooseIndex(const vector<double> &_indexProbabilities) {
+int RandomNums::chooseIndex(const std::vector<double> &_indexProbabilities) {
 	assert (_indexProbabilities.size() > 0);
 
 	double choice = this->rand();	//this is dice roll to see which pool we will draw from
@@ -154,7 +154,7 @@ unsigned long int RandomNums::randNorm_NaturalNum(const NormalDist &_normDist)
 		tries--;
 	} while(tries > 0);
 
-	cerr << "RandomNums::randNorm_NaturalNum: We could not get a number greater or equal to zero after 1000 tries. Check your distribution N(" << _normDist.mean << "," << _normDist.stddev << ").  Function will return 0." << endl;
+	std::cerr << "RandomNums::randNorm_NaturalNum: We could not get a number greater or equal to zero after 1000 tries. Check your distribution N(" << _normDist.mean << "," << _normDist.stddev << ").  Function will return 0." << std::endl;
 	//Util::exitWithPrompt(-1);
 
 	return 0;

@@ -30,24 +30,22 @@ const char PATH_SEPARATOR = '/';
 
 class DisplayBox;
 
-Sim::Sim(std::string _paramsXML, DisplayBox *dbox, bool _genGraphViz)
+Sim::Sim(std::string _paramsXML, DisplayBox *dbox)
 {
-#if !defined( CONSOLE )
-	//Setting the displaybox to write to for text controls
-	//note: this->eventParams.displaybox->textctrl->Update() must be called each time you use the print out as a stream in order to update in real time
-	//this is only used for GUI builds
-	this->eventParams.displaybox = dbox;
-#endif
+	if(dbox)
+	{
+		eventParams.displaybox = dbox;
+	}
 
 	//Character to seperate directories / for linux, mac and \ for windows
 	std::string dirSepChar = std::string(1, PATH_SEPARATOR);
 
 	//Remove the .xml and the directory from _paramsXML to get the sim name
-	this->eventParams.simName = _paramsXML.substr(_paramsXML.find_last_of(dirSepChar) + 1);
-	this->eventParams.simName = this->eventParams.simName.substr(0, this->eventParams.simName.length() - 4);
+	eventParams.simName = _paramsXML.substr(_paramsXML.find_last_of(dirSepChar) + 1);
+	eventParams.simName = eventParams.simName.substr(0, eventParams.simName.length() - 4);
 
-	size_t simNameLength = this->eventParams.simName.length();
-	size_t seqStartIndex = this->eventParams.simName.rfind("_seq01");
+	size_t simNameLength = eventParams.simName.length();
+	size_t seqStartIndex = eventParams.simName.rfind("_seq01");
 
 	seqPos = 1;//set the position in the sequence to 1
 	numInSeq = 1; //initialize the total number of files in sequence
@@ -57,7 +55,7 @@ Sim::Sim(std::string _paramsXML, DisplayBox *dbox, bool _genGraphViz)
 	{
 		//file is the start of a sequence
 		isSeq = true;
-		this->eventParams.simName = this->eventParams.simName.substr(0, simNameLength - std::string("_seq00").length());
+		eventParams.simName = eventParams.simName.substr(0, simNameLength - std::string("_seq00").length());
 
 		//count number of files in sequence
 		for(;;)
@@ -66,10 +64,10 @@ Sim::Sim(std::string _paramsXML, DisplayBox *dbox, bool _genGraphViz)
 
 			std::ifstream inputFile;
 			//boost::filesystem::path fullpath(_paramsXML);
-			//boost::filesystem::path newpath = fullpath.parent_path()/ (this->eventParams.simName+"_seq"+positionString+".xml");
-			std::string filename = _paramsXML.substr(0, _paramsXML.find_last_of(dirSepChar)) + dirSepChar + this->eventParams.simName + "_seq" + positionString + ".xml";
+			//boost::filesystem::path newpath = fullpath.parent_path()/ (eventParams.simName+"_seq"+positionString+".xml");
+			std::string filename = _paramsXML.substr(0, _paramsXML.find_last_of(dirSepChar)) + dirSepChar + eventParams.simName + "_seq" + positionString + ".xml";
 #if defined( CONSOLE )
-			filename = this->eventParams.simName + "_seq" + positionString + ".xml";
+			filename = eventParams.simName + "_seq" + positionString + ".xml";
 #endif
 			std::cout << "filename:" << filename << std::endl;
 			inputFile.open(filename.c_str(), std::ifstream::in);
@@ -92,10 +90,10 @@ Sim::Sim(std::string _paramsXML, DisplayBox *dbox, bool _genGraphViz)
 			} 
 			catch(ticpp::Exception &_e)
 			{
-				this->eventParams.displayOut("Sim: Exception raised: ");
-				this->eventParams.displayOut(_e.m_details.c_str());
-				this->eventParams.displayOut("\n");
-				this->XMLerror = true;
+				eventParams.displayOut("Sim: Exception raised: ");
+				eventParams.displayOut(_e.m_details.c_str());
+				eventParams.displayOut("\n");
+				XMLerror = true;
 				return;
 			}
 
@@ -108,17 +106,17 @@ Sim::Sim(std::string _paramsXML, DisplayBox *dbox, bool _genGraphViz)
 	}
 
 
-	this->eventParams.displayOut("Max time at begining");
+	eventParams.displayOut("Max time at begining");
 
-	this->eventParams.displayOut(boost::lexical_cast<std::string>(this->maxTime).c_str());
-	this->eventParams.displayOut("\n");
+	eventParams.displayOut(boost::lexical_cast<std::string>(maxTime).c_str());
+	eventParams.displayOut("\n");
 
 
-	this->eventParams.displayOut("Sim name is ");
-	this->eventParams.displayOut(this->eventParams.simName.c_str());
-	this->eventParams.displayOut("\n");
+	eventParams.displayOut("Sim name is ");
+	eventParams.displayOut(eventParams.simName.c_str());
+	eventParams.displayOut("\n");
 
-	this->XMLerror = false; //Assume by default that there won't be an XMLerror
+	XMLerror = false; //Assume by default that there won't be an XMLerror
 
 	// Load a document
 	ticpp::Document doc(_paramsXML);
@@ -127,7 +125,7 @@ Sim::Sim(std::string _paramsXML, DisplayBox *dbox, bool _genGraphViz)
 	{
 		doc.LoadFile();
 
-		this->eventParams.displayOut("Simulation Parameters\n");
+		eventParams.displayOut("Simulation Parameters\n");
 
 		ticpp::Element *simParams = doc.FirstChildElement("simulation");
 
@@ -141,9 +139,9 @@ Sim::Sim(std::string _paramsXML, DisplayBox *dbox, bool _genGraphViz)
 			seedMessage << "Using fixed seed = " << fixedSeed;
 		seedMessage << std::endl;
 		std::string seedMessageStr = seedMessage.str();
-		this->eventParams.displayOut(seedMessageStr.c_str());
+		eventParams.displayOut(seedMessageStr.c_str());
 
-		this->eventParams.monthOf1990 = simParams->FirstChildElement("monthOf1990")->GetText<int>();
+		eventParams.monthOf1990 = simParams->FirstChildElement("monthOf1990")->GetText<int>();
 
 		int proportionYear = 2002;
 		ticpp::Iterator<ticpp::Element> proportionIterator;
@@ -157,115 +155,115 @@ Sim::Sim(std::string _paramsXML, DisplayBox *dbox, bool _genGraphViz)
 		}
 
 		double inputVersion = simParams->FirstChildElement("inputVersion")->GetText<double>();
-		this->eventParams.displayOut("Input Version =");
-		this->eventParams.displayOut(boost::lexical_cast<std::string>(inputVersion).c_str());
-		this->eventParams.displayOut("\n");
+		eventParams.displayOut("Input Version =");
+		eventParams.displayOut(boost::lexical_cast<std::string>(inputVersion).c_str());
+		eventParams.displayOut("\n");
 
 		if (inputVersion != Util::INPUT_VERSION)
 		{
-			this->eventParams.displayOut("Input Version for ");
-			this->eventParams.displayOut(_paramsXML.c_str());
-			this->eventParams.displayOut(" is not ");
-			this->eventParams.displayOut(boost::lexical_cast<std::string>(Util::INPUT_VERSION).c_str());
-			this->eventParams.displayOut(".  Stopping model execution!\n");
+			eventParams.displayOut("Input Version for ");
+			eventParams.displayOut(_paramsXML.c_str());
+			eventParams.displayOut(" is not ");
+			eventParams.displayOut(boost::lexical_cast<std::string>(Util::INPUT_VERSION).c_str());
+			eventParams.displayOut(".  Stopping model execution!\n");
 
-			this->XMLerror = true;
+			XMLerror = true;
 			return;
 		}
 
 		//save Debug Level
-		this->eventParams.debugLevel = DebugLevel(simParams->FirstChildElement("debugLevel")->GetText<int>());
-		this->eventParams.displayOut("\tDebug Level = ");
-		this->eventParams.displayOut(boost::lexical_cast<std::string>(this->eventParams.debugLevel).c_str());
-		this->eventParams.displayOut("\n");
+		eventParams.debugLevel = DebugLevel(simParams->FirstChildElement("debugLevel")->GetText<int>());
+		eventParams.displayOut("\tDebug Level = ");
+		eventParams.displayOut(boost::lexical_cast<std::string>(eventParams.debugLevel).c_str());
+		eventParams.displayOut("\n");
 
 		//save Concurrency Definitions
 		for (int i = 0; i < Constants::NUMBER_CONCURRENCY_DEFS; i++)
 		{
 			int minNeeded = simParams->FirstChildElement("concurrencyDefinition")->FirstChildElement("def" + boost::lexical_cast<std::string>(i))->FirstChildElement("minNeeded")->GetText<int>();
 			bool useDef = simParams->FirstChildElement("concurrencyDefinition")->FirstChildElement("def" + boost::lexical_cast<std::string>(i))->FirstChildElement("allow")->GetText<int>() != 0;
-			this->eventParams.concurrencyDef[i] = new EventParams::ConcurrencyDef(minNeeded, useDef);
+			eventParams.concurrencyDef[i] = new EventParams::ConcurrencyDef(minNeeded, useDef);
 		}
 
 		//save which trace files to output
 		std::string traceIDs[] = {"population", "infection", "partnership", "survival", "cost", "clinical", "events", "health", "singleperson", "le","partacq", "calibStats", "artRollout", "shiftedOutcomes"};
 		for (int i = 0; i < Constants::NUMBER_OF_TRACE_FILES; i++)
 		{
-			this->eventParams.outputTrace[i] = simParams->FirstChildElement("writeTrace")->FirstChildElement(traceIDs[i])->GetText<int>() != 0;
-			this->eventParams.traceExtensions[i] = simParams->FirstChildElement("extensionNames")->FirstChildElement(traceIDs[i])->GetText();
+			eventParams.outputTrace[i] = simParams->FirstChildElement("writeTrace")->FirstChildElement(traceIDs[i])->GetText<int>() != 0;
+			eventParams.traceExtensions[i] = simParams->FirstChildElement("extensionNames")->FirstChildElement(traceIDs[i])->GetText();
 		}
 
 		//save calibration inputs
 		ticpp::Element *calibParams = simParams->FirstChildElement("calibration");
-		this->eventParams.calibrationInputs.useCalibration = calibParams->FirstChildElement("useCalibration")->GetText<int>() != 0;
+		eventParams.calibrationInputs.useCalibration = calibParams->FirstChildElement("useCalibration")->GetText<int>() != 0;
 
-		if (this->eventParams.calibrationInputs.useCalibration)
+		if (eventParams.calibrationInputs.useCalibration)
 		{
-			this->eventParams.calibrationInputs.monthOfCalibration = calibParams->FirstChildElement("monthOfCalibration")->GetText<int>();
+			eventParams.calibrationInputs.monthOfCalibration = calibParams->FirstChildElement("monthOfCalibration")->GetText<int>();
 
 			ticpp::Element *outcomeParams = calibParams->FirstChildElement("partnershipOutcomes");
-			this->eventParams.calibrationInputs.steadyPrevPopulation = outcomeParams->FirstChildElement("steadyPrev")->FirstChildElement("popOfInterest")->GetText<int>();
-			this->eventParams.calibrationInputs.steadyPrevBounds[Constants::LOWER] = outcomeParams->FirstChildElement("steadyPrev")->FirstChildElement("lwrBound")->GetText<double>();
-			this->eventParams.calibrationInputs.steadyPrevBounds[Constants::UPPER] = outcomeParams->FirstChildElement("steadyPrev")->FirstChildElement("uprBound")->GetText<double>();
+			eventParams.calibrationInputs.steadyPrevPopulation = outcomeParams->FirstChildElement("steadyPrev")->FirstChildElement("popOfInterest")->GetText<int>();
+			eventParams.calibrationInputs.steadyPrevBounds[Constants::LOWER] = outcomeParams->FirstChildElement("steadyPrev")->FirstChildElement("lwrBound")->GetText<double>();
+			eventParams.calibrationInputs.steadyPrevBounds[Constants::UPPER] = outcomeParams->FirstChildElement("steadyPrev")->FirstChildElement("uprBound")->GetText<double>();
 
-			this->eventParams.calibrationInputs.casualPrevPopulation = outcomeParams->FirstChildElement("casualPrev")->FirstChildElement("popOfInterest")->GetText<int>();
-			this->eventParams.calibrationInputs.casualPrevBounds[Constants::LOWER] = outcomeParams->FirstChildElement("casualPrev")->FirstChildElement("lwrBound")->GetText<double>();
-			this->eventParams.calibrationInputs.casualPrevBounds[Constants::UPPER] = outcomeParams->FirstChildElement("casualPrev")->FirstChildElement("uprBound")->GetText<double>();
+			eventParams.calibrationInputs.casualPrevPopulation = outcomeParams->FirstChildElement("casualPrev")->FirstChildElement("popOfInterest")->GetText<int>();
+			eventParams.calibrationInputs.casualPrevBounds[Constants::LOWER] = outcomeParams->FirstChildElement("casualPrev")->FirstChildElement("lwrBound")->GetText<double>();
+			eventParams.calibrationInputs.casualPrevBounds[Constants::UPPER] = outcomeParams->FirstChildElement("casualPrev")->FirstChildElement("uprBound")->GetText<double>();
 
-			this->eventParams.calibrationInputs.CSWPrevPopulation = outcomeParams->FirstChildElement("cswPrev")->FirstChildElement("popOfInterest")->GetText<int>();
-			this->eventParams.calibrationInputs.CSWPrevBounds[Constants::LOWER] = outcomeParams->FirstChildElement("cswPrev")->FirstChildElement("lwrBound")->GetText<double>();
-			this->eventParams.calibrationInputs.CSWPrevBounds[Constants::UPPER] = outcomeParams->FirstChildElement("cswPrev")->FirstChildElement("uprBound")->GetText<double>();
+			eventParams.calibrationInputs.CSWPrevPopulation = outcomeParams->FirstChildElement("cswPrev")->FirstChildElement("popOfInterest")->GetText<int>();
+			eventParams.calibrationInputs.CSWPrevBounds[Constants::LOWER] = outcomeParams->FirstChildElement("cswPrev")->FirstChildElement("lwrBound")->GetText<double>();
+			eventParams.calibrationInputs.CSWPrevBounds[Constants::UPPER] = outcomeParams->FirstChildElement("cswPrev")->FirstChildElement("uprBound")->GetText<double>();
 
-			this->eventParams.calibrationInputs.propInConcurrentPopulation = outcomeParams->FirstChildElement("propInCon")->FirstChildElement("popOfInterest")->GetText<int>();
-			this->eventParams.calibrationInputs.propInConcurrentBounds[Constants::LOWER] = outcomeParams->FirstChildElement("propInCon")->FirstChildElement("lwrBound")->GetText<double>();
-			this->eventParams.calibrationInputs.propInConcurrentBounds[Constants::UPPER] = outcomeParams->FirstChildElement("propInCon")->FirstChildElement("uprBound")->GetText<double>();
+			eventParams.calibrationInputs.propInConcurrentPopulation = outcomeParams->FirstChildElement("propInCon")->FirstChildElement("popOfInterest")->GetText<int>();
+			eventParams.calibrationInputs.propInConcurrentBounds[Constants::LOWER] = outcomeParams->FirstChildElement("propInCon")->FirstChildElement("lwrBound")->GetText<double>();
+			eventParams.calibrationInputs.propInConcurrentBounds[Constants::UPPER] = outcomeParams->FirstChildElement("propInCon")->FirstChildElement("uprBound")->GetText<double>();
 
-			this->eventParams.calibrationInputs.numActsPopulation = outcomeParams->FirstChildElement("numActs")->FirstChildElement("popOfInterest")->GetText<int>();
-			this->eventParams.calibrationInputs.numActsBounds[Constants::LOWER] = outcomeParams->FirstChildElement("numActs")->FirstChildElement("lwrBound")->GetText<double>();
-			this->eventParams.calibrationInputs.numActsBounds[Constants::UPPER] = outcomeParams->FirstChildElement("numActs")->FirstChildElement("uprBound")->GetText<double>();
+			eventParams.calibrationInputs.numActsPopulation = outcomeParams->FirstChildElement("numActs")->FirstChildElement("popOfInterest")->GetText<int>();
+			eventParams.calibrationInputs.numActsBounds[Constants::LOWER] = outcomeParams->FirstChildElement("numActs")->FirstChildElement("lwrBound")->GetText<double>();
+			eventParams.calibrationInputs.numActsBounds[Constants::UPPER] = outcomeParams->FirstChildElement("numActs")->FirstChildElement("uprBound")->GetText<double>();
 
-			this->eventParams.calibrationInputs.femaleCasualPrevRatio = outcomeParams->FirstChildElement("femaleCasualPrev")->FirstChildElement("ratio")->GetText<double>();
-			this->eventParams.calibrationInputs.femalePropInConcurrentRatio = outcomeParams->FirstChildElement("femalePropInCon")->FirstChildElement("ratio")->GetText<double>();
-			this->eventParams.calibrationInputs.femaleNumActsLRtoHRRatio = outcomeParams->FirstChildElement("femaleNumActsLRtoHR")->FirstChildElement("ratio")->GetText<double>();
+			eventParams.calibrationInputs.femaleCasualPrevRatio = outcomeParams->FirstChildElement("femaleCasualPrev")->FirstChildElement("ratio")->GetText<double>();
+			eventParams.calibrationInputs.femalePropInConcurrentRatio = outcomeParams->FirstChildElement("femalePropInCon")->FirstChildElement("ratio")->GetText<double>();
+			eventParams.calibrationInputs.femaleNumActsLRtoHRRatio = outcomeParams->FirstChildElement("femaleNumActsLRtoHR")->FirstChildElement("ratio")->GetText<double>();
 
 			for (int i = 0; i < Constants::NUMBER_OF_TRACE_FILES; i++)
 			{
-				this->eventParams.calibrationInputs.tossFiles[i] = calibParams->FirstChildElement("tossFiles")->FirstChildElement("traceFile" + boost::lexical_cast<std::string>(i))->GetText<int>() != 0;
+				eventParams.calibrationInputs.tossFiles[i] = calibParams->FirstChildElement("tossFiles")->FirstChildElement("traceFile" + boost::lexical_cast<std::string>(i))->GetText<int>() != 0;
 			}
 
 			for (int i = 0; i < Constants::NUMBER_CALIBRATION_PREVS; i++)
 			{
-				this->eventParams.calibrationInputs.calendarPrevs[i] = calibParams->FirstChildElement("calendarPrevalence")->FirstChildElement("time"+boost::lexical_cast<std::string>(i))->GetText<double>();
+				eventParams.calibrationInputs.calendarPrevs[i] = calibParams->FirstChildElement("calendarPrevalence")->FirstChildElement("time"+boost::lexical_cast<std::string>(i))->GetText<double>();
 			}
 			for (int i = 0; i < Constants::NUMBER_TIME_POINTS_SAVE_STATE; i++)
 			{
-				this->eventParams.calibrationInputs.saveStateTimePoints[i] = calibParams->FirstChildElement("storePoint"+boost::lexical_cast<std::string>(i)+"Mth")->GetText<int>();
+				eventParams.calibrationInputs.saveStateTimePoints[i] = calibParams->FirstChildElement("storePoint"+boost::lexical_cast<std::string>(i)+"Mth")->GetText<int>();
 			}
-			this->eventParams.calibrationInputs.thresholdPrevMult = calibParams->FirstChildElement("thresholdMultiplier")->GetText<double>();
+			eventParams.calibrationInputs.thresholdPrevMult = calibParams->FirstChildElement("thresholdMultiplier")->GetText<double>();
 		}
 
 		if (isSeq)
 		{
 			//save run time for sequences
-			this->seqRunTime = simParams->FirstChildElement("timeRunSeq")->GetText<int>();
-			this->eventParams.displayOut("\tTime steps = ");
-			this->eventParams.displayOut(boost::lexical_cast<std::string>(maxTime).c_str());
-			this->eventParams.displayOut("\n");
+			seqRunTime = simParams->FirstChildElement("timeRunSeq")->GetText<int>();
+			eventParams.displayOut("\tTime steps = ");
+			eventParams.displayOut(boost::lexical_cast<std::string>(maxTime).c_str());
+			eventParams.displayOut("\n");
 		}
 		else
 		{
 			//save simulation run time
-			this->maxTime = simParams->FirstChildElement("timeLimitMth")->GetText<int>();
-			this->seqRunTime = 0;//ignore sequence run time if running single file
-			this->eventParams.displayOut("\tTime steps = ");
-			this->eventParams.displayOut(boost::lexical_cast<std::string>(maxTime).c_str());
-			this->eventParams.displayOut("\n");
+			maxTime = simParams->FirstChildElement("timeLimitMth")->GetText<int>();
+			seqRunTime = 0;//ignore sequence run time if running single file
+			eventParams.displayOut("\tTime steps = ");
+			eventParams.displayOut(boost::lexical_cast<std::string>(maxTime).c_str());
+			eventParams.displayOut("\n");
 		}
-		this->delayPrevalence = simParams->FirstChildElement("population")->FirstChildElement("initialState")->FirstChildElement("delay")->GetText<int>();
-		this->eventParams.delayPrevalence = this->delayPrevalence;
-		this->eventParams.displayOut("\tDelay Prevalence = ");
-		this->eventParams.displayOut(boost::lexical_cast<std::string>(delayPrevalence).c_str());
-		this->eventParams.displayOut("\n");
+		delayPrevalence = simParams->FirstChildElement("population")->FirstChildElement("initialState")->FirstChildElement("delay")->GetText<int>();
+		eventParams.delayPrevalence = delayPrevalence;
+		eventParams.displayOut("\tDelay Prevalence = ");
+		eventParams.displayOut(boost::lexical_cast<std::string>(delayPrevalence).c_str());
+		eventParams.displayOut("\n");
 
 		bool filesLoaded;
 
@@ -274,22 +272,22 @@ Sim::Sim(std::string _paramsXML, DisplayBox *dbox, bool _genGraphViz)
 		{
 			//use art rollout input files
 			eventParams.useRollout = true;
-			filesLoaded = this->setRolloutSimContexts(simParams->FirstChildElement("population")->FirstChildElement("interventions")->FirstChildElement("artRolloutIntervention"));
+			filesLoaded = setRolloutSimContexts(simParams->FirstChildElement("population")->FirstChildElement("interventions")->FirstChildElement("artRolloutIntervention"));
 		}
 		else
 		{
 			//use standard cepac input files
 			eventParams.useRollout = false;
-			filesLoaded = this->setCEPACSimContexts(simParams->FirstChildElement("population")->FirstChildElement("interventions")->FirstChildElement("cepacIntervention"));
+			filesLoaded = setCEPACSimContexts(simParams->FirstChildElement("population")->FirstChildElement("interventions")->FirstChildElement("cepacIntervention"));
 		}
 
 		if (!filesLoaded)
 		{
 			//If the files didn't successfully load, don't run the model!
-			this->eventParams.displayOut("FILE ERROR: Stopping model execution for ");
-			this->eventParams.displayOut(_paramsXML.c_str());
-			this->eventParams.displayOut("\n");
-			this->XMLerror = true;
+			eventParams.displayOut("FILE ERROR: Stopping model execution for ");
+			eventParams.displayOut(_paramsXML.c_str());
+			eventParams.displayOut("\n");
+			XMLerror = true;
 			return;
 		}
 
@@ -299,16 +297,16 @@ Sim::Sim(std::string _paramsXML, DisplayBox *dbox, bool _genGraphViz)
 		if (fixedSeed > -1)
 		{
 			//Seed is Minnesota Twins retired numbers... yes, I am a dork
-			this->eventParams.randomNums.reset(fixedSeed == 0 ? 36291434 : fixedSeed);
+			eventParams.randomNums.reset(fixedSeed == 0 ? 36291434 : fixedSeed);
 		}
 
-		if (this->eventParams.useRollout)
+		if (eventParams.useRollout)
 		{
-			this->eventParams.cepacRunStats = new RunStats(this->eventParams.simName,this->eventParams.rolloutSimContexts[0]->rolloutSimContext);
+			eventParams.cepacRunStats = new RunStats(eventParams.simName,eventParams.rolloutSimContexts[0]->rolloutSimContext);
 		}
 		else
 		{
-			this->eventParams.cepacRunStats = new RunStats(this->eventParams.simName, this->eventParams.cepacSimContexts[0]);
+			eventParams.cepacRunStats = new RunStats(eventParams.simName, eventParams.cepacSimContexts[0]);
 		}
 
 		//Read in CEPAC death tables
@@ -318,47 +316,47 @@ Sim::Sim(std::string _paramsXML, DisplayBox *dbox, bool _genGraphViz)
 		cepacInput.getNonAIDSDeath(Person::probDeathNatCauses[DmgProfile::MALE], Person::probDeathNatCauses[DmgProfile::FEMALE]);*/
 
 		//Setup up CEPAC traces (these will probably be unreadable, but oh well)
-		if (this->eventParams.useRollout)
+		if (eventParams.useRollout)
 		{
-			this->eventParams.cepacTracer = new Tracer(this->eventParams.simName, this->eventParams.rolloutSimContexts[0]->rolloutSimContext, 1);
+			eventParams.cepacTracer = new Tracer(eventParams.simName, eventParams.rolloutSimContexts[0]->rolloutSimContext, 1);
 		}
 		else
 		{
-			this->eventParams.cepacTracer = new Tracer(this->eventParams.simName, this->eventParams.cepacSimContexts[0], 1);
+			eventParams.cepacTracer = new Tracer(eventParams.simName, eventParams.cepacSimContexts[0], 1);
 		}
 
 		//No longer creating a CEPAC trace file, but we still need to change over to the results folder before creating any other output files
 		CepacUtil::changeDirectoryToResults();
 
 		//If in the future it is decided to use the trace file again, uncomment out the "closeTraceFile" command in eventParams.h
-		//this->eventParams.cepacTracer->openTraceFile();
-		//this->eventParams.cepacTracer->printTraceHeader();
+		//eventParams.cepacTracer->openTraceFile();
+		//eventParams.cepacTracer->printTraceHeader();
 
 		//initialize the trace files for population and events and infections and costs
 		for (int i = 0; i < Constants::NUMBER_OF_TRACE_FILES; i++)
 		{
-			if (this->eventParams.outputTrace[i])
+			if (eventParams.outputTrace[i])
 			{
-				std::string fileName = this->eventParams.simName;
-				fileName.append("-" + this->eventParams.traceExtensions[i]);
-				this->eventParams.traceStreams[i].open(fileName.c_str(), ios::out);
+				std::string fileName = eventParams.simName;
+				fileName.append("-" + eventParams.traceExtensions[i]);
+				eventParams.traceStreams[i].open(fileName.c_str(), ios::out);
 			}
 		}
 
-		this->eventParams.numToTrace = simParams->FirstChildElement("numberToTracePerAgeRange")->GetText<int>();
-		this->eventParams.numNewbornsToTrace = simParams->FirstChildElement("numberNewbornsToTrace")->GetText<int>();
-		this->eventParams.monthTraceNewborns = simParams->FirstChildElement("monthTraceNewborns")->GetText<int>();
-		this->eventParams.numNewbornsTraced = 0;
+		eventParams.numToTrace = simParams->FirstChildElement("numberToTracePerAgeRange")->GetText<int>();
+		eventParams.numNewbornsToTrace = simParams->FirstChildElement("numberNewbornsToTrace")->GetText<int>();
+		eventParams.monthTraceNewborns = simParams->FirstChildElement("monthTraceNewborns")->GetText<int>();
+		eventParams.numNewbornsTraced = 0;
 
-		this->eventParams.tracePrevalentCases = simParams->FirstChildElement("tracePrevalentCases")->GetText<int>() != 0;
+		eventParams.tracePrevalentCases = simParams->FirstChildElement("tracePrevalentCases")->GetText<int>() != 0;
 
-		if (this->eventParams.calibrationInputs.useCalibration)
+		if (eventParams.calibrationInputs.useCalibration)
 		{
 			for (int i = 0; i < Constants::NUMBER_TIME_POINTS_SAVE_STATE; i++)
 			{
-				std::string fileName = this->eventParams.simName;
+				std::string fileName = eventParams.simName;
 				fileName.append("-popState"+boost::lexical_cast<std::string>(i)+".pop");
-				this->eventParams.popStateStream[i].open(fileName.c_str(),ios::out);
+				eventParams.popStateStream[i].open(fileName.c_str(),ios::out);
 			}
 		}
 		//open the batchstats files that were requested by the user
@@ -367,51 +365,43 @@ Sim::Sim(std::string _paramsXML, DisplayBox *dbox, bool _genGraphViz)
 		for (batchstat = BatchStatsVariables(0); batchstat < ENDBatchStatsVariables; batchstat = BatchStatsVariables(batchstat + 1))
 		{
 #if !defined( CONSOLE )
-			if (this->eventParams.displaybox->BatchStatsTrack[batchstat])
+			if (eventParams.displaybox->BatchStatsTrack[batchstat])
 			{
 #endif
-				this->eventParams.BatchStatsStream[batchstat].open(("batchstats-" + Constants::BatchStatFileName[batchstat] + ".out").c_str(), ios::out | ios::app);
+				eventParams.BatchStatsStream[batchstat].open(("batchstats-" + Constants::BatchStatFileName[batchstat] + ".out").c_str(), ios::out | ios::app);
 #if !defined( CONSOLE )
 			}
 #endif
 		}
 
 		//Open the summaryStats stream
-		//this->eventParams.summaryStatsStream.open("summaryStats.out", ios::out | ios::app);
+		//eventParams.summaryStatsStream.open("summaryStats.out", ios::out | ios::app);
 
 		//output seed used for this run
-		if (this->eventParams.outputTrace[EventParams::EVENTS])
+		if (eventParams.outputTrace[EventParams::EVENTS])
 		{
-			this->eventParams.traceStreams[EventParams::EVENTS] << "Seed = " << this->eventParams.randomNums.getSeed() << std::endl;
-			this->eventParams.traceStreams[EventParams::EVENTS] << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << "Sexually Active Population" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << "Non Sexually Active Population" << std::endl;
+			eventParams.traceStreams[EventParams::EVENTS] << "Seed = " << eventParams.randomNums.getSeed() << std::endl;
+			eventParams.traceStreams[EventParams::EVENTS] << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << "Sexually Active Population" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << "Non Sexually Active Population" << std::endl;
 		}
-		this->currTime = 0;
-		this->eventParams.currTime = this->currTime;
+		currTime = 0;
+		eventParams.currTime = currTime;
 
 		//create a population
 		// maybe someday we can have multiple interacting populations
 		//  in that case, we'll have to change the PopulationParams to not put the values in the static Male, Female, and SteadyCouple fields
-		this->currPopulation = new Population(this->eventParams, simParams->FirstChildElement("population"),simParams->FirstChildElement("lifeExpectancyOutput"), simParams->FirstChildElement("partnerAcqOutput"),this->maxTime);
+		currPopulation = new Population(eventParams, simParams->FirstChildElement("population"),simParams->FirstChildElement("lifeExpectancyOutput"), simParams->FirstChildElement("partnerAcqOutput"),maxTime);
 
-		if (this->eventParams.monthOf1990 > 0)
+		if (eventParams.monthOf1990 > 0)
 		{
-			this->currPopulation->popStats->enableShiftedOutcomes(this->eventParams.monthOf1990);
+			currPopulation->popStats->enableShiftedOutcomes(eventParams.monthOf1990);
 		}
-
-		//GRAPHVIZHERE
-		if (_genGraphViz)
-		{
-			//TODO: We no longer care about starting conditions and don't use the old methods of generating graphs
-			this->eventParams.genGraphViz = true;
-		}
-
 	}
 	catch(ticpp::Exception &_e)
 	{
-		this->eventParams.displayOut("Sim: Exception raised: ");
-		this->eventParams.displayOut(_e.m_details.c_str());
-		this->eventParams.displayOut("\n");
-		this->XMLerror = true;
+		eventParams.displayOut("Sim: Exception raised: ");
+		eventParams.displayOut(_e.m_details.c_str());
+		eventParams.displayOut("\n");
+		XMLerror = true;
 		return;
 	}
 
@@ -421,11 +411,11 @@ Sim::Sim(std::string _paramsXML, DisplayBox *dbox, bool _genGraphViz)
 
 Sim::~Sim(void)
 {
-	this->eventParams.close();
+	eventParams.close();
 
-	if (this->currPopulation != NULL)
+	if (currPopulation != NULL)
 	{
-		delete this->currPopulation;
+		delete currPopulation;
 	}
 
 	DmgProfile::deallocStaticMembers();
@@ -441,66 +431,66 @@ void Sim::run(int _numSteps)
 	int monthOfFirstMonthCalibPrev = 0;
 
 	//initialize/reset monthly stats
-	this->currPopulation->resetMonthlyStats();
+	currPopulation->resetMonthlyStats();
 
 	//initialize incident infections by age
-	this->currPopulation->initIncidentInfectionsByAge();
+	currPopulation->initIncidentInfectionsByAge();
 
-	if (this->delayPrevalence == 0)
+	if (delayPrevalence == 0)
 	{
-		this->currPopulation->applyIncidentPrevalence(eventParams);
+		currPopulation->applyIncidentPrevalence(eventParams);
 	}
 
 	//print out prevalent infection stats & headers for rest of infection stats
-	this->currPopulation->calcPrevalentPopulation(0);
+	currPopulation->calcPrevalentPopulation(0);
 
 	//Print out run name for first column of BatchStats files (if streams are open)
 	for (int i = 0; i < ENDBatchStatsVariables; i++)
 	{
-		if (this->eventParams.BatchStatsStream[i].is_open())
+		if (eventParams.BatchStatsStream[i].is_open())
 		{
-			this->eventParams.BatchStatsStream[i] << this->eventParams.simName << Constants::TAB;
+			eventParams.BatchStatsStream[i] << eventParams.simName << Constants::TAB;
 		}
 	}
 
-	if (this->eventParams.outputTrace[EventParams::INFECTION])
+	if (eventParams.outputTrace[EventParams::INFECTION])
 	{
-		this->currPopulation->popStats->infectionsTracker.printInfections(this->eventParams, this->currTime, this->eventParams.traceStreams[EventParams::INFECTION], this->currPopulation);
+		currPopulation->popStats->infectionsTracker.printInfections(eventParams, currTime, eventParams.traceStreams[EventParams::INFECTION], currPopulation);
 	}
-	if (this->eventParams.outputTrace[EventParams::PARTNERSHIP])
+	if (eventParams.outputTrace[EventParams::PARTNERSHIP])
 	{
-		this->currPopulation->printPartnerships(this->eventParams, this->currTime, this->eventParams.traceStreams[EventParams::PARTNERSHIP]);
+		currPopulation->printPartnerships(eventParams, currTime, eventParams.traceStreams[EventParams::PARTNERSHIP]);
 	}
-	if (this->eventParams.outputTrace[EventParams::CLINICAL])
+	if (eventParams.outputTrace[EventParams::CLINICAL])
 	{
-		this->currPopulation->printClinical(this->eventParams, this->currTime, this->eventParams.traceStreams[EventParams::CLINICAL]);
+		currPopulation->printClinical(eventParams, currTime, eventParams.traceStreams[EventParams::CLINICAL]);
 	}
-	if (this->eventParams.outputTrace[EventParams::POPULATION])
+	if (eventParams.outputTrace[EventParams::POPULATION])
 	{
-		this->currPopulation->printPopulation(this->eventParams, this->currTime,this->eventParams.traceStreams[EventParams::POPULATION]);
+		currPopulation->printPopulation(eventParams, currTime,eventParams.traceStreams[EventParams::POPULATION]);
 	}
 	if(eventParams.outputTrace[EventParams::ARTROLLOUT])
 	{
 		currPopulation->printARTRolloutOutcomes(eventParams, eventParams.traceStreams[EventParams::ARTROLLOUT]);
 	}
 
-	if (this->eventParams.debugLevel == DEBUG1)
+	if (eventParams.debugLevel == DEBUG1)
 	{
-		this->currPopulation->printMethodResults(eventParams,"--", "initialization", 0, "--", Constants::SHOW_INFECTED);
+		currPopulation->printMethodResults(eventParams,"--", "initialization", 0, "--", Constants::SHOW_INFECTED);
 	}
 	//loop for multiple input files
 	do
 	{
-		int startTime = this->currTime+1;
+		int startTime = currTime+1;
 		if (isSeq)
 		{
-			stepsToRun = this->seqRunTime;
+			stepsToRun = seqRunTime;
 		}
 
 		//ERINWASHERE
 		//GRAPHVIZHERE
-		/*if (this->eventParams.genGraphViz)
-		this->currPopulation->printGraphVizNodes(this->eventParams); */
+		/*if (eventParams.genGraphViz)
+		currPopulation->printGraphVizNodes(eventParams); */
 
 		SimulationTimer timer;
 		timer.Start();
@@ -517,7 +507,7 @@ void Sim::run(int _numSteps)
 				currPopulation->applyRolloutContext(eventParams, t);
 			}
 
-			long totalSize = this->timeStep();
+			long totalSize = timeStep();
 
 			//keeps track of the time it takes to run 1 timestep of this model
 			double end = timer.GetTime();
@@ -527,14 +517,14 @@ void Sim::run(int _numSteps)
 			std::string elapsedString = elapsedStringStream.str();
 
 			//int timeElapsed = end - begin;
-			this->eventParams.displayOut("Timestep(");
+			eventParams.displayOut("Timestep(");
 			std::string timeString = boost::lexical_cast<std::string>(t);
-			this->eventParams.displayOut(timeString.c_str());
-			this->eventParams.displayOut("): compute time elapsed = ");
-			this->eventParams.displayOut(elapsedString.c_str());
-			this->eventParams.displayOut(". size = ");
-			this->eventParams.displayOut(boost::lexical_cast<std::string>(totalSize).c_str());
-			this->eventParams.displayOut("\n");
+			eventParams.displayOut(timeString.c_str());
+			eventParams.displayOut("): compute time elapsed = ");
+			eventParams.displayOut(elapsedString.c_str());
+			eventParams.displayOut(". size = ");
+			eventParams.displayOut(boost::lexical_cast<std::string>(totalSize).c_str());
+			eventParams.displayOut("\n");
 
 			//print out new infection stats
 			this->currPopulation->calcPrevalentPopulation(t);
@@ -963,126 +953,126 @@ void Sim::setNonAidsDeathFromCepac(SimContext *cepacSimContext, std::vector<doub
 This function executes one timestep of the simulation
 The ordering of events within this function determines the ordering of events in each timestep
 ****/
-long Sim::timeStep()
+int Sim::timeStep()
 {
-	//advance the internal clock
-	this->currTime++;
+	currTime++;
 
-	this->eventParams.currTime = this->currTime;
+	eventParams.currTime = currTime;
 
 	//change non AIDS death if it is time to switch cepac files
-	if (this->eventParams.itIsTimeToSwitchSimContext() && !this->eventParams.useRollout)
+	if(eventParams.itIsTimeToSwitchSimContext() && !eventParams.useRollout)
 	{
 		int simIndex = 0;
-		for (int i = 0; i < Constants::NUMBER_OF_CEPAC_FILES; i++)
+		for(int i = 0; i < Constants::NUMBER_OF_CEPAC_FILES; i++)
 		{
-			if (this->eventParams.currTime > this->eventParams.timesToSwitchSimContext[i])
+			if(eventParams.currTime > eventParams.timesToSwitchSimContext[i])
 			{
 				simIndex = i;
 			}
 		}
 
-		this->setNonAidsDeathFromCepac(this->eventParams.cepacSimContexts[simIndex], Person::probDeathNatCauses[DmgProfile::MALE], Person::probDeathNatCauses[DmgProfile::FEMALE]);
+		setNonAidsDeathFromCepac(eventParams.cepacSimContexts[simIndex], Person::probDeathNatCauses[DmgProfile::MALE], Person::probDeathNatCauses[DmgProfile::FEMALE]);
 	}
 
 	//output the current timestep of the simulation
-	if (this->eventParams.debugLevel > DEBUG1 && this->eventParams.outputTrace[EventParams::EVENTS])
+	if(eventParams.debugLevel > DEBUG1 && eventParams.outputTrace[EventParams::EVENTS])
 	{
-		this->eventParams.traceStreams[EventParams::EVENTS] << "T:" << this->currTime << " : Start of Timestep" << std::endl;
+		eventParams.traceStreams[EventParams::EVENTS] << "T:" << currTime << " : Start of Timestep" << std::endl;
 	}
 
-	if (this->eventParams.outputTrace[EventParams::SINGLEPERSON])
+	if(eventParams.outputTrace[EventParams::SINGLEPERSON])
 	{
-		this->eventParams.traceStreams[EventParams::SINGLEPERSON] << std::endl << "** Time " << this->currTime << ": " << std::endl;
+		this->eventParams.traceStreams[EventParams::SINGLEPERSON] << std::endl << "** Time " << currTime << ": " << std::endl;
 	}
 
 	bool recordLE = false;
 	bool recordPartAcq  =  false;
 	bool firstMonthToRecord = false;
 	bool lastMonthToRecord = false;
-	if (this->currPopulation->popStats->isTimeToRecordLE(this->currTime))
+
+	if(currPopulation->popStats->isTimeToRecordLE(currTime))
 	{
 		recordLE = true;
 	}
-	if (this->currPopulation->popStats->isTimeToRecordPartAcq(this->currTime))
+	if(currPopulation->popStats->isTimeToRecordPartAcq(currTime))
 	{
 		recordPartAcq = true;
 	}
 
-	if (this->currPopulation->popStats->isFirstMonthToRecordLE(this->currTime))
+	if(currPopulation->popStats->isFirstMonthToRecordLE(currTime))
 	{
 		firstMonthToRecord = true;
 	}
 
-	if (this->currPopulation->popStats->isTimeToPrintLE(this->currTime))
+	if(currPopulation->popStats->isTimeToPrintLE(currTime))
 	{
 		lastMonthToRecord = true;
 	}
 
-	this->currPopulation->updatePhysicalState(this->eventParams,recordLE,firstMonthToRecord);
+	currPopulation->updatePhysicalState(eventParams, recordLE, firstMonthToRecord);
 
-	if (this->eventParams.useRollout)
+	if(eventParams.useRollout)
 	{
 		currPopulation->applyARTRollout(eventParams);
 	}
 
-	this->currPopulation->births(this->eventParams);
+	currPopulation->births(eventParams);
 
-	if (lastMonthToRecord)
+	if(lastMonthToRecord)
 	{
-		this->currPopulation->updateAgeBucketsLE();
-		if (this->eventParams.outputTrace[EventParams::LE])
+		currPopulation->updateAgeBucketsLE();
+		if(eventParams.outputTrace[EventParams::LE])
 		{
-			this->currPopulation->popStats->printLEStats(this->eventParams.traceStreams[EventParams::LE], currTime);
+			currPopulation->popStats->printLEStats(eventParams.traceStreams[EventParams::LE], currTime);
 		}
-		delete this->currPopulation->popStats->selectedLEStats;
-		this->currPopulation->popStats->selectedLEStats=NULL;
+		delete currPopulation->popStats->selectedLEStats;
+		currPopulation->popStats->selectedLEStats = NULL;
 	}
 
 	//steadyCouple, flings, and dissolveSexualPartnerships
-	this->currPopulation->updatePartnerships(this->eventParams);
+	currPopulation->updatePartnerships(eventParams);
 
 	if (recordPartAcq)
 	{
-		this->currPopulation->popStats->selectedPartAcqStats = new PopStats::SinglePartAcqStats();
-		this->currPopulation->recordPartAcqFreq();
-		if (this->eventParams.outputTrace[EventParams::PARTACQ])
+		currPopulation->popStats->selectedPartAcqStats = new PopStats::SinglePartAcqStats();
+		currPopulation->recordPartAcqFreq();
+		if (eventParams.outputTrace[EventParams::PARTACQ])
 		{
-			this->currPopulation->popStats->printPartAcqStats(this->eventParams.traceStreams[EventParams::PARTACQ], this->currTime);
+			currPopulation->popStats->printPartAcqStats(eventParams.traceStreams[EventParams::PARTACQ], currTime);
 		}
-		delete this->currPopulation->popStats->selectedPartAcqStats;
-		this->currPopulation->popStats->selectedPartAcqStats = NULL;
+		delete currPopulation->popStats->selectedPartAcqStats;
+		currPopulation->popStats->selectedPartAcqStats = NULL;
 	}
 	//apply incident prevalence
-	if (this->delayPrevalence != 0 && this->delayPrevalence == this->currTime)
+	if (delayPrevalence != 0 && delayPrevalence == currTime)
 	{
-		this->currPopulation->applyIncidentPrevalence(eventParams);
+		currPopulation->applyIncidentPrevalence(eventParams);
 	}
-	//Will confirm that this->currPopulation->currSize is correct and update size of age ranges
-	return this->currPopulation->updateSize();
+	//Will confirm that currPopulation->currSize is correct and update size of age ranges
+	return currPopulation->updateSize();
 }
 
 bool Sim::getError()
 {
-	return this->XMLerror;
+	return XMLerror;
 }
 
-long Sim::getMaxTime()
+int Sim::getMaxTime()
 {
-	return this->maxTime;
+	return maxTime;
 }
 
 RunStats *Sim::getCEPACRunStats()
 {
-	return this->eventParams.cepacRunStats;
+	return eventParams.cepacRunStats;
 }
 
 PopStats *Sim::getPopStats()
 {
-	return this->currPopulation->popStats;
+	return currPopulation->popStats;
 }
 
 EventParams *Sim::getEventParams()
 {
-	return &(this->eventParams);
+	return &eventParams;
 }

@@ -5,17 +5,15 @@
  *      Author: errhode
  */
 
-#include "graphVizParse.h"
-#include <boost/config.hpp>
-//#include <boost/regex.hpp>
-#include <boost/lexical_cast.hpp>
-#include <vector>
-#include <string>
-#include <iostream>
-#include <fstream>
 #include <climits>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <boost/config.hpp>
+#include <boost/lexical_cast.hpp>
 
-using namespace boost;
+#include "graphVizParse.h"
 
 /**GraphVizParse::GraphVizParse(int _timeSteps, std::string _simName){
 	int timeStep;
@@ -127,7 +125,7 @@ void GraphVizGraphElements::personNode::addRelationship(unsigned long partnerID,
 
 void GraphVizGraphElements::printGraphVizFiles(int _timeSteps, std::string _simName){
 	for (int timeToGraph = 0; timeToGraph <= _timeSteps; timeToGraph++){
-		std::string timeToGraphString(lexical_cast<std::string>(timeToGraph));
+		std::string timeToGraphString(boost::lexical_cast<std::string>(timeToGraph));
 		//Add the appropriate number of 0s to make it a three character string
 		if (timeToGraph < 100){
 			timeToGraphString.insert(0,"0");

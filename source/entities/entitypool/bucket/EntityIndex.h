@@ -284,8 +284,8 @@ Person* EntityIndex<_PSC,_KeyValType>::drawMember(RandomNums& _randomNums, Perso
 	cout << "EntityIndex drawMember being called for person " << _chooser->getID() << endl;
 
 	//these determine the bounds of which keys we will consider
-	_KeyValType minDesired = Util::getMin<_KeyValType>();
-	_KeyValType maxDesired = Util::getMax<_KeyValType>();
+	_KeyValType minDesired = std::numeric_limits<_KeyValType>::min();
+	_KeyValType maxDesired = std::numeric_limits<_KeyValType>::max();
 	//if there is a specific choose then make sure they want a specific kind of partnership
 	if(_chooser != NULL) {
 		assert(_partnershipType != SexualPartnership::ENDType);

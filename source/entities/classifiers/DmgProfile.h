@@ -130,7 +130,7 @@ private:
 	static std::map<DmgProfile, ProfileID, DmgProfile::less> ProfileToProfileID;
 	//allows for quick look-up of tuple given the dmgProfileID
 	static std::vector <const DmgProfile*> ProfileIDtoProfile;
-	static std::vector <string> ProfileIDtoStr;
+	static std::vector <std::string> ProfileIDtoStr;
 
 	//------------< End fields >--------------//
 
@@ -194,16 +194,16 @@ public:
 	Will take a string representation of a tuple and store the values
 	@author TBD
 	**/
-	void parse(string _tupleStr);
+	void parse(std::string _tupleStr);
 
 	/**
 	//appends _prefix and string representation to output stream
 	@author schung5
 	**/
-	void print(ostream& _outStream, string _prefix) const;
+	void print(std::ostream& _outStream, std::string _prefix) const;
 
 	//Saves the state of the dmgProfile to file
-	void saveState (ostream & _outStream);
+	void saveState(std::ostream & _outStream);
 
 	/**
 	Given the enums in this object, returns any Buckets that match the enum pattern
@@ -242,7 +242,7 @@ public:
 
 	@author schung5
 	**/
-	const string* toString() const;
+	const std::string* toString() const;
 
 public :
 
@@ -266,10 +266,10 @@ public :
 	We return a pointer to save compute speed. We don't want a
 	new string to be allocated cor each call
 	*/
-	static const string* toString(ProfileID _profileID);
+	static const std::string* toString(ProfileID _profileID);
 
 	//gets a string representation of the _demographic value of the tuple that corresponds to _profileID
-	static const string* getString(ProfileID _profileID, Demographic _demographic);
+	static const std::string* getString(ProfileID _profileID, Demographic _demographic);
 
 	//----------------< End Static Methods >------------------------------//
 

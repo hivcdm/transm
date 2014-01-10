@@ -51,16 +51,16 @@ double CostsTracker::getTotalCostsPerSource(CostsTracker::CostSources _costSourc
 }
 
 //Total costs for each time step
-double CostsTracker::getTotalCostsPerTime(long _time)
+double CostsTracker::getTotalCostsPerTime(int _time)
 {
-	if (static_cast<size_t>(_time) >= allCosts.size())
+	if(_time >= static_cast<int>(allCosts.size()))
 	{
 		//Default to 0 if time hasn't occurred
 		return 0;
 	}
 	else
 	{
-		return this->allCosts.at(_time)->getTotalCosts();
+		return allCosts.at(_time)->getTotalCosts();
 	}
 }
 
@@ -75,7 +75,7 @@ double CostsTracker::getTotalCosts(){
 }
 
 //Add a cost
-void CostsTracker::addCost(double _cost, CostsTracker::CostSources _costSource, long _currTime){
+void CostsTracker::addCost(double _cost, CostsTracker::CostSources _costSource, int _currTime){
 	//Check to see if a MonthlyCost already exists for this time
 	while (static_cast<size_t>(_currTime) >= this->allCosts.size())
 	{

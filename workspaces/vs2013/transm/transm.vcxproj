@@ -165,7 +165,9 @@
     <ClCompile Include="..\..\..\source\statistics\TabularOutput.cpp" />
     <ClCompile Include="..\..\..\source\statistics\TransmissionSummaryStats.cpp" />
     <ClCompile Include="..\..\..\source\util\rand\RandomNums.cpp" />
-    <ClCompile Include="..\..\..\source\util\sqlite\sqlite3.c" />
+    <ClCompile Include="..\..\..\source\util\sqlite\sqlite3.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
     <ClCompile Include="..\..\..\source\util\ticpp\ticpp.cpp" />
     <ClCompile Include="..\..\..\source\util\ticpp\tinystr.cpp" />
     <ClCompile Include="..\..\..\source\util\ticpp\tinyxml.cpp" />

@@ -4,8 +4,6 @@
 #include <string>
 #include <fstream>
 
-using namespace std;
-
 /**
 This class parses the parts of a CEPAC .in file that is needed to run the transmission model
 It also stores the values that it has parsed and provides accessor functions
@@ -14,7 +12,7 @@ It also stores the values that it has parsed and provides accessor functions
 class ParseCepacInput {
 
 	//fstream of a valid CEPAC .in file
-	fstream cepacInputFile;
+	std::fstream cepacInputFile;
 
 public :
 	/**
@@ -22,11 +20,11 @@ public :
 	@param _inputFile path to CEPAC file
 	@author schung5
 	**/
-	ParseCepacInput(string _inputFile);
+	ParseCepacInput(std::string _inputFile);
 
 	/**
 	from a CEPAC .in file stream, get the nonAIDS death for men and women
 	@author schung5
 	**/
-	void getNonAIDSDeath (vector<double> &_maleProbs ,vector<double> &_femaleProbs);			
+	void getNonAIDSDeath(std::vector<double> &_maleProbs, std::vector<double> &_femaleProbs);
 };

@@ -8,8 +8,6 @@
 #include "../util/XMLUtil.h"
 #include "../util/rand/RandomNums.h"
 
-using namespace std;
-
 //-----------------< Begin population-level parameters for males >-----------------------/
 //each index of the array contains parameters for a different population
 //(we only have 1 population for now so the size of the vector will default to 1
@@ -333,7 +331,7 @@ double Male::getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartne
 					   return 0; break;
 				   }
 		//case SEXUAL_ACTIVITY_LEVEL :
-		case ID :											return Util::getMin<double>();
+		case ID :											return numeric_limits<double>::min();
 		default : cerr << "Invalid Sorting key :" << _PSC; Util::exitWithPrompt(-1);
 	}
 
@@ -350,7 +348,7 @@ double Male::getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartne
 							   return 0; break;
 						   }
 		//case SEXUAL_ACTIVITY_LEVEL :
-		case ID :											return Util::getMax<double>();
+		case ID:											return numeric_limits<double>::max();
 		default : cerr << "Invalid Sorting key :" << _PSC; Util::exitWithPrompt(-1);
 	}
 

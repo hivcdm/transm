@@ -54,13 +54,13 @@ public:
 	double getTotalCostsPerSource(CostsTracker::CostSources _costSource);
 
 	//Total costs for each time step
-	double getTotalCostsPerTime(long _time);
+	double getTotalCostsPerTime(int _time);
 
 	//Total costs of all sources
 	double getTotalCosts();
 
 	//Add a cost
-	void addCost(double _cost, CostsTracker::CostSources _costSource, long _currTime);
+	void addCost(double _cost, CostsTracker::CostSources _costSource, int _currTime);
 
 	//print all costs (call at end of simulation)
 	void printCosts(std::ostream &_outStream);

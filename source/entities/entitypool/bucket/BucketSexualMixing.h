@@ -19,15 +19,14 @@ Each index contains people of same age by year. Right now the index is implement
 errhode 4/20/2009: The index has been replaced by BucketAge, which implements a FullVector.
 ***/
 
-#include "EntityIndex.h"
-#include "DmgProfileBucket.h"
-#include "BucketAge.h"
 #include <list>
 #include <boost/circular_buffer.hpp>
 
-class Person;
+#include "EntityIndex.h"
+#include "DmgProfileBucket.h"
+#include "BucketAge.h"
 
-using namespace std;
+class Person;
 
 /**
 This class contains Person objects in different buckets based on age

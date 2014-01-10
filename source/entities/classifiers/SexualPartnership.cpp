@@ -7,10 +7,6 @@
 #include <cmath>
 #include <string>
 
-using namespace std;
-
-
-
 const std::string SexualPartnership::TypeEnumStrs[ENDType] = {"Steady","Regular","Casual","CSW"};
 
 EnumCls<SexualPartnership::Type> SexualPartnership::TypeEnum(SexualPartnership::TypeEnumStrs, SexualPartnership::ENDType);

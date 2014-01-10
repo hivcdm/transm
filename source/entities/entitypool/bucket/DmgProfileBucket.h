@@ -1,10 +1,10 @@
 #pragma once
+
 #include "EntityIndex.h"
 #include "../../classifiers/DmgProfile.h"
 
 class Person;
 class RandomNums;
-using namespace std;
 
 /***
     This class is a simple container for Entitys and allows us to add, count, get, and remove them

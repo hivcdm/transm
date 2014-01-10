@@ -2970,7 +2970,7 @@ bool SimContext::readAndSkipPast(const char* searchStr, FILE* file) {
 	while ( strcmp(temp, searchStr) != 0 ) {
 		fscanf(file, "%512s", temp);
 		if ( feof(file) ) {
-		  //printf("\nWARNING: unexpected end of input file. Looking for %s",searchStr);
+		    printf("\nWARNING: unexpected end of input file. Looking for %s",searchStr);
 			return false;
 		}
 	}

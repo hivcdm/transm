@@ -11,9 +11,6 @@
 #include "FullVector.h"
 #include "../../classifiers/DmgProfile.h"
 #include <vector>
-//#include <list>
-
-using namespace std;
 
 class BucketAge{
 

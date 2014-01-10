@@ -1,11 +1,9 @@
-#include "InfectionsTracker.h"
-#include "../Constants.h"
-#include "../Population.h"
-
 #include <iostream>
 #include <sstream>
 
-using namespace std;
+#include "InfectionsTracker.h"
+#include "../Constants.h"
+#include "../Population.h"
 
 InfectionsTracker::InfectionsTracker() {
 

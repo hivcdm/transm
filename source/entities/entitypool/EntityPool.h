@@ -5,8 +5,6 @@
 #include <vector>
 #include <list>
 
-using namespace std;
-
 #include "./../classifiers/DmgProfile.h"
 #include "./../classifiers/SexualPartnership.h"
 #include "./bucket/BucketSexualMixing.h"

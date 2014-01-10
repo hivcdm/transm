@@ -1,16 +1,14 @@
 #pragma once
 
-#include "./rand/RandomNums.h"
-#include "./../Constants.h"
-#include <set>
-#include <vector>
-#include <string>
-#include <sstream>
 #include <assert.h>
-
 #include <limits.h>
+#include <set>
+#include <sstream>
+#include <string>
+#include <vector>
 
-using namespace std;
+#include "rand/RandomNums.h"
+#include "../Constants.h"
 
 class Util {
 
@@ -38,30 +36,22 @@ public:
 	Converts a string value to another datatype
 	**/
 	template <class T>
-	static T fromString(string _s);
+	static T fromString(std::string _s);
 
 	/**
 	Prints a prompt and exits after user hits return
 	***/
 	static void exitWithPrompt(int _exitCode);
 
-	//returns the minimum possible value of certain primitive types
-	template <class T>
-	static T getMin();
-
-	//returns the maximum possible value of certain primitive types
-	template <class T>
-	static T getMax();
-
 	//returns true if _elem is a member of _set
 	template <class T>
-	static bool memberOf(set<T> _set, T _elem);
+	static bool memberOf(std::set<T> _set, T _elem);
 
 	//retursn true if _elem is a member of _vector
 	template <class T>
-	static bool memberOf(vector<T> _vector, T _elem);
+	static bool memberOf(std::vector<T> _vector, T _elem);
 
-	static void normalize( vector<double> &_weights);
+	static void normalize(std::vector<double> &_weights);
 
 	//converts a probability to a rate
 	static double probToRate(double _prob);
@@ -84,17 +74,17 @@ public:
 
 		//this function was taken from
 	// http://www.oopweb.com/CPP/Documents/CPPHOWTO/Volume/C++Programming-HOWTO-7.html
-	static void Tokenize(const string& str, vector<string>& tokens, const string& delimiters);
+	static void Tokenize(const std::string& str, std::vector<std::string>& tokens, const std::string& delimiters);
 };
 
 //returns true if _elem is a member of _set
 template <class T>
-bool Util::memberOf(set<T> _set, T _elem) {
+bool Util::memberOf(std::set<T> _set, T _elem) {
 	return (_set.find(_elem) != _set.end())	;
 }
 
 template <class T>
-bool Util::memberOf(vector<T> _vector, T _elem) {
+bool Util::memberOf(std::vector<T> _vector, T _elem) {
 	for(int i = 0; i < _vector.size(); i++) {
 		if ( _vector.at(i) == _elem) return true;
 	}
@@ -102,52 +92,11 @@ bool Util::memberOf(vector<T> _vector, T _elem) {
 }
 
 
-//returns the minimum possible value of certain types
-template <class T>
-T Util::getMin() {
-	if(typeid(T) == typeid(int))
-		return INT_MIN;
-	else if((typeid(T) == typeid(long)) || (typeid(T) == typeid(double)))
-		return LONG_MIN;
-	else if(typeid(T) == typeid(char))
-		return CHAR_MIN;
-	else if((typeid(T) == typeid(unsigned long)) || (typeid(T) == typeid(unsigned int)))
-		return 0;
-	else {
-		cerr << "Util::getMin() - tried to pass in illegal type" << endl;
-		assert(false);
-		Util::exitWithPrompt(-1);
-		return -1;
-	}
-}
-
-//returns the maximum possible value of certain types
-template <class T>
-T Util::getMax() {
-	if(typeid(T) == typeid(int))
-		return INT_MAX;
-	else if( (typeid(T) == typeid(long)) || (typeid(T) == typeid(double)) )
-		return LONG_MAX;
-	else if(typeid(T) == typeid(char))
-		return CHAR_MAX;
-	else if(typeid(T) == typeid(unsigned int))
-		return UINT_MAX;
-	else if(typeid(T) == typeid(unsigned long))
-		return ULONG_MAX;
-	else {
-		cerr << "Util::getMax() - tried to pass in illegal type:" << endl;
-		assert(false);
-		Util::exitWithPrompt(-1);
-		return -1;
-
-	}
-}
-
 /**
 Converts a string value to another datatype
 **/
 template <class T>
-T Util::fromString(string _s) {
+T Util::fromString(std::string _s) {
 	std::istringstream converter(_s);
 	T converted;
 	converter >> converted;

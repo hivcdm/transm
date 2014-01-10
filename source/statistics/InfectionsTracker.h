@@ -1,18 +1,18 @@
 #pragma once
 
-#include <vector>
+#include <deque>
+#include <list>
 #include <map>
 #include <string>
-#include <list>
-#include <deque>
+#include <vector>
+#include <boost/tuple/tuple.hpp>
+
 #include "../entities/Person.h"
 #include "../entities/classifiers/DmgProfile.h"
 #include "../entities/classifiers/SexualPartnership.h"
-#include <boost/tuple/tuple.hpp>
 
 class Population;
 
-using namespace std;
 class InfectionsTracker {
 
 public:

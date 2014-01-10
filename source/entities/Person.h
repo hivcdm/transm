@@ -13,17 +13,14 @@
 #include "../cepac/Patient.h"
 #include "../graphviz/graphVizParse.h"
 
-class InfectionsTracker;
 class ArtRolloutTracker;
-
-using namespace std;
-
-//struct MonthEvent;
 class EntityPool;
 class EventParams;
-class RandomNums;
-enum TimeGranularity;
 class FullVector;
+class InfectionsTracker;
+class RandomNums;
+
+enum TimeGranularity;
 
 /**
 All individuals in the simulation are of this class, or something derived from this

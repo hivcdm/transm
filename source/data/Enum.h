@@ -41,7 +41,7 @@ public:
 	
 	enum NULL_ENUM {	};
 
-	const static string WILDCARD;
+	const static std::string WILDCARD;
 /*
 	class ExceptionBadEnum : public exception {
 
@@ -99,7 +99,7 @@ public :
 	Given a string, respresents to return the enum value that matches it
 	If string does not match any value, returns this->getMax() + 1
 	**/
-	Enum fromString(const string& _str) const;
+	Enum fromString(const std::string& _str) const;
 
 	/**
 	Stores the string representation of enum
@@ -121,7 +121,7 @@ public :
 	We return a pointer to save compute speed. We don't want a 
 	new string to be allocated cor each call
 	**/
-	const string* toString(Enum _enum) const;
+	const std::string* toString(Enum _enum) const;
 };
 
 /**

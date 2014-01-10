@@ -3,7 +3,7 @@
 #include "../Constants.h"
 
 
-const string BaseEnumCls::WILDCARD = "*";
+const std::string BaseEnumCls::WILDCARD = "*";
 
 BaseEnumCls::BaseEnumCls() {
 	initialized = false;
@@ -39,25 +39,27 @@ BaseEnumCls::Enum BaseEnumCls::getWildcard() const {
 	return this->max + 1;
 }
 
-BaseEnumCls::Enum BaseEnumCls::fromString(const string& _str) const{
-	assert(this->initialized);
-	//search through all valid enums
-	int currEnum = this->getMin();
-	while(currEnum <= this->getMax()) {
-		//if we find a match, then return the enum
-		if(!this->strs.at(currEnum).compare(_str))
+BaseEnumCls::Enum BaseEnumCls::fromString(const std::string& _str) const{
+	assert(initialized);
+
+	BaseEnumCls::Enum currEnum = getMin();
+	while(currEnum <= getMax())
+	{
+		if(!strs.at(currEnum).compare(_str))
+		{
 			return currEnum;
+		}
 		currEnum++;
 	}
 
-	//if we have a wildcard value
 	if(!_str.compare(BaseEnumCls::WILDCARD))
-		return this->getWildcard();
-
-	cerr << "Illegal string representation of enum (" << _str << ")";
-	Util::exitWithPrompt(-1);
-
-	return -1;
+	{
+		return getWildcard();
+	}
+	else
+	{
+		throw std::runtime_error("Illegal string representation of enum (" + _str + ")");
+	}
 }
 
 /**
@@ -101,7 +103,7 @@ bool BaseEnumCls::isValidNonWildCard(BaseEnumCls::Enum _e) const {
 	return Util::withinRange<BaseEnumCls::Enum>(_e, this->getMin(), this->getMax());
 }
 
-const string* BaseEnumCls::toString(BaseEnumCls::Enum _e) const{
+const std::string* BaseEnumCls::toString(BaseEnumCls::Enum _e) const{
 	assert(this->initialized);
 	assert(this->isValidEnum(_e));
 	return &this->strs.at(_e);

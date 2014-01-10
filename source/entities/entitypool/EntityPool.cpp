@@ -3,8 +3,6 @@ This file contains the implementations for the methods of EntityPool
 ***/
 
 #include <sstream>
-using namespace std;
-
 
 #include "EntityPool.h"
 
@@ -185,7 +183,7 @@ bool EntityPool::removeEntity(Person *_person)
 }
 
 
-bool EntityPool::refreshDmgProfileBucket(Person *_person, list<Person*>::iterator */*_p_Iter*/, bool forceRefresh)
+bool EntityPool::refreshDmgProfileBucket(Person *_person, list<Person *>::iterator * /*_p_Iter*/, bool forceRefresh)
 {
 	assert(_person != NULL);
 

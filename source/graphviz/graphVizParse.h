@@ -7,16 +7,15 @@
 
 #ifndef GRAPHVIZPARSE_H_
 #define GRAPHVIZPARSE_H_
-#include <boost/config.hpp>
-//#include <boost/regex.hpp>
-#include <boost/lexical_cast.hpp>
-#include <vector>
-#include <string>
-#include <iostream>
-#include <fstream>
-#include "../entities/classifiers/SexualPartnership.h"
 
-using namespace boost;
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <boost/config.hpp>
+#include <boost/lexical_cast.hpp>
+
+#include "../entities/classifiers/SexualPartnership.h"
 
 /** class GraphVizParse {
 

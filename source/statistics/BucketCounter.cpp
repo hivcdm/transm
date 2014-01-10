@@ -1,6 +1,6 @@
 #include "BucketCounter.h"
 
-static int sqliteCallback(void *result, int argc, char **argv, char **/*columnName*/)
+static int sqliteCallback(void *result, int argc, char **argv, char ** /*columnName*/)
 {
 	int &resultInt = *reinterpret_cast<int *>(result);
 	resultInt = 0;

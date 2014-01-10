@@ -114,7 +114,7 @@ unsigned int Util::convertTime(TimeGranularity _from, TimeGranularity _to, doubl
 	}
 	else
 	{
-		cerr << "convertToTime - invalid time granularity..." << _from << " or " << _to << endl;
+		std::cerr << "convertToTime - invalid time granularity..." << _from << " or " << _to << std::endl;
 		Util::exitWithPrompt(INVALID_TIME_GRANULARITY);
 	}
 
@@ -123,9 +123,9 @@ unsigned int Util::convertTime(TimeGranularity _from, TimeGranularity _to, doubl
 
 
 void Util::exitWithPrompt(int _exitCode) {
-    cerr << endl << endl << "Press any key to continue";
-    string x;
-    getline(cin,x);
+	std::cerr << std::endl << std::endl << "Press any key to continue";
+	std::string x;
+	std::getline(std::cin, x);
     exit(_exitCode);
 }
 
@@ -133,7 +133,7 @@ bool Util::isNormDistZero(const NormalDist _normDist) {
     return (_normDist.mean == 0) && (_normDist.stddev == 0);
 }
 
-void Util::normalize( vector<double> &_weights) {
+void Util::normalize(std::vector<double> &_weights) {
     double total = 0;
 
     //see what the values currently total to
@@ -174,15 +174,15 @@ long Util::round(double _d) {
 
 //this function was taken from
 // http://www.oopweb.com/CPP/Documents/CPPHOWTO/Volume/C++Programming-HOWTO-7.html
-void Util::Tokenize(const string& str,
-		    vector<string>& tokens,
-		    const string& delimiters = " ") {
+void Util::Tokenize(const std::string& str,
+	std::vector<std::string>& tokens,
+	const std::string& delimiters = " ") {
     // Skip delimiters at beginning.
-    string::size_type lastPos = str.find_first_not_of(delimiters, 0);
+	std::string::size_type lastPos = str.find_first_not_of(delimiters, 0);
     // Find first "non-delimiter".
-    string::size_type pos     = str.find_first_of(delimiters, lastPos);
+	std::string::size_type pos = str.find_first_of(delimiters, lastPos);
 
-    while (string::npos != pos || string::npos != lastPos){
+	while(std::string::npos != pos || std::string::npos != lastPos){
 	// Found a token, add it to the vector.
 	tokens.push_back(str.substr(lastPos, pos - lastPos));
 	// Skip delimiters.  Note the "not_of"

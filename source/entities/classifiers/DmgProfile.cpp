@@ -3,7 +3,6 @@
 #include "./../../util/Util.h"
 #include <typeinfo>
 #include <sstream>
-using namespace std;
 
 //declare strings of Enums
 const std::string demographicStrs[DmgProfile::ENDDemographic] = {"SEXUAL_ACTIVITY_STATUS", "GENDER", "SEXUAL_ORIENTATION", "RELATIONSHIP_STATUS", "EMPLOYMENT"};

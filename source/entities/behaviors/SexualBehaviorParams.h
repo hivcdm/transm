@@ -6,8 +6,6 @@
 #include "../Person.h"
 #include <vector>
 
-using namespace std;
-
 /**
 This can parse XML that contains info about sexual behavior for a particular
 type of partnership. As of 9/8/08, only males have detailed sexual

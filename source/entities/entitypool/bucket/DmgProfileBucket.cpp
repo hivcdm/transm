@@ -43,7 +43,7 @@ Person* DmgProfileBucket::drawMember(RandomNums& _randomNums, SexualPartnership:
 	return removed;
 }
 
-Person* DmgProfileBucket::drawMember(RandomNums& _randomNums, Person */*_chooser*/,SexualPartnership::Type _partnershipType, bool _remove)
+Person *DmgProfileBucket::drawMember(RandomNums& _randomNums, Person */*_chooser*/, SexualPartnership::Type _partnershipType, bool _remove)
 {
 	//we have to implement the more complicated drawing process
 	//This is done in BucketSexualMixing

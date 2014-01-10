@@ -147,12 +147,12 @@ double Female::getFOI(Person *_p, SexualPartnership::Type _partnershipType, Even
 //currently, females don't have much of a choice. Edit these functions to give them ability have have partner preferences
 double Female::getMinPartnerSelectVal(Person::SelectingCriteria /*_PSC*/, SexualPartnership::Type /*_partnershipType*/) const
 {
-		return Util::getMin<unsigned int>();
+	return numeric_limits<unsigned int>::min();
 }
 
 double Female::getMaxPartnerSelectVal(Person::SelectingCriteria /*_PSC*/, SexualPartnership::Type /*_partnershipType*/) const
 {
-	return Util::getMax<unsigned int>();
+	return numeric_limits<unsigned int>::max();
 }
 
 double Female::getTransmissionCoeff() {

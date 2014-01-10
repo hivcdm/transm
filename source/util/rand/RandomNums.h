@@ -2,13 +2,11 @@
 
 #include <cstdlib>
 #include <vector>
-#include "boost/random/mersenne_twister.hpp"
-#include "boost/random/normal_distribution.hpp"
-#include "boost/random/poisson_distribution.hpp"
-#include "boost/math/distributions/beta.hpp"
-//#include "IsaacRand.h"
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/normal_distribution.hpp>
+#include <boost/random/poisson_distribution.hpp>
+#include <boost/math/distributions/beta.hpp>
 
-using namespace std;
 typedef unsigned long uint32;
 
 class NormalDist {
@@ -67,7 +65,7 @@ public :
 	@param _indexProbabilities contains relative probabilities that a particular index will be chosen
 	@returns a number between 0 and _indexProbabilities.size()
 	***/
-	int chooseIndex(const vector<double> &_indexProbabilities);
+	int chooseIndex(const std::vector<double> &_indexProbabilities);
 
 	double rand();						// returns a double between 0 and 1
 	uint32 randInt( );      // integer in [0,n] for n < 2^32

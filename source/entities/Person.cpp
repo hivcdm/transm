@@ -655,7 +655,7 @@ void Person::quitSexWork(EventParams& _eventParams){
 	this->dmgProfile.set(DmgProfile::EMPLOYMENT, DmgProfile::NON_CSW);
 }
 
-void Person::rerollRiskGroup(EventParams& _eventParams){
+void Person::rerollRiskGroup(EventParams &/*_eventParams*/){
 	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
 	cerr << "Person::rerollRiskGroup()" << endl;
 }
@@ -1303,19 +1303,19 @@ int Person::getCEPACSimContextIndex(EventParams& _eventParams)
 //----------------< Start Methods for to be implemented by Male and Female >-------------------//
 
 
-Person* Person::choosePartner(SexualPartnership::Type _partnershipType, EntityPool *_availableEntities, bool _remove) {
+Person *Person::choosePartner(SexualPartnership::Type /*_partnershipType*/, EntityPool * /*_availableEntities*/, bool /*_remove*/) {
 	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
 	cerr << "Called Person::choosePartner()" << endl;
 	return NULL;
 }
 
-double Person::getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventParams& _eventParams){
+double Person::getFOI(Person * /*_p*/, SexualPartnership::Type /*_partnershipType*/, EventParams &/*_eventParams*/){
 	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
 	cerr << "Called Person::getFOI()" << endl;
 	return 0.0;
 }
 
-double Person::getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const {
+double Person::getMinPartnerSelectVal(Person::SelectingCriteria /*_PSC*/, SexualPartnership::Type /*_partnershipType*/) const {
 	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
 	cerr << "Person::getMinPartnerSelectVal()" << endl;
 	return 0.0;
@@ -1323,7 +1323,7 @@ double Person::getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPart
 
 
 
-double Person::getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const {
+double Person::getMaxPartnerSelectVal(Person::SelectingCriteria /*_PSC*/, SexualPartnership::Type /*_partnershipType*/) const {
 	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
 	cerr << "Person::getMaxPartnerSelectVal()" << endl;
 	return 0.0;
@@ -1341,13 +1341,13 @@ double Person::getTransmissionCoeff() {
 	return 0.0;
 }
 
-bool Person::possibleMatch(SexualPartnership::Type /*_partnershipType*/, Person */*_p*/) {
+bool Person::possibleMatch(SexualPartnership::Type /*_partnershipType*/, Person * /*_p*/) {
 	cerr << "Called Person::possibleMatch()" << endl;
 	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
 	return false;
 }
 
-int Person::rollForNewPartnershipDuration(SexualPartnership::Type /*_partnershipType*/, RandomNums &/*_randomNums*/, Person */*_p*/){
+int Person::rollForNewPartnershipDuration(SexualPartnership::Type /*_partnershipType*/, RandomNums &/*_randomNums*/, Person * /*_p*/){
 	cerr << "Called Person::rollForNewPartnershipDuration()" << endl;
 	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
 	return false;
@@ -1360,7 +1360,7 @@ int Person::rollForNumPartners(RandomNums &/*_randomNums*/, SexualPartnership::T
 	return false;
 }
 
-int Person::rollNumEventsPerPartner(Person */*_p*/, RandomNums &/*_randomNums*/, SexualPartnership::Type /*_partnershipType*/)
+int Person::rollNumEventsPerPartner(Person * /*_p*/, RandomNums &/*_randomNums*/, SexualPartnership::Type /*_partnershipType*/)
 {
 	cerr << "Called Person::rollNumEventsPerPartner()" << endl;
 	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
