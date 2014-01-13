@@ -9,7 +9,8 @@ This class parses the parts of a CEPAC .in file that is needed to run the transm
 It also stores the values that it has parsed and provides accessor functions
 @author schung5
 **/
-class ParseCepacInput {
+class ParseCepacInput
+{
 
 	//fstream of a valid CEPAC .in file
 	std::fstream cepacInputFile;

@@ -7,11 +7,9 @@ class SimContextTestSuite : public CxxTest::TestSuite
 public:
 	SimContextTestSuite()
 	{
-
 	}
 
 	~SimContextTestSuite()
 	{
-
 	}
 };

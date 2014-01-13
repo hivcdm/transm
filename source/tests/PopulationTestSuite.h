@@ -7,15 +7,13 @@ class PopulationTestSuite : public CxxTest::TestSuite
 public:
 	PopulationTestSuite()
 	{
-
 	}
 
 	~PopulationTestSuite()
 	{
-
 	}
 
-    void testConstructorsDestructors()
-    {
-    }
+	void testConstructorsDestructors()
+	{
+	}
 };

@@ -18,20 +18,19 @@ static int sqliteCallback(void *result, int argc, char **argv, char ** /*columnN
 }
 
 int BucketCounter::GetCount(DmgProfile::SexualActivityStatus sexualActivityStatus,
-	DmgProfile::Gender gender,
-	DmgProfile::SexualOrientation sexualOrientation,
-	DmgProfile::RelationshipStatus relationshipStatus,
-	DmgProfile::Employment employment,
-	Person::RiskLevel riskLevel,
-	int ageGroup,
-	Person::CD4Strata cd4Stratum)
+                            DmgProfile::Gender gender,
+                            DmgProfile::SexualOrientation sexualOrientation,
+                            DmgProfile::RelationshipStatus relationshipStatus,
+                            DmgProfile::Employment employment,
+                            Person::RiskLevel riskLevel,
+                            int ageGroup,
+                            Person::CD4Strata cd4Stratum)
 {
 	std::stringstream query;
-
 	query << "SELECT SUM(count) FROM Bucket";
-	BuildWhere(sexualActivityStatus, gender, sexualOrientation, relationshipStatus, employment, riskLevel, ageGroup, cd4Stratum, query);
+	BuildWhere(sexualActivityStatus, gender, sexualOrientation, relationshipStatus, employment, riskLevel, ageGroup,
+	           cd4Stratum, query);
 	query << ";";
-
 	int sum = 0;
 	bool success = ExecuteQuery(query.str(), sum);
 
@@ -53,15 +52,13 @@ void BucketCounter::Increment(Person *person)
 	}
 
 	std::stringstream query;
-
 	query << "UPDATE Bucket SET count=";
 	query << count + 1;
 	BuildWhere(person, query);
-
 	ExecuteQuery(query.str());
 }
 
-void BucketCounter::SetAgeRanges(const std::vector<std::pair<int, int> > &ageRanges)
+void BucketCounter::SetAgeRanges(const std::vector<std::pair<int, int>> &ageRanges)
 {
 	this->ageRanges.assign(ageRanges.begin(), ageRanges.end());
 }
@@ -69,11 +66,9 @@ void BucketCounter::SetAgeRanges(const std::vector<std::pair<int, int> > &ageRan
 int BucketCounter::GetCount(Person *person)
 {
 	std::stringstream query;
-
 	query << "SELECT SUM(count) FROM Bucket";
 	BuildWhere(person, query);
 	query << ";";
-
 	int count = 0;
 	bool success = ExecuteQuery(query.str(), count);
 
@@ -88,16 +83,19 @@ int BucketCounter::GetCount(Person *person)
 void BucketCounter::BuildWhere(Person *person, std::stringstream &query)
 {
 	const DmgProfile *demographicProfile = person->getDmgProfile();
-
-	DmgProfile::SexualActivityStatus sexualActivityStatus = static_cast<DmgProfile::SexualActivityStatus>(demographicProfile->get(DmgProfile::SEXUAL_ACTIVITY_STATUS));
+	DmgProfile::SexualActivityStatus sexualActivityStatus = static_cast<DmgProfile::SexualActivityStatus>
+	        (demographicProfile->get(DmgProfile::SEXUAL_ACTIVITY_STATUS));
 	DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(demographicProfile->get(DmgProfile::GENDER));
-	DmgProfile::SexualOrientation sexualOrientation = static_cast<DmgProfile::SexualOrientation>(demographicProfile->get(DmgProfile::SEXUAL_ORIENTATION));
-	DmgProfile::RelationshipStatus relationshipStatus = static_cast<DmgProfile::RelationshipStatus>(demographicProfile->get(DmgProfile::RELATIONSHIP_STATUS));
-	DmgProfile::Employment employment = static_cast<DmgProfile::Employment>(demographicProfile->get(DmgProfile::EMPLOYMENT));
+	DmgProfile::SexualOrientation sexualOrientation = static_cast<DmgProfile::SexualOrientation>(demographicProfile->get(
+	            DmgProfile::SEXUAL_ORIENTATION));
+	DmgProfile::RelationshipStatus relationshipStatus = static_cast<DmgProfile::RelationshipStatus>(demographicProfile->get(
+	            DmgProfile::RELATIONSHIP_STATUS));
+	DmgProfile::Employment employment = static_cast<DmgProfile::Employment>(demographicProfile->get(
+	                                        DmgProfile::EMPLOYMENT));
 	Person::RiskLevel riskLevel = person->getRiskLevel();
 	int ageGroup = -1;
-
 	int age = person->getAge(MONTH);
+
 	for(size_t i = 0; i < ageRanges.size(); ++i)
 	{
 		if(age >= ageRanges[i].first && age <= ageRanges[i].second)
@@ -105,28 +103,29 @@ void BucketCounter::BuildWhere(Person *person, std::stringstream &query)
 			ageGroup = i;
 		}
 	}
+
 	assert(ageGroup != -1);
 	Person::CD4Strata cd4Stratum = person->getCd4Stratum();
-
-	return BuildWhere(sexualActivityStatus, gender, sexualOrientation, relationshipStatus, employment, riskLevel, ageGroup, cd4Stratum, query);
+	return BuildWhere(sexualActivityStatus, gender, sexualOrientation, relationshipStatus, employment, riskLevel, ageGroup,
+	                  cd4Stratum, query);
 }
 
 void BucketCounter::BuildWhere(DmgProfile::SexualActivityStatus sexualActivityStatus,
-	DmgProfile::Gender gender,
-	DmgProfile::SexualOrientation sexualOrientation,
-	DmgProfile::RelationshipStatus relationshipStatus,
-	DmgProfile::Employment employment,
-	Person::RiskLevel riskLevel,
-	int ageGroup,
-	Person::CD4Strata cd4Stratum,
-	std::stringstream &query)
+                               DmgProfile::Gender gender,
+                               DmgProfile::SexualOrientation sexualOrientation,
+                               DmgProfile::RelationshipStatus relationshipStatus,
+                               DmgProfile::Employment employment,
+                               Person::RiskLevel riskLevel,
+                               int ageGroup,
+                               Person::CD4Strata cd4Stratum,
+                               std::stringstream &query)
 {
 	if((sexualActivityStatus != DmgProfile::ENDSexualActivityStatus) || (gender != DmgProfile::ENDGender) ||
-		(sexualOrientation != DmgProfile::ENDSexualOrientation) || (relationshipStatus != DmgProfile::ENDRelationshipStatus) ||
-		(employment != DmgProfile::ENDEmployment) || (riskLevel != Person::ENDRiskLevel) || (ageGroup != -1) || (cd4Stratum != Person::ENDCD4Strata))
+	        (sexualOrientation != DmgProfile::ENDSexualOrientation) || (relationshipStatus != DmgProfile::ENDRelationshipStatus) ||
+	        (employment != DmgProfile::ENDEmployment) || (riskLevel != Person::ENDRiskLevel) || (ageGroup != -1)
+	        || (cd4Stratum != Person::ENDCD4Strata))
 	{
 		query << " WHERE ";
-
 		bool first = true;
 
 		if(sexualActivityStatus != DmgProfile::ENDSexualActivityStatus)
@@ -141,6 +140,7 @@ void BucketCounter::BuildWhere(DmgProfile::SexualActivityStatus sexualActivitySt
 			{
 				query << " AND ";
 			}
+
 			query << "gender=" << gender;
 			first = false;
 		}
@@ -151,6 +151,7 @@ void BucketCounter::BuildWhere(DmgProfile::SexualActivityStatus sexualActivitySt
 			{
 				query << " AND ";
 			}
+
 			query << "sexualOrientation=" << sexualOrientation;
 			first = false;
 		}
@@ -161,6 +162,7 @@ void BucketCounter::BuildWhere(DmgProfile::SexualActivityStatus sexualActivitySt
 			{
 				query << " AND ";
 			}
+
 			query << "relationshipStatus=" << relationshipStatus;
 			first = false;
 		}
@@ -171,6 +173,7 @@ void BucketCounter::BuildWhere(DmgProfile::SexualActivityStatus sexualActivitySt
 			{
 				query << " AND ";
 			}
+
 			query << "employment=" << employment;
 			first = false;
 		}
@@ -181,6 +184,7 @@ void BucketCounter::BuildWhere(DmgProfile::SexualActivityStatus sexualActivitySt
 			{
 				query << " AND ";
 			}
+
 			query << "riskLevel=" << riskLevel;
 			first = false;
 		}
@@ -191,6 +195,7 @@ void BucketCounter::BuildWhere(DmgProfile::SexualActivityStatus sexualActivitySt
 			{
 				query << " AND ";
 			}
+
 			query << "ageGroup=" << ageGroup;
 			first = false;
 		}
@@ -201,6 +206,7 @@ void BucketCounter::BuildWhere(DmgProfile::SexualActivityStatus sexualActivitySt
 			{
 				query << " AND ";
 			}
+
 			query << "cd4Stratum=" << cd4Stratum;
 			first = false;
 		}
@@ -250,16 +256,19 @@ void BucketCounter::CloseConnection()
 bool BucketCounter::InsertBucket(Person *person)
 {
 	const DmgProfile *demographicProfile = person->getDmgProfile();
-
-	DmgProfile::SexualActivityStatus sexualActivityStatus = static_cast<DmgProfile::SexualActivityStatus>(demographicProfile->get(DmgProfile::SEXUAL_ACTIVITY_STATUS));
+	DmgProfile::SexualActivityStatus sexualActivityStatus = static_cast<DmgProfile::SexualActivityStatus>
+	        (demographicProfile->get(DmgProfile::SEXUAL_ACTIVITY_STATUS));
 	DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(demographicProfile->get(DmgProfile::GENDER));
-	DmgProfile::SexualOrientation sexualOrientation = static_cast<DmgProfile::SexualOrientation>(demographicProfile->get(DmgProfile::SEXUAL_ORIENTATION));
-	DmgProfile::RelationshipStatus relationshipStatus = static_cast<DmgProfile::RelationshipStatus>(demographicProfile->get(DmgProfile::RELATIONSHIP_STATUS));
-	DmgProfile::Employment employment = static_cast<DmgProfile::Employment>(demographicProfile->get(DmgProfile::EMPLOYMENT));
+	DmgProfile::SexualOrientation sexualOrientation = static_cast<DmgProfile::SexualOrientation>(demographicProfile->get(
+	            DmgProfile::SEXUAL_ORIENTATION));
+	DmgProfile::RelationshipStatus relationshipStatus = static_cast<DmgProfile::RelationshipStatus>(demographicProfile->get(
+	            DmgProfile::RELATIONSHIP_STATUS));
+	DmgProfile::Employment employment = static_cast<DmgProfile::Employment>(demographicProfile->get(
+	                                        DmgProfile::EMPLOYMENT));
 	Person::RiskLevel riskLevel = person->getRiskLevel();
 	int ageGroup = -1;
-
 	int age = person->getAge(MONTH);
+
 	for(size_t i = 0; i < ageRanges.size(); ++i)
 	{
 		if(age >= ageRanges[i].first && age <= ageRanges[i].second)
@@ -267,9 +276,9 @@ bool BucketCounter::InsertBucket(Person *person)
 			ageGroup = i;
 		}
 	}
+
 	assert(ageGroup != -1);
 	Person::CD4Strata cd4Stratum = person->getCd4Stratum();
-
 	std::stringstream query;
 	query << "INSERT INTO Bucket";
 	query << " (idBucket, sexualActivityStatus, gender, sexualOrientation, relationshipStatus, employment, riskLevel, ageGroup, cd4Stratum, count)";
@@ -283,21 +292,17 @@ bool BucketCounter::InsertBucket(Person *person)
 	query << ageGroup << ",";
 	query << cd4Stratum << ",";
 	query << 0 << ");";
-
 	return ExecuteQuery(query.str());
 }
 
 bool BucketCounter::BucketExists(Person *person)
 {
 	std::stringstream query;
-
 	query << "SELECT COUNT(*) FROM Bucket";
 	BuildWhere(person, query);
 	query << ";";
-
 	int count = 0;
 	ExecuteQuery(query.str(), count);
-
 	return count > 0;
 }
 

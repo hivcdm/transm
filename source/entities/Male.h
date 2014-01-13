@@ -9,24 +9,26 @@ class SexualBehaviorParams;
 /**
 All females in the simulation are members of this class, or a class derived from this one
 **/
-class Male : public Person {
+class Male : public Person
+{
 
-	public :
+public :
 
 	//----------------< BEGIN class SubPopParams >--------------------------//
 	/**
 	These are parameters that describe the population of males.
 	Each Population in the Sim will have a separate one of these references by the population's ID.
 	**/
-	class SubPopParams {
-		int loadParamsXML(ticpp::Element* _maleParams, EventParams &_eventParams) throw();
+	class SubPopParams
+	{
+		int loadParamsXML(ticpp::Element *_maleParams, EventParams &_eventParams) throw();
 
 		//-----------< BEGIN data fields >--------------------//
 		double chanceBecomeCSW;		//chance that a male will become a CSW
 		double partnerAcqMultWithSteady[Person::ENDRiskLevel];  //the rate multiplier for partner acquisition when a male has a Steady partner
 
 		//sexual behavior params for each type as specified by SexualPartnership::Type
-		vector<SexualBehaviorParams*> sexualBehaviorParams;
+		vector<SexualBehaviorParams *> sexualBehaviorParams;
 		double proportionHighRisk[DmgProfile::ENDEmployment];  //proportion of male population that is in the "high risk" lists based on csw status
 		NormalDist activityLevel; //Distribution of activity level (i.e. marbles)
 
@@ -54,8 +56,8 @@ class Male : public Person {
 		//-----------< END data fields >--------------------//
 	public:
 		SubPopParams();
-		SubPopParams(ticpp::Element* _maleParams, EventParams &_eventParams);
-		int reloadParamsXML(ticpp::Element* _maleParams, EventParams &_eventParams) throw();
+		SubPopParams(ticpp::Element *_maleParams, EventParams &_eventParams);
+		int reloadParamsXML(ticpp::Element *_maleParams, EventParams &_eventParams) throw();
 
 		~SubPopParams();
 		//-----------< BEGIN getters >--------------------//
@@ -64,7 +66,7 @@ class Male : public Person {
 		double getTransmitPerEventCoeff(HVLStrata _hvl) const;
 
 		//sexual behavior params for each type as specified by SexualPartnership::Type
-		const SexualBehaviorParams* getSexualBehaviorParams(SexualPartnership::Type _type) const;
+		const SexualBehaviorParams *getSexualBehaviorParams(SexualPartnership::Type _type) const;
 
 		double getProportionHighRisk(DmgProfile::Employment _cswStatus) const;
 		NormalDist getActivityLevel() const;
@@ -73,9 +75,9 @@ class Male : public Person {
 		double getCondomProtectEff() const;
 
 		int getPartneringDiscStartAgeYrs() const;
-		double getPartneringAcqDiscMult (int _ageYrs) const;
-		double getPartneringActsDiscMult (int _ageYrs) const;
-		
+		double getPartneringAcqDiscMult(int _ageYrs) const;
+		double getPartneringActsDiscMult(int _ageYrs) const;
+
 		//-----------< END getters >--------------------//
 	};
 	//----------------< END class SubPopParams >--------------------------//
@@ -84,7 +86,7 @@ private:
 	//this vector holds Parameters for males different populations it is used to populate fields
 	//	for each instance of Male w/ different values depending on which Population the Male is part of
 	//	Rationale: So males don't really have to know much about the population they are in except for the ID
-	static vector<SubPopParams*> populationSpecificParams;
+	static vector<SubPopParams *> populationSpecificParams;
 
 	//------------< Begin parameters for individual males >-----------------//
 	bool circumcised;					//whether they are circumcised
@@ -94,7 +96,8 @@ private:
 	// Replace range with distribution centered around an age
 	//double maxMonthsOlder[SexualPartnership::ENDType];			//how many months older are they willing to go for a partner
 	//double maxMonthsYounger[SexualPartnership::ENDType];		//how many months younger are they willing to go for a partner
-	NormalDist averageYearsYounger[SexualPartnership::ENDType];    // The distribution the males will draw from to determine how many years younger their partner should be (resulting difference may be negative for older women)
+	NormalDist
+	averageYearsYounger[SexualPartnership::ENDType];    // The distribution the males will draw from to determine how many years younger their partner should be (resulting difference may be negative for older women)
 	//------------< End parameters for individual males >-----------------//
 
 public:
@@ -103,44 +106,45 @@ public:
 	@param _populationID basically a check to see that you have added parameters in the right order
 	@param _maleParams the XML node that contains the parameter data
 	**/
-	static void addPopParams(unsigned int _populationID, ticpp::Element* _maleParams, EventParams &_eventParams);
+	static void addPopParams(unsigned int _populationID, ticpp::Element *_maleParams, EventParams &_eventParams);
 	/**
 	Updates a set of population parameters to be used by Males of that population
 	@param _populationID basically a check to see that you have added parameters in the right order
 	@param _maleParams the XML node that contains the parameter data
 	**/
-	static void updatePopParams(unsigned int _populationID, ticpp::Element* _maleParams, EventParams &_eventParams);
+	static void updatePopParams(unsigned int _populationID, ticpp::Element *_maleParams, EventParams &_eventParams);
 
 	/**
 	Access a set of population parameters to be used by Males of that population
 	**/
-	static const SubPopParams* getPopParams(unsigned int _populationID);
+	static const SubPopParams *getPopParams(unsigned int _populationID);
 
 	/**
 	this constructor creates a Male that can be simulated
 	constructor should set the CD4, HVL, and HVLsetpoint from age and gender **/
-	Male(EventParams& _eventParams, int _age, bool _circumcised,unsigned int _populationID);
+	Male(EventParams &_eventParams, int _age, bool _circumcised, unsigned int _populationID);
 
 	/** Start: Inherited from Person, comments found there **/
 
-	Person* choosePartner(RandomNums& _randomNums, EntityPool *_availableEntities , SexualPartnership::Type _partnershipType, bool _remove);
+	Person *choosePartner(RandomNums &_randomNums, EntityPool *_availableEntities ,
+	                      SexualPartnership::Type _partnershipType, bool _remove);
 
-	double getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventParams& _eventParams);
+	double getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventParams &_eventParams);
 
 	double getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
 	double getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
 	//Returns the age difference (in years) to center around
-	double rollForAgeDifference(SexualPartnership::Type _partnershipType, RandomNums& _randomNums);
+	double rollForAgeDifference(SexualPartnership::Type _partnershipType, RandomNums &_randomNums);
 
 	double getTransmissionCoeff();
 	bool possibleMatch(SexualPartnership::Type _partnershipType, Person *_p);
-	int rollForNumPartners(RandomNums& _randomNums, SexualPartnership::Type _partnershipType);
-	int rollNumEventsPerPartner(Person *_p, RandomNums& _randomNums, SexualPartnership::Type _partnershipType);
-	int rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNums& _randomNums, Person *_p);
-	
-	void rerollRiskGroup(EventParams& _eventParams);
+	int rollForNumPartners(RandomNums &_randomNums, SexualPartnership::Type _partnershipType);
+	int rollNumEventsPerPartner(Person *_p, RandomNums &_randomNums, SexualPartnership::Type _partnershipType);
+	int rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNums &_randomNums, Person *_p);
+
+	void rerollRiskGroup(EventParams &_eventParams);
 	//writes state of person to file
-	void saveState(ostream& _outStream, long currTime);
+	void saveState(ostream &_outStream, long currTime);
 
 	/** End: Inherited from Person **/
 

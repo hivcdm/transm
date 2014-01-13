@@ -26,9 +26,7 @@ bool MyApp::OnInit()
 	stringstream DisplayBoxHeader;
 	DisplayBoxHeader << "CEPAC Population Model Version " << Util::MODEL_VERSION;
 	wxString wxDisplayBoxHeader(DisplayBoxHeader.str().c_str(), wxConvUTF8);
-
-    DisplayBox *sizer = new DisplayBox(wxDisplayBoxHeader);
-    sizer->Show(true);
-
-    return true;
+	DisplayBox *sizer = new DisplayBox(wxDisplayBoxHeader);
+	sizer->Show(true);
+	return true;
 }

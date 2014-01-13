@@ -7,7 +7,8 @@
 /***
 All females in the simulation are members of this class, or a class derived from this one
 ***/
-class Female :public Person {
+class Female : public Person
+{
 public:
 
 	//----------------< BEGIN class SubPopParams >--------------------------//
@@ -17,10 +18,11 @@ public:
 
 	@author schung5
 	**/
-	class SubPopParams {
+	class SubPopParams
+	{
 
 		//given an XML-subtree, will load parse and store parameter tree
-		int loadParamsXML(ticpp::Element* _femaleParams, EventParams &_eventParams);
+		int loadParamsXML(ticpp::Element *_femaleParams, EventParams &_eventParams);
 
 		//-----------< BEGIN data fields >--------------------//
 		double chanceBecomeCSW;		//chance that a female will become a CSW
@@ -30,9 +32,9 @@ public:
 		//-----------< END data fields >--------------------//
 
 	public :
-		int reloadParamsXML(ticpp::Element* _femaleParams, EventParams &_eventParams) throw();
+		int reloadParamsXML(ticpp::Element *_femaleParams, EventParams &_eventParams) throw();
 		SubPopParams();
-		SubPopParams(ticpp::Element* _femaleParams, EventParams &_eventParams);
+		SubPopParams(ticpp::Element *_femaleParams, EventParams &_eventParams);
 
 		//-----------< BEGIN getters >--------------------//
 		double getChanceBecomeCSW() const;
@@ -48,27 +50,27 @@ private:
 	//this vector holds Parameters for females different populations it is used to populate fields
 	//	for each instance of Female w/ different values depending on which Population the Female is part of
 	//	Rationale: So females don't really have to know much about the population they are in except for the ID
-	static vector<SubPopParams*> populationSpecificParams;
+	static vector<SubPopParams *> populationSpecificParams;
 
 public:
 	/**
 	Add a set of population parameters to be used by Males of that population
 	@author schung5
 	**/
-	static void addPopParams(unsigned int _populationID, ticpp::Element* _femaleParams, EventParams &_eventParams);
+	static void addPopParams(unsigned int _populationID, ticpp::Element *_femaleParams, EventParams &_eventParams);
 
 	/**
 	Updates a set of population parameters to be used by Females of that population
 	@param _populationID basically a check to see that you have added parameters in the right order
 	@param _femaleParams the XML node that contains the parameter data
 	**/
-	static void updatePopParams(unsigned int _populationID, ticpp::Element* _femaleParams, EventParams &_eventParams);
+	static void updatePopParams(unsigned int _populationID, ticpp::Element *_femaleParams, EventParams &_eventParams);
 
 	/**
 	Access a set of population parameters to be used by Males of that population
 	@author schung5
 	**/
-	static const SubPopParams* getPopParams(unsigned int _populationID);
+	static const SubPopParams *getPopParams(unsigned int _populationID);
 
 
 	/**
@@ -86,15 +88,15 @@ public:
 	@return the force of infection for this female infecting an uninfected male
 	@author schung5
 	**/
-	double getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventParams& _eventParams);
+	double getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventParams &_eventParams);
 
 	double getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
 	double getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
 
 	double getTransmissionCoeff();
-	void rerollRiskGroup(EventParams& _eventParams);
+	void rerollRiskGroup(EventParams &_eventParams);
 	//writes state of person to file
-	void saveState(ostream& _outStream, long currTime);
+	void saveState(ostream &_outStream, long currTime);
 
 	/** end: Inherited from Person **/
 };

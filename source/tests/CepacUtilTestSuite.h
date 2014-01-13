@@ -7,11 +7,9 @@ class CepacUtilTestSuite : public CxxTest::TestSuite
 public:
 	CepacUtilTestSuite()
 	{
-
 	}
 
 	~CepacUtilTestSuite()
 	{
-
 	}
 };

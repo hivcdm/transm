@@ -7,15 +7,13 @@ class SimTestSuite : public CxxTest::TestSuite
 public:
 	SimTestSuite()
 	{
-
 	}
 
 	~SimTestSuite()
 	{
-
 	}
 
-    void testConstructorsDestructors()
-    {
-    }
+	void testConstructorsDestructors()
+	{
+	}
 };

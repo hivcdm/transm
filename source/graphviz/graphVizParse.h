@@ -29,12 +29,14 @@ public :
 }; */
 
 
-class GraphVizGraphElements {
+class GraphVizGraphElements
+{
 public:
 	/**
 	 * A small class of two integers, start and end, indicating the duration of a pairing and the type of relationship during this period
 	 */
-	class timePair {
+	class timePair
+	{
 	public:
 		/** The time period the relationship started */
 		int start;
@@ -47,7 +49,8 @@ public:
 	/**
 	 * A relationshipEdge should belong to a (male) node.  It contains the (female) node the original node had a relationship with a list of the time periods in which they had a relationship.
 	 */
-	class relationshipEdge {
+	class relationshipEdge
+	{
 	public:
 		/** The ID of the person the owner node had a partnership with */
 		int partnerID;
@@ -65,7 +68,8 @@ public:
 	 * A personNode contains the ID of the person, the time the person was born (or entered the model), the time the person was infected (if ever), and the time the person died (or left the model).
 	 * It also includes a list of the person's relationships if the person is male.
 	 */
-	class personNode {
+	class personNode
+	{
 	public:
 		/** The ID of the person who "owns" this node */
 		unsigned long personID;
@@ -132,7 +136,7 @@ public:
 	};
 
 	/** A vector of all person nodes making up the graph.  Male persons store all of their own edges.  */
-	vector<personNode*> persons;
+	vector<personNode *> persons;
 
 	//TODO: A function that prints out GraphViz data
 	/**

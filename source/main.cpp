@@ -29,7 +29,6 @@ int main(int argc, char *argv[])
 	}
 
 	Util::findInputFiles();
-
 	CepacUtil::createResultsDirectory();
 	SummaryStats *cepacSummaryStats = new SummaryStats("cepacPopstats.out");
 	TransmissionSummaryStats *transSummaryStats = new TransmissionSummaryStats("summaryStats.out");
@@ -41,23 +40,22 @@ int main(int argc, char *argv[])
 		std::cout << "Running File: " << Util::transmFilesToRun[i] << std::endl;
 		//Console version will not use GraphViz and will use random seed by result
 		Sim *s = new Sim(Util::transmFilesToRun[i], NULL);
+
 		if(!(s->getError()))
 		{
 			//Run the simulation the desired number of time steps
 			s->run(s->getMaxTime());
-
 			//Get CEPAC runStats from eventsParams and add to cepacSummaryStats
 			cepacSummaryStats->addRunStats(s->getCEPACRunStats());
-
 			//Get transmission popStats and add to transSummaryStats
 			transSummaryStats->addPopStats(s->getPopStats(), s->getEventParams());
-
 			delete s;
 		}
 	}
 
 	//Finalize CEPAC summary stats and print the popstats file
 	cepacSummaryStats->finalizeStats();
+
 	try
 	{
 		cepacSummaryStats->writeSummariesFile();

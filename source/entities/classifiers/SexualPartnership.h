@@ -18,19 +18,21 @@ If this couple is heterosexual, then by default, getPartner1() returns the Male
 
 @author schung5
 ***/
-class SexualPartnership {
+class SexualPartnership
+{
 
 public :
 	//this enum is used for when we are matching people
 	//  will type of partnership determines partner criteria
 	//Note: if this enum is modified, then also modify TypeEnumStrs
-	enum Type {
+	enum Type
+	{
 		STEADY,
 		REGULAR,
 		CASUAL,
 		CSW,
 		ENDType,
-	//	RAPE,  //not used yet
+		//	RAPE,  //not used yet
 	};
 	static EnumCls<Type> TypeEnum;
 
@@ -45,7 +47,7 @@ protected :
 	long timePartnerFormation;				//the time that this couple was formed
 	long timePartnerDissolution;			//time that this partnership will dissolve
 
-	Person * partners[2];			//this contains copies of pointers of partners
+	Person *partners[2];			//this contains copies of pointers of partners
 
 public :
 
@@ -64,7 +66,8 @@ public :
 	@param _person2 Second person in the couple. If this is a heterosexual couple, make sure to put this one as Female
 	@author schung5
 	**/
-	SexualPartnership(Person * _person1, Person * _person2, EventParams& _eventParams, SexualPartnership::Type _partnershipType);
+	SexualPartnership(Person *_person1, Person *_person2, EventParams &_eventParams,
+	                  SexualPartnership::Type _partnershipType);
 
 	/**
 	remove this couple from each member's list of current couples
@@ -85,20 +88,20 @@ public :
 	Gets the pointer to partner 1. Should be male if this couple is heterosexual
 	@author schung5
 	**/
-	Person* getPartner1();
+	Person *getPartner1();
 
 	/**
 	Gets the pointer to partner 2. Should be female if this couple is heterosexual
 	@author schung5
 	**/
-	Person* getPartner2();
+	Person *getPartner2();
 
 
 	/**
 	@param _member one of the members of the couple
 	@returns the other member of the couple
 	**/
-	Person* getOtherPartner(Person* _member);
+	Person *getOtherPartner(Person *_member);
 
 	/**
 	Gets what the type of this partnership is
@@ -120,20 +123,26 @@ public :
 	/**
 	@author schung5
 	**/
-	void printPartners(ostream& _outStream, string _prefix);
+	void printPartners(ostream &_outStream, string _prefix);
 
 	/**
 	* Saves state of this partnership to file
 	**/
-	void saveState(ostream & _outStream, int personID, long currTime);
+	void saveState(ostream &_outStream, int personID, long currTime);
 
 	/**
 	//models sexual activity in a couple.
 	@return returns a pointer to a person who has been newly infected. NULL if no infection occured
 	@author schung5
 	**/
-	Person* monthlySexualActivity(EventParams& _eventParams, InfectionsTracker *infTrack);
+	Person *monthlySexualActivity(EventParams &_eventParams, InfectionsTracker *infTrack);
 
-	int getTimeOfFormation(){return this->timePartnerFormation;}
-	int getTimeOfDissolution(){return this->timePartnerDissolution;}
+	int getTimeOfFormation()
+	{
+		return this->timePartnerFormation;
+	}
+	int getTimeOfDissolution()
+	{
+		return this->timePartnerDissolution;
+	}
 };

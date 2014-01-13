@@ -30,7 +30,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // Forward declare ticpp::Node, so it can be made a friend of TiCppRC
 namespace ticpp
 {
-	class Base;
+class Base;
 }
 
 // Forward declare TiCppRCImp so TiCppRC can hold a pointer to it
@@ -46,7 +46,7 @@ class TiCppRC
 
 private:
 
-	TiCppRCImp* m_tiRC; /**< Pointer to reference counter */
+	TiCppRCImp *m_tiRC; /**< Pointer to reference counter */
 
 public:
 
@@ -62,8 +62,9 @@ public:
 	Decrements reference count
 	*/
 	virtual ~TiCppRC();
-	
-	std::vector< ticpp::Base* > m_spawnedWrappers; /**< Remember all wrappers that we've created with 'new' - ( e.g. NodeFactory, FirstChildElement, etc. )*/
+
+	std::vector<ticpp::Base *>
+	m_spawnedWrappers; /**< Remember all wrappers that we've created with 'new' - ( e.g. NodeFactory, FirstChildElement, etc. )*/
 
 	/**
 	Delete all container objects we've spawned with 'new'.
@@ -77,14 +78,14 @@ private:
 
 	int m_count;		/**< Holds reference count to me, and to the node I point to */
 
-	TiCppRC* m_tiCppRC;	/**< Holds pointer to an object inheriting TiCppRC */
+	TiCppRC *m_tiCppRC;	/**< Holds pointer to an object inheriting TiCppRC */
 
 public:
 
 	/**
 	Initializes m_tiCppRC pointer, and set reference count to 1
 	*/
-	TiCppRCImp( TiCppRC* tiCppRC );
+	TiCppRCImp(TiCppRC *tiCppRC);
 
 	/**
 	Allows the TiCppRC object to set the pointer to itself ( m_tiCppRc ) to NULL when the TiCppRC object is deleted
@@ -109,7 +110,7 @@ public:
 	/**
 	Get internal pointer to the TiCppRC object - not reference counted, use at your own risk
 	*/
-	TiCppRC* Get();
+	TiCppRC *Get();
 
 	/**
 	Returns state of internal pointer - will be null if the object was deleted

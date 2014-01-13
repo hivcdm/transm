@@ -31,20 +31,21 @@ public:
 	EventParams *getEventParams();
 
 private:
-    /** Returns true if all simContexts loaded correctly */
-    bool setCEPACSimContexts(ticpp::Element *cepacInterventionNode);
+	/** Returns true if all simContexts loaded correctly */
+	bool setCEPACSimContexts(ticpp::Element *cepacInterventionNode);
 
 	/** */
-    bool setRolloutSimContexts(ticpp::Element *rolloutInterventionNode);
+	bool setRolloutSimContexts(ticpp::Element *rolloutInterventionNode);
 
-    /** Sets the Non aids death from a cepac simcontext */
-    void setNonAidsDeathFromCepac(SimContext *cepacSimContext, std::vector<double> &_maleProbs , std::vector<double> &_femaleProbs);
+	/** Sets the Non aids death from a cepac simcontext */
+	void setNonAidsDeathFromCepac(SimContext *cepacSimContext, std::vector<double> &_maleProbs ,
+	                              std::vector<double> &_femaleProbs);
 
 	/** perform one timestep of simulation */
-    int timeStep();
+	int timeStep();
 
 	/** loads the next set of input files if seq: returns false if no next input */
-    bool loadNextInput();
+	bool loadNextInput();
 
 	/** current time in the simulation */
 	int currTime;
@@ -65,15 +66,15 @@ private:
 	bool XMLerror;
 
 	/** determines whether this simulation is a sequence of .xml files */
-    bool isSeq;
+	bool isSeq;
 
 	/** position in sequence */
-    int seqPos;
+	int seqPos;
 
 	/** number of total files in sequence */
-    int numInSeq;
+	int numInSeq;
 
 	/** number of months to delay application of initial prevalence inputs */
-    int delayPrevalence;
+	int delayPrevalence;
 };
 

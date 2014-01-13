@@ -12,7 +12,8 @@
 #include "../../classifiers/DmgProfile.h"
 #include <vector>
 
-class BucketAge{
+class BucketAge
+{
 
 	//If this number gets changed, also change it in InfectionsTracker.h
 	static const int NUMBER_GENERATIONS_TO_TRACE = 6;
@@ -32,7 +33,7 @@ public:
 
 	//tells whether _person exists in the index
 	//Use person's internal index to help verify
-	bool exists(Person* p);
+	bool exists(Person *p);
 
 	//will return how many HIV infected people are currently in the index
 	//Store as a number?
@@ -42,7 +43,7 @@ public:
 	unsigned long getNumInfected(Person::RiskLevel _risk);
 
 	//prints every person in this index to _outStream
-	void print(ostream& _outStream, std::string _prefix);
+	void print(ostream &_outStream, std::string _prefix);
 
 	//-------------< End Methods taken from EntityIndex >--------------//
 
@@ -53,7 +54,8 @@ public:
 	 * -- Either draws from the FV related to _riskLevel or the random FV if _use_random == true
 	 * -- Removes returned person from this is _remove == true
 	 */
-	Person* drawMember(RandomNums& _randomNums, Person::RiskLevel _riskLevel, SexualPartnership::Type _partnershipType, bool _use_random, bool _remove);
+	Person *drawMember(RandomNums &_randomNums, Person::RiskLevel _riskLevel, SexualPartnership::Type _partnershipType,
+	                   bool _use_random, bool _remove);
 	//draw a member from this pool
 	//Person* drawMember(int _randomNums, Person *_chooser, int _partnershipType, bool _remove);
 
@@ -85,13 +87,13 @@ public:
 	 * @returns: An iterator of LLNoDist: the linked list of persons with
 	 * exactly one copy of each person in the Bucket
 	 */
-	vector<Person*>::iterator begin();
+	vector<Person *>::iterator begin();
 
 	/* @function: end
 	 * @returns: An iterator of LLNoDist: the linked list of persons with
 	 * exactly one copy of each person in the Bucket
 	 */
-	vector<Person*>::iterator end();
+	vector<Person *>::iterator end();
 
 	//-------------------< End Iteration Methods >---------------------//
 	//-----------------< Start Getters and Setters >-------------------//
@@ -155,7 +157,7 @@ public:
 	 */
 	void changeHIVStatus(Person *_p, Person::HIVStatus _orig, Person::HIVStatus _new);
 
-	void printAll(ostream& _outStream, string _prefix);
+	void printAll(ostream &_outStream, string _prefix);
 
 
 	//------------------< End Getters and Setters >--------------------//
@@ -163,7 +165,7 @@ public:
 
 private:
 	//FVinfected and FVuninfected keep track of number of persons and number of uninfected vs. infected persons by generation of infection
-	vector<FullVector*> FVinfected;
+	vector<FullVector *> FVinfected;
 	FullVector FVuninfected;
 	//FV with no probability distribution: 1 copy of each person
 	//Use this for iterator functions

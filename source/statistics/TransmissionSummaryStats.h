@@ -29,7 +29,8 @@ public:
 	static const int NUM_TIMES_TO_RECORD = 5;
 
 	/* Summary class stores the summary information that is written to the popstats file */
-	class TransmissionSummary {
+	class TransmissionSummary
+	{
 	public:
 		string runSetName;
 		string runName;
@@ -39,7 +40,7 @@ public:
 		//TODO: Have structure for prevalence and incidence at 5 time points (maybe by default these are 1, 0.2*maxTime, 0.4*maxTime, etc?)
 		//These times have to be defined!
 		long timeToRecord[NUM_TIMES_TO_RECORD];
-		std::vector<PopStats::SingleTimeStats*>* selectedSummaryStats;
+		std::vector<PopStats::SingleTimeStats *> *selectedSummaryStats;
 		double LMsAverage;
 		double HIVPosLMAverage;
 		double HIVNegLMAverage;
@@ -51,7 +52,7 @@ public:
 	}; /* end Summary */
 
 	/* addRunStats adds a new summary to the vector from a RunStats object */
-	void addPopStats(PopStats* popStats, EventParams* eventParams);
+	void addPopStats(PopStats *popStats, EventParams *eventParams);
 	/* finalizeStats calculates the final cost-effectiveness ratios for each run */
 	//void finalizeStats();
 	/* writeSummariesFile appends the summary information to the popstats.out file */

@@ -7,11 +7,9 @@ class InfectionsTrackerTestSuite : public CxxTest::TestSuite
 public:
 	InfectionsTrackerTestSuite()
 	{
-
 	}
 
 	~InfectionsTrackerTestSuite()
 	{
-
 	}
 };

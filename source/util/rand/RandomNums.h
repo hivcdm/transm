@@ -9,32 +9,42 @@
 
 typedef unsigned long uint32;
 
-class NormalDist {
+class NormalDist
+{
 public :
 	double mean;
 	double stddev;
 };
 
-class LogNormalDist {
+class LogNormalDist
+{
 public :
 	double mu;
 	double sigma;
 	bool isZeroDistrib;
 	double getMean() const;
-	LogNormalDist(){isZeroDistrib=false;}
+	LogNormalDist()
+	{
+		isZeroDistrib = false;
+	}
 };
 
-class ShiftedLogNormalDist{
+class ShiftedLogNormalDist
+{
 public :
 	double mu;
 	double sigma;
 	double shift;
 	bool isZeroDistrib;
 	double getMean() const;
-	ShiftedLogNormalDist(){isZeroDistrib=false;}
+	ShiftedLogNormalDist()
+	{
+		isZeroDistrib = false;
+	}
 };
 
-class BetaDist {
+class BetaDist
+{
 public:
 	double alpha;
 	double beta;
@@ -45,7 +55,8 @@ Current number generators:
 	MersenneTwister
 	ISSAC
 ***/
-class RandomNums {
+class RandomNums
+{
 
 	//the current seed for this random number generator
 	uint32 seed;
@@ -54,9 +65,9 @@ class RandomNums {
 	//seeding the the Mersenne Twister w/ the current time
 	boost::mt19937 mtRand;			//Mersenne Twister
 	double mtRand_OneOverMaxMult;	//used to generate a number between 0.0 and 1.0 for mtRand
-									//division is slower than mult so use 1/mtRand.max()
+	//division is slower than mult so use 1/mtRand.max()
 
-//	QTIsaac<UINT32> isaac;	//Isaac
+	//	QTIsaac<UINT32> isaac;	//Isaac
 
 public :
 	bool chance(const double _probability);
@@ -68,12 +79,12 @@ public :
 	int chooseIndex(const std::vector<double> &_indexProbabilities);
 
 	double rand();						// returns a double between 0 and 1
-	uint32 randInt( );      // integer in [0,n] for n < 2^32
-	uint32 randInt( const uint32& _max );      // integer in [0,n] for n < 2^32
-	uint32 randInt( const uint32& _min, const uint32& _max );      // integer in [min,max] for n < 2^32
+	uint32 randInt();       // integer in [0,n] for n < 2^32
+	uint32 randInt(const uint32 &_max);        // integer in [0,n] for n < 2^32
+	uint32 randInt(const uint32 &_min, const uint32 &_max);        // integer in [min,max] for n < 2^32
 
 	//draws a number from the _normDist
-	double randNorm( const NormalDist &_normDist );
+	double randNorm(const NormalDist &_normDist);
 	//draws a number from the _normDist, but only returns natural numbers
 	//  if we draw a # under 0, then draws from distribution again
 	//TODO: Isn't LogNormal more correct here?  Convert the distribution to a log normal distribution?
@@ -83,7 +94,7 @@ public :
 	double randShiftedLogNormal(const ShiftedLogNormalDist &_shiftedLogNormDist);
 	int randPoisson(double mu);
 	double randExponential(double _mean);
-	double randBeta (const BetaDist &_betaDist);
+	double randBeta(const BetaDist &_betaDist);
 
 	//getters and setters
 	uint32 getSeed();

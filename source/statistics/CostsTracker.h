@@ -11,11 +11,13 @@
 #include <fstream>
 #include <vector>
 
-class CostsTracker{
+class CostsTracker
+{
 
 public:
 	//If editing this, also edit CostSourcesStr
-	enum CostSources {
+	enum CostSources
+	{
 		CIRCUMCISION,
 		CONDOMS,
 		//PrEP,
@@ -25,7 +27,8 @@ public:
 
 	static const char CostSourcesStr[CostsTracker::EndCostSources][24];
 
-	class MonthlyCosts{
+	class MonthlyCosts
+	{
 	public:
 		MonthlyCosts();
 
@@ -35,7 +38,7 @@ public:
 	};
 
 private:
-	std::vector<MonthlyCosts*> allCosts;
+	std::vector<MonthlyCosts *> allCosts;
 
 	double totalCosts[CostsTracker::EndCostSources];
 

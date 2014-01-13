@@ -18,19 +18,21 @@ Each Person contains an instance of DmgProfile which then determines which DmgPr
 
 @author schung5
 **/
-class DmgProfile {
+class DmgProfile
+{
 
 public:
 
 	//-------------< Begin Enums that hold relevent Demographics for DmgProfileBucket Placement >------------------//
-/*
-	Unfortunately, when we want to change enum Demographic, we also need to change:
-		void initEnums()
-		fields/variables: demographicStrs,enumStrs,TotalNumBuckets
+	/*
+		Unfortunately, when we want to change enum Demographic, we also need to change:
+			void initEnums()
+			fields/variables: demographicStrs,enumStrs,TotalNumBuckets
 
-	For each enum, the END*** value is considered as a wildcard value in profile selection-related functions
-*/
-	enum Demographic {
+		For each enum, the END*** value is considered as a wildcard value in profile selection-related functions
+	*/
+	enum Demographic
+	{
 		SEXUAL_ACTIVITY_STATUS,
 		GENDER,
 		SEXUAL_ORIENTATION,
@@ -44,20 +46,23 @@ public:
 	//Bad case: We age all NA first. Someone ages out of the NA bucket into an SA one.
 	//			 Then we age all SA folks. If we aren't careful, then someone who
 	//			 just joined an SA bucket might be aged again.
-	enum SexualActivityStatus {
+	enum SexualActivityStatus
+	{
 		SA,
 		NA,
 		ENDSexualActivityStatus,
 	};
 
 	//Every Person is one of these genders
-	enum Gender {
+	enum Gender
+	{
 		MALE,
 		FEMALE,
 		ENDGender,
 	};
 
-	enum SexualOrientation {
+	enum SexualOrientation
+	{
 		HETERO,
 		HOMO,
 		ENDSexualOrientation,
@@ -69,13 +74,15 @@ public:
 	// members of the couples are dead. so what will happen is that 1 will be returned to the single's pool
 	// so we don't want to skip processing this person. We could check both at the same time, but that could possibly
 	// create a ripple effect of linked couple's needing the separate at the same time
-	enum RelationshipStatus {
+	enum RelationshipStatus
+	{
 		NON_SINGLE,
 		SINGLE,
 		ENDRelationshipStatus
 	};
 
-	enum Employment {
+	enum Employment
+	{
 		NON_CSW,
 		CSW,
 		/*
@@ -93,7 +100,8 @@ public:
 
 	static Demographic MaxDemographic;
 	//we have to statically define this here, b/c we  use this value elsewhere to statically declare arrays...
-	static const unsigned int TotalNumBuckets = ENDSexualActivityStatus * ENDGender * ENDSexualOrientation * ENDRelationshipStatus * ENDEmployment;
+	static const unsigned int TotalNumBuckets = ENDSexualActivityStatus *ENDGender *ENDSexualOrientation
+	        *ENDRelationshipStatus *ENDEmployment;
 
 	//-------------< END Enums that hold relevent Demographics for DmgProfileBucket Placement >------------------//
 
@@ -104,8 +112,10 @@ public:
 	typedef int ProfileID;
 
 	// functor for operator <. This is used in maps.
-	struct less{
-		bool operator()(const DmgProfile & _a, const DmgProfile& _b) const {
+	struct less
+	{
+		bool operator()(const DmgProfile &_a, const DmgProfile &_b) const
+		{
 			return (_a < _b);
 		}
 	};
@@ -114,7 +124,8 @@ public:
 
 	//------------< Begin fields >--------------//
 
-	static const ProfileID NOT_UNIQUE;	//used as a return value to getProfileID to signify that the current tuple of enums inside this class contain a wildcard
+	static const ProfileID
+	NOT_UNIQUE;	//used as a return value to getProfileID to signify that the current tuple of enums inside this class contain a wildcard
 	static const ProfileID MIN;			//min possible ProfileID
 	static const ProfileID MAX;			//max useable ProfileID. i.e. a bucket exists for it
 	static const ProfileID END;			//this is the ProfileID when all enums are at their wildcard value
@@ -129,7 +140,7 @@ private:
 	//allows for quick look-up of ProfileID given a tuple
 	static std::map<DmgProfile, ProfileID, DmgProfile::less> ProfileToProfileID;
 	//allows for quick look-up of tuple given the dmgProfileID
-	static std::vector <const DmgProfile*> ProfileIDtoProfile;
+	static std::vector <const DmgProfile *> ProfileIDtoProfile;
 	static std::vector <std::string> ProfileIDtoStr;
 
 	//------------< End fields >--------------//
@@ -188,7 +199,7 @@ public:
 	the END*[enum]* values would be the wildcards
 	@author schung5
 	**/
-	bool match(const DmgProfile & _selector) const;
+	bool match(const DmgProfile &_selector) const;
 
 	/**
 	Will take a string representation of a tuple and store the values
@@ -200,10 +211,10 @@ public:
 	//appends _prefix and string representation to output stream
 	@author schung5
 	**/
-	void print(std::ostream& _outStream, std::string _prefix) const;
+	void print(std::ostream &_outStream, std::string _prefix) const;
 
 	//Saves the state of the dmgProfile to file
-	void saveState(std::ostream & _outStream);
+	void saveState(std::ostream &_outStream);
 
 	/**
 	Given the enums in this object, returns any Buckets that match the enum pattern
@@ -242,7 +253,7 @@ public:
 
 	@author schung5
 	**/
-	const std::string* toString() const;
+	const std::string *toString() const;
 
 public :
 
@@ -252,13 +263,13 @@ public :
 	//this is to prevent any memory leaks
 	static void deallocStaticMembers();
 
-	static const BaseEnumCls* getEnumCls(Demographic _demographic);
+	static const BaseEnumCls *getEnumCls(Demographic _demographic);
 
 	//given a ProfileID and a category, returns the value of that category that corresponds with the _profileID
 	static const BaseEnumCls::Enum get(ProfileID _profileID, Demographic _demographic);
 
 	//given a ProfileID, returns a tuple of dmgProfile
-	static const DmgProfile* getDemographics(ProfileID _profileID);
+	static const DmgProfile *getDemographics(ProfileID _profileID);
 
 	/*
 	gets a concatenated string of the string representation of all demographic values
@@ -266,10 +277,10 @@ public :
 	We return a pointer to save compute speed. We don't want a
 	new string to be allocated cor each call
 	*/
-	static const std::string* toString(ProfileID _profileID);
+	static const std::string *toString(ProfileID _profileID);
 
 	//gets a string representation of the _demographic value of the tuple that corresponds to _profileID
-	static const std::string* getString(ProfileID _profileID, Demographic _demographic);
+	static const std::string *getString(ProfileID _profileID, Demographic _demographic);
 
 	//----------------< End Static Methods >------------------------------//
 

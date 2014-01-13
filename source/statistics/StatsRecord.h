@@ -27,7 +27,8 @@ Otherwise, the number of fields in say a Population object or a Person would be 
 
 ***/
 template<typename PointStatIDs, typename StratifiedStatIDs>
-class StatsRecord {
+class StatsRecord
+{
 
 	//any stats that can be represented as a single value
 	std::vector<double> singleValStats;
@@ -36,9 +37,9 @@ class StatsRecord {
 	/*
 	// container for all statified statistics, which are stored in array form
 	vector<vector<double>> stratifiedStats;
-EnumCls<StratifiedStatIDs>* stratifiedStatIDEnumCls;
+	EnumCls<StratifiedStatIDs>* stratifiedStatIDEnumCls;
 
-*/
+	*/
 public:
 	/**
 		Saves the an instance of EnumCls that wraps the enumerated stats that we are using
@@ -50,11 +51,11 @@ public:
 		@param _stratifiedStatIndicesLabels labels for each individual strata within each aggregate stat
 	**/
 	StatsRecord();
-	StatsRecord( EnumCls<PointStatIDs> *statIDEnumCls);
+	StatsRecord(EnumCls<PointStatIDs> *statIDEnumCls);
 	//StatsRecord( EnumCls<PointStatIDs> *statIDEnumCls, EnumCls<StratifiedStatIDs> *stratifiedStatID, size_t _stratifiedStatDims[]);
 	~StatsRecord();
 
-	void print(std::ostream& _outStream);
+	void print(std::ostream &_outStream);
 	//------------< Begin Single value stats methods >---------------------//
 
 
@@ -71,7 +72,7 @@ public:
 	/**
 
 	**/
-	void init( EnumCls<PointStatIDs> *statIDEnumCls);
+	void init(EnumCls<PointStatIDs> *statIDEnumCls);
 
 	/*
 		multiply _value to the internal value that corresponds to _statID label
@@ -141,25 +142,27 @@ public:
 };
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
-StatsRecord<PointStatIDs,StratifiedStatIDs>::StatsRecord(){
+StatsRecord<PointStatIDs, StratifiedStatIDs>::StatsRecord()
+{
 }
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
-StatsRecord<PointStatIDs,StratifiedStatIDs>::StatsRecord( EnumCls<PointStatIDs> *_statIDs) {
+StatsRecord<PointStatIDs, StratifiedStatIDs>::StatsRecord(EnumCls<PointStatIDs> *_statIDs)
+{
 	this->init(_statIDs);
 }
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
-StatsRecord<PointStatIDs,StratifiedStatIDs>::~StatsRecord(){
+StatsRecord<PointStatIDs, StratifiedStatIDs>::~StatsRecord()
+{
 	//delete statIDEnumCls;
 }
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
-void StatsRecord<PointStatIDs,StratifiedStatIDs>::init( EnumCls<PointStatIDs> *_statIDEnumCls) {
-	assert( typeid(StratifiedStatIDs) == typeid(BaseEnumCls::NULL_ENUM));
-
+void StatsRecord<PointStatIDs, StratifiedStatIDs>::init(EnumCls<PointStatIDs> *_statIDEnumCls)
+{
+	assert(typeid(StratifiedStatIDs) == typeid(BaseEnumCls::NULL_ENUM));
 	this->statIDEnumCls = _statIDEnumCls;
-
 	//make room internally to store numSingleStats values
 	this->singleValStats.resize(_statIDEnumCls->getNumEnums(), 0.0);
 }
@@ -188,19 +191,26 @@ StatsRecord<PointStatIDs,StratifiedStatIDs>::StatsRecord(  EnumCls<PointStatIDs>
 */
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
-void StatsRecord<PointStatIDs, StratifiedStatIDs>::print(std::ostream& _outStream){
+void StatsRecord<PointStatIDs, StratifiedStatIDs>::print(std::ostream &_outStream)
+{
 	//print out single value stats
-	for (PointStatIDs i = PointStatIDs(0); i < this->statIDEnumCls->getNumEnums(); ++i) {
+	for(PointStatIDs i = PointStatIDs(0); i < this->statIDEnumCls->getNumEnums(); ++i)
+	{
 		this->statIDEnumCls->appendEnumStr(_outStream, i);
 		_outStream << "\t" << this->singleValStats.at(i) << endl;
 	}
 
 	//print out array stats
-	for (StratifiedStatIDs i = StratifiedStatIDs(0); i < this->stratifiedStatIDEnumCls->getNumEnums(); ++i) {
+	for(StratifiedStatIDs i = StratifiedStatIDs(0); i < this->stratifiedStatIDEnumCls->getNumEnums(); ++i)
+	{
 		this->stratifiedStatIDEnumCls->appendEnumStr(_outStream, i);
 		_outStream << ":\t(";
-		for (size_t j = 0; j < this->stratifiedStats.at(i).size(); j++)
+
+		for(size_t j = 0; j < this->stratifiedStats.at(i).size(); j++)
+		{
 			_outStream << this->stratifiedStats.at(i).at(j) << "\t";
+		}
+
 		_outStream << ")" << endl;
 	}
 }
@@ -208,32 +218,37 @@ void StatsRecord<PointStatIDs, StratifiedStatIDs>::print(std::ostream& _outStrea
 //------------< Begin Single value stats methods >---------------------//
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
-double StatsRecord<PointStatIDs,StratifiedStatIDs>::getStat(PointStatIDs _statID)  const{
-	assert( this->validStatID(_statID) );
+double StatsRecord<PointStatIDs, StratifiedStatIDs>::getStat(PointStatIDs _statID)  const
+{
+	assert(this->validStatID(_statID));
 	return this->singleValStats.at(_statID);
 }
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
-void StatsRecord<PointStatIDs,StratifiedStatIDs>::incrStat(PointStatIDs _statID, double _value){
-	assert( this->validStatID(_statID) );
+void StatsRecord<PointStatIDs, StratifiedStatIDs>::incrStat(PointStatIDs _statID, double _value)
+{
+	assert(this->validStatID(_statID));
 	this->singleValStats.at(_statID) += _value;
 }
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
-void StatsRecord<PointStatIDs,StratifiedStatIDs>::multStat(PointStatIDs _statID, double _value){
-	assert( this->validStatID(_statID) );
+void StatsRecord<PointStatIDs, StratifiedStatIDs>::multStat(PointStatIDs _statID, double _value)
+{
+	assert(this->validStatID(_statID));
 	this->singleValStats.at(_statID) *= _value;
 }
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
-void StatsRecord<PointStatIDs,StratifiedStatIDs>::setStat(PointStatIDs _statID, double _value) {
-	assert( this->validStatID(_statID) );
+void StatsRecord<PointStatIDs, StratifiedStatIDs>::setStat(PointStatIDs _statID, double _value)
+{
+	assert(this->validStatID(_statID));
 	this->singleValStats.at(_statID) = _value;
 }
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
-bool StatsRecord<PointStatIDs,StratifiedStatIDs>::validStatID(PointStatIDs _statID) const {
-	return ( statIDEnumCls->isValidNonWildCard(_statID));
+bool StatsRecord<PointStatIDs, StratifiedStatIDs>::validStatID(PointStatIDs _statID) const
+{
+	return (statIDEnumCls->isValidNonWildCard(_statID));
 }
 
 //------------< End Single value stats methods >---------------------//

@@ -14,7 +14,8 @@ for each type of Person in the simulation
 
 @author schung5
 **/
-class SexualBehaviorParams {
+class SexualBehaviorParams
+{
 
 public :
 	/**
@@ -22,7 +23,8 @@ public :
 	@param _sexualMixingParams XML-subtree root node
 	@author schung5
 	**/
-	SexualBehaviorParams(ticpp::Element* _sexualMixingParams, EventParams &_eventParams, bool _useHighRiskMultiplier, double _highRiskMultiplier, bool _useHighRiskMultiplierCSW, double _highRiskMultiplierCSW);
+	SexualBehaviorParams(ticpp::Element *_sexualMixingParams, EventParams &_eventParams, bool _useHighRiskMultiplier,
+	                     double _highRiskMultiplier, bool _useHighRiskMultiplierCSW, double _highRiskMultiplierCSW);
 
 	/**
 	default constructor
@@ -31,7 +33,8 @@ public :
 	SexualBehaviorParams();
 
 	//different SexualPartnership can only involve certain categories of people
-	typedef struct {
+	typedef struct
+	{
 		//specifies an eligible type of person
 		DmgProfile dmgProfileSelector;
 		//will weight the chance that someone with these DmgProfileBucket dmgProfile will be chosen
@@ -71,7 +74,8 @@ private:
 	@param _sexualMixingParams XML-subtree root node
 	@author schung5
 	**/
-	int loadParamsXML(ticpp::Element* _sexualMixingParams, EventParams &_eventParams, bool _useHighRiskMultiplier, double _highRiskMultiplier, bool _useHighRiskMultiplierCSW, double _highRiskMultiplierCSW);
+	int loadParamsXML(ticpp::Element *_sexualMixingParams, EventParams &_eventParams, bool _useHighRiskMultiplier,
+	                  double _highRiskMultiplier, bool _useHighRiskMultiplierCSW, double _highRiskMultiplierCSW);
 
 public :
 

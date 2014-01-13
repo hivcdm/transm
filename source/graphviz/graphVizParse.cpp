@@ -53,19 +53,24 @@
 	}
 }*/
 
-SexualPartnership::Type GraphVizGraphElements::relationshipEdge::statusAtTime(int time){
+SexualPartnership::Type GraphVizGraphElements::relationshipEdge::statusAtTime(int time)
+{
 	/** Iterate through the timePairs and check if time falls between them */
-	for (vector<timePair>::iterator timesIt = this->times.begin(); timesIt != times.end(); ++timesIt){
-		if (time >= (*timesIt).start && time <= (*timesIt).end) {
+	for(vector<timePair>::iterator timesIt = this->times.begin(); timesIt != times.end(); ++timesIt)
+	{
+		if(time >= (*timesIt).start && time <= (*timesIt).end)
+		{
 			/** If time is within a time pair, return the relationship type for that pair */
 			return (*timesIt).relationshipType;
 		}
 	}
+
 	/** If time did not fall between any time pairs, return the ENDType */
 	return SexualPartnership::ENDType;
 }
 
-GraphVizGraphElements::personNode::personNode(int ID, bool _isMale, int timeBornAt){
+GraphVizGraphElements::personNode::personNode(int ID, bool _isMale, int timeBornAt)
+{
 	this->personID = ID;
 	this->isMale = _isMale;
 	this->timeBorn = timeBornAt;
@@ -75,27 +80,33 @@ GraphVizGraphElements::personNode::personNode(int ID, bool _isMale, int timeBorn
 	this->timeSA = INT_MAX;
 }
 
-bool GraphVizGraphElements::personNode::wasAlive(int time){
+bool GraphVizGraphElements::personNode::wasAlive(int time)
+{
 	return (time >= this->timeBorn && time <= this->timeDied);
 }
 
-bool GraphVizGraphElements::personNode::wasInfected(int time){
+bool GraphVizGraphElements::personNode::wasInfected(int time)
+{
 	return (this->wasAlive(time) && time >= this->timeInfected);
 }
 
-bool GraphVizGraphElements::personNode::wasBorn(int time){
+bool GraphVizGraphElements::personNode::wasBorn(int time)
+{
 	return (time >= this->timeBorn);
 }
 
-bool GraphVizGraphElements::personNode::wasSA(int time){
+bool GraphVizGraphElements::personNode::wasSA(int time)
+{
 	return (time >= this->timeSA);
 }
 
-bool GraphVizGraphElements::personNode::hadDied(int time){
+bool GraphVizGraphElements::personNode::hadDied(int time)
+{
 	return (time > this->timeDied);
 }
 
-void GraphVizGraphElements::personNode::addRelationship(unsigned long partnerID, int timeStart, int timeEnd, SexualPartnership::Type relationshipType)
+void GraphVizGraphElements::personNode::addRelationship(unsigned long partnerID, int timeStart, int timeEnd,
+        SexualPartnership::Type relationshipType)
 {
 	/** Form a TimePair for this relationship */
 	timePair newTimePair;
@@ -106,7 +117,7 @@ void GraphVizGraphElements::personNode::addRelationship(unsigned long partnerID,
 	/** Check if a relationship edge already exists with this partner */
 	for(auto relationshipsIt = relationships.begin(); relationshipsIt != relationships.end(); ++relationshipsIt)
 	{
-		if (static_cast<unsigned long>((*relationshipsIt).partnerID) == partnerID)
+		if(static_cast<unsigned long>((*relationshipsIt).partnerID) == partnerID)
 		{
 			/** If we previously formed a relationship with this partner, add the new time pair to the existing edge and be done */
 			(*relationshipsIt).times.push_back(newTimePair);
@@ -118,50 +129,68 @@ void GraphVizGraphElements::personNode::addRelationship(unsigned long partnerID,
 	relationshipEdge newRelation;
 	newRelation.partnerID = partnerID;
 	newRelation.times.push_back(newTimePair);
-
 	relationships.push_back(newRelation);
-
 }
 
-void GraphVizGraphElements::printGraphVizFiles(int _timeSteps, std::string _simName){
-	for (int timeToGraph = 0; timeToGraph <= _timeSteps; timeToGraph++){
+void GraphVizGraphElements::printGraphVizFiles(int _timeSteps, std::string _simName)
+{
+	for(int timeToGraph = 0; timeToGraph <= _timeSteps; timeToGraph++)
+	{
 		std::string timeToGraphString(boost::lexical_cast<std::string>(timeToGraph));
+
 		//Add the appropriate number of 0s to make it a three character string
-		if (timeToGraph < 100){
-			timeToGraphString.insert(0,"0");
+		if(timeToGraph < 100)
+		{
+			timeToGraphString.insert(0, "0");
 		}
-		if (timeToGraph < 10){
-			timeToGraphString.insert(0,"0");
-		}
-		std::string filename(_simName + "-GraphViz" + timeToGraphString +".gv");
 
+		if(timeToGraph < 10)
+		{
+			timeToGraphString.insert(0, "0");
+		}
+
+		std::string filename(_simName + "-GraphViz" + timeToGraphString + ".gv");
 		std::ofstream outstream(filename.c_str(), std::ios::out);
-
 		/** Print the graphViz standard header information */
 		outstream << "Digraph world {" << std::endl;
 		outstream << "graph[size=\"10,10\",ratio=fill,pack=1,center=1];" << std::endl;
 		outstream << "node[style=filled,label=\"\"];" << std::endl;
 
 		/** Print the nodes (persons) in the graph */
-		for (vector<personNode*>::iterator nodeIt = persons.begin(); nodeIt != persons.end(); ++nodeIt){
+		for(vector<personNode *>::iterator nodeIt = persons.begin(); nodeIt != persons.end(); ++nodeIt)
+		{
 			//Determine the shape based on the gender of the node owner
-			if ((*nodeIt)->isMale){
+			if((*nodeIt)->isMale)
+			{
 				outstream << "node[shape=box,";
-			} else {
+			}
+			else
+			{
 				outstream << "node[shape=triangle,";
 			}
+
 			/** Determine the color based on whether or not the person is not yet born (white), alive and uninfected (green), infected (red), or dead (gray) */
-			if (!(*nodeIt)->wasBorn(timeToGraph)){
+			if(!(*nodeIt)->wasBorn(timeToGraph))
+			{
 				outstream << "color=white]; ";
-			} else if ((*nodeIt)->hadDied(timeToGraph)) {
+			}
+			else if((*nodeIt)->hadDied(timeToGraph))
+			{
 				outstream << "color=gray75]; ";
-			} else if (!(*nodeIt)->wasSA(timeToGraph)) {
+			}
+			else if(!(*nodeIt)->wasSA(timeToGraph))
+			{
 				outstream << "color=yellow]; ";
-			} else if ((*nodeIt)->wasInfected(timeToGraph)) {
+			}
+			else if((*nodeIt)->wasInfected(timeToGraph))
+			{
 				outstream << "color=red]; ";
-			} else {
+			}
+			else
+			{
 				outstream << "color=green]; ";
 			}
+
 			//Print the node value
 			outstream << (*nodeIt)->personID << ";" << std::endl;
 		}
@@ -170,21 +199,32 @@ void GraphVizGraphElements::printGraphVizFiles(int _timeSteps, std::string _simN
 		/** Mark the edges as having weight 3 for visibility */
 		outstream << "edge[penwidth=3];" << std::endl;
 
-		for (vector<personNode*>::iterator nodeIt = persons.begin(); nodeIt != persons.end(); ++nodeIt){
-			for (vector<relationshipEdge>::iterator relsIt = (*nodeIt)->relationships.begin(); relsIt != (*nodeIt)->relationships.end(); ++relsIt){
+		for(vector<personNode *>::iterator nodeIt = persons.begin(); nodeIt != persons.end(); ++nodeIt)
+		{
+			for(vector<relationshipEdge>::iterator relsIt = (*nodeIt)->relationships.begin();
+			        relsIt != (*nodeIt)->relationships.end(); ++relsIt)
+			{
 				int headNode = (*nodeIt)->personID;
 				int tailNode = (*relsIt).partnerID;
 				SexualPartnership::Type pType = (*relsIt).statusAtTime(timeToGraph);
 				std::string style(pType == SexualPartnership::ENDType ? "invis" : "solid");
 				std::string color("");
+
 				//Get the color based on the relationship type
-				if (pType == SexualPartnership::CASUAL){
+				if(pType == SexualPartnership::CASUAL)
+				{
 					color.append("darkgreen");
-				} else if (pType == SexualPartnership::CSW){
+				}
+				else if(pType == SexualPartnership::CSW)
+				{
 					color.append("firebrick");
-				} else if (pType == SexualPartnership::REGULAR){
+				}
+				else if(pType == SexualPartnership::REGULAR)
+				{
 					color.append("darkviolet");
-				} else {//STEADY or invisible
+				}
+				else    //STEADY or invisible
+				{
 					color.append("blue");
 				}
 

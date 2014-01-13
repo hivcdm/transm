@@ -7,11 +7,9 @@ class MaleTestSuite : public CxxTest::TestSuite
 public:
 	MaleTestSuite()
 	{
-
 	}
 
 	~MaleTestSuite()
 	{
-
 	}
 };

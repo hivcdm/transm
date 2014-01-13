@@ -7,12 +7,10 @@ class CostsTrackerTestSuite : public CxxTest::TestSuite
 public:
 	CostsTrackerTestSuite()
 	{
-
 	}
 
 	~CostsTrackerTestSuite()
 	{
-
 	}
 
 };

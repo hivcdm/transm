@@ -14,10 +14,11 @@ class RandomNums;
 	The internal representation of the entities is a set. People are unsorted.
 ***/
 
-class DmgProfileBucket {
+class DmgProfileBucket
+{
 
 	//this is an index based on person's ID
-	typedef EntityIndex<Person::ID,unsigned long> PersonSet;
+	typedef EntityIndex<Person::ID, unsigned long> PersonSet;
 
 	friend class JavaStyleIterator;
 
@@ -25,7 +26,7 @@ class DmgProfileBucket {
 	PersonSet *simpleEntityIndex;
 
 	DmgProfile::ProfileID dmgProfileID;		//ID of DmgProfileBucket. id's go from 0 -> total number of buckets in EntityPool
-	const string* bucketLabel;
+	const string *bucketLabel;
 
 public:
 
@@ -33,12 +34,12 @@ public:
 
 	//returns the DmgProfileBucket's ID number
 	DmgProfile::ProfileID getProfileID();
-	
-	PersonSet* getEntityIndex();
+
+	PersonSet *getEntityIndex();
 	/**
 	This method will return a label for this DmgProfileBucket
 	**/
-	const string* getLabel();
+	const string *getLabel();
 
 	//------------< End Implemented Methods >----------------//
 
@@ -50,7 +51,7 @@ public:
 
 	//choose random person from the DmgProfileBucket
 	//  _remove - if true, then will remove the chosen person from the DmgProfileBucket
-	virtual Person* drawMember(RandomNums &_randomNums, SexualPartnership::Type _partnershipType, bool _remove);
+	virtual Person *drawMember(RandomNums &_randomNums, SexualPartnership::Type _partnershipType, bool _remove);
 
 	/***
 	Draws a partner from this Bucket on behalf of _chooser. This will take into account the
@@ -60,7 +61,8 @@ public:
 	@param _partnershipType the type of partner this person is looking for
 	@param _remove - will remove this person from the bucket
 	***/
-	virtual Person* drawMember(RandomNums& _randomNums, Person *_chooser,SexualPartnership::Type _partnershipType, bool _remove);
+	virtual Person *drawMember(RandomNums &_randomNums, Person *_chooser, SexualPartnership::Type _partnershipType,
+	                           bool _remove);
 
 	virtual bool exists(Person *_person);
 
@@ -83,13 +85,13 @@ public:
 
 	//lists all members of a specified entitypool on a different line
 	//  _prefix - will append this string to the front of each member and then print
-	virtual void print(ostream& _outStream, string _prefix);
+	virtual void print(ostream &_outStream, string _prefix);
 
 	/*
 	 * @effects: Ages everyone in the bucket one timestep
 	 * @returns: List of persons too old for timestep (should be placed into other bucket)
 	 */
-	virtual list<Person*> ageOneTimeStep();
+	virtual list<Person *> ageOneTimeStep();
 
 
 	//------------------< End DmgProfileBucket Virtual methods >------------------//
@@ -125,42 +127,42 @@ public:
 		1) make the code easier to read (a matter of personal preference)
 		2) hide the internal data structures from the outside
 	***/
-/*
-protected:
-	class JavaStyleIterator {
+	/*
+	protected:
+		class JavaStyleIterator {
 
-		PersonSet::JIterator pIter;
+			PersonSet::JIterator pIter;
 
-		public:
+			public:
 
-			JavaStyleIterator();
+				JavaStyleIterator();
 
-			JavaStyleIterator(DmgProfileBucket *_bucket);
+				JavaStyleIterator(DmgProfileBucket *_bucket);
 
-			//returns true if the element that was last returned by next() has been removed using remove()
-			virtual bool alreadyRemoved();
+				//returns true if the element that was last returned by next() has been removed using remove()
+				virtual bool alreadyRemoved();
 
-			//returns the spot right after last member of this pool
-			virtual bool hasNext();
+				//returns the spot right after last member of this pool
+				virtual bool hasNext();
 
-			//this will be used to get the next in line
-			virtual Person * next();
+				//this will be used to get the next in line
+				virtual Person * next();
 
-			//removes from the collection the last element returned by the iterator
-			virtual bool remove();
+				//removes from the collection the last element returned by the iterator
+				virtual bool remove();
 
-			//lets us reuse an iterator, resets to beginning of current collection
-			virtual void reset();
+				//lets us reuse an iterator, resets to beginning of current collection
+				virtual void reset();
 
-			//keeping this as virtual is really important!
-			// orelse, you will call base class destructor which might not be helpful
-			virtual ~JavaStyleIterator();
-	};
+				//keeping this as virtual is really important!
+				// orelse, you will call base class destructor which might not be helpful
+				virtual ~JavaStyleIterator();
+		};
 
- public :
-	//iterators for this class
-	typedef auto_ptr<JavaStyleIterator> JIterator;
+	 public :
+		//iterators for this class
+		typedef auto_ptr<JavaStyleIterator> JIterator;
 
-	virtual JIterator iterator();
-*/
+		virtual JIterator iterator();
+	*/
 };

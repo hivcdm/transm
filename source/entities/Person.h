@@ -30,7 +30,8 @@ Fields and Methods are divided into the following categories:
 
 @author schung5
 ***/
-class Person {
+class Person
+{
 
 	//used to create unique id's for each person
 	//this increments every time a New person is created
@@ -44,7 +45,8 @@ public:
 	//-------------------< Start static fields / enums >-----------------------//
 
 	//every Person's CD4 count falls in a CD4 strata - used in CEPAC
-	enum CD4Strata {
+	enum CD4Strata
+	{
 		CD4_ZERO,
 		CD4_ONE,
 		CD4_TWO,
@@ -55,7 +57,8 @@ public:
 	};
 
 	//every Person's hvl level falls in an HVL strata
-	enum HVLStrata {		//copies/ml
+	enum HVLStrata  		//copies/ml
+	{
 		UNINFECTED = -1,
 		HVL_ZERO,		//0-20
 		HVL_ONE,		//21-500
@@ -69,7 +72,8 @@ public:
 		ENDHVLStrata
 	};
 
-	enum HIVStatus{
+	enum HIVStatus
+	{
 		NEGATIVE, //hiv negative
 		OBSERVED_ACUTE,
 		UNOBSERVED_ACUTE,
@@ -80,7 +84,8 @@ public:
 		ENDHIVStatus
 	};
 
-	enum DeathStatus{
+	enum DeathStatus
+	{
 		ALIVE, //not dead
 		DTH_OI,
 		DTH_CHRAIDS,
@@ -91,7 +96,8 @@ public:
 		ENDDeathStatus
 	};
 
-	enum RiskLevel { //used for assortativeness
+	enum RiskLevel   //used for assortativeness
+	{
 		LOW,
 		HIGH,
 		ENDRiskLevel
@@ -99,7 +105,8 @@ public:
 
 	// we have made these stats referenceable by enum so that we can more easily create customizeable outputs or reports...
 	// we can perhaps have easier look-up of stat descriptions if we choose to write some up
-	enum Stats {
+	enum Stats
+	{
 		STAT_TOTAL_LM,							//months lived during sim.
 		STAT_HIV_NEG_LM,						//life months lived as HIV-
 		STAT_HIV_POS_POSTINFECT_LM,				//life months lived after HIV infection
@@ -147,7 +154,7 @@ protected:
 
 	//Person's relational state
 	//contains all current partnerships including CSW and Casual
-	list<SexualPartnership*> partners[SexualPartnership::ENDType];
+	list<SexualPartnership *> partners[SexualPartnership::ENDType];
 
 	//array of number of partners over persons history stratified by partnership type
 	int numPartnersInHistory[SexualPartnership::ENDType];
@@ -196,7 +203,7 @@ protected:
 	bool traceMe;
 
 	//The indices which point to the person in their assigned FullVector
-	map<FullVector*, vector<unsigned int> > FVindices;  //The indices of the the person in their assigned FullVector
+	map<FullVector *, vector<unsigned int>> FVindices; //The indices of the the person in their assigned FullVector
 
 
 	//-------------------< End Data Fields >-----------------------//
@@ -209,7 +216,7 @@ public:
 	//this constructor creates an actual person that can be simulated. It is generally called by Male and Female
 	// we pass in _eventParams because becomeInfected() needs it...
 	Person(EventParams &_eventParams, int _age, //bool _infected,
-			unsigned int _populationID);
+	       unsigned int _populationID);
 
 	~Person(void);
 
@@ -241,13 +248,13 @@ public:
 		if CEPAC bridge is in place, will call CEPAC to determine the health trajectory of this person
 		@params _prevalentInfection if true, than this person was a prevalent infection
 	*/
-	void becomeInfected(int _generationOfInfection, EventParams& _eventParams);
+	void becomeInfected(int _generationOfInfection, EventParams &_eventParams);
 
 	/*
 	 * Initializes this->cepacPatient using the persons current age, gender, and infection status.
 	 * Prevalent cases should call "becomeInfected" before calling this function; incident cases will become infected later
 	 */
-	void initialCEPACpatient(EventParams& _eventParams);
+	void initialCEPACpatient(EventParams &_eventParams);
 
 	/**
 	 * @return this->generationOfInfection
@@ -287,12 +294,15 @@ public:
 	/**
 	 * @return this->hvl
 	 */
-	HVLStrata getHVL() const { return this->hvl; }
+	HVLStrata getHVL() const
+	{
+		return this->hvl;
+	}
 
 	/** this calculates the FOI towards Person _p (this uses the Transmission coefficient) per event
 	// @param _p - partner
 	// @param _parteringType - whether this is a fling or steadyCouple */
-	virtual double getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventParams& _eventParams);
+	virtual double getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventParams &_eventParams);
 
 	/** get the transmission coefficient of the person... based on HVL */
 	virtual double getTransmissionCoeff();
@@ -311,11 +321,11 @@ public:
 	//update health status of HIV infected people -- i.e. cd4, hvl, art, etc.
 	//  in version 1, this information is taken from CEPAC model
 	// @returns: costs (accrued in CEPAC) of updating health
-	double updateHealthStatus(EventParams& _eventParams, ArtRolloutTracker *testTracker);
+	double updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTracker);
 
 	//Call this after all transmission/population dynamics are done.
 	//Runs infected through CEPAC until they die and adds their LM etc to CEPAC stats
-	void runCEPACtoDeath(RandomNums& _randomNums);
+	void runCEPACtoDeath(RandomNums &_randomNums);
 
 	//Sets the condom total to 0
 	void resetCondomUsage();
@@ -347,7 +357,7 @@ public:
 	 * of FV that point to this, sets this.FVindices to FVind
 	 * @return: true if this.FVindices was set to FVind or false otherwise
 	 */
-	bool setFVindices(vector<unsigned int> FVind, FullVector* FV);
+	bool setFVindices(vector<unsigned int> FVind, FullVector *FV);
 
 	/* @function: addFVindices
 	 * @arguments: int index, FullVector* FV
@@ -355,28 +365,28 @@ public:
 	 * this.FVindices, adds index to this.FVindices
 	 * @return: true if index was added to this.FVindices or false otherwise
 	 */
-	bool addFVindices(int index, FullVector* FV);
+	bool addFVindices(int index, FullVector *FV);
 
 	/* @function: removeFVindices
 	 * @arguments: int index, FullVector* FV
 	 * @effects: If FV[index] does not point to this, removes index from this.FVindices
 	 * @return: true if index was removed from this.FVindices, false otherwise
 	 */
-	bool removeFVindices(int index, FullVector* FV);
+	bool removeFVindices(int index, FullVector *FV);
 
 	/* @function: memberFVindices
 	 * @arguments: int index, FullVector* FV
 	 * @effects: none
 	 * @return: true iff this.FVindices contains index
 	 */
-	bool memberFVindices(int index, FullVector* FV);
+	bool memberFVindices(int index, FullVector *FV);
 
 	/* @function: getFVindices
 	 * @arguments: none
 	 * @effects: none
 	 * @return: copy of this.FVindices
 	 */
-	vector<unsigned int> getFVindices(FullVector* FV);
+	vector<unsigned int> getFVindices(FullVector *FV);
 
 	//----------------< End FullVector related methods >-------------------------//
 
@@ -402,10 +412,10 @@ public:
 	changes this person to sexually active
 	and initializes the CEPAC person
 	*/
-	void becomeSexuallyActive(EventParams& _eventParams);
+	void becomeSexuallyActive(EventParams &_eventParams);
 
 	//returns structure that holds current DemographicProfile
-	const DmgProfile* getDmgProfile() const;
+	const DmgProfile *getDmgProfile() const;
 	BaseEnumCls::Enum getDmgProfileVal(DmgProfile::Demographic _demographic) const;
 
 	//sets and gets current DmgProfileBucket membership
@@ -418,7 +428,7 @@ public:
 	/*
 	changes isSexWorker with probability taken from population prevalence of CSW (or initial csw chance if prevalent population)
 	*/
-	void rollForBecomeSexWorker(EventParams& _eventParams, bool _isInit, double initialProb = 0.0);
+	void rollForBecomeSexWorker(EventParams &_eventParams, bool _isInit, double initialProb = 0.0);
 
 	/*
 	stop being csw
@@ -428,17 +438,17 @@ public:
 	/*
 	rerolls risk group based on if they are csw or not.  Called after rolling for becoming sex worker
 	*/
-	virtual void rerollRiskGroup(EventParams& _eventParams);
+	virtual void rerollRiskGroup(EventParams &_eventParams);
 
 	/*
 	*Sets a new SimContext for the person
 	*/
-	void setSimContext(SimContext * newSimContext);
+	void setSimContext(SimContext *newSimContext);
 	//---------------< END DmgProfile related methods >------------------------//
 
-   //-----------------< Start methods Partnering/Selection Methods >-----------------------//
+	//-----------------< Start methods Partnering/Selection Methods >-----------------------//
 	//stores data to indicate that this person is in a sexual partnership
-        // if this partnership is STEADY, then will change RelationshipStatus
+	// if this partnership is STEADY, then will change RelationshipStatus
 	void addPartnership(SexualPartnership *_partnership);
 
 	//returns true if this person is available for steady partnership
@@ -450,13 +460,14 @@ public:
 	//  @param _availablePools	- a set of pools that this person can choose from
 	//  @param _remove - if true, than we will also remove the person from the EntityPool
 	// returns: a Person from one of the person pools in _availablePools
-	virtual Person* choosePartner(SexualPartnership::Type _partnershipType, EntityPool *_availableEntities, bool _remove);
+	virtual Person *choosePartner(SexualPartnership::Type _partnershipType, EntityPool *_availableEntities, bool _remove);
 
 	// fling with Person _p
 	// this is used for SexualPartnership::Type where there is no duration associated with the partnership (i.e. CASUAL, CSW)
 	//  will roll dice to see how many encounters there are during this fling...
 	//  returns pointer to a newly infected person. returns NULL if no infection occurred
-	Person* fling(Person *_p, SexualPartnership::Type _partnershipType, EventParams& _eventParams, InfectionsTracker *infTrack);
+	Person *fling(Person *_p, SexualPartnership::Type _partnershipType, EventParams &_eventParams,
+	              InfectionsTracker *infTrack);
 
 	/*
 	returns true if this person is already in some sort of REGULAR or STEADY partnership with _p
@@ -476,7 +487,8 @@ public:
 		_KeyValType getMinPartnerSelectVal(SexualPartnership::Type _partnershipType, Gender _partnerGender) const; - for class Male, Female
 		_KeyValType getMaxPartnerSelectVal(SexualPartnership::Type _partnershipType, Gender _partnerGender) const; - for class Male, Female
 	********/
-	enum SelectingCriteria {
+	enum SelectingCriteria
+	{
 		AGE,		//unsigned int
 		SEXUAL_ACTIVITY_LEVEL,	//double between 0 and 1
 		ID,						//unsigned int
@@ -490,7 +502,7 @@ public:
 	virtual double getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
 
 	//Returns the age difference (in years) to center around
-	virtual double rollForAgeDifference(SexualPartnership::Type _partnershipType, RandomNums& _randomNums);
+	virtual double rollForAgeDifference(SexualPartnership::Type _partnershipType, RandomNums &_randomNums);
 
 	/*
 	checks to see whether the duration limit of any SexualPartnerships have elapsed and will add them to a list to be removed
@@ -499,14 +511,16 @@ public:
 	@param _partnershipsToEnd when method is complete, _partnershipsToEnd will contain partnerships that should end.
 	@return number of partnerships ended
 	*/
-	long getPartnershipsToEnd(long _currTime,SexualPartnership::Type _partnershipType, list<SexualPartnership*> &_partnershipsToEnd, bool _fromDeath);
+	long getPartnershipsToEnd(long _currTime, SexualPartnership::Type _partnershipType,
+	                          list<SexualPartnership *> &_partnershipsToEnd, bool _fromDeath);
 
 	/*
 	have sex with all partners where the SexualPartnership has a duration. To prevent double-counting activity (iterator hits both partners)
 	sexual activity will only happen for the SexualPartnerships where this person is partner1
 	@return returns a pointer to the person who infected this person.
 	*/
-	Person* allPartnerSexualActivity(EventParams& _eventParams, SexualPartnership::Type _partnershipType, list<Person*> &_newlyInfected, InfectionsTracker *infTrack);
+	Person *allPartnerSexualActivity(EventParams &_eventParams, SexualPartnership::Type _partnershipType,
+	                                 list<Person *> &_newlyInfected, InfectionsTracker *infTrack);
 
 	//returns whether this person could partner with Person _p
 	//  split this by gender because there might be behaviour differences between them
@@ -518,15 +532,16 @@ public:
 	void removePartnership(SexualPartnership *_partnership);
 
 	//for a New partnership, roll how this person wants to be in this relationship
-	virtual int rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNums& _randomNums, Person *_p);
+	virtual int rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNums &_randomNums,
+	        Person *_p);
 
 	/*
 	for a particular month, choose how many partners of _partnershipType this Person will have
 	*/
-	virtual int rollForNumPartners(RandomNums& _randomNums, SexualPartnership::Type _partnershipType);
+	virtual int rollForNumPartners(RandomNums &_randomNums, SexualPartnership::Type _partnershipType);
 
 	//for a particular partner, choose how many events this male will have
-	virtual int rollNumEventsPerPartner(Person *_p, RandomNums& _randomNums, SexualPartnership::Type _partnershipType);
+	virtual int rollNumEventsPerPartner(Person *_p, RandomNums &_randomNums, SexualPartnership::Type _partnershipType);
 
 	/*
 	sexual activity with person _p. This can happen within context of class SexualPartnership or just between to Persons
@@ -536,7 +551,8 @@ public:
 	@param _infectionsTracker tracks the number of inf
 	returns a pointer to a person who has been newly infected. NULL if no infection occured
 	*/
-	Person* sexualActivity(Person *_p, int _numActs, SexualPartnership::Type _partnershipType, EventParams& _eventParams, InfectionsTracker *infTrack);
+	Person *sexualActivity(Person *_p, int _numActs, SexualPartnership::Type _partnershipType, EventParams &_eventParams,
+	                       InfectionsTracker *infTrack);
 
 	//-----------------< END methods Partnering/Selection Methods >-----------------------//
 
@@ -556,15 +572,15 @@ public:
 	//sets traceMe to true
 	void setToBeTraced();
 
-	const Person::StatsRecord* getStats();
+	const Person::StatsRecord *getStats();
 
 	//prints out person's id information
-	void print(ostream& _outStream, string _prefix) const;
+	void print(ostream &_outStream, string _prefix) const;
 
-	void printCurrentPartners(ostream& _outStream, string _prefix);
-	
+	void printCurrentPartners(ostream &_outStream, string _prefix);
+
 	//Writes the state of the patient to file.  This state can be reloaded on a different run.
-	virtual void saveState(ostream& _outStream, long currTime);
+	virtual void saveState(ostream &_outStream, long currTime);
 
 	//Unformed partnership tallies getters and setters -- the total should never be reset, only the "latest" (i.e. current time step)
 	int getTotalUnformedPartnerships(SexualPartnership::Type type);
@@ -572,9 +588,15 @@ public:
 	void increaseUnformedPartnershipTallies(SexualPartnership::Type type);
 	void resetLatestUnformedPartnerships(SexualPartnership::Type type);
 
-	GraphVizGraphElements::personNode* getPersonNode(){ return this->graphNode; }
+	GraphVizGraphElements::personNode *getPersonNode()
+	{
+		return this->graphNode;
+	}
 
-	bool isOnArt() { return cepacPatient && cepacPatient->getARTState()->isOnART; }
+	bool isOnArt()
+	{
+		return cepacPatient && cepacPatient->getARTState()->isOnART;
+	}
 
 	//-----------------< END getters, setters, and helper methods >--------------//
 
@@ -589,21 +611,34 @@ public:
 	// true is returned if key value of _p1 >= _p2. If key values are equal, then sorts based on Person's EntityID num
 	**/
 	template <Person::SelectingCriteria _PSC, class _KeyValType>
-	class Sorter{
+	class Sorter
+	{
 	public :
 		//gets value associated with _p
-		static inline _KeyValType getSortKey(Person* _p) {
-			switch(_PSC) {
-				case AGE : return (_KeyValType)_p->age;
-				case SEXUAL_ACTIVITY_LEVEL : return (_KeyValType)_p->sexualActivityLevel;
-				case ID : return (_KeyValType)_p->id;
-				default : cerr << "Invalid Sorting key :" << _PSC; Util::exitWithPrompt(-1);
+		static inline _KeyValType getSortKey(Person *_p)
+		{
+			switch(_PSC)
+			{
+			case AGE :
+				return (_KeyValType)_p->age;
+
+			case SEXUAL_ACTIVITY_LEVEL :
+				return (_KeyValType)_p->sexualActivityLevel;
+
+			case ID :
+				return (_KeyValType)_p->id;
+
+			default :
+				cerr << "Invalid Sorting key :" << _PSC;
+				Util::exitWithPrompt(-1);
 			}
+
 			return 0;
 		}
 
 		//functor associated with the < operator. Generally used for template args in in sets and maps
-		inline bool operator()(const Person* _p1, const Person* _p2) const {
+		inline bool operator()(const Person *_p1, const Person *_p2) const
+		{
 			return getSortKey(_p1) < getSortKey(_p2);
 		}
 
@@ -611,5 +646,5 @@ public:
 
 private:
 	//Return the current index of which SimContext should be used to update the health of a patient
-	int getCEPACSimContextIndex(EventParams& _eventParams);
+	int getCEPACSimContextIndex(EventParams &_eventParams);
 };

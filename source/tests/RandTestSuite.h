@@ -7,11 +7,9 @@ class RandTestSuite : public CxxTest::TestSuite
 public:
 	RandTestSuite()
 	{
-
 	}
 
 	~RandTestSuite()
 	{
-
 	}
 };

@@ -1,4 +1,5 @@
-class Distributions {
+class Distributions
+{
 
 	double mean;
 	double variance;

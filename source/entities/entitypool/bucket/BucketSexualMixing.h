@@ -1,14 +1,14 @@
 #pragma once
 
-	//this creates a DmgProfileBucket with an optimized data structure for sexual selection
-	//  people are put in different buckets based on age. Each bucket is sorted by sexualActivity coefficient
-	//  this is b/c SA folks are involved in fling and steadyCouple activity throughout the sim.
-	//	a more specialized and optimized data structure was necessary to make this program run at
-	//	a reasonable speed
-	// @param _id the ID number of the DmgProfileBucket
-	// @param _minAge minimum age in years allowed
-	// @param _maxAge maximum age in years allowed
-	// @param _sexuallyActive true if people in this bucket are sexually active. Either all are sexually active or all are not
+//this creates a DmgProfileBucket with an optimized data structure for sexual selection
+//  people are put in different buckets based on age. Each bucket is sorted by sexualActivity coefficient
+//  this is b/c SA folks are involved in fling and steadyCouple activity throughout the sim.
+//	a more specialized and optimized data structure was necessary to make this program run at
+//	a reasonable speed
+// @param _id the ID number of the DmgProfileBucket
+// @param _minAge minimum age in years allowed
+// @param _maxAge maximum age in years allowed
+// @param _sexuallyActive true if people in this bucket are sexually active. Either all are sexually active or all are not
 
 
 
@@ -33,7 +33,8 @@ This class contains Person objects in different buckets based on age
 
 The # of buckets depend on the timestep granularity used in the simulation
 **/
-class BucketSexualMixing : public DmgProfileBucket {
+class BucketSexualMixing : public DmgProfileBucket
+{
 
 
 	//friend class DmgProfileBucket::JavaStyleIterator;
@@ -48,7 +49,7 @@ class BucketSexualMixing : public DmgProfileBucket {
 
 public:
 	//This is the main circular buffer containing the BucketAge structures
-	typedef boost::circular_buffer_space_optimized<BucketAge*> BucketAllAges;
+	typedef boost::circular_buffer_space_optimized<BucketAge *> BucketAllAges;
 
 private :
 	//this contains a circular buffer composed of BucketAges
@@ -73,7 +74,8 @@ public :
 	@param _maxAgeInYrs age of people found in this bucket (in years)
 	@param _timeGranularity people will be bucketed by either MONTH or YEAR of age. This determines performance of selection when the behavior is heterogeneous vs. homogeneous
 	**/
-	BucketSexualMixing(DmgProfile::ProfileID _id, const string *_bucketLabel, unsigned int _popID, int _minAge, int _maxAge, TimeGranularity _timeGranularity, const double _assort[]);
+	BucketSexualMixing(DmgProfile::ProfileID _id, const string *_bucketLabel, unsigned int _popID, int _minAge, int _maxAge,
+	                   TimeGranularity _timeGranularity, const double _assort[]);
 	~BucketSexualMixing();
 
 	//-------------< Begin inherited from class DmgProfileBucket >---------------------//
@@ -82,7 +84,7 @@ public :
 	void clear();
 
 	//TESTED
-	Person* drawMember(RandomNums& _randomNums, SexualPartnership::Type _partnershipType, bool _remove);
+	Person *drawMember(RandomNums &_randomNums, SexualPartnership::Type _partnershipType, bool _remove);
 
 	/***
 	 * Draws random person for the age range desired by person for partnership type
@@ -92,7 +94,7 @@ public :
 	person exists, returns NULL
 	***/
 	//TESTED
-	Person* drawMember(RandomNums& _randomNums, Person *_chooser,SexualPartnership::Type _partnershipType, bool _remove);
+	Person *drawMember(RandomNums &_randomNums, Person *_chooser, SexualPartnership::Type _partnershipType, bool _remove);
 
 	//will remove this Person (if he or she exists) from the index
 	//TESTED
@@ -118,7 +120,7 @@ public :
 	bool insert(Person *_person);
 
 	//TESTED
-	void print(ostream& _outStream, std::string _prefix);
+	void print(ostream &_outStream, std::string _prefix);
 
 	//returns the # of entities in this index
 	//TESTED
@@ -153,7 +155,7 @@ public :
 	 */
 	//TESTED
 	unsigned long sizeRisk(Person::RiskLevel _risk);
-	
+
 	/*
 	 * @returns: total number of unique persons in this bucket with given risk level that is CSW
 	 * across all BucketAges in this; If _risk = Person::ENDRiskLevel,
@@ -165,7 +167,7 @@ public :
 	 * @returns: total number of unique persons in this bucket with given risk level and hiv status
 	 * across all BucketAges in this;
 	 */
-	unsigned long sizeRiskHIVStatus(Person::RiskLevel _risk,Person::HIVStatus _hivStatus);
+	unsigned long sizeRiskHIVStatus(Person::RiskLevel _risk, Person::HIVStatus _hivStatus);
 
 	/*
 	 * @returns: total number of marbles in all Random Risk FVs across all
@@ -196,7 +198,7 @@ public :
 	 * @returns: List of persons set to die (of old age)
 	 */
 	//TESTED
-	list<Person*> ageOneTimeStep();
+	list<Person *> ageOneTimeStep();
 
 	//--------< End additional methods based on this structure >--------//
 private :
@@ -210,15 +212,16 @@ private :
 
 	//gets a random person with age in [_ageLowerBound,_ageUpperBound]
 	//TESTED
-	Person* getRandomPerson(RandomNums& _randomNums, unsigned int _ageLowerBound, unsigned int _ageUpperBound, Person::RiskLevel _risk, SexualPartnership::Type _partnershipType, bool _remove);
+	Person *getRandomPerson(RandomNums &_randomNums, unsigned int _ageLowerBound, unsigned int _ageUpperBound,
+	                        Person::RiskLevel _risk, SexualPartnership::Type _partnershipType, bool _remove);
 
 	//Returns AgeBucket of oldest persons
 	//TESTED
-	BucketAge* getOldest();
+	BucketAge *getOldest();
 
 	//Returns AgeBucket of youngest persons
 	//TESTED
-	BucketAge* getYoungest();
+	BucketAge *getYoungest();
 
 	/**
 
@@ -232,37 +235,37 @@ private :
 		void remove();
 	***/
 
-/*protected:
-	class JavaStyleIterator : DmgProfileBucket::JavaStyleIterator{
+	/*protected:
+		class JavaStyleIterator : DmgProfileBucket::JavaStyleIterator{
 
-	public:
+		public:
 
-		EntityAgeBuffer *entityCircularBuff;
-		unsigned int currBuffIndex;
-		SexualActivityIndex::JIterator currNumIndexJIterator;
+			EntityAgeBuffer *entityCircularBuff;
+			unsigned int currBuffIndex;
+			SexualActivityIndex::JIterator currNumIndexJIterator;
 
-		JavaStyleIterator();
-		JavaStyleIterator(BucketSexualMixing *_bucket);
+			JavaStyleIterator();
+			JavaStyleIterator(BucketSexualMixing *_bucket);
 
-		//returns true if the element that was last returned by next() has been removed using remove()
-		bool alreadyRemoved();
+			//returns true if the element that was last returned by next() has been removed using remove()
+			bool alreadyRemoved();
 
-		//returns the spot right after last member of this pool
-		bool hasNext();
+			//returns the spot right after last member of this pool
+			bool hasNext();
 
-		//this will be used to get the next in line
-		Person* next();
+			//this will be used to get the next in line
+			Person* next();
 
-		//removes from the collection the last element returned by the iterator
-		bool remove();
+			//removes from the collection the last element returned by the iterator
+			bool remove();
 
-		//lets us reuse an iterator, resets to beginning of current collection
-		void reset();
+			//lets us reuse an iterator, resets to beginning of current collection
+			void reset();
 
-		~JavaStyleIterator();
-	};
+			~JavaStyleIterator();
+		};
 
-	JIterator iterator();
-*/
+		JIterator iterator();
+	*/
 };
 

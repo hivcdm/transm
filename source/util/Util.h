@@ -10,7 +10,8 @@
 #include "rand/RandomNums.h"
 #include "../Constants.h"
 
-class Util {
+class Util
+{
 
 	//usually we would divide to convert between these time increments
 	//but division is more expensive, so multiply by inverse instead.
@@ -19,18 +20,18 @@ class Util {
 	static double monthToYearMult;
 public:
 	/* Constant values for transmission model version and file/directory information */
-		static const double MODEL_VERSION;
-		static const double INPUT_VERSION;
+	static const double MODEL_VERSION;
+	static const double INPUT_VERSION;
 
-//Only have the "filesToRun" in Util for the console version... otherwise it is taken care of by DisplayBox
-//#if defined (CONSOLE)
-		static std::vector<std::string> transmFilesToRun;
-		static void findInputFiles();
-//#endif
+	//Only have the "filesToRun" in Util for the console version... otherwise it is taken care of by DisplayBox
+	//#if defined (CONSOLE)
+	static std::vector<std::string> transmFilesToRun;
+	static void findInputFiles();
+	//#endif
 
 
 	//convert _val from one TimeGranularity to another
-	static unsigned int convertTime(TimeGranularity _from, TimeGranularity _to, double _val );
+	static unsigned int convertTime(TimeGranularity _from, TimeGranularity _to, double _val);
 
 	/**
 	Converts a string value to another datatype
@@ -72,22 +73,29 @@ public:
 	//returns true if 0.0 <= _prob <= 1.0
 	static bool validProbability(double _prob);
 
-		//this function was taken from
+	//this function was taken from
 	// http://www.oopweb.com/CPP/Documents/CPPHOWTO/Volume/C++Programming-HOWTO-7.html
-	static void Tokenize(const std::string& str, std::vector<std::string>& tokens, const std::string& delimiters);
+	static void Tokenize(const std::string &str, std::vector<std::string> &tokens, const std::string &delimiters);
 };
 
 //returns true if _elem is a member of _set
 template <class T>
-bool Util::memberOf(std::set<T> _set, T _elem) {
+bool Util::memberOf(std::set<T> _set, T _elem)
+{
 	return (_set.find(_elem) != _set.end())	;
 }
 
 template <class T>
-bool Util::memberOf(std::vector<T> _vector, T _elem) {
-	for(int i = 0; i < _vector.size(); i++) {
-		if ( _vector.at(i) == _elem) return true;
+bool Util::memberOf(std::vector<T> _vector, T _elem)
+{
+	for(int i = 0; i < _vector.size(); i++)
+	{
+		if(_vector.at(i) == _elem)
+		{
+			return true;
+		}
 	}
+
 	return false;
 }
 
@@ -96,7 +104,8 @@ bool Util::memberOf(std::vector<T> _vector, T _elem) {
 Converts a string value to another datatype
 **/
 template <class T>
-T Util::fromString(std::string _s) {
+T Util::fromString(std::string _s)
+{
 	std::istringstream converter(_s);
 	T converted;
 	converter >> converted;
@@ -104,6 +113,7 @@ T Util::fromString(std::string _s) {
 }
 
 template <class T>
-bool Util::withinRange(T _val, T _min, T _max) {
-	return (( _min <= _val) && (_max >= _val));
+bool Util::withinRange(T _val, T _min, T _max)
+{
+	return ((_min <= _val) && (_max >= _val));
 }

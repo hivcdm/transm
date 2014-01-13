@@ -22,7 +22,6 @@ public:
 		LARGE_INTEGER ticksPerSecond;
 		QueryPerformanceFrequency(&ticksPerSecond);
 		updateFrequency = static_cast<double>(ticksPerSecond.QuadPart);
-
 		LARGE_INTEGER tick;
 		QueryPerformanceCounter(&tick);
 		start = tick.QuadPart;

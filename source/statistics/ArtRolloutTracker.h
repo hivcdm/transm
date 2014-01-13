@@ -19,7 +19,7 @@ public:
 	ArtRolloutTracker();
 	~ArtRolloutTracker();
 
-	void SetAgeRanges(const std::vector<boost::tuple<long, int, int> > &ageGroupSizes);
+	void SetAgeRanges(const std::vector<boost::tuple<long, int, int>> &ageGroupSizes);
 
 	void recordTest(Person *person, bool accepted, bool returned, SimContext::TEST_RESULT result);
 
@@ -40,7 +40,7 @@ private:
 	BucketCounter eligibleByBucketCounter;
 	BucketCounter treatedByBucketCounter;
 
-	std::vector<std::pair<int, int> > ageRanges;
+	std::vector<std::pair<int, int>> ageRanges;
 
 	void buildHeader();
 

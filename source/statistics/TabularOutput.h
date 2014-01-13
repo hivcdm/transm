@@ -9,12 +9,13 @@
 
 typedef std::pair<int, int> Coordinate;
 
-namespace std {
+namespace std
+{
 
 template<>
 struct hash<Coordinate>
 {
-	std::size_t operator()(Coordinate const& e) const
+	std::size_t operator()(Coordinate const &e) const
 	{
 		std::size_t seed = 0;
 		boost::hash_combine(seed, e.first);
@@ -26,7 +27,7 @@ struct hash<Coordinate>
 template<>
 struct equal_to<Coordinate>
 {
-	bool operator()(Coordinate const& x, Coordinate const& y) const
+	bool operator()(Coordinate const &x, Coordinate const &y) const
 	{
 		return x.first == y.first && x.second == y.second;
 	}

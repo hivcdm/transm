@@ -7,11 +7,9 @@ class XmlUtilTestSuite : public CxxTest::TestSuite
 public:
 	XmlUtilTestSuite()
 	{
-
 	}
 
 	~XmlUtilTestSuite()
 	{
-
 	}
 };

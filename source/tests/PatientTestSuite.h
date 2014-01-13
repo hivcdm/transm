@@ -7,11 +7,9 @@ class PatientTestSuite : public CxxTest::TestSuite
 public:
 	PatientTestSuite()
 	{
-
 	}
 
 	~PatientTestSuite()
 	{
-
 	}
 };

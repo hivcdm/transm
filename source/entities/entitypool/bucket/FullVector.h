@@ -21,31 +21,32 @@ class Person;
  * used to iterate through all Persons.
 */
 
-class FullVector{
+class FullVector
+{
 	static long FVcounter;
 
 public:
 	//Base Constructor
 	FullVector();
-	FullVector(vector< Person* > vP);
-	FullVector(int num, Person* p);
+	FullVector(vector<Person *> vP);
+	FullVector(int num, Person *p);
 
 	//Destructor
 	~FullVector();
 
 	//Wrapper functions for those in the vector class
 
-    /*
-    * WARNING: This operator can be used to retrieve values, but NOT to set them.
-    * Use the protected function "set" to set values at a specific index.
-    */
-	Person* operator[](int index);
+	/*
+	* WARNING: This operator can be used to retrieve values, but NOT to set them.
+	* Use the protected function "set" to set values at a specific index.
+	*/
+	Person *operator[](int index);
 
-	Person* at(int loc);
+	Person *at(int loc);
 
-	Person* back();
+	Person *back();
 
-	vector<Person*>::iterator begin();
+	vector<Person *>::iterator begin();
 
 	int capacity();
 
@@ -53,19 +54,19 @@ public:
 
 	bool empty();
 
-	bool exists(Person* _p);
+	bool exists(Person *_p);
 
-	vector<Person*>::iterator end();
+	vector<Person *>::iterator end();
 
-	Person* front();
+	Person *front();
 
 	int max_size();
 
-	void push_back(Person* p);
+	void push_back(Person *p);
 
-	vector<Person*>::reverse_iterator rbegin();
+	vector<Person *>::reverse_iterator rbegin();
 
-	vector<Person*>::reverse_iterator rend();
+	vector<Person *>::reverse_iterator rend();
 
 	void reserve(int size);
 
@@ -78,20 +79,20 @@ public:
 	 * @effects: Removes all pointers to person p from the vector while keeping the vector dense
 	 * @return: Returns true if all pointers were successfully removed, returns false otherwise
 	 */
-	bool remove(Person* p);
+	bool remove(Person *p);
 
 	/* @function add
 	 * @arguments: Person* p, int num
 	 * @effects: Adds num copies of p to this; updates p.FVindices accordingly
 	 */
-	void add(Person* p, int num);
+	void add(Person *p, int num);
 
 	/* @function selectout
 	 * @arguments: int index
 	 * @effects: removes Person* p at index from FullVector while keeping the vector dense
 	 * @returns: Person* p at index
 	 */
-	Person* selectout(int index);
+	Person *selectout(int index);
 
 	/* @function swapelements
 	 * @arguments: int index1, int index2
@@ -106,7 +107,7 @@ public:
 	int getID();
 
 protected:
-	vector<Person*> vPerson;
+	vector<Person *> vPerson;
 	int ID;
 
 
