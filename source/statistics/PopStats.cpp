@@ -836,7 +836,7 @@ bool PopStats::isTimeToRecordLE(long currTime)
 {
 	for(int i = 0; i < NUM_TIMES_TO_RECORD_LE; i++)
 	{
-		if(this->timeToRecordLE[i] == (currTime - 1) / 12)
+		if(timeToRecordLE[i] == (currTime - 1))
 		{
 			return true;
 		}
@@ -862,7 +862,7 @@ bool PopStats::isFirstMonthToRecordLE(long currTime)
 {
 	for(int i = 0; i < NUM_TIMES_TO_RECORD_LE; i++)
 	{
-		if(this->timeToRecordLE[i] * 12 == (currTime - 1))
+		if(timeToRecordLE[i] == (currTime - 1))
 		{
 			return true;
 		}
@@ -875,7 +875,7 @@ bool PopStats::isTimeToPrintLE(long currTime)
 {
 	for(int i = 0; i < NUM_TIMES_TO_RECORD_LE; i++)
 	{
-		if((this->timeToRecordLE[i] * 12 + 11) == (currTime - 1))
+		if((timeToRecordLE[i] + 11) == (currTime - 1))
 		{
 			return true;
 		}
