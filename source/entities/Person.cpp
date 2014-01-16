@@ -69,6 +69,70 @@ Person::CD4Strata Person::getCd4Stratum()
 	}
 }
 
+bool Person::isEligibleForTreatment()
+{
+	SimContext *simContext = cepacPatient->getSimContext();
+	int regimenNum = cepacPatient->getARTState()->currRegimenNum;
+	const SimContext::TreatmentInputs::ARTStartPolicy &startART = simContext->getTreatmentInputs()->startART[regimenNum];
+
+	// Evaluate the CD4 only criteria
+	double observedCD4 = cepacPatient->getMonitoringState()->currObservedCD4;
+	if(cepacPatient->getMonitoringState()->hasObservedCD4 &&
+		(observedCD4 >= startART.CD4BoundsOnly[SimContext::LOWER_BOUND]) &&
+		(observedCD4 <= startART.CD4BoundsOnly[SimContext::UPPER_BOUND])) {
+		return true;
+	}
+
+	// Evaluate the HVL strata only criteria
+	SimContext::HVL_STRATA observedHVL = cepacPatient->getMonitoringState()->currObservedHVLStrata;
+	if(cepacPatient->getMonitoringState()->hasObservedHVLStrata &&
+		(observedHVL >= startART.HVLBoundsOnly[SimContext::LOWER_BOUND]) &&
+		(observedHVL <= startART.HVLBoundsOnly[SimContext::UPPER_BOUND])) {
+		return true;
+	}
+
+	// Evaluate the CD4 and HVL combined criteria
+	if(cepacPatient->getMonitoringState()->hasObservedCD4 &&
+		(observedCD4 >= startART.CD4BoundsWithHVL[SimContext::LOWER_BOUND]) &&
+		(observedCD4 <= startART.CD4BoundsWithHVL[SimContext::UPPER_BOUND]) &&
+		cepacPatient->getMonitoringState()->hasObservedHVLStrata &&
+		(observedHVL >= startART.HVLBoundsWithCD4[SimContext::LOWER_BOUND]) &&
+		(observedHVL <= startART.HVLBoundsWithCD4[SimContext::UPPER_BOUND])) {
+		return true;
+	}
+
+	// Evaluate the acute OIs since last ART only criteria
+	int numOIs = 0;
+	for(int i = 0; i < SimContext::OI_NUM; i++)
+	{
+		if(startART.OIHistory[i])
+		{
+			numOIs += cepacPatient->getARTState()->numObservedOIsSinceFailOrStopART[i];
+		}
+	}
+
+	if(numOIs >= startART.numOIs)
+	{
+		return true;
+	}
+
+	// Evaluate the acute OIs in cepacPatient's history and CD4 count criteria
+	if((observedCD4 != SimContext::NOT_APPL) &&
+		(observedCD4 >= startART.CD4BoundsWithOIs[SimContext::LOWER_BOUND]) &&
+		(observedCD4 <= startART.CD4BoundsWithOIs[SimContext::UPPER_BOUND]))
+	{
+		for(int i = 0; i < SimContext::OI_NUM; i++)
+		{
+			if(startART.OIHistoryWithCD4[i] && (cepacPatient->getMonitoringState()->numObservedOIsTotal[i] > 0))
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 Person *Person::allPartnerSexualActivity(EventParams &_eventParams, SexualPartnership::Type _partnershipType,
         list<Person *> &_newlyInfected, InfectionsTracker *infTrack)
 {

@@ -137,8 +137,9 @@ private:
 	int yearlyCumulativeSexuallyActivePopSize;
 	int yearlyIncidentInfections;
 	int yearlyTests;
-	std::set<Person *> uniqueYearlyEligible;
-	std::set<Person *> uniqueYearlyEnrolled;
+	std::set<Person *> uniqueYearlyEligibleForTreatmentAccess;
+	std::set<Person *> uniqueYearlyAccessingTreatment;
+	std::set<Person *> uniqueYearlyEligibleForTreatment;
 	std::set<Person *> uniqueYearlyTreated;
 	std::vector<int> yearlyTestsByResult;
 
@@ -203,8 +204,9 @@ public:
 	void resetYear(int newYear);
 	void recordYearStartStats(int sexuallyActivePopSize, int prevalentCases);
 	void recordTestStats(int numTests, const std::vector<int> &numTestsByResult);
-	void recordEligiblePerson(Person *person);
-	void recordEnrollment(Person *person);
+	void recordTreatmentAccessEligiblity(Person *person);
+	void recordTreatmentAccess(Person *person);
+	void recordTreatmentEligiblity(Person *person);
 	void recordTreatment(Person *person);
 
 	std::vector<PopStats::SingleTimeStats *> *getSelectedSummaryStats();

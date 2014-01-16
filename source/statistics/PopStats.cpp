@@ -712,11 +712,13 @@ void PopStats::printShiftedOutcomes(std::ostream &_outStream, int year)
 			_outStream << Constants::TAB;
 		}
 
-		_outStream << "Number Eligible for Treatment";
+		_outStream << "Number Eligible for Access to Treatment";
 		_outStream << Constants::TAB;
 		_outStream << "Number Acessing Treatment";
 		_outStream << Constants::TAB;
-		_outStream << "Number Enrolled in ART";
+		_outStream << "Number Eligible for ART";
+		_outStream << Constants::TAB;
+		_outStream << "Number Receiving ART";
 		_outStream << std::endl;
 	}
 
@@ -743,9 +745,11 @@ void PopStats::printShiftedOutcomes(std::ostream &_outStream, int year)
 		_outStream << Constants::TAB;
 	}
 
-	_outStream << uniqueYearlyEligible.size();
+	_outStream << uniqueYearlyEligibleForTreatmentAccess.size();
 	_outStream << Constants::TAB;
-	_outStream << uniqueYearlyEnrolled.size();
+	_outStream << uniqueYearlyAccessingTreatment.size();
+	_outStream << Constants::TAB;
+	_outStream << uniqueYearlyEligibleForTreatment.size();
 	_outStream << Constants::TAB;
 	_outStream << uniqueYearlyTreated.size();
 	_outStream << std::endl;
@@ -943,15 +947,20 @@ void PopStats::recordTestStats(int numTests, const std::vector<int> &numTestsByR
 	}
 }
 
-void PopStats::recordEligiblePerson(Person *person)
+void PopStats::recordTreatmentAccessEligiblity(Person *person)
 {
-	uniqueYearlyEligible.insert(person);
+	uniqueYearlyEligibleForTreatmentAccess.insert(person);
 	artTracker.recordEligiblePerson(person);
 }
 
-void PopStats::recordEnrollment(Person *person)
+void PopStats::recordTreatmentAccess(Person *person)
 {
-	uniqueYearlyEnrolled.insert(person);
+	uniqueYearlyAccessingTreatment.insert(person);
+}
+
+void PopStats::recordTreatmentEligiblity(Person *person)
+{
+	uniqueYearlyEligibleForTreatment.insert(person);
 }
 
 void PopStats::recordTreatment(Person *person)
@@ -963,13 +972,17 @@ void PopStats::recordTreatment(Person *person)
 void PopStats::resetYear(int newYear)
 {
 	relativeYear = newYear;
+
 	yearStartPrevalentInfections = 0;
 	yearStartSexuallyActivePopSize = 0;
 	yearlyCumulativeSexuallyActivePopSize = 0;
 	yearlyIncidentInfections = 0;
 	yearlyTests = 0;
+
 	yearlyTestsByResult.assign(yearlyTestsByResult.size(), 0);
-	uniqueYearlyEligible.clear();
+
+	uniqueYearlyEligibleForTreatmentAccess.clear();
+	uniqueYearlyAccessingTreatment.clear();
+	uniqueYearlyEligibleForTreatment.clear();
 	uniqueYearlyTreated.clear();
-	uniqueYearlyEnrolled.clear();
 }

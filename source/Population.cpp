@@ -493,9 +493,17 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 				}
 			}
 
-			if(p->isOnArt())
+			if(_eventParams.useRollout && _eventParams.treatedContext && p->isInfected())
 			{
-				popStats->recordTreatment(p);
+				if(p->isOnArt())
+				{
+					popStats->recordTreatmentEligiblity(p); // if they're on treatment, they should be counted as eligible even if the treatment has worked
+					popStats->recordTreatment(p);
+				}
+				else if(p->isEligibleForTreatment())
+				{
+					popStats->recordTreatmentEligiblity(p);
+				}
 			}
 
 			//Update cost
@@ -1546,14 +1554,15 @@ void Population::applyARTRollout(EventParams &_eventParams)
 
 		for(auto bucketIterator = currentRankingBucket.begin(); bucketIterator != currentRankingBucket.end(); ++bucketIterator)
 		{
-			popStats->recordEligiblePerson(*bucketIterator);
+			popStats->recordTreatmentAccessEligiblity(*bucketIterator);
 		}
 	}
 
 	for(auto treatedIterator = rolloutTreatedPool.begin(); treatedIterator != rolloutTreatedPool.end(); ++treatedIterator)
 	{
-		popStats->recordEligiblePerson(*treatedIterator);
-		popStats->recordEnrollment(*treatedIterator);
+		// double counting shouldn't be a problem, they're either in rolloutTreatedPool or rankedForTreatment but not both
+		popStats->recordTreatmentAccessEligiblity(*treatedIterator);
+		popStats->recordTreatmentAccess(*treatedIterator);
 	}
 }
 

@@ -244,6 +244,9 @@ public:
 	bool isAlive();
 	/* saveState saves the state of the patient to file format using a JSON like notation */
 	void saveState(ostream & _outStream);
+
+	SimContext *getSimContext() { return simContext; }
+
 private:
 	/* pointers to the simulation context, statistics object, and trace object */
 	SimContext *simContext;

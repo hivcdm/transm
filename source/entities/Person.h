@@ -235,6 +235,8 @@ public:
 
 	CD4Strata getCd4Stratum();
 
+	bool isEligibleForTreatment();
+
 	//This is for keeping dead people around for graph printing reasons
 	//It mimics the destructor without destroying the Person object.
 	void deletePersonWithoutDeleting();
