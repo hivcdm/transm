@@ -197,7 +197,7 @@ void StatsRecord<PointStatIDs, StratifiedStatIDs>::print(std::ostream &_outStrea
 	for(PointStatIDs i = PointStatIDs(0); i < this->statIDEnumCls->getNumEnums(); ++i)
 	{
 		this->statIDEnumCls->appendEnumStr(_outStream, i);
-		_outStream << "\t" << this->singleValStats.at(i) << endl;
+		_outStream << "\t" << this->singleValStats.at(i) << std::endl;
 	}
 
 	//print out array stats
@@ -211,7 +211,7 @@ void StatsRecord<PointStatIDs, StratifiedStatIDs>::print(std::ostream &_outStrea
 			_outStream << this->stratifiedStats.at(i).at(j) << "\t";
 		}
 
-		_outStream << ")" << endl;
+		_outStream << ")" << std::endl;
 	}
 }
 

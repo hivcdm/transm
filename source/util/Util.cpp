@@ -32,7 +32,7 @@ void Util::findInputFiles()
 	struct _finddata_t tFileInfo;
 	hFile = _findfirst("*.xml", &tFileInfo);
 	int nInputFiles = 0;
-	string fileName;
+	std::string fileName;
 	//get the list of files that we have to process
 	transmFilesToRun.clear();
 
@@ -49,7 +49,7 @@ void Util::findInputFiles()
 	glob_t files;
 	glob("*.xml", GLOB_ERR, NULL, &files);
 	int nInputFiles = 0;
-	string fileName;
+	std::string fileName;
 	transmFilesToRun.clear();
 	//get the list of files that we have to process
 	int i;
@@ -63,7 +63,7 @@ void Util::findInputFiles()
 
 		if(seqStartIndex == (fileNameLength - 10))
 		{
-			if(seqFirstStartIndex == string::npos)
+		  if(seqFirstStartIndex == std::string::npos)
 			{
 				continue;
 			}

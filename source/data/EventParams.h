@@ -7,6 +7,8 @@
 #include "../Constants.h"
 #if !defined( CONSOLE )
 #include "../gui/DisplayBox.h"
+#else
+class DisplayBox;
 #endif
 #include "../cepac/include.h"
 
@@ -259,10 +261,9 @@ public :
 		}
 	}
 
-#if !defined( CONSOLE )
 	//Used for printing to GUI output
 	DisplayBox *displaybox;
-#endif
+
 	inline void displayOut(const char *message)
 	{
 #if !defined( CONSOLE )
