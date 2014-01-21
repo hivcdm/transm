@@ -17,7 +17,8 @@ ArtRolloutTracker::ArtRolloutTracker() :
 	numTestsOffered(0),
 	numTestsAccepted(0),
 	numTestsReturnedFor(0),
-	numTestsByResult(SimContext::TEST_RESULT_NUM)
+	numTestsByResult(SimContext::TEST_RESULT_NUM),
+	counter({"test_result", "eligible_for_access", "accessing_treatment", "eligible_for_treatment", "treated"})
 {
 	Reset();
 }
@@ -38,9 +39,7 @@ void ArtRolloutTracker::SetAgeRanges(const std::vector<boost::tuple<long, int, i
 		ageRanges.push_back(std::make_pair(minAge, maxAge));
 	}
 
-	testsByBucketCounter.SetAgeRanges(ageRanges);
-	eligibleByBucketCounter.SetAgeRanges(ageRanges);
-	treatedByBucketCounter.SetAgeRanges(ageRanges);
+	counter.SetAgeRanges(ageRanges);
 }
 
 void ArtRolloutTracker::recordTest(Person *person, bool accepted, bool returned, SimContext::TEST_RESULT result)
@@ -54,20 +53,30 @@ void ArtRolloutTracker::recordTest(Person *person, bool accepted, bool returned,
 		if(returned)
 		{
 			numTestsReturnedFor++;
-			testsByBucketCounter.Increment(person);
+			counter.Increment(person, "test_result");
 			numTestsByResult[result]++;
 		}
 	}
 }
 
-void ArtRolloutTracker::recordEligiblePerson(Person *person)
+void ArtRolloutTracker::recordTreatmentAccessEligiblity(Person *person)
 {
-	eligibleByBucketCounter.Increment(person);
+	counter.Increment(person, "eligible_for_access");
+}
+
+void ArtRolloutTracker::recordTreatmentAccess(Person *person)
+{
+	counter.Increment(person, "accessing_treatment");
+}
+
+void ArtRolloutTracker::recordTreatmentEligiblity(Person *person)
+{
+	counter.Increment(person, "eligible_for_treatment");
 }
 
 void ArtRolloutTracker::recordTreatment(Person *person)
 {
-	treatedByBucketCounter.Increment(person);
+	counter.Increment(person, "treated");
 }
 
 void ArtRolloutTracker::printArtRolloutOutcomes(int time, std::ostream &_outStream, Population *_population)
@@ -92,116 +101,72 @@ void ArtRolloutTracker::buildHeader()
 	SetHeaderCell(3, 2, "Totals");
 	SetHeaderCell(3, 3, "Offered");
 	SetHeaderCell(4, 3, "Accepted");
-	SetHeaderCell(5, 3, "Returned for Results");
-	SetHeaderCell(6, 2, "Gender");
-	SetHeaderCell(6, 3, "Males");
-	SetHeaderCell(7, 3, "Females");
-	int column = 8;
 
-	for(int genderIndex = 0; genderIndex < 2; genderIndex++, column += (ageRanges.size() + 1))
+	int column = 5;
+
+	for(auto outcome : getOutcomesToCount())
 	{
-		SetHeaderCell(column, 1, genderIndex == 0 ? "Males" : "Females");
-		SetHeaderCell(column, 2, "Non-Sexually Active Population");
-		SetHeaderCell(column, 3, "All ages");
-		SetHeaderCell(column + 1, 2, "Sexually Active Population");
-
-		for(size_t i = 0; i < ageRanges.size(); ++i)
+		std::string section_header = "";
+		if(outcome == "eligible_for_access")
 		{
-			std::stringstream rangeString;
-			rangeString << std::get<0>(ageRanges[i]) << "-" << std::get<1>(ageRanges[i]);
-			SetHeaderCell(column + 1 + i, 3, rangeString.str());
+			section_header = "Number Eligible for Access to Treatment";
 		}
-	}
-
-	SetHeaderCell(column, 2, "CD4 Stratum");
-
-	for(int cd4StratumIndex = 0; cd4StratumIndex < Person::ENDCD4Strata; ++cd4StratumIndex, ++column)
-	{
-		SetHeaderCell(column, 3, SimContext::CD4_STRATA_STRS[cd4StratumIndex]);
-	}
-
-	SetHeaderCell(column, 2, "Risk Group");
-
-	for(int riskGroupIndex = 0; riskGroupIndex < 6; ++riskGroupIndex, ++column)
-	{
-		SetHeaderCell(column, 3, RISK_GROUP_NAMES[riskGroupIndex]);
-	}
-
-	SetHeaderCell(column, 2, "Test Result");
-
-	for(int testResultIndex = 0; testResultIndex < SimContext::TEST_RESULT_NUM; ++testResultIndex, ++column)
-	{
-		SetHeaderCell(column, 3, SimContext::TEST_RESULT_STRS[testResultIndex]);
-	}
-
-	SetHeaderCell(column, 1, "Number Eligible for Treatment");
-	SetHeaderCell(column, 2, "Gender");
-	SetHeaderCell(column, 3, "Males");
-	SetHeaderCell(column + 1, 3, "Females");
-	column += 2;
-
-	for(int genderIndex = 0; genderIndex < 2; genderIndex++, column += (ageRanges.size() + 1))
-	{
-		SetHeaderCell(column, 1, genderIndex == 0 ? "Males" : "Females");
-		SetHeaderCell(column, 2, "Non-Sexually Active Population");
-		SetHeaderCell(column, 3, "All ages");
-		SetHeaderCell(column + 1, 2, "Sexually Active Population");
-
-		for(size_t i = 0; i < ageRanges.size(); ++i)
+		else if(outcome == "accessing_treatment")
 		{
-			std::stringstream rangeString;
-			rangeString << std::get<0>(ageRanges[i]) << "-" << std::get<1>(ageRanges[i]);
-			SetHeaderCell(column + 1 + i, 3, rangeString.str());
+			section_header = "Number Accessing Treatment";
 		}
-	}
-
-	SetHeaderCell(column, 2, "CD4 Stratum");
-
-	for(int cd4StratumIndex = 0; cd4StratumIndex < Person::ENDCD4Strata; ++cd4StratumIndex, ++column)
-	{
-		SetHeaderCell(column, 3, SimContext::CD4_STRATA_STRS[cd4StratumIndex]);
-	}
-
-	SetHeaderCell(column, 2, "Risk Group");
-
-	for(int riskGroupIndex = 0; riskGroupIndex < 6; ++riskGroupIndex, ++column)
-	{
-		SetHeaderCell(column, 3, RISK_GROUP_NAMES[riskGroupIndex]);
-	}
-
-	SetHeaderCell(column, 1, "Number Enrolled in ART");
-	SetHeaderCell(column, 2, "Gender");
-	SetHeaderCell(column, 3, "Males");
-	SetHeaderCell(column + 1, 3, "Females");
-	column += 2;
-
-	for(int genderIndex = 0; genderIndex < 2; genderIndex++, column += (ageRanges.size() + 1))
-	{
-		SetHeaderCell(column, 1, genderIndex == 0 ? "Males" : "Females");
-		SetHeaderCell(column, 2, "Non-Sexually Active Population");
-		SetHeaderCell(column, 3, "All ages");
-		SetHeaderCell(column + 1, 2, "Sexually Active Population");
-
-		for(size_t i = 0; i < ageRanges.size(); ++i)
+		else if(outcome == "eligible_for_treatment")
 		{
-			std::stringstream rangeString;
-			rangeString << std::get<0>(ageRanges[i]) << "-" << std::get<1>(ageRanges[i]);
-			SetHeaderCell(column + 1 + i, 3, rangeString.str());
+			section_header = "Number Eligible for Treatment";
 		}
-	}
+		else if(outcome == "treated")
+		{
+			section_header = "Number Treated";
+		}
 
-	SetHeaderCell(column, 2, "CD4 Stratum");
+		SetHeaderCell(column++, 1, section_header);
+		SetHeaderCell(column, 2, "Gender");
+		SetHeaderCell(column++, 3, "Males");
+		SetHeaderCell(column++, 3, "Females");
 
-	for(int cd4StratumIndex = 0; cd4StratumIndex < Person::ENDCD4Strata; ++cd4StratumIndex, ++column)
-	{
-		SetHeaderCell(column, 3, SimContext::CD4_STRATA_STRS[cd4StratumIndex]);
-	}
+		for(int genderIndex = 0; genderIndex < 2; genderIndex++, column += (ageRanges.size() + 1))
+		{
+			SetHeaderCell(column, 1, genderIndex == 0 ? "Males" : "Females");
+			SetHeaderCell(column, 2, "Non-Sexually Active Population");
+			SetHeaderCell(column, 3, "All ages");
+			SetHeaderCell(column + 1, 2, "Sexually Active Population");
 
-	SetHeaderCell(column, 2, "Risk Group");
+			for(size_t i = 0; i < ageRanges.size(); ++i)
+			{
+				std::stringstream rangeString;
+				rangeString << std::get<0>(ageRanges[i]) << "-" << std::get<1>(ageRanges[i]);
+				SetHeaderCell(column + 1 + i, 3, rangeString.str());
+			}
+		}
 
-	for(int riskGroupIndex = 0; riskGroupIndex < 6; ++riskGroupIndex, ++column)
-	{
-		SetHeaderCell(column, 3, RISK_GROUP_NAMES[riskGroupIndex]);
+		SetHeaderCell(column, 2, "CD4 Stratum");
+
+		for(int cd4StratumIndex = 0; cd4StratumIndex < Person::ENDCD4Strata; ++cd4StratumIndex, ++column)
+		{
+			SetHeaderCell(column, 3, SimContext::CD4_STRATA_STRS[cd4StratumIndex]);
+		}
+
+		SetHeaderCell(column, 2, "Risk Group");
+
+		for(int riskGroupIndex = 0; riskGroupIndex < 6; ++riskGroupIndex, ++column)
+		{
+			SetHeaderCell(column, 3, RISK_GROUP_NAMES[riskGroupIndex]);
+		}
+
+		if(outcome == "test_result")
+		{
+			SetHeaderCell(column, 2, "Test Result");
+
+			for(int testResultIndex = 0; testResultIndex < SimContext::TEST_RESULT_NUM; ++testResultIndex, ++column)
+			{
+				SetHeaderCell(column, 3, SimContext::TEST_RESULT_STRS[testResultIndex]);
+			}
+		}
 	}
 }
 
@@ -221,121 +186,51 @@ void ArtRolloutTracker::buildRow(int time, Population *_population)
 	PushElement(numTestsAccepted);
 	PushElement(numTestsReturnedFor);
 
-	for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
+	for(auto outcome : getOutcomesToCount())
 	{
-		PushElement(testsByBucketCounter.GetCountByGender(gender));
-	}
-
-	for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
-	{
-		PushElement(testsByBucketCounter.GetCountByGenderSexualActivity(gender, DmgProfile::NA));
-
-		for(int ageGroup = 0; ageGroup < ageRanges.size(); ++ageGroup)
+		for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
 		{
-			PushElement(testsByBucketCounter.GetCountByGenderSexualActivityAge(gender, DmgProfile::SA, ageGroup));
+			PushElement(counter.GetCountByGender(gender, outcome));
 		}
-	}
 
-	for(Person::CD4Strata cd4Stratum = static_cast<Person::CD4Strata>(0); cd4Stratum < Person::ENDCD4Strata; ++cd4Stratum)
-	{
-		PushElement(testsByBucketCounter.GetCountByCd4(cd4Stratum));
-	}
-
-	for(DmgProfile::Employment employment = static_cast<DmgProfile::Employment>(0); employment < DmgProfile::ENDEmployment;
-	        ++employment)
-	{
-		for(Person::RiskLevel riskLevel = static_cast<Person::RiskLevel>(0); riskLevel < Person::ENDRiskLevel; ++riskLevel)
+		for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
 		{
-			for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
-			{
-				// We don't include Male CSWs for now
-				if(gender == DmgProfile::MALE && employment == DmgProfile::CSW)
-				{
-					continue;
-				}
+			PushElement(counter.GetCountByGenderSexualActivity(gender, DmgProfile::NA, outcome));
 
-				PushElement(testsByBucketCounter.GetCountByRiskGroup(riskLevel, gender, employment));
+			for(int ageGroup = 0; ageGroup < ageRanges.size(); ++ageGroup)
+			{
+				PushElement(counter.GetCountByGenderSexualActivityAge(gender, DmgProfile::SA, ageGroup, outcome));
 			}
 		}
-	}
 
-	for(int i = 0; i < SimContext::TEST_RESULT_NUM; ++i)
-	{
-		PushElement(numTestsByResult[i]);
-	}
-
-	for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
-	{
-		PushElement(eligibleByBucketCounter.GetCountByGender(gender));
-	}
-
-	for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
-	{
-		PushElement(eligibleByBucketCounter.GetCountByGenderSexualActivity(gender, DmgProfile::NA));
-
-		for(int ageGroup = 0; ageGroup < ageRanges.size(); ++ageGroup)
+		for(Person::CD4Strata cd4Stratum = static_cast<Person::CD4Strata>(0); cd4Stratum < Person::ENDCD4Strata; ++cd4Stratum)
 		{
-			PushElement(eligibleByBucketCounter.GetCountByGenderSexualActivityAge(gender, DmgProfile::SA, ageGroup));
+			PushElement(counter.GetCountByCd4(cd4Stratum, outcome));
 		}
-	}
 
-	for(Person::CD4Strata cd4Stratum = static_cast<Person::CD4Strata>(0); cd4Stratum < Person::ENDCD4Strata; ++cd4Stratum)
-	{
-		PushElement(eligibleByBucketCounter.GetCountByCd4(cd4Stratum));
-	}
-
-	for(DmgProfile::Employment employment = static_cast<DmgProfile::Employment>(0); employment < DmgProfile::ENDEmployment;
-	        ++employment)
-	{
-		for(Person::RiskLevel riskLevel = static_cast<Person::RiskLevel>(0); riskLevel < Person::ENDRiskLevel; ++riskLevel)
+		for(DmgProfile::Employment employment = static_cast<DmgProfile::Employment>(0); employment < DmgProfile::ENDEmployment;
+			++employment)
 		{
-			for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
+			for(Person::RiskLevel riskLevel = static_cast<Person::RiskLevel>(0); riskLevel < Person::ENDRiskLevel; ++riskLevel)
 			{
-				// We don't include Male CSWs for now
-				if(gender == DmgProfile::MALE && employment == DmgProfile::CSW)
+				for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
 				{
-					continue;
-				}
+					// We don't include Male CSWs for now
+					if(gender == DmgProfile::MALE && employment == DmgProfile::CSW)
+					{
+						continue;
+					}
 
-				PushElement(eligibleByBucketCounter.GetCountByRiskGroup(riskLevel, gender, employment));
+					PushElement(counter.GetCountByRiskGroup(riskLevel, gender, employment, outcome));
+				}
 			}
 		}
-	}
 
-	for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
-	{
-		PushElement(treatedByBucketCounter.GetCountByGender(gender));
-	}
-
-	for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
-	{
-		PushElement(treatedByBucketCounter.GetCountByGenderSexualActivity(gender, DmgProfile::NA));
-
-		for(int ageGroup = 0; ageGroup < ageRanges.size(); ++ageGroup)
+		if(outcome == "test_result")
 		{
-			PushElement(treatedByBucketCounter.GetCountByGenderSexualActivityAge(gender, DmgProfile::SA, ageGroup));
-		}
-	}
-
-	for(Person::CD4Strata cd4Stratum = static_cast<Person::CD4Strata>(0); cd4Stratum < Person::ENDCD4Strata; ++cd4Stratum)
-	{
-		PushElement(treatedByBucketCounter.GetCountByCd4(cd4Stratum));
-	}
-
-	for(DmgProfile::Employment employment = static_cast<DmgProfile::Employment>(0); employment < DmgProfile::ENDEmployment;
-	        ++employment)
-	{
-		for(Person::RiskLevel riskLevel = static_cast<Person::RiskLevel>(0); riskLevel < Person::ENDRiskLevel; ++riskLevel)
-		{
-			for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
+			for(int i = 0; i < SimContext::TEST_RESULT_NUM; ++i)
 			{
-				// We don't include Male CSWs for now
-				if(gender == DmgProfile::MALE && employment == DmgProfile::CSW)
-				{
-					continue;
-				}
-
-				PushElement(treatedByBucketCounter.GetCountByRiskGroup(riskLevel, gender, employment));
+				PushElement(numTestsByResult[i]);
 			}
 		}
 	}
@@ -343,9 +238,7 @@ void ArtRolloutTracker::buildRow(int time, Population *_population)
 
 void ArtRolloutTracker::Reset()
 {
-	testsByBucketCounter.Reset();
-	eligibleByBucketCounter.Reset();
-	treatedByBucketCounter.Reset();
+	counter.Reset();
 
 	for(int resultIndex = 0; resultIndex < SimContext::TEST_RESULT_NUM; ++resultIndex)
 	{

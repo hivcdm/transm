@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 #include <boost/tuple/tuple.hpp>
 
 #include "TabularOutput.h"
@@ -23,8 +24,9 @@ public:
 
 	void recordTest(Person *person, bool accepted, bool returned, SimContext::TEST_RESULT result);
 
-	void recordEligiblePerson(Person *person);
-
+	void recordTreatmentAccessEligiblity(Person *person);
+	void recordTreatmentAccess(Person *person);
+	void recordTreatmentEligiblity(Person *person);
 	void recordTreatment(Person *person);
 
 	void printArtRolloutOutcomes(int time, std::ostream &_outStream, Population *_population);
@@ -32,13 +34,16 @@ public:
 private:
 	static const std::string RISK_GROUP_NAMES[];
 
+	static const std::vector<std::string> getOutcomesToCount()
+	{
+		return {"test_result", "eligible_for_access", "accessing_treatment", "eligible_for_treatment", "treated"};
+	}
+
 	int numTestsOffered;
 	int numTestsAccepted;
 	int numTestsReturnedFor;
 	std::vector<int> numTestsByResult;
-	BucketCounter testsByBucketCounter;
-	BucketCounter eligibleByBucketCounter;
-	BucketCounter treatedByBucketCounter;
+	BucketCounter counter;
 
 	std::vector<std::pair<int, int>> ageRanges;
 

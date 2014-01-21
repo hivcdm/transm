@@ -24,10 +24,11 @@ int BucketCounter::GetCount(DmgProfile::SexualActivityStatus sexualActivityStatu
                             DmgProfile::Employment employment,
                             Person::RiskLevel riskLevel,
                             int ageGroup,
-                            Person::CD4Strata cd4Stratum)
+                            Person::CD4Strata cd4Stratum,
+							const std::string &parameter)
 {
 	std::stringstream query;
-	query << "SELECT SUM(count) FROM Bucket";
+	query << "SELECT SUM(" + parameter + ") FROM Bucket";
 	BuildWhere(sexualActivityStatus, gender, sexualOrientation, relationshipStatus, employment, riskLevel, ageGroup,
 	           cd4Stratum, query);
 	query << ";";
@@ -42,9 +43,9 @@ int BucketCounter::GetCount(DmgProfile::SexualActivityStatus sexualActivityStatu
 	return -1;
 }
 
-void BucketCounter::Increment(Person *person)
+void BucketCounter::Increment(Person *person, const std::string &parameter)
 {
-	int count = GetCount(person);
+	int count = GetCount(person, parameter);
 
 	if(count == 0)
 	{
@@ -52,7 +53,7 @@ void BucketCounter::Increment(Person *person)
 	}
 
 	std::stringstream query;
-	query << "UPDATE Bucket SET count=";
+	query << "UPDATE Bucket SET " + parameter + "=";
 	query << count + 1;
 	BuildWhere(person, query);
 	ExecuteQuery(query.str());
@@ -63,10 +64,10 @@ void BucketCounter::SetAgeRanges(const std::vector<std::pair<int, int>> &ageRang
 	this->ageRanges.assign(ageRanges.begin(), ageRanges.end());
 }
 
-int BucketCounter::GetCount(Person *person)
+int BucketCounter::GetCount(Person *person, const std::string &parameter)
 {
 	std::stringstream query;
-	query << "SELECT SUM(count) FROM Bucket";
+	query << "SELECT SUM(" + parameter + ") FROM Bucket";
 	BuildWhere(person, query);
 	query << ";";
 	int count = 0;
@@ -216,26 +217,32 @@ void BucketCounter::BuildWhere(DmgProfile::SexualActivityStatus sexualActivitySt
 void BucketCounter::CreateTable()
 {
 	std::string query = "CREATE TABLE Bucket (\
-							idBucket INTEGER NOT NULL,\
-							sexualActivityStatus INTEGER NOT NULL,\
-							gender INTEGER NOT NULL,\
-							sexualOrientation INTEGER NOT NULL,\
-							relationshipStatus INTEGER NOT NULL,\
-							employment INTEGER NOT NULL,\
-							riskLevel INTEGER NOT NULL,\
-							ageGroup INTEGER NOT NULL,\
-							cd4Stratum INTEGER NOT NULL,\
-							count INTEGER NOT NULL,\
-							UNIQUE(\
-							    sexualActivityStatus,\
-								gender,\
-								sexualOrientation,\
-								relationshipStatus,\
-								employment,\
-								riskLevel,\
-								ageGroup,\
-								cd4Stratum) ON CONFLICT REPLACE,\
-							PRIMARY KEY(idBucket ASC));";
+								idBucket INTEGER NOT NULL,\
+								sexualActivityStatus INTEGER NOT NULL,\
+								gender INTEGER NOT NULL,\
+								sexualOrientation INTEGER NOT NULL,\
+								relationshipStatus INTEGER NOT NULL,\
+								employment INTEGER NOT NULL,\
+								riskLevel INTEGER NOT NULL,\
+								ageGroup INTEGER NOT NULL,\
+								cd4Stratum INTEGER NOT NULL,";
+
+	for(auto parameter : outcomes)
+	{
+		query += parameter + " INTEGER NOT NULL,";
+	}
+
+	query += "UNIQUE(\
+				sexualActivityStatus,\
+				gender,\
+				sexualOrientation,\
+				relationshipStatus,\
+				employment,\
+				riskLevel,\
+				ageGroup,\
+				cd4Stratum) ON CONFLICT REPLACE,\
+			PRIMARY KEY(idBucket ASC));";
+
 	ExecuteQuery(query);
 }
 
@@ -281,7 +288,20 @@ bool BucketCounter::InsertBucket(Person *person)
 	Person::CD4Strata cd4Stratum = person->getCd4Stratum();
 	std::stringstream query;
 	query << "INSERT INTO Bucket";
-	query << " (idBucket, sexualActivityStatus, gender, sexualOrientation, relationshipStatus, employment, riskLevel, ageGroup, cd4Stratum, count)";
+	query << " (idBucket, sexualActivityStatus, gender, sexualOrientation, relationshipStatus, employment, riskLevel, ageGroup, cd4Stratum, ";
+	for(auto parameter : outcomes)
+	{
+		query << parameter;
+
+		if(parameter != outcomes.back())
+		{
+			query << ", ";
+		}
+		else
+		{
+			query << ")";
+		}
+	}
 	query << " VALUES (NULL, ";
 	query << sexualActivityStatus << ",";
 	query << gender << ",";
@@ -291,7 +311,16 @@ bool BucketCounter::InsertBucket(Person *person)
 	query << riskLevel << ",";
 	query << ageGroup << ",";
 	query << cd4Stratum << ",";
-	query << 0 << ");";
+	for(auto parameter : outcomes)
+	{
+		query << 0;
+
+		if(parameter != outcomes.back())
+		{
+			query << ",";
+		}
+	}
+	query << ");";
 	return ExecuteQuery(query.str());
 }
 
@@ -308,7 +337,7 @@ bool BucketCounter::BucketExists(Person *person)
 
 void BucketCounter::Reset()
 {
-	std::string query = "DELETE FROM Bucket";
+	std::string query = "DELETE FROM Bucket;";
 	ExecuteQuery(query);
 }
 
