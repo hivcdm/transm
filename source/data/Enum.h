@@ -212,7 +212,7 @@ E EnumCls<E>::toEnum(std::string _enumStr)
 		}
 	}
 
-	cerr << "Error: EnumCls " << _enumStr << " does not exist" << endl;
+	std::cerr << "Error: EnumCls " << _enumStr << " does not exist" << std::endl;
 	return E(this->numEnums);
 }
 

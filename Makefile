@@ -76,9 +76,9 @@ CONSOLE_OBJS = $(OBJS) source/main.o
 
 #compiler and related flags
 CC = gcc
-CFLAGS = -I. -O3 -Wall -D__LINUX__
+CFLAGS = -I. -O3 -D__LINUX__
 CXX = g++
-CXXFLAGS = -I. -O3 -Wall -std=c++0x -D__LINUX__
+CXXFLAGS = -I. -O3 -std=c++11 -D__LINUX__ -I/PHShome/nna6/build/boost_1_55_0/
 LDFLAGS = -lm -ldl -lpthread
 
 #rules for compiling C and CPP files
