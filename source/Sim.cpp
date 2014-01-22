@@ -760,6 +760,9 @@ bool Sim::loadNextInput()
 		// maybe someday we can have multiple interacting populations
 		//  in that case, we'll have to change the PopulationParams to not put the values in the static Male, Female, and SteadyCouple fields
 		this->currPopulation->updatePopulation(this->eventParams, simParams->FirstChildElement("population"));
+
+		ticpp::Element *rolloutInterventionNode = simParams->FirstChildElement("population")->FirstChildElement("interventions")->FirstChildElement("artRolloutIntervention");
+		updateEligibility(rolloutInterventionNode);
 	}
 	catch(ticpp::Exception &_e)
 	{
@@ -773,6 +776,74 @@ bool Sim::loadNextInput()
 	return true;
 }
 
+void Sim::updateEligibility(ticpp::Element *rolloutInterventionNode)
+{
+	ticpp::Element *eligNodes = rolloutInterventionNode->FirstChildElement("rolloutEligibility");
+	ticpp::Iterator<ticpp::Element> criteriaNode("criteria");
+
+	for(criteriaNode = criteriaNode.begin(eligNodes); criteriaNode != criteriaNode.end(); criteriaNode++)
+	{
+		std::string criteriaName = (*criteriaNode).FirstChildElement("name")->GetText();
+
+		if(criteriaName == "OIHist")
+		{
+			this->eventParams.rolloutEligibility.oiHistRank = (*criteriaNode).FirstChildElement("rank")->GetText<int>();
+
+			for(int i = 0; i < Constants::NUMBER_OF_OIS; i++)
+			{
+				std::string index_string = boost::lexical_cast<std::string, int>(i);
+				bool enabled = (*criteriaNode).FirstChildElement("OI" + index_string)->GetText<int>() != 0;
+				this->eventParams.rolloutEligibility.oiHistOIs[i] = enabled;
+			}
+
+			this->eventParams.rolloutEligibility.oiHistNumToStart =
+				(*criteriaNode).FirstChildElement("numOIToStart")->GetText<int>();
+		}
+		else if(criteriaName == "CD4")
+		{
+			this->eventParams.rolloutEligibility.cd4Rank = (*criteriaNode).FirstChildElement("rank")->GetText<int>();
+			this->eventParams.rolloutEligibility.cd4Bounds[Constants::LOWER] =
+				(*criteriaNode).FirstChildElement("CD4Lwr")->GetText<int>();
+			this->eventParams.rolloutEligibility.cd4Bounds[Constants::UPPER] =
+				(*criteriaNode).FirstChildElement("CD4Upp")->GetText<int>();
+		}
+		else if(criteriaName == "CD4OIHist")
+		{
+			this->eventParams.rolloutEligibility.cd4OiHistRank = (*criteriaNode).FirstChildElement("rank")->GetText<int>();
+			this->eventParams.rolloutEligibility.cd4OiHistCd4Bounds[Constants::LOWER] =
+				(*criteriaNode).FirstChildElement("CD4Lwr")->GetText<int>();
+			this->eventParams.rolloutEligibility.cd4OiHistCd4Bounds[Constants::UPPER] =
+				(*criteriaNode).FirstChildElement("CD4Upp")->GetText<int>();
+
+			for(int i = 0; i < Constants::NUMBER_OF_OIS; i++)
+			{
+				std::string index_string = boost::lexical_cast<std::string, int>(i);
+				bool enabled = (*criteriaNode).FirstChildElement("OI" + index_string)->GetText<int>() != 0;
+				this->eventParams.rolloutEligibility.cd4OiHistOIs[i] = enabled;
+			}
+		}
+		else if(criteriaName == "HVL")
+		{
+			this->eventParams.rolloutEligibility.hvlRank = (*criteriaNode).FirstChildElement("rank")->GetText<int>();
+			this->eventParams.rolloutEligibility.hvlBounds[Constants::LOWER] =
+				(*criteriaNode).FirstChildElement("HVLLwr")->GetText<int>();
+			this->eventParams.rolloutEligibility.hvlBounds[Constants::UPPER] =
+				(*criteriaNode).FirstChildElement("HVLUpp")->GetText<int>();
+		}
+		else if(criteriaName == "CD4HVL")
+		{
+			this->eventParams.rolloutEligibility.cd4HvlRank = (*criteriaNode).FirstChildElement("rank")->GetText<int>();
+			this->eventParams.rolloutEligibility.cd4HvlCd4Bounds[Constants::LOWER] =
+				(*criteriaNode).FirstChildElement("CD4Lwr")->GetText<int>();
+			this->eventParams.rolloutEligibility.cd4HvlCd4Bounds[Constants::UPPER] =
+				(*criteriaNode).FirstChildElement("CD4Upp")->GetText<int>();
+			this->eventParams.rolloutEligibility.cd4HvlHvlBounds[Constants::LOWER] =
+				(*criteriaNode).FirstChildElement("HVLLwr")->GetText<int>();
+			this->eventParams.rolloutEligibility.cd4HvlHvlBounds[Constants::UPPER] =
+				(*criteriaNode).FirstChildElement("HVLUpp")->GetText<int>();
+		}
+	}
+}
 
 /*
 * This function records all of the SimContext files to be used by the CEPAC disease model throughout the run of the transmission model

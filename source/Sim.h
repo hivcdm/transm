@@ -44,6 +44,9 @@ private:
 	/** perform one timestep of simulation */
 	int timeStep();
 
+	/** Load new eligibility when rollout sim context changes */
+	void updateEligibility(ticpp::Element *rolloutInterventionNode);
+
 	/** loads the next set of input files if seq: returns false if no next input */
 	bool loadNextInput();
 
