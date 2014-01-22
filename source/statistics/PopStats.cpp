@@ -956,11 +956,13 @@ void PopStats::recordTreatmentAccessEligiblity(Person *person)
 void PopStats::recordTreatmentAccess(Person *person)
 {
 	uniqueYearlyAccessingTreatment.insert(person);
+	artTracker.recordTreatmentAccess(person);
 }
 
 void PopStats::recordTreatmentEligiblity(Person *person)
 {
 	uniqueYearlyEligibleForTreatment.insert(person);
+	artTracker.recordTreatmentEligiblity(person);
 }
 
 void PopStats::recordTreatment(Person *person)

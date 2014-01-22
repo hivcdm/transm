@@ -42,7 +42,7 @@ void Person::ageOneTimeUnit()
 	age++;
 }
 
-Person::CD4Strata Person::getCd4Stratum()
+Person::CD4Strata Person::getCd4Stratum() const
 {
 	switch(cepacPatient->getDiseaseState()->currTrueCD4Strata)
 	{
@@ -72,7 +72,7 @@ Person::CD4Strata Person::getCd4Stratum()
 bool Person::isEligibleForTreatment()
 {
 	SimContext *simContext = cepacPatient->getSimContext();
-	int regimenNum = cepacPatient->getARTState()->currRegimenNum;
+	int regimenNum = 0; //cepacPatient->getARTState()->currRegimenNum;
 	const SimContext::TreatmentInputs::ARTStartPolicy &startART = simContext->getTreatmentInputs()->startART[regimenNum];
 
 	// Evaluate the CD4 only criteria

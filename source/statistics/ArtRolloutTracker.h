@@ -33,11 +33,7 @@ public:
 
 private:
 	static const std::string RISK_GROUP_NAMES[];
-
-	static const std::vector<std::string> getOutcomesToCount()
-	{
-		return {"test_result", "eligible_for_access", "accessing_treatment", "eligible_for_treatment", "treated"};
-	}
+	static const std::string TRACKED_OUTCOMES[];
 
 	int numTestsOffered;
 	int numTestsAccepted;

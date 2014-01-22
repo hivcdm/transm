@@ -1,104 +1,120 @@
+#pragma once
+
+#include <algorithm>
+#include <cassert>
+#include <cstdarg>
+#include <functional>
+#include <initializer_list>
 #include <string>
 #include <unordered_map>
-#include <utility>
+#include <vector>
 
-#include "../entities/Person.h"
-#include "../util/sqlite/sqlite3.h"
-
-static int sqliteCallback(void *result, int argc, char **argv, char **azColName);
+#include "Bucket.h"
 
 class BucketCounter
 {
+	typedef std::unordered_map<Bucket, std::vector<int>, bucket_hash<Bucket>, bucket_equal_to<Bucket>> BucketContainer;
+
+	struct query_equal
+	{
+		query_equal(const std::vector<int> &indices) : indices(indices) {}
+
+		bool operator()(const BucketContainer::value_type &b)
+		{
+			for(int i = 0; i < indices.size(); i++)
+			{
+				if(indices[i] != -1 && b.first.GetValue(i) != indices[i])
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		std::vector<int> indices;
+	};
+
 public:
-	BucketCounter(const std::vector<std::string> &outcomes) : outcomes(outcomes), db(NULL), connected(false), ageRanges(0), previousResult(0)
+	BucketCounter() {}
+
+	BucketCounter(const std::vector<std::string> &buckets, const std::vector<std::string> &counts);
+
+	void operator=(const BucketCounter &rhs)
 	{
-		OpenConnection();
-		CreateTable();
+		countNames_.assign(rhs.countNames_.begin(), rhs.countNames_.end());
+		bucketNames_.assign(rhs.bucketNames_.begin(), rhs.bucketNames_.end());
+
+		counts_.clear();
+		for(auto pair : rhs.counts_)
+		{
+			counts_[pair.first] = pair.second;
+		}
 	}
-
-	~BucketCounter()
-	{
-		CloseConnection();
-	}
-
-	int GetCount(DmgProfile::SexualActivityStatus sexualActivityStatus, DmgProfile::Gender gender,
-	             DmgProfile::SexualOrientation sexualOrientation,
-	             DmgProfile::RelationshipStatus relationshipStatus, DmgProfile::Employment employment, Person::RiskLevel riskLevel,
-	             int ageGroup, Person::CD4Strata cd4Stratum, const std::string &parameter);
-
-	int GetCount(const std::string &parameter)
-	{
-		return GetCount(DmgProfile::ENDSexualActivityStatus, DmgProfile::ENDGender, DmgProfile::ENDSexualOrientation,
-		                DmgProfile::ENDRelationshipStatus, DmgProfile::ENDEmployment, Person::ENDRiskLevel, -1, Person::ENDCD4Strata, parameter);
-	}
-
-	int GetCountByGender(DmgProfile::Gender gender, const std::string &parameter)
-	{
-		return GetCount(DmgProfile::ENDSexualActivityStatus, gender, DmgProfile::ENDSexualOrientation,
-			DmgProfile::ENDRelationshipStatus, DmgProfile::ENDEmployment, Person::ENDRiskLevel, -1, Person::ENDCD4Strata, parameter);
-	}
-
-	int GetCountByGenderSexualActivity(DmgProfile::Gender gender, DmgProfile::SexualActivityStatus sexualActivityStatus, const std::string &parameter)
-	{
-		return GetCount(sexualActivityStatus, gender, DmgProfile::ENDSexualOrientation,
-			DmgProfile::ENDRelationshipStatus, DmgProfile::ENDEmployment, Person::ENDRiskLevel, -1, Person::ENDCD4Strata, parameter);
-	}
-
-	int GetCountByGenderSexualActivityAge(DmgProfile::Gender gender, DmgProfile::SexualActivityStatus sexualActivityStatus,
-		int ageGroup, const std::string &parameter)
-	{
-		return GetCount(sexualActivityStatus, gender, DmgProfile::ENDSexualOrientation,
-		                DmgProfile::ENDRelationshipStatus, DmgProfile::ENDEmployment, Person::ENDRiskLevel, ageGroup, Person::ENDCD4Strata, parameter);
-	}
-
-	int GetCountByCd4(Person::CD4Strata cd4Stratum, const std::string &parameter)
-	{
-		return GetCount(DmgProfile::ENDSexualActivityStatus, DmgProfile::ENDGender, DmgProfile::ENDSexualOrientation,
-			DmgProfile::ENDRelationshipStatus, DmgProfile::ENDEmployment, Person::ENDRiskLevel, -1, cd4Stratum, parameter);
-	}
-
-	int GetCountByRiskGroup(Person::RiskLevel riskLevel, DmgProfile::Gender gender, DmgProfile::Employment employment, const std::string &parameter)
-	{
-		return GetCount(DmgProfile::ENDSexualActivityStatus, gender, DmgProfile::ENDSexualOrientation,
-			DmgProfile::ENDRelationshipStatus, employment, riskLevel, -1, Person::ENDCD4Strata, parameter);
-	}
-
-	void Increment(Person *person, const std::string &parameter);
-
-	void Callback(int argc, char **argv, char **columnName);
-
-	void SetAgeRanges(const std::vector<std::pair<int, int>> &ageRanges);
 
 	void Reset();
 
+	void Increment(const Bucket &bucket, const std::string &count);
+
+	template<typename ... Ts>
+	int GetCount(const std::string &count, const Ts &... query)
+	{
+		auto predicate = query_equal(BuildQueryIndices(query...));
+		auto bucketIterator = std::find_if(counts_.begin(), counts_.end(), predicate);
+		int sum = 0;
+		int countIndex = std::distance(countNames_.begin(), std::find(countNames_.begin(), countNames_.end(), count));
+
+		while(bucketIterator != counts_.end())
+		{
+			sum += bucketIterator->second[countIndex];
+			bucketIterator = std::find_if(++bucketIterator, counts_.end(), predicate);
+		}
+
+		return sum;
+	}
+
+	template<typename ... Ts>
+	std::vector<int> GetCounts(const Ts &... query)
+	{
+		auto predicate = query_equal(BuildQueryIndices(query...));
+		auto bucketIterator = std::find_if(counts_.begin(), counts_.end(), predicate);
+		std::vector<int> sums(countNames_.size(), 0);
+
+		while(bucketIterator != counts_.end())
+		{
+			std::transform(sums.begin(), sums.end(), bucketIterator->second.begin(), sums.begin(), std::plus<int>());
+			bucketIterator = std::find_if(++bucketIterator, counts_.end(), predicate);
+		}
+
+		return sums;
+	}
+
 private:
-	int GetCount(Person *person, const std::string &parameter);
+	template<typename ... Ts>
+	std::vector<int> BuildQueryIndices(const Ts &... query)
+	{
+		const int size = sizeof...(query);
+		std::pair<std::string, int> r[size] = {query...};
 
-	void BuildWhere(Person *person, std::stringstream &query);
+		std::vector<int> indices;
 
-	void BuildWhere(DmgProfile::SexualActivityStatus sexualActivityStatus, DmgProfile::Gender gender,
-	                DmgProfile::SexualOrientation sexualOrientation,
-	                DmgProfile::RelationshipStatus relationshipStatus, DmgProfile::Employment employment, Person::RiskLevel riskLevel,
-	                int ageGroup,
-	                Person::CD4Strata cd4Stratum, std::stringstream &query);
+		for(auto key : bucketNames_)
+		{
+			indices.push_back(-1);
+			for(auto pair : r)
+			{
+				if(pair.first == key)
+				{
+					indices.back() = pair.second;
+					break;
+				}
+			}
+		}
 
-	void CreateTable();
+		return indices;
+	}
 
-	void OpenConnection();
-
-	void CloseConnection();
-
-	bool InsertBucket(Person *person);
-
-	bool BucketExists(Person *person);
-
-	bool ExecuteQuery(const std::string &query);
-
-	bool ExecuteQuery(const std::string &query, int &result);
-
-	sqlite3 *db;
-	bool connected;
-	std::vector<std::pair<int, int>> ageRanges;
-	const std::vector<std::string> outcomes;
-	int previousResult;
+	std::vector<std::string> countNames_;
+	BucketContainer counts_;
+	std::vector<std::string> bucketNames_;
 };

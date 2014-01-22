@@ -233,7 +233,7 @@ public:
 	bool oiHistory[Constants::NUMBER_OF_OIS]; //OI HIstory
 	DeathStatus deathStatus;
 
-	CD4Strata getCd4Stratum();
+	CD4Strata getCd4Stratum() const;
 
 	bool isEligibleForTreatment();
 

@@ -1,4 +1,5 @@
 #include "ArtRolloutTracker.h"
+#include "PersonBucket.h"
 #include "../Population.h"
 #include "../entities/Person.h"
 #include "../cepac/SimContext.h"
@@ -13,13 +14,40 @@ const std::string ArtRolloutTracker::RISK_GROUP_NAMES[] =
 	"CSW High-Risk Female"
 };
 
+const std::string ArtRolloutTracker::TRACKED_OUTCOMES[] =
+{
+"test_result", "eligible_for_access", "accessing_treatment", "eligible_for_treatment", "treated"
+};
+
+const std::string BUCKETS[] =
+{
+	"sexualActivityStatus",
+	"gender",
+	"sexualOrientation",
+	"relationshipStatus",
+	"employment",
+	"riskLevel",
+	"ageGroup",
+	"cd4Stratum"
+};
+
 ArtRolloutTracker::ArtRolloutTracker() :
 	numTestsOffered(0),
 	numTestsAccepted(0),
 	numTestsReturnedFor(0),
-	numTestsByResult(SimContext::TEST_RESULT_NUM),
-	counter({"test_result", "eligible_for_access", "accessing_treatment", "eligible_for_treatment", "treated"})
+	numTestsByResult(SimContext::TEST_RESULT_NUM)
 {
+	std::vector<std::string> tracked;
+	for(auto outcome : TRACKED_OUTCOMES)
+	{
+		tracked.push_back(outcome);
+	}
+	std::vector<std::string> buckets;
+	for(auto bucket : BUCKETS)
+	{
+		buckets.push_back(bucket);
+	}
+	counter = BucketCounter(buckets, tracked);
 	Reset();
 }
 
@@ -38,8 +66,6 @@ void ArtRolloutTracker::SetAgeRanges(const std::vector<boost::tuple<long, int, i
 		int maxAge = boost::tuples::get<Population::MAX_AGE_IN_MONTHS>(ageRangeSizes.at(i));
 		ageRanges.push_back(std::make_pair(minAge, maxAge));
 	}
-
-	counter.SetAgeRanges(ageRanges);
 }
 
 void ArtRolloutTracker::recordTest(Person *person, bool accepted, bool returned, SimContext::TEST_RESULT result)
@@ -53,7 +79,7 @@ void ArtRolloutTracker::recordTest(Person *person, bool accepted, bool returned,
 		if(returned)
 		{
 			numTestsReturnedFor++;
-			counter.Increment(person, "test_result");
+			counter.Increment(PersonBucket(*person, ageRanges), "test_result");
 			numTestsByResult[result]++;
 		}
 	}
@@ -61,22 +87,22 @@ void ArtRolloutTracker::recordTest(Person *person, bool accepted, bool returned,
 
 void ArtRolloutTracker::recordTreatmentAccessEligiblity(Person *person)
 {
-	counter.Increment(person, "eligible_for_access");
+	counter.Increment(PersonBucket(*person, ageRanges), "eligible_for_access");
 }
 
 void ArtRolloutTracker::recordTreatmentAccess(Person *person)
 {
-	counter.Increment(person, "accessing_treatment");
+	counter.Increment(PersonBucket(*person, ageRanges), "accessing_treatment");
 }
 
 void ArtRolloutTracker::recordTreatmentEligiblity(Person *person)
 {
-	counter.Increment(person, "eligible_for_treatment");
+	counter.Increment(PersonBucket(*person, ageRanges), "eligible_for_treatment");
 }
 
 void ArtRolloutTracker::recordTreatment(Person *person)
 {
-	counter.Increment(person, "treated");
+	counter.Increment(PersonBucket(*person, ageRanges), "treated");
 }
 
 void ArtRolloutTracker::printArtRolloutOutcomes(int time, std::ostream &_outStream, Population *_population)
@@ -101,10 +127,11 @@ void ArtRolloutTracker::buildHeader()
 	SetHeaderCell(3, 2, "Totals");
 	SetHeaderCell(3, 3, "Offered");
 	SetHeaderCell(4, 3, "Accepted");
+	SetHeaderCell(5, 3, "Returned For Results");
 
-	int column = 5;
+	int column = 6;
 
-	for(auto outcome : getOutcomesToCount())
+	for(auto outcome : TRACKED_OUTCOMES)
 	{
 		std::string section_header = "";
 		if(outcome == "eligible_for_access")
@@ -124,7 +151,7 @@ void ArtRolloutTracker::buildHeader()
 			section_header = "Number Treated";
 		}
 
-		SetHeaderCell(column++, 1, section_header);
+		SetHeaderCell(column, 1, section_header);
 		SetHeaderCell(column, 2, "Gender");
 		SetHeaderCell(column++, 3, "Males");
 		SetHeaderCell(column++, 3, "Females");
@@ -186,30 +213,29 @@ void ArtRolloutTracker::buildRow(int time, Population *_population)
 	PushElement(numTestsAccepted);
 	PushElement(numTestsReturnedFor);
 
-	for(auto outcome : getOutcomesToCount())
+	for(auto outcome : TRACKED_OUTCOMES)
 	{
 		for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
 		{
-			PushElement(counter.GetCountByGender(gender, outcome));
+			PushElement(counter.GetCount(outcome, std::make_pair("gender", gender)));
 		}
 
 		for(DmgProfile::Gender gender = static_cast<DmgProfile::Gender>(0); gender < DmgProfile::ENDGender; ++gender)
 		{
-			PushElement(counter.GetCountByGenderSexualActivity(gender, DmgProfile::NA, outcome));
+			PushElement(counter.GetCount(outcome, std::make_pair("gender", gender), std::make_pair("sexualActivityStatus", DmgProfile::NA)));
 
 			for(int ageGroup = 0; ageGroup < ageRanges.size(); ++ageGroup)
 			{
-				PushElement(counter.GetCountByGenderSexualActivityAge(gender, DmgProfile::SA, ageGroup, outcome));
+				PushElement(counter.GetCount(outcome, std::make_pair("gender", gender), std::make_pair("sexualActivityStatus", DmgProfile::SA), std::make_pair("ageGroup", ageGroup)));
 			}
 		}
 
 		for(Person::CD4Strata cd4Stratum = static_cast<Person::CD4Strata>(0); cd4Stratum < Person::ENDCD4Strata; ++cd4Stratum)
 		{
-			PushElement(counter.GetCountByCd4(cd4Stratum, outcome));
+			PushElement(counter.GetCount(outcome, std::make_pair("cd4Stratum", cd4Stratum)));
 		}
 
-		for(DmgProfile::Employment employment = static_cast<DmgProfile::Employment>(0); employment < DmgProfile::ENDEmployment;
-			++employment)
+		for(DmgProfile::Employment employment = static_cast<DmgProfile::Employment>(0); employment < DmgProfile::ENDEmployment; ++employment)
 		{
 			for(Person::RiskLevel riskLevel = static_cast<Person::RiskLevel>(0); riskLevel < Person::ENDRiskLevel; ++riskLevel)
 			{
@@ -221,7 +247,7 @@ void ArtRolloutTracker::buildRow(int time, Population *_population)
 						continue;
 					}
 
-					PushElement(counter.GetCountByRiskGroup(riskLevel, gender, employment, outcome));
+					PushElement(counter.GetCount(outcome, std::make_pair("gender", gender), std::make_pair("employment", employment), std::make_pair("riskLevel", riskLevel)));
 				}
 			}
 		}
