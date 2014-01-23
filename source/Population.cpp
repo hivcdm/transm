@@ -500,7 +500,7 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 					popStats->recordTreatmentEligiblity(p); // if they're on treatment, they should be counted as eligible even if the treatment has worked
 					popStats->recordTreatment(p);
 				}
-				else if(p->isEligibleForTreatment())
+				else if(p->isEligibleForTreatment(_eventParams.treatedContext->getTreatmentInputs()->startART[0]))
 				{
 					popStats->recordTreatmentEligiblity(p);
 				}

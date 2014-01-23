@@ -69,35 +69,29 @@ Person::CD4Strata Person::getCd4Stratum() const
 	}
 }
 
-bool Person::isEligibleForTreatment()
+bool Person::isEligibleForTreatment(const SimContext::TreatmentInputs::ARTStartPolicy &artStartPolicy)
 {
-	SimContext *simContext = cepacPatient->getSimContext();
-	int regimenNum = 0; //cepacPatient->getARTState()->currRegimenNum;
-	const SimContext::TreatmentInputs::ARTStartPolicy &startART = simContext->getTreatmentInputs()->startART[regimenNum];
-
 	// Evaluate the CD4 only criteria
-	double observedCD4 = cepacPatient->getMonitoringState()->currObservedCD4;
-	if(cepacPatient->getMonitoringState()->hasObservedCD4 &&
-		(observedCD4 >= startART.CD4BoundsOnly[SimContext::LOWER_BOUND]) &&
-		(observedCD4 <= startART.CD4BoundsOnly[SimContext::UPPER_BOUND])) {
+	double trueCD4 = cepacPatient->getDiseaseState()->currTrueCD4;
+	if((trueCD4 >= artStartPolicy.CD4BoundsOnly[SimContext::LOWER_BOUND]) &&
+		(trueCD4 <= artStartPolicy.CD4BoundsOnly[SimContext::UPPER_BOUND]))
+	{
 		return true;
 	}
 
 	// Evaluate the HVL strata only criteria
-	SimContext::HVL_STRATA observedHVL = cepacPatient->getMonitoringState()->currObservedHVLStrata;
-	if(cepacPatient->getMonitoringState()->hasObservedHVLStrata &&
-		(observedHVL >= startART.HVLBoundsOnly[SimContext::LOWER_BOUND]) &&
-		(observedHVL <= startART.HVLBoundsOnly[SimContext::UPPER_BOUND])) {
+	SimContext::HVL_STRATA trueHVL = cepacPatient->getDiseaseState()->currTrueHVLStrata;
+	if((trueHVL >= artStartPolicy.HVLBoundsOnly[SimContext::LOWER_BOUND]) &&
+		(trueHVL <= artStartPolicy.HVLBoundsOnly[SimContext::UPPER_BOUND]))
+	{
 		return true;
 	}
 
 	// Evaluate the CD4 and HVL combined criteria
-	if(cepacPatient->getMonitoringState()->hasObservedCD4 &&
-		(observedCD4 >= startART.CD4BoundsWithHVL[SimContext::LOWER_BOUND]) &&
-		(observedCD4 <= startART.CD4BoundsWithHVL[SimContext::UPPER_BOUND]) &&
-		cepacPatient->getMonitoringState()->hasObservedHVLStrata &&
-		(observedHVL >= startART.HVLBoundsWithCD4[SimContext::LOWER_BOUND]) &&
-		(observedHVL <= startART.HVLBoundsWithCD4[SimContext::UPPER_BOUND])) {
+	if((trueCD4 >= artStartPolicy.CD4BoundsWithHVL[SimContext::LOWER_BOUND]) &&
+		(trueCD4 <= artStartPolicy.CD4BoundsWithHVL[SimContext::UPPER_BOUND]) &&
+		(trueHVL >= artStartPolicy.HVLBoundsWithCD4[SimContext::LOWER_BOUND]) &&
+		(trueHVL <= artStartPolicy.HVLBoundsWithCD4[SimContext::UPPER_BOUND])) {
 		return true;
 	}
 
@@ -105,25 +99,25 @@ bool Person::isEligibleForTreatment()
 	int numOIs = 0;
 	for(int i = 0; i < SimContext::OI_NUM; i++)
 	{
-		if(startART.OIHistory[i])
+		if(artStartPolicy.OIHistory[i])
 		{
-			numOIs += cepacPatient->getARTState()->numObservedOIsSinceFailOrStopART[i];
+			numOIs += oiHistory[i];
 		}
 	}
 
-	if(numOIs >= startART.numOIs)
+	if(numOIs >= artStartPolicy.numOIs)
 	{
 		return true;
 	}
 
 	// Evaluate the acute OIs in cepacPatient's history and CD4 count criteria
-	if((observedCD4 != SimContext::NOT_APPL) &&
-		(observedCD4 >= startART.CD4BoundsWithOIs[SimContext::LOWER_BOUND]) &&
-		(observedCD4 <= startART.CD4BoundsWithOIs[SimContext::UPPER_BOUND]))
+	if((trueCD4 != SimContext::NOT_APPL) &&
+		(trueCD4 >= artStartPolicy.CD4BoundsWithOIs[SimContext::LOWER_BOUND]) &&
+		(trueCD4 <= artStartPolicy.CD4BoundsWithOIs[SimContext::UPPER_BOUND]))
 	{
 		for(int i = 0; i < SimContext::OI_NUM; i++)
 		{
-			if(startART.OIHistoryWithCD4[i] && (cepacPatient->getMonitoringState()->numObservedOIsTotal[i] > 0))
+			if(artStartPolicy.OIHistoryWithCD4[i] && oiHistory[i])
 			{
 				return true;
 			}
