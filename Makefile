@@ -6,7 +6,7 @@ VERSION = 333a
 EXE = transm$(VERSION)
 
 #header files
-HEADERS = source/util/ticpp/*.h source/util/rand/*.h source/util/*.h source/statistics/*.h source/graphviz/*.h source/entities/entitypool/bucket/*.h source/entities/entitypool/*.h source/entities/classifiers/*.h source/entities/behaviors/*.h source/entities/*.h source/data/*.h source/cepacbridge/*.h source/*.h source/cepac/*.h source/util/sqlite/*.h
+HEADERS = source/util/ticpp/*.h source/util/rand/*.h source/util/*.h source/statistics/*.h source/graphviz/*.h source/entities/entitypool/bucket/*.h source/entities/entitypool/*.h source/entities/classifiers/*.h source/entities/behaviors/*.h source/entities/*.h source/data/*.h source/cepacbridge/*.h source/*.h source/cepac/*.h
 
 # src and .o directories. Add to here when a new file has been added
 OBJS = source/util/ticpp/ticpp.o \
@@ -63,8 +63,7 @@ OBJS = source/util/ticpp/ticpp.o \
 	source/cepac/Tracer.o \
 	source/statistics/ArtRolloutTracker.o \
 	source/statistics/TabularOutput.o \
-	source/statistics/BucketCounter.o \
-	source/util/sqlite/sqlite3.o
+	source/statistics/BucketCounter.o
 
 GUI_OBJS = $(OBJS) source/gui/widgets/statusWidget.o \
 	source/gui/widgets/verticalStatusWidget.o \
@@ -111,7 +110,7 @@ gui : $(GUI_OBJS)
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $(EXE)
 
 clean : 
-	rm -f source/*.o source/cepacbridge/*.o source/data/*.o source/entities/*.o source/entities/behaviors/*.o source/entities/classifiers/*.o source/entities/entitypool/*.o source/entities/entitypool/bucket/*.o source/graphviz/*.o source/statistics/*.o source/util/*.o source/util/rand/*.o source/util/ticpp/*.o source/gui/*.o source/gui/widgets/*.o source/gui/dialogs/*.o source/cepac/*.o source/util/sqlite/*.o
+	rm -f source/*.o source/cepacbridge/*.o source/data/*.o source/entities/*.o source/entities/behaviors/*.o source/entities/classifiers/*.o source/entities/entitypool/*.o source/entities/entitypool/bucket/*.o source/graphviz/*.o source/statistics/*.o source/util/*.o source/util/rand/*.o source/util/ticpp/*.o source/gui/*.o source/gui/widgets/*.o source/gui/dialogs/*.o source/cepac/*.o
 	rm -f $(EXE)
 
 
