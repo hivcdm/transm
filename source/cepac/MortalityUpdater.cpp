@@ -1,28 +1,28 @@
 #include "include.h"
 
-/* Constructor takes in the patient object and determines if updatesCanOccur */
+/** \brief Constructor takes in the patient object and determines if updatesCanOccur */
 MortalityUpdater::MortalityUpdater(Patient *patient) : StateUpdater(patient) {
 
 }
 
-/* Destructor is empty, no cleanup required */
+/** \brief Destructor is empty, no cleanup required */
 MortalityUpdater::~MortalityUpdater(void) {
 
 }
 
-/* performInitialUpdates perform all of the state and statistics updates upon patient creation */
+/** \brief performInitialUpdates perform all of the state and statistics updates upon patient creation */
 void MortalityUpdater::performInitialUpdates() {
-	// Call the parent function to perform general updates and initialization
+	/** Calls the parent function to perform general updates and initialization */
 	StateUpdater::performInitialUpdates();
 } /* end performInitialUpdates */
 
-/* performMonthlyUpdates perform all of the state and statistics updates for a simulated month */
+/** \brief performMonthlyUpdates perform all of the state and statistics updates for a simulated month */
 void MortalityUpdater::performMonthlyUpdates() {
 	const SimContext::NatHistInputs *natHist = simContext->getNatHistInputs();
 
-	// If using pediatrics and simplified mortality, calculate death with single life tables
+	/** If using pediatrics and simplified mortality, calculate death with single life tables */
 	if (simContext->getPedsInputs()->enablePediatricsModel && simContext->getPedsInputs()->enableSimplifiedBehavior) {
-		// Load the proper probability of death
+		/** - Load the proper probability of death */
 		SimContext::PEDS_AGE_CAT ageCat = patient->getGeneralState()->ageCategoryPediatrics;
 		SimContext::GENDER_TYPE gender = patient->getGeneralState()->gender;
 		SimContext::PEDS_HIV_STATE hivState = patient->getDiseaseState()->infectedPediatricsHIVState;
@@ -43,28 +43,28 @@ void MortalityUpdater::performMonthlyUpdates() {
 				probDeath = simContext->getPedsInputs()->probDeathHIVPositive[hivState][SimContext::ART_OFF_STATE][gender][ageCat];
 		}
 
-		// Modify by maternal mortality rate multiplier
+		/** - Modify by maternal mortality rate multiplier */
 		if (!patient->getGeneralState()->isMotherAlive) {
 			double rateMult = simContext->getPedsInputs()->probDeathMaternalRateMultiplier;
 			probDeath = CepacUtil::probRateMultiply(probDeath, rateMult);
 		}
-		// Modify by replacement fed mortality rate multiplier
-		if (patient->getGeneralState()->breastfeedingStatus == SimContext::PEDS_BF_REPL) {
+		/** - Modify by replacement fed mortality rate multiplier */
+		if (patient->getGeneralState()->breastfeedingStatus == SimContext::PEDS_BF_REPL && patient->getGeneralState()->monthNum<patient->getGeneralState()->monthOfReplacementFeedingStart+simContext->getPedsInputs()->ReplacementFedMultiplierDuration) {
 			double rateMult = simContext->getPedsInputs()->probDeathReplacementFedMultiplier;
 			probDeath = CepacUtil::probRateMultiply(probDeath, rateMult);
 		}
 
-		// Roll for death and update state if death occurs
+		/** - Roll for death and update state if death occurs */
 		double randNum = CepacUtil::getRandomDouble(120005, patient);
 		if (randNum < probDeath) {
 			setCauseOfDeath(SimContext::DTH_NONAIDS);
 		}
 
-		// Return before regular CEPAC mortality calculation
+		/** - Return before regular CEPAC mortality calculation */
 		return;
 	}
 
-	// Add the mortality risk from non-AIDS death
+	/** For adults, add the mortality risk from non-AIDS death */
 	double probNonAIDSDeath = 0.0;
 	SimContext::GENDER_TYPE gender = patient->getGeneralState()->gender;
 	SimContext::PEDS_AGE_CAT pedsAgeCat = patient->getGeneralState()->ageCategoryPediatrics;
@@ -80,35 +80,36 @@ void MortalityUpdater::performMonthlyUpdates() {
 	}
 	else {
 		// Use the pediatrics lifetables for early childhood
-		probNonAIDSDeath = simContext->getPedsInputs()->probNonAIDSDeathEarly[gender][pedsAgeCat];
+		if (simContext->getPedsInputs()->useExposedUninfectedDefs && patient->getDiseaseState()->isExposed)
+			probNonAIDSDeath = simContext->getPedsInputs()->probNonAIDSDeathExposedUninfectedEarly[gender][pedsAgeCat];
+		else
+			probNonAIDSDeath = simContext->getPedsInputs()->probNonAIDSDeathEarly[gender][pedsAgeCat];
 	}
 	double rateMult = patient->getGeneralState()->nonAIDSDeathRateMultiplier;
 	probNonAIDSDeath = CepacUtil::probRateMultiply(probNonAIDSDeath, rateMult);
-
 	if (probNonAIDSDeath > 0) {
 		addMortalityRisk(SimContext::DTH_NONAIDS, probNonAIDSDeath);
 	}
 
-	// If HIV-positive, calculate probability of chronic AIDS death
+	/** If HIV-positive, calculate probability of chronic AIDS death */
 	if (patient->getDiseaseState()->infectedHIVState != SimContext::HIV_INF_NEG) {
-		// Determine prob of chronic AIDS death
+		/** - Determine prob of chronic AIDS death */
 		double probAIDSDeath = 0.0;
 		SimContext::HIST_EXT oiHistory = patient->getDiseaseState()->typeTrueOIHistory;
 		SimContext::PEDS_AGE_CAT pedsAgeCat = patient->getGeneralState()->ageCategoryPediatrics;
 		if (pedsAgeCat == SimContext::PEDS_AGE_ADULT) {
-			// Use the adult probability of chronic AIDS death
+			/** - Use the adult probability of chronic AIDS death */
 			SimContext::CD4_STRATA currCD4 = patient->getDiseaseState()->currTrueCD4Strata;
 			SimContext::CD4_STRATA minCD4 = patient->getDiseaseState()->minTrueCD4Strata;
-			// Account for chrAIDS death fraction on benefit
+			/** - Account for chrAIDS death fraction on benefit */
 			double fractionOfBenefit = simContext->getRunSpecsInputs()->deathFractionOfBenefit[SimContext::DTH_CHRAIDS];
 			probAIDSDeath = fractionOfBenefit * natHist->chronicAIDSDeathProbOffART[oiHistory][currCD4] +
 				(1 - fractionOfBenefit) * natHist->chronicAIDSDeathProbOffART[oiHistory][minCD4];
-			// Adjust for ART effect
+			/** - Adjust for ART effect */
 			if (patient->getARTState()->isOnART) {
 				double rateMult = simContext->getNatHistInputs()->chronicAIDSDeathProbOnARTMult[oiHistory][currCD4];
-				// Adjust multiplier between full ART effect and no ART effect according
-				//	to the factor from the ART response type
-				rateMult = 1 - (patient->getARTState()->responseFactorCurrRegimen * (1 - rateMult));
+				/** - Adjust multiplier between full ART effect and no ART effect according to the factor from the ART response type */
+				rateMult = 1 - (patient->getARTState()->responseFactorCurrRegimen[SimContext::HET_OUTCOME_ARTEFFECT_MORT] * (1 - rateMult));
 				probAIDSDeath = CepacUtil::probRateMultiply(probAIDSDeath, rateMult);
 			}
 		}
@@ -121,7 +122,7 @@ void MortalityUpdater::performMonthlyUpdates() {
 				double rateMult = simContext->getPedsInputs()->chronicAIDSDeathProbOnARTMultLate[oiHistory][currCD4];
 				// Adjust multiplier between full ART effect and no ART effect according
 				//	to the factor from the ART response type
-				rateMult = 1 - (patient->getARTState()->responseFactorCurrRegimen * (1 - rateMult));
+				rateMult = 1 - (patient->getARTState()->responseFactorCurrRegimen[SimContext::HET_OUTCOME_ARTEFFECT_MORT] * (1 - rateMult));
 				probAIDSDeath = CepacUtil::probRateMultiply(probAIDSDeath, rateMult);
 			}
 		}
@@ -141,36 +142,36 @@ void MortalityUpdater::performMonthlyUpdates() {
 					rateMult = simContext->getPedsInputs()->chronicAIDSDeathProbOnARTMultEarly[cd4PercStrata][2];
 				// Adjust multiplier between full ART effect and no ART effect according
 				//	to the factor from the ART response type
-				rateMult = 1 - (patient->getARTState()->responseFactorCurrRegimen * (1 - rateMult));
+				rateMult = 1 - (patient->getARTState()->responseFactorCurrRegimen[SimContext::HET_OUTCOME_ARTEFFECT_MORT] * (1 - rateMult));
 				probAIDSDeath = CepacUtil::probRateMultiply(probAIDSDeath, rateMult);
 			}
 		}
 
-		// Add mortality risks of chronic AIDS death
+		/** Add mortality risks of chronic AIDS death */
 		if (probAIDSDeath > 0) {
 			addMortalityRisk(SimContext::DTH_CHRAIDS, probAIDSDeath);
 		}
 	}
 
-	// Calculate the combined probability of the patient not dying this month
+	/** Calculate the combined probability of the patient not dying this month */
 	bool deathOccurs = false;
 	int causeOfDeathId = 0;
 	double probNoDeath = 1.0;
 	const vector<SimContext::MortalityRisk> &mortalityRisks = patient->getDiseaseState()->mortalityRisks;
 	int numRisks = mortalityRisks.size();
 	for (int i = 0; i < numRisks; i++) {
-		// Set as the cause of death if any prob is >= 1
+		/** Set as the cause of death if any prob is >= 1 */
 		if (mortalityRisks[i].probDeath >= 1) {
 			deathOccurs = true;
 			causeOfDeathId = i;
 			break;
 		}
-		// Accumulate the probability of death not occurring
+		/** Accumulate the probability of death not occurring: \f$ p(noDeath) = \prod_{i \in MortalityRisks} (1 - p(Death_i)) \f$ */
 		probNoDeath *= (1 - mortalityRisks[i].probDeath);
 	}
 
 	if (!deathOccurs) {
-		// Roll for death not occurring this month, return if patient survives
+		/** Roll for death not occurring this month, return if patient survives */
 		double randNum = CepacUtil::getRandomDouble(120010, patient);
 		if (randNum < probNoDeath)
 			return;
@@ -183,7 +184,7 @@ void MortalityUpdater::performMonthlyUpdates() {
 			indivProbDeath[i] = (probNoDeath / (1 - mortalityRisks[i].probDeath)) * mortalityRisks[i].probDeath;
 			sumOfProbs += indivProbDeath[i];
 		}*/
-		//2/2/2010: Calculate the rate each cause of death occurs (per Milt) -- errhode
+		/** 2/2/2010: Calculate the rate each cause of death occurs (per Milt) -- errhode */
 		double *indivRateDeath = new double[numRisks];
 		double sumOfRates = 0;
 		for (int i = 0; i < numRisks; i++) {
@@ -191,7 +192,7 @@ void MortalityUpdater::performMonthlyUpdates() {
 			sumOfRates += indivRateDeath[i];
 		}
 
-		// Roll for the cause of death from a normalized distribution of the individual probabilities
+		/** Roll for the cause of death from a normalized distribution of the individual rates */
 		randNum = CepacUtil::getRandomDouble(120020, patient);
 		for (int i = 0; i < numRisks; i++) {
 			indivRateDeath[i] = indivRateDeath[i] / sumOfRates;
@@ -205,10 +206,10 @@ void MortalityUpdater::performMonthlyUpdates() {
 		delete [] indivRateDeath;
 	}
 
-	// Set the cause of death
+	/** Set the cause of death */
 	if (deathOccurs) {
 		setCauseOfDeath(mortalityRisks[causeOfDeathId].causeOfDeath);
-		// Special case for ART toxicity, add cost here
+		/** Special case for ART toxicity, add cost here */
 		if (mortalityRisks[causeOfDeathId].causeOfDeath == SimContext::DTH_TOX_ART) {
 			incrementCostsMisc(mortalityRisks[causeOfDeathId].costDeath, 1.0);
 		}

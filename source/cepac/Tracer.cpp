@@ -1,6 +1,11 @@
 #include "include.h"
 
-/* Constructor takes in the run name, simulation context, and desired tracing level */
+/** \brief Constructor takes in the run name, simulation context, and desired tracing level
+ *
+ * \param runName a string identify the run corresponding to this Tracer: this->traceFileName will be the runName appended to CepacUtil::FILE_EXTENSION_FOR_TRACE
+ * \param *simContext this->simContext
+ * \param traceLevel this->traceLevel
+ **/
 Tracer::Tracer(string runName, SimContext *simContext, int traceLevel) {
 	traceFileName = runName;
 	traceFileName.append(CepacUtil::FILE_EXTENSION_FOR_TRACE);
@@ -8,18 +13,18 @@ Tracer::Tracer(string runName, SimContext *simContext, int traceLevel) {
 	this->simContext = simContext;
 } /* end Constructor */
 
-/* Destructor is empty, no cleanup required */
+/** \brief Destructor is empty, no cleanup required */
 Tracer::~Tracer(void) {
 
 } /* end Destructor */
 
-/* openTraceFile opens the trace file for writing */
+/** \brief openTraceFile opens the trace file for writing */
 void Tracer::openTraceFile() {
 	CepacUtil::changeDirectoryToResults();
 	traceFile = CepacUtil::openFile(traceFileName.c_str(), "w");
 } /* end openTraceFile */
 
-/* closeTraceFile closes the trace file */
+/** \brief closeTraceFile closes the trace file */
 void Tracer::closeTraceFile() {
 	// return if trace file is not valid
 	if (traceFile == NULL)
@@ -28,7 +33,7 @@ void Tracer::closeTraceFile() {
 	CepacUtil::closeFile(traceFile);
 } /* end closeTraceFile */
 
-/* printTraceOutputHeader prints out the HVL/CD4 strata information to trace file */
+/** \brief printTraceOutputHeader prints out the HVL/CD4 strata information to trace file */
 void Tracer::printTraceHeader() {
 	// return if trace file is not valid
 	if (traceFile == NULL)
@@ -44,21 +49,21 @@ void Tracer::printTraceHeader() {
 	printTrace(1, "     %s = 30k - 100k\n", SimContext::HVL_STRATA_STRS[SimContext::HVL__HI]);
 	printTrace(1, "     %s = > 100k\n", SimContext::HVL_STRATA_STRS[SimContext::HVL_VHI]);
 	printTrace(1, "=============================\n");
-	printTrace(1, "CD4: %s = 0 - %1.0f\n", SimContext::CD4_STRATA_STRS[SimContext::CD4_VLO], 
+	printTrace(1, "CD4: %s = 0 - %1.0f\n", SimContext::CD4_STRATA_STRS[SimContext::CD4_VLO],
 		runSpecsInputs->CD4StrataUpperBounds[SimContext::CD4_VLO]);
-	printTrace(1, "     %s = %1.0f - %1.0f\n", SimContext::CD4_STRATA_STRS[SimContext::CD4__LO], 
-		runSpecsInputs->CD4StrataUpperBounds[SimContext::CD4_VLO], 
+	printTrace(1, "     %s = %1.0f - %1.0f\n", SimContext::CD4_STRATA_STRS[SimContext::CD4__LO],
+		runSpecsInputs->CD4StrataUpperBounds[SimContext::CD4_VLO],
 		runSpecsInputs->CD4StrataUpperBounds[SimContext::CD4__LO]);
-	printTrace(1, "     %s = %1.0f - %1.0f\n", SimContext::CD4_STRATA_STRS[SimContext::CD4_MLO], 
-		runSpecsInputs->CD4StrataUpperBounds[SimContext::CD4__LO], 
+	printTrace(1, "     %s = %1.0f - %1.0f\n", SimContext::CD4_STRATA_STRS[SimContext::CD4_MLO],
+		runSpecsInputs->CD4StrataUpperBounds[SimContext::CD4__LO],
 		runSpecsInputs->CD4StrataUpperBounds[SimContext::CD4_MLO]);
-	printTrace(1, "     %s = %1.0f - %1.0f\n", SimContext::CD4_STRATA_STRS[SimContext::CD4_MHI], 
-		runSpecsInputs->CD4StrataUpperBounds[SimContext::CD4_MLO], 
+	printTrace(1, "     %s = %1.0f - %1.0f\n", SimContext::CD4_STRATA_STRS[SimContext::CD4_MHI],
+		runSpecsInputs->CD4StrataUpperBounds[SimContext::CD4_MLO],
 		runSpecsInputs->CD4StrataUpperBounds[SimContext::CD4_MHI]);
-	printTrace(1, "     %s = %1.0f - %1.0f\n", SimContext::CD4_STRATA_STRS[SimContext::CD4__HI], 
-		runSpecsInputs->CD4StrataUpperBounds[SimContext::CD4_MHI], 
+	printTrace(1, "     %s = %1.0f - %1.0f\n", SimContext::CD4_STRATA_STRS[SimContext::CD4__HI],
+		runSpecsInputs->CD4StrataUpperBounds[SimContext::CD4_MHI],
 		runSpecsInputs->CD4StrataUpperBounds[SimContext::CD4__HI]);
-	printTrace(1, "     %s = > %1.0f\n", SimContext::CD4_STRATA_STRS[SimContext::CD4_VHI], 
+	printTrace(1, "     %s = > %1.0f\n", SimContext::CD4_STRATA_STRS[SimContext::CD4_VHI],
 		runSpecsInputs->CD4StrataUpperBounds[SimContext::CD4__HI]);
 	printTrace(1, "=============================\n");
 	printTrace(1, "\n\n-----------------------------\n");
@@ -66,7 +71,11 @@ void Tracer::printTraceHeader() {
 	printTrace(1, "-----------------------------\n");
 } /* end printTraceHeader */
 
-/* printTrace prints out the specified text to the trace file if at the specified tracing level */
+/** \brief printTrace prints out the specified text to the trace file if at the specified tracing level
+ *
+ * \param level an integer representing the trace level of the information to be printed: only prints if level <= this->traceLevel
+ * \param format the information to be printed
+ **/
 void Tracer::printTrace(int level, const char *format, ...) {
 	// return if trace file is not valid
 	if (traceFile == NULL)

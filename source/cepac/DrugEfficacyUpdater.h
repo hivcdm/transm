@@ -2,7 +2,7 @@
 
 #include "include.h"
 
-/*
+/**
 	DrugEfficacyUpdater is a state updater that handles the efficacy changes of drug treatments
 	that the patient is on.  This includes ART efficacy state change such as late failure and
 	prophylaxis resistance.

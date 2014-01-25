@@ -1,23 +1,24 @@
 #include "include.h"
 
-/* Constructor takes in the patient as a pointer */
+/** \brief Constructor takes in the patient as a pointer */
 ClinicVisitUpdater::ClinicVisitUpdater(Patient *patient) :
 	StateUpdater(patient)
 {
 
 }
 
-/* Destructor is empty, no cleanup required */
+/** \brief Destructor is empty, no cleanup required */
 ClinicVisitUpdater::~ClinicVisitUpdater() {
 
 }
 
-/* performInitialUpdates perform all of the state and statistics updates upon patient creation */
+/** \brief performInitialUpdates perform all of the state and statistics updates upon patient creation */
 void ClinicVisitUpdater::performInitialUpdates() {
-	// First call the parent function to perform general updates and initialization
+
+	/** First calls the parent function to perform general updates and initialization */
 	StateUpdater::performInitialUpdates();
 
-	// Set the type of clinic visits and available treatments for the patient
+	/** Sets the type of clinic visits and available treatments for the patient */
 	SimContext::CLINIC_VISITS visitType = SimContext::CLINIC_SCHED;
 	SimContext::THERAPY_IMPL treatmentType = SimContext::THERAPY_IMPL_PROPH_ART;
 	double randNum = CepacUtil::getRandomDouble(60010, patient);
@@ -40,13 +41,22 @@ void ClinicVisitUpdater::performInitialUpdates() {
 	}
 	setClinicVisitType(visitType, treatmentType);
 
-	// Set the patients baseline ART response propensity coefficient
-	double baselineMean = simContext->getHeterogeneityInputs()->propRespondBaselineMean;
-	double baselineStdDev = simContext->getHeterogeneityInputs()->propRespondBaselineStdDev;
-	double baselineCoeff = CepacUtil::getRandomGaussian(baselineMean, baselineStdDev, 60030, patient);
-	setARTResponseBaseline(baselineCoeff);
+	/** Set the initial ART state to not on ART and determine next available regimen */
+	setInitialARTState();
+	/** Set the initial proph state to not on any prophs and determine next available ones */
+	setInitialProphState();
+	/** Set the initial TB proph state to not be on or scheduled for TB proph */
+	setInitialTBProphState();
+	/** Set the initial TB treatment state to not be on or scheduled for TB treatment */
+	setInitialTBTreatmentState();
 
-	// Set the patients CD4 response type
+	/** Sets the patients baseline ART response propensity coefficient */
+	double baselineMean = simContext->getHeterogeneityInputs()->propRespondBaselineLogitMean;
+	double baselineStdDev = simContext->getHeterogeneityInputs()->propRespondBaselineLogitStdDev;
+	double baselineCoeff = CepacUtil::getRandomGaussian(baselineMean, baselineStdDev, 60030, patient);
+	setResponseBaseline(baselineCoeff);
+
+	/** Set the patients CD4 response type */
 	randNum = CepacUtil::getRandomDouble(60040, patient);
 	SimContext::CD4_RESPONSE_TYPE responseType = SimContext::CD4_RESPONSE_1;
 	for (int i = 0; i < SimContext::CD4_RESPONSE_NUM_TYPES; i++) {
@@ -59,7 +69,7 @@ void ClinicVisitUpdater::performInitialUpdates() {
 	}
 	setCD4ResponseType(responseType);
 
-	// Schedule the clinic visits and CD4/HVL test
+	/** Schedules the initial clinic visits and CD4/HVL test for detected HIV positive patients*/
 	if (patient->getMonitoringState()->isDetectedHIVPositive) {
 		scheduleInitialClinicVisit();
 	}
@@ -70,19 +80,18 @@ void ClinicVisitUpdater::performInitialUpdates() {
 	}
 	scheduleEmergencyClinicVisit(false);
 
-	// Set the observed health state of the patient to unknown values
+	/** Sets the observed health state of the patient to unknown values */
 	setObservedCD4(false);
 	setObservedCD4Percentage(false);
 	setObservedHVLStrata(false);
 	resetClinicVisitState(true);
 
-	// Initialize LTFU state to not lost and STI state to not interrupted
+	/** Initialize LTFU state to not lost and STI state to not interrupted */
 	setCurrLTFUState(SimContext::LTFU_STATE_NONE);
 	setCurrSTIState(SimContext::STI_STATE_NONE);
 
-	// Set the initial ART state to not on ART and determine next available regimen
-	setInitialARTState();
-	// Identify the first available art line
+
+	/** Identify the first available art line */
 	bool hasNext = false;
 	int nextRegimen = SimContext::NOT_APPL;
 	for (int i = 0; i < SimContext::ART_NUM_LINES; i++) {
@@ -94,35 +103,45 @@ void ClinicVisitUpdater::performInitialUpdates() {
 	}
 	setNextARTRegimen(hasNext, nextRegimen);
 
-	// Set the initial proph state to not on any prophs and determine next available ones
-	setInitialProphState();
-	// Determine patient prophylaxis non compliance
+
+	/** Determine patient prophylaxis non compliance */
 	randNum = CepacUtil::getRandomDouble(60060, patient);
 	if (randNum < simContext->getCohortInputs()->OIProphNonComplianceRisk)
 		setProphNonCompliance(true);
 	else
 		setProphNonCompliance(false);
 	for (int i = 0; i < SimContext::OI_NUM; i++) {
-		// Set the initial proph that is available for use
+		/** Set the initial proph that is available for use */
 		bool hasNext = false;
 		int prophNum = SimContext::NOT_APPL;
 		SimContext::PROPH_TYPE prophType = SimContext::PROPH_PRIMARY;
 		if (patient->getDiseaseState()->hasTrueOIHistory[i])
 			prophType = SimContext::PROPH_SECONDARY;
+
 		for (int k = 0; k < SimContext::PROPH_NUM; k++) {
-			const SimContext::ProphInputs *prophInput = simContext->getProphInputs(SimContext::PROPH_PRIMARY, i, k);
+			const SimContext::ProphInputs *prophInput;
+			if(patient->getGeneralState()->ageCategoryPediatrics>=SimContext::PEDS_AGE_LATE){
+				prophInput=simContext->getProphInputs(SimContext::PROPH_PRIMARY, i, k);
+			}
+			else{
+				prophInput=simContext->getPedsProphInputs(SimContext::PROPH_PRIMARY, i, k);
+			}
+
+
 			if (prophInput) {
+
 				hasNext = true;
 				prophNum = k;
 				break;
 			}
 		}
+
 		setNextProph(hasNext, prophType, (SimContext::OI_TYPE) i, prophNum);
+
 	}
 
-	// Set the initial TB proph state to not be on or scheduled for TB proph
-	setInitialTBProphState();
-	// Identify the first available TB proph line
+
+	/** Identify the first available TB proph line */
 	hasNext = false;
 	int prophNum = SimContext::NOT_APPL;
 	for (int i = 0; i < SimContext::PROPH_NUM; i++) {
@@ -134,32 +153,39 @@ void ClinicVisitUpdater::performInitialUpdates() {
 	}
 	setNextTBProph(hasNext, prophNum);
 
-	// Set the initial TB treatment state to not be on or scheduled for TB treatment
-	setInitialTBTreatmentState();
+
 } /* end performInitialUpdates */
 
-/* performMonthlyUpdates perform all of the state and statistics updates for a simulated month */
+/** \brief performMonthlyUpdates performs all of the state and statistics updates for a simulated month */
 void ClinicVisitUpdater::performMonthlyUpdates() {
+
+	/** Calls StateUpdater::willAttendClinicThisMonth() and only proceeds if it returns true */
 	if (!willAttendClinicThisMonth())
 		return;
 
-	/* handle emergency visits for OIs and determine if OIs are observed */
+	/** Calls ClinicVisitUpdater::performOIDetectionUpdates() to handle emergency visits for OIs and determine if OIs are observed */
 	performOIDetectionUpdates();
 
-	/* accrue general costs for the clinic visit and increment number of visits */
+	/** Accrue general costs for the clinic visit and increment number of visits */
 	int ageCategory = patient->getGeneralState()->ageCategoryClinical;
+	int cd4Strata = patient->getDiseaseState()->currTrueCD4Strata;
 	SimContext::GENDER_TYPE gender = patient->getGeneralState()->gender;
-	const double *costs = simContext->getCostInputs()->clinicVisitCost[gender][ageCategory];
-	incrementCostsClinicVisit(costs);
+
+	if(patient->getMonitoringState()->hasRegularClinicVisit &&
+			(patient->getGeneralState()->monthNum >= patient->getMonitoringState()->monthOfRegularClinicVisit)) {
+		const double *costs = simContext->getCostInputs()->clinicVisitCostRoutine[gender][cd4Strata];
+		incrementCostsClinicVisit(costs);
+	}
+
 	incrementNumClinicVisits();
 
-	// Print tracing for the clinic visit if enabled
+	/** Print tracing for the clinic visit if enabled */
 	if (patient->getGeneralState()->tracingEnabled) {
 		tracer->printTrace(1, "**%d CLINIC VISIT, $ %1.0lf;\n",
 			patient->getGeneralState()->monthNum, patient->getGeneralState()->costsDiscounted);
 	}
 
-	/* schedule the next regular clinic visit */
+	/** schedule the next regular clinic visit */
 	if (simContext->getTreatmentInputs()->emergencyVisitIsNotRegularVisit) {
 		if (patient->getMonitoringState()->hasRegularClinicVisit &&
 			(patient->getGeneralState()->monthNum >= patient->getMonitoringState()->monthOfRegularClinicVisit)) {
@@ -169,33 +195,37 @@ void ClinicVisitUpdater::performMonthlyUpdates() {
 	else {
 		scheduleRegularClinicVisit(true, patient->getGeneralState()->monthNum + simContext->getTreatmentInputs()->clinicVisitInterval);
 	}
-	/* if clinic visit was an emergency one, update state to indicate that it occurred */
+	/** if clinic visit was an emergency one, update state to indicate that it occurred */
 	if (patient->getMonitoringState()->hasEmergencyClinicVisit &&
 		(patient->getGeneralState()->monthNum >= patient->getMonitoringState()->monthOfEmergencyClinicVisit)) {
 			scheduleEmergencyClinicVisit(false);
 	}
 
-	/* Evaluate ART and prophylaxis policies and make changes to the treatment programs */
+	/** Evaluate ART and prophylaxis policies and make changes to the treatment programs by calling ClinicVisitUpdater::performARTProgramUpdates and ClinicVisitUpdater::performProphProgramUpdates */
 	performARTProgramUpdates();
+
 	performProphProgramUpdates();
 
-	/* Evaluate TB proph and treatment policies and makes to the treatment programs */
+	/** Evaluate TB proph and treatment policies and makes to the treatment programs by calling ClinicVisitUpdater::performTBProphProgramUpdates() and ClinicVisitUpdater::performTBTreatmentProgramUpdates */
 	performTBProphProgramUpdates();
 	performTBTreatmentProgramUpdates();
 
-	// reset the state for events since the last clinic visit
+	/** reset the state for events since the last clinic visit */
 	resetClinicVisitState();
+
 } /* end performMonthlyUpdates */
 
-/* changes the inputs the updater uses to determine disease progression -- to be used primarily by the transmission model
- * changes the "nextARTRegimen" based on the ART regimens of the new simContext */
+/** \brief setSimContext changes the inputs the updater uses to determine disease progression -- to be used primarily by the transmission model.
+ *
+ * Also changes the "nextARTRegimen" based on the ART regimens of the new simContext
+ * \param newSimContext a pointer to a SimContext which should now be used to determine future HIV progression
+ **/
 void ClinicVisitUpdater::setSimContext(SimContext *newSimContext){
-	// First call the parent function to switch to newSimContext
+	/** First call the parent function to switch to newSimContext */
 	StateUpdater::setSimContext(newSimContext);
-	//this->simContext = newSimContext;
 
-	// determine next available regimen
-	//Identify the current (if any) art line or the last ART line taken (if ever)
+	/** determine next available regimen
+	//Identify the current (if any) art line or the last ART line taken (if ever) */
 	int potentialNextARTRegimenNum = 0;
 	if (patient->getARTState()->hasTakenART){
 		if (patient->getARTState()->isOnART){
@@ -205,8 +235,8 @@ void ClinicVisitUpdater::setSimContext(SimContext *newSimContext){
 		}
 	}
 
-	// Identify the next available art line
-	// Need to do here or if there are new/different ART lines in the new simContext, the patient will ignore them
+	/** Identify the next available art line from the newSimContext
+	// Need to do here or if there are new/different ART lines in the new simContext, the patient will ignore them */
 	bool hasNext = false;
 	int nextRegimen = SimContext::NOT_APPL;
 	for (int i = potentialNextARTRegimenNum; i < SimContext::ART_NUM_LINES; i++) {
@@ -219,7 +249,7 @@ void ClinicVisitUpdater::setSimContext(SimContext *newSimContext){
 
 	setNextARTRegimen(hasNext, nextRegimen);
 
-	//Identify current proph state and determine next available one for each OI
+	/** Identify current proph state and determine next available one for each OI */
 	for (int i = 0; i < SimContext::OI_NUM; i++) {
 		// Set the initial proph that is available for use
 		bool hasNext = false;
@@ -228,23 +258,31 @@ void ClinicVisitUpdater::setSimContext(SimContext *newSimContext){
 		if (patient->getDiseaseState()->hasTrueOIHistory[i])
 			prophType = SimContext::PROPH_SECONDARY;
 
-		//The first proph to look for -- will be 0 if the patient has never been on Proph or the current/last proph if patient *has* been on proph
+		/** The first proph to look for -- will be 0 if the patient has never been on Proph or the current/last proph if patient *has* been on proph */
 		int potentialNextProphNum = 0;
 		if (patient->getProphState()->hasTakenProph[i][prophType]){
 			potentialNextProphNum = patient->getProphState()->currProphNum[i];
 		}
 		for (int k = potentialNextProphNum; k < SimContext::PROPH_NUM; k++) {
-			const SimContext::ProphInputs *prophInput = simContext->getProphInputs(SimContext::PROPH_PRIMARY, i, k);
+			const SimContext::ProphInputs *prophInput;
+			if(patient->getGeneralState()->ageCategoryPediatrics>=SimContext::PEDS_AGE_LATE){
+				prophInput=simContext->getProphInputs(SimContext::PROPH_PRIMARY, i, k);
+			}
+			else{
+				prophInput=simContext->getPedsProphInputs(SimContext::PROPH_PRIMARY, i, k);
+			}
 			if (prophInput) {
 				hasNext = true;
 				prophNum = k;
 				break;
 			}
 		}
+
 		setNextProph(hasNext, prophType, (SimContext::OI_TYPE) i, prophNum);
+
 	}
 
-	//TODO: The same as above for TB proph, plus TB treatment somehow has to be dealt with
+	/** TODO: The same as above for TB proph, plus TB treatment somehow has to be dealt with */
 	/*//Identify current TB proph state and determine next available one
 	// Set the initial TB proph state to not be on or scheduled for TB proph
 	setInitialTBProphState();
@@ -261,33 +299,33 @@ void ClinicVisitUpdater::setSimContext(SimContext *newSimContext){
 	setNextTBProph(hasNext, prophNum);*/
 }
 
-/* performOIDetectionUpdates handles the emergency OI clinic visit and
+/** \brief performOIDetectionUpdates handles the emergency OI clinic visit and
 	determines if the current and prior OIs are observed */
 void ClinicVisitUpdater::performOIDetectionUpdates() {
 	for (int i = 0; i < SimContext::OI_NUM; i++) {
 		bool isObserved = false;
 
-		// Determine if OIs are observed
+		/** Determine if OIs are observed */
 		if (patient->getDiseaseState()->hasCurrTrueOI && (patient->getDiseaseState()->typeCurrTrueOI == i)) {
-			// Patient currently has acute OI, always count as observed
+			/** If Patient currently has acute OI, always count as observed */
 			isObserved = true;
 		}
 		else if (!patient->getMonitoringState()->hadPrevClinicVisit && patient->getDiseaseState()->hasTrueOIHistory[i]) {
-			// First clinic visit and patient has history of OI, roll for being observed
+			/** If first clinic visit and patient has history of OI, roll for being observed */
 			double randNum = CepacUtil::getRandomDouble(60070, patient);
 			if (randNum < simContext->getTreatmentInputs()->probDetectOIAtEntry[i]) {
 				isObserved = true;
 			}
 		}
 		else if (patient->getMonitoringState()->hadPrevClinicVisit && (patient->getDiseaseState()->numTrueOIsSinceLastVisit[i] > 0)) {
-			// Subsequent clinic visit and patient had OI since last visit, roll for being observed
+			/** If subsequent clinic visit and patient had OI since last visit, roll for being observed */
 			double randNum = CepacUtil::getRandomDouble(60080, patient);
 			if (randNum < simContext->getTreatmentInputs()->probDetectOISinceLastVisit[i]) {
 				isObserved = true;
 			}
 		}
 
-		// If OI is observed, increment number observed and output tracing
+		/** If OI is observed, increment number observed and output tracing */
 		if (isObserved) {
 			incrementNumObservedOIs((SimContext::OI_TYPE) i, 1);
 			if (patient->getGeneralState()->tracingEnabled) {
@@ -295,49 +333,87 @@ void ClinicVisitUpdater::performOIDetectionUpdates() {
 					patient->getGeneralState()->monthNum, SimContext::OI_STRS[i]);
 			}
 
-			// If on ART, determine if observed OI should count towards ART failure
+			/** If on ART, determine if observed OI should count towards ART failure */
 			if (patient->getARTState()->isOnART) {
 				int artLineNum = patient->getARTState()->currRegimenNum;
-				const SimContext::TreatmentInputs::ARTFailPolicy &failART = simContext->getTreatmentInputs()->failART[artLineNum];
-				bool isFailureOI = false;
-				if (patient->getGeneralState()->monthNum - patient->getARTState()->monthOfCurrRegimenStart >= failART.OIsMonthsFromInit) {
-					if (failART.OIsEvent[i] == SimContext::ART_FAIL_BY_OI_ANY)
-						isFailureOI = true;
-					else if (!patient->getDiseaseState()->hasTrueOIHistory[i] &&
-						(failART.OIsEvent[i] == SimContext::ART_FAIL_BY_OI_PRIMARY))
-							isFailureOI = true;
-					else if (patient->getDiseaseState()->hasTrueOIHistory[i] &&
-						(failART.OIsEvent[i] == SimContext::ART_FAIL_BY_OI_SECONDARY))
-							isFailureOI = true;
-				}
+				if (patient->getGeneralState()->ageCategoryPediatrics>=SimContext::PEDS_AGE_LATE){
+					const SimContext::TreatmentInputs::ARTFailPolicy &failART = simContext->getTreatmentInputs()->failART[artLineNum];
+					bool isFailureOI = false;
 
-				// If OI should count towards failure, increment count and trigger a CD4 or HVL test if
-				//	confirmatory testing is needed
-				if (isFailureOI) {
-					incrementARTFailedOIs();
-					if (patient->getARTState()->numFailedOIs >= failART.OIsMinNum) {
-						if (failART.diagnoseUseCD4TestsConfirm)
-							patient->getCD4TestUpdater()->performMonthlyUpdates();
-						if (failART.diagnoseUseHVLTestsConfirm)
-							patient->getHVLTestUpdater()->performMonthlyUpdates();
+					if (patient->getGeneralState()->monthNum - patient->getARTState()->monthOfCurrRegimenStart >= failART.OIsMonthsFromInit) {
+						if (failART.OIsEvent[i] == SimContext::ART_FAIL_BY_OI_ANY)
+							isFailureOI = true;
+						else if (!patient->getDiseaseState()->hasTrueOIHistory[i] &&
+							(failART.OIsEvent[i] == SimContext::ART_FAIL_BY_OI_PRIMARY))
+								isFailureOI = true;
+						else if (patient->getDiseaseState()->hasTrueOIHistory[i] &&
+							(failART.OIsEvent[i] == SimContext::ART_FAIL_BY_OI_SECONDARY))
+								isFailureOI = true;
+					}
+
+					/** If OI should count towards failure, increment count and trigger a CD4 or HVL test if
+					//	confirmatory testing is needed */
+					if (isFailureOI) {
+						incrementARTFailedOIs();
+						if (patient->getARTState()->numFailedOIs >= failART.OIsMinNum) {
+							if (failART.diagnoseUseCD4TestsConfirm)
+								patient->getCD4TestUpdater()->performMonthlyUpdates();
+							if (failART.diagnoseUseHVLTestsConfirm)
+								patient->getHVLTestUpdater()->performMonthlyUpdates();
+						}
 					}
 				}
+				else{
+					const SimContext::PedsInputs::ARTFailPolicy &failART = simContext->getPedsInputs()->failART[artLineNum];
+					bool isFailureOI = false;
+
+					if (patient->getGeneralState()->monthNum - patient->getARTState()->monthOfCurrRegimenStart >= failART.OIsMonthsFromInit) {
+						if (failART.OIsEvent[i] == SimContext::ART_FAIL_BY_OI_ANY)
+							isFailureOI = true;
+						else if (!patient->getDiseaseState()->hasTrueOIHistory[i] &&
+							(failART.OIsEvent[i] == SimContext::ART_FAIL_BY_OI_PRIMARY))
+								isFailureOI = true;
+						else if (patient->getDiseaseState()->hasTrueOIHistory[i] &&
+							(failART.OIsEvent[i] == SimContext::ART_FAIL_BY_OI_SECONDARY))
+								isFailureOI = true;
+					}
+
+					/** If OI should count towards failure, increment count and trigger a CD4 or HVL test if
+					//	confirmatory testing is needed */
+					if (isFailureOI) {
+						incrementARTFailedOIs();
+						if (patient->getARTState()->numFailedOIs >= failART.OIsMinNum) {
+							if (failART.diagnoseUseCD4TestsConfirm)
+								patient->getCD4TestUpdater()->performMonthlyUpdates();
+							if (failART.diagnoseUseHVLTestsConfirm)
+								patient->getHVLTestUpdater()->performMonthlyUpdates();
+						}
+					}
+				}
+
 			}
 		}
 	}
 } /* end performOIDetectionUpdates */
 
-/* performARTProgramUpdates evaluates ART policies and alters the treatment program */
+/** \brief performARTProgramUpdates evaluates ART policies and alters the treatment program */
 void ClinicVisitUpdater::performARTProgramUpdates() {
-	// return if ART treatments are not available to the patient
+	/** return if ART treatments are not available to the patient */
 	if (!patient->getARTState()->mayReceiveART)
 		return;
 
-	// If patient is currently on ART and not already observed to have failed,
-	//	determine if failure is observed this month
+	/** If patient is currently on ART and not already observed to have failed,
+	//	determine if failure is observed this month by calling ClinicVisitUpdater::evaluateFailARTPolicy() */
 	if (patient->getARTState()->isOnART && !patient->getARTState()->hasObservedFailure) {
 		if (patient->getARTState()->currSTIState == SimContext::STI_STATE_NONE) {
-			SimContext::ART_FAIL_TYPE failType = evaluateFailARTPolicy();
+			SimContext::ART_FAIL_TYPE failType;
+			if (patient->getGeneralState()->ageCategoryPediatrics>=SimContext::PEDS_AGE_LATE){
+				failType=evaluateFailARTPolicy();
+			}
+			else{
+				failType=evaluateFailARTPolicyPeds();
+			}
+
 			if (failType != SimContext::ART_FAIL_NOT_FAILED) {
 				setCurrARTObservedFailure(failType);
 				if (patient->getGeneralState()->tracingEnabled) {
@@ -359,11 +435,13 @@ void ClinicVisitUpdater::performARTProgramUpdates() {
 				}
 			}
 		}
-		// If failure was observed this month, determine if regimen should be restarted based on
-		// 	the patient's response type
+		/** If failure was observed this month, determine if regimen should be restarted based on
+		// 	the patient's response type */
 		if (patient->getARTState()->hasObservedFailure) {
-			SimContext::RESP_TYPE responseType = patient->getARTState()->responseTypeCurrRegimen;
-			double probRestart = simContext->getHeterogeneityInputs()->probRestartARTRegimenAfterFailure[responseType];
+			/** Get the current ART regimen information */
+			int currRegimen = patient->getARTState()->currRegimenNum;
+			SimContext::RESP_TYPE responseType = patient->getARTState()->responseTypeCurrRegimen[SimContext::HET_OUTCOME_RESTART];
+			double probRestart = patient->getARTState()->probRestartAfterFail;
 			double randNum = CepacUtil::getRandomDouble(60090, patient);
 			if (randNum < probRestart) {
 				setNextARTRegimen(true, patient->getARTState()->currRegimenNum);
@@ -371,12 +449,20 @@ void ClinicVisitUpdater::performARTProgramUpdates() {
 		}
 	}
 
-	// If patient is on ART, evaluate stopping criteria
+	/** If patient is on ART, evaluate stopping criteria  by calling ClinicVisitUpdater::evaluateStopARTPolicy()
+	 * Also check for STI (standard treatment interruption) stopping here by calling ClinicVisitUpdater::evaluateSTIInitialStopPolicy()
+	 * or ClinicVisitUpdater::evaluateSTISubsequentStopPolicy() depending on whether or not an STI has previously been applied.
+	 **/
 	SimContext::ART_STOP_TYPE stopType = SimContext::ART_STOP_NOT_STOPPED;
 	bool stiInterrupt = false;
 	if (patient->getARTState()->isOnART) {
 		if (patient->getARTState()->currSTIState == SimContext::STI_STATE_NONE) {
-			stopType = evaluateStopARTPolicy();
+			if(patient->getGeneralState()->ageCategoryPediatrics>=SimContext::PEDS_AGE_LATE){
+				stopType = evaluateStopARTPolicy();
+			}
+			else{
+				stopType = evaluateStopARTPolicyPeds();
+			}
 			if (stopType == SimContext::ART_STOP_NOT_STOPPED) {
 				if (evaluateSTIInitialStopPolicy()) {
 					stopType = SimContext::ART_STOP_STI;
@@ -392,26 +478,26 @@ void ClinicVisitUpdater::performARTProgramUpdates() {
 		}
 	}
 
-	// Stop the current ART regimen if it was determined to do so
+	/** Stop the current ART regimen if it was determined to do so */
 	if (stopType != SimContext::ART_STOP_NOT_STOPPED) {
-		// For STI stop, update the state to interrupt and set next regimen to the current one
+		/** For STI stop, update the state to interrupt and set next regimen to the current one */
 		if (stiInterrupt) {
 			setCurrSTIState(SimContext::STI_STATE_INTERRUPT);
 			setNextARTRegimen(true, patient->getARTState()->currRegimenNum);
 		}
 
-		// Stop the ART regimen and set target HVL back to the setpoint
+		/** Stop the ART regimen and set target HVL back to the setpoint */
 		stopCurrARTRegimen(stopType);
 		setTargetHVLStrata(patient->getDiseaseState()->setpointHVLStrata);
 
-		// Output tracing if enabled
+		/** Output tracing if enabled */
 		if (patient->getGeneralState()->tracingEnabled) {
 			tracer->printTrace(1, "**%d TAKEN OFF ART %d by %s;\n", patient->getGeneralState()->monthNum,
 				patient->getARTState()->prevRegimenNum + 1,
 				SimContext::ART_STOP_TYPE_STRS[patient->getARTState()->typeCurrStop]);
 		}
 
-		// If no more lines are available, set the post-ART CD4/HVL testing interval
+		/** If no more lines are available, set the post-ART CD4/HVL testing interval */
 		if (!patient->getARTState()->hasNextRegimenAvailable) {
 			int intervalCD4 = simContext->getTreatmentInputs()->CD4TestingIntervalPostART;
 			if (intervalCD4 != SimContext::NOT_APPL)
@@ -426,7 +512,12 @@ void ClinicVisitUpdater::performARTProgramUpdates() {
 		}
 	}
 
-	// If patient is not on ART, determine if the patient should start a new regimen this month
+	/** If patient is not on ART, determine if the patient should start a new regimen this month
+	 * by calling ClinicVisitUpdater::evaluateStartARTPolicy().  If in the middle of an STI,
+	 * check for restart criteria by calling ClinicVisitUpdater::evaluateSTIRestartPolicy().
+	 * Also check if the patient returned to care from LTFU this month and if LTFU policies
+	 * indicate an ART restart.
+	 **/
 	bool startNextART = false;
 	bool rtcStart = false;
 	bool stiRestart = false;
@@ -447,32 +538,55 @@ void ClinicVisitUpdater::performARTProgramUpdates() {
 				}
 		}
 		// Otherwise, evaluate normal ART starting criteria
-		else if (evaluateStartARTPolicy()) {
-			startNextART = true;
+		else{
+			if (patient->getGeneralState()->ageCategoryPediatrics >= SimContext::PEDS_AGE_LATE){
+				if (evaluateStartARTPolicy()){
+					startNextART = true;
+				}
+			}
+			else{
+				if (evaluateStartARTPolicyPeds()){
+					startNextART=true;
+				}
+			}
+
 		}
 	}
 
-	// Start the next ART regimen if it was determined to do so
+	/** Start the next ART regimen if it was determined to do so */
 	if (startNextART) {
-		// Start the ART regimen, update STI state if this is a restart
+		/** Start the ART regimen, update STI state if this is a restart, by calling StateUpdater::startNextARTRegimen() */
 		if (stiRestart) {
 			setCurrSTIState(SimContext::STI_STATE_RESTART);
 		}
 		startNextARTRegimen();
 
-		// Get the current ART regimen information
+		/** Get the current ART regimen information */
 		int currRegimen = patient->getARTState()->currRegimenNum;
 		int currSubRegimen = patient->getARTState()->currSubRegimenNum;
 		const SimContext::ARTInputs *artInput = simContext->getARTInputs(currRegimen);
+
 		const SimContext::PedsARTInputs *pedsART = simContext->getPedsARTInputs(currRegimen);
 		SimContext::PEDS_AGE_CAT pedsAgeCat = patient->getGeneralState()->ageCategoryPediatrics;
 
-		// Determine and set the ART response type for this regimen
-		double responseLogit = patient->getARTState()->responseBaselineLogit;
+		/** Determine and set the ART response type for this regimen */
+		double responseLogit = patient->getGeneralState()->responseBaselineLogit;
 		int ageCat = patient->getGeneralState()->ageCategoryHIVInfection;
-		responseLogit += simContext->getHeterogeneityInputs()->propRespondAge[ageCat];
-		SimContext::CD4_STRATA cd4Strata = patient->getDiseaseState()->currTrueCD4Strata;
-		responseLogit += simContext->getHeterogeneityInputs()->propRespondCD4[cd4Strata];
+
+		if(pedsAgeCat==SimContext::PEDS_AGE_ADULT){
+			responseLogit += simContext->getHeterogeneityInputs()->propRespondAge[ageCat];
+			SimContext::CD4_STRATA cd4Strata = patient->getDiseaseState()->currTrueCD4Strata;
+			responseLogit += simContext->getHeterogeneityInputs()->propRespondCD4[cd4Strata];
+		}
+		else if(pedsAgeCat==SimContext::PEDS_AGE_LATE){
+			responseLogit += simContext->getHeterogeneityInputs()->propRespondAgeLate;
+			SimContext::CD4_STRATA cd4Strata = patient->getDiseaseState()->currTrueCD4Strata;
+			responseLogit += simContext->getHeterogeneityInputs()->propRespondCD4[cd4Strata];
+		}
+		else{
+			responseLogit += simContext->getHeterogeneityInputs()->propRespondAgeEarly;
+		}
+
 		if (patient->getGeneralState()->gender == SimContext::GENDER_FEMALE)
 			responseLogit += simContext->getHeterogeneityInputs()->propRespondFemale;
 		if (patient->getDiseaseState()->typeTrueOIHistory != SimContext::HIST_EXT_N)
@@ -483,27 +597,35 @@ void ClinicVisitUpdater::performARTProgramUpdates() {
 			if (patient->getGeneralState()->hasRiskFactor[i])
 				responseLogit += simContext->getHeterogeneityInputs()->propRespondRiskFactor[i];
 		}
-		responseLogit += simContext->getHeterogeneityInputs()->propRespondARTRegimen[currRegimen];
-		double responseStdDev = simContext->getHeterogeneityInputs()->propRespondIndividualStdDev;
-		responseLogit += CepacUtil::getRandomGaussian(0, responseStdDev, 60100, patient);
-		double propRespond = pow(1 + exp(0 - responseLogit), -1);
-		setCurrARTResponse(propRespond);
+		double responseStdDev;
+		double responseIncrRegimenMean;
+		if (patient->getGeneralState()->ageCategoryPediatrics == SimContext::PEDS_AGE_ADULT){
+			responseIncrRegimenMean = simContext->getARTInputs(currRegimen)->propRespondARTRegimenLogitMean;
+			responseStdDev = simContext->getARTInputs(currRegimen)->propRespondARTRegimenLogitStdDev;
+		}
+		else if (patient->getGeneralState()->ageCategoryPediatrics == SimContext::PEDS_AGE_LATE){
+			responseIncrRegimenMean += simContext->getPedsARTInputs(currRegimen)->propRespondARTRegimenLogitMeanLate;
+			responseStdDev = simContext->getPedsARTInputs(currRegimen)->propRespondARTRegimenLogitStdDevLate;
+		}
+		else{
+			responseIncrRegimenMean += simContext->getPedsARTInputs(currRegimen)->propRespondARTRegimenLogitMeanEarly;
+			responseStdDev = simContext->getPedsARTInputs(currRegimen)->propRespondARTRegimenLogitStdDevEarly;
+		}
 
-		// Determine and set the initial efficacy of the regimen
-		// Determine the probability of suppression
+		double responseLogitDraw = CepacUtil::getRandomGaussian(responseIncrRegimenMean, responseStdDev, 60100, patient);
+		responseLogit += responseLogitDraw;
+		setARTResponseCurrRegimenBase(responseLogit, responseLogitDraw);
+		setCurrARTResponse(responseLogit);
+
+		/** Determine and set the initial efficacy of the regimen
+		// Determine the probability of suppression */
 		SimContext::HVL_STRATA hvlStrata = patient->getDiseaseState()->currTrueHVLStrata;
-		SimContext::RESP_TYPE responseType = patient->getARTState()->responseTypeCurrRegimen;
+
 		double probSuppress = 0.0;
-		if (pedsAgeCat == SimContext::PEDS_AGE_ADULT) {
-			probSuppress = artInput->probInitialEfficacy[SimContext::ART_EFF_SUCCESS][hvlStrata];
-		}
-		else if (pedsAgeCat == SimContext::PEDS_AGE_LATE) {
-			probSuppress = pedsART->probInitialEfficacyLate[SimContext::ART_EFF_SUCCESS][hvlStrata];
-		}
-		else {
-			probSuppress = pedsART->probInitialEfficacyEarly[SimContext::ART_EFF_SUCCESS][hvlStrata];
-		}
-		//If just Returned To Care and restarting the previous ART, use the alternate probability of suppression
+		probSuppress =patient->getARTState()->probInitialEfficacy;
+
+
+		/** If just Returned To Care and restarting the previous ART, use the alternate probability of suppression */
 		if (rtcStart && currRegimen == patient->getARTState()->prevRegimenNum) {
 			if (patient->getARTState()->prevRegimenEfficacy == SimContext::ART_EFF_SUCCESS){
 				probSuppress = simContext->getLTFUInputs()->probSuppressionWhenReturnToSuppressed[currRegimen];
@@ -512,7 +634,7 @@ void ClinicVisitUpdater::performARTProgramUpdates() {
 				probSuppress = simContext->getLTFUInputs()->probSuppressionWhenReturnToFailed[currRegimen];
 			}
 		}
-		// Modify probability of suppression by resistance penalty
+		/**  Modify probability of suppression by resistance penalty */
 		for (int i = 0; i <= currRegimen; i++) {
 			int numMonths = patient->getARTState()->numMonthsOnUnsuccessfulByRegimen[i];
 			double resistFactor = simContext->getTreatmentInputs()->ARTResistancePriorRegimen[currRegimen][i];
@@ -523,22 +645,13 @@ void ClinicVisitUpdater::performARTProgramUpdates() {
 			double resistFactor = simContext->getTreatmentInputs()->ARTResistanceHVL[i];
 			probSuppress *= pow(1 - resistFactor, numMonths);
 		}
-		// Multiply probability by the reduction factor from the ART response type
-		probSuppress *= patient->getARTState()->responseFactorCurrRegimen;
-		// Determine the probability of partial suppression, set to 0 for non-responders
-		// 	NOTE: currently does not use resistance penalty, heterogeneity, or LTFU modifiers
-		//		will need to be fixed if partial suppression is to be used again
+
+		/**  Determine the probability of partial suppression, set to 0 for non-responders
+		// 	NOTE: currently does not use resistance penalty, heterogeneity, or LTFU modifierst
+		//		will need to be fixed if partial suppression is to be used again */
 		double probPartialSuppress = 0.0;
-		if (pedsAgeCat == SimContext::PEDS_AGE_ADULT) {
-			probPartialSuppress = artInput->probInitialEfficacy[SimContext::ART_EFF_PARTIAL][hvlStrata];
-		}
-		else if (pedsAgeCat == SimContext::PEDS_AGE_LATE) {
-			probPartialSuppress = pedsART->probInitialEfficacyLate[SimContext::ART_EFF_PARTIAL][hvlStrata];
-		}
-		else {
-			probPartialSuppress = pedsART->probInitialEfficacyEarly[SimContext::ART_EFF_PARTIAL][hvlStrata];
-		}
-		// Set the initial efficacy of the regimen using the calculated probabilities
+
+		/** Set the initial efficacy of the regimen using the calculated probabilities */
 		SimContext::ART_EFF_TYPE efficacy;
 		double randNum = CepacUtil::getRandomDouble(60110, patient);
 		if ((probSuppress > 0) && (randNum < probSuppress)) {
@@ -550,17 +663,12 @@ void ClinicVisitUpdater::performARTProgramUpdates() {
 		else {
 			efficacy = SimContext::ART_EFF_FAILURE;
 		}
+
 		setCurrARTEfficacy(efficacy, true);
 
-		// Print debugging information if enabled
-		if (patient->getGeneralState()->tracingEnabled) {
-			tracer->printTrace(1, "**%d INIT NEW ART %d, $ %1.0lf;\n", patient->getGeneralState()->monthNum,
-				patient->getARTState()->currRegimenNum + 1, patient->getGeneralState()->costsDiscounted);
-			tracer->printTrace(1, "**%d ART DRAW %s, %s;\n", patient->getGeneralState()->monthNum,
-				SimContext::ART_EFF_STRS[efficacy], SimContext::RESP_TYPE_STRS[responseType]);
-		}
 
-		// Set the target HVL based on the destined efficacy
+
+		/** Set the target HVL based on the destined efficacy */
 		if (efficacy == SimContext::ART_EFF_SUCCESS) {
 			setTargetHVLStrata(SimContext::HVL_VLO);
 		}
@@ -571,16 +679,14 @@ void ClinicVisitUpdater::performARTProgramUpdates() {
 			setTargetHVLStrata(patient->getDiseaseState()->setpointHVLStrata);
 		}
 
-		// Set the initial CD4 slope for suppressive ART based on the response type,
-		//	also set the CD4 envelope regimen and slope if this is the first successful regimen
+		/** Set the initial CD4 slope for suppressive ART based on the response type,
+		//	also set the CD4 envelope regimen and slope if this is the first successful regimen */
 		if (efficacy != SimContext::ART_EFF_FAILURE) {
 			SimContext::CD4_RESPONSE_TYPE cd4Response = patient->getARTState()->CD4ResponseType;
 			if (pedsAgeCat == SimContext::PEDS_AGE_ADULT) {
 				double cd4SlopeMean = artInput->CD4ChangeOnARTMean[efficacy][cd4Response][0];
 				double cd4SlopeStdDev = artInput->CD4ChangeOnARTStdDev[efficacy][cd4Response][0];
 				double cd4Slope = CepacUtil::getRandomGaussian(cd4SlopeMean, cd4SlopeStdDev, 60120, patient);
-				// Adjust slope by the reduction factor from the ART response type
-				cd4Slope *= patient->getARTState()->responseFactorCurrRegimen;
 				setCurrRegimenCD4Slope(cd4Slope);
 				if (efficacy == SimContext::ART_EFF_SUCCESS) {
 					if (!patient->getARTState()->overallCD4Envelope.isActive) {
@@ -597,8 +703,7 @@ void ClinicVisitUpdater::performARTProgramUpdates() {
 				double cd4SlopeMean = pedsART->CD4ChangeOnARTMeanLate[efficacy][cd4Response][0];
 				double cd4SlopeStdDev = pedsART->CD4ChangeOnARTStdDevLate[efficacy][cd4Response][0];
 				double cd4Slope = CepacUtil::getRandomGaussian(cd4SlopeMean, cd4SlopeStdDev, 60121, patient);
-				// Adjust slope by the reduction factor from the ART response type
-				cd4Slope *= patient->getARTState()->responseFactorCurrRegimen;
+
 				setCurrRegimenCD4Slope(cd4Slope);
 				if (efficacy == SimContext::ART_EFF_SUCCESS) {
 					if (!patient->getARTState()->overallCD4Envelope.isActive) {
@@ -612,11 +717,11 @@ void ClinicVisitUpdater::performARTProgramUpdates() {
 				}
 			}
 			else {
+				/** For Peds, use CD4 Percentage */
 				double cd4PercSlopeMean = pedsART->CD4PercentageChangeOnARTMeanEarly[efficacy][pedsAgeCat][cd4Response][0];
 				double cd4PercSlopeStdDev = pedsART->CD4PercentageChangeOnARTStdDevEarly[efficacy][pedsAgeCat][cd4Response][0];
 				double cd4PercSlope = CepacUtil::getRandomGaussian(cd4PercSlopeMean, cd4PercSlopeStdDev, 60122, patient);
-				// Adjust slope by the reduction factor from the ART response type
-				cd4PercSlope *= patient->getARTState()->responseFactorCurrRegimen;
+
 				setCurrRegimenCD4PercentageSlope(cd4PercSlope);
 				if (efficacy == SimContext::ART_EFF_SUCCESS) {
 					if (!patient->getARTState()->overallCD4PercentageEnvelope.isActive) {
@@ -631,19 +736,35 @@ void ClinicVisitUpdater::performARTProgramUpdates() {
 			}
 		}
 
-		// Accumulate the initial startup cost for this regimen
+
+
+		/** Accumulate the initial startup cost for this regimen */
 		if (pedsAgeCat == SimContext::PEDS_AGE_ADULT) {
 			incrementCostsART(currRegimen, artInput->costInitial);
 		}
-		else if (pedsAgeCat == SimContext::PEDS_AGE_LATE) {
-			incrementCostsART(currRegimen, pedsART->costInitialLate);
-		}
-		else {
-			incrementCostsART(currRegimen, pedsART->costInitialEarly);
+		else{
+			incrementCostsART(currRegimen, pedsART->costInitial[patient->getGeneralState()->ageCategoryPedsARTCost]);
 		}
 
-		// Identify the next available art line, need to do here since starting
-		//	criteria for the next line may be evaluated before current one is stopped
+
+
+		/** Print debugging information if enabled */
+		if (patient->getGeneralState()->tracingEnabled) {
+
+			tracer->printTrace(1, "**%d INIT NEW ART %d, $ %1.0lf;\n", patient->getGeneralState()->monthNum,
+				patient->getARTState()->currRegimenNum + 1, patient->getGeneralState()->costsDiscounted);
+			tracer->printTrace(1, "**%d ART DRAW %s;\n", patient->getGeneralState()->monthNum,
+				SimContext::ART_EFF_STRS[efficacy]);
+			for(int i=0;i<SimContext::HET_NUM_OUTCOMES;i++){
+				SimContext::RESP_TYPE responseType = patient->getARTState()->responseTypeCurrRegimen[i];
+				tracer->printTrace(1, "**%d ART DRAW %s:%s;\n", patient->getGeneralState()->monthNum,
+					SimContext::HET_OUTCOME_STRS[i], SimContext::RESP_TYPE_STRS[responseType]);
+			}
+
+		}
+
+		/** Identify the next available art line, need to do here since starting
+		//	criteria for the next line may be evaluated before current one is stopped */
 		bool hasNext = false;
 		int nextRegimen = SimContext::NOT_APPL;
 		for (int i = patient->getARTState()->currRegimenNum + 1; i < SimContext::ART_NUM_LINES; i++) {
@@ -655,7 +776,7 @@ void ClinicVisitUpdater::performARTProgramUpdates() {
 		}
 		setNextARTRegimen(hasNext, nextRegimen);
 
-		// If CD4/HVL tests should happen at ART init, trigger them here if they have not yet occurred
+		/** If CD4/HVL tests should happen at ART init, trigger them here if they have not yet occurred */
 		if (simContext->getTreatmentInputs()->numARTInitialCD4Tests > 0) {
 			patient->getCD4TestUpdater()->performMonthlyUpdates();
 		}
@@ -663,7 +784,7 @@ void ClinicVisitUpdater::performARTProgramUpdates() {
 			patient->getHVLTestUpdater()->performMonthlyUpdates();
 		}
 
-		// Set the on-ART CD4/HVL testing intervals
+		/** Set the on-ART CD4/HVL testing intervals */
 		int intervalCD4 = SimContext::NOT_APPL;
 		if (patient->getARTState()->hasNextRegimenAvailable)
 			intervalCD4 = simContext->getTreatmentInputs()->CD4TestingIntervalOnART[0];
@@ -684,7 +805,7 @@ void ClinicVisitUpdater::performARTProgramUpdates() {
 			scheduleHVLTest(false);
 	}
 
-	// Set the initial ART subregimen or determine if the subregimen needs to be switched
+	/** Set the initial ART subregimen or determine if the subregimen needs to be switched */
 	if (patient->getARTState()->isOnART) {
 		int currRegimen = patient->getARTState()->currRegimenNum;
 		const SimContext::ARTInputs *artInput = simContext->getARTInputs(currRegimen);
@@ -726,7 +847,7 @@ void ClinicVisitUpdater::performARTProgramUpdates() {
 			}
 
 			// Roll for all ART toxicities for new subregimen, toxicity does not occur for non-responders
-			if (patient->getARTState()->responseTypeCurrRegimen != SimContext::RESP_TYPE_NON) {
+			if (patient->getARTState()->responseTypeCurrRegimen[SimContext::HET_OUTCOME_TOX] != SimContext::RESP_TYPE_NON) {
 				for (int i = 0; i < SimContext::ART_NUM_TOX_SEVERITY; i++) {
 					for (int j = 0; j < SimContext::ART_NUM_TOX_PER_SEVERITY; j++) {
 						double randNum = CepacUtil::getRandomDouble(60130, patient);
@@ -753,24 +874,49 @@ void ClinicVisitUpdater::performARTProgramUpdates() {
 			}
 		}
 	}
+
+	/** Check Eligibility for adherence intervention */
+	if (patient->getARTState()->isOnART && !(patient->getARTState()->isOnAdherenceIntervention)){
+		if(patient->getARTState()->responseLogitCurrRegimenBase<=simContext->getHeterogeneityInputs()->interventionEligibility){
+			startAdherenceIntervention();
+			/**Set initial efficacy for adherence intervention*/
+			double efficacyMean = simContext->getHeterogeneityInputs()->interventionEfficacyMean[0];
+			double efficacyStdDev = simContext->getHeterogeneityInputs()->interventionEfficacyStdDev[0];
+			double efficacyCoeff = CepacUtil::getRandomGaussian(efficacyMean, efficacyStdDev, 60300, patient);
+			double responseLogit=patient->getARTState()->responseLogitCurrRegimenBase;
+			responseLogit+=efficacyCoeff;
+			setCurrARTResponse(responseLogit);
+
+			/** Accumulate the initial startup cost for this intervention */
+			incrementCostsIntervention(simContext->getHeterogeneityInputs()->interventionInitCost);
+
+			/** Print debugging information if enabled */
+			if (patient->getGeneralState()->tracingEnabled) {
+				tracer->printTrace(1, "**%d INIT ADHERENCE INTERVENTION, $ %1.0lf;\n", patient->getGeneralState()->monthNum, patient->getGeneralState()->costsDiscounted);
+			}
+		}
+	}
 } /* end performARTProgramUpdates */
 
-/* evaluateStartARTPolicy determines if the starting criteria for ART has been met */
+/** \brief evaluateStartARTPolicy determines if the starting criteria for ART has been met
+ *
+ * \return true if the Patient meets ART starting criteria
+ **/
 bool ClinicVisitUpdater::evaluateStartARTPolicy() {
-	// return false if there are no more available regimens
+	/** return false if there are no more available regimens */
 	if (!patient->getARTState()->hasNextRegimenAvailable)
 		return false;
 
 	int artLineNum = patient->getARTState()->nextRegimenNum;
 	const SimContext::TreatmentInputs::ARTStartPolicy &startART = simContext->getTreatmentInputs()->startART[artLineNum];
 
-	// return false if minimum time before starting has not yet been reached
+	/** return false if minimum time before starting has not yet been reached */
 	if ((startART.minMonthNum != SimContext::NOT_APPL) &&
 		(patient->getGeneralState()->monthNum < startART.minMonthNum)) {
 			return false;
 	}
 
-	// return false if minimum time since last regimen stop has not yet been reached
+	/** return false if minimum time since last regimen stop has not yet been reached */
 	if (startART.monthsSincePrevRegimen != SimContext::NOT_APPL) {
 		if (patient->getARTState()->isOnART)
 			return false;
@@ -779,13 +925,7 @@ bool ClinicVisitUpdater::evaluateStartARTPolicy() {
 			return false;
 	}
 
-	// return false if minimum age for starting regimen has not yet been reached
-	if ((simContext->getPedsInputs()->startARTMinAgeMonths[artLineNum] != SimContext::NOT_APPL) &&
-		(patient->getGeneralState()->monthNum < simContext->getPedsInputs()->startARTMinAgeMonths[artLineNum])) {
-			return false;
-	}
-
-	// Evaluate the CD4 only criteria
+	/** Evaluate the CD4 only criteria */
 	double observedCD4 = patient->getMonitoringState()->currObservedCD4;
 	if (patient->getMonitoringState()->hasObservedCD4 &&
 		(observedCD4 >= startART.CD4BoundsOnly[SimContext::LOWER_BOUND]) &&
@@ -793,7 +933,7 @@ bool ClinicVisitUpdater::evaluateStartARTPolicy() {
 			return true;
 	}
 
-	// Evaluate the HVL strata only criteria
+	/** Evaluate the HVL strata only criteria */
 	SimContext::HVL_STRATA observedHVL = patient->getMonitoringState()->currObservedHVLStrata;
 	if (patient->getMonitoringState()->hasObservedHVLStrata &&
 		(observedHVL >= startART.HVLBoundsOnly[SimContext::LOWER_BOUND]) &&
@@ -801,7 +941,7 @@ bool ClinicVisitUpdater::evaluateStartARTPolicy() {
 			return true;
 	}
 
-	// Evaluate the CD4 and HVL combined criteria
+	/** Evaluate the CD4 and HVL combined criteria */
 	if (patient->getMonitoringState()->hasObservedCD4 &&
 		(observedCD4 >= startART.CD4BoundsWithHVL[SimContext::LOWER_BOUND]) &&
 		(observedCD4 <= startART.CD4BoundsWithHVL[SimContext::UPPER_BOUND]) &&
@@ -811,25 +951,7 @@ bool ClinicVisitUpdater::evaluateStartARTPolicy() {
 			return true;
 	}
 
-	// Evaluate the CD4 percentage only criteria
-	double observedCD4Percent = patient->getMonitoringState()->currObservedCD4Percentage;
-	if (patient->getMonitoringState()->hasObservedCD4Percentage &&
-		(observedCD4Percent >= simContext->getPedsInputs()->startARTCD4PercentageBoundsOnly[artLineNum][SimContext::LOWER_BOUND]) &&
-		(observedCD4Percent <= simContext->getPedsInputs()->startARTCD4PercentageBoundsOnly[artLineNum][SimContext::UPPER_BOUND])) {
-			return true;
-	}
-
-	// Evaluate the CD4 percentage and HVL combined criteria
-	if (patient->getMonitoringState()->hasObservedCD4Percentage &&
-		(observedCD4Percent >= simContext->getPedsInputs()->startARTCD4PercentageBoundsWithHVL[artLineNum][SimContext::LOWER_BOUND]) &&
-		(observedCD4Percent <= simContext->getPedsInputs()->startARTCD4PercentageBoundsWithHVL[artLineNum][SimContext::UPPER_BOUND]) &&
-		patient->getMonitoringState()->hasObservedHVLStrata &&
-		(observedHVL >= simContext->getPedsInputs()->startARTHVLBoundsWithCD4Percentage[artLineNum][SimContext::LOWER_BOUND]) &&
-		(observedHVL <= simContext->getPedsInputs()->startARTHVLBoundsWithCD4Percentage[artLineNum][SimContext::UPPER_BOUND])) {
-			return true;
-	}
-
-	// Evaluate the acute OIs since last ART only criteria
+	/** Evaluate the acute OIs since last ART only criteria */
 	int numOIs = 0;
 	for (int i = 0; i < SimContext::OI_NUM; i++) {
 		if (startART.OIHistory[i]) {
@@ -839,7 +961,7 @@ bool ClinicVisitUpdater::evaluateStartARTPolicy() {
 	if (numOIs >= startART.numOIs)
 		return true;
 
-	// Evaluate the acute OIs in patient's history and CD4 count criteria
+	/** Evaluate the acute OIs in patient's history and CD4 count criteria */
 	if ((observedCD4 != SimContext::NOT_APPL) &&
 		(observedCD4 >= startART.CD4BoundsWithOIs[SimContext::LOWER_BOUND]) &&
 		(observedCD4 <= startART.CD4BoundsWithOIs[SimContext::UPPER_BOUND])) {
@@ -853,20 +975,92 @@ bool ClinicVisitUpdater::evaluateStartARTPolicy() {
 	return false;
 } /* end evaluateStartARTPolicy */
 
-/* evaluateFailARTPolicy determines if the observed failure criteria for ART has been met */
+
+/** \brief evaluateStartARTPolicyPeds determines if the starting criteria for ART has been met (Only for early childhood)
+ *
+ * \return true if the Patient meets ART starting criteria
+ **/
+bool ClinicVisitUpdater::evaluateStartARTPolicyPeds() {
+	/** return false if there are no more available regimens */
+	if (!patient->getARTState()->hasNextRegimenAvailable)
+		return false;
+
+	int artLineNum = patient->getARTState()->nextRegimenNum;
+	const SimContext::PedsInputs::ARTStartPolicy &startART = simContext->getPedsInputs()->startART;
+
+	/** return false if minimum time before starting has not yet been reached */
+	if ((startART.minMonthNum[artLineNum] != SimContext::NOT_APPL) &&
+		(patient->getGeneralState()->monthNum < startART.minMonthNum[artLineNum])) {
+			return false;
+	}
+
+	/** return false if minimum time since last regimen stop has not yet been reached */
+	if (startART.monthsSincePrevRegimen[artLineNum] != SimContext::NOT_APPL) {
+		if (patient->getARTState()->isOnART)
+			return false;
+		if ((patient->getARTState()->monthOfPrevRegimenStop != SimContext::NOT_APPL) &&
+			(patient->getGeneralState()->monthNum - patient->getARTState()->monthOfPrevRegimenStop < startART.monthsSincePrevRegimen[artLineNum]))
+			return false;
+	}
+
+	/** Evaluate the CD4 only criteria */
+	double observedCD4Perc = patient->getMonitoringState()->currObservedCD4Percentage;
+	int cd4AgeCategory=0;
+	for (int i=0;i<SimContext::NUM_ART_START_CD4PERC_PEDS-1;i++){
+		if (patient->getGeneralState()->ageMonths > startART.CD4PercStageMonths[i]){
+			cd4AgeCategory=i+1;
+		}
+		else{
+			break;
+		}
+	}
+	if (patient->getMonitoringState()->hasObservedCD4Percentage &&
+		(observedCD4Perc >= startART.CD4PercBounds[cd4AgeCategory][artLineNum][SimContext::LOWER_BOUND]) &&
+		(observedCD4Perc <= startART.CD4PercBounds[cd4AgeCategory][artLineNum][SimContext::UPPER_BOUND])) {
+
+			return true;
+	}
+
+	/** Evaluate the HVL strata only criteria */
+	SimContext::HVL_STRATA observedHVL = patient->getMonitoringState()->currObservedHVLStrata;
+	if (patient->getMonitoringState()->hasObservedHVLStrata &&
+		(observedHVL >= startART.HVLBounds[artLineNum][SimContext::LOWER_BOUND]) &&
+		(observedHVL <= startART.HVLBounds[artLineNum][SimContext::UPPER_BOUND])) {
+
+			return true;
+	}
+
+	/** Evaluate the acute OIs since last ART only criteria */
+	int numOIs = 0;
+	for (int i = 0; i < SimContext::OI_NUM; i++) {
+		if (startART.OIHistory[artLineNum][i]) {
+			numOIs += patient->getARTState()->numObservedOIsSinceFailOrStopART[i];
+		}
+	}
+	if (numOIs >= startART.numOIs[artLineNum]){
+
+		return true;
+	}
+
+	return false;
+} /* end evaluateStartARTPolicyPeds */
+
+/** \brief evaluateFailARTPolicy determines if the observed failure criteria for ART has been met
+ *
+ * \return The SimContext::ART_FAIL_TYPE indicating why ART failed (or that ART didn't fail) */
 SimContext::ART_FAIL_TYPE ClinicVisitUpdater::evaluateFailARTPolicy() {
 	int artLineNum = patient->getARTState()->currRegimenNum;
 	const SimContext::TreatmentInputs::ARTFailPolicy &failART = simContext->getTreatmentInputs()->failART[artLineNum];
 
-	// check for clinical (OI based) failure
+	/** check for clinical (OI based) failure */
 	if (patient->getARTState()->numFailedOIs >= failART.OIsMinNum) {
 		if (failART.diagnoseUseHVLTestsConfirm) {
-			// Using confirmatory HVL testing, also verify that this criteria has been met
+			/** I using confirmatory HVL testing, also verify that this criteria has been met */
 			if (patient->getARTState()->numFailedHVLTests >= failART.diagnoseNumTestsConfirm)
 				return SimContext::ART_FAIL_CLINICAL;
 		}
 		if (failART.diagnoseUseCD4TestsConfirm) {
-			// Using confirmatory CD4 testing, also verify that this criteria has been met
+			// If using confirmatory CD4 testing, also verify that this criteria has been met */
 			if (patient->getARTState()->numFailedCD4Tests >= failART.diagnoseNumTestsConfirm)
 				return SimContext::ART_FAIL_CLINICAL;
 		}
@@ -876,10 +1070,10 @@ SimContext::ART_FAIL_TYPE ClinicVisitUpdater::evaluateFailARTPolicy() {
 		}
 	}
 
-	// check for immunologic failure
+	/** check for immunologic failure */
 	if (patient->getARTState()->numFailedCD4Tests >= failART.diagnoseNumTestsFail) {
 		if (failART.diagnoseUseHVLTestsConfirm) {
-			// Using confirmatory HVL testing, also verify that this criteria has been met
+			/** If using confirmatory HVL testing, also verify that this criteria has been met */
 			if (patient->getARTState()->numFailedHVLTests >= failART.diagnoseNumTestsConfirm)
 				return SimContext::ART_FAIL_IMMUNOLOGIC;
 		}
@@ -889,7 +1083,7 @@ SimContext::ART_FAIL_TYPE ClinicVisitUpdater::evaluateFailARTPolicy() {
 		}
 	}
 
-	// check for virologic failure
+	/** check for virologic failure */
 	if (patient->getARTState()->numFailedHVLTests >= failART.diagnoseNumTestsFail) {
 		return SimContext::ART_FAIL_VIROLOGIC;
 	}
@@ -897,28 +1091,72 @@ SimContext::ART_FAIL_TYPE ClinicVisitUpdater::evaluateFailARTPolicy() {
 	return SimContext::ART_FAIL_NOT_FAILED;
 } /* end evaluateFailARTPolicy */
 
-/* evaluateStopARTPolicy determines if the stopping criteria for ART has been met */
+
+/** \brief evaluateFailARTPolicyPeds determines if the observed failure criteria for ART has been met for early childhood
+ *
+ * \return The SimContext::ART_FAIL_TYPE indicating why ART failed (or that ART didn't fail) */
+SimContext::ART_FAIL_TYPE ClinicVisitUpdater::evaluateFailARTPolicyPeds() {
+	int artLineNum = patient->getARTState()->currRegimenNum;
+	const SimContext::PedsInputs::ARTFailPolicy &failART = simContext->getPedsInputs()->failART[artLineNum];
+
+	/** check for clinical (OI based) failure */
+	if (patient->getARTState()->numFailedOIs >= failART.OIsMinNum) {
+		if (failART.diagnoseUseHVLTestsConfirm) {
+			/** I using confirmatory HVL testing, also verify that this criteria has been met */
+			if (patient->getARTState()->numFailedHVLTests >= failART.diagnoseNumTestsConfirm)
+				return SimContext::ART_FAIL_CLINICAL;
+		}
+		if (failART.diagnoseUseCD4TestsConfirm) {
+			// If using confirmatory CD4 testing, also verify that this criteria has been met */
+			if (patient->getARTState()->numFailedCD4Tests >= failART.diagnoseNumTestsConfirm)
+				return SimContext::ART_FAIL_CLINICAL;
+		}
+		if (!failART.diagnoseUseHVLTestsConfirm && !failART.diagnoseUseCD4TestsConfirm) {
+			// No confirmatory testing, return clinical failure
+			return SimContext::ART_FAIL_CLINICAL;
+		}
+	}
+
+	/** check for immunologic failure */
+	if (patient->getARTState()->numFailedCD4Tests >= failART.diagnoseNumTestsFail) {
+		if (failART.diagnoseUseHVLTestsConfirm) {
+			/** If using confirmatory HVL testing, also verify that this criteria has been met */
+			if (patient->getARTState()->numFailedHVLTests >= failART.diagnoseNumTestsConfirm)
+				return SimContext::ART_FAIL_IMMUNOLOGIC;
+		}
+		else {
+			// No confirmatory testing, return immunologic failure
+			return SimContext::ART_FAIL_IMMUNOLOGIC;
+		}
+	}
+
+	/** check for virologic failure */
+	if (patient->getARTState()->numFailedHVLTests >= failART.diagnoseNumTestsFail) {
+		return SimContext::ART_FAIL_VIROLOGIC;
+	}
+
+	return SimContext::ART_FAIL_NOT_FAILED;
+} /* end evaluateFailARTPolicy */
+
+/** \brief evaluateStopARTPolicy determines if the stopping criteria for ART has been met
+ *
+ * \return a SimContext::ART_STOP_TYPE indicating the reason for stopping ART (or SimContext::ART_STOP_NOT_STOPPED if ART shouldn't be stopped)*/
 SimContext::ART_STOP_TYPE ClinicVisitUpdater::evaluateStopARTPolicy() {
 	int artLineNum = patient->getARTState()->currRegimenNum;
 	const SimContext::TreatmentInputs::ARTStopPolicy &stopART = simContext->getTreatmentInputs()->stopART[artLineNum];
 
-	// check if maximum months on ART is exceeded
+	/** check if maximum months on ART is exceeded */
 	if ((stopART.maxMonthsOnART != SimContext::NOT_APPL) &&
 		(patient->getGeneralState()->monthNum - patient->getARTState()->monthOfCurrRegimenStart >= stopART.maxMonthsOnART)) {
 			return SimContext::ART_STOP_MAX_MTHS;
 	}
-	// check if maximum age months has been exceeded
-	if ((simContext->getPedsInputs()->stopARTMaxAgeMonths[artLineNum] != SimContext::NOT_APPL) &&
-		(patient->getGeneralState()->monthNum >= simContext->getPedsInputs()->stopARTMaxAgeMonths[artLineNum])) {
-			return SimContext::ART_STOP_MAX_MTHS;
-	}
 
-	// check if a major toxicity has occurred and is specified to cause the regimen to be stopped
+	/** check if a major toxicity has occurred and is specified to cause the regimen to be stopped */
 	if (stopART.withMajorToxicty && patient->getARTState()->hasMajorToxicity)
 		return SimContext::ART_STOP_MAJ_TOX;
 
-	// Return not stopped if there has not been an observed failure, or have not reached the
-	//	minimum month number or months on ART
+	/** Return not stopped if there has not been an observed failure, or have not reached the
+	//	minimum month number or months on ART */
 	if (!patient->getARTState()->hasObservedFailure)
 		return SimContext::ART_STOP_NOT_STOPPED;
 	if ((stopART.afterFailMinMonthNum > 0) &&
@@ -930,24 +1168,19 @@ SimContext::ART_STOP_TYPE ClinicVisitUpdater::evaluateStopARTPolicy() {
 			return SimContext::ART_STOP_NOT_STOPPED;
 	}
 
-	// If we reach here, observed failure has already occurred
-	// check if should stop immediately upon failure
+	/** If we reach here, observed failure has already occurred
+	// check if should stop immediately upon failure */
 	if (stopART.afterFailImmediate) {
 		return SimContext::ART_STOP_FAIL;
 	}
-	// check if minimum CD4 threshold has been reached
+	/** check if minimum CD4 threshold has been reached */
 	if ((stopART.afterFailCD4LowerBound != SimContext::NOT_APPL) &&
 		patient->getMonitoringState()->hasObservedCD4 &&
 		(patient->getMonitoringState()->currObservedCD4 <= stopART.afterFailCD4LowerBound)) {
 			return SimContext::ART_STOP_CD4;
 	}
-	// check if minimum CD4 percentage threshold has been reached
-	if ((simContext->getPedsInputs()->stopARTAfterFailCD4PercentageBound[artLineNum] != SimContext::NOT_APPL) &&
-		patient->getMonitoringState()->hasObservedCD4Percentage &&
-		(patient->getMonitoringState()->currObservedCD4Percentage <= simContext->getPedsInputs()->stopARTAfterFailCD4PercentageBound[artLineNum])) {
-			return SimContext::ART_STOP_CD4;
-	}
-	// check if observance of a severe OI should cause failure
+
+	/** check if observance of a severe OI should cause failure */
 	if (stopART.afterFailWithSevereOI) {
 		for (int i = 0; i < SimContext::OI_NUM; i++) {
 			if ((patient->getARTState()->numObservedOIsSinceFailOrStopART[i] > 0) &&
@@ -956,7 +1189,7 @@ SimContext::ART_STOP_TYPE ClinicVisitUpdater::evaluateStopARTPolicy() {
 			}
 		}
 	}
-	// check if maximum numbers of months since failure has exceeded
+	/** check if maximum numbers of months since failure has exceeded */
 	if ((stopART.afterFailMonthsFromObserved != SimContext::NOT_APPL) &&
 		(patient->getGeneralState()->monthNum - patient->getARTState()->monthOfObservedFailure >= stopART.afterFailMonthsFromObserved)) {
 			return SimContext::ART_STOP_FAIL_MTHS;
@@ -965,17 +1198,81 @@ SimContext::ART_STOP_TYPE ClinicVisitUpdater::evaluateStopARTPolicy() {
 	return SimContext::ART_STOP_NOT_STOPPED;
 } /* evaluateStopARTPolicy */
 
-/* evaluateSTIInitialStopPolicy determines if the ART treatment should be stopped for the
-	initial STI interruption */
+
+/** \brief evaluateStopARTPolicyPeds determines if the stopping criteria for ART has been met for early childhood
+ *
+ * \return a SimContext::ART_STOP_TYPE indicating the reason for stopping ART (or SimContext::ART_STOP_NOT_STOPPED if ART shouldn't be stopped)*/
+SimContext::ART_STOP_TYPE ClinicVisitUpdater::evaluateStopARTPolicyPeds() {
+	int artLineNum = patient->getARTState()->currRegimenNum;
+	const SimContext::PedsInputs::ARTStopPolicy &stopART = simContext->getPedsInputs()->stopART[artLineNum];
+
+	/** check if maximum months on ART is exceeded */
+	if ((stopART.maxMonthsOnART != SimContext::NOT_APPL) &&
+		(patient->getGeneralState()->monthNum - patient->getARTState()->monthOfCurrRegimenStart >= stopART.maxMonthsOnART)) {
+			return SimContext::ART_STOP_MAX_MTHS;
+	}
+
+	/** check if a major toxicity has occurred and is specified to cause the regimen to be stopped */
+	if (stopART.withMajorToxicty && patient->getARTState()->hasMajorToxicity)
+		return SimContext::ART_STOP_MAJ_TOX;
+
+	/** Return not stopped if there has not been an observed failure, or have not reached the
+	//	minimum month number or months on ART */
+	if (!patient->getARTState()->hasObservedFailure)
+		return SimContext::ART_STOP_NOT_STOPPED;
+	if ((stopART.afterFailMinMonthNum > 0) &&
+		(patient->getGeneralState()->monthNum < stopART.afterFailMinMonthNum)) {
+			return SimContext::ART_STOP_NOT_STOPPED;
+	}
+	if ((stopART.afterFailMonthsFromInit > 0) &&
+		(patient->getGeneralState()->monthNum - patient->getARTState()->monthOfCurrRegimenStart < stopART.afterFailMonthsFromInit)) {
+			return SimContext::ART_STOP_NOT_STOPPED;
+	}
+
+	/** If we reach here, observed failure has already occurred
+	// check if should stop immediately upon failure */
+	if (stopART.afterFailImmediate) {
+		return SimContext::ART_STOP_FAIL;
+	}
+	/** check if minimum CD4 threshold has been reached */
+	if ((stopART.afterFailCD4PercLowerBound != SimContext::NOT_APPL) &&
+		patient->getMonitoringState()->hasObservedCD4Percentage &&
+		(patient->getMonitoringState()->currObservedCD4Percentage <= stopART.afterFailCD4PercLowerBound)) {
+			return SimContext::ART_STOP_CD4;
+	}
+
+	/** check if observance of a severe OI should cause failure */
+	if (stopART.afterFailWithSevereOI) {
+		for (int i = 0; i < SimContext::OI_NUM; i++) {
+			if ((patient->getARTState()->numObservedOIsSinceFailOrStopART[i] > 0) &&
+				(simContext->getRunSpecsInputs()->severeOIs[i])) {
+					return SimContext::ART_STOP_SEV_OI;
+			}
+		}
+	}
+	/** check if maximum numbers of months since failure has exceeded */
+	if ((stopART.afterFailMonthsFromObserved != SimContext::NOT_APPL) &&
+		(patient->getGeneralState()->monthNum - patient->getARTState()->monthOfObservedFailure >= stopART.afterFailMonthsFromObserved)) {
+			return SimContext::ART_STOP_FAIL_MTHS;
+	}
+
+	return SimContext::ART_STOP_NOT_STOPPED;
+} /* evaluateStopARTPolicyPeds */
+
+/** \brief evaluateSTIInitialStopPolicy determines if the ART treatment should be stopped for the
+	initial STI interruption
+
+	\return true if the Patient meets the criteria for an initial ART treatment interruption
+*/
 bool ClinicVisitUpdater::evaluateSTIInitialStopPolicy() {
 	int artLineNum = patient->getARTState()->currRegimenNum;
 	const SimContext::STIInputs::InitiationPolicy &policy = simContext->getSTIInputs()->firstInterruption[artLineNum];
 
-	// return not stopped if STI is not enabled for this ART regimen
+	/** return not stopped if STI is not enabled for this ART regimen*/
 	if (!simContext->getTreatmentInputs()->enableSTIForART[artLineNum])
 		return false;
 
-	// return not stopped if we haven't reached the minimum months for first interruption
+	/** return not stopped if we haven't reached the minimum months for first interruption*/
 	if ((policy.minMonthNum != SimContext::NOT_APPL) &&
 		(patient->getGeneralState()->monthNum < policy.minMonthNum))
 		return false;
@@ -983,7 +1280,7 @@ bool ClinicVisitUpdater::evaluateSTIInitialStopPolicy() {
 		(patient->getGeneralState()->monthNum - patient->getARTState()->monthOfCurrRegimenStart < policy.monthsSinceARTStart))
 		return false;
 
-	// Evaluate the CD4 only criteria
+	/** Evaluate the CD4 only criteria */
 	double observedCD4 = patient->getMonitoringState()->currObservedCD4;
 	if (patient->getMonitoringState()->hasObservedCD4 &&
 		(observedCD4 >= policy.CD4BoundsOnly[SimContext::LOWER_BOUND]) &&
@@ -991,7 +1288,7 @@ bool ClinicVisitUpdater::evaluateSTIInitialStopPolicy() {
 			return true;
 	}
 
-	// Evaluate the HVL strata only criteria
+	/** Evaluate the HVL strata only criteria */
 	SimContext::HVL_STRATA observedHVL = patient->getMonitoringState()->currObservedHVLStrata;
 	if (patient->getMonitoringState()->hasObservedHVLStrata &&
 		(observedHVL >= policy.HVLBoundsOnly[SimContext::LOWER_BOUND]) &&
@@ -999,7 +1296,7 @@ bool ClinicVisitUpdater::evaluateSTIInitialStopPolicy() {
 			return true;
 	}
 
-	// Evaluate the CD4 and HVL combined criteria
+	/** Evaluate the CD4 and HVL combined criteria */
 	if (patient->getMonitoringState()->hasObservedCD4 &&
 		(observedCD4 >= policy.CD4BoundsWithHVL[SimContext::LOWER_BOUND]) &&
 		(observedCD4 <= policy.CD4BoundsWithHVL[SimContext::UPPER_BOUND]) &&
@@ -1009,7 +1306,7 @@ bool ClinicVisitUpdater::evaluateSTIInitialStopPolicy() {
 			return true;
 	}
 
-	// Evaluate the acute OIs since last ART only criteria
+	/** Evaluate the acute OIs since last ART only criteria */
 	int numOIs = 0;
 	for (int i = 0; i < SimContext::OI_NUM; i++) {
 		if (policy.OIHistory[i]) {
@@ -1019,7 +1316,7 @@ bool ClinicVisitUpdater::evaluateSTIInitialStopPolicy() {
 	if (numOIs >= policy.numOIs)
 		return true;
 
-	// Evaluate the acute OIs in patient's history and CD4 count criteria
+	/** Evaluate the acute OIs in patient's history and CD4 count criteria */
 	if ((observedCD4 != SimContext::NOT_APPL) &&
 		(observedCD4 >= policy.CD4BoundsWithOIs[SimContext::LOWER_BOUND]) &&
 		(observedCD4 <= policy.CD4BoundsWithOIs[SimContext::UPPER_BOUND])) {
@@ -1033,17 +1330,20 @@ bool ClinicVisitUpdater::evaluateSTIInitialStopPolicy() {
 	return false;
 } /* evaluateSTIInitialStopPolicy */
 
-/* evaluateSTIEndpointPolicy determines then end of the STI cycle and indicates observed failure */
+/** \brief evaluateSTIEndpointPolicy determines then end of the STI cycle and indicates observed failure
+ *
+ * \return a SimContext::ART_FAIL_TYPE indicating the type of observed failure that ended the STI (or no failure if it didn't end)
+ **/
 SimContext::ART_FAIL_TYPE ClinicVisitUpdater::evaluateSTIEndpointPolicy() {
 	int artLineNum = patient->getARTState()->currRegimenNum;
 	const SimContext::STIInputs::EndpointPolicy &policy = simContext->getSTIInputs()->endpoint[artLineNum];
 
-	// return not failed if we haven't reached the minimum months since STI started
+	/** return not failed if we haven't reached the minimum months since STI started */
 	if ((policy.monthsSinceSTIStart != SimContext::NOT_APPL) &&
 		(patient->getGeneralState()->monthNum - patient->getARTState()->monthOfSTIInitialStop < policy.monthsSinceSTIStart))
 		return SimContext::ART_FAIL_NOT_FAILED;
 
-	// Evaluate the CD4 only criteria
+	/** Evaluate the CD4 only criteria */
 	double observedCD4 = patient->getMonitoringState()->currObservedCD4;
 	if (patient->getMonitoringState()->hasObservedCD4 &&
 		(observedCD4 >= policy.CD4BoundsOnly[SimContext::LOWER_BOUND]) &&
@@ -1051,7 +1351,7 @@ SimContext::ART_FAIL_TYPE ClinicVisitUpdater::evaluateSTIEndpointPolicy() {
 			return SimContext::ART_FAIL_IMMUNOLOGIC;
 	}
 
-	// Evaluate the HVL strata only criteria
+	/** Evaluate the HVL strata only criteria */
 	SimContext::HVL_STRATA observedHVL = patient->getMonitoringState()->currObservedHVLStrata;
 	if (patient->getMonitoringState()->hasObservedHVLStrata &&
 		(observedHVL >= policy.HVLBoundsOnly[SimContext::LOWER_BOUND]) &&
@@ -1059,7 +1359,7 @@ SimContext::ART_FAIL_TYPE ClinicVisitUpdater::evaluateSTIEndpointPolicy() {
 			return SimContext::ART_FAIL_VIROLOGIC;
 	}
 
-	// Evaluate the CD4 and HVL combined criteria
+	/** Evaluate the CD4 and HVL combined criteria */
 	if (patient->getMonitoringState()->hasObservedCD4 &&
 		(observedCD4 >= policy.CD4BoundsWithHVL[SimContext::LOWER_BOUND]) &&
 		(observedCD4 <= policy.CD4BoundsWithHVL[SimContext::UPPER_BOUND]) &&
@@ -1069,7 +1369,7 @@ SimContext::ART_FAIL_TYPE ClinicVisitUpdater::evaluateSTIEndpointPolicy() {
 			return SimContext::ART_FAIL_VIROLOGIC;
 	}
 
-	// Evaluate the acute OIs since last ART only criteria
+	/** Evaluate the acute OIs since last ART only criteria */
 	int numOIs = 0;
 	for (int i = 0; i < SimContext::OI_NUM; i++) {
 		if (policy.OIHistory[i]) {
@@ -1079,7 +1379,7 @@ SimContext::ART_FAIL_TYPE ClinicVisitUpdater::evaluateSTIEndpointPolicy() {
 	if (numOIs >= policy.numOIs)
 		return SimContext::ART_FAIL_CLINICAL;
 
-	// Evaluate the acute OIs in patient's history and CD4 count criteria
+	/** Evaluate the acute OIs in patient's history and CD4 count criteria */
 	if ((observedCD4 != SimContext::NOT_APPL) &&
 		(observedCD4 >= policy.CD4BoundsWithOIs[SimContext::LOWER_BOUND]) &&
 		(observedCD4 <= policy.CD4BoundsWithOIs[SimContext::UPPER_BOUND])) {
@@ -1093,11 +1393,13 @@ SimContext::ART_FAIL_TYPE ClinicVisitUpdater::evaluateSTIEndpointPolicy() {
 	return SimContext::ART_FAIL_NOT_FAILED;
 } /* evaluateSTIEndpointPolicy */
 
-/* evaluateSTIRestartPolicy determines if ART should be restarted while interrupted */
+/** \brief evaluateSTIRestartPolicy determines if ART should be restarted while interrupted
+ *
+ * \return true if Patient meets criteria to restart ART while currently the middle of an interruption */
 bool ClinicVisitUpdater::evaluateSTIRestartPolicy() {
 	int artLineNum = patient->getARTState()->nextRegimenNum;
 
-	// Evaluate the CD4 only criteria
+	/** Evaluate the CD4 only criteria */
 	double observedCD4 = patient->getMonitoringState()->currObservedCD4;
 	if (patient->getMonitoringState()->hasObservedCD4 &&
 		(observedCD4 >= simContext->getSTIInputs()->ARTRestartCD4Bounds[artLineNum][SimContext::LOWER_BOUND]) &&
@@ -1105,7 +1407,7 @@ bool ClinicVisitUpdater::evaluateSTIRestartPolicy() {
 			return true;
 	}
 
-	// Evaluate the HVL strata only criteria
+	/** Evaluate the HVL strata only criteria */
 	SimContext::HVL_STRATA observedHVL = patient->getMonitoringState()->currObservedHVLStrata;
 	if (patient->getMonitoringState()->hasObservedHVLStrata &&
 		(observedHVL >= simContext->getSTIInputs()->ARTRestartHVLBounds[artLineNum][SimContext::LOWER_BOUND]) &&
@@ -1116,12 +1418,15 @@ bool ClinicVisitUpdater::evaluateSTIRestartPolicy() {
 	return false;
 } /* evaluateSTIRestartPolicy */
 
-/* evaluateSTISubsequentStopPolicy determines if the ART treatment should be stopped for
-	subsequent STI interruptions */
+/** \brief evaluateSTISubsequentStopPolicy determines if the ART treatment should be stopped for
+	subsequent STI interruptions
+
+	\return true if Patient meets criteria for stopping ART due to STI
+*/
 bool ClinicVisitUpdater::evaluateSTISubsequentStopPolicy() {
 	int artLineNum = patient->getARTState()->nextRegimenNum;
 
-	// Evaluate the CD4 only criteria
+	/** Evaluate the CD4 only criteria */
 	double observedCD4 = patient->getMonitoringState()->currObservedCD4;
 	if (patient->getMonitoringState()->hasObservedCD4) {
 		if ((simContext->getSTIInputs()->ARTRestopCD4Bounds[artLineNum][SimContext::UPPER_BOUND] != SimContext::NOT_APPL) &&
@@ -1134,7 +1439,7 @@ bool ClinicVisitUpdater::evaluateSTISubsequentStopPolicy() {
 		}
 	}
 
-	// Evaluate the HVL strata only criteria
+	/** Evaluate the HVL strata only criteria */
 	SimContext::HVL_STRATA observedHVL = patient->getMonitoringState()->currObservedHVLStrata;
 	if (patient->getMonitoringState()->hasObservedHVLStrata) {
 		if ((simContext->getSTIInputs()->ARTRestopHVLBounds[artLineNum][SimContext::UPPER_BOUND] != SimContext::NOT_APPL) &&
@@ -1150,23 +1455,27 @@ bool ClinicVisitUpdater::evaluateSTISubsequentStopPolicy() {
 	return false;
 } /* evaluateSTISubsequentStopPolicy */
 
-/* performProphProgramUpdates evaluates prophylaxis policies and alters the treatment program */
+/** \brief performProphProgramUpdates evaluates prophylaxis policies and alters the treatment program */
 void ClinicVisitUpdater::performProphProgramUpdates() {
-	// return if prohylaxis are not avaiable to the patient
+
+	/** return if prohylaxes are not avaiable to the patient */
 	if (!patient->getProphState()->mayReceiveProph)
 		return;
 
-	// Determine if observed OIs will cause a switch to using secondary prophs and
-	//	stopping current primary proph
+	/** Determine if observed OIs will cause a switch to using secondary prophs and
+	//	stopping current primary proph */
 	for (int i = 0; i < SimContext::OI_NUM; i++) {
 		if (patient->getMonitoringState()->numObservedOIsSinceLastVisit[i] > 0) {
 			// Skip if patient is already using or is set to use secondary prophs
+
 			if (patient->getProphState()->isOnProph[i] &&
 				(patient->getProphState()->currProphType[i] == SimContext::PROPH_SECONDARY))
 				continue;
+
 			if (patient->getProphState()->hasNextProphAvailable[i] &&
 				(patient->getProphState()->nextProphType[i] == SimContext::PROPH_SECONDARY))
 				continue;
+
 			double randNum = CepacUtil::getRandomDouble(60150, patient);
 			if (randNum < simContext->getTreatmentInputs()->probSwitchSecondaryProph[i]) {
 				if (patient->getProphState()->isOnProph[i]) {
@@ -1185,24 +1494,38 @@ void ClinicVisitUpdater::performProphProgramUpdates() {
 				SimContext::PROPH_TYPE nextProphType = SimContext::PROPH_SECONDARY;
 				int nextProphNum = SimContext::NOT_APPL;
 				for (int j = 0; j < SimContext::PROPH_NUM; j++) {
-					const SimContext::ProphInputs *prophInput = simContext->getProphInputs(nextProphType,i,j);
+					const SimContext::ProphInputs *prophInput;
+					if(patient->getGeneralState()->ageCategoryPediatrics>=SimContext::PEDS_AGE_LATE){
+						prophInput=simContext->getProphInputs(nextProphType,i,j);
+					}
+					else{
+						prophInput=simContext->getPedsProphInputs(nextProphType,i,j);
+					}
 					if (prophInput) {
 						hasNext = true;
 						nextProphNum = j;
 						break;
 					}
 				}
+
 				setNextProph(hasNext, nextProphType, (SimContext::OI_TYPE) i, nextProphNum);
 			}
 		}
 	}
 
-	// Handle the appropriate stopping/switching for a toxicity or months to switch reached
+
+	/** Handle the appropriate stopping/switching for a toxicity or months to switch reached */
 	for (int i = 0; i < SimContext::OI_NUM; i++) {
 		if (patient->getProphState()->isOnProph[i]) {
 			SimContext::PROPH_TYPE prophType = patient->getProphState()->currProphType[i];
 			int prophNum = patient->getProphState()->currProphNum[i];
-			const SimContext::ProphInputs *prophInput = simContext->getProphInputs(prophType,i,prophNum);
+			const SimContext::ProphInputs *prophInput;
+			if(patient->getGeneralState()->ageCategoryPediatrics>=SimContext::PEDS_AGE_LATE){
+				prophInput=simContext->getProphInputs(prophType,i,prophNum);
+			}
+			else{
+				prophInput=simContext->getPedsProphInputs(prophType,i,prophNum);
+			}
 			int monthsOnProph = patient->getGeneralState()->monthNum - patient->getProphState()->monthOfProphStart[i];
 			SimContext::PROPH_TOX_TYPE toxType = patient->getProphState()->typeProphToxicity[i];
 
@@ -1222,7 +1545,13 @@ void ClinicVisitUpdater::performProphProgramUpdates() {
 				bool hasNext = false;
 				int nextProphNum = SimContext::NOT_APPL;
 				for (int j = prophNum + 1; j < SimContext::PROPH_NUM; j++) {
-					const SimContext::ProphInputs *nextProphInput = simContext->getProphInputs(prophType,i,j);
+					const SimContext::ProphInputs *nextProphInput;
+					if(patient->getGeneralState()->ageCategoryPediatrics>=SimContext::PEDS_AGE_LATE){
+						nextProphInput=simContext->getProphInputs(prophType,i,j);
+					}
+					else{
+						nextProphInput=simContext->getPedsProphInputs(prophType,i,j);
+					}
 					if (nextProphInput) {
 						hasNext = true;
 						nextProphNum = j;
@@ -1244,13 +1573,22 @@ void ClinicVisitUpdater::performProphProgramUpdates() {
 		}
 	}
 
-	// If on prophs, determine if stopping policy criteria has been met for each OI
+	/** If on prophs, determine if stopping policy criteria has been met for each OI */
 	for (int i = 0; i < SimContext::OI_NUM; i++) {
 		SimContext::OI_TYPE oiType = (SimContext::OI_TYPE) i;
+
 		if (patient->getProphState()->isOnProph[i]) {
+
 			// Patient is currently on proph for this OI, evaluate stopping policy
 			SimContext::PROPH_TYPE prophType = patient->getProphState()->currProphType[oiType];
-			if (evaluateStopProphPolicy(prophType, oiType)) {
+			bool stopProph=false;
+			if(patient->getGeneralState()->ageCategoryPediatrics>=SimContext::PEDS_AGE_LATE){
+				stopProph=evaluateStopProphPolicy(prophType,oiType);
+			}
+			else{
+				stopProph=evaluateStopProphPolicyPeds(prophType,oiType);
+			}
+			if (stopProph) {
 				// Stop the current proph
 				SimContext::PROPH_TYPE prophType = patient->getProphState()->currProphType[i];
 				int prophNum = patient->getProphState()->currProphNum[i];
@@ -1264,14 +1602,30 @@ void ClinicVisitUpdater::performProphProgramUpdates() {
 		}
 	}
 
-	// If not on prophs, determine if starting policy criteria has been met for each OI
+	/** If not on prophs, determine if starting policy criteria has been met for each OI */
 	for (int i = 0; i < SimContext::OI_NUM; i++) {
 		SimContext::OI_TYPE oiType = (SimContext::OI_TYPE) i;
+
 		if (!patient->getProphState()->isOnProph[i]) {
+
 			// Patient is currently not on any proph for this OI, evaluate starting policy
 			//	and if stopping policy is not also immediately met
 			SimContext::PROPH_TYPE prophType = patient->getProphState()->nextProphType[oiType];
-			if (evaluateStartProphPolicy(prophType, oiType) && !evaluateStopProphPolicy(prophType, oiType)) {
+			bool startProph=false;
+			bool stopProph=false;
+
+			if(patient->getProphState()->hasNextProphAvailable[oiType]){
+				if(patient->getGeneralState()->ageCategoryPediatrics>=SimContext::PEDS_AGE_LATE){
+					startProph=evaluateStartProphPolicy(prophType, oiType);
+					stopProph=evaluateStopProphPolicy(prophType, oiType);
+				}
+				else{
+					startProph=evaluateStartProphPolicyPeds(prophType, oiType);
+					stopProph=evaluateStopProphPolicyPeds(prophType, oiType);
+				}
+			}
+
+			if (startProph && !stopProph) {
 				// Start a new proph if there is another one available
 				startNextProph(oiType);
 				if (patient->getGeneralState()->tracingEnabled) {
@@ -1282,11 +1636,19 @@ void ClinicVisitUpdater::performProphProgramUpdates() {
 			}
 		}
 	}
+
 } /* end performProphProgramUpdates */
 
-/* evaluateStartProphPolicy determines if the start criteria for the proph has been met */
+/** \brief evaluateStartProphPolicy determines if the start criteria for the proph has been met
+ *
+ * \param prophType a SimContext::PROPH_TYPE indicating the type of prophylaxis being considered for starting criteria
+ * \param oiType a SimContext::OI_TYPE indicating the OI being considered for prophylaxis starting criteria
+ *
+ * \return true if the Patient meets the criteria for starting prophylaxis
+ **/
 bool ClinicVisitUpdater::evaluateStartProphPolicy(SimContext::PROPH_TYPE prophType, SimContext::OI_TYPE oiType) {
-	// return false if there is not another available proph
+
+	/** return false if there is not another available proph */
 	if (!patient->getProphState()->hasNextProphAvailable[oiType])
 		return false;
 
@@ -1294,12 +1656,12 @@ bool ClinicVisitUpdater::evaluateStartProphPolicy(SimContext::PROPH_TYPE prophTy
 	bool hasFailedOneCriteria = false;
 	const SimContext::TreatmentInputs::ProphStartPolicy &prophStart = simContext->getTreatmentInputs()->startProph[prophType][oiType];
 
-	// Evaluate the minimum month for starting critera, return false if it is not met
+	/** Evaluate the minimum month for starting critera, return false if it is not met */
 	int monthNum = patient->getGeneralState()->monthNum;
+
 	if ((prophStart.minMonthNum != SimContext::NOT_APPL) && (monthNum < prophStart.minMonthNum))
 		return false;
-
-	// Evaluate the current CD4 level criteria
+	/** Evaluate the current CD4 level criteria */
 	if (patient->getMonitoringState()->hasObservedCD4) {
 		double currCD4 = patient->getMonitoringState()->currObservedCD4;
 		if ((currCD4 >= prophStart.currCD4Bounds[SimContext::LOWER_BOUND]) && (currCD4 <= prophStart.currCD4Bounds[SimContext::UPPER_BOUND])) {
@@ -1310,7 +1672,7 @@ bool ClinicVisitUpdater::evaluateStartProphPolicy(SimContext::PROPH_TYPE prophTy
 		}
 	}
 
-	// Evaluate the minimum CD4 level criteria,
+	/** Evaluate the minimum CD4 level criteria, */
 	if (patient->getMonitoringState()->hasObservedCD4) {
 		double minCD4 = patient->getMonitoringState()->minObservedCD4;
 		if ((minCD4 >= prophStart.minCD4Bounds[SimContext::LOWER_BOUND]) && (minCD4 <= prophStart.minCD4Bounds[SimContext::UPPER_BOUND])) {
@@ -1321,7 +1683,7 @@ bool ClinicVisitUpdater::evaluateStartProphPolicy(SimContext::PROPH_TYPE prophTy
 		}
 	}
 
-	// Evaluate the OI history criteria, skip if all the inputs are unspecified
+	/** Evaluate the OI history criteria, skip if all the inputs are unspecified */
 	bool useHistory = false;
 	bool hasPassedOneOIHist = false;
 	bool useNoHistory = false;
@@ -1356,10 +1718,10 @@ bool ClinicVisitUpdater::evaluateStartProphPolicy(SimContext::PROPH_TYPE prophTy
 		else
 			hasFailedOneCriteria = true;
 	}
-
-	// return true if using or evaluation and at least one criteria has been met,
+	/** return true if using or evaluation and at least one criteria has been met,
 	//	return true if using and evaluation and at least one criteria has been met and none have failed,
-	//	return false otherwise
+	//	return false otherwise */
+
 	if (prophStart.useOrEvaluation && hasPassedOneCriteria)
 		return true;
 	if (!prophStart.useOrEvaluation && hasPassedOneCriteria && !hasFailedOneCriteria)
@@ -1367,23 +1729,111 @@ bool ClinicVisitUpdater::evaluateStartProphPolicy(SimContext::PROPH_TYPE prophTy
 	return false;
 } /* end evaluateStartProphPolicy */
 
-/* evaluateStopProphPolicy determines if the stopping criteria for the proph has been met */
+/** \brief evaluateStartProphPolicyPeds determines if the start criteria for the proph has been met for early childhood (<5 years old)
+ *
+ * \param prophType a SimContext::PROPH_TYPE indicating the type of prophylaxis being considered for starting criteria
+ * \param oiType a SimContext::OI_TYPE indicating the OI being considered for prophylaxis starting criteria
+ *
+ * \return true if the Patient meets the criteria for starting prophylaxis
+ **/
+bool ClinicVisitUpdater::evaluateStartProphPolicyPeds(SimContext::PROPH_TYPE prophType, SimContext::OI_TYPE oiType) {
+
+
+	/** return false if there is not another available proph */
+	if (!patient->getProphState()->hasNextProphAvailable[oiType])
+		return false;
+
+	bool hasPassedFirstCriteria = false;
+	bool hasPassedSecondCriteria = false;
+	bool hasPassedThirdCriteria = false;
+	const SimContext::PedsInputs::ProphStartPolicy &prophStart = simContext->getPedsInputs()->startProph[prophType];
+
+	/** Evaluate the age criteria */
+	int ageMonths = patient->getGeneralState()->ageMonths;
+	if (ageMonths>=prophStart.ageBounds[SimContext::LOWER_BOUND][oiType] && ageMonths<prophStart.ageBounds[SimContext::UPPER_BOUND][oiType]) {
+		hasPassedFirstCriteria = true;
+	}
+	else {
+		hasPassedFirstCriteria = false;
+	}
+
+	/** Evaluate the curr cd4 perc level criteria, */
+	if (patient->getMonitoringState()->hasObservedCD4Percentage) {
+		double currCD4Perc = patient->getMonitoringState()->currObservedCD4Percentage;
+		if (currCD4Perc>=prophStart.currCD4PercBounds[SimContext::LOWER_BOUND][oiType]&& currCD4Perc<=prophStart.currCD4PercBounds[SimContext::UPPER_BOUND][oiType]) {
+			hasPassedSecondCriteria = true;
+		}
+		else {
+			hasPassedSecondCriteria = false;
+		}
+	}
+
+	/** Evaluate the OI history criteria, skip if all the inputs are unspecified */
+	bool useThirdCriteria=false;
+
+	for (int i = 0; i < SimContext::OI_NUM; i++) {
+		if (prophStart.OIHistory[i][oiType]!=SimContext::NOT_APPL){
+			useThirdCriteria=true;
+			if(patient->getMonitoringState()->numObservedOIsTotal[i]>0){
+				if(prophStart.OIHistory[i][oiType]==0){
+					hasPassedThirdCriteria=false;
+					break;
+				}
+				else{
+					hasPassedThirdCriteria=true;
+				}
+			}
+		}
+	}
+
+	//** Returns based on selection criteria*/
+	if(useThirdCriteria){
+		bool tempCondition;
+		if(prophStart.parDirection==SimContext::RIGHT){
+			tempCondition=(prophStart.secondCondition==SimContext::AND)?hasPassedSecondCriteria && hasPassedThirdCriteria:hasPassedSecondCriteria || hasPassedThirdCriteria;
+			return (prophStart.firstCondition==SimContext::AND)?hasPassedFirstCriteria && tempCondition:hasPassedFirstCriteria || tempCondition;
+		}
+		else{
+			tempCondition=(prophStart.firstCondition==SimContext::AND)?hasPassedFirstCriteria && hasPassedSecondCriteria:hasPassedFirstCriteria || hasPassedSecondCriteria;
+			return (prophStart.secondCondition==SimContext::AND)?tempCondition && hasPassedThirdCriteria:tempCondition || hasPassedThirdCriteria;
+		}
+	}
+	else{
+		return (prophStart.firstCondition==SimContext::AND)?hasPassedFirstCriteria && hasPassedSecondCriteria:hasPassedFirstCriteria || hasPassedSecondCriteria;
+	}
+
+	return false;
+} /* end evaluateStartProphPolicyPeds */
+
+/** \brief evaluateStopProphPolicy determines if the stopping criteria for the proph has been met
+ *
+ * \param prophType a SimContext::PROPH_TYPE indicating the type of prophylaxis being considered for stopping criteria
+ * \param oiType a SimContext::OI_TYPE indicating the OI being considered for prophylaxis stopping criteria
+ *
+ * \return true if the Patient meets the criteria for stopping prophylaxis
+ **/
 bool ClinicVisitUpdater::evaluateStopProphPolicy(SimContext::PROPH_TYPE prophType, SimContext::OI_TYPE oiType) {
+
+
 	bool hasPassedOneCriteria = false;
 	bool hasFailedOneCriteria = false;
 	const SimContext::TreatmentInputs::ProphStopPolicy &prophStop = simContext->getTreatmentInputs()->stopProph[prophType][oiType];
 
-	// Evaluate the minimum month # and months on proph stopping criteria, return true if they are met
+	/** Evaluate the minimum month # and months on proph stopping criteria, return true if they are met */
 	int monthNum = patient->getGeneralState()->monthNum;
-	if ((prophStop.minMonthNum != SimContext::NOT_APPL) && (monthNum >= prophStop.minMonthNum))
+
+	if ((prophStop.minMonthNum != SimContext::NOT_APPL) && (monthNum >= prophStop.minMonthNum)){
+
 		return true;
+	}
+
 	if (patient->getProphState()->isOnProph[oiType]) {
 		int monthsOnProph = monthNum - patient->getProphState()->monthOfProphStart[oiType];
 		if ((prophStop.monthsOnProph != SimContext::NOT_APPL) && (monthsOnProph >= prophStop.monthsOnProph))
 			return true;
 	}
 
-	// Evaluate the current CD4 level criteria
+	/** Evaluate the current CD4 level criteria */
 	if (patient->getMonitoringState()->hasObservedCD4) {
 		double currCD4 = patient->getMonitoringState()->currObservedCD4;
 		if ((currCD4 > prophStop.currCD4Bounds[SimContext::UPPER_BOUND]) || (currCD4 < prophStop.currCD4Bounds[SimContext::LOWER_BOUND])) {
@@ -1394,7 +1844,7 @@ bool ClinicVisitUpdater::evaluateStopProphPolicy(SimContext::PROPH_TYPE prophTyp
 		}
 	}
 
-	// Evaluate the minimum CD4 level criteria
+	/** Evaluate the minimum CD4 level criteria */
 	if (patient->getMonitoringState()->hasObservedCD4) {
 		double minCD4 = patient->getMonitoringState()->minObservedCD4;
 		if ((minCD4 > prophStop.minCD4Bounds[SimContext::UPPER_BOUND]) || (minCD4 < prophStop.minCD4Bounds[SimContext::LOWER_BOUND])) {
@@ -1405,7 +1855,7 @@ bool ClinicVisitUpdater::evaluateStopProphPolicy(SimContext::PROPH_TYPE prophTyp
 		}
 	}
 
-	// Evaluate the OI history criteria, skip if all the inputs are unspecified
+	/** Evaluate the OI history criteria, skip if all the inputs are unspecified */
 	bool useHistory = false;
 	bool hasPassedOneOIHist = false;
 	bool useNoHistory = false;
@@ -1441,9 +1891,9 @@ bool ClinicVisitUpdater::evaluateStopProphPolicy(SimContext::PROPH_TYPE prophTyp
 			hasFailedOneCriteria = true;
 	}
 
-	// return true if using or evaluation and at least one criteria has been met,
+	/** return true if using or evaluation and at least one criteria has been met,
 	//	return true if using and evaluation and at least one criteria has been met and none have failed,
-	//	return false otherwise
+	//	return false otherwise */
 	if (prophStop.useOrEvaluation && hasPassedOneCriteria)
 		return true;
 	if (!prophStop.useOrEvaluation && hasPassedOneCriteria && !hasFailedOneCriteria)
@@ -1451,12 +1901,92 @@ bool ClinicVisitUpdater::evaluateStopProphPolicy(SimContext::PROPH_TYPE prophTyp
 	return false;
 } /* evaluateStopProphPolicy */
 
-/* performTBProphProgramUpdates evaluates TB proph policies and alters the treatment program */
+/** \brief evaluateStopProphPolicyPeds determines if the stopping criteria for the proph has been met
+ *
+ * \param prophType a SimContext::PROPH_TYPE indicating the type of prophylaxis being considered for stopping criteria
+ * \param oiType a SimContext::OI_TYPE indicating the OI being considered for prophylaxis stopping criteria
+ *
+ * \return true if the Patient meets the criteria for stopping prophylaxis
+ **/
+bool ClinicVisitUpdater::evaluateStopProphPolicyPeds(SimContext::PROPH_TYPE prophType, SimContext::OI_TYPE oiType) {
+	bool hasPassedFirstCriteria = false;
+	bool hasPassedSecondCriteria = false;
+	bool hasPassedThirdCriteria = false;
+	const SimContext::PedsInputs::ProphStopPolicy &prophStop = simContext->getPedsInputs()->stopProph[prophType];
+
+
+	/** Evaluate the months on proph stopping criteria, return true if they are met */
+	int monthNum = patient->getGeneralState()->monthNum;
+	if (patient->getProphState()->isOnProph[oiType]) {
+		int monthsOnProph = monthNum - patient->getProphState()->monthOfProphStart[oiType];
+		if ((prophStop.monthsOnProph[oiType] != SimContext::NOT_APPL) && (monthsOnProph >= prophStop.monthsOnProph[oiType]))
+			return true;
+	}
+
+	/** Evaluate the age criteria */
+	int ageMonths = patient->getGeneralState()->ageMonths;
+	if (ageMonths>=prophStop.ageLowerBound[oiType]) {
+		hasPassedFirstCriteria = true;
+	}
+	else {
+		hasPassedFirstCriteria = false;
+	}
+
+	/** Evaluate the curr cd4 perc level criteria, */
+	if (patient->getMonitoringState()->hasObservedCD4Percentage) {
+		double currCD4Perc = patient->getMonitoringState()->currObservedCD4Percentage;
+		if (currCD4Perc>=prophStop.currCD4PercLowerBound[oiType]) {
+			hasPassedSecondCriteria = true;
+		}
+		else {
+			hasPassedSecondCriteria = false;
+		}
+	}
+
+	/** Evaluate the OI history criteria, skip if all the inputs are unspecified */
+	bool useThirdCriteria=false;
+
+	for (int i = 0; i < SimContext::OI_NUM; i++) {
+		if (prophStop.OIHistory[i][oiType]!=SimContext::NOT_APPL){
+			useThirdCriteria=true;
+			if(patient->getMonitoringState()->numObservedOIsTotal[i]>0){
+				if(prophStop.OIHistory[i][oiType]==0){
+					hasPassedThirdCriteria=false;
+					break;
+				}
+				else{
+					hasPassedThirdCriteria=true;
+				}
+			}
+		}
+	}
+
+	//** Returns based on selection criteria*/
+	if(useThirdCriteria){
+		bool tempCondition;
+		if(prophStop.parDirection==SimContext::RIGHT){
+			tempCondition=(prophStop.secondCondition==SimContext::AND)?hasPassedSecondCriteria && hasPassedThirdCriteria:hasPassedSecondCriteria || hasPassedThirdCriteria;
+			return (prophStop.firstCondition==SimContext::AND)?hasPassedFirstCriteria && tempCondition:hasPassedFirstCriteria || tempCondition;
+		}
+		else{
+			tempCondition=(prophStop.firstCondition==SimContext::AND)?hasPassedFirstCriteria && hasPassedSecondCriteria:hasPassedFirstCriteria || hasPassedSecondCriteria;
+			return (prophStop.secondCondition==SimContext::AND)?tempCondition && hasPassedThirdCriteria:tempCondition || hasPassedThirdCriteria;
+		}
+	}
+	else{
+		return (prophStop.firstCondition==SimContext::AND)?hasPassedFirstCriteria && hasPassedSecondCriteria:hasPassedFirstCriteria || hasPassedSecondCriteria;
+	}
+
+	return false;
+
+} /* evaluateStopProphPolicyPeds */
+/** \brief performTBProphProgramUpdates evaluates TB proph policies and alters the treatment program */
 void ClinicVisitUpdater::performTBProphProgramUpdates() {
+	/** Return if patient may not receive prophylaxis */
 	if (!patient->getProphState()->mayReceiveProph)
 		return;
 
-	// If a major proph toxicity occurred, stop the current TB proph
+	/** If a major proph toxicity occurred, stop the current TB proph */
 	if (patient->getTBState()->isOnProph && patient->getTBState()->hasMajorProphToxicity) {
 		// Stop the TB proph
 		int currProph = patient->getTBState()->currProphNum;
@@ -1481,7 +2011,7 @@ void ClinicVisitUpdater::performTBProphProgramUpdates() {
 		setNextTBProph(hasNext, nextProph);
 	}
 
-	// If patient is on proph, evaluate if they should stop and update if so
+	/** If patient is on proph, evaluate if they should stop by calling ClinicVisitUpdater::evaluateStopTBProphPolicy() and update if so */
 	if (patient->getTBState()->isOnProph) {
 		if (evaluateStopTBProphPolicy()) {
 			// Stop the TB proph
@@ -1496,7 +2026,7 @@ void ClinicVisitUpdater::performTBProphProgramUpdates() {
 		}
 	}
 	else {
-		// If proph available and patient is not on proph or scheduled, evaluate whether to start and lag time
+		/** If proph available and patient is not on proph or scheduled, evaluate whether to start by calling ClinicVisitUpdater::evaluateStartTBProphPolicy() and rolling for the lag to start time */
 		if (patient->getTBState()->hasNextProphAvailable && !patient->getTBState()->isScheduledForProph) {
 			if (evaluateStartTBProphPolicy()) {
 				// Roll for prob of receiving proph
@@ -1522,14 +2052,14 @@ void ClinicVisitUpdater::performTBProphProgramUpdates() {
 		}
 	}
 
-	// If acute TB occurs and proph is scheduled for a future time, cancel it
+	/** If acute TB occurs and proph is scheduled for a future time, cancel it */
 	if (patient->getTBState()->isScheduledForProph &&
 		patient->getDiseaseState()->hasCurrTrueOI &&
 		(patient->getDiseaseState()->typeCurrTrueOI == SimContext::OI_TB)) {
 			unscheduleNextTBProph();
 	}
 
-	// Start proph if scheduled to do so and reached month of schedule
+	/** Start proph if scheduled to do so and reached month of schedule */
 	if (patient->getTBState()->isScheduledForProph &&
 		(patient->getGeneralState()->monthNum >= patient->getTBState()->monthOfProphStart)) {
 			startNextTBProph();
@@ -1543,20 +2073,26 @@ void ClinicVisitUpdater::performTBProphProgramUpdates() {
 	}
 } /* end performTBProphProgramUpdates */
 
-/* evaluateStartTBProphPolicy determines if the start criteria for TB proph has been met */
+/** \brief evaluateStartTBProphPolicy determines if the start criteria for TB proph has been met
+ *
+ * \return true if Patient meets the TB Prophylaxis starting criteria */
 bool ClinicVisitUpdater::evaluateStartTBProphPolicy() {
-	// return false if there is not another available proph
+	/** return false if there is not another available proph */
 	if (patient->getTBState()->nextProphNum == SimContext::NOT_APPL)
 		return false;
-	// return false if TB is active or on treatment
+	/** return false if TB is active or on treatment */
 	if ((patient->getTBState()->currTrueTBDiseaseState == SimContext::TB_STATE_ACTIVE) ||
 		(patient->getTBState()->isOnTreatment))
+		return false;
+
+	/** return false if flag for continue tb after stop is not set and patient has had tb proph before */
+	if (!simContext->getTBInputs()->continueProphAfterStop && patient->getTBState()->hadProph)
 		return false;
 
 	bool hasPassedOneCriteria = false;
 	bool hasFailedOneCriteria = false;
 
-	// Evaluate the current observed CD4 criteria
+	/** Evaluate the current observed CD4 criteria */
 	if (patient->getMonitoringState()->hasObservedCD4) {
 		double currCD4 = patient->getMonitoringState()->currObservedCD4;
 		if ((simContext->getTBInputs()->startProphCurrentCD4Bounds[SimContext::LOWER_BOUND] != SimContext::NOT_APPL) ||
@@ -1571,7 +2107,7 @@ bool ClinicVisitUpdater::evaluateStartTBProphPolicy() {
 		}
 	}
 
-	// Evaluate the minimum observed CD4 criteria
+	/** Evaluate the minimum observed CD4 criteria */
 	if (patient->getMonitoringState()->hasObservedCD4) {
 		double minCD4 = patient->getMonitoringState()->minObservedCD4;
 		if ((simContext->getTBInputs()->startProphMinCD4Bounds[SimContext::LOWER_BOUND] != SimContext::NOT_APPL) ||
@@ -1586,7 +2122,7 @@ bool ClinicVisitUpdater::evaluateStartTBProphPolicy() {
 		}
 	}
 
-	// Evaluate history of active TB
+	/** Evaluate history of active TB */
 	if (simContext->getTBInputs()->startProphKnownActiveHistory != SimContext::NOT_APPL) {
 		if (patient->getTBState()->hasObservedHistoryActiveTB) {
 			hasPassedOneCriteria = true;
@@ -1596,7 +2132,7 @@ bool ClinicVisitUpdater::evaluateStartTBProphPolicy() {
 		}
 	}
 
-	// Evaluate ART initiation criteria
+	/** Evaluate ART initiation criteria */
 	if (simContext->getTBInputs()->startProphAtARTInitiation != SimContext::NOT_APPL) {
 		if (patient->getARTState()->isOnART) {
 			hasPassedOneCriteria = true;
@@ -1606,19 +2142,23 @@ bool ClinicVisitUpdater::evaluateStartTBProphPolicy() {
 		}
 	}
 
-	// return true if using or evaluation and at least one criteria has been met,
+	/** return true if using or evaluation and at least one criteria has been met,
 	//	return true if using and evaluation and at least one criteria has been met and none have failed,
-	//	return false otherwise
-	if (simContext->getTBInputs()->startProphUseOrEvaluation && hasPassedOneCriteria)
+	//	return false otherwise */
+	if (simContext->getTBInputs()->startProphUseOrEvaluation && hasPassedOneCriteria){
 		return true;
+	}
 	if (!simContext->getTBInputs()->startProphUseOrEvaluation && hasPassedOneCriteria && !hasFailedOneCriteria)
 		return true;
 	return false;
 } /* end evaluateStartTBProphPolicy */
 
-/* evaluateStopTBProphPolicy determines if the sopping criteria for TB proph has been met */
+/** \brief evaluateStopTBProphPolicy determines if the stopping criteria for TB proph has been met
+ *
+ * \return true if Patient meets criteria for stopping TB prophylaxis
+ **/
 bool ClinicVisitUpdater::evaluateStopTBProphPolicy() {
-	// return true if patient has acute TB this month, stop proph
+	/** return true if patient has acute TB this month, stop proph */
 	if (patient->getDiseaseState()->hasCurrTrueOI &&
 		(patient->getDiseaseState()->typeCurrTrueOI == SimContext::OI_TB))
 		return true;
@@ -1626,9 +2166,7 @@ bool ClinicVisitUpdater::evaluateStopTBProphPolicy() {
 	bool hasPassedOneCriteria = false;
 	bool hasFailedOneCriteria = false;
 
-	// Evaluate the current observed CD4 criteria,
-	//	return true if within range and using OR evalatuation,
-	//	return false if outside range and using AND evaluation
+	/** Evaluate the current observed CD4 criteria */
 	if (patient->getMonitoringState()->hasObservedCD4) {
 		double currCD4 = patient->getMonitoringState()->currObservedCD4;
 		if ((simContext->getTBInputs()->stopProphCurrentCD4Bounds[SimContext::LOWER_BOUND] != SimContext::NOT_APPL) ||
@@ -1643,9 +2181,7 @@ bool ClinicVisitUpdater::evaluateStopTBProphPolicy() {
 		}
 	}
 
-	// Evaluate ART initiation criteria,
-	//	return true if on ART and using OR evaluation,
-	//	return false if not and using AND evaluation
+	/** Evaluate ART initiation criteria */
 	if (simContext->getTBInputs()->stopProphAtARTInitiation != SimContext::NOT_APPL) {
 		if (patient->getARTState()->isOnART) {
 			hasPassedOneCriteria = true;
@@ -1655,10 +2191,8 @@ bool ClinicVisitUpdater::evaluateStopTBProphPolicy() {
 		}
 	}
 
-	// Evaluate months on proph criteria,
-	//	return true if on ART and using OR evaluation,
-	//	return false if not and using AND evaluation
-	if (simContext->getTBInputs()->stopProphAtARTInitiation != SimContext::NOT_APPL) {
+	/** Evaluate months on proph criteria, */
+	if (simContext->getTBInputs()->stopProphNumMonths != SimContext::NOT_APPL) {
 		int monthsOnProph = patient->getGeneralState()->monthNum - patient->getTBState()->monthOfProphStart;
 		if (monthsOnProph >= simContext->getTBInputs()->stopProphNumMonths) {
 			hasPassedOneCriteria = true;
@@ -1668,9 +2202,9 @@ bool ClinicVisitUpdater::evaluateStopTBProphPolicy() {
 		}
 	}
 
-	// return true if using or evaluation and at least one criteria has been met,
+	/** return true if using or evaluation and at least one criteria has been met,
 	//	return true if using and evaluation and at least one criteria has been met and none have failed,
-	//	return false otherwise
+	//	return false otherwise */
 	if (simContext->getTBInputs()->stopProphUseOrEvaluation && hasPassedOneCriteria)
 		return true;
 	if (!simContext->getTBInputs()->stopProphUseOrEvaluation && hasPassedOneCriteria && !hasFailedOneCriteria)
@@ -1678,10 +2212,10 @@ bool ClinicVisitUpdater::evaluateStopTBProphPolicy() {
 	return false;
 } /* end evaluateStopTBProphPolicy */
 
-/* performTBTreatmentProgramUpdates evaluates TB treatment policies and alters the treatment program */
+/** \brief performTBTreatmentProgramUpdates evaluates TB treatment policies and alters the treatment program */
 void ClinicVisitUpdater::performTBTreatmentProgramUpdates() {
-	// Evaluate new treatment if patient has acute TB and is not yet scheduled for treatment, or
-	//	if patient has active TB and this is the first visit
+	/** Evaluate new treatment if patient has acute TB and is not yet scheduled for treatment, or
+	//	if patient has active TB and this is the first visit */
 	bool treatmentEligible = false;
 	if (patient->getDiseaseState()->hasCurrTrueOI &&
 		(patient->getDiseaseState()->typeCurrTrueOI == SimContext::OI_TB) &&
@@ -1692,7 +2226,7 @@ void ClinicVisitUpdater::performTBTreatmentProgramUpdates() {
 		(patient->getTBState()->currTrueTBDiseaseState == SimContext::TB_STATE_ACTIVE))
 			treatmentEligible = true;
 	if (treatmentEligible) {
-			// Roll for whether or not a next TB treatment should be schedule
+			/** If patient is treatment eligible, roll for whether or not a next TB treatment should be schedule */
 			double probTreat = 0.0;
 			if (patient->getARTState()->isOnART)
 				probTreat = simContext->getTBInputs()->probReceiveTreatmentOnART;
@@ -1705,7 +2239,7 @@ void ClinicVisitUpdater::performTBTreatmentProgramUpdates() {
 				int lineNum = 0;
 				SimContext::TB_TREATM_STAGE treatStage = SimContext::TB_TREATM_STAGE_1_NEW;
 				randNum = CepacUtil::getRandomDouble(60190, patient);
-				for (int i = 0; i < SimContext::TB_TREATM_LINES_NUM; i++) {
+				for (int i = 0; i < SimContext::TB_TREATM_STAGE_NUM; i++) {
 					if (randNum < simContext->getTBInputs()->probInitialTreatmentLine[tbStrain][i]) {
 						lineNum = i;
 						break;
@@ -1713,8 +2247,10 @@ void ClinicVisitUpdater::performTBTreatmentProgramUpdates() {
 					randNum -= simContext->getTBInputs()->probInitialTreatmentLine[tbStrain][i];
 				}
 				if (lineNum == 1)
-					treatStage = SimContext::TB_TREATM_STAGE_2;
+					treatStage = SimContext::TB_TREATM_STAGE_1_RPT;
 				else if (lineNum == 2)
+					treatStage = SimContext::TB_TREATM_STAGE_2;
+				else if (lineNum==3)
 					treatStage = SimContext::TB_TREATM_STAGE_3;
 
 				// Determine time lag to treatment start
@@ -1735,7 +2271,7 @@ void ClinicVisitUpdater::performTBTreatmentProgramUpdates() {
 				}
 			}
 
-			// Increment costs for acute TB here, need to determine treatment first
+			/** Increment costs for acute TB here, need to determine treatment first */
 			if (patient->getTBState()->isScheduledForTreatment) {
 				SimContext::TB_TREATM_STAGE treatStage = patient->getTBState()->nextTreatmentStage;
 				const double *costArray = simContext->getTBInputs()->acuteActiveTreatedCosts[treatStage];
@@ -1748,25 +2284,39 @@ void ClinicVisitUpdater::performTBTreatmentProgramUpdates() {
 			}
 	}
 
-	// Evaluate treatment changes if intended duration has been exceeded
+	/** Evaluate treatment changes if intended duration has been exceeded */
 	if (patient->getTBState()->isOnTreatment) {
 		int monthsTreat = patient->getGeneralState()->monthNum - patient->getTBState()->monthOfTreatmentStart;
 		SimContext::TB_TREATM_STAGE treatStage = patient->getTBState()->currTreatmentStage;
 		SimContext::TB_STRAIN tbStrain = patient->getTBState()->currTrueTBResistanceStrain;
 		if (monthsTreat >= simContext->getTBInputs()->monthsTreatmentDuration[treatStage]) {
-			// If treatment succeeded, set to history of active state
-			if (patient->getTBState()->currTrueTBDiseaseState == SimContext::TB_STATE_TREATM_SUCC) {
+			/** If treatment truly succeeded, set to history of active state after true cure
+			 *
+			 *  If treatment falsely succeeded, set to history of active state after false cure
+			 **/
+			if (patient->getTBState()->currTrueTBDiseaseState == SimContext::TB_STATE_TREATM_TRUE_SUCC) {
 				stopCurrTBTreatment(true, true);
-				setTBDiseaseState(SimContext::TB_STATE_HIST_ACTV);
+				setTBDiseaseState(SimContext::TB_STATE_HIST_ACTV, SimContext::TB_HIST_ACTV_AFTER_TRUE);
 
 				// Output tracing if enabled
 				if (patient->getGeneralState()->tracingEnabled) {
-					tracer->printTrace(1, "**%d TB TREAT SUCCESS %s;\n",
+					tracer->printTrace(1, "**%d TB TREAT TRUE SUCCESS %s;\n",
 						patient->getGeneralState()->monthNum, SimContext::TB_TREATM_STAGE_STRS[treatStage]);
 				}
 			}
 
-			// If treatment failed, return to active state and determine the next treatment step
+			if (patient->getTBState()->currTrueTBDiseaseState == SimContext::TB_STATE_TREATM_FALSE_SUCC) {
+				stopCurrTBTreatment(true, true);
+				setTBDiseaseState(SimContext::TB_STATE_HIST_ACTV, SimContext::TB_HIST_ACTV_AFTER_FALSE);
+
+				// Output tracing if enabled
+				if (patient->getGeneralState()->tracingEnabled) {
+					tracer->printTrace(1, "**%d TB TREAT FALSE SUCCESS %s;\n",
+						patient->getGeneralState()->monthNum, SimContext::TB_TREATM_STAGE_STRS[treatStage]);
+				}
+			}
+
+			/** If treatment failed, return to active state and determine the next treatment step */
 			if (patient->getTBState()->currTrueTBDiseaseState == SimContext::TB_STATE_TREATM_FAILING) {
 				// Stop current treatment, update state and statistics
 				stopCurrTBTreatment(true, false);
@@ -1778,7 +2328,7 @@ void ClinicVisitUpdater::performTBTreatmentProgramUpdates() {
 						patient->getGeneralState()->monthNum, SimContext::TB_TREATM_STAGE_STRS[treatStage]);
 				}
 
-				// Roll for developing increased resistance from failed treatment
+				/** Roll for developing increased resistance from failed treatment */
 				double randNum = CepacUtil::getRandomDouble(60210, patient);
 				if ((randNum < simContext->getTBInputs()->probIncreasedResistanceNotCured[treatStage]) &&
 					(tbStrain < SimContext::TB_STRAIN_XDR)) {
@@ -1790,23 +2340,21 @@ void ClinicVisitUpdater::performTBTreatmentProgramUpdates() {
 						}
 				}
 
-				// Roll for the next subsequent course of treatment
+				/** Roll for the next subsequent course of treatment */
 				SimContext::TB_TREATM_STAGE newTreatStage;
 				bool contTreat = false;
 				randNum = CepacUtil::getRandomDouble(60220, patient);
 				if ((simContext->getTBInputs()->probRepeatTreatmentAfterFailure[treatStage] > 0) &&
 					(randNum < simContext->getTBInputs()->probRepeatTreatmentAfterFailure[treatStage])) {
-						// Repeat line 1 if using first line 1
-						if (treatStage == SimContext::TB_TREATM_STAGE_1_NEW) {
-							contTreat = true;
-							newTreatStage = SimContext::TB_TREATM_STAGE_1_RPT;
-						}
+						//Repeat same treatment
+						contTreat = true;
+						newTreatStage = treatStage;
 				}
 				else {
 					randNum -= simContext->getTBInputs()->probRepeatTreatmentAfterFailure[treatStage];
 					if ((simContext->getTBInputs()->probNextTreatmentAfterFailure[treatStage] > 0) &&
 						(randNum < simContext->getTBInputs()->probNextTreatmentAfterFailure[treatStage])) {
-							// Repeat line 1 from new line 1, go onto next line otherwise
+							// Continue to next treatment stage
 							if ((treatStage == SimContext::TB_TREATM_STAGE_1_NEW)) {
 								contTreat = true;
 								newTreatStage = SimContext::TB_TREATM_STAGE_1_RPT;
@@ -1824,8 +2372,13 @@ void ClinicVisitUpdater::performTBTreatmentProgramUpdates() {
 						randNum -= simContext->getTBInputs()->probNextTreatmentAfterFailure[treatStage];
 						if ((simContext->getTBInputs()->probSkipTreatmentAfterFailure[treatStage] > 0) &&
 							(randNum < simContext->getTBInputs()->probSkipTreatmentAfterFailure[treatStage])) {
-								// Skip to line 3 from either line 1 new or repeat
-								if ((treatStage == SimContext::TB_TREATM_STAGE_1_NEW) || (treatStage == SimContext::TB_TREATM_STAGE_1_RPT)) {
+								//Skip one treatment stage and go to the next one
+								if (treatStage == SimContext::TB_TREATM_STAGE_1_NEW) {
+									contTreat = true;
+									newTreatStage = SimContext::TB_TREATM_STAGE_2;
+								}
+								// Skip to line 3 from line 1 repeat
+								if (treatStage == SimContext::TB_TREATM_STAGE_1_RPT) {
 									contTreat = true;
 									newTreatStage = SimContext::TB_TREATM_STAGE_3;
 								}
@@ -1833,7 +2386,7 @@ void ClinicVisitUpdater::performTBTreatmentProgramUpdates() {
 					}
 				}
 
-				// If additional treatments will occur, calculate lag to start and schedule it
+				/** If additional treatments will occur, calculate lag to start and schedule it */
 				if (contTreat) {
 					// Determine time lag to treatment start
 					double timeLagMean = simContext->getTBInputs()->monthsLagToStartTreatmentMean[newTreatStage];
@@ -1862,7 +2415,7 @@ void ClinicVisitUpdater::performTBTreatmentProgramUpdates() {
 		}
 	}
 
-	// Start patient on treatment if they still have active TB are scheduled for it this month
+	/** Start patient on treatment if they still have active TB are scheduled for it this month */
 	if ((patient->getTBState()->currTrueTBDiseaseState == SimContext::TB_STATE_ACTIVE) &&
 		patient->getTBState()->isScheduledForTreatment &&
 		(patient->getGeneralState()->monthNum >= patient->getTBState()->monthOfTreatmentStart)) {
@@ -1872,8 +2425,13 @@ void ClinicVisitUpdater::performTBTreatmentProgramUpdates() {
 			SimContext::TB_TREATM_STAGE treatStage = patient->getTBState()->currTreatmentStage;
 			SimContext::TB_STRAIN tbStrain = patient->getTBState()->currTrueTBResistanceStrain;
 			double randNum = CepacUtil::getRandomDouble(60240, patient);
-			if (randNum < simContext->getTBInputs()->probCuredAfterTreatment[tbStrain][treatStage]) {
-				setTBDiseaseState(SimContext::TB_STATE_TREATM_SUCC);
+			// The true and false cure probabilities are additive per discussion with Jason on 2/7/2011
+			if (randNum < (simContext->getTBInputs()->probCuredAfterTreatment[tbStrain][treatStage][SimContext::TB_CURE_TRUE] + simContext->getTBInputs()->probCuredAfterTreatment[tbStrain][treatStage][SimContext::TB_CURE_FALSE])) {
+				if (randNum < simContext->getTBInputs()->probCuredAfterTreatment[tbStrain][treatStage][SimContext::TB_CURE_TRUE]){
+					setTBDiseaseState(SimContext::TB_STATE_TREATM_TRUE_SUCC);
+				} else {
+					setTBDiseaseState(SimContext::TB_STATE_TREATM_FALSE_SUCC);
+				}
 			}
 			else {
 				setTBDiseaseState(SimContext::TB_STATE_TREATM_FAILING);
@@ -1883,7 +2441,7 @@ void ClinicVisitUpdater::performTBTreatmentProgramUpdates() {
 			if (patient->getGeneralState()->tracingEnabled) {
 				tracer->printTrace(1, "**%d START TB TREATMENT %s(%s);\n",
 					patient->getGeneralState()->monthNum, SimContext::TB_TREATM_STAGE_STRS[treatStage],
-					(patient->getTBState()->currTrueTBDiseaseState == SimContext::TB_STATE_TREATM_SUCC) ? "succ" : "fail");
+					(patient->getTBState()->currTrueTBDiseaseState == SimContext::TB_STATE_TREATM_TRUE_SUCC) ? "true succ" : ((patient->getTBState()->currTrueTBDiseaseState == SimContext::TB_STATE_TREATM_FALSE_SUCC) ? "false succ" : "fail"));
 			}
 	}
 } /* end performTBTreatmentProgramUpdates */

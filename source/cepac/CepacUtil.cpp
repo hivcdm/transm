@@ -1,37 +1,47 @@
-#ifndef _MSC_VER
-#include <unistd.h>
-#endif
 #include "include.h"
 
-/* Empty constructor and destructor, should never create an instance of this class */
+/** \brief Empty constructor and destructor, should never create an instance of this class */
 CepacUtil::CepacUtil(void)
 {
 }
+/** \brief Empty constructor and destructor, should never create an instance of this class */
 CepacUtil::~CepacUtil(void)
 {
 }
 
 /* Constant string values for CEPAC version and file/directory information */
-const char *CepacUtil::CEPAC_INPUT_VERSION = "201020540";
-const char *CepacUtil::CEPAC_VERSION_STRING = "44a";
-const char *CepacUtil::CEPAC_EXECUTABLE_COMPILED_DATE = "2010-08-12";
+/** The CEPAC Input Version to match that from the .in file */
+const char *CepacUtil::CEPAC_INPUT_VERSION = "201020603";
+/** CEPAC version string: the version label commonly used in CEPAC vernacular */
+const char *CepacUtil::CEPAC_VERSION_STRING = "45b";
+/** The compile date of the most recent release */
+const char *CepacUtil::CEPAC_EXECUTABLE_COMPILED_DATE = "2013-02-26";
+/** .tmp */
 const char *CepacUtil::FILE_EXTENSION_FOR_TEMP = ".tmp";
+/** .txt */
 const char *CepacUtil::FILE_EXTENSION_FOR_TRACE = ".txt";
+/** .out */
 const char *CepacUtil::FILE_EXTENSION_FOR_OUTPUT = ".out";
+/** .in */
 const char *CepacUtil::FILE_EXTENSION_FOR_INPUT = ".in";
+/** *.in */
 const char *CepacUtil::FILE_EXTENSION_INPUT_SEARCH_STR = "*.in";
+/** popstats.out */
 const char *CepacUtil::FILE_NAME_SUMMARIES = "popstats.out";
 
-/* Vector of the file names to be run, and the inputs and results directories paths */
+/** Vector of the file names to be run*/
 std::vector<std::string> CepacUtil::filesToRun;
+/** The inputs directory path */
 std::string CepacUtil::inputsDirectory;
+/** The output directory path */
 std::string CepacUtil::resultsDirectory;
+/** True if we're using random seed, false for fixed seed */
 bool CepacUtil::useRandomSeedByTime;
 
-/* Random number generator class */
+/** \brief Random number generator class */
 MTRand CepacUtil::mtRand;
 
-/* useCurrentDirectoryForInputs determines the current directory and sets as inputs directory */
+/** \brief useCurrentDirectoryForInputs determines the current directory and sets as inputs directory */
 void CepacUtil::useCurrentDirectoryForInputs() {
 #if defined(_WIN32)
 	char buffer[512];
@@ -44,7 +54,7 @@ void CepacUtil::useCurrentDirectoryForInputs() {
 #endif
 } /* end useCurrentDirectoryForInputs */
 
-/* findInputFiles locates all the .in files in the current directory and adds them
+/** \brief findInputFiles locates all the .in files in the current directory and adds them
 	to the filesToRun vector */
 void CepacUtil::findInputFiles() {
 #if defined(_WIN32)
@@ -80,7 +90,7 @@ void CepacUtil::findInputFiles() {
 #endif
 } /* end findInputFiles */
 
-/* createResultsDirectory creates the directory "results" as a subdirectory of the inputs one */
+/** \brief createResultsDirectory creates the directory "results" as a subdirectory of the inputs one */
 void CepacUtil::createResultsDirectory() {
 #if defined(_WIN32)
 	resultsDirectory = inputsDirectory;
@@ -95,7 +105,7 @@ void CepacUtil::createResultsDirectory() {
 #endif
 } /* end createResultsDirectory */
 
-/* changeDirectoryToResults changes the working directory to the results one */
+/** \brief changeDirectoryToResults changes the working directory to the results one */
 void CepacUtil::changeDirectoryToResults() {
 #if defined(_WIN32)
 	_chdir(resultsDirectory.c_str());
@@ -104,7 +114,7 @@ void CepacUtil::changeDirectoryToResults() {
 #endif
 } /* end changeDirectoryToResults */
 
-/* changeDirectoryToInputs changes the working directory to the inputs one */
+/** \brief changeDirectoryToInputs changes the working directory to the inputs one */
 void CepacUtil::changeDirectoryToInputs() {
 #if defined(_WIN32)
 	_chdir(inputsDirectory.c_str());
@@ -113,7 +123,10 @@ void CepacUtil::changeDirectoryToInputs() {
 #endif
 } /* end changeDirectoryToInputs */
 
-/* getDateString places the current date string in the specified buffer */
+/** \brief getDateString places the current date string in the specified buffer
+ *  \param buffer a pointer to a char array representing the buffer to add the resulting date string to
+ *  \param bufsize an integer representing the size of buffer
+ **/
 void CepacUtil::getDateString(char *buffer, int bufsize) {
 #if defined(_WIN32)
 	_strdate(buffer);
@@ -124,7 +137,9 @@ void CepacUtil::getDateString(char *buffer, int bufsize) {
 #endif
 } /* end getDateString */
 
-/* getTimeString places the current system time string in the specified buffer */
+/** \brief getTimeString places the current system time string in the specified buffer
+ *  \param buffer a pointer to a char array representing the buffer to add the resulting time string to
+ *  \param bufsize an integer representing the size of buffer */
 void CepacUtil::getTimeString(char *buffer, int bufsize) {
 #if defined(_WIN32)
 	_strtime(buffer);
@@ -135,7 +150,9 @@ void CepacUtil::getTimeString(char *buffer, int bufsize) {
 #endif
 } /* end getTimeString */
 
-/* fileExists returns true if the specified file exists, false otherwise */
+/** \brief fileExists returns true if the specified file exists, false otherwise
+ * \param filename a pointer to a character array representing the name of the file
+ **/
 bool CepacUtil::fileExists(const char *filename) {
 	FILE *file;
 	//fopen_s(&file, filename, "r");
@@ -146,13 +163,18 @@ bool CepacUtil::fileExists(const char *filename) {
 	return true;
 } /* end fileExists */
 
-/* openFile opens the specified file in the given mode */
+/** \brief openFile opens the specified file in the given mode
+ * \param filename a pointer to a character array representing the name of the file
+ * \param mode a pointer to a character array representing the mode to open the file in: "r" for read, "w" for write, "a" for append, "r+" for reading and writing an existing file, "w+" for reading and writing an empty file, "a+" for reading and appending to a file
+ **/
 FILE *CepacUtil::openFile(const char *filename, const char *mode) {
 	FILE *file = fopen(filename, mode);
 	return file;
 } /* end openFile */
 
-/* closeFile closes the specified file */
+/** \brief closeFile closes the specified file
+ * \param filename a pointer to a character array representing the name of the file
+ **/
 void CepacUtil::closeFile(FILE *file) {
 	fclose(file);
 } /* end closeFile */

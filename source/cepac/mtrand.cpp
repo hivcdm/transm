@@ -18,6 +18,7 @@ void MTRand_int32::gen_state() { // generate new state vector
   p = 0; // reset position
 }
 
+/** seed with 32 bit integer */
 void MTRand_int32::seed(unsigned long s) {  // init by 32 bit seed
   state[0] = s & 0xFFFFFFFFUL; // for > 32 bit machines
   for (int i = 1; i < n; ++i) {
@@ -30,6 +31,7 @@ void MTRand_int32::seed(unsigned long s) {  // init by 32 bit seed
   p = n; // force gen_state() to be called for next random number
 }
 
+/** seed with array */
 void MTRand_int32::seed(const unsigned long* array, int size) { // init by array
   seed(19650218UL);
   int i = 1, j = 0;

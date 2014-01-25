@@ -2,8 +2,8 @@
 
 #include "include.h"
 
-/* 
-	CD4TestUpdater handles the clinical CD4 testing of patients and the associated state 
+/**
+	CD4TestUpdater handles the clinical CD4 testing of patients and the associated state
 	updates.  It usually coincides with clinic visits but was split out to handle CD4 tests
 	that occur outside of clinic visits due to ART initiation or repeat ART failure testing.
 */

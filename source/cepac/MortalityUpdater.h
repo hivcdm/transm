@@ -2,7 +2,7 @@
 
 #include "include.h"
 
-/*
+/**
 	The MortalityUpdater class is a state updater that checks for the occurrence of
 	chronic AIDS or non-AIDS death each month, and updates the patient's death state if so.
 	The chronic AIDS death also includes TB extended mortality effects.

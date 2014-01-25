@@ -1,16 +1,20 @@
 #include "include.h"
 
-/* Constructor takes run name and associated simulation context pointer as parameters */
+/** \brief Constructor takes run name and associated simulation context pointer as parameters
+ *
+ * \param runName a string representing the run name associated with this RunStats object
+ * \param simContext a pointer to the SimContext representing the inputs associated with this RunStats object*/
 RunStats::RunStats(string runName, SimContext *simContext) {
+
 	statsFileName = runName;
 	statsFileName.append(CepacUtil::FILE_EXTENSION_FOR_OUTPUT);
 	this->simContext = simContext;
 
-	/* Clear the vectors for patient and time summaries */
+	/** Clear the vectors for patient and time summaries */
 	patients.clear();
 	timeSummaries.clear();
 
-	/* Initialize the statistics subclasses */
+	/** Initialize the statistics subclasses */
 	initPopulationSummary();
 	initHIVScreening();
 	initSurvivalStats();
@@ -24,9 +28,10 @@ RunStats::RunStats(string runName, SimContext *simContext) {
 	initLTFUStats();
 	initProphStats();
 	initARTStats();
+
 } /* end Constructor */
 
-/* Destructor clears vectors and frees the allocated TimeSummary objects */
+/** \brief Destructor clears vectors and frees the allocated TimeSummary objects */
 RunStats::~RunStats(void) {
 	for (vector<TimeSummary *>::iterator s = timeSummaries.begin(); s != timeSummaries.end(); s++) {
 		TimeSummary *summary = *s;
@@ -36,7 +41,26 @@ RunStats::~RunStats(void) {
 	patients.clear();
 } /* end Destructor */
 
-/* finalizeStats calculate all aggregate statistics and values to be outputted */
+/** \brief finalizeStats calculate all aggregate statistics and values to be outputted
+ *
+ * The finalize functions calculate all averages and standard deviations.
+ *
+ * Calls:
+ * - RunStats::finalizePopulationSummary();
+ * - RunStats::finalizeHIVScreening();
+ * - RunStats::finalizeSurvivalStats();
+ * - RunStats::finalizeInitialDistributions();
+ * - RunStats::finalizeCHRMsStats();
+ * - RunStats::finalizeOIStats();
+ * - RunStats::finalizeDeathStats();
+ * - RunStats::finalizeOverallSurvival();
+ * - RunStats::finalizeOverallCosts();
+ * - RunStats::finalizeTBStats();
+ * - RunStats::finalizeLTFUStats();
+ * - RunStats::finalizeProphStats();
+ * - RunStats::finalizeARTStats();
+ * - RunStats::finalizeTimeSummaries();
+*/
 void RunStats::finalizeStats() {
 	finalizePopulationSummary();
 	finalizeHIVScreening();
@@ -54,7 +78,23 @@ void RunStats::finalizeStats() {
 	finalizeTimeSummaries();
 }; /* end finalizeStats */
 
-/* writeStatsFile outputs all statistics to the stats file */
+/** \brief writeStatsFile outputs all statistics to the stats file
+ *
+ *  * Calls:
+ * - RunStats::writePopulationSummary();
+ * - RunStats::writeHIVScreening();
+ * - RunStats::writeSurvivalStats();
+ * - RunStats::writeInitialDistributions();
+ * - RunStats::writeCHRMsStats();
+ * - RunStats::writeOIStats();
+ * - RunStats::writeDeathStats();
+ * - RunStats::writeOverallSurvival();
+ * - RunStats::writeOverallCosts();
+ * - RunStats::writeTBStats();
+ * - RunStats::writeLTFUStats();
+ * - RunStats::writeProphStats();
+ * - RunStats::writeARTStats();
+ * - RunStats::writeTimeSummaries();*/
 void RunStats::writeStatsFile() {
 	CepacUtil::changeDirectoryToResults();
 	statsFile = CepacUtil::openFile(statsFileName.c_str(), "w");
@@ -85,7 +125,7 @@ void RunStats::writeStatsFile() {
 	CepacUtil::closeFile(statsFile);
 } /* end writeStatsFile */
 
-/* initPopulationSummary initializes the PopulationSummary object */
+/** \brief initPopulationSummary initializes the PopulationSummary object */
 void RunStats::initPopulationSummary() {
 	popSummary.numCohorts = 0;
 	popSummary.numCohortsHIVPositive = 0;
@@ -125,7 +165,7 @@ void RunStats::initPopulationSummary() {
 	popSummary.QALMsHIVPositiveAverage = 0;
 } /* end initPopulationSummary */
 
-/* initHIVScreening initializes the HIVScreening object */
+/** \brief initHIVScreening initializes the HIVScreening object */
 void RunStats::initHIVScreening() {
 	hivScreening.numPrevalentCases = 0;
 	hivScreening.numIncidentCases = 0;
@@ -137,15 +177,19 @@ void RunStats::initHIVScreening() {
 	}
 	hivScreening.numAtDetectionPrevalent = 0;
 	hivScreening.numAtDetectionIncident = 0;
+	hivScreening.numAtLinkage = 0;
 	for (int j = 0; j < SimContext::HIV_INF_NUM; j++) {
 		hivScreening.numAtDetectionPrevalentHIV[j] = 0;
 		hivScreening.numAtDetectionIncidentHIV[j] = 0;
+		hivScreening.numAtLinkageHIV[j] = 0;
 		for (int i = 0; i < SimContext::CD4_NUM_STRATA; i++) {
 			hivScreening.numAtDetectionPrevalentCD4[i] = 0;
 			hivScreening.numAtDetectionPrevalentCD4HIV[i][j] = 0;
 			hivScreening.numAtDetectionIncidentCD4[i] = 0;
 			hivScreening.percentAtDetectionIncidentCD4[i] = 0;
 			hivScreening.numAtDetectionIncidentCD4HIV[i][j] = 0;
+			hivScreening.numAtLinkageCD4[i] = 0;
+			hivScreening.numAtLinkageCD4HIV[i][j] = 0;
 		}
 		for (int i = 0; i < SimContext::HVL_NUM_STRATA; i++) {
 			hivScreening.numAtDetectionPrevalentHVL[i] = 0;
@@ -153,17 +197,23 @@ void RunStats::initHIVScreening() {
 			hivScreening.numAtDetectionIncidentHVL[i] = 0;
 			hivScreening.percentAtDetectionIncidentHVL[i] = 0;
 			hivScreening.numAtDetectionIncidentHVLHIV[i][j] = 0;
+			hivScreening.numAtLinkageHVL[i] = 0;
+			hivScreening.numAtLinkageHVLHIV[i][j] = 0;
 		}
 	}
 	hivScreening.CD4AtDetectionPrevalentSum = 0;
 	hivScreening.CD4AtDetectionPrevalentAverage = 0;
 	hivScreening.CD4AtDetectionIncidentSum = 0;
 	hivScreening.CD4AtDetectionIncidentAverage = 0;
+	hivScreening.CD4AtLinkageSum = 0;
+	hivScreening.CD4AtLinkageAverage = 0;
 	for (int i = 0; i < SimContext::HIV_INF_NUM; i++) {
 		hivScreening.CD4AtDetectionPrevalentSumHIV[i] = 0;
 		hivScreening.CD4AtDetectionPrevalentAverageHIV[i] = 0;
 		hivScreening.CD4AtDetectionIncidentSumHIV[i] = 0;
 		hivScreening.CD4AtDetectionIncidentAverageHIV[i] = 0;
+		hivScreening.CD4AtLinkageSumHIV[i] = 0;
+		hivScreening.CD4AtLinkageAverageHIV[i] = 0;
 	}
 	hivScreening.monthsToInfectionSum = 0;
 	hivScreening.monthsToInfectionAverage = 0;
@@ -181,6 +231,10 @@ void RunStats::initHIVScreening() {
 	hivScreening.monthsToDetectionIncidentAverage = 0;
 	hivScreening.monthsToDetectionIncidentSumSquares = 0;
 	hivScreening.monthsToDetectionIncidentStdDev = 0;
+	hivScreening.monthsToLinkageSum = 0;
+	hivScreening.monthsToLinkageAverage = 0;
+	hivScreening.monthsToLinkageSumSquares = 0;
+	hivScreening.monthsToLinkageStdDev = 0;
 	hivScreening.ageMonthsAtDetectionPrevalentSum = 0;
 	hivScreening.ageMonthsAtDetectionPrevalentAverage = 0;
 	hivScreening.ageMonthsAtDetectionPrevalentSumSquares = 0;
@@ -189,14 +243,24 @@ void RunStats::initHIVScreening() {
 	hivScreening.ageMonthsAtDetectionIncidentAverage = 0;
 	hivScreening.ageMonthsAtDetectionIncidentSumSquares = 0;
 	hivScreening.ageMonthsAtDetectionIncidentStdDev = 0;
+	hivScreening.ageMonthsAtLinkageSum = 0;
+	hivScreening.ageMonthsAtLinkageAverage = 0;
+	hivScreening.ageMonthsAtLinkageSumSquares = 0;
+	hivScreening.ageMonthsAtLinkageStdDev = 0;
 	hivScreening.numDetectedGender[SimContext::GENDER_MALE] = 0;
 	hivScreening.numDetectedGender[SimContext::GENDER_FEMALE] = 0;
 	for (int i = 0; i < SimContext::HIV_DET_NUM; i++) {
 		hivScreening.numDetectedPrevalentMeans[i] = 0;
 		hivScreening.numDetectedIncidentMeans[i] = 0;
+		hivScreening.numLinkedMeans[i] = 0;
+		hivScreening.monthsToLinkageSumMeans[i]=0;
+		hivScreening.monthsToLinkageAverageMeans[i]=0;
+		hivScreening.monthsToLinkageSumSquaresMeans[i]=0;
+		hivScreening.monthsToLinkageStdDevMeans[i]=0;
 	}
 	for (int i = 0; i < SimContext::OI_NUM; i++) {
 		hivScreening.numDetectedByOIs[i] = 0;
+		hivScreening.numDetectedByOIsPrevDetected[i] = 0;
 	}
 	for (int i = 0; i < SimContext::TEST_ACCEPT_NUM; i++) {
 		for (int j = 0; j < SimContext::HIV_EXT_INF_NUM; j++) {
@@ -210,6 +274,28 @@ void RunStats::initHIVScreening() {
 	hivScreening.numRefuseTest = 0;
 	hivScreening.numReturnForResults = 0;
 	hivScreening.numNoReturnForResults = 0;
+
+	hivScreening.numAcceptLabStaging = 0;
+	hivScreening.numRefuseLabStaging = 0;
+	hivScreening.numReturnForResultsLabStaging = 0;
+	hivScreening.numNoReturnForResultsLabStaging = 0;
+	hivScreening.numLinkLabStaging = 0;
+	hivScreening.numNoLinkLabStaging = 0;
+	for (int i=0; i< SimContext::HIV_POS_NUM;i++){
+		hivScreening.numAcceptLabStagingHIVState[i] = 0;
+		hivScreening.numReturnLabStagingHIVState[i] = 0;
+	}
+	for (int i = 0; i < SimContext::CD4_NUM_STRATA; i++){
+		hivScreening.numReturnLabStagingObsvCD4[i] = 0;
+		hivScreening.numReturnLabStagingTrueCD4[i] = 0;
+		hivScreening.numLinkLabStagingObsvCD4[i] = 0;
+		hivScreening.numLinkLabStagingTrueCD4[i] = 0;
+		for (int j = 0; j < SimContext::CD4_NUM_STRATA; j++){
+			hivScreening.numLinkLabStagingObsvTrueCD4[i][j] = 0;
+			hivScreening.numReturnLabStagingObsvTrueCD4[i][j] = 0;
+		}
+	}
+
 	hivScreening.numTestResultsPrevalent = 0;
 	hivScreening.numTestResultsIncident = 0;
 	hivScreening.numTestResultsHIVNegative = 0;
@@ -220,7 +306,7 @@ void RunStats::initHIVScreening() {
 	}
 } /* end initHIVScreening */
 
-/* initSurvivalStats initializes the SurvivalStats objects for each of the subgroups */
+/** \brief initSurvivalStats initializes the SurvivalStats objects for each of the subgroups */
 void RunStats::initSurvivalStats() {
 	for (int i = 0; i < NUM_SURVIVAL_GROUPS; i++) {
 		survivalStats[i].LMsHistogram.clear();
@@ -251,7 +337,7 @@ void RunStats::initSurvivalStats() {
 	}
 } /* end initSurvivalStats */
 
-/* initInitialDistributions initializes the InititalDistribution object */
+/** \brief initInitialDistributions initializes the InititalDistribution object */
 void RunStats::initInitialDistributions() {
 	for (int i = 0; i < SimContext::CD4_NUM_STRATA; i++) {
 		initialDistributions.numPatientsCD4Level[i] = 0;
@@ -280,9 +366,10 @@ void RunStats::initInitialDistributions() {
 	}
 } /* end initInitialDistributions */
 
-/* initCHRMsStats initializes the CHRMsStats object */
+/** \brief initCHRMsStats initializes the CHRMsStats object */
 void RunStats::initCHRMsStats() {
 	for (int i = 0; i < SimContext::CHRM_NUM; i++) {
+		chrmsStats.numPatientsWithCHRM[i]=0;
 		chrmsStats.numPrevalentCHRM[i] = 0;
 		chrmsStats.numIncidentCHRM[i] = 0;
 		chrmsStats.numDeathsCHRM[i] = 0;
@@ -301,7 +388,7 @@ void RunStats::initCHRMsStats() {
 	}
 } /* end initCHRMsStats */
 
-/* initOIStats initializes the OIStats object */
+/** \brief initOIStats initializes the OIStats object */
 void RunStats::initOIStats() {
 	for (int i = 0; i < SimContext::OI_NUM; i++) {
 		oiStats.numPrimaryOIsOI[i] = 0;
@@ -362,11 +449,15 @@ void RunStats::initOIStats() {
 	}
 } /* end initOIStats */
 
-/* initDeathStats initializes the DeathStats object */
+/** \brief initDeathStats initializes the DeathStats object */
 void RunStats::initDeathStats() {
 	deathStats.numDeathsUninfected = 0;
+	deathStats.numToxDeaths=0;
 	for (int i = 0; i < SimContext::DTH_NUM_CAUSES; i++) {
 		deathStats.numDeathsType[i] = 0;
+		for(int j=0;j<SimContext::CHRM_NUM;j++){
+			deathStats.numDeathsWithCHRMsTypeCHRM[i][j];
+		}
 	}
 	for (int i = 0; i < SimContext::CD4_NUM_STRATA; i++) {
 		deathStats.numDeathsCD4[i] = 0;
@@ -384,6 +475,23 @@ void RunStats::initDeathStats() {
 			deathStats.numDeathsHVLCD4[i][j] = 0;
 		}
 	}
+
+	for (int i = 0; i < SimContext::HIV_CARE_NUM; i++){
+		deathStats.numDeathsCare[i] = 0;
+		for (int j = 0; j < SimContext::DTH_NUM_CAUSES; j++){
+			deathStats.numDeathsCareType[i][j]=0;
+		}
+	}
+
+	for (int i=0;i<SimContext::CD4_NUM_STRATA;i++){
+		for (int j=0;j<SimContext::HVL_NUM_STRATA;j++){
+			deathStats.numToxDeathsCD4HVL[i][j]=0;
+			for (int k=0;k<SimContext::OI_NUM;k++){
+				deathStats.numToxDeathsCD4HVLOIHist[i][j][k]=0;
+			}
+		}
+	}
+
 	deathStats.numChronicAIDSDeathsNoOIHistory = 0;
 	deathStats.numChronicAIDSDeathsOIHistory = 0;
 	deathStats.numNonAIDSDeathsNoOIHistory = 0;
@@ -394,9 +502,11 @@ void RunStats::initDeathStats() {
 		deathStats.numNonAIDSDeathsNoOIHistoryCD4[i] = 0;
 		deathStats.numNonAIDSDeathsOIHistoryCD4[i] = 0;
 	}
+	deathStats.ToxDeathsCD4Sum=0;
+	deathStats.ToxDeathsCD4SumSquares=0;
 } /* end initDeathStats */
 
-/* initOverallSurvival initializes the OverallSurvival object */
+/** \brief initOverallSurvival initializes the OverallSurvival object */
 void RunStats::initOverallSurvival() {
 	overallSurvival.LMsNoOIHistory = 0;
 	overallSurvival.LMsOIHistory = 0;
@@ -414,6 +524,9 @@ void RunStats::initOverallSurvival() {
 		overallSurvival.LMsNoOIHistoryOIs[i] = 0;
 		overallSurvival.LMsOIHistoryOIs[i] = 0;
 	}
+	for (int i=0;i<SimContext::CHRM_NUM;i++){
+		overallSurvival.LMsCHRMHistoryCHRMs[i]=0;
+	}
 	overallSurvival.LMsHIVPositive = 0;
 	overallSurvival.QALMsHIVPositive = 0;
 	for (int i = 0; i < SimContext::HIV_ID_NUM; i++) {
@@ -429,7 +542,7 @@ void RunStats::initOverallSurvival() {
 	}
 } /* end initOverallSurvival */
 
-/* initOverallCosts initializes the OverallCosts object */
+/** \brief initOverallCosts initializes the OverallCosts object */
 void RunStats::initOverallCosts() {
 	overallCosts.costsNoOIHistory = 0;
 	overallCosts.costsOIHistory = 0;
@@ -463,18 +576,25 @@ void RunStats::initOverallCosts() {
 	overallCosts.costsClinicVisits = 0;
 	overallCosts.costsHIVScreeningTests = 0;
 	overallCosts.costsHIVScreeningMisc = 0;
+	overallCosts.costsLabStagingTests = 0;
+	overallCosts.costsLabStagingMisc = 0;
 	for (int i = 0; i < SimContext::COST_NUM_TYPES; i++) {
 		overallCosts.totalUndiscountedCosts[i] = 0;
 	}
 	overallCosts.totalUndiscountedCostsUnclassified = 0;
 	overallCosts.costsDrugs = 0;
+	overallCosts.costsInterventions=0;
 	overallCosts.costsToxicity = 0;
+	for (int i=0;i<SimContext::CHRM_NUM;i++){
+		overallCosts.costsCHRMs[i]=0;
+	}
+
 	for (int i = 0; i < SimContext::GENDER_NUM; i++) {
 		overallCosts.costsGender[i] = 0;
 	}
 } /* end initOverallCost */
 
-/* initTBStats initializes the TBStats object */
+/** \brief initTBStats initializes the TBStats object */
 void RunStats::initTBStats() {
 	for (int i = 0; i < SimContext::TB_NUM_STRAINS; i++) {
 		tbStats.numLatentInfections[i] = 0;
@@ -511,7 +631,7 @@ void RunStats::initTBStats() {
 	}
 } /* end initTBStats */
 
-/* initLTFUStats initializes the LTFUStats object */
+/** \brief initLTFUStats initializes the LTFUStats object */
 void RunStats::initLTFUStats() {
 	ltfuStats.numPatientsLost = 0;
 	ltfuStats.numPatientsReturned = 0;
@@ -541,7 +661,7 @@ void RunStats::initLTFUStats() {
 	}
 } /* end initLTFUStats */
 
-/* initProphStats initializes the ProphStats object */
+/** \brief initProphStats initializes the ProphStats object */
 void RunStats::initProphStats() {
 	for (int i = 0; i < SimContext::OI_NUM; i++) {
 		prophStats.numMinorToxicityTotal[i] = 0;
@@ -560,13 +680,15 @@ void RunStats::initProphStats() {
 	}
 } /* end initProphStats */
 
-/* initARTStats initializes the ARTStats object */
+/** \brief initARTStats initializes the ARTStats object */
 void RunStats::initARTStats() {
+
 	artStats.monthsSuppressed = 0;
 	for (int i = 0; i < SimContext::HVL_NUM_STRATA; i++) {
 		artStats.monthsPartiallySuppressedHVL[i] = 0;
 		artStats.monthsFailedHVL[i] = 0;
 	}
+
 	for (int i = 0; i < SimContext::ART_NUM_LINES; i++) {
 		artStats.monthsSuppressedLine[i] = 0;
 		artStats.monthsPartiallySuppressedLine[i] = 0;
@@ -594,31 +716,48 @@ void RunStats::initARTStats() {
 		artStats.monthsToTrueFailureMean[i] = 0;
 		artStats.monthsToTrueFailureSumSquares[i] = 0;
 		artStats.monthsToTrueFailureStdDev[i] = 0;
+
 		for (int j = 0; j < SimContext::RESP_NUM_TYPES; j++) {
-			artStats.numOnARTAtInitResp[i][j] = 0;
-			artStats.trueCD4AtInitSum[i] = 0;
-			artStats.trueCD4AtInitMean[i] = 0;
-			artStats.observedCD4AtInitSum[i] = 0;
-			artStats.observedCD4AtInitMean[i] = 0;
-			for (int k = 0; k < SimContext::ART_EFF_NUM_TYPES; k++) {
-				artStats.numDrawEfficacyAtInitResp[i][k][j] = 0;
+			for(int k=0;k<SimContext::HET_NUM_OUTCOMES;k++){
+				artStats.numOnARTAtInitResp[i][k][j] = 0;
+				artStats.trueCD4AtInitSumResp[i][k][j] = 0;
+				artStats.trueCD4AtInitMeanResp[i][k][j] = 0;
+				artStats.observedCD4AtInitSumResp[i][k][j] = 0;
+				artStats.observedCD4AtInitMeanResp[i][k][j] = 0;
 			}
+
+
+
+			for (int k = 0; k < SimContext::ART_EFF_NUM_TYPES; k++) {
+				for(int l=0;l<SimContext::HET_NUM_OUTCOMES;l++){
+					artStats.numDrawEfficacyAtInitResp[i][k][l][j] = 0;
+				}
+			}
+
 			for (int k = 0; k < SimContext::CD4_RESPONSE_NUM_TYPES; k++) {
-				artStats.numCD4ResponseTypeAtInitResp[i][k][j] = 0;
+				for (int l=0;l<SimContext::HET_NUM_OUTCOMES;l++){
+					artStats.numCD4ResponseTypeAtInitResp[i][k][l][j] = 0;
+				}
 			}
 			for (int k = 0; k < SimContext::RISK_FACT_NUM; k++) {
-				artStats.numWithRiskFactorAtInitResp[i][k][j] = 0;
+				for (int l=0;l <SimContext::HET_NUM_OUTCOMES;l++){
+					artStats.numWithRiskFactorAtInitResp[i][k][l][j] = 0;
+				}
 			}
-			artStats.numTrueFailureResp[i][j] = 0;
-			artStats.trueCD4AtTrueFailureSumResp[i][j] = 0;
-			artStats.trueCD4AtTrueFailureMeanResp[i][j] = 0;
-			artStats.observedCD4AtTrueFailureSumResp[i][j] = 0;
-			artStats.observedCD4AtTrueFailureMeanResp[i][j] = 0;
-			artStats.monthsToTrueFailureSumResp[i][j] = 0;
-			artStats.monthsToTrueFailureMeanResp[i][j] = 0;
-			artStats.monthsToTrueFailureSumSquaresResp[i][j] = 0;
-			artStats.monthsToTrueFailureStdDevResp[i][j] = 0;
+
+			for(int k=0;k<SimContext::HET_NUM_OUTCOMES;k++){
+				artStats.numTrueFailureResp[i][k][j] = 0;
+				artStats.trueCD4AtTrueFailureSumResp[i][k][j] = 0;
+				artStats.trueCD4AtTrueFailureMeanResp[i][k][j] = 0;
+				artStats.observedCD4AtTrueFailureSumResp[i][k][j] = 0;
+				artStats.observedCD4AtTrueFailureMeanResp[i][k][j] = 0;
+				artStats.monthsToTrueFailureSumResp[i][k][j] = 0;
+				artStats.monthsToTrueFailureMeanResp[i][k][j] = 0;
+				artStats.monthsToTrueFailureSumSquaresResp[i][k][j] = 0;
+				artStats.monthsToTrueFailureStdDevResp[i][k][j] = 0;
+			}
 		}
+
 		artStats.numSTIInterruptionsSum[i] = 0;
 		artStats.numSTIInterruptionsMean[i] = 0;
 		artStats.monthsOnSTIInterruptionSum[i] = 0;
@@ -703,16 +842,59 @@ void RunStats::initARTStats() {
 	}
 } /* end initARTStats */
 
-/* initTimeSummary initializes the given TimeSummary object */
+/** \brief initTimeSummary initializes the given TimeSummary object */
 void RunStats::initTimeSummary(TimeSummary *currTime) {
 	// Initialize all the time summary values
 	currTime->timePeriod = 0;
 	currTime->numAlive = 0;
+	currTime->numAliveWithCHRMs=0;
+	currTime->numAliveWithoutCHRMs=0;
+
+	currTime->numDeaths=0;
+	for(int i=0;i<SimContext::CHRM_NUM;i++){
+		currTime->numAliveCHRM[i]=0;
+	}
+
+	for (int j=0;j<SimContext::CHRM_AGE_CAT_NUM;j++){
+		currTime->numCHRMsAgeTotal[j]=0;
+	}
+	for (int j=0;j<SimContext::GENDER_NUM;j++){
+		currTime->numCHRMsGenderTotal[j]=0;
+	}
+	for(int j=0;j<SimContext::CD4_NUM_STRATA;j++){
+		currTime->numCHRMsCD4Total[j]=0;
+	}
+
 	for (int i = 0; i < SimContext::HIV_ID_NUM; i++) {
 		currTime->numAliveType[i] = 0;
+		currTime->numDeathsInf[i]=0;
+		currTime->numAliveWithCHRMsType[i]=0;
+		currTime->numAliveWithoutCHRMsType[i]=0;
+		for(int j=0;j<SimContext::CHRM_NUM;j++){
+			currTime->numAliveTypeCHRMs[i][j]=0;
+		}
+		for (int j = 0; j < SimContext::HIV_CARE_NUM; j++){
+			currTime->numAliveTypeCare[i][j]=0;
+		}
+	}
+	for (int i = 0; i < SimContext::HIV_CARE_NUM; i++){
+		currTime->numAliveCare[i] = 0;
+		currTime->numDeathsCare[i] = 0;
+
+		currTime->trueCD4SumCare[i] = 0;
+		currTime->trueCD4MeanCare[i] = 0;
+		currTime->trueCD4SumSquaresCare[i] = 0;
+		currTime->trueCD4StdDevCare[i] = 0;
+		currTime->observedCD4SumCare[i] = 0;
+		currTime->observedCD4MeanCare[i] = 0;
+		currTime->observedCD4SumSquaresCare[i] = 0;
+		currTime->observedCD4StdDevCare[i] = 0;
 	}
 	for (int i = 0; i < SimContext::PEDS_HIV_NUM; i++) {
 		currTime->numAlivePediatrics[i] = 0;
+	}
+	for(int i=0;i<SimContext::CHRM_NUM;i++){
+		currTime->numIncidentCHRMs[i]=0;
 	}
 	currTime->numIncidentHIVInfections = 0;
 	currTime->sumQOLmultipliers = 0;
@@ -741,6 +923,9 @@ void RunStats::initTimeSummary(TimeSummary *currTime) {
 			currTime->trueCD4ARTDistribution[j][i] = 0;
 		}
 		currTime->observedCD4Distribution[i] = 0;
+		for (int j = 0; j < SimContext::HIV_CARE_NUM; j++){
+			currTime->observedCD4DistributionCare[i][j] = 0;
+		}
 	}
 	for (int i = 0; i < SimContext::HVL_NUM_STRATA; i++) {
 		currTime->trueHVLDistribution[i] = 0;
@@ -764,14 +949,35 @@ void RunStats::initTimeSummary(TimeSummary *currTime) {
 		currTime->numWithFirstOI[i] = 0;
 		currTime->numDeathsFromFirstOI[i] = 0;
 	}
+	for (int i=0; i<SimContext::CHRM_NUM;i++){
+		for (int j=0;j<SimContext::CHRM_AGE_CAT_NUM;j++){
+			currTime->numCHRMsAge[i][j]=0;
+		}
+		for (int j=0;j<SimContext::GENDER_NUM;j++){
+			currTime->numCHRMsGender[i][j]=0;
+		}
+		for(int j=0;j<SimContext::CD4_NUM_STRATA;j++){
+			currTime->numCHRMsCD4[i][j]=0;
+		}
+	}
+	currTime->numDeathsWithoutCHRMs=0;
 	for (int i = 0; i < SimContext::DTH_NUM_CAUSES; i++) {
 		currTime->numDeathsType[i] = 0;
+		currTime->numDeathsWithoutCHRMsType[i]=0;
+		for(int j=0;j<SimContext::CHRM_NUM;j++){
+			currTime->numDeathsWithCHRMsTypeCHRM[i][j]=0;
+		}
+		for (int j = 0; j < SimContext::HIV_CARE_NUM; j++)
+			currTime->numDeathsTypeCare[i][j]=0;
 	}
 	currTime->costsCD4Testing = 0;
 	currTime->costsHVLTesting = 0;
 	currTime->costsClinicVisits = 0;
 	currTime->costsHIVTests = 0;
 	currTime->costsHIVMisc = 0;
+	currTime->costsLabStagingTests = 0;
+	currTime->costsLabStagingMisc = 0;
+
 	currTime->totalMonthlyCohortCosts = 0;
 	for (int i = 0; i < SimContext::OI_NUM; i++) {
 		for (int j = 0; j < SimContext::PROPH_NUM; j++) {
@@ -781,21 +987,37 @@ void RunStats::initTimeSummary(TimeSummary *currTime) {
 	for (int i = 0; i < SimContext::ART_NUM_LINES; i++) {
 		currTime->costsART[i] = 0;
 		currTime->numOnART[i] = 0;
+		currTime->numStartingART[i] = 0;
 		currTime->numOnARTIncludingContinuedCosts[i] = 0;
 		currTime->numLostToFollowUpART[i] = 0;
+		currTime->numStartingLostToFollowUpART[i] = 0;
 		currTime->numReturnOnPrevART[i] = 0;
 		currTime->numReturnOnNextART[i] = 0;
 		currTime->numDeathsWhileLostART[i] = 0;
 	}
+	currTime->numInCarePostART = 0;
+	currTime->numInCarePreART = 0;
+	currTime->numStartingPreART = 0;
+	currTime->numStartingPostART = 0;
+	for (int i=0;i<SimContext::CHRM_NUM;i++){
+		currTime->costsCHRMs[i]=0;
+	}
 	currTime->numLostToFollowUpPreART = 0;
 	currTime->numLostToFollowUpPostART = 0;
+	currTime->numStartingLostToFollowUpPreART = 0;
+	currTime->numStartingLostToFollowUpPostART = 0;
 	currTime->numReturnToCarePreART = 0;
 	currTime->numReturnToCarePostART = 0;
 	currTime->numDeathsWhileLostPreART = 0;
 	currTime->numDeathsWhileLostPostART = 0;
+	currTime->numDeathsUndetectedInfected = 0;
+	currTime->numDeathsDetectedLinked = 0;
+	currTime->numDeathsDetectedNeverLinked = 0;
+	currTime->numDeathsDetectedLTFU = 0;
+	currTime->numDeathsUninfected = 0;
 } /* end initTimeSummary */
 
-/* finalizePopulationSummary calculates aggregate statistics for the PopulationSummary object */
+/** \brief finalizePopulationSummary calculates aggregate statistics for the PopulationSummary object */
 void RunStats::finalizePopulationSummary() {
 	char tmpbuf[256];
 
@@ -808,7 +1030,7 @@ void RunStats::finalizePopulationSummary() {
 	CepacUtil::getTimeString(tmpbuf, 255);
 	popSummary.runTime = tmpbuf;
 
-	// Calculate the total costs and life month statistics from all patients
+	/** Calculate the total costs and life month statistics from all patients */
 	popSummary.costsAverage = popSummary.costsSum / popSummary.numCohorts;
 	popSummary.costsStdDev = sqrt(popSummary.costsSumSquares / popSummary.numCohorts - popSummary.costsAverage * popSummary.costsAverage);
 	popSummary.costsLowerBound = popSummary.costsAverage - (1.96 * popSummary.costsStdDev / sqrt((double)popSummary.numCohorts));
@@ -822,7 +1044,7 @@ void RunStats::finalizePopulationSummary() {
 	popSummary.QALMsLowerBound = popSummary.QALMsAverage - (1.96 * popSummary.QALMsStdDev / sqrt((double)popSummary.numCohorts));
 	popSummary.QALMsUpperBound = popSummary.QALMsAverage + (1.96 * popSummary.QALMsStdDev / sqrt((double)popSummary.numCohorts));
 
-	// Calculate the total costs and life month statistics from patients with X number of ART failures
+	/** Calculate the total costs and life month statistics from patients with X number of ART failures */
 	for (int i = 0; i <= SimContext::ART_NUM_LINES; i++) {
 		if (popSummary.numFailART[i] > 0) {
 			popSummary.costsFailARTAverage[i] = popSummary.costsFailARTSum[i] / popSummary.numFailART[i];
@@ -831,7 +1053,7 @@ void RunStats::finalizePopulationSummary() {
 		}
 	}
 
-	// Calculate the total costs and life month statistics from the HIV positive patients
+	/** Calculate the total costs and life month statistics from the HIV positive patients */
 	if (popSummary.numCohortsHIVPositive > 0) {
 		popSummary.costsHIVPositiveAverage = popSummary.costsHIVPositiveSum / popSummary.numCohortsHIVPositive;
 		popSummary.LMsHIVPositiveAverage = popSummary.LMsHIVPositiveSum / popSummary.numCohortsHIVPositive;
@@ -839,11 +1061,11 @@ void RunStats::finalizePopulationSummary() {
 	}
 } /* end finalizePopulationSummary */
 
-/* finalizeHIVScreening calculates aggregate statistics for the HIVScreening object */
+/** \brief finalizeHIVScreening calculates aggregate statistics for the HIVScreening object */
 void RunStats::finalizeHIVScreening() {
 	hivScreening.numHIVPositiveTotal = hivScreening.numPrevalentCases + hivScreening.numIncidentCases;
 
-	// Calculate sums for number at detection by CD4, HVL, HIV state
+	/** Calculate sums for number at detection by CD4, HVL, HIV state */
 	for (int j = 0; j < SimContext::HIV_INF_NUM; j++) {
 		for (int i = 0; i < SimContext::CD4_NUM_STRATA; i++) {
 			hivScreening.numAtDetectionPrevalent += hivScreening.numAtDetectionPrevalentCD4HIV[i][j];
@@ -852,10 +1074,14 @@ void RunStats::finalizeHIVScreening() {
 			hivScreening.numAtDetectionIncidentHIV[j] += hivScreening.numAtDetectionIncidentCD4HIV[i][j];
 			hivScreening.numAtDetectionPrevalentCD4[i] += hivScreening.numAtDetectionPrevalentCD4HIV[i][j];
 			hivScreening.numAtDetectionIncidentCD4[i] += hivScreening.numAtDetectionIncidentCD4HIV[i][j];
+			hivScreening.numAtLinkage += hivScreening.numAtLinkageCD4HIV[i][j];
+			hivScreening.numAtLinkageHIV[j]+=hivScreening.numAtLinkageCD4HIV[i][j];
+			hivScreening.numAtLinkageCD4[i] += hivScreening.numAtLinkageCD4HIV[i][j];
 		}
 		for (int i = 0; i < SimContext::HVL_NUM_STRATA; i++) {
 			hivScreening.numAtDetectionPrevalentHVL[i] += hivScreening.numAtDetectionPrevalentHVLHIV[i][j];
 			hivScreening.numAtDetectionIncidentHVL[i] += hivScreening.numAtDetectionIncidentHVLHIV[i][j];
+			hivScreening.numAtLinkageHVL[i] += hivScreening.numAtLinkageHVLHIV[i][j];
 		}
 	}
 	for (int i = 0; i < SimContext::CD4_NUM_STRATA; i++) {
@@ -867,21 +1093,25 @@ void RunStats::finalizeHIVScreening() {
 			hivScreening.percentAtDetectionIncidentHVL[i] = 100.0 * hivScreening.numAtDetectionIncidentHVL[i] / hivScreening.numAtDetectionIncident;
 	}
 
-	// Calculate average CD4s at time of detection
+	/** Calculate average CD4s at time of detection */
 	for (int i = 0; i < SimContext::HIV_INF_NUM; i++) {
 		hivScreening.CD4AtDetectionPrevalentSum += hivScreening.CD4AtDetectionPrevalentSumHIV[i];
 		hivScreening.CD4AtDetectionIncidentSum += hivScreening.CD4AtDetectionIncidentSumHIV[i];
+		hivScreening.CD4AtLinkageSum += hivScreening.CD4AtLinkageSumHIV[i];
 		if (hivScreening.numAtDetectionPrevalentHIV[i] > 0)
 			hivScreening.CD4AtDetectionPrevalentAverageHIV[i] = hivScreening.CD4AtDetectionPrevalentSumHIV[i] / hivScreening.numAtDetectionPrevalentHIV[i];
 		if (hivScreening.numAtDetectionIncidentHIV[i] > 0)
 			hivScreening.CD4AtDetectionIncidentAverageHIV[i] = hivScreening.CD4AtDetectionIncidentSumHIV[i] / hivScreening.numAtDetectionIncidentHIV[i];
+		if (hivScreening.numAtLinkageHIV[i] > 0)
+			hivScreening.CD4AtLinkageAverageHIV[i] = hivScreening.CD4AtLinkageSumHIV[i] / hivScreening.numAtLinkageHIV[i];
 	}
 	if (hivScreening.numAtDetectionPrevalent > 0)
 		hivScreening.CD4AtDetectionPrevalentAverage = hivScreening.CD4AtDetectionPrevalentSum / hivScreening.numAtDetectionPrevalent;
 	if (hivScreening.numAtDetectionIncident > 0)
 		hivScreening.CD4AtDetectionIncidentAverage = hivScreening.CD4AtDetectionIncidentSum / hivScreening.numAtDetectionIncident;
-
-	// Calculate averages and standard deviations for time to infection and detection
+	if (hivScreening.numAtLinkage > 0)
+		hivScreening.CD4AtLinkageAverage = hivScreening.CD4AtLinkageSum / hivScreening.numAtLinkage;
+	/** Calculate averages and standard deviations for time to infection and detection */
 	if (hivScreening.numIncidentCases > 0) {
 		hivScreening.monthsToInfectionAverage = hivScreening.monthsToInfectionSum / hivScreening.numIncidentCases;
 		hivScreening.monthsToInfectionStdDev = sqrt(hivScreening.monthsToInfectionSumSquares / hivScreening.numIncidentCases - hivScreening.monthsToInfectionAverage * hivScreening.monthsToInfectionAverage);
@@ -900,8 +1130,19 @@ void RunStats::finalizeHIVScreening() {
 		hivScreening.ageMonthsAtDetectionIncidentAverage = hivScreening.ageMonthsAtDetectionIncidentSum / hivScreening.numAtDetectionIncident;
 		hivScreening.ageMonthsAtDetectionIncidentStdDev = sqrt(hivScreening.ageMonthsAtDetectionIncidentSumSquares / hivScreening.numAtDetectionIncident - hivScreening.ageMonthsAtDetectionIncidentAverage * hivScreening.ageMonthsAtDetectionIncidentAverage);
 	}
-
-	// Calculate sums for test results by infection type
+	if (hivScreening.numAtLinkage > 0){
+		hivScreening.monthsToLinkageAverage = hivScreening.monthsToLinkageSum / hivScreening.numAtLinkage;
+		hivScreening.monthsToLinkageStdDev = sqrt(hivScreening.monthsToLinkageSumSquares / hivScreening.numAtLinkage - hivScreening.monthsToLinkageAverage*hivScreening.monthsToLinkageAverage);
+		hivScreening.ageMonthsAtLinkageAverage = hivScreening.ageMonthsAtLinkageSum / hivScreening.numAtLinkage;
+		hivScreening.ageMonthsAtLinkageStdDev = sqrt(hivScreening.ageMonthsAtLinkageSumSquares / hivScreening.numAtLinkage - hivScreening.ageMonthsAtLinkageAverage * hivScreening.ageMonthsAtLinkageAverage);
+	}
+	for (int i = 0; i < SimContext::HIV_DET_NUM; i++){
+		if (hivScreening.numLinkedMeans[i] > 0){
+			hivScreening.monthsToLinkageAverageMeans[i] = hivScreening.monthsToLinkageSumMeans[i] / hivScreening.numLinkedMeans[i];
+			hivScreening.monthsToLinkageStdDevMeans[i] = sqrt(hivScreening.monthsToLinkageSumSquaresMeans[i] / hivScreening.numLinkedMeans[i] - hivScreening.monthsToLinkageAverageMeans[i]*hivScreening.monthsToLinkageAverageMeans[i]);
+		}
+	}
+	/** Calculate sums for test results by infection type */
 	for (int i = 0; i < SimContext::TEST_RESULT_NUM; i++) {
 		hivScreening.numTestResultsPrevalent += hivScreening.numTestResultsPrevalentType[i];
 		hivScreening.numTestResultsIncident += hivScreening.numTestResultsIncidentType[i];
@@ -909,16 +1150,16 @@ void RunStats::finalizeHIVScreening() {
 	}
 } /* end finalizeHIVScreening */
 
-/* finalizeSurvivalStats calculates aggregate statistics for the SurvivalStats objects */
+/** \brief finalizeSurvivalStats calculates aggregate statistics for the SurvivalStats objects */
 void RunStats::finalizeSurvivalStats() {
 	if (patients.size() == 0)
 		return;
 
-	// Sort the patient summaries by life months
+	/** Sort the patient summaries by life months */
 	sort(patients.begin(), patients.end(), PatientSummary::compareLMs());
 
-	// Calculate the upper bound, lower bound, and median of the survival groups,
-	//	also initial histogram starting point and bucket size
+	/** Calculate the upper bound, lower bound, and median of the survival groups,
+	//	also initial histogram starting point and bucket size */
 	int numTruncate = patients.size() * TRUNC_HISTOGRAM_PERC / 100;
 	int lowerBoundNum[NUM_SURVIVAL_GROUPS];
 	int upperBoundNum[NUM_SURVIVAL_GROUPS];
@@ -944,7 +1185,7 @@ void RunStats::finalizeSurvivalStats() {
 		bucketSize[i] = (int) floor((survivalStats[i].LMsMax - survivalStats[i].LMsMin) / MAX_NUM_HISTOGRAM_BUCKETS) + 1;
 	}
 
-	// Initital loop over the patient summaries only calculates mean values and histogram
+	/** Initital loop over the patient summaries only calculates mean values and histogram */
 	int patientNum = 0;
 	for (vector<PatientSummary>::iterator i = patients.begin(); i != patients.end(); i++) {
 		const PatientSummary &currPatient = *i;
@@ -968,7 +1209,7 @@ void RunStats::finalizeSurvivalStats() {
 		survivalStats[i].QALMsMean = survivalStats[i].QALMsSum / numCohorts[i];
 	}
 
-	// Second loop calculates all other statistics, need means for skew and kurtosis
+	/** Second loop calculates all other statistics, need means for skew and kurtosis */
 	patientNum = 0;
 	for (vector<PatientSummary>::iterator i = patients.begin(); i != patients.end(); i++) {
 		const PatientSummary &currPatient = *i;
@@ -1003,14 +1244,14 @@ void RunStats::finalizeSurvivalStats() {
 	}
 } /* end finalizeSurvivalStats */
 
-/* finalizeInitialDistributions calculates aggregate statistics for the InitialDistributions object */
+/** \brief finalizeInitialDistributions calculates aggregate statistics for the InitialDistributions object */
 void RunStats::finalizeInitialDistributions() {
-	// Finalize initial distribution stats
+	/** Finalize initial distribution stats */
 	if (popSummary.numCohortsHIVPositive > 0)
 		initialDistributions.averageInitialAgeMonths = initialDistributions.sumInitialAgeMonths / popSummary.numCohortsHIVPositive;
 } /* end finalizeInitialDistributions */
 
-/* finalizeCHRMsStats calculates aggregate statistics for the CHRMsStats object */
+/** \brief finalizeCHRMsStats calculates aggregate statistics for the CHRMsStats object */
 void RunStats::finalizeCHRMsStats() {
 	for (int i = 0; i < SimContext::CHRM_NUM; i++) {
 		for (int j = 0; j < SimContext::CD4_NUM_STRATA; j++) {
@@ -1024,9 +1265,9 @@ void RunStats::finalizeCHRMsStats() {
 	}
 } /* end finalizeCHRMsStats */
 
-/* finalizeOIStats calculates aggregate statistics for the OIStats object */
+/** \brief finalizeOIStats calculates aggregate statistics for the OIStats object */
 void RunStats::finalizeOIStats() {
-	// Accumulate the OI occurrence numbers
+	/** Accumulate the OI occurrence numbers */
 	for (int i = 0; i < SimContext::OI_NUM; i++) {
 		for (int j = 0; j < SimContext::CD4_NUM_STRATA; j++) {
 			oiStats.numPrimaryOIsCD4[j] += oiStats.numPrimaryOIsCD4OI[j][i];
@@ -1038,7 +1279,7 @@ void RunStats::finalizeOIStats() {
 		}
 	}
 
-	// Accumulate the OI history numbers
+	/** Accumulate the OI history numbers */
 	for (int j = 0; j < SimContext::HVL_NUM_STRATA; j++) {
 		for (int k = 0; k < SimContext::CD4_NUM_STRATA; k++) {
 			oiStats.numMonthsCD4[k] += oiStats.numMonthsHVLCD4[j][k];
@@ -1054,7 +1295,7 @@ void RunStats::finalizeOIStats() {
 		}
 	}
 
-	// Calculate the OI history probabilities
+	/** Calculate the OI history probabilities */
 	for (int i = 0; i < SimContext::OI_NUM; i++) {
 		for (int j = 0; j < SimContext::CD4_NUM_STRATA; j++) {
 			if (oiStats.numPatientsCD4[j] > 0)
@@ -1083,13 +1324,18 @@ void RunStats::finalizeOIStats() {
 	}
 } /* end finalizeOIStats */
 
-/* finalizeDeathStats calculates aggregate statistics for the DeathStats object */
+/** \brief finalizeDeathStats calculates aggregate statistics for the DeathStats object */
 void RunStats::finalizeDeathStats() {
-	// Finalize death stats
+	/** Finalize death stats */
 	for (int i = 0; i < SimContext::CD4_NUM_STRATA; i++) {
 		for (int j = 0; j < SimContext::DTH_NUM_CAUSES; j++) {
 			deathStats.numDeathsCD4[i] += deathStats.numDeathsCD4Type[i][j];
 			deathStats.numDeathsType[j] += deathStats.numDeathsCD4Type[i][j];
+		}
+	}
+	for (int i = 0; i < SimContext::HIV_CARE_NUM; i++){
+		for (int j = 0; j < SimContext::DTH_NUM_CAUSES; j++){
+			deathStats.numDeathsCare[i] += deathStats.numDeathsCareType[i][j];
 		}
 	}
 	for (int i = 0; i < SimContext::HVL_NUM_STRATA; i++) {
@@ -1103,11 +1349,37 @@ void RunStats::finalizeDeathStats() {
 		deathStats.numNonAIDSDeathsNoOIHistory += deathStats.numNonAIDSDeathsNoOIHistoryCD4[i];
 		deathStats.numNonAIDSDeathsOIHistory += deathStats.numNonAIDSDeathsOIHistoryCD4[i];
 	}
+
+	for (int i=0;i<SimContext::CD4_NUM_STRATA;i++){
+		for (int j=0;j<SimContext::HVL_NUM_STRATA;j++){
+			if(deathStats.numToxDeathsCD4[i]==0){
+				deathStats.hvlDistribToxDeathCD4HVL[i][j]=0;
+			}
+			else{
+				deathStats.hvlDistribToxDeathCD4HVL[i][j]=(double)deathStats.numToxDeathsCD4HVL[i][j]/deathStats.numToxDeathsCD4[i];
+			}
+		}
+	}
+	for (int i=0;i<SimContext::OI_NUM;i++){
+		for (int j=0;j<SimContext::CD4_NUM_STRATA;j++){
+			for (int k=0;k<SimContext::HVL_NUM_STRATA;k++){
+				if(deathStats.numToxDeathsCD4HVL[j][k]==0){
+					deathStats.probOiHistToxDeathsCD4HVLOIHist[j][k][i]=0;
+				}
+				else{
+					deathStats.probOiHistToxDeathsCD4HVLOIHist[j][k][i]=(double)deathStats.numToxDeathsCD4HVLOIHist[j][k][i]/deathStats.numToxDeathsCD4HVL[j][k];
+				}
+			}
+		}
+	}
+
+	deathStats.ToxDeathsCD4Mean=deathStats.ToxDeathsCD4Sum/deathStats.numToxDeaths;
+	deathStats.ToxDeathsCD4StdDev=sqrt(deathStats.ToxDeathsCD4SumSquares/deathStats.numToxDeaths-deathStats.ToxDeathsCD4Mean*deathStats.ToxDeathsCD4Mean);
 } /* end finalizeDeathStats */
 
-/* finalizeOverallSurvival calculates aggregate statistics for the OverallSurvival object */
+/** \brief finalizeOverallSurvival calculates aggregate statistics for the OverallSurvival object */
 void RunStats::finalizeOverallSurvival() {
-	// Finalize the overall survival stats
+	/** Finalize the overall survival stats */
 	for (int i = 0; i < SimContext::CD4_NUM_STRATA; i++) {
 		overallSurvival.LMsTotalCD4[i] = overallSurvival.LMsNoOIHistoryCD4[i] + overallSurvival.LMsOIHistoryCD4[i];
 		overallSurvival.LMsNoOIHistory += overallSurvival.LMsNoOIHistoryCD4[i];
@@ -1120,7 +1392,7 @@ void RunStats::finalizeOverallSurvival() {
 		overallSurvival.QALMsHIVState[SimContext::HIV_ID_UNID];
 } /* end finalizeOverallSurvival */
 
-/* finalizeOverallCosts calculates aggregate statistics for the OverallCosts object */
+/** \brief finalizeOverallCosts calculates aggregate statistics for the OverallCosts object */
 void RunStats::finalizeOverallCosts() {
 	for (int i = 0; i < SimContext::CD4_NUM_STRATA; i++) {
 		overallCosts.costsTotalCD4[i] = overallCosts.costsOIHistoryCD4[i] + overallCosts.costsNoOIHistoryCD4[i];
@@ -1142,10 +1414,10 @@ void RunStats::finalizeOverallCosts() {
 
 /* finalizeTBStats calculates aggregate statistics for the TBStats object */
 void RunStats::finalizeTBStats() {
-
+	/** Does nothing */
 } /* end finalizeTBStats */
 
-/* finalizeLTFUStats calculates aggregate statistics for the LTFUStats object */
+/** \brief finalizeLTFUStats calculates aggregate statistics for the LTFUStats object */
 void RunStats::finalizeLTFUStats() {
 	for (int i = 0; i < SimContext::CD4_NUM_STRATA; i++) {
 		ltfuStats.numLostToFollowUp += ltfuStats.numLostToFollowUpCD4[i];
@@ -1158,7 +1430,7 @@ void RunStats::finalizeLTFUStats() {
 	}
 } /* end finalizeLTFUStats */
 
-/* finalizeProphStats calculates aggregate statistics for the ProphStats object */
+/** \brief finalizeProphStats calculates aggregate statistics for the ProphStats object */
 void RunStats::finalizeProphStats() {
 	for (int i = 0; i < SimContext::OI_NUM; i++) {
 		for (int j = 0; j < SimContext::PROPH_NUM_TYPES; j++) {
@@ -1174,10 +1446,10 @@ void RunStats::finalizeProphStats() {
 	}
 } /* end finalizeProphStats */
 
-/* finalizeARTStats calculates aggregate statistics for the ARTStats object */
+/** \brief finalizeARTStats calculates aggregate statistics for the ARTStats object */
 void RunStats::finalizeARTStats() {
 	for (int i = 0; i < SimContext::ART_NUM_LINES; i++) {
-		// Finalize the months of ART suppression stats
+		/** Finalize the months of ART suppression stats */
 		artStats.monthsSuppressed += artStats.monthsSuppressedLine[i];
 		for (int j = 0; j < SimContext::HVL_NUM_STRATA; j++) {
 			artStats.monthsPartiallySuppressedLine[i] += artStats.monthsPartiallySuppressedLineHVL[i][j];
@@ -1186,23 +1458,13 @@ void RunStats::finalizeARTStats() {
 			artStats.monthsFailedHVL[j] += artStats.monthsFailedLineHVL[i][j];
 		}
 
-		// Finalize stats for beginning ART
+		/** Finalize stats for beginning ART */
 		for (int j = 0; j < SimContext::RESP_NUM_TYPES; j++) {
-			artStats.numOnARTAtInit[i] += artStats.numOnARTAtInitResp[i][j];
-			artStats.trueCD4AtInitSum[i] += artStats.trueCD4AtInitSumResp[i][j];
-			artStats.observedCD4AtInitSum[i] += artStats.trueCD4AtInitSumResp[i][j];
-			for (int k = 0; k < SimContext::ART_EFF_NUM_TYPES; k++) {
-				artStats.numDrawEfficacyAtInit[i][k] += artStats.numDrawEfficacyAtInitResp[i][k][j];
-			}
-			for (int k = 0; k < SimContext::CD4_RESPONSE_NUM_TYPES; k++) {
-				artStats.numCD4ResponseTypeAtInit[i][k] += artStats.numCD4ResponseTypeAtInitResp[i][k][j];
-			}
-			for (int k = 0; k < SimContext::RISK_FACT_NUM; k++) {
-				artStats.numWithRiskFactorAtInit[i][k] += artStats.numWithRiskFactorAtInitResp[i][k][j];
-			}
-			if (artStats.numOnARTAtInitResp[i][j] > 0) {
-				artStats.trueCD4AtInitMeanResp[i][j] = artStats.trueCD4AtInitSumResp[i][j] / artStats.numOnARTAtInitResp[i][j];
-				artStats.observedCD4AtInitMeanResp[i][j] = artStats.observedCD4AtInitSumResp[i][j] / artStats.numOnARTAtInitResp[i][j];
+			for(int k=0;k<SimContext::HET_NUM_OUTCOMES;k++){
+				if (artStats.numOnARTAtInitResp[i][k][j] > 0) {
+					artStats.trueCD4AtInitMeanResp[i][k][j] = artStats.trueCD4AtInitSumResp[i][k][j] / artStats.numOnARTAtInitResp[i][k][j];
+					artStats.observedCD4AtInitMeanResp[i][k][j] = artStats.observedCD4AtInitSumResp[i][k][j] / artStats.numOnARTAtInitResp[i][k][j];
+				}
 			}
 		}
 		if (artStats.numOnARTAtInit[i] > 0) {
@@ -1210,18 +1472,15 @@ void RunStats::finalizeARTStats() {
 			artStats.observedCD4AtInitMean[i] = artStats.observedCD4AtInitSum[i] / artStats.numOnARTAtInit[i];
 		}
 
-		// Finalize stats for true ART failures
+		/** Finalize stats for true ART failures */
 		for (int j = 0; j < SimContext::RESP_NUM_TYPES; j++) {
-			artStats.numTrueFailure[i] += artStats.numTrueFailureResp[i][j];
-			artStats.trueCD4AtTrueFailureSum[i] += artStats.trueCD4AtTrueFailureSumResp[i][j];
-			artStats.observedCD4AtTrueFailureSum[i] += artStats.observedCD4AtTrueFailureSumResp[i][j];
-			artStats.monthsToTrueFailureSum[i] += artStats.monthsToTrueFailureSumResp[i][j];
-			artStats.monthsToTrueFailureSumSquares[i] += artStats.monthsToTrueFailureSumSquaresResp[i][j];
-			if (artStats.numTrueFailureResp[i][j] > 0) {
-				artStats.trueCD4AtTrueFailureMeanResp[i][j] = artStats.trueCD4AtTrueFailureSumResp[i][j] / artStats.numTrueFailureResp[i][j];
-				artStats.observedCD4AtTrueFailureMeanResp[i][j] = artStats.observedCD4AtTrueFailureSumResp[i][j] / artStats.numTrueFailureResp[i][j];
-				artStats.monthsToTrueFailureMeanResp[i][j] = artStats.monthsToTrueFailureSumResp[i][j] / artStats.numTrueFailureResp[i][j];
-				artStats.monthsToTrueFailureStdDevResp[i][j] = sqrt(artStats.monthsToTrueFailureSumSquaresResp[i][j] / artStats.numTrueFailureResp[i][j] - artStats.monthsToTrueFailureMeanResp[i][j] * artStats.monthsToTrueFailureMeanResp[i][j]);
+			for(int k=0;k<SimContext::HET_NUM_OUTCOMES;k++){
+				if (artStats.numTrueFailureResp[i][k][j] > 0) {
+					artStats.trueCD4AtTrueFailureMeanResp[i][k][j] = artStats.trueCD4AtTrueFailureSumResp[i][k][j] / artStats.numTrueFailureResp[i][k][j];
+					artStats.observedCD4AtTrueFailureMeanResp[i][k][j] = artStats.observedCD4AtTrueFailureSumResp[i][k][j] / artStats.numTrueFailureResp[i][k][j];
+					artStats.monthsToTrueFailureMeanResp[i][k][j] = artStats.monthsToTrueFailureSumResp[i][k][j] / artStats.numTrueFailureResp[i][k][j];
+					artStats.monthsToTrueFailureStdDevResp[i][k][j] = sqrt(artStats.monthsToTrueFailureSumSquaresResp[i][k][j] / artStats.numTrueFailureResp[i][k][j] - artStats.monthsToTrueFailureMeanResp[i][k][j] * artStats.monthsToTrueFailureMeanResp[i][k][j]);
+				}
 			}
 		}
 		if (artStats.numTrueFailure[i] > 0) {
@@ -1231,7 +1490,7 @@ void RunStats::finalizeARTStats() {
 			artStats.monthsToTrueFailureStdDev[i] = sqrt(artStats.monthsToTrueFailureSumSquares[i] / artStats.numTrueFailure[i] - artStats.monthsToTrueFailureMean[i] * artStats.monthsToTrueFailureMean[i]);
 		}
 
-		// Finalize stats for observed ART failures
+		/** Finalize stats for observed ART failures */
 		for (int j = 0; j < SimContext::ART_NUM_FAIL_TYPES; j++) {
 			artStats.numObservedFailure[i] += artStats.numObservedFailureType[i][j];
 			artStats.numObservedFailureAfterTrue[i] += artStats.numObservedFailureAfterTrueType[i][j];
@@ -1254,7 +1513,7 @@ void RunStats::finalizeARTStats() {
 			artStats.monthsToObservedFailureStdDev[i] = sqrt(artStats.monthsToObservedFailureSumSquares[i] / artStats.numObservedFailure[i] - artStats.monthsToObservedFailureMean[i] * artStats.monthsToObservedFailureMean[i]);
 		}
 
-		// Finalize stats for stopping ART
+		/** Finalize stats for stopping ART */
 		for (int j = 0; j < SimContext::ART_NUM_STOP_TYPES; j++) {
 			artStats.numStop[i] += artStats.numStopType[i][j];
 			artStats.numStopAfterTrueFailure[i] += artStats.numStopAfterTrueFailureType[i][j];
@@ -1277,7 +1536,7 @@ void RunStats::finalizeARTStats() {
 			artStats.monthsToStopStdDev[i] = sqrt(artStats.monthsToStopSumSquares[i] / artStats.numStop[i] - artStats.monthsToStopMean[i] * artStats.monthsToStopMean[i]);
 		}
 
-		// finalize stats for selected month efficacy totals
+		/** finalize stats for selected month efficacy totals */
 		for (int j = 0; j < SimContext::ART_NUM_MTHS_RECORD; j++) {
 			if (artStats.numOnARTAtMonth[i][j] > 0) {
 				artStats.HVLDropsAtMonthMean[i][j] = artStats.HVLDropsAtMonthSum[i][j] / artStats.numOnARTAtMonth[i][j];
@@ -1285,7 +1544,7 @@ void RunStats::finalizeARTStats() {
 			}
 		}
 
-		// finalize stats for STI
+		/** finalize stats for STI */
 		for (int j = 0; j < SimContext::STI_NUM_CYCLES; j++) {
 			artStats.numSTIInterruptionsSum[i] += artStats.numSTIInterruptions[i][j];
 		}
@@ -1298,29 +1557,55 @@ void RunStats::finalizeARTStats() {
 	}
 } /* end finalizeARTStats */
 
-/* finalizeTimeSummaries calculates aggregate statistics for the TimeSummaries object */
+/** \brief finalizeTimeSummaries calculates aggregate statistics for the TimeSummaries object */
 void RunStats::finalizeTimeSummaries() {
-	// Finalize the TimeSummary objects stats
+	/** Finalize the TimeSummary objects stats */
 	for (vector<TimeSummary *>::iterator i = timeSummaries.begin(); i != timeSummaries.end(); i++) {
 		TimeSummary *currTime = *i;
 		int numHIVPositive = 0;
+		int numHIVPositiveCare[SimContext::HIV_CARE_NUM];
+		for (int k = 0; k < SimContext::HIV_CARE_NUM; k++){
+			numHIVPositiveCare[k]=0;
+			for (int j = 0; j < SimContext::DTH_NUM_CAUSES; j++){
+				if (k != SimContext::HIV_CARE_NEG)
+					currTime->numHIVPosDeathsType[j] += currTime->numDeathsTypeCare[j][k];
+			}
+		}
 		for (int j = 0; j < SimContext::HIV_ID_NUM; j++) {
 			currTime->numAlive += currTime->numAliveType[j];
-			if (j != SimContext::HIV_ID_NEG)
+			currTime->numDeaths+=currTime->numDeathsInf[j];
+			currTime->numAliveWithCHRMs+=currTime->numAliveWithCHRMsType[j];
+			currTime->numAliveWithoutCHRMs+=currTime->numAliveWithoutCHRMsType[j];
+			for(int k=0;k<SimContext::CHRM_NUM;k++){
+				currTime->numAliveCHRM[k]+=currTime->numAliveTypeCHRMs[j][k];
+			}
+			if (j != SimContext::HIV_ID_NEG){
 				numHIVPositive += currTime->numAliveType[j];
+				for (int k = 0; k < SimContext::HIV_CARE_NUM; k++){
+					numHIVPositiveCare[k] += currTime->numAliveTypeCare[j][k];
+				}
+			}
 		}
+
 		int numPedsHIVPositive = 0;
 		for (int j = 0; j < SimContext::PEDS_HIV_NUM; j++) {
 			if (j != SimContext::PEDS_HIV_NEG)
 				numPedsHIVPositive += currTime->numAlivePediatrics[j];
 		}
 		int numObservedCD4 = 0;
-		for (int i = 0; i < SimContext::CD4_NUM_STRATA; i++) {
-			numObservedCD4 += currTime->observedCD4Distribution[i];
+		int numObservedCD4Care[SimContext::HIV_CARE_NUM];
+		for (int k = 0; k < SimContext::HIV_CARE_NUM; k++){
+			numObservedCD4Care[k] = 0;
+		}
+		for (int j = 0; j < SimContext::CD4_NUM_STRATA; j++) {
+			numObservedCD4 += currTime->observedCD4Distribution[j];
+			for (int k = 0; k < SimContext::HIV_CARE_NUM; k++){
+				numObservedCD4Care[k] += currTime->observedCD4DistributionCare[j][k];
+			}
 		}
 		int numObservedHVL = 0;
-		for (int i = 0; i < SimContext::HVL_NUM_STRATA; i++) {
-			numObservedHVL += currTime->observedHVLDistribution[i];
+		for (int j = 0; j < SimContext::HVL_NUM_STRATA; j++) {
+			numObservedHVL += currTime->observedHVLDistribution[j];
 		}
 		if (numHIVPositive > 0) {
 			currTime->trueCD4Mean = currTime->trueCD4Sum / numHIVPositive;
@@ -1340,6 +1625,16 @@ void RunStats::finalizeTimeSummaries() {
 			currTime->observedHVLMean = currTime->observedHVLSum / numObservedHVL;
 			currTime->observedHVLStdDev = sqrt(currTime->observedHVLSumSquares / numObservedHVL - currTime->observedHVLMean * currTime->observedHVLMean);
 		}
+		for (int j = 0; j < SimContext::HIV_CARE_NUM; j++){
+			if(numHIVPositiveCare[j] > 0){
+				currTime->trueCD4MeanCare[j] = currTime->trueCD4SumCare[j] / numHIVPositiveCare[j];
+				currTime->trueCD4StdDevCare[j] = sqrt(currTime->trueCD4SumSquaresCare[j] / numHIVPositiveCare[j] - currTime->trueCD4MeanCare[j] * currTime->trueCD4MeanCare[j]);
+			}
+			if(numObservedCD4Care[j] > 0){
+				currTime->observedCD4MeanCare[j] = currTime->observedCD4SumCare[j] / numObservedCD4Care[j];
+				currTime->observedCD4StdDevCare[j] = sqrt(currTime->observedCD4SumSquaresCare[j] / numObservedCD4Care[j] - currTime->observedCD4MeanCare[j] * currTime->observedCD4MeanCare[j]);
+			}
+		}
 		for (int j = 0; j < SimContext::ART_NUM_STATES; j++) {
 			for (int k = 0; k < SimContext::CD4_NUM_STRATA; k++) {
 				for (int l = 0; l < SimContext::HVL_NUM_STRATA; l++) {
@@ -1351,7 +1646,7 @@ void RunStats::finalizeTimeSummaries() {
 	}
 } /* end finalizeTimeSummaries */
 
-/* writePopulationSummary outputs the PopulationSummary statistics to the stats file */
+/** \brief writePopulationSummary outputs the PopulationSummary statistics to the stats file */
 void RunStats::writePopulationSummary() {
 	int i;
 
@@ -1385,7 +1680,7 @@ void RunStats::writePopulationSummary() {
 		popSummary.QALMsHIVPositiveAverage);
 } /* end writePopulationSummary */
 
-/* writeHIVScreening outputs the HIVScreening statistics to the stats file */
+/** \brief writeHIVScreening outputs the HIVScreening statistics to the stats file */
 void RunStats::writeHIVScreening() {
 	int i, j;
 
@@ -1470,6 +1765,39 @@ void RunStats::writeHIVScreening() {
 			hivScreening.percentAtDetectionIncidentHVL[j]);
 	}
 
+	fprintf(statsFile, "\n\tCD4 at Linkage:");
+	for (i = 1; i < SimContext::HIV_INF_NUM; ++i)  // don't start at HIV neg; make sure mod this if HIVneg #def chgs
+		fprintf(statsFile, "\t%s", SimContext::HIV_INF_STRS[i]);
+	fprintf(statsFile, "\tTotal");
+	for (j = SimContext::CD4_NUM_STRATA - 1; j >= 0; --j) {
+		fprintf(statsFile, "\n\t%s", SimContext::CD4_STRATA_STRS[j]);
+		for (i = 1; i < SimContext::HIV_INF_NUM; ++i) {
+			fprintf(statsFile, "\t%lu", hivScreening.numAtLinkageCD4HIV[j][i]);
+		}
+		fprintf(statsFile, "\t%lu", hivScreening.numAtLinkageCD4[j]);
+	}
+	fprintf(statsFile, "\n\tTotal");
+	for (i = 1; i < SimContext::HIV_INF_NUM; ++i)
+		fprintf(statsFile, "\t%lu", hivScreening.numAtLinkageHIV[i]);
+	fprintf(statsFile, "\n\tMean CD4 Count:");
+	for (i = 1; i < SimContext::HIV_INF_NUM; ++i) {
+		fprintf(statsFile, "\t%1.2lf", hivScreening.CD4AtLinkageAverageHIV[i]);
+	}
+	fprintf(statsFile, "\t%1.2lf", hivScreening.CD4AtLinkageAverage);
+
+	fprintf(statsFile, "\n\tHVL at Linkage:");
+	for (i = 1; i < SimContext::HIV_INF_NUM; ++i)  // don't start at HIV neg; make sure mod this if HIVneg #def chgs
+		fprintf(statsFile, "\t%s", SimContext::HIV_INF_STRS[i]);
+	fprintf(statsFile, "\tTotal");
+	for (j = SimContext::HVL_NUM_STRATA - 1; j >= 0; --j) {
+		fprintf(statsFile, "\n\t%s", SimContext::HVL_STRATA_STRS[j]);
+		for (i = 1; i < SimContext::HIV_INF_NUM; ++i) {
+			fprintf(statsFile, "\t%lu", hivScreening.numAtLinkageHVLHIV[j][i]);
+		}
+		fprintf(statsFile, "\t%lu", hivScreening.numAtLinkageHVL[j]);
+	}
+
+
 	fprintf(statsFile, "\n\tAvg Mths to Det (Preval):\t%1.2lf\t(%1.2lf SD)",
 		hivScreening.monthsToDetectionPrevalentAverage, hivScreening.monthsToDetectionPrevalentStdDev);
 	fprintf(statsFile, "\t\tAvg Age Mths at Det:\t%1.2lf\t(%1.2lf SD)",
@@ -1480,6 +1808,11 @@ void RunStats::writeHIVScreening() {
 		hivScreening.ageMonthsAtDetectionIncidentAverage, hivScreening.ageMonthsAtDetectionIncidentStdDev);
 	fprintf(statsFile, "\n\tAvg Mths to Det Since Inf (Incid):\t%1.2lf\t(%1.2lf SD)",
 		hivScreening.monthsAfterInfectionToDetectionAverage, hivScreening.monthsAfterInfectionToDetectionStdDev);
+	fprintf(statsFile, "\n\tAvg Mths to Linkage:\t%1.2lf\t(%1.2lf SD)",
+		hivScreening.monthsToLinkageAverage, hivScreening.monthsToLinkageStdDev);
+	fprintf(statsFile, "\t\tAvg Age Mths at Linkage:\t%1.2lf\t(%1.2lf SD)",
+		hivScreening.ageMonthsAtLinkageAverage, hivScreening.ageMonthsAtLinkageStdDev);
+
 	fprintf(statsFile, "\n\t\tMale\tFemale");
 	fprintf(statsFile, "\n\tGender at Detection:\t%lu\t%lu",
 		hivScreening.numDetectedGender[SimContext::GENDER_MALE], hivScreening.numDetectedGender[SimContext::GENDER_FEMALE]);
@@ -1493,6 +1826,17 @@ void RunStats::writeHIVScreening() {
 	fprintf(statsFile, "\n\tMeans of Detection (Incid):");
 	for (i = 0; i < SimContext::HIV_DET_NUM; ++i)
 		fprintf(statsFile, "\t%lu", hivScreening.numDetectedIncidentMeans[i]);
+	fprintf(statsFile,"\n\tMeans of Linkage:");
+	for (i = 0; i < SimContext::HIV_DET_NUM; i++)
+		fprintf(statsFile, "\t%lu", hivScreening.numLinkedMeans[i]);
+	fprintf(statsFile,"\n\tMean months to linkage:");
+	for (i = 0 ; i < SimContext::HIV_DET_NUM; i++)
+		fprintf(statsFile,"\t%1.2lf", hivScreening.monthsToLinkageAverageMeans[i]);
+	fprintf(statsFile,"\n\tSD(mo to linkage):");
+	for (i = 0 ; i < SimContext::HIV_DET_NUM; i++)
+		fprintf(statsFile,"\t%1.2lf", hivScreening.monthsToLinkageStdDevMeans[i]);
+
+
 	fprintf(statsFile, "\n\t");
 	for (i = 0; i < SimContext::OI_NUM; ++i)
 		fprintf(statsFile, "\t%s", SimContext::OI_STRS[i]);
@@ -1509,8 +1853,12 @@ void RunStats::writeHIVScreening() {
 			fprintf(statsFile, "\t%lu", hivScreening.numTestingAcceptRate[j][(i+1)%SimContext::HIV_EXT_INF_NUM]);
 	}
 	fprintf(statsFile, "\n\t\tAccept\tRefuse");
-	fprintf(statsFile, "\n\tTest accepts:\t%lu\t%lu", hivScreening.numAcceptTest, hivScreening.numRefuseTest);
-	fprintf(statsFile, "\n\tTest returns:\t%lu\t%lu", hivScreening.numReturnForResults, hivScreening.numNoReturnForResults);
+	fprintf(statsFile, "\n\tHIV Test accepts:\t%lu\t%lu", hivScreening.numAcceptTest, hivScreening.numRefuseTest);
+	fprintf(statsFile, "\n\tHIV Test returns:\t%lu\t%lu", hivScreening.numReturnForResults, hivScreening.numNoReturnForResults);
+	fprintf(statsFile, "\n\tLab Staging accepts:\t%lu\t%lu", hivScreening.numAcceptLabStaging, hivScreening.numRefuseLabStaging);
+	fprintf(statsFile, "\n\tLab Staging returns:\t%lu\t%lu", hivScreening.numReturnForResultsLabStaging, hivScreening.numNoReturnForResultsLabStaging);
+	fprintf(statsFile, "\n\tLinkage To Care (Lab Staging):\t%lu\t%lu", hivScreening.numLinkLabStaging, hivScreening.numNoLinkLabStaging);
+
 	fprintf(statsFile, "\n\t");
 	for (i = 0; i < SimContext::HIV_TEST_FREQ_NUM; ++i)
 		fprintf(statsFile, "\t[/%dmths]", simContext->getHIVTestInputs()->HIVTestingInterval[i]);
@@ -1541,9 +1889,58 @@ void RunStats::writeHIVScreening() {
 	fprintf(statsFile, "\n\t#s Tests Done by State:");
 	for (i = 0; i < SimContext::HIV_EXT_INF_NUM; ++i)
 		fprintf(statsFile, "\t%lu", hivScreening.numTestsHIVState[(i+1)%SimContext::HIV_EXT_INF_NUM]);
+
+	fprintf(statsFile, "\n\t#s Lab Staging Accepts by State:");
+	for (i = 0; i < SimContext::HIV_POS_NUM; ++i)
+		fprintf(statsFile, "\t%lu", hivScreening.numAcceptLabStagingHIVState[i]);
+	fprintf(statsFile, "\n\t#s Lab Staging Return For Results by State:");
+	for (i = 0; i < SimContext::HIV_POS_NUM; ++i)
+		fprintf(statsFile, "\t%lu", hivScreening.numReturnLabStagingHIVState[i]);
+
+	fprintf(statsFile, "\n\t#s Lab Staging Num Return For Results\t");
+	for (i = 0; i < SimContext::CD4_NUM_STRATA; i++)
+		fprintf(statsFile, "\tTRUE");
+	fprintf(statsFile, "\tTOTAL");
+	fprintf(statsFile, "\n\t\t");
+	for (i = 0; i < SimContext::CD4_NUM_STRATA; i++)
+		fprintf(statsFile, "\t%s", SimContext::CD4_STRATA_STRS[i]);
+
+	for (i = 0; i < SimContext::CD4_NUM_STRATA; i++){
+		fprintf(statsFile, "\n\tOBSV\t%s", SimContext::CD4_STRATA_STRS[i]);
+		for (j = 0; j < SimContext::CD4_NUM_STRATA; j++){
+			fprintf(statsFile, "\t%lu", hivScreening.numReturnLabStagingObsvTrueCD4[i][j]);
+		}
+		fprintf(statsFile, "\t%lu", hivScreening.numReturnLabStagingObsvCD4[i]);
+	}
+	fprintf(statsFile, "\n\t\tTOTAL");
+	for (j = 0 ; j < SimContext::CD4_NUM_STRATA; j++){
+		fprintf(statsFile, "\t%lu", hivScreening.numReturnLabStagingTrueCD4[j]);
+	}
+	fprintf(statsFile, "\t%lu", hivScreening.numReturnForResultsLabStaging);
+
+	fprintf(statsFile, "\n\t#s Lab Staging Num Link To Care\t");
+	for (i = 0; i < SimContext::CD4_NUM_STRATA; i++)
+		fprintf(statsFile, "\tTRUE");
+	fprintf(statsFile, "\tTOTAL");
+	fprintf(statsFile, "\n\t\t");
+	for (i = 0; i < SimContext::CD4_NUM_STRATA; i++)
+		fprintf(statsFile, "\t%s", SimContext::CD4_STRATA_STRS[i]);
+
+	for (i = 0; i < SimContext::CD4_NUM_STRATA; i++){
+		fprintf(statsFile, "\n\tOBSV\t%s", SimContext::CD4_STRATA_STRS[i]);
+		for (j = 0; j < SimContext::CD4_NUM_STRATA; j++){
+			fprintf(statsFile, "\t%lu", hivScreening.numLinkLabStagingObsvTrueCD4[i][j]);
+		}
+		fprintf(statsFile, "\t%lu", hivScreening.numLinkLabStagingObsvCD4[i]);
+	}
+	fprintf(statsFile, "\n\t\tTOTAL");
+	for (j = 0 ; j < SimContext::CD4_NUM_STRATA; j++){
+		fprintf(statsFile, "\t%lu", hivScreening.numLinkLabStagingTrueCD4[j]);
+	}
+	fprintf(statsFile, "\t%lu", hivScreening.numLinkLabStaging);
 } /* end HIVScreening */
 
-/* writeSurvivalStats outputs the SurvivalStats statistics to the stats file */
+/** \brief writeSurvivalStats outputs the SurvivalStats statistics to the stats file */
 void RunStats::writeSurvivalStats() {
 	int numTruncate = patients.size() * TRUNC_HISTOGRAM_PERC / 100;
 	for (int i = 0; i < NUM_SURVIVAL_GROUPS; i++) {
@@ -1561,7 +1958,7 @@ void RunStats::writeSurvivalStats() {
 					TRUNC_HISTOGRAM_PERC, numTruncate); break;
 			case SURVIVAL_EXCL_LONG_AND_SHORT:
 				fprintf(statsFile, "\nLIFE MONTH SURVIVAL EXCLUDING LONGEST & SHORTEST %d%% (%d patients) LMs",
-					TRUNC_HISTOGRAM_PERC, numTruncate*2);
+					TRUNC_HISTOGRAM_PERC, numTruncate*2);break;
 		}
 
 		// Print out the histogram information
@@ -1595,7 +1992,7 @@ void RunStats::writeSurvivalStats() {
 	}
 } /* end writeSurvivalStats */
 
-/* writeInitialDistributions outputs the InitialDistributions statistics to the stats file */
+/** \brief writeInitialDistributions outputs the InitialDistributions statistics to the stats file */
 void RunStats::writeInitialDistributions() {
 	int i, j;
 	fprintf(statsFile,"\nINITIAL DISTRIBUTIONS");
@@ -1665,9 +2062,19 @@ void RunStats::writeInitialDistributions() {
 	}
 } /* end writeInitialDistributions */
 
-/* writeCHRMsStats outputs the CHRMsStats statistics to the stats file */
+/** \brief writeCHRMsStats outputs the CHRMsStats statistics to the stats file */
 void RunStats::writeCHRMsStats() {
 	fprintf(statsFile, "\nCHRMs SUMMARIES");
+
+	fprintf(statsFile, "\n\tAvg Mths With CHRM");
+	for (int i = 0; i < SimContext::CHRM_NUM; i++) {
+		fprintf(statsFile, "\t%s", SimContext::CHRM_STRS[i]);
+	}
+	fprintf(statsFile, "\n\t");
+	for (int i = 0; i < SimContext::CHRM_NUM; i++) {
+		fprintf(statsFile, "\t%1.0lf", chrmsStats.numPatientsWithCHRM[i]==0?0:overallSurvival.LMsCHRMHistoryCHRMs[i]/chrmsStats.numPatientsWithCHRM[i]);
+	}
+
 
 	fprintf(statsFile, "\n\tPrevalent");
 	for (int i = 0; i < SimContext::CHRM_NUM; i++) {
@@ -1721,7 +2128,7 @@ void RunStats::writeCHRMsStats() {
 	}
 } /* end writeCHRMsStats */
 
-/* writeOIStats outputs the OIStats statistics to the stats file */
+/** \brief writeOIStats outputs the OIStats statistics to the stats file */
 void RunStats::writeOIStats() {
 	int i, j, k;
 	fprintf(statsFile,"\nOI SUMMARIES");
@@ -1833,9 +2240,9 @@ void RunStats::writeOIStats() {
 	}  // for i
 } /* end writeOIStats */
 
-/* writeDeathStats outputs the DeathStats statistics to the stats file */
+/** \brief writeDeathStats outputs the DeathStats statistics to the stats file */
 void RunStats::writeDeathStats() {
-	int i, j;
+	int i, j, k;
 	fprintf(statsFile,"\nCAUSES OF DEATH");
 
 	// Print out OI and other causes of death statistics
@@ -1857,6 +2264,27 @@ void RunStats::writeDeathStats() {
 	for (i = SimContext::OI_NUM; i < SimContext::DTH_NUM_CAUSES; ++i)
 		fprintf(statsFile," \t%1lu", deathStats.numDeathsType[i]);
 	fprintf(statsFile," \t%1ld", popSummary.numCohorts);
+
+	fprintf(statsFile,"\n\n\tStatus");
+	for (i = 0; i < SimContext::DTH_NUM_CAUSES; ++i)
+		fprintf(statsFile," \t%s", SimContext::DTH_CAUSES_STRS[i] );
+	fprintf(statsFile," \tTotal");
+	for (j = 0; j <= SimContext::HIV_CARE_NUM; j++) {
+		fprintf(statsFile,"\n\t%s", SimContext::HIV_CARE_STRS[j]);
+		for (i = 0; i < SimContext::OI_NUM; ++i)
+			fprintf(statsFile," \t%1lu", deathStats.numDeathsCareType[j][i]);
+		for (i = SimContext::OI_NUM; i < SimContext::DTH_NUM_CAUSES; ++i)
+			fprintf(statsFile," \t%1lu", deathStats.numDeathsCareType[j][i]);
+		fprintf(statsFile," \t%1lu", deathStats.numDeathsCare[j]);
+	}
+	fprintf(statsFile,"\n\t# Deaths");
+	for (i = 0; i < SimContext::OI_NUM; ++i)
+		fprintf(statsFile," \t%1lu", deathStats.numDeathsType[i]);
+	for (i = SimContext::OI_NUM; i < SimContext::DTH_NUM_CAUSES; ++i)
+		fprintf(statsFile," \t%1lu", deathStats.numDeathsType[i]);
+	fprintf(statsFile," \t%1ld", popSummary.numCohorts);
+
+
 	fprintf(statsFile,"\n\tHIVnegs");
 	for (i = 0; i <= SimContext::DTH_CHRAIDS; ++i)
 		fprintf(statsFile,"\tN/A");
@@ -1895,9 +2323,56 @@ void RunStats::writeDeathStats() {
 	for (j = SimContext::CD4_NUM_STRATA - 1; j >= 0; --j)
 		fprintf(statsFile," \t%1lu", deathStats.numNonAIDSDeathsOIHistoryCD4[j]);
 	fprintf(statsFile," \t%1lu", deathStats.numNonAIDSDeathsOIHistory);
+
+	//Print death by tox
+	fprintf(statsFile,"\n\tTox Deaths");
+
+	for(int i=0;i<SimContext::CD4_NUM_STRATA;i++){
+		fprintf(statsFile,"\t%s",SimContext::CD4_STRATA_STRS[i]);
+	}
+
+	for(int j=0;j<SimContext::HVL_NUM_STRATA;j++){
+		fprintf(statsFile,"\n\t%s",SimContext::HVL_STRATA_STRS[j]);
+		for(int i=0;i<SimContext::CD4_NUM_STRATA;i++){
+			fprintf(statsFile,"\t%1lu",deathStats.numToxDeathsCD4HVL[i][j]);
+		}
+	}
+
+	//Print death by tox with oi hist
+	fprintf(statsFile,"\n\tDeaths From Toxicity");
+
+	fprintf(statsFile,"\n\t\tDistribution of Initial CD4");
+	fprintf(statsFile,"\n\t\tMean\t%1.0lf",deathStats.ToxDeathsCD4Mean);
+	fprintf(statsFile,"\n\t\tStd Dev\t%1.0lf",deathStats.ToxDeathsCD4StdDev);
+
+	fprintf(statsFile,"\n\n\t\tDistribution of Initial HVL\n\t\t");
+	for(int i=0;i<SimContext::CD4_NUM_STRATA;i++){
+		fprintf(statsFile,"\t%s",SimContext::CD4_STRATA_STRS[i]);
+	}
+
+	for(int j=0;j<SimContext::HVL_NUM_STRATA;j++){
+		fprintf(statsFile,"\n\t\t%s",SimContext::HVL_STRATA_STRS[j]);
+		for(int i=0;i<SimContext::CD4_NUM_STRATA;i++){
+			fprintf(statsFile,"\t%1.4lf",deathStats.hvlDistribToxDeathCD4HVL[i][j]);
+		}
+	}
+
+	fprintf(statsFile,"\n\n\t\tProbability of Prior OI History");
+	for (k=0;k<SimContext::OI_NUM;k++){
+		fprintf(statsFile,"\n\t\t%s",SimContext::OI_STRS[k]);
+		for(int i=0;i<SimContext::CD4_NUM_STRATA;i++){
+			fprintf(statsFile,"\t%s",SimContext::CD4_STRATA_STRS[i]);
+		}
+		for(int j=0;j<SimContext::HVL_NUM_STRATA;j++){
+			fprintf(statsFile,"\n\t\t%s",SimContext::HVL_STRATA_STRS[j]);
+			for(int i=0;i<SimContext::CD4_NUM_STRATA;i++){
+				fprintf(statsFile,"\t%1.4lf",deathStats.probOiHistToxDeathsCD4HVLOIHist[i][j][k]);
+			}
+		}
+	}
 } /* end writeDeathStats */
 
-/* writeOverallSurvival outputs the OverallSurvival statistics to the stats file */
+/** \brief writeOverallSurvival outputs the OverallSurvival statistics to the stats file */
 void RunStats::writeOverallSurvival() {
 	int i;
     fprintf(statsFile,"\nOVERALL SURVIVAL");
@@ -1945,6 +2420,15 @@ void RunStats::writeOverallSurvival() {
 	for (i = 0; i < SimContext::OI_NUM; ++i)
 	    fprintf(statsFile," \t%1.0lf", overallSurvival.LMsOIHistoryOIs[i]);
 
+	// output total LMs by history of individual chrms
+    fprintf(statsFile,"\n\tCHRMs: ");
+	for (i = 0; i < SimContext::CHRM_NUM; ++i)
+		fprintf(statsFile,"\t%s", SimContext::CHRM_STRS[i]);
+    fprintf(statsFile,"\n\tLife Mths, with CHRM hist");
+	for (i = 0; i < SimContext::CHRM_NUM; ++i)
+	    fprintf(statsFile," \t%1.0lf", overallSurvival.LMsCHRMHistoryCHRMs[i]);
+
+
 	// output LMs by HIV screening states
 	fprintf(statsFile, "\n\t");
 	for (i = 0; i < SimContext::HIV_ID_NUM; ++i)
@@ -1973,7 +2457,7 @@ void RunStats::writeOverallSurvival() {
 		fprintf(statsFile, "\t%1.0lf", overallSurvival.QALMsGender[i]);
 } /* end writeOverallSurvival */
 
-/* writeOverallCosts outputs the OverallCosts statistics to the stats file */
+/** \brief writeOverallCosts outputs the OverallCosts statistics to the stats file */
 void RunStats::writeOverallCosts() {
 	int i, j;
     fprintf(statsFile,"\nOVERALL COSTS");
@@ -1998,6 +2482,16 @@ void RunStats::writeOverallCosts() {
 	    fprintf(statsFile," \t%1.0lf", overallCosts.costsTotalCD4[i]);
 	}
 	fprintf(statsFile,"\t%1.0lf", overallCosts.costsTotal);
+
+	//Chrms costs
+	fprintf(statsFile, "\n\t");
+	for(int i=0;i<SimContext::CHRM_NUM;i++){
+		fprintf(statsFile,"\t%s", SimContext::CHRM_STRS[i]);
+	}
+	fprintf(statsFile,"\n\tCHRMs Costs:");
+	for(int i=0;i<SimContext::CHRM_NUM;i++){
+		fprintf(statsFile,"\t%1.0lf",overallCosts.costsCHRMs[i]);
+	}
 
 	// output costs by HVL and HVL setpoint
     fprintf(statsFile,"\n\tHVL Strata: ");
@@ -2041,11 +2535,15 @@ void RunStats::writeOverallCosts() {
 	fprintf(statsFile, "\n\t\tTests\tMisc");
 	fprintf(statsFile, "\n\tHIV Screening Costs:\t%1.0lf\t%1.0lf",
 		overallCosts.costsHIVScreeningTests, overallCosts.costsHIVScreeningMisc);
-	fprintf(statsFile, "\n\t\tDirectMedical\tDirectNonMedical\tTimeCosts\tIndirect\tUnclassified\t\tDrugCosts\tToxicity");
-	fprintf(statsFile, "\n\tTotal Undiscounted Costs:\t%1.0lf\t%1.0lf\t%1.0lf\t%1.0lf\t%1.0lf\t\t%1.0lf\t%1.0lf",
+
+	fprintf(statsFile, "\n\tLab Staging Costs:\t%1.0lf\t%1.0lf",
+		overallCosts.costsLabStagingTests, overallCosts.costsLabStagingMisc);
+
+	fprintf(statsFile, "\n\t\tDirectMedical\tDirectNonMedical\tTimeCosts\tIndirect\tUnclassified\tPediatric Costs\tDrugCosts\tToxicity");
+	fprintf(statsFile, "\n\tTotal Undiscounted Costs:\t%1.0lf\t%1.0lf\t%1.0lf\t%1.0lf\t%1.0lf\t%1.0lf\t%1.0lf\t%1.0lf",
 		overallCosts.totalUndiscountedCosts[0], overallCosts.totalUndiscountedCosts[1],
 		overallCosts.totalUndiscountedCosts[2], overallCosts.totalUndiscountedCosts[3],
-		overallCosts.totalUndiscountedCostsUnclassified, overallCosts.costsDrugs, overallCosts.costsToxicity);
+		overallCosts.totalUndiscountedCostsUnclassified, overallCosts.costsPeds, overallCosts.costsDrugs, overallCosts.costsToxicity);
 
 	// output costs by gender
 	fprintf(statsFile, "\n\t");
@@ -2056,7 +2554,7 @@ void RunStats::writeOverallCosts() {
 		fprintf(statsFile, "\t%1.0lf", overallCosts.costsGender[i]);
 } /* end writeOverallCosts */
 
-/* writeTBStats outputs the TBStats statistics to the stats file */
+/** \brief writeTBStats outputs the TBStats statistics to the stats file */
 void RunStats::writeTBStats() {
 	int i, j;
 	fprintf(statsFile, "\nTB SUMMARY EVENTS");
@@ -2164,7 +2662,7 @@ void RunStats::writeTBStats() {
 		fprintf(statsFile, "\t%lu", tbStats.numProphMajorToxicity[i]);
 } /* end writeTBStats */
 
-/* writeLTFUStats outputs the LTFUStats statistics to the stats file */
+/** \brief writeLTFUStats outputs the LTFUStats statistics to the stats file */
 void RunStats::writeLTFUStats() {
 	int i, j;
 
@@ -2220,7 +2718,7 @@ void RunStats::writeLTFUStats() {
 	fprintf(statsFile, "\t%d", ltfuStats.numDeathsWhileLostPostART);
 } /* end writeLTFUStats */
 
-/* writeProphStats outputs the ProphStats statistics to the stats file */
+/** \brief writeProphStats outputs the ProphStats statistics to the stats file */
 void RunStats::writeProphStats() {
 	int i,j;
 
@@ -2278,7 +2776,7 @@ void RunStats::writeProphStats() {
 	}
 } /* end ProphStats */
 
-/* writeARTStats outputs the ARTStats statistics to the stats file */
+/** \brief writeARTStats outputs the ARTStats statistics to the stats file */
 void RunStats::writeARTStats() {
 	int i, j, k;
 	const SimContext::RunSpecsInputs *runSpecs = simContext->getRunSpecsInputs();
@@ -2471,7 +2969,7 @@ void RunStats::writeARTStats() {
 	}
 } /* end writeARTStats */
 
-/* writeTimeSummaries outputs the vector of TimeSummary objects statistics to the stats file */
+/** \brief writeTimeSummaries outputs the vector of TimeSummary objects statistics to the stats file */
 void RunStats::writeTimeSummaries() {
 	int j, k;
 	const SimContext::RunSpecsInputs *runSpecs = simContext->getRunSpecsInputs();
@@ -2488,38 +2986,149 @@ void RunStats::writeTimeSummaries() {
 			fprintf(statsFile,"\nCOHORT SUMMARY FOR MONTH %d", currTime->timePeriod);
 
 		// output number alive by hiv state and total QOL applied
-		fprintf(statsFile,"\n\t");
-		for (j = 0; j < SimContext::HIV_ID_NUM; ++j)
-			fprintf(statsFile, "\t%s", SimContext::HIV_ID_STRS[j]);
-		fprintf(statsFile,"\tTotal\t");
-		for (j = 0; j < SimContext::PEDS_HIV_NUM; ++j)
-			fprintf(statsFile, "\t%s", SimContext::PEDS_HIV_STATE_STRS[j]);
-		fprintf(statsFile, "\t\tIncident HIV+");
-		if (runSpecs->longitLoggingLevel == SimContext::LONGIT_SUMM_MTH_DET){
-			fprintf(statsFile,"\t\tTotal QOL applied");
+		if(simContext->getHIVTestInputs()->enableHIVTesting){
+			fprintf(statsFile,"\n\t");
+			for (j = 0; j < SimContext::HIV_CARE_NUM; ++j)
+				fprintf(statsFile, "\t%s", SimContext::HIV_CARE_STRS[j]);
+			fprintf(statsFile,"\tTotal\t");
+			for (j = 0; j < SimContext::PEDS_HIV_NUM; ++j)
+				fprintf(statsFile, "\t%s", SimContext::PEDS_HIV_STATE_STRS[j]);
+			fprintf(statsFile, "\t\tIncident HIV+");
+			if (runSpecs->longitLoggingLevel == SimContext::LONGIT_SUMM_MTH_DET){
+				fprintf(statsFile,"\t\tTotal QOL applied");
+			}
+
+			fprintf(statsFile,"\n\t# Alive:");
+			for (j = 0; j < SimContext::HIV_CARE_NUM; ++j) {
+				fprintf(statsFile, "\t%1lu", currTime->numAliveCare[j]);
+			}
+			fprintf(statsFile, "\t%1lu\t", currTime->numAlive);
+			for (j = 0; j < SimContext::PEDS_HIV_NUM; ++j)
+				fprintf(statsFile, "\t%1lu", currTime->numAlivePediatrics[j]);
+			fprintf(statsFile, "\t\t%1lu", currTime->numIncidentHIVInfections);
+			if (runSpecs->longitLoggingLevel == SimContext::LONGIT_SUMM_MTH_DET){
+				fprintf(statsFile, "\t\t%1.2f", currTime->sumQOLmultipliers);
+			}
 		}
-		fprintf(statsFile,"\n\t# Alive:");
-		for (j = 0; j < SimContext::HIV_ID_NUM; ++j) {
-			fprintf(statsFile, "\t%1lu", currTime->numAliveType[j]);
+		else{
+			fprintf(statsFile,"\n\t");
+			for (j = 0; j < SimContext::HIV_ID_NUM; ++j)
+				fprintf(statsFile, "\t%s", SimContext::HIV_ID_STRS[j]);
+			fprintf(statsFile,"\tTotal\t");
+			for (j = 0; j < SimContext::PEDS_HIV_NUM; ++j)
+				fprintf(statsFile, "\t%s", SimContext::PEDS_HIV_STATE_STRS[j]);
+			fprintf(statsFile, "\t\tIncident HIV+");
+			if (runSpecs->longitLoggingLevel == SimContext::LONGIT_SUMM_MTH_DET){
+				fprintf(statsFile,"\t\tTotal QOL applied");
+			}
+
+			fprintf(statsFile,"\n\t# Alive:");
+			for (j = 0; j < SimContext::HIV_ID_NUM; ++j) {
+				fprintf(statsFile, "\t%1lu", currTime->numAliveType[j]);
+			}
+			fprintf(statsFile, "\t%1lu\t", currTime->numAlive);
+			for (j = 0; j < SimContext::PEDS_HIV_NUM; ++j)
+				fprintf(statsFile, "\t%1lu", currTime->numAlivePediatrics[j]);
+			fprintf(statsFile, "\t\t%1lu", currTime->numIncidentHIVInfections);
+			if (runSpecs->longitLoggingLevel == SimContext::LONGIT_SUMM_MTH_DET){
+				fprintf(statsFile, "\t\t%1.2f", currTime->sumQOLmultipliers);
+			}
 		}
-		fprintf(statsFile, "\t%1lu\t", currTime->numAlive);
-		for (j = 0; j < SimContext::PEDS_HIV_NUM; ++j)
-			fprintf(statsFile, "\t%1lu", currTime->numAlivePediatrics[j]);
-		fprintf(statsFile, "\t\t%1lu", currTime->numIncidentHIVInfections);
-		if (runSpecs->longitLoggingLevel == SimContext::LONGIT_SUMM_MTH_DET){
-			fprintf(statsFile, "\t\t%1.2f", currTime->sumQOLmultipliers);
+		if(simContext->getHIVTestInputs()->enableHIVTesting){
+			//output deaths information
+			fprintf(statsFile,"\n\t# Deaths:");
+			for (j = 0; j < SimContext::HIV_CARE_NUM; ++j) {
+				fprintf(statsFile, "\t%1lu", currTime->numDeathsCare[j]);
+			}
+			fprintf(statsFile, "\t%1lu\t", currTime->numDeaths);
+		}
+		else{
+			//output deaths information
+			fprintf(statsFile,"\n\t# Deaths:");
+			for (j = 0; j < SimContext::HIV_ID_NUM; ++j) {
+				fprintf(statsFile, "\t%1lu", currTime->numDeathsInf[j]);
+			}
+			fprintf(statsFile, "\t%1lu\t", currTime->numDeaths);
 		}
 
+		if (simContext->getCHRMsInputs()->showCHRMsOutput){
+			fprintf(statsFile,"\n\t# Alive without CHRMs:");
+			for (j = 0; j < SimContext::HIV_ID_NUM; ++j) {
+				fprintf(statsFile, "\t%1lu", currTime->numAliveWithoutCHRMsType[j]);
+			}
+			fprintf(statsFile, "\t%1lu\t", currTime->numAliveWithoutCHRMs);
+			fprintf(statsFile,"\tAge");
+			for (j = 0; j < SimContext::CHRM_AGE_CAT_NUM; ++j)
+				fprintf(statsFile, "\t");
+			fprintf(statsFile,"Gender");
+			for (j = 0; j < SimContext::GENDER_NUM; ++j)
+				fprintf(statsFile, "\t");
+			fprintf(statsFile,"CD4");
+			for (j = 0; j < SimContext::CD4_NUM_STRATA; ++j)
+				fprintf(statsFile, "\t");
+
+			fprintf(statsFile,"\n\t");
+			for (j = 0; j < SimContext::HIV_ID_NUM; ++j)
+				fprintf(statsFile, "\t%s", SimContext::HIV_ID_STRS[j]);
+			fprintf(statsFile,"\tTotal\t");
+			for (j = 0; j < SimContext::CHRM_AGE_CAT_NUM; ++j)
+				fprintf(statsFile, "\t%s", SimContext::CHRM_AGE_CAT_STRS[j]);
+			for (j = 0; j < SimContext::GENDER_NUM; ++j)
+				fprintf(statsFile, "\t%s", SimContext::GENDER_STRS[j]);
+			for (j = 0; j < SimContext::CD4_NUM_STRATA; ++j)
+				fprintf(statsFile, "\t%s", SimContext::CD4_STRATA_STRS[j]);
+
+			fprintf(statsFile,"\n\t# Alive with CHRMs:");
+			for (j = 0; j < SimContext::HIV_ID_NUM; ++j) {
+				fprintf(statsFile, "\t%1lu", currTime->numAliveWithCHRMsType[j]);
+			}
+			fprintf(statsFile, "\t%1lu\t", currTime->numAliveWithCHRMs);
+			for(j=0;j<SimContext::CHRM_AGE_CAT_NUM;j++){
+				fprintf(statsFile, "\t%1lu", currTime->numCHRMsAgeTotal[j]);
+			}
+			for(j=0;j<SimContext::GENDER_NUM;j++){
+				fprintf(statsFile, "\t%1lu", currTime->numCHRMsGenderTotal[j]);
+			}
+			for(j=0;j<SimContext::CD4_NUM_STRATA;j++){
+				fprintf(statsFile, "\t%1lu", currTime->numCHRMsCD4Total[j]);
+			}
+
+			for(int i=0;i<SimContext::CHRM_NUM;i++){
+				fprintf(statsFile,"\n\t%s",SimContext::CHRM_STRS[i]);
+				for (j = 0; j < SimContext::HIV_ID_NUM; ++j) {
+					fprintf(statsFile, "\t%1lu", currTime->numAliveTypeCHRMs[j][i]);
+				}
+				fprintf(statsFile, "\t%1lu\t", currTime->numAliveCHRM[i]);
+
+				for(int j=0;j<SimContext::CHRM_AGE_CAT_NUM;j++){
+					fprintf(statsFile, "\t%1lu", currTime->numCHRMsAge[i][j]);
+				}
+				for(int j=0;j<SimContext::GENDER_NUM;j++){
+					fprintf(statsFile, "\t%1lu", currTime->numCHRMsGender[i][j]);
+				}
+				for(int j=0;j<SimContext::CD4_NUM_STRATA;j++){
+					fprintf(statsFile, "\t%1lu", currTime->numCHRMsCD4[i][j]);
+				}
+			}
+		}
 		// output true and observed CD4 and HVL
 		if (runSpecs->longitLoggingLevel == SimContext::LONGIT_SUMM_MTH_BRF) {
 			fprintf(statsFile,"\t\tMeanTrueCD4 (/infd): \t%1.0lf", currTime->trueCD4Mean );
 			fprintf(statsFile,"\t\tMeanTrueHVL (/infd): \t%1.0lf", currTime->trueHVLMean );
 		} else {
-			fprintf(statsFile,"\n\tMean True CD4 (/infd):\t%1.0lf\t(%1.0lf SD)",
-				currTime->trueCD4Mean, currTime->trueCD4StdDev );
-			fprintf(statsFile,"\t\tMean Obsv CD4 (/infd): \t%1.0lf \t(%1.0lf SD)",
-				currTime->observedCD4Mean, currTime->observedCD4StdDev );
-			fprintf(statsFile,"\t\tMean CD4 Perc (/infd): \t%1.2lf \t(%1.2lf SD)",
+			if (simContext->getHIVTestInputs()->enableHIVTesting){
+				fprintf(statsFile,"\n\t\tMean True CD4\tSD\t\tMean Observed CD4\tSD");
+				for (int i = 0; i < SimContext::HIV_CARE_NUM; i++){
+					fprintf(statsFile,"\n\t%s\t%1.0lf\t%1.0lf\t\t%1.0lf\t%1.0lf",simContext->HIV_CARE_STRS[i],currTime->trueCD4MeanCare[i],currTime->trueCD4StdDevCare[i],currTime->observedCD4MeanCare[i],currTime->observedCD4StdDevCare[i]);
+				}
+			}
+			else{
+				fprintf(statsFile,"\n\tMean True CD4 (/infd):\t%1.0lf\t(%1.0lf SD)",
+					currTime->trueCD4Mean, currTime->trueCD4StdDev );
+				fprintf(statsFile,"\t\tMean Obsv CD4 (/infd): \t%1.0lf \t(%1.0lf SD)",
+					currTime->observedCD4Mean, currTime->observedCD4StdDev );
+			}
+			fprintf(statsFile,"\n\t\tMean CD4 Perc (/infd): \t%1.2lf \t(%1.2lf SD)",
 				currTime->trueCD4PercentageMean, currTime->trueCD4PercentageStdDev );
 			fprintf(statsFile,"\n\tMean True HVL (/infd): \t%1.0lf \t(%1.0lf SD)",
 				currTime->trueHVLMean, currTime->trueHVLStdDev );
@@ -2579,6 +3188,18 @@ void RunStats::writeTimeSummaries() {
 				fprintf(statsFile," \t%1lu", currTime->observedHVLDistribution[j]);
 		}
 
+		//output chrms incidence for this month
+		if (simContext->getCHRMsInputs()->showCHRMsOutput){
+			fprintf(statsFile,"\n\t");
+			for(j=0;j<SimContext::CHRM_NUM;j++){
+				fprintf(statsFile," \t%s",SimContext::CHRM_STRS[j]);
+			}
+			fprintf(statsFile,"\n\tIncident CHRMs evts:");
+			for(j=0;j<SimContext::CHRM_NUM;j++){
+				fprintf(statsFile," \t%1lu",currTime->numIncidentCHRMs[j]);
+			}
+		}
+
 		// output OI distribs for only this month (not cumulative)
 		fprintf(statsFile,"\n\tOIs Distrib");
 		for ( j = 0; j < SimContext::OI_NUM; ++j )
@@ -2617,18 +3238,70 @@ void RunStats::writeTimeSummaries() {
 		fprintf(statsFile,"\n\tDths Distrib");
 		for ( j = 0; j < SimContext::DTH_NUM_CAUSES; ++j )
 			fprintf(statsFile," \t%s", SimContext::DTH_CAUSES_STRS[j]);
-		fprintf(statsFile,"\n\tDth evts:");
-		for ( j = 0; j < SimContext::DTH_NUM_CAUSES; ++j )
-			fprintf(statsFile," \t%1lu", currTime->numDeathsType[j]);
-		fprintf(statsFile,"\n\tDth events while LTFU:");
-		for ( j = 0; j < SimContext::DTH_NUM_CAUSES; ++j )
-			fprintf(statsFile," \t%1lu", currTime->numDeathsType[j]);
+		if (simContext->getHIVTestInputs()->enableHIVTesting){
+			fprintf(statsFile,"\n\tDth evts:");
+			for ( j = 0; j < SimContext::DTH_NUM_CAUSES; ++j )
+				fprintf(statsFile," \t%1lu", currTime->numDeathsType[j]);
+			fprintf(statsFile,"\n\tTotal Dth Evts of HIV+:");
+			for ( j = 0; j < SimContext::DTH_NUM_CAUSES; ++j )
+				fprintf(statsFile," \t%1lu", currTime->numHIVPosDeathsType[j]);
+			for (int k = 0; k < SimContext::HIV_CARE_NUM; k++){
+				fprintf(statsFile,"\n\tDeath evts while %s:",SimContext::HIV_CARE_STRS[k]);
+				for ( j = 0; j < SimContext::DTH_NUM_CAUSES; ++j )
+					fprintf(statsFile," \t%1lu", currTime->numDeathsTypeCare[j][k]);
+			}
+
+		}
+		else{
+			fprintf(statsFile,"\n\tDth evts:");
+			for ( j = 0; j < SimContext::DTH_NUM_CAUSES; ++j )
+				fprintf(statsFile," \t%1lu", currTime->numDeathsType[j]);
+			fprintf(statsFile,"\n\tDth events while LTFU:");
+			for ( j = 0; j < SimContext::DTH_NUM_CAUSES; ++j )
+				fprintf(statsFile," \t%1lu", currTime->numDeathsTypeCare[j][SimContext::HIV_CARE_LTFU]);
+		}
+
+
+		if (simContext->getCHRMsInputs()->showCHRMsOutput){
+			//output dth distribs for those without charms when they died (not cumulative)
+			fprintf(statsFile,"\n\tPatients without CHRMs");
+			fprintf(statsFile,"\n\tDths Distrib");
+			for ( j = 0; j < SimContext::DTH_NUM_CAUSES; ++j )
+				fprintf(statsFile," \t%s", SimContext::DTH_CAUSES_STRS[j]);
+			fprintf(statsFile," \t%s","Total");
+			fprintf(statsFile,"\n\tDth evts:");
+			for ( j = 0; j < SimContext::DTH_NUM_CAUSES; ++j )
+				fprintf(statsFile," \t%1lu", currTime->numDeathsWithoutCHRMsType[j]);
+			fprintf(statsFile," \t%1lu",currTime->numDeathsWithoutCHRMs);
+			//fprintf(statsFile,"\n\tDth events while LTFU:");
+			//for ( j = 0; j < SimContext::DTH_NUM_CAUSES; ++j )
+				//fprintf(statsFile," \t%1lu", currTime->numDeathsType[j]);
+
+
+			//output dth distribs for those with charms when they died (not cumulative)
+			fprintf(statsFile,"\n\tPatients with CHRMs");
+			for(int i=0;i<SimContext::CHRM_NUM;i++){
+				fprintf(statsFile,"\n\t%s",SimContext::CHRM_STRS[i]);
+				fprintf(statsFile,"\n\tDths Distrib");
+				for ( j = 0; j < SimContext::DTH_NUM_CAUSES; ++j )
+					fprintf(statsFile," \t%s", SimContext::DTH_CAUSES_STRS[j]);
+				fprintf(statsFile," \t%s","Total");
+				fprintf(statsFile,"\n\tDth evts:");
+				for ( j = 0; j < SimContext::DTH_NUM_CAUSES; ++j )
+					fprintf(statsFile," \t%1lu", currTime->numDeathsWithCHRMsTypeCHRM[j][i]);
+				fprintf(statsFile," \t%1lu",currTime->numDeathsWithCHRMsCHRM[i]);
+				//fprintf(statsFile,"\n\tDth events while LTFU:");
+				//for ( j = 0; j < SimContext::DTH_NUM_CAUSES; ++j )
+					//fprintf(statsFile," \t%1lu", currTime->numDeathsType[j]);
+			}
+		}
 
 		// output cost distribs for only this month (not cumulative)
-		fprintf(statsFile,"\n\t\tCD4\tHVL\tClinic\tHIVtests\tHIVmisc");
-		fprintf(statsFile,"\n\tTesting costs: \t%1.0lf \t%1.0lf \t%1.0lf \t%1.0lf \t%1.0lf",
+		fprintf(statsFile,"\n\t\tCD4\tHVL\tClinic\tHIVtests\tHIVmisc\tLab Stage Tests\tLab Stage Misc");
+		fprintf(statsFile,"\n\tTesting costs: \t%1.0lf \t%1.0lf \t%1.0lf \t%1.0lf \t%1.0lf \t%1.0lf \t%1.0lf",
 			currTime->costsCD4Testing, currTime->costsHVLTesting, currTime->costsClinicVisits,
-			currTime->costsHIVTests, currTime->costsHIVMisc);
+			currTime->costsHIVTests, currTime->costsHIVMisc, currTime->costsLabStagingTests, currTime->costsLabStagingMisc);
+		fprintf(statsFile,"\n\tPediatric costs: \t%1.0lf", currTime->costsPeds);
 		fprintf(statsFile,"\n\tTotal Cohort Mth costs: \t%1.2lf", currTime->totalMonthlyCohortCosts);
 		fprintf(statsFile,"\n\tProph Costs");
 		for (j = 0; j < SimContext::OI_NUM; ++j)
@@ -2645,13 +3318,25 @@ void RunStats::writeTimeSummaries() {
 		fprintf(statsFile,"\n\tART Costs:");
 		for (j = 0; j < SimContext::ART_NUM_LINES; ++j)
 			fprintf(statsFile," \t%1.0lf", currTime->costsART[j]);
-		fprintf(statsFile,"\n\tNum on ART:");
+		fprintf(statsFile,"\n\tNum HIV+ in care(Starting this month):");
+		for (j = 0; j < SimContext::ART_NUM_LINES; ++j)
+			fprintf(statsFile," \t%lu", currTime->numStartingART[j]);
+		fprintf(statsFile,"\t%lu",currTime->numStartingPreART);
+		fprintf(statsFile, "\t%lu", currTime->numStartingPostART);
+		fprintf(statsFile,"\n\tNum HIV+ in care(Total):");
 		for (j = 0; j < SimContext::ART_NUM_LINES; ++j)
 			fprintf(statsFile," \t%lu", currTime->numOnART[j]);
+		fprintf(statsFile,"\t%lu",currTime->numInCarePreART);
+		fprintf(statsFile, "\t%lu", currTime->numInCarePostART);
 		fprintf(statsFile,"\n\tOn ART (InclContinCosts):");
 		for (j = 0; j < SimContext::ART_NUM_LINES; ++j)
 			fprintf(statsFile," \t%lu", currTime->numOnARTIncludingContinuedCosts[j]);
-		fprintf(statsFile,"\n\tNum LTFU:");
+		fprintf(statsFile,"\n\tNum HIV+ LTFU(Starting this month):");
+		for (j = 0; j < SimContext::ART_NUM_LINES; ++j)
+			fprintf(statsFile," \t%lu", currTime->numStartingLostToFollowUpART[j]);
+		fprintf(statsFile," \t%lu", currTime->numStartingLostToFollowUpPreART);
+		fprintf(statsFile," \t%lu", currTime->numStartingLostToFollowUpPostART);
+		fprintf(statsFile,"\n\tNum HIV+ LTFU(Total):");
 		for (j = 0; j < SimContext::ART_NUM_LINES; ++j)
 			fprintf(statsFile," \t%lu", currTime->numLostToFollowUpART[j]);
 		fprintf(statsFile," \t%lu", currTime->numLostToFollowUpPreART);
@@ -2669,6 +3354,23 @@ void RunStats::writeTimeSummaries() {
 			fprintf(statsFile," \t%lu", currTime->numDeathsWhileLostART[j]);
 		fprintf(statsFile," \t%lu", currTime->numDeathsWhileLostPreART);
 		fprintf(statsFile," \t%lu", currTime->numDeathsWhileLostPostART);
+
+		if (simContext->getCHRMsInputs()->showCHRMsOutput){
+			fprintf(statsFile,"\n\t");
+			for (j = 0; j < SimContext::CHRM_NUM; ++j)
+				fprintf(statsFile, " \t%s",SimContext::CHRM_STRS[j]);
+			fprintf(statsFile,"\n\tCHRMs Costs:");
+			for (j = 0; j < SimContext::CHRM_NUM; ++j)
+				fprintf(statsFile," \t%1.0lf", currTime->costsCHRMs[j]);
+		}
+
+		if (simContext->getHIVTestInputs()->enableHIVTesting){
+			fprintf(statsFile, "\n\n\tNum Deaths Not Detected (HIV+):\t%lu", currTime->numDeathsUndetectedInfected);
+			fprintf(statsFile, "\n\tNum Deaths Detected Linked:\t%lu", currTime->numDeathsDetectedLinked);
+			fprintf(statsFile, "\n\tNum Deaths Detected Never Linked:\t%lu", currTime->numDeathsDetectedNeverLinked);
+			fprintf(statsFile, "\n\tNum Deaths While LTFU (Previously Linked):\t%lu", currTime->numDeathsDetectedLTFU);
+			fprintf(statsFile, "\n\tNum Deaths HIV-:\t%lu", currTime->numDeathsUninfected);
+		}
 	}
 } /* end writeTimeSummaries */
 

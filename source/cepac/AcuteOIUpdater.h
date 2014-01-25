@@ -2,7 +2,7 @@
 
 #include "include.h"
 
-/*
+/**
 	The AcuteOIUpdater class tests for the occurrence of acute OIs each month and updates
 	all the patient state and statistics if they occur.
 */

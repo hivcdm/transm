@@ -2,7 +2,7 @@
 
 #include "include.h"
 
-/*
+/**
 	The StateUpdater class is the base class for all simulation updater classes in the model.
 	All of its child classes should implement the performInitialUpdates and performMonthlyUpdates
 	virtual functions to perform the patient initialization and subsequent monthly updates to
@@ -19,23 +19,35 @@ public:
 	StateUpdater(Patient *patient);
 	virtual ~StateUpdater(void);
 
-	/* performInitialUpdates perform all of the state and statistics updates upon patient creation */
+	/**
+	 *  performInitialUpdates perform all of the state and statistics updates upon patient creation
+	 **/
 	virtual void performInitialUpdates();
-	/* performMonthlyUpdates perform all of the state and statistics updates for a simulated month */
+	/**
+	 *  performMonthlyUpdates perform all of the state and statistics updates for a simulated month
+	 **/
 	virtual void performMonthlyUpdates();
-	/* changes the inputs the updater uses to determine disease progression -- to be used primarily by the transmission model*/
+	/**
+	 *  changes the inputs the updater uses to determine disease progression -- to be used primarily by the transmission model
+	 **/
 	void setSimContext(SimContext *newSimContext);
 
 protected:
 
-	/* Pointers to the patient state, simulation context, tracer, and run stats objects */
+	/** Pointer  to the patient state */
 	Patient *patient;
+	/** Pointer to the simulation context (i.e. .in file information) */
 	SimContext *simContext;
+	/** Pointer to the run stats object (i.e. the .out file information) */
 	RunStats *runStats;
+	/** Pointer to the tracer (i.e. the trace file information) */
 	Tracer *tracer;
 
-	/* Updater functions that are invoked by the StateUpdater child classes,
+	/**
+	 * \class StateUpdater
+	 * The protected functions are updater functions that are invoked by the StateUpdater child classes,
 		child classes cannot directly modify state and must use these functions */
+
 	/* initializePatient initializes the patients basic state */
 	void initializePatient(int patientNum, bool tracingEnabled);
 	/* setPatientAgeGender set the patients age and gender */
@@ -48,11 +60,13 @@ protected:
 	void setInitialTBProphState();
 	/* setInitialTBTreatmentState sets the initial TB treatment state to not be on TB treatment */
 	void setInitialTBTreatmentState();
+	/* countInitialTBState counts the TB state/strain at entry -- only should be called after these have been set! */
+	void countInitialTBState();
 	/* incrementMonth updates the simulation month number and patient age */
 	void incrementMonth();
 	/* incrementDiscountFactor adjusts the discounting factor */
 	void incrementDiscountFactor(double amount);
-	/* setQOLMultiplier resets the quality of life factor back to the specified level */
+	/* setQOLMultiplier resets the quality of life factor back to 1 */
 	void setQOLMultiplier(double newQOL);
 	/* accumulateQOLMultiplier accumulates the QOL by multiplying the new factor with the existing one */
 	void accumulateQOLMultiplier(double amount);
@@ -66,14 +80,22 @@ protected:
 	void setInfectedPediatricsHIVState(SimContext::PEDS_HIV_STATE hivState, bool isInitial = false);
 	/* setInfectedMaternalHIVState sets the maternal HIV state for pediatrics and updates statistics */
 	void setInfectedMaternalHIVState(SimContext::PEDS_MOM_HIV_STATE hivState, bool isInitial = false);
+	/* setExposedPediatricsState sets the pediatrics exposure state */
+	void setExposedPediatricsState(bool exposedState);
 	/* setBreastfeedingStatus for pediatrics and updates statistics */
 	void setBreastfeedingStatus(SimContext::PEDS_BF_TYPE bfType);
 	/* setPediatricsART sets whether or not the infant is on ART */
 	void setPediatricsART(bool isOnART);
+	/* setCareState sets the care status of patients*/
+	void setCareState(SimContext::HIV_CARE typeCare);
 	/* setDetectedHIVState sets the patients to being detected as HIV positive and updates statistics */
 	void setDetectedHIVState(bool isDetected, SimContext::HIV_DET typeDetection = SimContext::HIV_DET_UNDETECTED, SimContext::OI_TYPE oiType = SimContext::OI_NONE);
+	/* setLinkedState sets the patients method of linking to care*/
+	void setLinkedState(bool isLinked, SimContext::HIV_DET typeDetection = SimContext::HIV_DET_UNDETECTED);
 	/* updateHIVTestingStats updates all statistics after an HIV testing event */
 	void updateHIVTestingStats(bool acceptTest, bool returnResults, bool isPositive);
+	/* updateLabStagingStats updates all statistics after an Lab Staging testing event */
+	void updateLabStagingStats(bool acceptTest, bool returnResults, bool hasLinked);
 	/* setHIVTestingParams sets the interval and acceptance rate for HIV testing */
 	void setHIVTestingParams(int intervalIndex, int acceptanceRateIndex);
 	/* scheduleHIVTest sets the month of the next HIV test */
@@ -84,36 +106,52 @@ protected:
 	void scheduleHVLTest(bool hasNext, int monthNum = 0);
 	/* setClinicVisitType sets the conditions for a clinic visit and available treatments */
 	void setClinicVisitType(SimContext::CLINIC_VISITS visitType, SimContext::THERAPY_IMPL treatmentType);
-	/* setARTResponseBaseline sets the baseline propensity to respond coeffecient */
-	void setARTResponseBaseline(double baseline);
+	/* setResponseBaseline sets the baseline propensity to respond coeffecient */
+	void setResponseBaseline(double baseline);
+	/* setPreARTResponseBase sets the baseline propensity to respond coeffecient for PreART*/
+	void setPreARTResponseBase(double baseline);
+	/* setARTResponseCurrRegimenBase sets the propensity to respond coeffecient for the current regimen without any adherence interventions*/
+	void setARTResponseCurrRegimenBase(double responseLogit, double responseRegimenIncrLogit);
 	/* setCD4ResponseType sets the predisposed CD4 ART response type of the patient */
 	void setCD4ResponseType(SimContext::CD4_RESPONSE_TYPE responseType);
 	/* setRiskFactor sets whether or not the patient has risk factor x */
 	void setRiskFactor(int riskNum, bool hasRisk, bool isInitial = false);
+	/* Sets the variable hadChanceCD4Test in patient monitoring state*/
+	void setChanceCD4Test(bool hadChance);
+	/* Sets the variable hadChanceHVLTest in patient monitoring state*/
+	void setChanceHVLTest(bool hadChance);
+	/*Schedules the initial cd4 tests during clinic visit*/
+	void scheduleInitialCD4Test(int monthNum);
+	/*Schedules the initial HVL tests during clinic visit*/
+	void scheduleInitialHVLTest(int monthNum);
 	/* scheduleInitialClinicVisit sets the month of initial clinic visit, CD4 test, and HVL test */
 	void scheduleInitialClinicVisit();
 	/* scheduleRegularClinicVisit sets the month of the next regularly scheduled clinic visit */
-	void scheduleRegularClinicVisit(bool hasNext, int monthNum = 0);
+	void scheduleRegularClinicVisit(bool hasNext, int monthNum = 0,bool scheduleInitialCD4=true,bool scheduleInitialHVL=true);
 	/* scheduleEmergencyClinicVisit sets the month of the next emergency clinic visit */
-	void scheduleEmergencyClinicVisit(bool hasNext, int monthNum = 0);
+	void scheduleEmergencyClinicVisit(bool hasNext, int monthNum = 0,bool scheduleInitialCD4=true,bool scheduleInitialHVL=true);
 	/* resetCliniVisitState resets state keeping track of event since the last clinic visit */
 	void resetClinicVisitState(bool isInitial = false);
 	/* incrementNumClinicVisits increments the total number of clinic visits */
 	void incrementNumClinicVisits();
 	/* incrementNumObservedOIs increments the patients observed OIs and statistics */
 	void incrementNumObservedOIs(SimContext::OI_TYPE oiType, int numObserved);
-	/* setCurrLTFUStats updates the state and statisitics for a patient being LTFU or RTC */
+	/* setCurrLTFUState updates the state and statistics for a patient being LTFU or RTC */
 	void setCurrLTFUState(SimContext::LTFU_STATE ltfuState);
 	/* startNextARTRegimen updates the state to begin the next ART treatment regimen */
 	void startNextARTRegimen();
 	/* startNextARTSubRegimen updates the state to begin the next ART treatment subregimen */
 	void startNextARTSubRegimen(int nextSubRegimen);
-	/* setCurrARTRegimen updates the destined efficacy of the ART regimen */
+	/* setCurrARTEfficacy updates the destined efficacy of the ART regimen */
 	void setCurrARTEfficacy(SimContext::ART_EFF_TYPE efficacyType, bool isInitial);
 	/* setCurrARTResponse sets the calculated ART propensity to respond and response type */
 	void setCurrARTResponse(double propRespond);
+	/* starts an adherence intervention*/
+	void startAdherenceIntervention();
 	/* setTargetHVLStrata updates the target HVL while on ART or post ART */
 	void setTargetHVLStrata(SimContext::HVL_STRATA targetHVL);
+	/* setPatientNatHistSlopePerc sets the natural history cd4 decline increment Perc*/
+	void setPatientNatHistSlopePerc(double cd4Perc);
 	/* setCurrRegimenCD4Slope sets the CD4 slope for the current ART regimen */
 	void setCurrRegimenCD4Slope(double cd4Slope);
 	/* setCurrRegimenCD4PercentageSlope sets the CD4 percentage slope for the current ART regimen */
@@ -124,10 +162,12 @@ protected:
 	void setCD4EnvelopeSlope(SimContext::ENVL_CD4_TYPE envelopeType, double cd4Slope);
 	/* incrementCD4Envelope increments the specified CD4 envelope's level according to hypothetical ART success */
 	void incrementCD4Envelope(SimContext::ENVL_CD4_TYPE envelopeType, double changeCD4);
-	/* setCurrARTObservedFailue updates the state to begin the next ART treatment regimen */
+	/* setCurrARTObservedFailure updates the state to begin the next ART treatment regimen */
 	void setCurrARTObservedFailure(SimContext::ART_FAIL_TYPE failType);
-	/* stopCurrARTRegimen updates the state to begin the next ART treatment regimen */
+	/* stopCurrARTRegimen updates the state to end the next ART treatment regimen */
 	void stopCurrARTRegimen(SimContext::ART_STOP_TYPE stopType);
+	/* stopAdherenceIntervention updates the state to stop the Adherence Intervention*/
+	void stopAdherenceIntervention();
 	/* setNextARTRegimen updates the next ART regimen that is available for use */
 	void setNextARTRegimen(bool hasNext, int artLineNum = 0);
 	/* incrementMonthsUnsuccessfulART increments the number of months on failed/partial ART by HVL */
@@ -165,7 +205,7 @@ protected:
 	/* setProphResistance updates the flag to indicate that proph resistance has occurred */
 	void setProphResistance(SimContext::OI_TYPE oiType);
 	/* setTBDiseaseState updates the TB disease state */
-	void setTBDiseaseState(SimContext::TB_STATE newTBState);
+	void setTBDiseaseState(SimContext::TB_STATE newTBState, SimContext::TB_HIST_ACTV_STATE newTBHistActiveState = SimContext::TB_HIST_ACTV_NO_HIST_ACTV);
 	/* setTBResistanceStrain updates the TB disease drug resistance */
 	void setTBResistanceStrain(SimContext::TB_STRAIN newTBStrain);
 	/* setNewTBInfection updates the state and statistics for a new TB infections occurring */
@@ -224,12 +264,14 @@ protected:
 	void setTrueCD4(double newCD4, bool isInitial = false);
 	/* setTrueCD4Percentage updates the pediatrics patients actual CD4 percentage */
 	void setTrueCD4Percentage(double newCD4Perc, bool isInitial = false);
+	/* setCD4MultOnARTFail updates the lag period and current cd4 multiplier for failed ART*/
+	void setCD4MultOnARTFail(int monthOfNewCD4Decline,double newCD4Mult);
 	/* setTrueHVLStrata set the patient's actual HVL strata to the given level */
 	void setTrueHVLStrata(SimContext::HVL_STRATA newHVL);
 	/* setSetpointHVLStrata sets the patients setpoint HVL level */
 	void setSetpointHVLStrata(SimContext::HVL_STRATA newSetpoint);
 	/* setObservedCD4 updates the patients observed CD4 level and confines it within the bounds */
-	void setObservedCD4(bool isKnown, double cd4Value = 0.0);
+	void setObservedCD4(bool isKnown, double cd4Value = 0.0, bool isLabStaging = false);
 	/* setObservedCD4Percentage updates the patients observed CD4 percentage and confines it within the bounds */
 	void setObservedCD4Percentage(bool isKnown, double cd4Percent = 0.0);
 	/* setObservedHVLStrata updates the patients observed HVL strata */
@@ -238,6 +280,10 @@ protected:
 	void incrementCostsHIVTest(double cost);
 	/* incrementCostsHIVMisc adds an HIV misc related cost to the patients total */
 	void incrementCostsHIVMisc(double cost);
+	/* incrementCostsLabStagingTest adds a Lab Staging testing cost to the patients total */
+	void incrementCostsLabStagingTest(double cost);
+	/* incrementCostsLabStagingMisc adds a Lab Staging misc related cost to the patients total */
+	void incrementCostsLabStagingMisc(double cost);
 	/* incrementCostsCD4Test adds the CD4 testing related costs to the patients total */
 	void incrementCostsCD4Test(const double *costArray);
 	/* incrementCostsHVLTest adds the HVL testing related costs to the patients total */
@@ -246,6 +292,8 @@ protected:
 	void incrementCostsClinicVisit(const double *costArray);
 	/* incrementCostsART adds an ART treatment cost to the patients total */
 	void incrementCostsART(int artLineNum, double cost);
+	/* incrementCostsIntervention adds an intervention cost to the patients total */
+	void incrementCostsIntervention(double cost);
 	/* incrementCostsProph adds a prophylaxis treatment cost to the patients total */
 	void incrementCostsProph(SimContext::OI_TYPE oiType, int prophNum, double cost);
 	/* incrementCostsTBProph adds a TB proph cost to patients total */
@@ -254,11 +302,15 @@ protected:
 	void incrementCostsTBTreatment(const double *costArray, double percent);
 	/* incrementCostsToxicity adds a toxicity cost to the patients total */
 	void incrementCostsToxicity(double cost);
+	/*incrementCostsChrms adds a CHRMs cost to the patients total*/
+	void incrementCostsCHRMs(SimContext::CHRM_TYPE CHRMType,double cost);
+	/* incrementCostsPeds adds a pediatric cost to the patient's total */
+	void incrementCostsPeds(double cost);
 	/* incrementCostsMisc adds a miscellaneous cost to the patients total costs,
 		overloaded to take in either a single cost value or a COST_NUM_TYPES sized array of costs */
 	void incrementCostsMisc(double cost, double percent);
-	void incrementCostsMisc(const double *costArray, double percent);
-	/* updateInitialDistributions updates the inital statistics for patients upon infection */
+	void incrementCostsMisc(const double *costArray, double percent, double multiplier = 1.0);
+	/* updateInitialDistributions updates the initial statistics for patients upon infection */
 	void updateInitialDistributions();
 	/* updatePatientSurvival updates the patient state for discounted LMs and QALMs,
 		used with a half month length if death occurred that month */
@@ -279,9 +331,6 @@ protected:
 	bool willAttendClinicThisMonth();
 	/* getPartialSuppressTargetHVL determines the ART target HVL when entering partial suppression */
 	SimContext::HVL_STRATA getPartialSuppressTargetHVL(int artLineNum);
-
-private:
-	/* Private utility functions that are used by multiple updater functions */
 	/* getCD4Strata returns the CD4 strata for a given value */
 	SimContext::CD4_STRATA getCD4Strata(double valueCD4);
 	/* getCD4PercentageStrata returns the CD4 percentage strata for a given value */
@@ -290,13 +339,24 @@ private:
 	int getAgeCategoryClinical(int ageMonths);
 	/* getAgeCategoryHIVInfection returns the HIV testing age category for the given age */
 	int getAgeCategoryHIVInfection(int ageMonths);
+	/* getAgeCategoryCHRMs returns the CHRMs age category for the given age */
+	int getAgeCategoryCHRMs(int ageMonths);
 	/* getAgeCategoryPediatrics returns the Pediatrics testing category for the given age */
 	SimContext::PEDS_AGE_CAT getAgeCategoryPediatrics(int ageMonths);
+	/* getAgeCategoryPediatricsCost returns the Pediatrics Cost category for the given age */
+	SimContext::PEDS_COST_AGE getAgeCategoryPediatricsCost(int ageMonths);
+	/* getAgeCategoryPediatricsARTCost returns the Pediatrics ART Cost category for the given age */
+	SimContext::PEDS_ART_COST_AGE getAgeCategoryPediatricsARTCost(int ageMonths);
+private:
+	/**
+	 * \class StateUpdater
+	 * The private functions are utility functions that are used by multiple updater functions */
+
 	/* getTimeSummary returns a non-const pointer to the TimeSummary object for the current time period,
 		creates a new one if needed or returns null if not keeping longitudinal stats */
 	RunStats::TimeSummary *getTimeSummaryForUpdate();
 	/* incrementCostsCommon increases all general cost stats that are independent of the type of cost,
 		overloaded to take in either a single cost value or a COST_NUM_TYPES sized array of costs */
 	void incrementCostsCommon(double cost, double percent);
-	void incrementCostsCommon(const double *costArray, double percent);
+	void incrementCostsCommon(const double *costArray, double percent , double multiplier = 1.0);
 };

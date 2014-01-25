@@ -4,8 +4,18 @@
 //	state updater constructor only copies the pointer and does not access any of its fields so it is safe
 #pragma warning(disable:4355)
 
-/* Constructor takes in the patient number, simulation context, run stats object, and tracing object
-	Initializes all subclass state values */
+/** Constructor takes in the patient number, simulation context, run stats object, and tracing object
+	Initializes all subclass state values
+
+	\param *simContext a pointer to the SimContext the patient should use for inputs
+	\param *runStats a pointer to the RunStats the patient should use for outputs
+	\param *tracer a pointer to the Tracer used for tracing the patient
+	\param _predefinedAgeAndGender a bool that is true if the patient's age and gender are predefined (likely by the transmission model) instead of drawn from the SimContext distribution
+	\param _ageMonths an integer specifying the initial age of the patient IF it is not to be drawn from the SimContext distribution
+	\param _gender a SimContext::GENDER_TYPE specifying the patient's gender IF it is not to be drawn from the SimContext distribution
+	\param _setAsIncidentCase a boolean that is true if this is an incident HIV case (determined likely by the transmission model)
+	\param startingMonth an integer specifying the month the patient should start in (for syncing up the patients in the transmission model)
+**/
 Patient::Patient(SimContext *simContext, RunStats *runStats, Tracer *tracer,  bool _predefinedAgeAndGender, int _ageMonths, SimContext::GENDER_TYPE _gender, bool _setAsIncidentCase, int startingMonth) :
 		simContext(simContext),
 		runStats(runStats),
@@ -26,6 +36,8 @@ Patient::Patient(SimContext *simContext, RunStats *runStats, Tracer *tracer,  bo
 		clinicVisitUpdater(this),
 		endMonthUpdater(this)
 {
+
+
 	//Determine if Age and Gender and Incident Case status are input defined rather than drawn from a distribution
 	this->generalState.predefinedAgeAndGender = _predefinedAgeAndGender;
 	if (this->generalState.predefinedAgeAndGender){
@@ -36,6 +48,14 @@ Patient::Patient(SimContext *simContext, RunStats *runStats, Tracer *tracer,  bo
 
 	//Set the initial time
 	this->generalState.initialMonthNum = startingMonth;
+
+	//initialize unitialized variables
+	this->tbState.hasObservedHistoryActiveTB=false;
+	this->tbState.hadProph=false;
+	this->artState.isOnAdherenceIntervention = false;
+	this->diseaseState.hasDrawnPatientSpecificCD4Decline = false;
+	this->monitoringState.hasScheduledCD4Test = false;
+	this->monitoringState.hasScheduledHVLTest = false;
 
 	beginMonthUpdater.performInitialUpdates();
 	hivInfectionUpdater.performInitialUpdates();
@@ -54,113 +74,65 @@ Patient::Patient(SimContext *simContext, RunStats *runStats, Tracer *tracer,  bo
 	endMonthUpdater.performInitialUpdates();
 }
 
-/* Cleanup the state updater classes */
+/** Cleanup the state updater classes */
 Patient::~Patient(void) {
 
 }
 
-/* simulateMonth runs a single month of simulation for this patient, and updates
+/** simulateMonth runs a single month of simulation for this patient, and updates
 	its state and runStats statistics */
 void Patient::simulateMonth() {
+
 	beginMonthUpdater.performMonthlyUpdates();
 
-	/* Disease and General Health updaters */
-	//If this is being run in the transmission model (i.e. age and gender were predefined) ignore all incidence (i.e. do not perform hivInfection updates until after infection)
+	/** Disease and General Health updaters are called */
+	/** If this is being run in the transmission model (i.e. age and gender were predefined) ignore all incidence (i.e. do not perform hivInfection updates until after infection)*/
 	if (!(generalState.predefinedAgeAndGender && diseaseState.infectedHIVState == SimContext::HIV_INF_NEG)){
 		hivInfectionUpdater.performMonthlyUpdates();
 	}
 	chrmsUpdater.performMonthlyUpdates();
+
 	if (diseaseState.infectedHIVState != SimContext::HIV_INF_NEG) {
+
 		drugToxicityUpdater.performMonthlyUpdates();
+
 		tbDiseaseUpdater.performMonthlyUpdates();
+
 		// Roll for occurrence of an acute OI if acute TB did not happen this month
 		if (!diseaseState.hasCurrTrueOI) {
 			acuteOIUpdater.performMonthlyUpdates();
 		}
 	}
+
 	mortalityUpdater.performMonthlyUpdates();
+
 	if (!diseaseState.isAlive) {
 		endMonthUpdater.performMonthlyUpdates();
 		return;
 	}
+
 	if (diseaseState.infectedHIVState != SimContext::HIV_INF_NEG) {
 		cd4HVLUpdater.performMonthlyUpdates();
 	}
 
-	/* Treatment, Monitoring, and Behavior updaters */
+
+	/** Treatment, Monitoring, and Behavior updaters are called */
 	hivTestingUpdater.performMonthlyUpdates();
+
 	if (diseaseState.infectedHIVState != SimContext::HIV_INF_NEG) {
+
 		behaviorUpdater.performMonthlyUpdates();
 		drugEfficacyUpdater.performMonthlyUpdates();
 		cd4TestUpdater.performMonthlyUpdates();
+
 		hvlTestUpdater.performMonthlyUpdates();
+
 		clinicVisitUpdater.performMonthlyUpdates();
+
 	}
 
 	endMonthUpdater.performMonthlyUpdates();
+
 } /* endSimulateMonth */
 
-/* saveState saves the state of the patient to file format using a JSON like notation */
-void Patient::saveState(ostream & _outStream){
-	//general state
-	_outStream << "patient:{" << endl;
-	_outStream << "mth:" << this->generalState.monthNum << "," << endl;
-	_outStream << "initMth:" << this->generalState.initialMonthNum << "," << endl;
-	_outStream << "discCost:" << this->generalState.costsDiscounted << "," << endl;
-	_outStream << "discLM:" << this->generalState.LMsDiscounted << "," << endl;
-	_outStream << "discQALM:" << this->generalState.qualityAdjustLMsDiscounted << "," << endl;
 
-	//disease state
-	int mthAcuToChr=-1,mthInf=-1,trueCD4=-1,minCD4=-1,trueHVL=-1,setHVL=-1,tarHVL=-1;
-	if(this->diseaseState.infectedHIVState!=SimContext::HIV_INF_NEG){
-		mthAcuToChr=this->diseaseState.monthOfAcuteToChronicHIV;
-		mthInf=this->diseaseState.monthOfHIVInfection;
-		trueCD4=this->diseaseState.currTrueCD4;
-		minCD4=this->diseaseState.minTrueCD4;
-		trueHVL=this->diseaseState.currTrueHVLStrata;
-		setHVL=this->diseaseState.setpointHVLStrata;
-		tarHVL=this->diseaseState.targetHVLStrata;
-	}
-	_outStream << "hivState:" << this->diseaseState.infectedHIVState << "," << endl;
-	_outStream << "mthInf:" << mthInf << "," << endl;
-	_outStream << "mthAcuToChr:" << mthAcuToChr << "," << endl;
-	_outStream << "trueCD4:" << trueCD4 << "," << endl;
-	_outStream << "minCD4:" << minCD4 << "," << endl;
-	_outStream << "trueHVL:" << trueHVL << "," << endl;
-	_outStream << "setHVL:" << setHVL << "," << endl;
-	_outStream << "tarHVL:" << tarHVL << "," << endl;
-	_outStream << "hasOI:" << this->diseaseState.hasCurrTrueOI << "," << endl;
-	if (this->diseaseState.hasCurrTrueOI)
-		_outStream << "typeOI:" << this->diseaseState.typeCurrTrueOI << "," << endl;
-	_outStream << "typeOIhist:" << this->diseaseState.typeTrueOIHistory << "," << endl;
-	
-	bool isFirst=true;
-	_outStream << "hasOIhist:[";
-	for (int i=0; i<SimContext::OI_NUM; i++){
-		if (!isFirst)
-			_outStream << ",";
-		isFirst=false;
-		_outStream << this->diseaseState.hasTrueOIHistory[i];
-	}
-	_outStream << "]" << "," << endl;
-
-	isFirst=true;
-	_outStream << "numOILastVst:[";
-	for (int i=0; i<SimContext::OI_NUM; i++){
-		if (!isFirst)
-			_outStream << ",";
-		isFirst=false;
-		_outStream << this->diseaseState.numTrueOIsSinceLastVisit[i];
-	}
-	_outStream << "]" << "," << endl;
-
-	isFirst=true;
-	_outStream << "mortRisks:[";
-	for (vector<SimContext::MortalityRisk>::iterator it=this->diseaseState.mortalityRisks.begin(); it!=this->diseaseState.mortalityRisks.end(); it++){
-		if (!isFirst)
-			_outStream << ",";
-		isFirst=false;
-		(*it).saveState(_outStream);
-	}
-	_outStream << "]}";
-}
