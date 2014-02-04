@@ -1,17 +1,8 @@
-/*
- * main.cpp
- *
- *  Created on: Sep 22, 2010
- *      Author: errhode
- */
-
 #include "cepac/include.h"
 #include "util/Util.h"
 #include "statistics/TransmissionSummaryStats.h"
 #include "Sim.h"
 
-
-/* Main function for a console based application */
 int main(int argc, char *argv[])
 {
 	/* Console application uses the directory given on the command line or the
@@ -28,7 +19,7 @@ int main(int argc, char *argv[])
 		CepacUtil::useCurrentDirectoryForInputs();
 	}
 
-	Util::findInputFiles();
+	Util::findInputFiles(argv[1]);
 	CepacUtil::createResultsDirectory();
 	SummaryStats *cepacSummaryStats = new SummaryStats("cepacPopstats.out");
 	TransmissionSummaryStats *transSummaryStats = new TransmissionSummaryStats("summaryStats.out");
@@ -39,18 +30,27 @@ int main(int argc, char *argv[])
 		CepacUtil::changeDirectoryToInputs();
 		std::cout << "Running File: " << Util::transmFilesToRun[i] << std::endl;
 		//Console version will not use GraphViz and will use random seed by result
-		Sim *s = new Sim(Util::transmFilesToRun[i], NULL);
+		Sim s(Util::transmFilesToRun[i]);
 
-		if(!(s->getError()))
+		while(!s.GetEventParams()->outputMessageQueue.empty())
 		{
-			//Run the simulation the desired number of time steps
-			s->run(s->getMaxTime());
-			//Get CEPAC runStats from eventsParams and add to cepacSummaryStats
-			cepacSummaryStats->addRunStats(s->getCEPACRunStats());
-			//Get transmission popStats and add to transSummaryStats
-			transSummaryStats->addPopStats(s->getPopStats(), s->getEventParams());
-			delete s;
+			std::cout << s.GetEventParams()->outputMessageQueue.front();
+			s.GetEventParams()->outputMessageQueue.pop_front();
 		}
+
+		s.Initialize();
+
+		while(s.Step())
+		{
+			while(!s.GetEventParams()->outputMessageQueue.empty())
+			{
+				std::cout << s.GetEventParams()->outputMessageQueue.front();
+				s.GetEventParams()->outputMessageQueue.pop_front();
+			}
+		}
+
+		cepacSummaryStats->addRunStats(s.GetCEPACRunStats());
+		transSummaryStats->addPopStats(s.GetPopStats(), s.GetEventParams());
 	}
 
 	//Finalize CEPAC summary stats and print the popstats file
