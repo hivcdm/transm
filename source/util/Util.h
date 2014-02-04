@@ -23,12 +23,8 @@ public:
 	static const double MODEL_VERSION;
 	static const double INPUT_VERSION;
 
-	//Only have the "filesToRun" in Util for the console version... otherwise it is taken care of by DisplayBox
-	//#if defined (CONSOLE)
 	static std::vector<std::string> transmFilesToRun;
-	static void findInputFiles();
-	//#endif
-
+	static void findInputFiles(const std::string &inputDirectory);
 
 	//convert _val from one TimeGranularity to another
 	static unsigned int convertTime(TimeGranularity _from, TimeGranularity _to, double _val);

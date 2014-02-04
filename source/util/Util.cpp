@@ -1,19 +1,7 @@
 #include <iostream>
 #include <typeinfo>
 #include "Util.h"
-/* Include platform specific header files */
-#if defined(_LINUX)
-#include <sys/io.h>
-#endif
-#if defined(_WIN32)
-#include <io.h>
-#include <direct.h>	//for _mkdir and _CHDIR
-#else
-#include <sys/types.h>
-#include <sys/stat.h>
-//used to find files in a directory
-#include <glob.h>
-#endif
+#include <boost/filesystem.hpp>
 
 const double Util::MODEL_VERSION = 3.33;
 const double Util::INPUT_VERSION = 3.33;
@@ -24,60 +12,22 @@ double Util::monthToYearMult = 1.0 / 12;
 
 std::vector<std::string> Util::transmFilesToRun;
 
-#if defined ( CONSOLE )
-void Util::findInputFiles()
+void Util::findInputFiles(const std::string &inputDirectory)
 {
-#if defined(_WIN32)
-	long hFile;
-	struct _finddata_t tFileInfo;
-	hFile = _findfirst("*.xml", &tFileInfo);
-	int nInputFiles = 0;
-	std::string fileName;
-	//get the list of files that we have to process
-	transmFilesToRun.clear();
+	boost::filesystem::path directoryPath(inputDirectory);
+	boost::filesystem::directory_iterator end_iter;
 
-	do
+	if(boost::filesystem::exists(directoryPath) && boost::filesystem::is_directory(directoryPath))
 	{
-		fileName = (char *) tFileInfo.name;
-		transmFilesToRun.push_back(fileName);
-		nInputFiles++;
-	}
-	while(_findnext(hFile, &tFileInfo) == 0);
-
-	_findclose(hFile);
-#else
-	glob_t files;
-	glob("*.xml", GLOB_ERR, NULL, &files);
-	int nInputFiles = 0;
-	std::string fileName;
-	transmFilesToRun.clear();
-	//get the list of files that we have to process
-	int i;
-
-	for(i = 0; i < files.gl_pathc; i++)
-	{
-		fileName = (char *) files.gl_pathv[i];
-		size_t fileNameLength = fileName.length();
-		size_t seqFirstStartIndex = fileName.rfind("_seq01");
-		size_t seqStartIndex = fileName.rfind("_seq");
-
-		if(seqStartIndex == (fileNameLength - 10))
+		for(boost::filesystem::directory_iterator dir_iter(directoryPath); dir_iter != end_iter; ++dir_iter)
 		{
-		  if(seqFirstStartIndex == std::string::npos)
+			if(boost::filesystem::is_regular_file(dir_iter->status()) && dir_iter->path().extension() == ".xml")
 			{
-				continue;
+				transmFilesToRun.push_back(dir_iter->path().string());
 			}
 		}
-
-		transmFilesToRun.push_back(fileName);
-		++nInputFiles;
 	}
-
-	globfree(&files);
-#endif
 }
-#endif
-
 
 //convert _val from one TimeGranularity to another
 unsigned int Util::convertTime(TimeGranularity _from, TimeGranularity _to, double _val)
