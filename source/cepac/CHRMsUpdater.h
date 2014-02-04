@@ -2,7 +2,7 @@
 
 #include "include.h"
 
-/**
+/*
 	The CHRMsUpdater class tests for the initiation of chronic events (CHRMs) each month and
 	the continuing effects of existing ones.  Performs all updates of the patient state and
 	statistics for the chronic events.

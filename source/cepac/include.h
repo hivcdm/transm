@@ -1,13 +1,13 @@
 #pragma once
 
-/**
-	\brief include.h is the main include file for all CEPAC simulation classes
+/*
+	include.h is the main include file for all CEPAC simulation classes
 */
 
 // avoid deprecated warnings for many string functions in VC++ 2005
 #pragma warning(disable:4996)
 
-/** include all the necessary standard C and C++ libraries */
+/* include all the necessary standard C and C++ libraries */
 #include <time.h>
 #include <string.h>
 #include <stdio.h>
@@ -25,14 +25,14 @@
 #include <list>
 using namespace std;
 
-/** Predefine classes that have circular dependencies */
+/* Predefine classes that have circular dependencies */
 class SimContext;
 class Tracer;
 class RunStats;
 class SummaryStats;
 class Patient;
 
-/** Include all the class definitions */
+/* Include all the class definitions */
 #include "SimContext.h"
 #include "Tracer.h"
 #include "RunStats.h"
@@ -58,7 +58,7 @@ class Patient;
 #include "CepacUtil.h"
 
 
-/** Include platform specific header files */
+/* Include platform specific header files */
 #if defined(_LINUX)
 	#include <sys/io.h>
 #endif

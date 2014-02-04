@@ -2,7 +2,7 @@
 
 #include "include.h"
 
-/**
+/*
 	HIVTestingUpdater is an updater that manages the HIV testing of all patients and the
 	montly events for HIV negative patients.  It handles all the scheduled testing programs and
 	background screening for the detection of HIV.  For patients that are uninfected, this module also
@@ -30,6 +30,4 @@ private:
 	/* performBackgroundScreeningUpdates handles whether patient is detected by background
 		screening and updates the associated state and statistics */
 	void performBackgroundScreeningUpdates();
-	/* performLabStagingUpdates determines if lab staging occurs, if its accepted, and updates state and statistics*/
-	void performLabStagingUpdates(bool wasPrevDetected);
 };

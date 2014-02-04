@@ -2,7 +2,7 @@
 
 #include "include.h"
 
-/**
+/* 
 	DrugToxicityUpdater is an updater that handles all the toxicity events and effects
 	for ART regimens, prophylaxis, and TB treatments.
 */

@@ -2,7 +2,7 @@
 
 #include "include.h"
 
-/**
+/* 
 	HVLTestUpdater handles the clinical HVL testing of patients and the associated state
 	updates.  It usually coincides with clinic visits but was split out to handle HVL tests
 	that occur outside of clinic visits due to ART initiation or repeat ART failure testing.

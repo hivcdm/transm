@@ -2,7 +2,7 @@
 
 #include "include.h"
 
-/**
+/*
 	HIVInfectionUpdater handles the transition from acute to chronic HIV and updates all
 	associated patient state and statistics.  It only does work during the specified
 	transition month.

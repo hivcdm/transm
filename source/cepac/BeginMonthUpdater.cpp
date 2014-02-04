@@ -1,62 +1,55 @@
 #include "include.h"
 
-/** \brief Constructor takes in the patient object */
+/* Constructor takes in the patient object */
 BeginMonthUpdater::BeginMonthUpdater(Patient *patient) : StateUpdater(patient) {
 
 }
 
-/** \brief Destructor is empty, no cleanup required */
+/* Destructor is empty, no cleanup required */
 BeginMonthUpdater::~BeginMonthUpdater(void) {
 
 }
 
-/** \brief performInitialUpdates perform all of the state and statistics updates upon patient creation */
+/* performInitialUpdates perform all of the state and statistics updates upon patient creation */
 void BeginMonthUpdater::performInitialUpdates() {
-
-	/** First call the parent function to perform general updates and initialization */
+	// First call the parent function to perform general updates and initialization
 	StateUpdater::performInitialUpdates();
 
-	/** Initialize the general patient state */
+	// Initialize the general patient state
 	int patientNum = runStats->getPopulationSummary()->numCohorts + 1;
-	/** Increase numCohorts here so that the next created patient has a different patientNum, even if this patient isn't dead (i.e. in the transmission model) */
+	//Increase numCohorts here so that the next created patient has a different patientNum, even if this patient isn't dead (i.e. in the transmission model)
 	this->incrementCohortSize();
 	bool tracingEnabled = (patientNum <= SimContext::numPatientsToTrace);
 	initializePatient(patientNum, tracingEnabled);
 
-	/** Determine the patients gender */
+	// Determine the patients gender
 	double randNum = CepacUtil::getRandomDouble(20010, patient);
 	SimContext::GENDER_TYPE gender = SimContext::GENDER_FEMALE;
 	if (randNum < simContext->getCohortInputs()->maleGenderDistribution)
 		gender = SimContext::GENDER_MALE;
 
-	/** Determine the patients age */
-	double ageMonthsMean;
-	double ageMonthsStdDev;
-	if (simContext->getPedsInputs()->enablePediatricsModel){
-		ageMonthsMean=simContext->getPedsInputs()->initialAgeMean;
-		ageMonthsStdDev=simContext->getPedsInputs()->initialAgeStdDev;
-	}
-	else{
-		ageMonthsMean = simContext->getCohortInputs()->initialAgeMean;
-		ageMonthsStdDev = simContext->getCohortInputs()->initialAgeStdDev;
-	}
-
+	// Determine the patients age
+	double ageMonthsMean = simContext->getCohortInputs()->initialAgeMean;
+	double ageMonthsStdDev = simContext->getCohortInputs()->initialAgeStdDev;
 	int ageMonths = (int) (CepacUtil::getRandomGaussian(ageMonthsMean, ageMonthsStdDev, 20020, patient) + 0.5);
 	if (ageMonths < 0)
 		ageMonths = 0;
 	else if (ageMonths > 1200)
 		ageMonths = 1200;
-
-	/** If we want the pre-assigned age and gender (i.e. transmission model), set that here */
+	// If using the pediatrics model, start everyone at age 0
+	if (simContext->getPedsInputs()->enablePediatricsModel) {
+		ageMonths = 0;
+	}
+	//If we want the pre-assigned age and gender, set that here
 	if (this->patient->getGeneralState()->predefinedAgeAndGender){
 		gender = this->patient->getGeneralState()->gender;
 		ageMonths = this->patient->getGeneralState()->ageMonths;
 	}
 
-	/** Set the age and gender of the patient */
+	// Set the age and gender of the patient
 	setPatientAgeGender(gender, ageMonths);
 
-	/** Set the patients prevalence of risk factors */
+	// Set the patients prevalence of risk factors
 	for (int i = 0; i < SimContext::RISK_FACT_NUM; i++) {
 		bool hasRisk = false;
 		randNum = CepacUtil::getRandomDouble(60050, patient);
@@ -67,15 +60,16 @@ void BeginMonthUpdater::performInitialUpdates() {
 } /* end performInitialUpdates */
 //
 
-/** \brief performMonthlyUpdates perform all of the state and statistics updates for a simulated month */
+/* performMonthlyUpdates perform all of the state and statistics updates for a simulated month */
 void BeginMonthUpdater::performMonthlyUpdates() {
-	/** Set the discount factor, and reset the QOL multiplier, non-AIDS death increase, and acute OI */
+	// Set the discount factor, and reset the QOL multiplier, non-AIDS death increase, and acute OI
 	setQOLMultiplier(1.0);
 	setNonAIDSDeathRateMultiplier(1.0);
 	setCurrTrueOI(SimContext::OI_NONE);
 	clearMortalityRisks();
 
-	/** Do special processing for the initial month: */
+	// Do special processing for the initial month
+	//ERINWASHERE
 	if (patient->getGeneralState()->monthNum == patient->getGeneralState()->initialMonthNum) {
 	//if (patient->getGeneralState()->monthNum == 0) {
 		if (patient->getGeneralState()->tracingEnabled) {
@@ -83,7 +77,7 @@ void BeginMonthUpdater::performMonthlyUpdates() {
 		}
 
 		if (patient->getDiseaseState()->infectedHIVState == SimContext::HIV_INF_NEG) {
-			/** Print out initial patient tracing for HIV negative patients */
+			// Print out initial patient tracing for HIV negative patients
 			if (patient->getGeneralState()->tracingEnabled) {
 				tracer->printTrace(1, "  gender: %s, init age: %d mths (%1.2lf yrs)\n",
 					(patient->getGeneralState()->gender == SimContext::GENDER_MALE) ? "male" : "female",
@@ -107,16 +101,16 @@ void BeginMonthUpdater::performMonthlyUpdates() {
 			}
 		}
 		else {
-			/** If patient is initially infected, update the initial distribution at time of infection statistics */
+			// Update the initial distribution at time of infection statistics
 			updateInitialDistributions();
 
-			/** Print out initial patient tracing for prevalent HIV positive patients */
+			// Print out initial patient tracing for prevalent HIV positive patients
 			if (patient->getGeneralState()->tracingEnabled) {
 				tracer->printTrace(1, "  gender: %s, init age: %d mths (%1.2lf yrs)\n",
 					(patient->getGeneralState()->gender == SimContext::GENDER_MALE) ? "male" : "female",
 					patient->getGeneralState()->ageMonths, patient->getGeneralState()->ageMonths / 12.0 );
 				if (patient->getGeneralState()->ageCategoryPediatrics < SimContext::PEDS_AGE_LATE) {
-					tracer->printTrace(1, "  init CD4 perc: %1.3f %s;\n", patient->getDiseaseState()->currTrueCD4Percentage,
+					tracer->printTrace(1, "  init CD4 perc: %1.2f %s;\n", patient->getDiseaseState()->currTrueCD4Percentage,
 						SimContext::CD4_STRATA_STRS[patient->getDiseaseState()->currTrueCD4Strata]);
 				}
 				else {

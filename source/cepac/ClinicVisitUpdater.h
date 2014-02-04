@@ -2,7 +2,7 @@
 
 #include "include.h"
 
-/**
+/*
 	ClinicVisitUpdater handles all of the patient state and statistics updates for scheduled
 	and emergency OI clinic visits.  This includes OI detection and treatment, ART
 	treat policy decisions, prophylaxis treatment policy decisions, and initiating TB treatments.
@@ -29,16 +29,10 @@ private:
 	void performARTProgramUpdates();
 	/* evaluateStartARTPolicy determines if the starting criteria for ART has been met */
 	bool evaluateStartARTPolicy();
-	/* evaluateStartARTPolicy determines if the starting criteria for ART has been met (Only for early childhood)*/
-	bool evaluateStartARTPolicyPeds();
 	/* evaluateFailARTPolicy determines if the observed failure criteria for ART has been met */
 	SimContext::ART_FAIL_TYPE evaluateFailARTPolicy();
-	/* evaluateFailARTPolicyPeds determines if the observed failure criteria for ART has been met (Only for early childhood)*/
-	SimContext::ART_FAIL_TYPE evaluateFailARTPolicyPeds();
 	/* evaluateStopARTPolicy determines if the stopping criteria for ART has been met */
 	SimContext::ART_STOP_TYPE evaluateStopARTPolicy();
-	/* evaluateStopARTPolicyPeds determines if the stopping criteria for ART has been met (Only for early childhood)*/
-	SimContext::ART_STOP_TYPE evaluateStopARTPolicyPeds();
 	/* evaluateSTIInitialStopPolicy determines if the ART treatment should be stopped for the
 		initial STI interruption */
 	bool evaluateSTIInitialStopPolicy();
@@ -53,12 +47,8 @@ private:
 	void performProphProgramUpdates();
 	/* evaluateStartProphPolicy determines if the start criteria for the proph has been met */
 	bool evaluateStartProphPolicy(SimContext::PROPH_TYPE prophType, SimContext::OI_TYPE oiType);
-	/* evaluateStartProphPolicyPeds determines if the start criteria for the proph has been met (Only for early childhood in peds model)*/
-	bool evaluateStartProphPolicyPeds(SimContext::PROPH_TYPE prophType, SimContext::OI_TYPE oiType);
 	/* evaluateStopProphPolicy determines if the sopping criteria for the proph has been met */
 	bool evaluateStopProphPolicy(SimContext::PROPH_TYPE prophType, SimContext::OI_TYPE oiType);
-	/* evaluateStopProphPolicyPeds determines if the stopping criteria for the proph has been met (Only for early childhood in peds model)*/
-	bool evaluateStopProphPolicyPeds(SimContext::PROPH_TYPE prophType, SimContext::OI_TYPE oiType);
 	/* performTBProphProgramUpdates evaluates TB proph policies and alters the treatment program */
 	void performTBProphProgramUpdates();
 	/* evaluateStartTBProphPolicy determines if the start criteria for TB proph has been met */

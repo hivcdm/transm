@@ -3,7 +3,7 @@
 #include "include.h"
 
 /*
-	CepacUtil contains the platform specific utility functions for handling files/directories,
+	CepacUtil contains the platform specific utility functions for hadling files/directories,
 	generating random numbers, and determining the current date/time.
 */
 class CepacUtil
@@ -61,10 +61,7 @@ public:
 	static void closeFile(FILE *file);
 };
 
-/** \brief setRandomSeedType sets up the random number generator to use seed by time (i.e. random seed) or fixed seed
- *
- * \param useTimeSeed a boolean that determines whether to use fixed or random seed: if true, use random, else use fixed
- **/
+/* setRandomSeedType sets up the random number generator to use seed by time or fixed seed */
 inline void CepacUtil::setRandomSeedType(bool useTimeSeed) {
 	useRandomSeedByTime = useTimeSeed;
 	if (useRandomSeedByTime)
@@ -73,12 +70,7 @@ inline void CepacUtil::setRandomSeedType(bool useTimeSeed) {
 		mtRand.seed(8675309);
 } /* end setRandomSeedType */
 
-/** \brief getRandomDouble returns a random number within the range [0,1)
- *
- * \param callSiteId an integer specifying what function called the random number generator: used for synchronized fixed seed
- * \param patient a pointer to the Patient, used for synchronized fixed seed
- * \return a double randomly selected in the range [0,1)
- **/
+/* getRandomDouble returns a random number within the range [0,1) */
 inline double CepacUtil::getRandomDouble(int callSiteId, Patient *patient) {
 	// If using fixed seed, reseed by callSite, patient number, and month number
 	if (!useRandomSeedByTime) {
@@ -90,14 +82,8 @@ inline double CepacUtil::getRandomDouble(int callSiteId, Patient *patient) {
 	return mtRand();
 } /* end getRandomDouble */
 
-/** \brief getRandomGaussian returns a random normally distributed value with the specified mean and standard deviation
- *
- * \param mean a double representing the mean of the normal distribution
- * \param stdDev a double representing the standard deviation of the normal distribution
- * \param callSiteId an integer specifying what function called the random number generator: used for synchronized fixed seed
- * \param patient a pointer to the Patient, used for synchronized fixed seed
- * \return a double randomly selected from the defined distribution
- **/
+/* getRandomGaussian returns a random normally distributed value with the specified mean
+	and standard deviation */
 inline double CepacUtil::getRandomGaussian(double mean, double stdDev, int callSiteId, Patient *patient) {
 	// If using fixed seed, reseed by callSite, patient number, and month number
 	if (!useRandomSeedByTime) {
@@ -120,36 +106,17 @@ inline double CepacUtil::getRandomGaussian(double mean, double stdDev, int callS
 	return (mean + (y2 * stdDev));
 } /* end getRandomGaussian */
 
-/** \brief probToRate converts a probability to a rate
- *
- * \f$ rate = -\log (1 - prob) \f$
- *
- * \param prob a double representing the probability to be converted to a rate
- * \return a double representing the equivalent rate
- **/
+/* probToRate converts a probability to a rate */
 inline double CepacUtil::probToRate(double prob) {
 	return (-1 * log(1 - prob));
 } /* end probToRate */
 
-/** \brief rateToProb converts a rate to a probability
- *
- *  \f$ prob = 1 - e^{-rate} \f$
- *
- * \param rate a double representing the rate to be converted to a probability
- * \return a double representing the equivalent probability
- **/
+/* rateToProb converts a rate to a probability */
 inline double CepacUtil::rateToProb(double rate) {
 	return (1 - exp(-1 * rate));
 } /* end rateToProb */
 
-/** \brief probRateMultiply modifies a probability by a rate multiplier
- *
- * \f$ return = 1 - (1 - prob)^{rateMult} \f$
- *
- * \param prob a double representing the probability to be multiplied
- * \param rateMult a double representing the rate multiplier to apply to the probability
- * \return a double representing the adjusted probability
- **/
+/* probRateMultiply modifies a probability by a rate multiplier */
 inline double CepacUtil::probRateMultiply(double prob, double rateMult) {
 	// Formula is derived from conversion to rate, perform multiply, and convert back to prob
 	if (rateMult == 0)
@@ -159,35 +126,14 @@ inline double CepacUtil::probRateMultiply(double prob, double rateMult) {
 	return (1 - pow(1 - prob, rateMult));
 } /* end probRateMultiply */
 
-/** \brief probToLogit converts a probability to a logit
- *
- * \f$ logit = \log(\frac{prob}{1 - prob}) \f$
- *
- * \param prob a double representing the probability to be converted to a logit
- * \return a double representing the equivalent logit
- **/
 inline double CepacUtil::probToLogit(double prob) {
-	//Watch out for invalid values!
 	return log(prob / (1 - prob));
 }
 
-/** \brief logitToProb converts a logit to a probability
- *
- * \f$ prob = \frac{1}{1 + e^{-logit}} \f$
- *
- * \param logit a double representing the logit to be converted to a probability
- * \return a double representing the equivalent probability
- **/
 inline double CepacUtil::logitToProb(double logit) {
 	return 1 / (1 + exp(-1 * logit));
 }
 
-/** \brief probLogitAdjustment takes a probability and adjusts it by a given logit by converting the probability to a logit, summing the logits together, and converting back to a probability
- *
- * \param prob a double representing the initial probability
- * \param logitAdjust a double representing the logit factor to add to the probability
- * \return a double representing the new adjusted probability
- **/
 inline double CepacUtil::probLogitAdjustment(double prob, double logitAdjust) {
 	return logitToProb(probToLogit(prob) + logitAdjust);
 }

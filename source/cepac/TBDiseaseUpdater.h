@@ -2,9 +2,9 @@
 
 #include "include.h"
 
-/**
-	TBDiseaseUpdater is a state updater that handles the occurence of acute TB and the
-	disease progression of reactivation, reinfection, relapse, and spontaneous resolution.
+/* 
+	TBDiseaseUpdater is a state updater that handles the occurence of acute TB and the 
+	disease progression of reactivation, reinfection, relapse, and spontaneous resolution.  
 	It also handles the effects of TB treatments and the switch of
 	treatment after failure (though this may be moved into the clinic visit at some point).
 */

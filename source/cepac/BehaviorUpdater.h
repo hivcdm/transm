@@ -2,10 +2,10 @@
 
 #include "include.h"
 
-/**
+/* 
 	BehaviorUpdater is a state updater that handles behavioral issues such as compliance
 	and adherence.  For now this only contains loss to follow up and return to care, but
-	it will eventually include drug use, adherence, pregnancy, etc.
+	it will eventual include drug use, adherence, pregnancy, etc.
 */
 class BehaviorUpdater : public StateUpdater {
 public:

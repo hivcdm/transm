@@ -2,8 +2,6 @@
 
 /* Constructor takes run name as parameter */
 SimContext::SimContext(string runName) {
-
-	counter=0;
 	inputFileName = runName;
 	inputFileName.append(".in");
 	runSpecsInputs.runName = runName;
@@ -18,7 +16,6 @@ SimContext::~SimContext(void) {
 		for (int j = 0; j < OI_NUM; j++) {
 			for (int k = 0; k < PROPH_NUM; k++) {
 				delete prophsInputs[i][j][k];
-				delete pedsProphsInputs[i][j][k];
 			}
 		}
 	}
@@ -46,10 +43,6 @@ const char *SimContext::HIST_OI_CATS_STRS[] = {
 	"NoOIHist", "MildOIHist", "SevrOIHist"
 };
 char SimContext::CHRM_STRS[SimContext::CHRM_NUM][32];	// CHRM_STRS is set during readCHRMsInputs
-const char *SimContext::CHRM_AGE_CAT_STRS[]={
-		"<20","20-29","30-39","40-49","50-59","60-69",">70"
-};
-
 const char *SimContext::CLINIC_VISITS_STRS[] = {
 	"initial", "acute", "sched"
 };
@@ -61,9 +54,6 @@ const char *SimContext::CD4_RESPONSE_STRS[] = {
 };
 const char *SimContext::RESP_TYPE_STRS[] = {
 	"Full Responder", "Partial Responder", "Non Responder"
-};
-const char *SimContext::HET_OUTCOME_STRS[]={
-	"Suppression", "Late Failure", "ART Effect OI","ART Effect CHRMs", "ART Effect Mortality","ART Effect TB","ART Effect TB Mortality","CD4 response","Resistance","Toxicity","Cost"
 };
 const char *SimContext::ART_TOX_SEVERITY_STRS[] = {
 	"Min","Chr","Maj","Dth"
@@ -82,10 +72,7 @@ const char *SimContext::TB_STRAIN_STRS[] = {
 	"dsTB", "mdrTB", "xdrTB"
 };
 const char *SimContext::TB_STATE_STRS[] = {
-	"latent", "active", "treatment(true succeeding)","treatment(false succeeding)","historyActive", "treatment(failing)"
-};
-const char *SimContext::TB_HIST_ACTV_STATE_STRS[] = {
-	"history of active after true cure", "history of active after false cure", "history of active after self cure","no history of active"
+	"latent", "active", "treatment(succeeding)","historyActive", "treatment(failing)"
 };
 const char *SimContext::TB_TREATM_STAGE_STRS[] = {
 	"L1", "L1rpt", "L2", "L3"
@@ -100,10 +87,7 @@ const char *SimContext::HIV_EXT_INF_STRS[] =  {
 	"HIVneg_hiRisk", "HIVasym", "HIVsymp", "HIVacut", "HIVneg_loRisk"
 };
 const char *SimContext::HIV_DET_STRS[] = {
-	"initial", "HIVscreening", "HIVscreeningPrevDetected","HIVbackground", "presentingBkgdPrevDetected", "presentingOI", "presentingOIPrevDetected", "unidentified"
-};
-const char *SimContext::HIV_CARE_STRS[] = {
-	"HIV-", "HIV+undected", "HIV+unlinked(detected not in care","HIV+in_care","HIV+LTFU","HIV+RTC"
+	"initial", "HIVscreening", "HIVbackground", "presentingOI", "unidentified"
 };
 const char *SimContext::TEST_RESULT_STRS[] = {
 	"truePos", "falsPos", "trueNeg", "falsNeg"
@@ -151,10 +135,7 @@ void SimContext::readInputs() {
 	readSTIInputs();
 	readTBInputs();
 	readPedsInputs();
-	readPedsProphInputs();
 	readPedsARTInputs();
-	readPedsCostInputs();
-
 
 	/* Close the input file */
 	CepacUtil::closeFile(inputFile);
@@ -164,6 +145,7 @@ void SimContext::readInputs() {
 void SimContext::readRunSpecsInputs() {
 	char buffer[256];
 	int i, tempBool;
+
 	// read in name of set this run belongs to
 	readAndSkipPast( "Runset", inputFile );
 	fscanf( inputFile, "%299s", buffer );
@@ -406,12 +388,6 @@ void SimContext::readTreatmentInputsPart1() {
 	readAndSkipPast( "OIVstAsNotSchedClinicVst", inputFile );
 	fscanf( inputFile, "%d", &tempBool);
 	treatmentInputs.emergencyVisitIsNotRegularVisit = (bool) tempBool;
-
-	// read in months to lag of cd4/hvl testing availability
-	readAndSkipPast( "LagToCD4Test", inputFile );
-	fscanf( inputFile, "%d", &treatmentInputs.CD4TestingLag );
-	readAndSkipPast( "LagToHVLTest", inputFile );
-	fscanf( inputFile, "%d", &treatmentInputs.HVLTestingLag );
 
 	//ART starting criteria
 	// read in CD4 bounds
@@ -773,18 +749,31 @@ void SimContext::readLTFUInputs() {
 	readAndSkipPast( "UseLTFU", inputFile);
 	fscanf( inputFile, "%d", &tempBool);
 	ltfuInputs.useLTFU = (bool) tempBool;
-	readAndSkipPast( "PropRespLTFUPreART", inputFile);
-	fscanf( inputFile, "%lf %lf", &(ltfuInputs.propRespondLTFUPreARTLogitMean),
-		&(ltfuInputs.propRespondLTFUPreARTLogitStdDev));
-	readAndSkipPast("HetOutcomes", inputFile);
-	readAndSkipPast("LTFU",inputFile);
-	fscanf(inputFile, "%lf %lf %lf %lf", &(ltfuInputs.responseThresholdLTFU[0]), &(ltfuInputs.responseThresholdLTFU[1]),&(ltfuInputs.responseValueLTFU[0]),&(ltfuInputs.responseValueLTFU[1]));
-
-	readAndSkipPast("PropGenMedCostsByState",inputFile);
-	fscanf(inputFile, "%lf %lf %lf %lf", &(ltfuInputs.propGeneralMedicineCost[HIV_CARE_UNDETECTED]), &(ltfuInputs.propGeneralMedicineCost[HIV_CARE_UNLINKED]), &(ltfuInputs.propGeneralMedicineCost[HIV_CARE_IN_CARE]), &(ltfuInputs.propGeneralMedicineCost[HIV_CARE_LTFU]));
-	ltfuInputs.propGeneralMedicineCost[HIV_CARE_NEG] = 1.0;
-	ltfuInputs.propGeneralMedicineCost[HIV_CARE_RTC] = ltfuInputs.propGeneralMedicineCost[HIV_CARE_IN_CARE];
-
+	readAndSkipPast( "LTFUBackground", inputFile);
+	fscanf( inputFile, "%lf %lf", &(ltfuInputs.regressionCoefficientsLTFUPreART[LTFU_BACKGROUND]),
+		&(ltfuInputs.regressionCoefficientsLTFUPostART[LTFU_BACKGROUND]));
+	readAndSkipPast( "LTFUAge", inputFile);
+	fscanf( inputFile, "%lf %lf", &(ltfuInputs.regressionCoefficientsLTFUPreART[LTFU_AGE]),
+		&(ltfuInputs.regressionCoefficientsLTFUPostART[LTFU_AGE]));
+	readAndSkipPast( "LTFUGender", inputFile);
+	fscanf( inputFile, "%lf %lf", &(ltfuInputs.regressionCoefficientsLTFUPreART[LTFU_GENDER]),
+		&(ltfuInputs.regressionCoefficientsLTFUPostART[LTFU_GENDER]));
+	readAndSkipPast( "LTFUHistory", inputFile);
+	fscanf( inputFile, "%lf %lf", &(ltfuInputs.regressionCoefficientsLTFUPreART[LTFU_HISTORY]),
+		&(ltfuInputs.regressionCoefficientsLTFUPostART[LTFU_HISTORY]));
+	readAndSkipPast( "LTFUT1", inputFile);
+	fscanf( inputFile, "%lf %lf", &(ltfuInputs.regressionCoefficientsLTFUPreART[LTFU_T1]),
+		&(ltfuInputs.regressionCoefficientsLTFUPostART[LTFU_T1]));
+	readAndSkipPast( "LTFUT1T2", inputFile);
+	fscanf( inputFile, "%lf %lf", &(ltfuInputs.regressionCoefficientsLTFUPreART[LTFU_T1_T2]),
+		&(ltfuInputs.regressionCoefficientsLTFUPostART[LTFU_T1_T2]));
+	readAndSkipPast( "LTFUT2", inputFile);
+	fscanf( inputFile, "%lf %lf", &(ltfuInputs.regressionCoefficientsLTFUPreART[LTFU_T2]),
+		&(ltfuInputs.regressionCoefficientsLTFUPostART[LTFU_T2]));
+	readAndSkipPast( "LTFUTimeInt", inputFile);
+	fscanf( inputFile, "%d %d", &(ltfuInputs.timeBoundsFromARTInitLTFU[0]), &(ltfuInputs.timeBoundsFromARTInitLTFU[1]));
+	readAndSkipPast( "LTFUAgeThreshhold", inputFile);
+	fscanf( inputFile, "%d", &ltfuInputs.ageThresholdLTFU);
 	readAndSkipPast( "pLTFUOIProph", inputFile);
 	fscanf( inputFile, "%lf", &ltfuInputs.probRemainOnOIProph);
 	readAndSkipPast( "pLTFUOITreat", inputFile);
@@ -826,16 +815,12 @@ void SimContext::readLTFUInputs() {
 void SimContext::readHeterogeneityInputs() {
 	// read in the propensity to respond coefficients
 	readAndSkipPast("PropRespBaseline", inputFile);
-	fscanf(inputFile, "%lf %lf", &(heterogeneityInputs.propRespondBaselineLogitMean),
-			&(heterogeneityInputs.propRespondBaselineLogitStdDev));
+	fscanf(inputFile, "%lf %lf", &(heterogeneityInputs.propRespondBaselineMean),
+			&(heterogeneityInputs.propRespondBaselineStdDev));
 	readAndSkipPast("PropRespAge", inputFile);
 	for (int i = 0; i < RESP_AGE_CAT_NUM; i++) {
 		fscanf(inputFile, "%lf ", &(heterogeneityInputs.propRespondAge[i]));
 	}
-
-	readAndSkipPast("PropRespPedsAge", inputFile);
-	fscanf(inputFile, "%lf %lf", &(heterogeneityInputs.propRespondAgeEarly),&(heterogeneityInputs.propRespondAgeLate));
-
 	readAndSkipPast("PropRespCD4", inputFile);
 	for (int i = CD4_NUM_STRATA - 1; i >= 0; i--) {
 		fscanf(inputFile, "%lf ", &(heterogeneityInputs.propRespondCD4[i]));
@@ -850,27 +835,30 @@ void SimContext::readHeterogeneityInputs() {
 	for (int i = 0; i < RISK_FACT_NUM; i++) {
 		fscanf(inputFile, "%lf ", &(heterogeneityInputs.propRespondRiskFactor[i]));
 	}
+	readAndSkipPast("PropRespARTRegimens", inputFile);
+	for (int i = 0; i < ART_NUM_LINES; i++) {
+		fscanf(inputFile, "%lf ", &(heterogeneityInputs.propRespondARTRegimen[i]));
+	}
+	readAndSkipPast("PropRespIndivStdDev", inputFile);
+	fscanf(inputFile, "%lf", &(heterogeneityInputs.propRespondIndividualStdDev));
 
+	// read in the clinical response parameters
+	readAndSkipPast("ResponseTypeThresholdsL1", inputFile);
+	for (int i = 0; i < ART_NUM_LINES; i++) {
+		fscanf(inputFile, "%lf ", &(heterogeneityInputs.responseTypeThresholds[i][0]));
+	}
+	readAndSkipPast("ResponseTypeThresholdsL2", inputFile);
+	for (int i = 0; i < ART_NUM_LINES; i++) {
+		fscanf(inputFile, "%lf ", &(heterogeneityInputs.responseTypeThresholds[i][1]));
+	}
+	readAndSkipPast("ProbFillRxNonResponders", inputFile);
+	fscanf(inputFile, "%lf", &(heterogeneityInputs.probFillARTPrescriptionsNonResponder));
+	readAndSkipPast("ProbRestartRegimen", inputFile);
+	for (int i = 0; i < ART_NUM_LINES; i++) {
+		fscanf(inputFile, "%lf ", &(heterogeneityInputs.probRestartARTRegimenAfterFailure[i]));
+	}
 
 	// read in the adherence intervention parameters
-	readAndSkipPast("EligibilityThreshold", inputFile);
-	fscanf(inputFile, "%lf", &(heterogeneityInputs.interventionEligibility));
-	readAndSkipPast("InterventionCostStart", inputFile);
-	fscanf(inputFile, "%lf", &(heterogeneityInputs.interventionInitCost));
-	readAndSkipPast("InterventionCostMonth", inputFile);
-	fscanf(inputFile, "%lf", &(heterogeneityInputs.interventionMthCost));
-	readAndSkipPast("CostDuration", inputFile);
-	fscanf(inputFile, "%d", &(heterogeneityInputs.interventionCostDuration));
-	readAndSkipPast("InterventionEfficacy", inputFile);
-	readAndSkipPast("MthStageEfficacy", inputFile);
-	fscanf(inputFile, "%d %d", &(heterogeneityInputs.stageBoundsInterventionEfficacy[0]),&(heterogeneityInputs.stageBoundsInterventionEfficacy[1]));
-	readAndSkipPast("InterventionEfficacy", inputFile);
-	readAndSkipPast("Mean", inputFile);
-	fscanf(inputFile, "%lf %lf %lf", &(heterogeneityInputs.interventionEfficacyMean[0]),&(heterogeneityInputs.interventionEfficacyMean[1]),&(heterogeneityInputs.interventionEfficacyMean[2]));
-	readAndSkipPast("InterventionEfficacy", inputFile);
-	readAndSkipPast("StdDev", inputFile);
-	fscanf(inputFile, "%lf %lf %lf", &(heterogeneityInputs.interventionEfficacyStdDev[0]),&(heterogeneityInputs.interventionEfficacyStdDev[1]),&(heterogeneityInputs.interventionEfficacyStdDev[2]));
-
 
 } /* end readHeterogeneityInputs */
 
@@ -1034,20 +1022,15 @@ void SimContext::readProphInputs() {
 
 	for ( k = 0; k < OI_NUM; ++k) {
 		for ( i = 0; i < PROPH_NUM; ++i ) {
-
 			// read in OI proph id and name
 			sprintf( scratch, "OI%d_PriProph%d", k + 1, i + 1 );
 			readAndSkipPast( scratch, inputFile );
 			readAndSkipPast( "Id", inputFile );
 			int idNum;
 			fscanf( inputFile, " %d", &idNum);
-
-
-
 			// continue to next proph if this one is unspecified
 			if (idNum == NOT_APPL) {
 				prophsInputs[PROPH_PRIMARY][k][i] = NULL;
-
 				continue;
 			}
 			// allocate a proph input structure
@@ -1056,11 +1039,9 @@ void SimContext::readProphInputs() {
 			// read in OI proph efficacy (for primary proph, primary OIs only in LDC model)
 			readAndSkipPast( scratch, inputFile );
 			readAndSkipPast( "EffPriOIs", inputFile );
-
-			for ( j = 0; j < OI_NUM; ++j ){
+			for ( j = 0; j < OI_NUM; ++j )
 				fscanf( inputFile, "%lf", &(prophsInputs[PROPH_PRIMARY][k][i]->primaryOIEfficacy[j]) );
 
-			}
 			// read in OI primary proph efficacy on secondary OIs
 			readAndSkipPast( scratch, inputFile );
 			readAndSkipPast( "EffSecOIs", inputFile );
@@ -1217,6 +1198,18 @@ void SimContext::readARTInputs() {
 		sprintf(tmpBuf, "ART%dEffTimeHorizon", artNum);
 		readAndSkipPast( tmpBuf, file );
 		fscanf( file, "%d", &artInput.efficacyTimeHorizon );
+		// read in chances of ART success
+		sprintf(tmpBuf, "ART%dSuccessProb", artNum);
+		readAndSkipPast( tmpBuf, file );
+		readAndSkipPast( "Succ", file );
+		for (i = HVL_NUM_STRATA - 1; i >= 0; --i)
+			fscanf( file, "%lf", &(artInput.probInitialEfficacy[ART_EFF_SUCCESS][i]) );
+		readAndSkipPast( tmpBuf, file );
+		readAndSkipPast( "Part", file );
+		for (i = HVL_NUM_STRATA - 1; i >= 0; --i)
+			fscanf( file, "%lf", &(artInput.probInitialEfficacy[ART_EFF_PARTIAL][i]) );
+		for (i = HVL_NUM_STRATA - 1; i >= 0; --i)
+			artInput.probInitialEfficacy[ART_EFF_FAILURE][i] = 1.0 - artInput.probInitialEfficacy[ART_EFF_SUCCESS][i] - artInput.probInitialEfficacy[ART_EFF_PARTIAL][i];
 
 		// read in distribution of partial suppression
 		sprintf(tmpBuf, "ART%dDistribPartial", artNum);
@@ -1224,7 +1217,16 @@ void SimContext::readARTInputs() {
 		fscanf( file, "%lf %lf %lf", &(artInput.partialSuppressionDistribution[0]),
 			&(artInput.partialSuppressionDistribution[1]),
 			&(artInput.partialSuppressionDistribution[2]) );
-
+		// read in chances of late failure/partial suppression
+		sprintf(tmpBuf, "ART%dLateFail_Succ", artNum);
+		readAndSkipPast( tmpBuf, file );
+		fscanf( file, "%lf", &artInput.probLateFailFromSuppress );
+		sprintf(tmpBuf, "ART%dLatePart_Succ", artNum);
+		readAndSkipPast( tmpBuf, file );
+		fscanf( file, "%lf", &artInput.probLatePartialSuppressFromSuppress );
+		sprintf(tmpBuf, "ART%dLateFail_Part", artNum);
+		readAndSkipPast( tmpBuf, file );
+		fscanf( file, "%lf", &artInput.probLateFailFromPartialSuppress );
 		// read in mth by which all would fail
 		sprintf(tmpBuf, "ART%dMthForceFail", artNum);
 		readAndSkipPast( tmpBuf, file );
@@ -1255,13 +1257,14 @@ void SimContext::readARTInputs() {
 		}
 		sprintf(tmpBuf, "ART%dMthStageCD4Eff_Fail", artNum);
 		readAndSkipPast( tmpBuf, file );
-		fscanf( file, "%d", &(artInput.stageBoundCD4ChangeOnARTFail));
+		fscanf( file, "%d %d", &(artInput.stageBoundsCD4ChangeOnART[ART_EFF_FAILURE][0]), &(artInput.stageBoundsCD4ChangeOnART[ART_EFF_FAILURE][1]));
 		for (j = 0; j < CD4_RESPONSE_NUM_TYPES; j++) {
 			sprintf(tmpBuf, "ART%dCD4EffMult_Fail", artNum);
-			readAndSkipPast2( tmpBuf, CD4_RESPONSE_STRS[j], file);
-			fscanf( file, "%lf %lf",
+			readAndSkipPast2( tmpBuf, CD4_RESPONSE_STRS[j], file );
+			fscanf( file, "%lf %lf %lf %lf %lf %lf",
 				&(artInput.CD4MultiplierOnFailedART[j][0]),
-				&(artInput.CD4MultiplierOnFailedART[j][1]));
+				&(artInput.CD4MultiplierOnFailedART[j][1]),
+				&(artInput.CD4MultiplierOnFailedART[j][2]));
 		}
 		sprintf(tmpBuf, "ART%dMthCD4SecStdDev", artNum);
 		readAndSkipPast( tmpBuf, file );
@@ -1331,49 +1334,6 @@ void SimContext::readARTInputs() {
 			readAndSkipPast("TimeToSwitch", file);
 			fscanf( file, "%d",&(artInput.monthsToSwitchSubRegimen[i]));
 		}
-
-		//read regimen specific heterogeneity inputs
-		sprintf(tmpBuf, "ART%dProbFillRxNonResponders", artNum);
-		readAndSkipPast(tmpBuf, file);
-		fscanf(file, "%lf", &(artInput.probFillARTPrescriptionsNonResponder));
-
-		sprintf(tmpBuf, "ART%dProbRestartRegimen", artNum);
-		readAndSkipPast(tmpBuf, file);
-		fscanf(file, "%lf %lf %lf", &(artInput.probRestartARTRegimenAfterFailure[RESP_TYPE_FULL]),&(artInput.probRestartARTRegimenAfterFailure[RESP_TYPE_PARTIAL]),&(artInput.probRestartARTRegimenAfterFailure[RESP_TYPE_NON]));
-
-		sprintf(tmpBuf, "ART%dHetPropRespRegCoeff", artNum);
-		readAndSkipPast(tmpBuf, file);
-		fscanf(file, "%lf %lf", &(artInput.propRespondARTRegimenLogitMean), &(artInput.propRespondARTRegimenLogitStdDev));
-
-		sprintf(tmpBuf, "ART%dHetOutcomes", artNum);
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("Supp",file);
-		fscanf(file, "%lf %lf %lf %lf %lf", &(artInput.responseTypeThresholds[HET_OUTCOME_SUPP][0]), &(artInput.responseTypeThresholds[HET_OUTCOME_SUPP][1]),&(artInput.responseTypeValues[HET_OUTCOME_SUPP][0]),&(artInput.responseTypeValues[HET_OUTCOME_SUPP][1]), &(artInput.responseTypeExponents[HET_OUTCOME_SUPP]));
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("LateFail",file);
-		fscanf(file, "%lf %lf %lf %lf %lf", &(artInput.responseTypeThresholds[HET_OUTCOME_LATEFAIL][0]), &(artInput.responseTypeThresholds[HET_OUTCOME_LATEFAIL][1]),&(artInput.responseTypeValues[HET_OUTCOME_LATEFAIL][0]),&(artInput.responseTypeValues[HET_OUTCOME_LATEFAIL][1]), &(artInput.responseTypeExponents[HET_OUTCOME_LATEFAIL]));
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("ARTEffectOI",file);
-		fscanf(file, "%lf %lf", &(artInput.responseTypeThresholds[HET_OUTCOME_ARTEFFECT_OI][0]), &(artInput.responseTypeThresholds[HET_OUTCOME_ARTEFFECT_OI][1]));
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("ARTEffectCHRMs",file);
-		fscanf(file, "%lf %lf", &(artInput.responseTypeThresholds[HET_OUTCOME_ARTEFFECT_CHRMS][0]), &(artInput.responseTypeThresholds[HET_OUTCOME_ARTEFFECT_CHRMS][1]));
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("ARTEffectMort",file);
-		fscanf(file, "%lf %lf", &(artInput.responseTypeThresholds[HET_OUTCOME_ARTEFFECT_MORT][0]), &(artInput.responseTypeThresholds[HET_OUTCOME_ARTEFFECT_MORT][1]));
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("Resist",file);
-		fscanf(file, "%lf %lf", &(artInput.responseTypeThresholds[HET_OUTCOME_RESIST][0]), &(artInput.responseTypeThresholds[HET_OUTCOME_RESIST][1]));
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("Tox",file);
-		fscanf(file, "%lf %lf", &(artInput.responseTypeThresholds[HET_OUTCOME_TOX][0]), &(artInput.responseTypeThresholds[HET_OUTCOME_TOX][1]));
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("Cost",file);
-		fscanf(file, "%lf %lf", &(artInput.responseTypeThresholds[HET_OUTCOME_COST][0]), &(artInput.responseTypeThresholds[HET_OUTCOME_COST][1]));
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("RestartAfterFail",file);
-		fscanf(file, "%lf %lf", &(artInput.responseTypeThresholds[HET_OUTCOME_RESTART][0]), &(artInput.responseTypeThresholds[HET_OUTCOME_RESTART][1]));
-
 	}
 } /* end readARTInputs */
 
@@ -1458,10 +1418,6 @@ void SimContext::readNatHistInputs() {
 			fscanf( inputFile, "%lf", &(natHistInputs.monthlyCD4DeclineStdDev[j][i]) );
 	}
 
-	readAndSkipPast( "BslCD4Decl_BtwSbjct", inputFile);
-	//read in between subject cd4 decline.  This std dev is used to draw between subject cd4 decline for each patient once per run
-	fscanf( inputFile, "%lf", &(natHistInputs.monthlyCD4DeclineBtwSubject) );
-
 	// read in non AIDS dth prob
 	readAndSkipPast( "NonAIDSDthProb_Male", inputFile );
 	for ( i = AGE_STARTING; i < AGE_YRS; ++i )
@@ -1474,7 +1430,6 @@ void SimContext::readNatHistInputs() {
 /* readCHRMsInputs reads data from the CHRMs tab of the input sheet */
 void SimContext::readCHRMsInputs() {
 	char scratch[256];
-	int tempBool;
 
 	// Read in CHRMs names
 	readAndSkipPast("CHRMstrs", inputFile);
@@ -1482,11 +1437,6 @@ void SimContext::readCHRMsInputs() {
 		fscanf( inputFile, "%32s", CHRM_STRS[i] );
 		strcpy(DTH_CAUSES_STRS[DTH_CHRM_1 + i], CHRM_STRS[i]);
 	}
-
-	//Output CHRMs output
-	readAndSkipPast("showCHRMOutput", inputFile);
-	fscanf(inputFile,"%d", &tempBool);
-	chrmsInputs.showCHRMsOutput = (bool) tempBool;
 
 	// Read in probability of prevalent CHRMs, modifiers, and months since start
 	for (int i = 0; i < CHRM_NUM; i++) {
@@ -1703,29 +1653,29 @@ void SimContext::readCostInputs() {
 		}
 	}
 
-	// read in general medicine costs
-	readAndSkipPast("CostGenMed_dmed", inputFile);
+	// read in routine care costs for HIV-neg
+	readAndSkipPast("CostRoutine_HIVneg_dmed", inputFile);
 	for (i = 0; i < GENDER_NUM; i++) {
 		for (j = 0; j < CHRM_AGE_CAT_NUM; j++) {
-			fscanf(inputFile, "%lf", &(costInputs.generalMedicineCost[i][j][COST_DIR_MED]));
+			fscanf(inputFile, "%lf", &(costInputs.routineCareCostHIVNegative[i][j][COST_DIR_MED]));
 		}
 	}
-	readAndSkipPast("CostGenMed_nmed", inputFile);
+	readAndSkipPast("CostRoutine_HIVneg_nmed", inputFile);
 	for (i = 0; i < GENDER_NUM; i++) {
 		for (j = 0; j < CHRM_AGE_CAT_NUM; j++) {
-			fscanf(inputFile, "%lf", &(costInputs.generalMedicineCost[i][j][COST_DIR_NONMED]));
+			fscanf(inputFile, "%lf", &(costInputs.routineCareCostHIVNegative[i][j][COST_DIR_NONMED]));
 		}
 	}
-	readAndSkipPast("CostGenMed_time", inputFile);
+	readAndSkipPast("CostRoutine_HIVneg_time", inputFile);
 	for (i = 0; i < GENDER_NUM; i++) {
 		for (j = 0; j < CHRM_AGE_CAT_NUM; j++) {
-			fscanf(inputFile, "%lf", &(costInputs.generalMedicineCost[i][j][COST_TIME]));
+			fscanf(inputFile, "%lf", &(costInputs.routineCareCostHIVNegative[i][j][COST_TIME]));
 		}
 	}
-	readAndSkipPast("CostGenMed_indr", inputFile);
+	readAndSkipPast("CostRoutine_HIVneg_indr", inputFile);
 	for (i = 0; i < GENDER_NUM; i++) {
 		for (j = 0; j < CHRM_AGE_CAT_NUM; j++) {
-			fscanf(inputFile, "%lf", &(costInputs.generalMedicineCost[i][j][COST_INDIR]));
+			fscanf(inputFile, "%lf", &(costInputs.routineCareCostHIVNegative[i][j][COST_INDIR]));
 		}
 	}
 	// read in routine car costs for HIV positive, not on ART
@@ -1785,11 +1735,13 @@ void SimContext::readCostInputs() {
 
 	// read in contact/clinic vist costs
 	for ( i = 0; i < GENDER_NUM; ++i) {
-		for ( j = CD4_NUM_STRATA - 1; j >= 0; j-- ) {
-			sprintf( scratch, "CostVisit_%s_routine", GENDER_STRS[i]);
-			readAndSkipPast2( scratch, CD4_STRATA_STRS[j], inputFile );
+		for ( j = 0; j < AGE_CATEGORIES; ++j ) {
+			sprintf( scratch, "CostVisit_%s", GENDER_STRS[i]);
+			readAndSkipPast( scratch, inputFile );
+			sprintf( scratch, "Age%d", j );
+			readAndSkipPast( scratch, inputFile );
 			for (k = 0; k < COST_NUM_TYPES; k++) {
-				fscanf(inputFile, "%lf", &(costInputs.clinicVisitCostRoutine[i][j][k]) );
+				fscanf(inputFile, "%lf", &(costInputs.clinicVisitCost[i][j][k]) );
 			}
 		}
 	}
@@ -1808,10 +1760,8 @@ void SimContext::readTBInputs() {
 		fscanf( file, "%lf %lf %lf", &(tbInputs.distributionTBStateAtEntry[i][TB_STATE_LATENT]),
 				&(tbInputs.distributionTBStateAtEntry[i][TB_STATE_ACTIVE]),
 				&(tbInputs.distributionTBStateAtEntry[i][TB_STATE_HIST_ACTV]));
-		tbInputs.distributionTBStateAtEntry[i][TB_STATE_TREATM_TRUE_SUCC] = 0.0;
-		tbInputs.distributionTBStateAtEntry[i][TB_STATE_TREATM_FALSE_SUCC] = 0.0;
+		tbInputs.distributionTBStateAtEntry[i][TB_STATE_TREATM_SUCC] = 0.0;
 	}
-
 	readAndSkipPast( "DistTB_Entry_Latent", file );
 	fscanf( file, "%lf %lf", &(tbInputs.distributionTBStrainAtEntry[TB_STRAIN_MDR][TB_STATE_LATENT]),
 			&(tbInputs.distributionTBStrainAtEntry[TB_STRAIN_XDR][TB_STATE_LATENT]));
@@ -1895,46 +1845,18 @@ void SimContext::readTBInputs() {
 	readAndSkipPast( "ReinfectionSupercedeOption", file );
 	fscanf( file, "%d", &tbInputs.reinfectionSupercedeOption);
 
-	// nat hist for history of active TB after true cure
-	readAndSkipPast( "ProbMthTBRelapse_HistActvAfterTrueCure_OffART", file );
+	// nat hist for history of active TB
+	readAndSkipPast( "ProbMthTBRelapse_HistActv_OffART", file );
 	for (i = CD4_NUM_STRATA - 1; i >= 0; --i)
-		fscanf( file, "%lf", &(tbInputs.probRelapseHistoryActiveAfterTrueCureOffART[i]));
-	readAndSkipPast( "MthPerTBRelapse_HistActvAfterTrueCure_OnART", file );
+		fscanf( file, "%lf", &(tbInputs.probRelapseHistoryActiveOffART[i]));
+	readAndSkipPast( "MthPerTBRelapse_HistActv_OnART", file );
 	for (i = 0; i < TB_MTH_PERIODS_NUM; ++i)
-		fscanf( file, "%d", &(tbInputs.multiplierRelapseStageBoundsHistoryActiveAfterTrueCureOnART[i]));
+		fscanf( file, "%d", &(tbInputs.multiplierRelapseStageBoundsHistoryActiveOnART[i]));
 	for (i = CD4_NUM_STRATA - 1; i >= 0; --i) {
-		readAndSkipPast( "ProbMthTBRelapse_HistActvAfterTrueCure_OnART", file );
+		readAndSkipPast( "ProbMthTBRelapse_HistActv_OnART", file );
 		readAndSkipPast( CD4_STRATA_STRS[i], file );
 		for (j = 0; j < TB_MTH_PERIODS_NUM; ++j)
-			fscanf( file, "%lf", &(tbInputs.multiplierRelapseHistoryActiveAfterTrueCureOnART[i][j]));
-	}
-
-	// nat hist for history of active TB after false cure
-	readAndSkipPast( "ProbMthTBRelapse_HistActvAfterFalseCure_OffART", file );
-	for (i = CD4_NUM_STRATA - 1; i >= 0; --i)
-		fscanf( file, "%lf", &(tbInputs.probRelapseHistoryActiveAfterFalseCureOffART[i]));
-	readAndSkipPast( "MthPerTBRelapse_HistActvAfterFalseCure_OnART", file );
-	for (i = 0; i < TB_MTH_PERIODS_NUM; ++i)
-		fscanf( file, "%d", &(tbInputs.multiplierRelapseStageBoundsHistoryActiveAfterFalseCureOnART[i]));
-	for (i = CD4_NUM_STRATA - 1; i >= 0; --i) {
-		readAndSkipPast( "ProbMthTBRelapse_HistActvAfterFalseCure_OnART", file );
-		readAndSkipPast( CD4_STRATA_STRS[i], file );
-		for (j = 0; j < TB_MTH_PERIODS_NUM; ++j)
-			fscanf( file, "%lf", &(tbInputs.multiplierRelapseHistoryActiveAfterFalseCureOnART[i][j]));
-	}
-
-	// nat hist for history of active TB after self cure
-	readAndSkipPast( "ProbMthTBRelapse_HistActvAfterSelfCure_OffART", file );
-	for (i = CD4_NUM_STRATA - 1; i >= 0; --i)
-		fscanf( file, "%lf", &(tbInputs.probRelapseHistoryActiveAfterSelfCureOffART[i]));
-	readAndSkipPast( "MthPerTBRelapse_HistActvAfterSelfCure_OnART", file );
-	for (i = 0; i < TB_MTH_PERIODS_NUM; ++i)
-		fscanf( file, "%d", &(tbInputs.multiplierRelapseStageBoundsHistoryActiveAfterSelfCureOnART[i]));
-	for (i = CD4_NUM_STRATA - 1; i >= 0; --i) {
-		readAndSkipPast( "ProbMthTBRelapse_HistActvAfterSelfCure_OnART", file );
-		readAndSkipPast( CD4_STRATA_STRS[i], file );
-		for (j = 0; j < TB_MTH_PERIODS_NUM; ++j)
-			fscanf( file, "%lf", &(tbInputs.multiplierRelapseHistoryActiveAfterSelfCureOnART[i][j]));
+			fscanf( file, "%lf", &(tbInputs.multiplierRelapseHistoryActiveOnART[i][j]));
 	}
 
 	// nat hist for active TB
@@ -1954,7 +1876,6 @@ void SimContext::readTBInputs() {
 	readAndSkipPast( "AcuteTBMortProb", file );
 	for (i = CD4_NUM_STRATA - 1; i >= 0; --i)
 		fscanf( file, "%lf", &(tbInputs.probAcuteMortality[i]));
-
 	for (i = 0; i < TB_NUM_STRAINS; ++i) {
 		sprintf(tmpBuf, "MthPerTBExtMort_Active_%s", TB_STRAIN_STRS[i]);
         readAndSkipPast( tmpBuf, file );
@@ -1992,7 +1913,7 @@ void SimContext::readTBInputs() {
 	for (i = 0; i < TB_NUM_STRAINS; ++i) {
 		sprintf(tmpBuf, "ProbRecvLine_InitTBTreatm_%s", TB_STRAIN_STRS[i]);
         readAndSkipPast( tmpBuf, file );
-		for (j = 0; j < TB_TREATM_STAGE_NUM; ++j)
+		for (j = 0; j < TB_TREATM_LINES_NUM; ++j)
 			fscanf( file, "%lf", &(tbInputs.probInitialTreatmentLine[i][j]));
 	}
 	for (i = 0; i < TB_TREATM_STAGE_NUM; ++i) {
@@ -2004,19 +1925,11 @@ void SimContext::readTBInputs() {
 		tbInputs.probDiscontinueTreatmentAfterFailure[i] = 1.0 - tbInputs.probRepeatTreatmentAfterFailure[i]
 			- tbInputs.probNextTreatmentAfterFailure[i] - tbInputs.probSkipTreatmentAfterFailure[i];
 	}
-	//True cure...
 	for (i = 0; i < TB_NUM_STRAINS; ++i) {
-		sprintf(tmpBuf, "ProbTBTreatm_TrueCure_%s", TB_STRAIN_STRS[i]);
+		sprintf(tmpBuf, "ProbTBTreatm_Cure_%s", TB_STRAIN_STRS[i]);
         readAndSkipPast( tmpBuf, file );
 		for (j = 0; j < TB_TREATM_STAGE_NUM; ++j)
-			fscanf( file, "%lf", &(tbInputs.probCuredAfterTreatment[i][j][SimContext::TB_CURE_TRUE]));
-	}
-	//False cure...
-	for (i = 0; i < TB_NUM_STRAINS; ++i) {
-		sprintf(tmpBuf, "ProbTBTreatm_FalseCure_%s", TB_STRAIN_STRS[i]);
-        readAndSkipPast( tmpBuf, file );
-		for (j = 0; j < TB_TREATM_STAGE_NUM; ++j)
-			fscanf( file, "%lf", &(tbInputs.probCuredAfterTreatment[i][j][SimContext::TB_CURE_FALSE]));
+			fscanf( file, "%lf", &(tbInputs.probCuredAfterTreatment[i][j]));
 	}
     readAndSkipPast( "ProbTBTreatmIncrResist", file );
 	for (i = 0; i < TB_TREATM_STAGE_NUM; ++i)
@@ -2085,7 +1998,7 @@ void SimContext::readTBInputs() {
 	fscanf(file, "%lf", &tbInputs.probDropoffProph);
     readAndSkipPast( "TBProphStop_boolFlag", file );
 	fscanf( file, "%d", &tempBool);
-	tbInputs.stopProphUseOrEvaluation = (bool) tempBool;
+	tbInputs.startProphUseOrEvaluation = (bool) tempBool;
     readAndSkipPast( "TBProphStop_curCD4", file );
 	fscanf( file, "%lf %lf", &(tbInputs.stopProphCurrentCD4Bounds[LOWER_BOUND]),
 		&(tbInputs.stopProphCurrentCD4Bounds[UPPER_BOUND]));
@@ -2093,9 +2006,6 @@ void SimContext::readTBInputs() {
 	fscanf( file, "%d", &tbInputs.stopProphAtARTInitiation);
 	readAndSkipPast( "TBProphStop_mthOnProph", file );
 	fscanf( file, "%d", &tbInputs.stopProphNumMonths);
-	readAndSkipPast( "TBProphStop_ContinueAfterStop",file);
-	fscanf( file, "%d", &tempBool);
-	tbInputs.continueProphAfterStop = (bool) tempBool;
 
 	//prophylaxis efficacy and cost for TB
 	int prophId;
@@ -2146,7 +2056,7 @@ void SimContext::readTBInputs() {
 
 /* readQOLInputs reads data from the QOL tab of the input sheet */
 void SimContext::readQOLInputs() {
-	int i, j, tempBool;
+	int i, j;
 
 	// read in routine QOL
 	for ( i = CD4_NUM_STRATA - 1; i >= 0; --i ) {
@@ -2175,12 +2085,6 @@ void SimContext::readQOLInputs() {
 	for (i = 0; i < AGE_YRS; i++) {
 		fscanf(inputFile, "%lf", &(qolInputs.nonAIDSBackgroundQOL[GENDER_FEMALE][i]));
 	}
-
-	//read in Additional QOL decrease switch for multiple OIs
-	readAndSkipPast("QOLMultipleOIDecrease", inputFile);
-	fscanf(inputFile,"%d",&tempBool);
-	qolInputs.enableQOLDecreaseMultipleOI= (bool) tempBool;
-
 } /* end readQOLInputs */
 
 /* readHIVTestInputs reads data from the HIVTest tab of the input sheet */
@@ -2196,10 +2100,6 @@ void SimContext::readHIVTestInputs() {
 	readAndSkipPast( "HIVtestAvail", inputFile );
 	fscanf( inputFile, "%d", &tempBool);
 	testingInputs.HIVTestAvailable = (bool) tempBool;
-	//read in CD4 test available
-	readAndSkipPast( "CD4testAvail", inputFile );
-	fscanf( inputFile, "%d", &tempBool);
-	testingInputs.CD4TestAvailable = (bool) tempBool;
 	// read in whether to use alt HIV+ stopping rule
 	readAndSkipPast( "AltStopRuleEnable", inputFile );
 	fscanf( inputFile, "%d", &tempBool);
@@ -2408,50 +2308,11 @@ void SimContext::readHIVTestInputs() {
 		&(testingInputs.HIVTestCost[HIV_EXT_INF_SYMP_CHR_POS]),
 		&(testingInputs.HIVTestCost[HIV_EXT_INF_ACUTE_SYN]) );
 	testingInputs.HIVTestCost[HIV_EXT_INF_NEG_LO] = testingInputs.HIVTestCost[HIV_EXT_INF_NEG_HI];
-
-	//Read in Lab Staging (CD4) characteristics
-	readAndSkipPast( "CD4TestAcceptRate", inputFile );
-	fscanf( inputFile, "%lf %lf %lf",
-			&(testingInputs.CD4TestAcceptRate[HIV_POS_ASYMP_CHR_POS]),
-			&(testingInputs.CD4TestAcceptRate[HIV_POS_SYMP_CHR_POS]),
-			&(testingInputs.CD4TestAcceptRate[HIV_POS_ACUTE_SYN]));
-	readAndSkipPast( "CD4TestRetRate", inputFile );
-	fscanf( inputFile, "%lf %lf %lf",
-			&(testingInputs.CD4TestReturnRate[HIV_POS_ASYMP_CHR_POS]),
-			&(testingInputs.CD4TestReturnRate[HIV_POS_SYMP_CHR_POS]),
-			&(testingInputs.CD4TestReturnRate[HIV_POS_ACUTE_SYN]));
-	readAndSkipPast( "CD4TestStartupCost", inputFile );
-	fscanf( inputFile, "%lf %lf %lf",
-			&(testingInputs.CD4TestInitialCost[HIV_POS_ASYMP_CHR_POS]),
-			&(testingInputs.CD4TestInitialCost[HIV_POS_SYMP_CHR_POS]),
-			&(testingInputs.CD4TestInitialCost[HIV_POS_ACUTE_SYN]));
-	readAndSkipPast( "CD4TestCost", inputFile );
-	fscanf( inputFile, "%lf %lf %lf",
-			&(testingInputs.CD4TestCost[HIV_POS_ASYMP_CHR_POS]),
-			&(testingInputs.CD4TestCost[HIV_POS_SYMP_CHR_POS]),
-			&(testingInputs.CD4TestCost[HIV_POS_ACUTE_SYN]));
-	readAndSkipPast( "CD4TestNonRetCost", inputFile );
-	fscanf( inputFile, "%lf %lf %lf",
-			&(testingInputs.CD4TestNonReturnCost[HIV_POS_ASYMP_CHR_POS]),
-			&(testingInputs.CD4TestNonReturnCost[HIV_POS_SYMP_CHR_POS]),
-			&(testingInputs.CD4TestNonReturnCost[HIV_POS_ACUTE_SYN]));
-	readAndSkipPast( "CD4TestRetCost", inputFile );
-	fscanf( inputFile, "%lf %lf %lf",
-			&(testingInputs.CD4TestReturnCost[HIV_POS_ASYMP_CHR_POS]),
-			&(testingInputs.CD4TestReturnCost[HIV_POS_SYMP_CHR_POS]),
-			&(testingInputs.CD4TestReturnCost[HIV_POS_ACUTE_SYN]));
-	readAndSkipPast( "LabStageStdDev", inputFile );
-	fscanf( inputFile, "%lf", &(testingInputs.CD4TestStdDevPercentage));
-	//Read Lab Staging Linkage Rates
-	readAndSkipPast( "CD4TestLinkRate", inputFile );
-	for (i=CD4_NUM_STRATA-1; i >= 0; i--){
-		fscanf( inputFile, "%lf", &(testingInputs.CD4TestLinkageRate[i]));
-	}
 } /* end readHIVTestInputs */
 
 /* readPedsInputs reads data from the Peds tab of the input sheet */
 void SimContext::readPedsInputs() {
-	int i, j, k,tempBool;
+	int i, j, k;
 	int tempInt;
 	char scratch[256];
 
@@ -2462,11 +2323,6 @@ void SimContext::readPedsInputs() {
 	readAndSkipPast("EnableSimplified", inputFile);
 	fscanf(inputFile, "%d", &tempInt);
 	pedsInputs.enableSimplifiedBehavior = (bool) tempInt;
-
-	// read in initial age (mths) distrib
-	readAndSkipPast( "InitAgePeds", inputFile );
-	fscanf(inputFile,"%lf %lf", &pedsInputs.initialAgeMean, &pedsInputs.initialAgeStdDev);
-
 	readAndSkipPast("DistPrevHIVPosIU", inputFile);
 	for (i = 0; i < PEDS_MOM_HIV_NUM; i++) {
 		fscanf(inputFile, " %lf", &(pedsInputs.initialHIVStateDistribution[PEDS_HIV_POS_IU][i]));
@@ -2599,25 +2455,6 @@ void SimContext::readPedsInputs() {
 	readAndSkipPast("ProbNonAIDSDeathFemaleEarly", inputFile);
 	for (i = 0; i < PEDS_AGE_EARLY_NUM; i++) {
 		fscanf(inputFile, "%lf ", &(pedsInputs.probNonAIDSDeathEarly[GENDER_FEMALE][i]));
-	}
-
-	// read in the probability of non-AIDS death, early childhood only, late uses NatHist tables
-	readAndSkipPast("UseExposedDefPeds", inputFile);
-	fscanf( inputFile, "%d", &tempBool);
-	pedsInputs.useExposedUninfectedDefs = (bool) tempBool;
-
-	readAndSkipPast("ProbNonAIDSDeathExposedMaleEarly", inputFile);
-	for (i = 0; i < PEDS_AGE_EARLY_NUM; i++) {
-		fscanf(inputFile, "%lf ", &(pedsInputs.probNonAIDSDeathExposedUninfectedEarly[GENDER_MALE][i]));
-	}
-	readAndSkipPast("ProbNonAIDSDeathExposedFemaleEarly", inputFile);
-	for (i = 0; i < PEDS_AGE_EARLY_NUM; i++) {
-		fscanf(inputFile, "%lf ", &(pedsInputs.probNonAIDSDeathExposedUninfectedEarly[GENDER_FEMALE][i]));
-	}
-	readAndSkipPast("ExposedDefEarly", inputFile);
-	for (i = 0; i < PEDS_EXPOSED_CONDITIONS_NUM; i++){
-		fscanf( inputFile, "%d", &tempBool);
-		pedsInputs.exposedUninfectedDefsEarly[i] = (bool) tempBool;
 	}
 
 	// read in the probability of acute OIs, for early and late childhood
@@ -2779,22 +2616,10 @@ void SimContext::readPedsInputs() {
 	fscanf(inputFile, "%lf ", &(pedsInputs.probDeathMaternalRateMultiplier));
 	readAndSkipPast("ProbPedsDeathReplFedMult", inputFile);
 	fscanf(inputFile, "%lf ", &(pedsInputs.probDeathReplacementFedMultiplier));
-	readAndSkipPast("PedsDeathReplFedMultDuration", inputFile);
-	fscanf(inputFile, "%d", &(pedsInputs.ReplacementFedMultiplierDuration));
-
 	readAndSkipPast("ProbPedsARTTreatment", inputFile);
 	fscanf(inputFile, "%lf %lf", &(pedsInputs.probStartART[SimContext::PEDS_HIV_POS_IP]),
 			&(pedsInputs.probStartART[SimContext::PEDS_HIV_POS_PP]));
 	pedsInputs.probStartART[SimContext::PEDS_HIV_POS_IU] = pedsInputs.probStartART[SimContext::PEDS_HIV_POS_IP];
-
-	//Read in Peds Costs inputs
-	readAndSkipPast("PedsMonthlyCost", inputFile);
-	fscanf(inputFile, "%lf ", &(pedsInputs.monthlyCostPedsHIVNegativeNonexposed));
-	fscanf(inputFile, "%lf ", &(pedsInputs.monthlyCostPedsHIVNegativeExposed));
-	fscanf(inputFile, "%lf ", &(pedsInputs.monthlyCostPedsHIVPositive[SimContext::PEDS_HIV_POS_IP][SimContext::ART_OFF_STATE]));
-	fscanf(inputFile, "%lf ", &(pedsInputs.monthlyCostPedsHIVPositive[SimContext::PEDS_HIV_POS_IP][SimContext::ART_ON_STATE]));
-	fscanf(inputFile, "%lf ", &(pedsInputs.monthlyCostPedsHIVPositive[SimContext::PEDS_HIV_POS_PP][SimContext::ART_OFF_STATE]));
-	fscanf(inputFile, "%lf ", &(pedsInputs.monthlyCostPedsHIVPositive[SimContext::PEDS_HIV_POS_PP][SimContext::ART_ON_STATE]));
 
 	// read in ART policies inputs
 	// read in maximum cd4 percentages and testing intervals
@@ -2808,6 +2633,77 @@ void SimContext::readPedsInputs() {
 	readAndSkipPast("IntvlHVLTstPreARTPeds", inputFile);
 	fscanf(inputFile, "%ld %ld", &(pedsInputs.HVLTestingIntervalPreARTEarly),
 			&(pedsInputs.HVLTestingIntervalPreARTLate));
+
+	// read in start ART policy
+	readAndSkipPast2("ARTstart_CD4Perc", "upp", inputFile);
+	for (i = 0; i < SimContext::ART_NUM_LINES; i++) {
+		fscanf(inputFile, "%lf", &(pedsInputs.startARTCD4PercentageBoundsOnly[i][SimContext::UPPER_BOUND]));
+	}
+	readAndSkipPast2("ARTstart_CD4Perc", "lwr", inputFile);
+	for (i = 0; i < SimContext::ART_NUM_LINES; i++) {
+		fscanf(inputFile, "%lf", &(pedsInputs.startARTCD4PercentageBoundsOnly[i][SimContext::LOWER_BOUND]));
+	}
+	readAndSkipPast2("ARTstart_CD4PercHVL", "CD4upp", inputFile);
+	for (i = 0; i < SimContext::ART_NUM_LINES; i++) {
+		fscanf(inputFile, "%lf", &(pedsInputs.startARTCD4PercentageBoundsWithHVL[i][SimContext::UPPER_BOUND]));
+	}
+	readAndSkipPast2("ARTstart_CD4PercHVL", "CD4lwr", inputFile);
+	for (i = 0; i < SimContext::ART_NUM_LINES; i++) {
+		fscanf(inputFile, "%lf", &(pedsInputs.startARTCD4PercentageBoundsWithHVL[i][SimContext::LOWER_BOUND]));
+	}
+	readAndSkipPast2("ARTstart_CD4PercHVL", "HVLupp", inputFile);
+	for (i = 0; i < SimContext::ART_NUM_LINES; i++) {
+		fscanf(inputFile, "%ld", &(pedsInputs.startARTHVLBoundsWithCD4Percentage[i][SimContext::UPPER_BOUND]));
+	}
+	readAndSkipPast2("ARTstart_CD4PercHVL", "HVLlwr", inputFile);
+	for (i = 0; i < SimContext::ART_NUM_LINES; i++) {
+		fscanf(inputFile, "%ld", &(pedsInputs.startARTHVLBoundsWithCD4Percentage[i][SimContext::LOWER_BOUND]));
+	}
+	readAndSkipPast2("ARTstart", "MinMthsAge", inputFile);
+	for (i = 0; i < SimContext::ART_NUM_LINES; i++) {
+		fscanf(inputFile, "%ld", &(pedsInputs.startARTMinAgeMonths[i]));
+	}
+
+	// read in ART observed failure policy inputs
+	readAndSkipPast("ARTfail_cd4PercAbsolDrop", inputFile);
+	for (i = 0; i < SimContext::ART_NUM_LINES; i++) {
+		fscanf(inputFile, "%lf", &(pedsInputs.failARTCD4PercentageAbsolDrop[i]));
+	}
+	readAndSkipPast("ARTfail_cd4PercBelowPreARTNadir", inputFile);
+	for (i = 0; i < SimContext::ART_NUM_LINES; i++) {
+		fscanf(inputFile, "%ld", &tempInt);
+		pedsInputs.failARTCD4PercentageBelowNadir[i] = (bool) tempInt;
+	}
+	readAndSkipPast2("ARTfail_cd4PercAbsolOR", "uppBnd", inputFile);
+	for (i = 0; i < SimContext::ART_NUM_LINES; i++) {
+		fscanf(inputFile, "%lf", &(pedsInputs.failARTCD4PercentageBoundsOR[i][SimContext::UPPER_BOUND]));
+	}
+	readAndSkipPast2("ARTfail_cd4PercAbsolOR", "lwrBnd", inputFile);
+	for (i = 0; i < SimContext::ART_NUM_LINES; i++) {
+		fscanf(inputFile, "%lf", &(pedsInputs.failARTCD4PercentageBoundsOR[i][SimContext::LOWER_BOUND]));
+	}
+	readAndSkipPast2("ARTfail_cd4PercAbsolAND", "uppBnd", inputFile);
+	for (i = 0; i < SimContext::ART_NUM_LINES; i++) {
+		fscanf(inputFile, "%lf", &(pedsInputs.failARTCD4PercentageBoundsAND[i][SimContext::UPPER_BOUND]));
+	}
+	readAndSkipPast2("ARTfail_cd4PercAbsolAND", "lwrBnd", inputFile);
+	for (i = 0; i < SimContext::ART_NUM_LINES; i++) {
+		fscanf(inputFile, "%lf", &(pedsInputs.failARTCD4PercentageBoundsAND[i][SimContext::LOWER_BOUND]));
+	}
+	readAndSkipPast("ARTfail_cd4PercMthsFromInit", inputFile);
+	for (i = 0; i < SimContext::ART_NUM_LINES; i++) {
+		fscanf(inputFile, "%ld", &(pedsInputs.failARTMonthsFromInit[i]));
+	}
+
+	// read in ART stop policy inputs
+	readAndSkipPast("ARTstop_MaxMthsAge", inputFile);
+	for (i = 0; i < SimContext::ART_NUM_LINES; i++) {
+		fscanf(inputFile, "%ld", &(pedsInputs.stopARTMaxAgeMonths[i]));
+	}
+	readAndSkipPast("ARTstop_OnFailBelowCD4Perc", inputFile);
+	for (i = 0; i < SimContext::ART_NUM_LINES; i++) {
+		fscanf(inputFile, "%lf", &(pedsInputs.stopARTAfterFailCD4PercentageBound[i]));
+	}
 
 	// read in ART effect rate multipliers
 	readAndSkipPast("MthStageRateMultChrDeathPedsEarly", inputFile);
@@ -2831,7 +2727,7 @@ void SimContext::readPedsInputs() {
 	for (i = SimContext::CD4_NUM_STRATA - 1; i >= 0; i--) {
 		readAndSkipPast2("RateMultChrDeathPedsLate", SimContext::CD4_STRATA_STRS[i], inputFile);
 		for (j = 0; j < SimContext::HIST_EXT_NUM; j++) {
-			fscanf(inputFile, "%lf", &(pedsInputs.chronicAIDSDeathProbOnARTMultLate[j][i]));
+			fscanf(inputFile, "%lf", &(pedsInputs.chronicAIDSDeathProbOnARTMultLate[i][j]));
 		}
 	}
 	for (i = SimContext::CD4_NUM_STRATA - 1; i >= 0; i--) {
@@ -2840,446 +2736,7 @@ void SimContext::readPedsInputs() {
 			fscanf(inputFile, "%lf", &(pedsInputs.monthlyOIProbOnARTMultLate[i][j]));
 		}
 	}
-
-	// read in primary OI proph regimen starting criteria
-	readAndSkipPast( "PriProphStartPeds", inputFile );
-	readAndSkipPast( "agelwr", inputFile );
-	for ( i = 0; i < OI_NUM; ++i )
-		fscanf( inputFile, "%lf", &(pedsInputs.startProph[PROPH_PRIMARY].ageBounds[LOWER_BOUND][i]) );
-	readAndSkipPast( "PriProphStartPeds", inputFile );
-	readAndSkipPast( "ageupp", inputFile );
-	for ( i = 0; i < OI_NUM; ++i )
-		fscanf( inputFile, "%lf", &(pedsInputs.startProph[PROPH_PRIMARY].ageBounds[UPPER_BOUND][i]) );
-
-	readAndSkipPast( "PriProphStartPeds", inputFile );
-	readAndSkipPast( "cd4Percupp", inputFile );
-	for ( i = 0; i < OI_NUM; ++i )
-		fscanf( inputFile, "%lf", &(pedsInputs.startProph[PROPH_PRIMARY].currCD4PercBounds[UPPER_BOUND][i]) );
-	readAndSkipPast( "PriProphStartPeds", inputFile );
-	readAndSkipPast( "cd4Perclwr", inputFile );
-	for ( i = 0; i < OI_NUM; ++i )
-		fscanf( inputFile, "%lf", &(pedsInputs.startProph[PROPH_PRIMARY].currCD4PercBounds[LOWER_BOUND][i]) );
-
-	for ( j = 0; j < OI_NUM; ++j ) {
-		readAndSkipPast( "PriProphStartPeds", inputFile );
-		readAndSkipPast( OI_STRS[j], inputFile );
-		for ( i = 0; i < OI_NUM; ++i )
-			fscanf( inputFile, "%d", &(pedsInputs.startProph[PROPH_PRIMARY].OIHistory[j][i]) );
-	}
-
-	readAndSkipPast( "PriProphStartPeds_CondFirst", inputFile );
-	fscanf( inputFile, "%d", &tempInt);
-	pedsInputs.startProph[PROPH_PRIMARY].firstCondition=(CONDITIONS_TYPE) tempInt;
-	readAndSkipPast( "PriProphStartPeds_CondSecond", inputFile );
-	fscanf( inputFile, "%d", &tempInt);
-	pedsInputs.startProph[PROPH_PRIMARY].secondCondition=(CONDITIONS_TYPE) tempInt;
-	readAndSkipPast( "PriProphStartPeds_CondPar", inputFile );
-	fscanf( inputFile, "%d", &tempInt);
-	pedsInputs.startProph[PROPH_PRIMARY].parDirection=(DIRECTIONS_TYPE) tempInt;
-
-	// read in primary OI proph regimen stopping criteria
-	readAndSkipPast( "PriProphStopPeds", inputFile );
-	readAndSkipPast( "agelwr", inputFile );
-	for ( i = 0; i < OI_NUM; ++i )
-		fscanf( inputFile, "%lf", &(pedsInputs.stopProph[PROPH_PRIMARY].ageLowerBound[i]) );
-	readAndSkipPast( "PriProphStopPeds", inputFile );
-	readAndSkipPast( "CD4Perclwr", inputFile );
-	for ( i = 0; i < OI_NUM; ++i )
-		fscanf( inputFile, "%lf", &(pedsInputs.stopProph[PROPH_PRIMARY].currCD4PercLowerBound[i]) );
-	for ( j = 0; j < OI_NUM; ++j ) {
-		readAndSkipPast( "PriProphStopPeds", inputFile );
-		readAndSkipPast( OI_STRS[j], inputFile );
-		for ( i = 0; i < OI_NUM; ++i )
-			fscanf( inputFile, "%d", &(pedsInputs.stopProph[PROPH_PRIMARY].OIHistory[j][i]) );
-	}
-	readAndSkipPast( "PriProphStopPeds", inputFile );
-	readAndSkipPast( "mthsOnProph", inputFile );
-	for ( i = 0; i < OI_NUM; ++i )
-		fscanf( inputFile, "%d", &(pedsInputs.stopProph[PROPH_PRIMARY].monthsOnProph[i]) );
-
-	readAndSkipPast( "PriProphStopPeds_CondFirst", inputFile );
-	fscanf( inputFile, "%d", &tempInt);
-	pedsInputs.stopProph[PROPH_PRIMARY].firstCondition=(CONDITIONS_TYPE) tempInt;
-	readAndSkipPast( "PriProphStopPeds_CondSecond", inputFile );
-	fscanf( inputFile, "%d", &tempInt);
-	pedsInputs.stopProph[PROPH_PRIMARY].secondCondition=(CONDITIONS_TYPE) tempInt;
-	readAndSkipPast( "PriProphStopPeds_CondPar", inputFile );
-	fscanf( inputFile, "%d", &tempInt);
-	pedsInputs.stopProph[PROPH_PRIMARY].parDirection=(DIRECTIONS_TYPE) tempInt;
-
-	// read in secondary OI proph regimen starting criteria
-	readAndSkipPast( "SecProphStartPeds", inputFile );
-	readAndSkipPast( "agelwr", inputFile );
-	for ( i = 0; i < OI_NUM; ++i )
-		fscanf( inputFile, "%lf", &(pedsInputs.startProph[PROPH_SECONDARY].ageBounds[LOWER_BOUND][i]) );
-	readAndSkipPast( "SecProphStartPeds", inputFile );
-	readAndSkipPast( "ageupp", inputFile );
-	for ( i = 0; i < OI_NUM; ++i )
-		fscanf( inputFile, "%lf", &(pedsInputs.startProph[PROPH_SECONDARY].ageBounds[UPPER_BOUND][i]) );
-
-	readAndSkipPast( "SecProphStartPeds", inputFile );
-	readAndSkipPast( "cd4Percupp", inputFile );
-	for ( i = 0; i < OI_NUM; ++i )
-		fscanf( inputFile, "%lf", &(pedsInputs.startProph[PROPH_SECONDARY].currCD4PercBounds[UPPER_BOUND][i]) );
-	readAndSkipPast( "SecProphStartPeds", inputFile );
-	readAndSkipPast( "cd4Perclwr", inputFile );
-	for ( i = 0; i < OI_NUM; ++i )
-		fscanf( inputFile, "%lf", &(pedsInputs.startProph[PROPH_SECONDARY].currCD4PercBounds[LOWER_BOUND][i]) );
-
-	for ( j = 0; j < OI_NUM; ++j ) {
-		readAndSkipPast( "SecProphStartPeds", inputFile );
-		readAndSkipPast( OI_STRS[j], inputFile );
-		for ( i = 0; i < OI_NUM; ++i )
-			fscanf( inputFile, "%d", &(pedsInputs.startProph[PROPH_SECONDARY].OIHistory[j][i]) );
-	}
-
-	readAndSkipPast( "SecProphStartPeds_CondFirst", inputFile );
-	fscanf( inputFile, "%d", &tempInt);
-	pedsInputs.startProph[PROPH_SECONDARY].firstCondition=(CONDITIONS_TYPE) tempInt;
-	readAndSkipPast( "SecProphStartPeds_CondSecond", inputFile );
-	fscanf( inputFile, "%d", &tempInt);
-	pedsInputs.startProph[PROPH_SECONDARY].secondCondition=(CONDITIONS_TYPE) tempInt;
-	readAndSkipPast( "SecProphStartPeds_CondPar", inputFile );
-	fscanf( inputFile, "%d", &tempInt);
-	pedsInputs.startProph[PROPH_SECONDARY].parDirection=(DIRECTIONS_TYPE) tempInt;
-
-	// read in primary OI proph regimen stopping criteria
-	readAndSkipPast( "SecProphStopPeds", inputFile );
-	readAndSkipPast( "agelwr", inputFile );
-	for ( i = 0; i < OI_NUM; ++i )
-		fscanf( inputFile, "%lf", &(pedsInputs.stopProph[PROPH_SECONDARY].ageLowerBound[i]) );
-	readAndSkipPast( "SecProphStopPeds", inputFile );
-	readAndSkipPast( "CD4Perclwr", inputFile );
-	for ( i = 0; i < OI_NUM; ++i )
-		fscanf( inputFile, "%lf", &(pedsInputs.stopProph[PROPH_SECONDARY].currCD4PercLowerBound[i]) );
-	for ( j = 0; j < OI_NUM; ++j ) {
-		readAndSkipPast( "SecProphStopPeds", inputFile );
-		readAndSkipPast( OI_STRS[j], inputFile );
-		for ( i = 0; i < OI_NUM; ++i )
-			fscanf( inputFile, "%d", &(pedsInputs.stopProph[PROPH_SECONDARY].OIHistory[j][i]) );
-	}
-	readAndSkipPast( "SecProphStopPeds", inputFile );
-	readAndSkipPast( "mthsOnProph", inputFile );
-	for ( i = 0; i < OI_NUM; ++i )
-		fscanf( inputFile, "%d", &(pedsInputs.stopProph[PROPH_SECONDARY].monthsOnProph[i]) );
-
-	readAndSkipPast( "SecProphStopPeds_CondFirst", inputFile );
-	fscanf( inputFile, "%d", &tempInt);
-	pedsInputs.stopProph[PROPH_SECONDARY].firstCondition=(CONDITIONS_TYPE) tempInt;
-	readAndSkipPast( "SecProphStopPeds_CondSecond", inputFile );
-	fscanf( inputFile, "%d", &tempInt);
-	pedsInputs.stopProph[PROPH_SECONDARY].secondCondition=(CONDITIONS_TYPE) tempInt;
-	readAndSkipPast( "SecProphStopPeds_CondPar", inputFile );
-	fscanf( inputFile, "%d", &tempInt);
-	pedsInputs.stopProph[PROPH_SECONDARY].parDirection=(DIRECTIONS_TYPE) tempInt;
-
-	//Peds ART starting criteria
-	// read in CD4 bounds
-	readAndSkipPast( "PedsARTstartMthStage", inputFile );
-	for (i=0;i<(NUM_ART_START_CD4PERC_PEDS-1);i++){
-		fscanf(inputFile, "%d",&(pedsInputs.startART.CD4PercStageMonths[i]));
-	}
-	for (i=0;i<NUM_ART_START_CD4PERC_PEDS;i++){
-		sprintf(scratch, "PedsARTstart_CD4Perc%d", i);
-		readAndSkipPast2( scratch, "upp", inputFile );
-		for (j=0;j<ART_NUM_LINES;j++){
-			fscanf(inputFile, "%lf", &(pedsInputs.startART.CD4PercBounds[i][j][UPPER_BOUND]));
-		}
-		readAndSkipPast2( scratch, "lwr", inputFile );
-		for (j = 0; j < ART_NUM_LINES; ++j)
-			fscanf( inputFile, "%lf", &(pedsInputs.startART.CD4PercBounds[i][j][LOWER_BOUND]) );
-	}
-
-	// read in HVL bounds to administer ARTs
-	readAndSkipPast2( "PedsARTstart_HVL", "upp", inputFile );
-	for (i = 0; i < ART_NUM_LINES; ++i)
-		fscanf( inputFile, "%d", &(pedsInputs.startART.HVLBounds[i][UPPER_BOUND]) );
-	readAndSkipPast2( "PedsARTstart_HVL", "lwr", inputFile );
-	for (i = 0; i < ART_NUM_LINES; ++i)
-		fscanf( inputFile, "%d", &(pedsInputs.startART.HVLBounds[i][LOWER_BOUND]) );
-
-	// read in OI criteria to administer ARTs
-	for (j = 0; j < OI_NUM; ++j) {
-		readAndSkipPast2( "PedsARTstart_OIs", OI_STRS[j], inputFile );
-		for (i = 0; i < ART_NUM_LINES; ++i) {
-			fscanf( inputFile, "%d", &tempBool);
-			pedsInputs.startART.OIHistory[i][j] = (bool) tempBool;
-		}
-	}
-	readAndSkipPast2( "PedsARTstart_OIs", "numOIs", inputFile );
-	for (i = 0; i < ART_NUM_LINES; ++i)
-		fscanf( inputFile, "%d", &(pedsInputs.startART.numOIs[i]) );
-
-	// read in minimum mth # to start ART
-	readAndSkipPast2( "PedsARTstart", "minMthNum", inputFile );
-	for (i = 0; i < ART_NUM_LINES; ++i)
-		fscanf( inputFile, "%d", &(pedsInputs.startART.minMonthNum[i]) );
-	readAndSkipPast2( "PedsARTstart", "MthsSincePrevRegStop", inputFile );
-	for (i = 0; i < ART_NUM_LINES; ++i)
-		fscanf( inputFile, "%d", &(pedsInputs.startART.monthsSincePrevRegimen[i]) );
-
-	// ART Failure parameters
-	// read in # HVL lvls to incr for fail diag
-	readAndSkipPast( "PedsARTfail_hvlNumIncr", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i )
-		fscanf( inputFile, "%d", &(pedsInputs.failART[i].HVLNumIncrease) );
-	// read in absolute HVL counts for fail diag
-	readAndSkipPast( "PedsARTfail_hvlAbsol", inputFile );
-	readAndSkipPast( "uppBnd", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i )
-		fscanf( inputFile, "%d", &(pedsInputs.failART[i].HVLBounds[UPPER_BOUND]) );
-	readAndSkipPast( "PedsARTfail_hvlAbsol", inputFile );
-	readAndSkipPast( "lwrBnd", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i )
-		fscanf( inputFile, "%d", &(pedsInputs.failART[i].HVLBounds[LOWER_BOUND]) );
-	// read in true/false use HVL as setpoint for fail diag
-	readAndSkipPast( "PedsARTfail_hvlAtSetptAsFailDiag", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i ) {
-		fscanf( inputFile, "%d", &tempBool);
-		pedsInputs.failART[i].HVLFailAtSetpoint = (bool) tempBool;
-	}
-	// read in # of months before using HVL criteria
-	readAndSkipPast( "PedsARTfail_hvlMthsFromInit", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i )
-		fscanf( inputFile, "%d", &(pedsInputs.failART[i].HVLMonthsFromInit) );
-	// read in CD4 percentage to decr for fail diag
-	readAndSkipPast( "PedsARTfail_cd4PercDrop", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i )
-		fscanf( inputFile, "%lf", &(pedsInputs.failART[i].CD4PercPercentageDrop) );
-	// read in true/false use CD4 as below pre-ART nadir for fail diag
-	readAndSkipPast( "PedsARTfail_cd4BelowPreARTNadir", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i ) {
-		fscanf( inputFile, "%d", &tempBool);
-		pedsInputs.failART[i].CD4PercBelowPreARTNadir = (bool) tempBool;
-	}
-	// read in absolute CD4 counts as OR criteria for fail diag
-	readAndSkipPast( "PedsARTfail_cd4AbsolOR", inputFile );
-	readAndSkipPast( "uppBnd", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i )
-		fscanf( inputFile, "%lf", &(pedsInputs.failART[i].CD4PercBoundsOR[UPPER_BOUND]) );
-	readAndSkipPast( "PedsARTfail_cd4AbsolOR", inputFile );
-	readAndSkipPast( "lwrBnd", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i )
-		fscanf( inputFile, "%lf", &(pedsInputs.failART[i].CD4PercBoundsOR[LOWER_BOUND]) );
-	// read in absolute CD4 counts as AND criteria for fail diag
-	readAndSkipPast( "PedsARTfail_cd4AbsolAND", inputFile );
-	readAndSkipPast( "uppBnd", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i )
-		fscanf( inputFile, "%lf", &(pedsInputs.failART[i].CD4PercBoundsAND[UPPER_BOUND]) );
-	readAndSkipPast( "PedsARTfail_cd4AbsolAND", inputFile );
-	readAndSkipPast( "lwrBnd", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i )
-		fscanf( inputFile, "%lf", &(pedsInputs.failART[i].CD4PercBoundsAND[LOWER_BOUND]) );
-	// read in # of months before using CD4 criteria
-	readAndSkipPast( "PedsARTfail_cd4MthsFromInit", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i )
-		fscanf( inputFile, "%d", &(pedsInputs.failART[i].CD4PercMonthsFromInit) );
-	// read in whether to treat OI event as ART fail diag
-	for ( j = 0; j < OI_NUM; ++j ) {
-		readAndSkipPast( "PedsARTfail_OIs", inputFile );
-		readAndSkipPast( OI_STRS[j], inputFile );
-		for ( i = 0; i < ART_NUM_LINES; ++i )
-			fscanf( inputFile, "%d", &(pedsInputs.failART[i].OIsEvent[j]) );
-	}
-	readAndSkipPast( "PedsARTfail_OIsMinNum", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i )
-		fscanf( inputFile, "%d", &(pedsInputs.failART[i].OIsMinNum) );
-	readAndSkipPast( "PedsARTfail_OIsMthsFromInit", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i )
-		fscanf( inputFile, "%d", &(pedsInputs.failART[i].OIsMonthsFromInit) );
-	// read in ART failure diagnoses criteria parameters
-	readAndSkipPast( "PedsARTfail_diagNumTestsFail", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i )
-		fscanf( inputFile, "%d", &(pedsInputs.failART[i].diagnoseNumTestsFail) );
-	readAndSkipPast( "PedsARTfail_diagUseHVLTestsConfirm", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i ) {
-		fscanf( inputFile, "%d", &tempBool);
-		pedsInputs.failART[i].diagnoseUseHVLTestsConfirm = (bool) tempBool;
-	}
-	readAndSkipPast( "PedsARTfail_diagUseCD4TestsConfirm", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i ) {
-		fscanf( inputFile, "%d", &tempBool);
-		pedsInputs.failART[i].diagnoseUseCD4TestsConfirm = (bool) tempBool;
-	}
-	readAndSkipPast( "PedsARTfail_diagNumTestsConfirm", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i )
-		fscanf( inputFile, "%d", &(pedsInputs.failART[i].diagnoseNumTestsConfirm) );
-
-	//read in ART stopping policy
-	// read in maximum number of months to be on ART
-	readAndSkipPast( "PedsARTstop_MaxMthsOnART", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i )
-		fscanf( inputFile, "%d", &(pedsInputs.stopART[i].maxMonthsOnART));
-	// read in stop on major toxicity
-	readAndSkipPast("PedsARTstop_MajorToxicity", inputFile);
-	for (i = 0; i < ART_NUM_LINES; i++) {
-		fscanf(inputFile, "%d", &tempBool);
-		pedsInputs.stopART[i].withMajorToxicty = (bool) tempBool;
-	}
-	// read in criteria to use after failure has been observed
-	readAndSkipPast( "PedsARTstop_OnFailImmed", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i ) {
-		fscanf( inputFile, "%d", &tempBool);
-		pedsInputs.stopART[i].afterFailImmediate = (bool) tempBool;
-	}
-	readAndSkipPast( "PedsARTstop_OnFailBelowCD4", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i )
-		fscanf( inputFile, "%lf", &(pedsInputs.stopART[i].afterFailCD4PercLowerBound));
-	readAndSkipPast( "PedsARTstop_OnFailSevereOI", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i ) {
-		fscanf( inputFile, "%d", &tempBool);
-		pedsInputs.stopART[i].afterFailWithSevereOI = (bool) tempBool;
-	}
-	readAndSkipPast( "PedsARTstop_OnFailMthsAfterObsv", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i )
-		fscanf( inputFile, "%d", &(pedsInputs.stopART[i].afterFailMonthsFromObserved));
-	// read in minimum month number to stop ART
-	readAndSkipPast( "PedsARTstop_OnFailMinMthNum", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i )
-		fscanf( inputFile, "%d", &(pedsInputs.stopART[i].afterFailMinMonthNum) );
-	readAndSkipPast( "PedsARTstop_OnFailMthsFromInit", inputFile );
-	for ( i = 0; i < ART_NUM_LINES; ++i )
-		fscanf( inputFile, "%d", &(pedsInputs.stopART[i].afterFailMonthsFromInit) );
 } /* end readPedsInputs */
-
-
-/* readPedsProphInputs reads data from the PedsProphs tab of the input sheet */
-void SimContext::readPedsProphInputs() {
-	char scratch[256], buffer[256];
-	int i, j, k, tempBool;
-
-	for ( k = 0; k < OI_NUM; ++k) {
-		for ( i = 0; i < PROPH_NUM; ++i ) {
-			// read in OI proph id and name
-			sprintf( scratch, "OI%d_PriProph%dPeds", k + 1, i + 1 );
-			readAndSkipPast( scratch, inputFile );
-			readAndSkipPast( "Id", inputFile );
-			int idNum;
-			fscanf( inputFile, " %d", &idNum);
-			// continue to next proph if this one is unspecified
-			if (idNum == NOT_APPL) {
-				pedsProphsInputs[PROPH_PRIMARY][k][i] = NULL;
-				continue;
-			}
-			// allocate a proph input structure
-			pedsProphsInputs[PROPH_PRIMARY][k][i] = new ProphInputs();
-
-			// read in OI proph efficacy (for primary proph, primary OIs only in LDC model)
-			readAndSkipPast( scratch, inputFile );
-			readAndSkipPast( "EffPriOIs", inputFile );
-			for ( j = 0; j < OI_NUM; ++j )
-				fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_PRIMARY][k][i]->primaryOIEfficacy[j]) );
-
-			// read in OI primary proph efficacy on secondary OIs
-			readAndSkipPast( scratch, inputFile );
-			readAndSkipPast( "EffSecOIs", inputFile );
-			for ( j = 0; j < OI_NUM; ++j )
-				fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_PRIMARY][k][i]->secondaryOIEfficacy[j]) );
-
-			// read in proph resist prob, level of proph resistance, time of proph resistance,
-			// cost factor of proph resistance, & mortality factor of proph resistance
-			readAndSkipPast( scratch, inputFile );
-			readAndSkipPast( "Resist", inputFile );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_PRIMARY][k][i]->monthlyProbResistance) );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_PRIMARY][k][i]->percentResistance) );
-			fscanf( inputFile, "%d", &(pedsProphsInputs[PROPH_PRIMARY][k][i]->timeOfResistance) );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_PRIMARY][k][i]->costFactorResistance) );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_PRIMARY][k][i]->mortalityFactorResistance) );
-
-			// read in min & maj tox for proph
-			readAndSkipPast( scratch, inputFile );
-			readAndSkipPast( "Tox", inputFile );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_PRIMARY][k][i]->probMinorToxicity) );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_PRIMARY][k][i]->probMajorToxicity) );
-			fscanf( inputFile, "%d", &(pedsProphsInputs[PROPH_PRIMARY][k][i]->monthsToToxicity) );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_PRIMARY][k][i]->probDeathMajorToxicity) );
-
-			// read in costs and QOL for proph
-			readAndSkipPast( scratch, inputFile );
-			readAndSkipPast( "CostQOL", inputFile );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_PRIMARY][k][i]->costMonthly) );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_PRIMARY][k][i]->costMinorToxicity) );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_PRIMARY][k][i]->QOLMinorToxicity) );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_PRIMARY][k][i]->costMajorToxicity) );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_PRIMARY][k][i]->QOLMajorToxicity) );
-
-			// read in proph switching inputs
-			readAndSkipPast(scratch, inputFile);
-			readAndSkipPast("Switch", inputFile);
-			fscanf( inputFile, "%d", &(pedsProphsInputs[PROPH_PRIMARY][k][i]->monthsToSwitch) );
-			fscanf( inputFile, "%d", &tempBool);
-			pedsProphsInputs[PROPH_PRIMARY][k][i]->switchOnMinorToxicity = (bool) tempBool;
-			fscanf( inputFile, "%d", &tempBool);
-			pedsProphsInputs[PROPH_PRIMARY][k][i]->switchOnMajorToxicity = (bool) tempBool;
-		}
-	}
-
-	for ( k = 0; k < OI_NUM; ++k) {
-		for ( i = 0; i < PROPH_NUM; ++i ) {
-			// read in OI proph id and name
-			sprintf( scratch, "OI%d_SecProph%dPeds", k + 1, i + 1 );
-			readAndSkipPast( scratch, inputFile );
-			readAndSkipPast( "Id", inputFile );
-			int idNum;
-			fscanf( inputFile, " %d", &idNum);
-			// continue to next proph if this one is unspecified
-			if (idNum == NOT_APPL) {
-				pedsProphsInputs[PROPH_SECONDARY][k][i] = NULL;
-				continue;
-			}
-			// allocate a proph input structure
-			pedsProphsInputs[PROPH_SECONDARY][k][i] = new ProphInputs();
-
-			// read in OI proph efficacy (for primary proph, primary OIs only in LDC model)
-			readAndSkipPast( scratch, inputFile );
-			readAndSkipPast( "EffPriOIs", inputFile );
-			for ( j = 0; j < OI_NUM; ++j )
-				fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_SECONDARY][k][i]->primaryOIEfficacy[j]) );
-
-			// read in OI primary proph efficacy on secondary OIs
-			readAndSkipPast( scratch, inputFile );
-			readAndSkipPast( "EffSecOIs", inputFile );
-			for ( j = 0; j < OI_NUM; ++j )
-				fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_SECONDARY][k][i]->secondaryOIEfficacy[j]) );
-
-			// read in proph resist prob, level of proph resistance, time of proph resistance,
-			// cost factor of proph resistance, & mortality factor of proph resistance
-			readAndSkipPast( scratch, inputFile );
-			readAndSkipPast( "Resist", inputFile );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_SECONDARY][k][i]->monthlyProbResistance) );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_SECONDARY][k][i]->percentResistance) );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_SECONDARY][k][i]->timeOfResistance) );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_SECONDARY][k][i]->costFactorResistance) );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_SECONDARY][k][i]->mortalityFactorResistance) );
-
-			// read in min & maj tox for proph
-			readAndSkipPast( scratch, inputFile );
-			readAndSkipPast( "Tox", inputFile );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_SECONDARY][k][i]->probMinorToxicity) );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_SECONDARY][k][i]->probMajorToxicity) );
-			fscanf( inputFile, "%d", &(pedsProphsInputs[PROPH_SECONDARY][k][i]->monthsToToxicity) );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_SECONDARY][k][i]->probDeathMajorToxicity) );
-
-			// read in costs and QOL for proph
-			readAndSkipPast( scratch, inputFile );
-			readAndSkipPast( "CostQOL", inputFile );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_SECONDARY][k][i]->costMonthly) );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_SECONDARY][k][i]->costMinorToxicity) );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_SECONDARY][k][i]->QOLMinorToxicity) );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_SECONDARY][k][i]->costMajorToxicity) );
-			fscanf( inputFile, "%lf", &(pedsProphsInputs[PROPH_SECONDARY][k][i]->QOLMajorToxicity) );
-
-			// read in proph switching inputs
-			readAndSkipPast(scratch, inputFile);
-			readAndSkipPast("Switch", inputFile);
-			fscanf( inputFile, "%d", &(pedsProphsInputs[PROPH_SECONDARY][k][i]->monthsToSwitch) );
-			fscanf( inputFile, "%d", &tempBool);
-			pedsProphsInputs[PROPH_SECONDARY][k][i]->switchOnMinorToxicity = (bool) tempBool;
-			fscanf( inputFile, "%d", &tempBool);
-			pedsProphsInputs[PROPH_SECONDARY][k][i]->switchOnMajorToxicity = (bool) tempBool;
-		}
-	}
-} /* end readPedsProphInputs */
 
 /* readPedsARTInputs reads data from the UserARTs tab of the input sheet */
 void SimContext::readPedsARTInputs() {
@@ -3306,26 +2763,22 @@ void SimContext::readPedsARTInputs() {
 		// read in one-time startup cost
 		sprintf(tmpBuf, "ART%dInitCostPeds", artNum);
 		readAndSkipPast( tmpBuf, file );
-		for (i = 0; i < PEDS_ART_COST_AGE_CAT_NUM; i++)
-			fscanf( file, "%lf", &pedsART.costInitial[i]);
+		fscanf( file, "%lf %lf", &pedsART.costInitialEarly, &pedsART.costInitialLate );
 		// read in monthly cost
 		sprintf(tmpBuf, "ART%dMthCostPeds", artNum);
 		readAndSkipPast( tmpBuf, file );
-		for (i = 0; i < PEDS_ART_COST_AGE_CAT_NUM; i++)
-			fscanf( file, "%lf", &pedsART.costMonthly[i]);
+		fscanf( file, "%lf %lf", &pedsART.costMonthlyEarly, &pedsART.costMonthlyLate );
 
 		// read in efficacy time horizon
 		sprintf(tmpBuf, "ART%dEffTimeHorizonPeds", artNum);
 		readAndSkipPast( tmpBuf, file );
 		fscanf( file, "%d %d", &pedsART.efficacyTimeHorizonEarly, &pedsART.efficacyTimeHorizonLate );
 		// read in chances of ART success
-		/**
 		sprintf(tmpBuf, "ART%dSuccessProbPedsEarly", artNum);
 		readAndSkipPast( tmpBuf, file );
 		readAndSkipPast( "Succ", file );
 		for (i = HVL_NUM_STRATA - 1; i >= 0; --i)
 			fscanf( file, "%lf", &(pedsART.probInitialEfficacyEarly[ART_EFF_SUCCESS][i]) );
-
 		readAndSkipPast( tmpBuf, file );
 		readAndSkipPast( "Part", file );
 		for (i = HVL_NUM_STRATA - 1; i >= 0; --i)
@@ -3343,7 +2796,7 @@ void SimContext::readPedsARTInputs() {
 			fscanf( file, "%lf", &(pedsART.probInitialEfficacyLate[ART_EFF_PARTIAL][i]) );
 		for (i = HVL_NUM_STRATA - 1; i >= 0; --i)
 			pedsART.probInitialEfficacyLate[ART_EFF_FAILURE][i] = 1.0 - pedsART.probInitialEfficacyLate[ART_EFF_SUCCESS][i] - pedsART.probInitialEfficacyLate[ART_EFF_PARTIAL][i];
-		**/
+
 		// read in distribution of partial suppression
 		sprintf(tmpBuf, "ART%dDistribPartialPedsEarly", artNum);
 		readAndSkipPast( tmpBuf, file );
@@ -3356,7 +2809,6 @@ void SimContext::readPedsARTInputs() {
 			&(pedsART.partialSuppressionDistributionLate[1]),
 			&(pedsART.partialSuppressionDistributionLate[2]) );
 		// read in chances of late failure/partial suppression
-		/**
 		sprintf(tmpBuf, "ART%dLateFail_SuccPeds", artNum);
 		readAndSkipPast( tmpBuf, file );
 		fscanf( file, "%lf %lf", &pedsART.probLateFailFromSuppressEarly, &pedsART.probLateFailFromSuppressLate);
@@ -3366,7 +2818,6 @@ void SimContext::readPedsARTInputs() {
 		sprintf(tmpBuf, "ART%dLateFail_PartPeds", artNum);
 		readAndSkipPast( tmpBuf, file );
 		fscanf( file, "%lf %lf", &pedsART.probLateFailFromPartialSuppressEarly, &pedsART.probLateFailFromPartialSuppressLate );
-		**/
 		// read in mth by which all would fail
 		sprintf(tmpBuf, "ART%dMthForceFailPeds", artNum);
 		readAndSkipPast( tmpBuf, file );
@@ -3429,26 +2880,30 @@ void SimContext::readPedsARTInputs() {
 		}
 		sprintf(tmpBuf, "ART%dMthStageCD4Eff_FailPedsEarly", artNum);
 		readAndSkipPast( tmpBuf, file );
-		fscanf( file, "%d", &(pedsART.stageBoundCD4PercentageChangeOnARTFailEarly));
+		fscanf( file, "%d %d", &(pedsART.stageBoundsCD4PercentageChangeOnARTEarly[ART_EFF_FAILURE][0]),
+				&(pedsART.stageBoundsCD4PercentageChangeOnARTEarly[ART_EFF_FAILURE][1]));
 		sprintf(tmpBuf, "ART%dCD4EffMult_FailPedsEarly", artNum);
 		for (j = 0; j < CD4_RESPONSE_NUM_TYPES; j++) {
 			readAndSkipPast2(tmpBuf, CD4_RESPONSE_STRS[j], file);
-			fscanf( file, "%lf %lf",
+			fscanf( file, "%lf %lf %lf",
 				&(pedsART.CD4PercentageMultiplierOnFailedARTEarly[j][0]),
-				&(pedsART.CD4PercentageMultiplierOnFailedARTEarly[j][1]));
+				&(pedsART.CD4PercentageMultiplierOnFailedARTEarly[j][1]),
+				&(pedsART.CD4PercentageMultiplierOnFailedARTEarly[j][2]));
 		}
 		sprintf(tmpBuf, "ART%dMthCD4SecStdDevPedsEarly", artNum);
 		readAndSkipPast( tmpBuf, file );
 		fscanf( file, "%lf", &pedsART.secondaryCD4PercentageChangeOnARTStdDevEarly);
 		sprintf(tmpBuf, "ART%dMthStageCD4Eff_FailPedsLate", artNum);
 		readAndSkipPast( tmpBuf, file );
-		fscanf( file, "%d", &(pedsART.stageBoundCD4ChangeOnARTFailLate));
+		fscanf( file, "%d %d", &(pedsART.stageBoundsCD4ChangeOnARTLate[ART_EFF_FAILURE][0]),
+				&(pedsART.stageBoundsCD4ChangeOnARTLate[ART_EFF_FAILURE][1]));
 		sprintf(tmpBuf, "ART%dCD4EffMult_FailPedsLate", artNum);
 		for (j = 0; j < CD4_RESPONSE_NUM_TYPES; j++) {
 			readAndSkipPast2(tmpBuf, CD4_RESPONSE_STRS[j], file);
-			fscanf( file, "%lf %lf",
+			fscanf( file, "%lf %lf %lf",
 				&(pedsART.CD4MultiplierOnFailedARTLate[j][0]),
-				&(pedsART.CD4MultiplierOnFailedARTLate[j][1]));
+				&(pedsART.CD4MultiplierOnFailedARTLate[j][1]),
+				&(pedsART.CD4MultiplierOnFailedARTLate[j][2]));
 		}
 		sprintf(tmpBuf, "ART%dMthCD4SecStdDevPedsLate", artNum);
 		readAndSkipPast( tmpBuf, file );
@@ -3505,282 +2960,19 @@ void SimContext::readPedsARTInputs() {
 		readAndSkipPast2( tmpBuf, "Fail", file );
 		fscanf( file, "%lf %d", &(pedsART.monthlyProbHVLChangeLate[ART_EFF_FAILURE]),
 				&(pedsART.monthlyNumStrataHVLChangeLate[ART_EFF_FAILURE]) );
-
-		//read regimen specific heterogeneity inputs
-		sprintf(tmpBuf, "PedsART%dProbFillRxNonRespondersEarly", artNum);
-		readAndSkipPast(tmpBuf, file);
-		fscanf(file, "%lf", &(pedsART.probFillARTPrescriptionsNonResponderEarly));
-
-		sprintf(tmpBuf, "PedsART%dProbRestartRegimenEarly", artNum);
-		readAndSkipPast(tmpBuf, file);
-		fscanf(file, "%lf %lf %lf", &(pedsART.probRestartARTRegimenAfterFailureEarly[RESP_TYPE_FULL]),&(pedsART.probRestartARTRegimenAfterFailureEarly[RESP_TYPE_PARTIAL]),&(pedsART.probRestartARTRegimenAfterFailureEarly[RESP_TYPE_NON]));
-
-		sprintf(tmpBuf, "PedsART%dHetPropRespRegCoeffEarly", artNum);
-		readAndSkipPast(tmpBuf, file);
-		fscanf(file, "%lf %lf", &(pedsART.propRespondARTRegimenLogitMeanEarly), &(pedsART.propRespondARTRegimenLogitStdDevEarly));
-
-		sprintf(tmpBuf, "PedsART%dHetOutcomesEarly", artNum);
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("Supp",file);
-		fscanf(file, "%lf %lf %lf %lf %lf", &(pedsART.responseTypeThresholdsEarly[HET_OUTCOME_SUPP][0]), &(pedsART.responseTypeThresholdsEarly[HET_OUTCOME_SUPP][1]),&(pedsART.responseTypeValuesEarly[HET_OUTCOME_SUPP][0]),&(pedsART.responseTypeValuesEarly[HET_OUTCOME_SUPP][1]), &(pedsART.responseTypeExponentsEarly[HET_OUTCOME_SUPP]));
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("LateFail",file);
-		fscanf(file, "%lf %lf %lf %lf %lf", &(pedsART.responseTypeThresholdsEarly[HET_OUTCOME_LATEFAIL][0]), &(pedsART.responseTypeThresholdsEarly[HET_OUTCOME_LATEFAIL][1]),&(pedsART.responseTypeValuesEarly[HET_OUTCOME_LATEFAIL][0]),&(pedsART.responseTypeValuesEarly[HET_OUTCOME_LATEFAIL][1]), &(pedsART.responseTypeExponentsEarly[HET_OUTCOME_LATEFAIL]));
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("ARTEffectOI",file);
-		fscanf(file, "%lf %lf", &(pedsART.responseTypeThresholdsEarly[HET_OUTCOME_ARTEFFECT_OI][0]), &(pedsART.responseTypeThresholdsEarly[HET_OUTCOME_ARTEFFECT_OI][1]));
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("ARTEffectCHRMs",file);
-		fscanf(file, "%lf %lf", &(pedsART.responseTypeThresholdsEarly[HET_OUTCOME_ARTEFFECT_CHRMS][0]), &(pedsART.responseTypeThresholdsEarly[HET_OUTCOME_ARTEFFECT_CHRMS][1]));
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("ARTEffectMort",file);
-		fscanf(file, "%lf %lf", &(pedsART.responseTypeThresholdsEarly[HET_OUTCOME_ARTEFFECT_MORT][0]), &(pedsART.responseTypeThresholdsEarly[HET_OUTCOME_ARTEFFECT_MORT][1]));
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("Resist",file);
-		fscanf(file, "%lf %lf", &(pedsART.responseTypeThresholdsEarly[HET_OUTCOME_RESIST][0]), &(pedsART.responseTypeThresholdsEarly[HET_OUTCOME_RESIST][1]));
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("Tox",file);
-		fscanf(file, "%lf %lf", &(pedsART.responseTypeThresholdsEarly[HET_OUTCOME_TOX][0]), &(pedsART.responseTypeThresholdsEarly[HET_OUTCOME_TOX][1]));
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("Cost",file);
-		fscanf(file, "%lf %lf", &(pedsART.responseTypeThresholdsEarly[HET_OUTCOME_COST][0]), &(pedsART.responseTypeThresholdsEarly[HET_OUTCOME_COST][1]));
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("RestartAfterFail",file);
-		fscanf(file, "%lf %lf", &(pedsART.responseTypeThresholdsEarly[HET_OUTCOME_RESTART][0]), &(pedsART.responseTypeThresholdsEarly[HET_OUTCOME_RESTART][1]));
-
-
-		sprintf(tmpBuf, "PedsART%dProbFillRxNonRespondersLate", artNum);
-		readAndSkipPast(tmpBuf, file);
-		fscanf(file, "%lf", &(pedsART.probFillARTPrescriptionsNonResponderLate));
-
-		sprintf(tmpBuf, "PedsART%dProbRestartRegimenLate", artNum);
-		readAndSkipPast(tmpBuf, file);
-		fscanf(file, "%lf %lf %lf", &(pedsART.probRestartARTRegimenAfterFailureLate[RESP_TYPE_FULL]),&(pedsART.probRestartARTRegimenAfterFailureLate[RESP_TYPE_PARTIAL]),&(pedsART.probRestartARTRegimenAfterFailureLate[RESP_TYPE_NON]));
-
-		sprintf(tmpBuf, "PedsART%dHetPropRespRegCoeffLate", artNum);
-		readAndSkipPast(tmpBuf, file);
-		fscanf(file, "%lf %lf", &(pedsART.propRespondARTRegimenLogitMeanLate), &(pedsART.propRespondARTRegimenLogitStdDevLate));
-
-		sprintf(tmpBuf, "PedsART%dHetOutcomesLate", artNum);
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("Supp",file);
-		fscanf(file, "%lf %lf %lf %lf %lf", &(pedsART.responseTypeThresholdsLate[HET_OUTCOME_SUPP][0]), &(pedsART.responseTypeThresholdsLate[HET_OUTCOME_SUPP][1]),&(pedsART.responseTypeValuesLate[HET_OUTCOME_SUPP][0]),&(pedsART.responseTypeValuesLate[HET_OUTCOME_SUPP][1]), &(pedsART.responseTypeExponentsLate[HET_OUTCOME_SUPP]));
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("LateFail",file);
-		fscanf(file, "%lf %lf %lf %lf %lf", &(pedsART.responseTypeThresholdsLate[HET_OUTCOME_LATEFAIL][0]), &(pedsART.responseTypeThresholdsLate[HET_OUTCOME_LATEFAIL][1]),&(pedsART.responseTypeValuesLate[HET_OUTCOME_LATEFAIL][0]),&(pedsART.responseTypeValuesLate[HET_OUTCOME_LATEFAIL][1]), &(pedsART.responseTypeExponentsLate[HET_OUTCOME_LATEFAIL]));
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("ARTEffectOI",file);
-		fscanf(file, "%lf %lf", &(pedsART.responseTypeThresholdsLate[HET_OUTCOME_ARTEFFECT_OI][0]), &(pedsART.responseTypeThresholdsLate[HET_OUTCOME_ARTEFFECT_OI][1]));
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("ARTEffectCHRMs",file);
-		fscanf(file, "%lf %lf", &(pedsART.responseTypeThresholdsLate[HET_OUTCOME_ARTEFFECT_CHRMS][0]), &(pedsART.responseTypeThresholdsLate[HET_OUTCOME_ARTEFFECT_CHRMS][1]));
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("ARTEffectMort",file);
-		fscanf(file, "%lf %lf", &(pedsART.responseTypeThresholdsLate[HET_OUTCOME_ARTEFFECT_MORT][0]), &(pedsART.responseTypeThresholdsLate[HET_OUTCOME_ARTEFFECT_MORT][1]));
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("Resist",file);
-		fscanf(file, "%lf %lf", &(pedsART.responseTypeThresholdsLate[HET_OUTCOME_RESIST][0]), &(pedsART.responseTypeThresholdsLate[HET_OUTCOME_RESIST][1]));
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("Tox",file);
-		fscanf(file, "%lf %lf", &(pedsART.responseTypeThresholdsLate[HET_OUTCOME_TOX][0]), &(pedsART.responseTypeThresholdsLate[HET_OUTCOME_TOX][1]));
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("Cost",file);
-		fscanf(file, "%lf %lf", &(pedsART.responseTypeThresholdsLate[HET_OUTCOME_COST][0]), &(pedsART.responseTypeThresholdsLate[HET_OUTCOME_COST][1]));
-		readAndSkipPast(tmpBuf, file);
-		readAndSkipPast("RestartAfterFail",file);
-		fscanf(file, "%lf %lf", &(pedsART.responseTypeThresholdsLate[HET_OUTCOME_RESTART][0]), &(pedsART.responseTypeThresholdsLate[HET_OUTCOME_RESTART][1]));
 	}
 } /* end readPedsARTInputs */
-
-
-/* readPedsCostInputs reads data from the PedsCost tab of the input sheet */
-void SimContext::readPedsCostInputs() {
-	char scratch[256], tmpBuf[256];
-	int i, j, k;
-
-	for (int t=1; t <=PEDS_COST_AGE_CAT_NUM;t++){
-		// read in acute OI costs
-		for ( i = 0; i < OI_NUM; ++i ) {
-			sprintf(tmpBuf, "Peds%dCostAcuteOI_noART_treated", t);
-			readAndSkipPast( tmpBuf, inputFile );
-			readAndSkipPast( OI_STRS[i], inputFile );
-			for (j = 0; j < COST_NUM_TYPES; j++) {
-				fscanf(inputFile, "%lf", &(pedsCostInputs.acuteOICostTreated[t-1][ART_OFF_STATE][i][j]) );
-			}
-		}
-		for ( i = 0; i < OI_NUM; ++i ) {
-			sprintf(tmpBuf, "Peds%dCostAcuteOI_noART_untreated", t);
-			readAndSkipPast( tmpBuf, inputFile );
-			readAndSkipPast( OI_STRS[i], inputFile );
-			for (j = 0; j < COST_NUM_TYPES; j++) {
-				fscanf(inputFile, "%lf", &(pedsCostInputs.acuteOICostUntreated[t-1][ART_OFF_STATE][i][j]) );
-			}
-		}
-		for ( i = 0; i < OI_NUM; ++i ) {
-			sprintf(tmpBuf, "Peds%dCostAcuteOI_onART_treated", t);
-			readAndSkipPast( tmpBuf, inputFile );
-			readAndSkipPast( OI_STRS[i], inputFile );
-			for (j = 0; j < COST_NUM_TYPES; j++) {
-				fscanf(inputFile, "%lf", &(pedsCostInputs.acuteOICostTreated[t-1][ART_ON_STATE][i][j]) );
-			}
-		}
-		for ( i = 0; i < OI_NUM; ++i ) {
-			sprintf(tmpBuf, "Peds%dCostAcuteOI_onART_untreated", t);
-			readAndSkipPast( tmpBuf, inputFile );
-			readAndSkipPast( OI_STRS[i], inputFile );
-			for (j = 0; j < COST_NUM_TYPES; j++) {
-				fscanf(inputFile, "%lf", &(pedsCostInputs.acuteOICostUntreated[t-1][ART_ON_STATE][i][j]) );
-			}
-		}
-
-		// read in CD4 / HVL test costs
-		sprintf(tmpBuf, "Peds%dCostCD4Test", t);
-		readAndSkipPast( tmpBuf, inputFile );
-		for (i = 0; i < COST_NUM_TYPES; i++) {
-			fscanf(inputFile, "%lf", &(pedsCostInputs.CD4TestCost[t-1][i]) );
-		}
-		sprintf(tmpBuf, "Peds%dCostHVLTest", t);
-		readAndSkipPast( tmpBuf, inputFile );
-		for (i = 0; i < COST_NUM_TYPES; i++) {
-			fscanf(inputFile, "%lf", &(pedsCostInputs.HVLTestCost[t-1][i]) );
-		}
-
-		// read in death from OI costs
-		for ( i = 0; i < DTH_NUM_CAUSES_BASIC; ++i ) {
-			sprintf(tmpBuf, "Peds%dCostDth_noART_treated", t);
-			readAndSkipPast( tmpBuf, inputFile );
-			readAndSkipPast( DTH_CAUSES_STRS[i], inputFile);
-			for (j = 0; j < COST_NUM_TYPES; j++) {
-				fscanf(inputFile, "%lf", &(pedsCostInputs.deathCostTreated[t-1][ART_OFF_STATE][i][j]) );
-			}
-		}
-		for ( i = 0; i < DTH_NUM_CAUSES_BASIC; ++i ) {
-			sprintf(tmpBuf, "Peds%dCostDth_noART_untreated", t);
-			readAndSkipPast( tmpBuf, inputFile );
-			readAndSkipPast( DTH_CAUSES_STRS[i], inputFile);
-			for (j = 0; j < COST_NUM_TYPES; j++) {
-				fscanf(inputFile, "%lf", &(pedsCostInputs.deathCostUntreated[t-1][ART_OFF_STATE][i][j]) );
-			}
-		}
-		for ( i = 0; i < DTH_NUM_CAUSES_BASIC; ++i ) {
-			sprintf(tmpBuf, "Peds%dCostDth_onART_treated", t);
-			readAndSkipPast( tmpBuf, inputFile );
-			readAndSkipPast( DTH_CAUSES_STRS[i], inputFile);
-			for (j = 0; j < COST_NUM_TYPES; j++) {
-				fscanf(inputFile, "%lf", &(pedsCostInputs.deathCostTreated[t-1][ART_ON_STATE][i][j]) );
-			}
-		}
-		for ( i = 0; i < DTH_NUM_CAUSES_BASIC; ++i ) {
-			sprintf(tmpBuf, "Peds%dCostDth_onART_untreated", t);
-			readAndSkipPast( tmpBuf, inputFile );
-			readAndSkipPast( DTH_CAUSES_STRS[i], inputFile);
-			for (j = 0; j < COST_NUM_TYPES; j++) {
-				fscanf(inputFile, "%lf", &(pedsCostInputs.deathCostUntreated[t-1][ART_ON_STATE][i][j]) );
-			}
-		}
-	}
-
-	// read in routine care costs for HIV-neg
-	readAndSkipPast("PedsCostRoutine_HIVneg_dmed", inputFile);
-	for (i = 0; i < GENDER_NUM; i++) {
-		for (j = 0; j < PEDS_COST_AGE_CAT_NUM; j++) {
-			fscanf(inputFile, "%lf", &(pedsCostInputs.routineCareCostHIVNegative[i][j][COST_DIR_MED]));
-		}
-	}
-	readAndSkipPast("PedsCostRoutine_HIVneg_nmed", inputFile);
-	for (i = 0; i < GENDER_NUM; i++) {
-		for (j = 0; j < PEDS_COST_AGE_CAT_NUM; j++) {
-			fscanf(inputFile, "%lf", &(pedsCostInputs.routineCareCostHIVNegative[i][j][COST_DIR_NONMED]));
-		}
-	}
-	readAndSkipPast("PedsCostRoutine_HIVneg_time", inputFile);
-	for (i = 0; i < GENDER_NUM; i++) {
-		for (j = 0; j < PEDS_COST_AGE_CAT_NUM; j++) {
-			fscanf(inputFile, "%lf", &(pedsCostInputs.routineCareCostHIVNegative[i][j][COST_TIME]));
-		}
-	}
-	readAndSkipPast("PedsCostRoutine_HIVneg_indr", inputFile);
-	for (i = 0; i < GENDER_NUM; i++) {
-		for (j = 0; j < PEDS_COST_AGE_CAT_NUM; j++) {
-			fscanf(inputFile, "%lf", &(pedsCostInputs.routineCareCostHIVNegative[i][j][COST_INDIR]));
-		}
-	}
-	// read in routine care costs for HIV positive, not on ART
-	for (i = CD4_NUM_STRATA - 1; i >= 0; i--) {
-		readAndSkipPast2("PedsCostRoutine_HIVpos_noART_dmed", CD4_STRATA_STRS[i], inputFile);
-		for (j = 0; j < GENDER_NUM; j++) {
-			for (k = 0; k < PEDS_COST_AGE_CAT_NUM; k++) {
-				fscanf(inputFile, "%lf", &(pedsCostInputs.routineCareCostHIVPositive[ART_OFF_STATE][i][j][k][COST_DIR_MED]));
-				}
-		}
-		readAndSkipPast2("PedsCostRoutine_HIVpos_noART_nmed", CD4_STRATA_STRS[i], inputFile);
-		for (j = 0; j < GENDER_NUM; j++) {
-			for (k = 0; k < PEDS_COST_AGE_CAT_NUM; k++) {
-				fscanf(inputFile, "%lf", &(pedsCostInputs.routineCareCostHIVPositive[ART_OFF_STATE][i][j][k][COST_DIR_NONMED]));
-			}
-		}
-		readAndSkipPast2("PedsCostRoutine_HIVpos_noART_time", CD4_STRATA_STRS[i], inputFile);
-		for (j = 0; j < GENDER_NUM; j++) {
-			for (k = 0; k < PEDS_COST_AGE_CAT_NUM; k++) {
-				fscanf(inputFile, "%lf", &(pedsCostInputs.routineCareCostHIVPositive[ART_OFF_STATE][i][j][k][COST_TIME]));
-			}
-		}
-		readAndSkipPast2("PedsCostRoutine_HIVpos_noART_indr", CD4_STRATA_STRS[i], inputFile);
-		for (j = 0; j < GENDER_NUM; j++) {
-			for (k = 0; k < PEDS_COST_AGE_CAT_NUM; k++) {
-				fscanf(inputFile, "%lf", &(pedsCostInputs.routineCareCostHIVPositive[ART_OFF_STATE][i][j][k][COST_INDIR]));
-			}
-		}
-	}
-	// read in routine car costs for HIV positive, on ART
-	for (i = CD4_NUM_STRATA - 1; i >= 0; i--) {
-		readAndSkipPast2("PedsCostRoutine_HIVpos_onART_dmed", CD4_STRATA_STRS[i], inputFile);
-		for (j = 0; j < GENDER_NUM; j++) {
-			for (k = 0; k < PEDS_COST_AGE_CAT_NUM; k++) {
-				fscanf(inputFile, "%lf", &(pedsCostInputs.routineCareCostHIVPositive[ART_ON_STATE][i][j][k][COST_DIR_MED]));
-
-			}
-		}
-		readAndSkipPast2("PedsCostRoutine_HIVpos_onART_nmed", CD4_STRATA_STRS[i], inputFile);
-		for (j = 0; j < GENDER_NUM; j++) {
-			for (k = 0; k < PEDS_COST_AGE_CAT_NUM; k++) {
-				fscanf(inputFile, "%lf", &(pedsCostInputs.routineCareCostHIVPositive[ART_ON_STATE][i][j][k][COST_DIR_NONMED]));
-			}
-		}
-		readAndSkipPast2("PedsCostRoutine_HIVpos_onART_time", CD4_STRATA_STRS[i], inputFile);
-		for (j = 0; j < GENDER_NUM; j++) {
-			for (k = 0; k < PEDS_COST_AGE_CAT_NUM; k++) {
-				fscanf(inputFile, "%lf", &(pedsCostInputs.routineCareCostHIVPositive[ART_ON_STATE][i][j][k][COST_TIME]));
-			}
-		}
-		readAndSkipPast2("PedsCostRoutine_HIVpos_onART_indr", CD4_STRATA_STRS[i], inputFile);
-		for (j = 0; j < GENDER_NUM; j++) {
-			for (k = 0; k < PEDS_COST_AGE_CAT_NUM; k++) {
-				fscanf(inputFile, "%lf", &(pedsCostInputs.routineCareCostHIVPositive[ART_ON_STATE][i][j][k][COST_INDIR]));
-			}
-		}
-	}
-} /* end readPedsCostInputs */
 
 /* readAndSkipPast and readAndSkipPast2 skip over the given text in the input file */
 bool SimContext::readAndSkipPast(const char* searchStr, FILE* file) {
 	char temp[513];
-
 	fscanf(file, "%512s", temp);
-
 	while ( strcmp(temp, searchStr) != 0 ) {
-
 		fscanf(file, "%512s", temp);
-
 		if ( feof(file) ) {
-			if(counter<=100){
-			printf("\nWARNING: unexpected end of input file. Looking for %s",searchStr);
-			counter++;
-			}
-
+		  //printf("\nWARNING: unexpected end of input file. Looking for %s",searchStr);
 			return false;
 		}
-
 	}
 	return true;
 }  // readAndSkipPast

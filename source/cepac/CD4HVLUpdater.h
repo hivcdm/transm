@@ -2,8 +2,8 @@
 
 #include "include.h"
 
-/**
-	CD4HVLUpdater updates the patient's monthly CD4 and HVL levels according to their natural
+/* 
+	CD4HVLUpdater updates the patient's monthly CD4 and HVL levels according to their natural 
 	history disease progression and ART treatment effects.
 */
 class CD4HVLUpdater : public StateUpdater {
