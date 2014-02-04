@@ -68,7 +68,7 @@ void Population::Params::AgeBucketPrevalenceInfo::print(EventParams &_eventParam
 	_eventParams.displayOut(boost::lexical_cast<std::string>
 	                        (this->numInfectedRisk[DmgProfile::FEMALE][Person::HIGH]).c_str());
 	_eventParams.displayOut("\n");
-	_eventParams.displayOut("\num infected low risk males = ");
+	_eventParams.displayOut("\tnum infected low risk males = ");
 	_eventParams.displayOut(boost::lexical_cast<std::string>(this->numInfectedRisk[DmgProfile::MALE][Person::LOW]).c_str());
 	_eventParams.displayOut("\n");
 	_eventParams.displayOut("\tnum infected low risk females = ");
