@@ -771,10 +771,6 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 		_eventParams.BatchStatsStream[INCIDENCE] << incidence << Constants::TAB;
 	}
 
-#if !defined ( CONSOLE )
-	//Send incidence to incidence widget -- Should be in halves of a percent (* 200)
-	_eventParams.displaybox->currentIncidence = (int)(200.0 * incidence);
-#endif
 	//Total Infected in History
 	_outStream << this->getNumIncidentInfections() << Constants::TAB;
 
