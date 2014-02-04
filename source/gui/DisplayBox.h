@@ -17,6 +17,7 @@
 #include "./widgets/verticalStatusWidget.h"
 #include "./dialogs/SetupBatchStatsDialog.h"
 #include "../Constants.h"
+#include "../Sim.h"
 
 class DisplayBox : public wxFrame
 {
@@ -34,6 +35,9 @@ public:
 	verticalStatusWidget *incidenceWidget;
 	StatusWidget *totalProgressWidget;
 	StatusWidget *singleProgressWidget;
+	wxButton *runButton;
+
+	wxCriticalSection locker;
 
 	//The factors to be plotted in the status widgets
 	//current prevalence for prevalence widget (100 * current prevalence)
@@ -67,6 +71,10 @@ public:
 
 	void OnSetupBatchStats(wxCommandEvent &WXUNUSED(event));
 
+	void BackgroundUpdate(Sim &sim);
+private:
+	bool simRunning;
+	bool updating;
 };
 
 #endif /* PLAYGROUND_H_ */

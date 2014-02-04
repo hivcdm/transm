@@ -8,6 +8,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <stdio.h>
+#include <thread>
 #if defined(WIN32)
 #include <direct.h>
 #else
@@ -91,7 +92,8 @@ DisplayBox::DisplayBox(const wxString &title)
 	//Add two buttons to buttonsPanel
 	wxBoxSizer *hButtonBox = new wxBoxSizer(wxHORIZONTAL);
 	hButtonBox->Add(new wxButton(buttonsPanel, ID_BATCHSTATS, wxT("Set up BatchStats Output")), 1, wxALIGN_LEFT | wxALL, 5);
-	hButtonBox->Add(new wxButton(buttonsPanel, ID_RUN, wxT("Run")), 2, wxALIGN_RIGHT | wxALL, 5);
+	runButton = new wxButton(buttonsPanel, ID_RUN, wxT("Run"));
+	hButtonBox->Add(runButton, 2, wxALIGN_RIGHT | wxALL, 5);
 	buttonsPanel->SetSizer(hButtonBox);
 	prevalenceWidget = new verticalStatusWidget(prevalencePanel, wxID_ANY, &(this->currPrev), 1,
 	        wxString::Format(wxT("Current Percent Infected")));
@@ -147,6 +149,26 @@ DisplayBox::DisplayBox(const wxString &title)
 	Centre();
 }
 
+void DisplayBox::BackgroundUpdate(Sim &sim)
+{
+	{
+		wxCriticalSectionLocker lock(locker);
+		if(!simRunning)
+		{
+			return;
+		}
+	}
+	bool running = sim.Step();
+	{
+		wxCriticalSectionLocker lock(locker);
+		if(simRunning)
+		{
+			simRunning = running;
+		}
+		updating = false;
+	}
+}
+
 void DisplayBox::OnRun(wxCommandEvent &WXUNUSED(event))
 {
 	if(this->graphicsCheckbox->GetValue())
@@ -157,6 +179,22 @@ void DisplayBox::OnRun(wxCommandEvent &WXUNUSED(event))
 	else
 	{
 		*(this->summaryText) << wxT("No graphics will be generated.\n");
+	}
+
+	if(runButton->GetLabel() == "Run")
+	{
+		runButton->SetLabel("Stop");
+	}
+	else
+	{
+		{
+			wxCriticalSectionLocker lock(locker);
+			simRunning = false;
+		}
+
+		runButton->SetLabel("Run");
+
+		return;
 	}
 
 	//Reset the status bars to 0
@@ -190,18 +228,53 @@ void DisplayBox::OnRun(wxCommandEvent &WXUNUSED(event))
 		*(this->summaryText) << wxT("Running File: ") << filename << wxT("\n");
 		//Run simulation on selected file
 		*(this->textctrl) << wxT("Running simulation...\n");
-		Sim *s = new Sim(filesToRun[i], this);
 
-		//TODO: Change this to a general try-catch statement above?  Will need to change the constructor to throw the exception
-		if(!(s->getError()))
+		Sim s(filesToRun[i]);
+		s.Initialize();
+
+		simRunning = true;
+
+		while(true)
 		{
-			//Run the simulation the desired number of time steps
-			s->run(s->getMaxTime());
-			//Get CEPAC runStats from eventsParams and add to cepacSummaryStats
-			cepacSummaryStats->addRunStats(s->getCEPACRunStats());
-			//Get transmission popStats and add to transSummaryStats
-			transSummaryStats->addPopStats(s->getPopStats(), s->getEventParams());
-			delete s;
+			{
+				wxCriticalSectionLocker lock(locker);
+				if(!simRunning)
+				{
+					break;
+				}
+			}
+
+			updating = true;
+			std::thread backgroundThread(&DisplayBox::BackgroundUpdate, this, std::ref(s));
+
+			while(true)
+			{
+				{
+					wxCriticalSectionLocker lock(locker);
+					if(!updating)
+					{
+						break;
+					}
+				}
+				wxYield();
+				UpdateWindowUI();
+				Update();
+
+				currPrev = s.GetPrevalence();
+				currentIncidence = s.GetIncidence();
+				currentRunProgress = (100.0 * s.GetTime()) / s.GetTotalTime() + 0.5;
+			}
+
+			backgroundThread.join();
+
+			while(!s.GetEventParams()->outputMessageQueue.empty())
+			{
+				*(this->textctrl) << s.GetEventParams()->outputMessageQueue.front();
+				s.GetEventParams()->outputMessageQueue.pop_front();
+			}
+
+			textctrl->Refresh();
+			textctrl->Update();
 		}
 
 		*(this->textctrl) << wxT("Done!\n");
@@ -229,39 +302,8 @@ void DisplayBox::OnRun(wxCommandEvent &WXUNUSED(event))
 	//Clear files to run once they've been run
 	this->filesToRun.clear();
 	*(this->summaryText) << wxT("All runs completed!  Open another directory to run more...\n");
-	/*if defined(WIN32)
-		struct _finddata_t params_files;
-		long hasFile;
-		//Sim *s;
 
-		if ((hasFile = _findfirst("*.xml", &params_files)) == -1L){
-			*(this->textctrl) << wxT("No *.xml files to be found!\n");
-		}
-		else{
-			do{
-				//create the Simulation object
-				wxString wxFilename(params_files.name, wxConvUTF8);
-				*(this->textctrl) << wxT("About to run on ") << wxFilename << wxT("\n");
-				Sim *s = new Sim(params_files.name, this);
-				//close the file that we just wrote to
-				if (!(s->getError()))
-					delete s;
-
-				*(this->textctrl) << wxT("Done!\n");
-			} while ( _findnext(hasFile, &params_files) == 0);
-
-			_findclose(hasFile);
-		}
-	#endif
-	#if defined(__APPLE__)
-		*(this->textctrl) << wxT("Running simulation...\n");
-		Sim *s = new Sim("params.xml", this);
-
-		if (!(s->getError()))
-			delete s;
-		*(this->textctrl) << wxT("Done!\n");
-	#endif//#if defined(__APPLE__)* /
-		this->prevalenceWidget->Refresh();*/
+	runButton->SetLabel("Run");
 }
 
 void DisplayBox::OnOpen(wxCommandEvent &WXUNUSED(event))
@@ -343,6 +385,11 @@ void DisplayBox::OnOpen(wxCommandEvent &WXUNUSED(event))
 
 void DisplayBox::OnQuit(wxCommandEvent &WXUNUSED(event))
 {
+	{
+		wxCriticalSectionLocker lock(locker);
+		simRunning = false;
+	}
+
 	Close(true);
 }
 
