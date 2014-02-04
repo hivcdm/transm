@@ -1,15 +1,13 @@
 #pragma once
 
+#include <deque>
 #include <iostream>
 #include <fstream>
+#include <string>
 #include <vector>
+
 #include "../util/rand/RandomNums.h"
 #include "../Constants.h"
-#if !defined( CONSOLE )
-#include "../gui/DisplayBox.h"
-#else
-class DisplayBox;
-#endif
 #include "../cepac/include.h"
 
 //these are found in Constants.h
@@ -261,20 +259,12 @@ public :
 		}
 	}
 
-	//Used for printing to GUI output
-	DisplayBox *displaybox;
-
-	inline void displayOut(const char *message)
+	inline void displayOut(const std::string &message)
 	{
-#if !defined( CONSOLE )
-		wxString wxMessage(message, wxConvUTF8);
-		*(this->displaybox->textctrl) << wxMessage;
-		this->displaybox->textctrl->Update();
-		wxYield();
-#else
-		std::cout << message;
-#endif
+		outputMessageQueue.push_back(message);
 	}
+
+	std::deque<std::string> outputMessageQueue;
 
 	DebugLevel debugLevel;		//determines how much output is printed to the traces
 	RandomNums randomNums;		//random number generator that is used throughout the simulation
