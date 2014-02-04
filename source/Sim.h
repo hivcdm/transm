@@ -1,83 +1,97 @@
 #pragma once
 
 #include "data/EventParams.h"
-#ifndef CONSOLE
-#include "gui/DisplayBox.h"
-#endif
 #include "statistics/PopStats.h"
 #include "util/ticpp/ticpp.h"
 
 class Population;
 class InfectionsTracker;
-class DisplayBox;
 
 class Sim
 {
 public:
-	Sim(std::string xmlFile, DisplayBox *dbox);		//creates a simulation object
+	Sim(const std::string &xmlFile);		//creates a simulation object
 
 	~Sim();
 
-	void run(int numSteps);
+	void Initialize();
 
-	bool getError();				//returns XMLerror
+	bool Step();
 
-	int getMaxTime();				//returns this->maxTime
+	RunStats *GetCEPACRunStats();	//returns this->eventParams.cepacRunStats for adding to the general popstats
 
-	RunStats *getCEPACRunStats();	//returns this->eventParams.cepacRunStats for adding to the general popstats
+	PopStats *GetPopStats(); //returns this->population->popStats information for creating popStats-like file for transmission output
 
-	PopStats *getPopStats(); //returns this->population->popStats information for creating popStats-like file for transmission output
+	EventParams *GetEventParams();
 
-	EventParams *getEventParams();
+	double GetPrevalence() { return prevalence_; }
+
+	double GetIncidence() { return incidence_; }
+
+	int GetTotalTime() { return totalTime_; }
+
+	int GetTime() { return time_; }
 
 private:
+	void FirstStep();
+
+	void LastStep();
+
 	/** Returns true if all simContexts loaded correctly */
-	bool setCEPACSimContexts(ticpp::Element *cepacInterventionNode);
+	bool SetCEPACSimContexts(ticpp::Element *cepacInterventionNode);
 
 	/** */
-	bool setRolloutSimContexts(ticpp::Element *rolloutInterventionNode);
+	bool SetRolloutSimContexts(ticpp::Element *rolloutInterventionNode);
 
 	/** Sets the Non aids death from a cepac simcontext */
-	void setNonAidsDeathFromCepac(SimContext *cepacSimContext, std::vector<double> &_maleProbs ,
+	void SetNonAidsDeathFromCepac(SimContext *cepacSimContext, std::vector<double> &_maleProbs ,
 	                              std::vector<double> &_femaleProbs);
 
 	/** perform one timestep of simulation */
-	int timeStep();
+	int SimulateMonth();
 
 	/** Load new eligibility when rollout sim context changes */
-	void updateEligibility(ticpp::Element *rolloutInterventionNode);
+	void UpdateEligibility(ticpp::Element *rolloutInterventionNode);
 
 	/** loads the next set of input files if seq: returns false if no next input */
-	bool loadNextInput();
+	bool LoadInput(const std::string &xmlFile);
+
+	const std::string xmlFile_;
 
 	/** current time in the simulation */
-	int currTime;
-
-	/** time to end simulation */
-	int maxTime;
+	int time_;
 
 	/** number of months to run this file in a sequence*/
-	int seqRunTime;
+	int duration_;
 
 	/** pointer to current population */
-	Population *currPopulation;
+	Population *population_;
 
 	/** housekeeping parameters that are universal to each event in the simulation */
-	EventParams eventParams;
-
-	/** True if there was an error parsing the XML input file */
-	bool XMLerror;
+	EventParams parameters_;
 
 	/** determines whether this simulation is a sequence of .xml files */
-	bool isSeq;
+	bool isSequence_;
 
 	/** position in sequence */
-	int seqPos;
+	int sequencePosition_;
 
 	/** number of total files in sequence */
-	int numInSeq;
+	int numberInSequence_;
 
 	/** number of months to delay application of initial prevalence inputs */
-	int delayPrevalence;
+	int prevalenceDelay_;
+
+	bool failedCalibration_;
+
+	bool hasPassedFirstMonthCalibPrev_;
+
+	int monthOfFirstMonthCalibPrev_;
+
+	int totalTime_;
+
+	double incidence_;
+
+	double prevalence_;
 };
 
