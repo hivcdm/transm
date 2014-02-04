@@ -23,7 +23,36 @@ void Util::findInputFiles(const std::string &inputDirectory)
 		{
 			if(boost::filesystem::is_regular_file(dir_iter->status()) && dir_iter->path().extension() == ".xml")
 			{
-				transmFilesToRun.push_back(dir_iter->path().string());
+                auto stem = dir_iter->path().stem().string();
+                auto suffixPosition = stem.rfind("_seq");
+                bool valid = false;
+                
+                if(suffixPosition != std::string::npos)
+                {
+                    size_t sequenceIndexDigits = stem[suffixPosition + 4] == '0' ? 1 : 2;
+                    if(sequenceIndexDigits > 0 && sequenceIndexDigits <= 2)
+                    {
+                        std::string sequenceIndexString(stem.begin() + suffixPosition + 6 - sequenceIndexDigits, stem.end());
+                        try
+                        {
+                            auto sequenceIndex = std::stoi(sequenceIndexString);
+                            valid = sequenceIndex == 1;
+                        }
+                        catch (std::exception)
+                        {
+                            
+                        }
+                    }
+                }
+                else
+                {
+                    valid = true;
+                }
+                
+                if(valid)
+                {
+                    transmFilesToRun.push_back(dir_iter->path().string());
+                }
 			}
 		}
 	}

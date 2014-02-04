@@ -654,7 +654,7 @@ bool Sim::LoadInput(const std::string &xmlFile)
 		parameters_.displayOut("Simulation Parameters\n");
 		ticpp::Element *simParams = doc.FirstChildElement("simulation");
 		//save run time for sequences
-		duration_ = simParams->FirstChildElement("timeRunSeq")->GetText<int>();
+		duration_ += simParams->FirstChildElement("timeRunSeq")->GetText<int>();
 		parameters_.displayOut("\tTime steps = ");
 		parameters_.displayOut(boost::lexical_cast<std::string>(duration_).c_str());
 		parameters_.displayOut("\n");
@@ -665,6 +665,8 @@ bool Sim::LoadInput(const std::string &xmlFile)
 
 		ticpp::Element *rolloutInterventionNode = simParams->FirstChildElement("population")->FirstChildElement("interventions")->FirstChildElement("artRolloutIntervention");
 		UpdateEligibility(rolloutInterventionNode);
+        
+        sequencePosition_++;
 	}
 
 	return true;
