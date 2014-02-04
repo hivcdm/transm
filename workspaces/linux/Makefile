@@ -78,7 +78,7 @@ CC = gcc
 CFLAGS = -I. -O3 -D__LINUX__
 CXX = g++
 CXXFLAGS = -I. -O3 -std=c++11 -D__LINUX__ -I/PHShome/nna6/build/boost_1_55_0/
-LDFLAGS = -lm -ldl -lpthread
+LDFLAGS = -lm -ldl -lpthread -lboost_filesystem -lboost_system
 
 #rules for compiling C and CPP files
 .SUFFIXES: .c .cpp
