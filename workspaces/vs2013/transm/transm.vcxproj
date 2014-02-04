@@ -122,7 +122,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(boostpath)\include;$(wxpath)\include\msvc;$(wxpath)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\taf656\Development\libraries\boost\boost_1_55_0;$(wxpath)\include\msvc;$(wxpath)\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>TIXML_USE_TICPP;_CRT_SECURE_NO_WARNINGS;WIN32;WXUSINGDLL;wxMSVC_VERSION_AUTO;__WXMSW__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4703</DisableSpecificWarnings>
     </ClCompile>
@@ -153,7 +153,6 @@
     <ClCompile Include="..\..\..\source\entities\Male.cpp" />
     <ClCompile Include="..\..\..\source\entities\Person.cpp" />
     <ClCompile Include="..\..\..\source\graphviz\graphVizParse.cpp" />
-    <ClCompile Include="..\..\..\source\main.cpp" />
     <ClCompile Include="..\..\..\source\Population.cpp" />
     <ClCompile Include="..\..\..\source\PopulationParams.cpp" />
     <ClCompile Include="..\..\..\source\Sim.cpp" />
@@ -165,9 +164,6 @@
     <ClCompile Include="..\..\..\source\statistics\TabularOutput.cpp" />
     <ClCompile Include="..\..\..\source\statistics\TransmissionSummaryStats.cpp" />
     <ClCompile Include="..\..\..\source\util\rand\RandomNums.cpp" />
-    <ClCompile Include="..\..\..\source\util\sqlite\sqlite3.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\util\ticpp\ticpp.cpp" />
     <ClCompile Include="..\..\..\source\util\ticpp\tinystr.cpp" />
     <ClCompile Include="..\..\..\source\util\ticpp\tinyxml.cpp" />
@@ -207,8 +203,6 @@
     <ClInclude Include="..\..\..\source\util\rand\Distributions.h" />
     <ClInclude Include="..\..\..\source\util\rand\IsaacRand.h" />
     <ClInclude Include="..\..\..\source\util\rand\RandomNums.h" />
-    <ClInclude Include="..\..\..\source\util\sqlite\sqlite3.h" />
-    <ClInclude Include="..\..\..\source\util\sqlite\sqlite3ext.h" />
     <ClInclude Include="..\..\..\source\util\ticpp\ticpp.h" />
     <ClInclude Include="..\..\..\source\util\ticpp\ticpprc.h" />
     <ClInclude Include="..\..\..\source\util\ticpp\tinystr.h" />
