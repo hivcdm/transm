@@ -48,6 +48,12 @@ int main(int argc, char *argv[])
 				s.GetEventParams()->outputMessageQueue.pop_front();
 			}
 		}
+        
+        while(!s.GetEventParams()->outputMessageQueue.empty())
+        {
+            std::cout << s.GetEventParams()->outputMessageQueue.front();
+            s.GetEventParams()->outputMessageQueue.pop_front();
+        }
 
 		cepacSummaryStats->addRunStats(s.GetCEPACRunStats());
 		transSummaryStats->addPopStats(s.GetPopStats(), s.GetEventParams());

@@ -285,6 +285,12 @@ bool Sim::Step()
 
 void Sim::LastStep()
 {
+    if(parameters_.outputTrace[EventParams::LE])
+    {
+        //population_->popStats->printLEStats(parameters_.traceStreams[EventParams::LE], time_);
+        population_->popStats->lifeMonthsTracker.PrintSummary(parameters_.traceStreams[EventParams::LE]);
+    }
+    
 	//print survival statistics
 	if(parameters_.outputTrace[EventParams::SURVIVAL])
 	{
@@ -645,6 +651,9 @@ bool Sim::LoadInput(const std::string &xmlFile)
 		{
 			population_->popStats->enableShiftedOutcomes(parameters_.monthOf1990);
 		}
+        
+        population_->popStats->lifeMonthsTracker.SetStartTime(60);
+        population_->popStats->lifeMonthsTracker.SetEndTime(-1);
 
 		sequencePosition_++;
 	}

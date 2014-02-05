@@ -113,6 +113,7 @@ Population::Population(EventParams &_eventParams, ticpp::Element *_popParamsNode
 	} //for(ageBucket = 0...
 
 	popStats->artTracker.SetAgeRanges(currSizeByAgeRange);
+    popStats->lifeMonthsTracker.SetAgeRanges(currSizeByAgeRange);
 
 	if(_eventParams.outputTrace[EventParams::SINGLEPERSON])
 	{
@@ -493,19 +494,6 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 				}
 			}
 
-			if(_eventParams.useRollout && _eventParams.treatedContext && p->isInfected())
-			{
-				if(p->isOnArt())
-				{
-					popStats->recordTreatmentEligiblity(p); // if they're on treatment, they should be counted as eligible even if the treatment has worked
-					popStats->recordTreatment(p);
-				}
-				else if(p->isEligibleForTreatment(_eventParams.treatedContext->getTreatmentInputs()->startART[0]))
-				{
-					popStats->recordTreatmentEligiblity(p);
-				}
-			}
-
 			//Update cost
 			this->popStats->costsTracker.addCost(CEPACcost, CostsTracker::CEPAC, _eventParams.currTime);
 
@@ -596,6 +584,24 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 				p->quitSexWork(_eventParams);
 				this->entities->refreshDmgProfileBucket(p, &p_Iter);
 			}
+            
+			if(_eventParams.useRollout && _eventParams.treatedContext && p->isInfected())
+			{
+				if(p->isOnArt())
+				{
+					popStats->recordTreatmentEligiblity(p); // if they're on treatment, they should be counted as eligible even if the treatment has worked
+					popStats->recordTreatment(p);
+				}
+				else if(p->isEligibleForTreatment(_eventParams.treatedContext->getTreatmentInputs()->startART[0]))
+				{
+					popStats->recordTreatmentEligiblity(p);
+				}
+			}
+            
+            if(popStats->lifeMonthsTracker.IsTimeToRecord(_eventParams.currTime))
+            {
+                popStats->lifeMonthsTracker.RecordLifeMonth(p);
+            }
 
 			p_Iter++;
 		}//while (p_Iter != this->entities->end(gender))

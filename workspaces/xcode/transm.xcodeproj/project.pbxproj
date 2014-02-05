@@ -63,6 +63,7 @@
 		E939A39918A1517A00525631 /* tinyxmlerror.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E939A35918A1517A00525631 /* tinyxmlerror.cpp */; };
 		E939A39A18A1517A00525631 /* tinyxmlparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E939A35A18A1517A00525631 /* tinyxmlparser.cpp */; };
 		E939A39B18A1517A00525631 /* Util.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E939A35C18A1517A00525631 /* Util.cpp */; };
+		E939A39E18A1719900525631 /* LifeMonthsTracker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E939A39C18A1719900525631 /* LifeMonthsTracker.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -202,6 +203,9 @@
 		E939A35C18A1517A00525631 /* Util.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Util.cpp; sourceTree = "<group>"; };
 		E939A35D18A1517A00525631 /* Util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Util.h; sourceTree = "<group>"; };
 		E939A35E18A1517A00525631 /* XMLUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XMLUtil.h; sourceTree = "<group>"; };
+		E939A39C18A1719900525631 /* LifeMonthsTracker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LifeMonthsTracker.cpp; sourceTree = "<group>"; };
+		E939A39D18A1719900525631 /* LifeMonthsTracker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LifeMonthsTracker.h; sourceTree = "<group>"; };
+		E939A39F18A17BF200525631 /* LifeMonthsBucket.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LifeMonthsBucket.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -408,6 +412,9 @@
 		E939A33718A1517A00525631 /* statistics */ = {
 			isa = PBXGroup;
 			children = (
+				E939A39F18A17BF200525631 /* LifeMonthsBucket.h */,
+				E939A39C18A1719900525631 /* LifeMonthsTracker.cpp */,
+				E939A39D18A1719900525631 /* LifeMonthsTracker.h */,
 				E939A33818A1517A00525631 /* ArtRolloutTracker.cpp */,
 				E939A33918A1517A00525631 /* ArtRolloutTracker.h */,
 				E939A33A18A1517A00525631 /* Bucket.h */,
@@ -587,6 +594,7 @@
 				E939A38F18A1517A00525631 /* CostsTracker.cpp in Sources */,
 				E939A37A18A1517A00525631 /* DmgProfile.cpp in Sources */,
 				E939A37018A1517A00525631 /* RunStats.cpp in Sources */,
+				E939A39E18A1719900525631 /* LifeMonthsTracker.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
