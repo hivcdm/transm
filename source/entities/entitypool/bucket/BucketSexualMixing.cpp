@@ -571,7 +571,7 @@ bool BucketSexualMixing::increaseInfected(Person *_person)
 
 	int index = this->getCorrectBufferIndex(_person);
 
-	if(index >= this->personsByAge->size())
+	if(index >= static_cast<int>(personsByAge->size()))
 	{
 		//_person is not in this Bucket collection
 		return false;
@@ -587,7 +587,7 @@ void BucketSexualMixing::changeHIVStatus(Person *_p, Person::HIVStatus _orig, Pe
 {
 	int index = this->getCorrectBufferIndex(_p);
 
-	if(index >= this->personsByAge->size())
+	if(index >= static_cast<int>(personsByAge->size()))
 	{
 		return;
 	}

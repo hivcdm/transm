@@ -256,7 +256,7 @@ void FullVector::add(Person *p, int num)
 //TESTED
 Person *FullVector::selectout(int index)
 {
-	if(index < vPerson.size())
+	if(index < static_cast<int>(vPerson.size()))
 	{
 		Person *p = vPerson[index];
 		Person *p2 = vPerson.back();
@@ -288,7 +288,7 @@ Person *FullVector::selectout(int index)
 //TESTED
 bool FullVector::swapelements(int index1, int index2)
 {
-	if(index1 < vPerson.size() && index2 < vPerson.size())
+	if(index1 < static_cast<int>(vPerson.size()) && index2 < static_cast<int>(vPerson.size()))
 	{
 		Person *p1 = vPerson[index1];
 		Person *p2 = vPerson[index2];

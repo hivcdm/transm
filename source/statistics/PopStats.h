@@ -7,7 +7,6 @@
 #include "ArtRolloutTracker.h"
 #include "CostsTracker.h"
 #include "InfectionsTracker.h"
-#include "LifeMonthsTracker.h"
 #include "StatsRecord.h"
 #include "../data/Enum.h"
 #include "../entities/classifiers/SexualPartnership.h"
@@ -156,8 +155,6 @@ public:
 	CostsTracker costsTracker;			//tallies all costs
 
 	ArtRolloutTracker artTracker; // records art rollout outcomes
-    
-    LifeMonthsTracker lifeMonthsTracker;
 
 	EnumCls<PopStats::LifeStats> *enumClass; //used in lifeStats; declared here so that deletion is possible
 

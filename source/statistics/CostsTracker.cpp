@@ -15,6 +15,19 @@ const char CostsTracker::CostSourcesStr[CostsTracker::EndCostSources][24] =
 	"CEPAC",
 };
 
+void CostsTracker::recordLifeMonth(Person::HIVStatus status, int time)
+{
+	//Check to see if a MonthlyCost already exists for this time
+	while(static_cast<size_t>(time) >= allCosts.size())
+	{
+		//Else create one
+		MonthlyCosts *monthlyCosts = new MonthlyCosts();
+		allCosts.push_back(monthlyCosts);
+	}
+
+	allCosts[time]->LifeMonths[status]++;
+}
+
 CostsTracker::MonthlyCosts::MonthlyCosts()
 {
 	//Initialize all costs to 0

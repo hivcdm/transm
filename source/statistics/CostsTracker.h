@@ -11,6 +11,8 @@
 #include <fstream>
 #include <vector>
 
+#include "../entities/Person.h"
+
 class CostsTracker
 {
 
@@ -20,8 +22,15 @@ public:
 	{
 		CIRCUMCISION,
 		CONDOMS,
-		//PrEP,
-		CEPAC,
+		ART1,
+		ART2,
+		ART3,
+		ART4,
+		CD4TESTS,
+		HVLTESTS,
+		CLINIC_VISITS,
+		TOXICITY,
+		DIRECT_MEDICAL,
 		EndCostSources
 	};
 
@@ -33,6 +42,8 @@ public:
 		MonthlyCosts();
 
 		double Costs[EndCostSources];
+
+		int LifeMonths[Person::ENDHIVStatus];
 
 		double getTotalCosts();
 	};
@@ -64,6 +75,8 @@ public:
 
 	//Add a cost
 	void addCost(double _cost, CostsTracker::CostSources _costSource, int _currTime);
+
+	void recordLifeMonth(Person::HIVStatus status, int time);
 
 	//print all costs (call at end of simulation)
 	void printCosts(std::ostream &_outStream);

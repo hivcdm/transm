@@ -14,6 +14,7 @@
 #include "../graphviz/graphVizParse.h"
 
 class ArtRolloutTracker;
+class CostsTracker;
 class EntityPool;
 class EventParams;
 class FullVector;
@@ -323,7 +324,7 @@ public:
 	//update health status of HIV infected people -- i.e. cd4, hvl, art, etc.
 	//  in version 1, this information is taken from CEPAC model
 	// @returns: costs (accrued in CEPAC) of updating health
-	double updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTracker);
+	double updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTracker, CostsTracker *costsTracker);
 
 	//Call this after all transmission/population dynamics are done.
 	//Runs infected through CEPAC until they die and adds their LM etc to CEPAC stats

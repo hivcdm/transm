@@ -33,7 +33,7 @@ public :
 		NormalDist activityLevel; //Distribution of activity level (i.e. marbles)
 
 		//the age that partnering discount will start
-		double partneringDiscStartAgeYrs;
+		int partneringDiscStartAgeYrs;
 		//partnering acquisition rates get discounted every year
 		double partneringAcqDiscPerYr;
 		//coital acts/month get discounted every year

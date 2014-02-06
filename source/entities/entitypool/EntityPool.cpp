@@ -32,9 +32,9 @@ void EntityPool::print(ostream &_outStream)
 {
 	DmgProfileBucket *bucket = NULL;
 	//iterate through all buckets
-	int currBucketIndex = 0;
+	size_t currBucketIndex = 0;
 
-	while(currBucketIndex < this->entityBuckets->size())
+	while(currBucketIndex < entityBuckets->size())
 	{
 		bucket = this->entityBuckets->at(currBucketIndex);
 
@@ -60,7 +60,7 @@ void EntityPool::print(ostream &_outStream)
 void EntityPool::printBucketLabels(ostream &_outStream, bool _printPropInfected)
 {
 	DmgProfileBucket *bucket = NULL;
-	int currBucketIndex = 0;
+	size_t currBucketIndex = 0;
 
 	//iterate through all buckets
 	while(currBucketIndex < this->entityBuckets->size())
@@ -102,7 +102,7 @@ void EntityPool::printBucketSizes(ostream &_outStream, string _prefix, bool _pri
 	_totalInRegular = 0;
 	_totalSexuallyActive = 0;
 	DmgProfileBucket *bucket = NULL;	//pointer to current DmgProfileBucket we are looking at
-	int currBucketIndex = 0;		//the ProfileID of the current DmgProfileBucket we are looking at
+	size_t currBucketIndex = 0;		//the ProfileID of the current DmgProfileBucket we are looking at
 
 	//iterate through all buckets and append current DmgProfileBucket sizes to a string buffer
 	while(currBucketIndex < this->entityBuckets->size())
@@ -265,7 +265,7 @@ unsigned long EntityPool::size()
 {
 	DmgProfileBucket *bucket = NULL;
 	unsigned long size = 0;		//total of the zie
-	int currBucketIndex = 0;
+	size_t currBucketIndex = 0;
 
 	//iterate through all buckets
 	while(currBucketIndex < this->entityBuckets->size())
@@ -306,7 +306,7 @@ unsigned long EntityPool::sizeNotSexuallyActive()
 {
 	DmgProfileBucket *bucket = NULL;
 	unsigned long size = 0;		//total of the zie
-	int currBucketIndex = 0;
+	size_t currBucketIndex = 0;
 
 	//iterate through all buckets
 	while(currBucketIndex < this->entityBuckets->size())
@@ -337,7 +337,7 @@ unsigned long EntityPool::sizeNotSexuallyActive(DmgProfile::Gender _gender)
 {
 	DmgProfileBucket *bucket = NULL;
 	unsigned long size = 0;		//total of the zie
-	int currBucketIndex = 0;
+	size_t currBucketIndex = 0;
 
 	//iterate through all buckets
 	while(currBucketIndex < this->entityBuckets->size())
@@ -354,7 +354,7 @@ unsigned long EntityPool::sizeNotSexuallyActive(DmgProfile::Gender _gender)
 		//Only add the sizes of non-sexually active buckets that match demographic profile
 		if(DmgProfile::get(bucket->getProfileID(), DmgProfile::SEXUAL_ACTIVITY_STATUS) == DmgProfile::NA)
 		{
-			if(DmgProfile::get(bucket->getProfileID(), DmgProfile::GENDER) == _gender)
+			if(DmgProfile::get(bucket->getProfileID(), DmgProfile::GENDER) == static_cast<BaseEnumCls::Enum>(_gender))
 			{
 				size += this->entityBuckets->at(currBucketIndex)->size();
 			}
@@ -371,7 +371,7 @@ unsigned long EntityPool::sizeSexuallyActive(DmgProfile::Gender _gender, Person:
 {
 	DmgProfileBucket *bucket = NULL;
 	unsigned long size = 0;		//total of the zie
-	int currBucketIndex = 0;
+	size_t currBucketIndex = 0;
 
 	//iterate through all buckets
 	while(currBucketIndex < this->entityBuckets->size())
@@ -388,7 +388,7 @@ unsigned long EntityPool::sizeSexuallyActive(DmgProfile::Gender _gender, Person:
 		//Only add the sizes of sexually active buckets that match demographic profile
 		if(DmgProfile::get(bucket->getProfileID(), DmgProfile::SEXUAL_ACTIVITY_STATUS) == DmgProfile::SA)
 		{
-			if(DmgProfile::get(bucket->getProfileID(), DmgProfile::GENDER) == _gender)
+			if(DmgProfile::get(bucket->getProfileID(), DmgProfile::GENDER) == static_cast<BaseEnumCls::Enum>(_gender))
 			{
 				size += ((BucketSexualMixing *)(this->entityBuckets->at(currBucketIndex)))->sizeRisk(_risk);
 			}
@@ -404,7 +404,7 @@ unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMo
 {
 	DmgProfileBucket *bucket = NULL;
 	unsigned long size = 0;		//total of the zie
-	int currBucketIndex = 0;
+	size_t currBucketIndex = 0;
 
 	//iterate through all buckets
 	while(currBucketIndex < this->entityBuckets->size())
@@ -435,7 +435,7 @@ unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMo
 {
 	DmgProfileBucket *bucket = NULL;
 	unsigned long size = 0;		//total of the zie
-	int currBucketIndex = 0;
+	size_t currBucketIndex = 0;
 
 	//iterate through all buckets
 	while(currBucketIndex < this->entityBuckets->size())
@@ -452,7 +452,7 @@ unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMo
 		//Only add the sizes of sexually active buckets
 		if(DmgProfile::get(bucket->getProfileID(), DmgProfile::SEXUAL_ACTIVITY_STATUS) == DmgProfile::SA)
 		{
-			if(DmgProfile::get(bucket->getProfileID(), DmgProfile::GENDER) == _gender)
+			if(DmgProfile::get(bucket->getProfileID(), DmgProfile::GENDER) == static_cast<BaseEnumCls::Enum>(_gender))
 			{
 				size += ((BucketSexualMixing *)(this->entityBuckets->at(currBucketIndex)))->sizeByAge(minAgeMonths, maxAgeMonths);
 			}

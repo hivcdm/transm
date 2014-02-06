@@ -198,7 +198,7 @@ double Male::SubPopParams::getCondomProtectEff()  const
 
 int Male::SubPopParams::getPartneringDiscStartAgeYrs() const
 {
-	return this->partneringDiscStartAgeYrs;
+	return partneringDiscStartAgeYrs;
 }
 
 double Male::SubPopParams::getPartneringAcqDiscMult(int _ageYrs) const
@@ -451,8 +451,8 @@ bool Male::possibleMatch(SexualPartnership::Type _partnershipType, Person *_p)
 	assert(_p->isAlive());
 	assert(_partnershipType < SexualPartnership::ENDType);
 	assert(false);  // check if we are using years instead of Month
-	int minAge = this->getMinPartnerSelectVal(Person::AGE, _partnershipType);
-	int maxAge = this->getMaxPartnerSelectVal(Person::AGE, _partnershipType);
+	int minAge = static_cast<int>(getMinPartnerSelectVal(Person::AGE, _partnershipType));
+	int maxAge = static_cast<int>(getMaxPartnerSelectVal(Person::AGE, _partnershipType));
 	return Util::withinRange(_p->getAge(MONTH), minAge, maxAge);
 }
 

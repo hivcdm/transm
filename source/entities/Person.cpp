@@ -8,6 +8,7 @@
 #include "../util/rand/RandomNums.h"
 #include "../statistics/InfectionsTracker.h"
 #include "../statistics/ArtRolloutTracker.h"
+#include "../statistics/CostsTracker.h"
 
 class EntityPool;
 
@@ -989,31 +990,29 @@ bool Person::rollForDeath(RandomNums &_randomNums)
 
 		//if this person is past Person::maxYrForDeathStats, they should not be alive
 		//get the correct probability of death for this person's gender and age
-		if(this->getAge(YEAR) >= Person::probDeathNatCauses[this->getDmgProfileVal(DmgProfile::GENDER)].size())
+		if(getAge(YEAR) >= static_cast<int>(Person::probDeathNatCauses[getDmgProfileVal(DmgProfile::GENDER)].size()))
 		{
-			cout << "The age is " << this->getAge(YEAR) << endl;
+			cout << "The age is " << getAge(YEAR) << endl;
 		}
 
 		double deathRate = Person::probDeathNatCauses[this->getDmgProfileVal(DmgProfile::GENDER)].at(this->getAge(YEAR));
-		this->death = _randomNums.chance(deathRate);
+		death = _randomNums.chance(deathRate);
 
-		if(this->death)
+		if(death)
 		{
-			this->deathStatus = DTH_NONAIDS;
+			deathStatus = DTH_NONAIDS;
 		}
 	}
 
 	//if they died, collect statistics
-	if(this->death)
+	if(death)
 	{
-		this->stats.setStat(STAT_TOTAL_LM, this->getAge(MONTH));
-		this->stats.setStat(STAT_HIV_NEG_LM,
-		                    this->getAge(MONTH) - (this->isInfected() ? this->stats.getStat(STAT_TIME_OF_INFECTION_MTH) : 0));
-		this->stats.setStat(STAT_HIV_POS_POSTINFECT_LM,
-		                    this->stats.getStat(STAT_TOTAL_LM) - this->stats.getStat(STAT_AGE_AT_INFECTION_MTH));
+		stats.setStat(STAT_TOTAL_LM, getAge(MONTH));
+		stats.setStat(STAT_HIV_NEG_LM, getAge(MONTH) - (isInfected() ? stats.getStat(STAT_TIME_OF_INFECTION_MTH) : 0));
+		stats.setStat(STAT_HIV_POS_POSTINFECT_LM, stats.getStat(STAT_TOTAL_LM) - stats.getStat(STAT_AGE_AT_INFECTION_MTH));
 	}
 
-	return this->death;
+	return death;
 }
 
 void Person::setCurrBucketProfileID(DmgProfile::ProfileID _profileID)
@@ -1122,7 +1121,35 @@ Person *Person::sexualActivity(Person *_p, int _numActs, SexualPartnership::Type
 	return NULL;
 }
 
-double Person::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTracker)
+std::array<double, 9> getCosts(const RunStats::OverallCosts *overallCosts, int artRegimen)
+{
+	assert(artRegimen < 4);
+
+	std::array<double, 9> costs;
+
+	costs[artRegimen] = overallCosts->directCostsARTLine[artRegimen];
+	costs[4] = overallCosts->costsCD4Testing;
+	costs[5] = overallCosts->costsHVLTesting;
+	costs[6] = overallCosts->costsClinicVisits;
+	costs[7] = overallCosts->costsToxicity;
+	costs[8] = overallCosts->totalUndiscountedCosts[SimContext::COST_DIR_MED];
+
+	return costs;
+}
+
+std::array<double, 9> getDifference(const std::array<double, 9> &minuend, const std::array<double, 9> &subtrahend)
+{
+	std::array<double, 9> costs;
+
+	for(int i = 0; i < 9; ++i)
+	{
+		costs[i] = minuend[i] - subtrahend[i];
+	}
+
+	return costs;
+}
+
+double Person::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTracker, CostsTracker *costsTracker)
 {
 	//if this person has died, then don't update.
 	if(!this->isAlive())
@@ -1154,9 +1181,26 @@ double Person::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 	//run this person's patient info one month forward in CEPAC
 	this->cepacPatient->simulateMonth();
 	RunStats::HIVScreening hivScreeningAfter = *_eventParams.cepacRunStats->getHIVScreening();
+
+	auto costsBefore = getCosts(cepacPatient->getRunStats()->getOverallCosts(), cepacPatient->getARTState()->currRegimenNum);
+
 	//Update this patient's costs
 	costThisMonth = this->cepacPatient->getGeneralState()->costsDiscounted - this->CEPACcosts;
 	this->CEPACcosts = this->cepacPatient->getGeneralState()->costsDiscounted;
+
+	//auto discountFactor = cepacPatient->getGeneralState()->discountFactor;
+	auto costsAfter = getCosts(cepacPatient->getRunStats()->getOverallCosts(), cepacPatient->getARTState()->currRegimenNum);
+	auto costs = getDifference(costsAfter, costsBefore);
+
+	costsTracker->addCost(costs[0], CostsTracker::ART1, _eventParams.currTime);
+	costsTracker->addCost(costs[1], CostsTracker::ART2, _eventParams.currTime);
+	costsTracker->addCost(costs[2], CostsTracker::ART3, _eventParams.currTime);
+	costsTracker->addCost(costs[3], CostsTracker::ART4, _eventParams.currTime);
+	costsTracker->addCost(costs[4], CostsTracker::CD4TESTS, _eventParams.currTime);
+	costsTracker->addCost(costs[5], CostsTracker::HVLTESTS, _eventParams.currTime);
+	costsTracker->addCost(costs[6], CostsTracker::CLINIC_VISITS, _eventParams.currTime);
+	costsTracker->addCost(costs[7], CostsTracker::TOXICITY, _eventParams.currTime);
+	costsTracker->addCost(costs[8], CostsTracker::DIRECT_MEDICAL, _eventParams.currTime);
 
 	//update HVL and CD4 for this Person if they are infected
 	if(this->isInfected())
@@ -1419,7 +1463,7 @@ bool Person::addFVindices(int index, FullVector *FV)
 
 			for(iter = FVindex->begin(); iter != FVindex->end(); iter++)
 			{
-				if(*iter == index)
+				if(static_cast<int>(*iter) == index)
 				{
 					indexAlreadyInFVindices = true;
 					break;
@@ -1473,7 +1517,7 @@ bool Person::removeFVindices(int index, FullVector *FV)
 
 			for(iter = FVindex->begin(); iter != FVindex->end(); iter++)
 			{
-				if(*iter == index)
+				if(static_cast<int>(*iter) == index)
 				{
 					FVindex->erase(iter);
 
@@ -1508,7 +1552,7 @@ bool Person::memberFVindices(int index, FullVector *FV)
 
 		for(iter = FVindex.begin(); iter != FVindex.end(); iter++)
 		{
-			if(*iter == index)
+			if(static_cast<int>(*iter) == index)
 			{
 				return true;
 			}

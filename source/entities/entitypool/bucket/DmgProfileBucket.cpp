@@ -1,8 +1,17 @@
-#include "DmgProfileBucket.h"
-#include "../../Person.h"
 #include <assert.h>
 #include <algorithm>
+
+#include "DmgProfileBucket.h"
+#include "../../Person.h"
+
 class RandomNums;
+
+/**
+* mark a function parameter as unused and avoid
+* the corresponding compiler warning.
+* wrap around the parameter name, e.g. void f(int UNUSED(x))
+**/
+#define UNUSED(param)
 
 //------------< Begin Implemented Methods >----------------//
 //returns the DmgProfileBucket's ID number
@@ -49,7 +58,7 @@ Person *DmgProfileBucket::drawMember(RandomNums &_randomNums, SexualPartnership:
 	return removed;
 }
 
-Person *DmgProfileBucket::drawMember(RandomNums &_randomNums, Person */*_chooser*/,
+Person *DmgProfileBucket::drawMember(RandomNums &_randomNums, Person *UNUSED(_chooser),
                                      SexualPartnership::Type _partnershipType, bool _remove)
 {
 	//we have to implement the more complicated drawing process

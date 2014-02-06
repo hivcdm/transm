@@ -245,7 +245,7 @@ public :
 		{
 			int yearRelativeTo2002 = (currTime - monthOf2002) / 12;
 
-			if(yearRelativeTo2002 < targetYearlyRolloutProportions.size() - 1)
+			if(yearRelativeTo2002 < static_cast<int>(targetYearlyRolloutProportions.size() - 1))
 			{
 				double currentYearTargetProportion = targetYearlyRolloutProportions[yearRelativeTo2002];
 				double nextYearTargetProportion = targetYearlyRolloutProportions[yearRelativeTo2002 + 1];

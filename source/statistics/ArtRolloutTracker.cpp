@@ -224,7 +224,7 @@ void ArtRolloutTracker::buildRow(int time, Population *_population)
 		{
 			PushElement(counter.GetCount(outcome, std::make_pair("gender", gender), std::make_pair("sexualActivityStatus", DmgProfile::NA)));
 
-			for(int ageGroup = 0; ageGroup < ageRanges.size(); ++ageGroup)
+			for(size_t ageGroup = 0; ageGroup < ageRanges.size(); ++ageGroup)
 			{
 				PushElement(counter.GetCount(outcome, std::make_pair("gender", gender), std::make_pair("sexualActivityStatus", DmgProfile::SA), std::make_pair("ageGroup", ageGroup)));
 			}

@@ -133,9 +133,8 @@ void SexualPartnership::printPartners(ostream &_outStream, string _prefix)
 void SexualPartnership::saveState(ostream &_outStream, int personID, long currTime)
 {
 	//Saves the type of partnership, the id of partner, and months left in partnership
-	int partnerID = this->partners[0]->getID() == personID ? this->partners[1]->getID() : this->partners[0]->getID();
-	_outStream << "{type:" << this->type << ", partID:" << partnerID << ",tLeft:" << this->timePartnerDissolution - currTime
-	           << "}";
+	auto partnerID = static_cast<int>(partners[0]->getID()) == personID ? partners[1]->getID() : partners[0]->getID();
+	_outStream << "{type:" << type << ", partID:" << partnerID << ",tLeft:" << timePartnerDissolution - currTime << "}";
 }
 SexualPartnership::~SexualPartnership()
 {

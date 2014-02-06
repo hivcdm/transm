@@ -274,7 +274,7 @@ void DmgProfile::selectProfileIDs(std::vector<ProfileID> &_selected, const std::
 		DmgProfile::initProfileIDMap();
 	}
 
-	int i = 0;
+	size_t i = 0;
 
 	if(_available)
 	{
@@ -425,7 +425,7 @@ const string *DmgProfile::toString(ProfileID _profileID)
 
 void DmgProfile::deallocStaticMembers()
 {
-	for(int i = 0; i < DmgProfile::ProfileIDtoProfile.size(); ++i)
+	for(size_t i = 0; i < DmgProfile::ProfileIDtoProfile.size(); ++i)
 	{
 		delete DmgProfile::ProfileIDtoProfile.at(i);
 		DmgProfile::ProfileIDtoProfile.at(i) = NULL;

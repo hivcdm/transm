@@ -30,7 +30,7 @@ public:
 			return false;
 		}
 
-		for(int i = 0; i < values_.size(); i++)
+		for(size_t i = 0; i < values_.size(); i++)
 		{
 			if(values_[i] != other.values_[i])
 			{

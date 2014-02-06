@@ -113,7 +113,6 @@ Population::Population(EventParams &_eventParams, ticpp::Element *_popParamsNode
 	} //for(ageBucket = 0...
 
 	popStats->artTracker.SetAgeRanges(currSizeByAgeRange);
-    popStats->lifeMonthsTracker.SetAgeRanges(currSizeByAgeRange);
 
 	if(_eventParams.outputTrace[EventParams::SINGLEPERSON])
 	{
@@ -483,7 +482,7 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 
 			Person::HIVStatus oldStatus = p->hivStatus;
 			//update their health status
-			double CEPACcost = p->updateHealthStatus(_eventParams, &popStats->artTracker);
+			p->updateHealthStatus(_eventParams, &popStats->artTracker, &popStats->costsTracker);
 
 			if(oldStatus != p->hivStatus)
 			{
@@ -493,9 +492,6 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 					        p->hivStatus);
 				}
 			}
-
-			//Update cost
-			this->popStats->costsTracker.addCost(CEPACcost, CostsTracker::CEPAC, _eventParams.currTime);
 
 			//see whether this person has died.
 			//if this person was a couple, then will push living members to personsToAdd
@@ -597,11 +593,8 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 					popStats->recordTreatmentEligiblity(p);
 				}
 			}
-            
-            if(popStats->lifeMonthsTracker.IsTimeToRecord(_eventParams.currTime))
-            {
-                popStats->lifeMonthsTracker.RecordLifeMonth(p);
-            }
+
+			popStats->costsTracker.recordLifeMonth(p->getHIVStatus(), _eventParams.currTime);
 
 			p_Iter++;
 		}//while (p_Iter != this->entities->end(gender))
@@ -1117,8 +1110,7 @@ Person *Population::generatePerson(EventParams &_eventParams, DmgProfile::Gender
 
 		if(m->isCircumcised())
 		{
-			this->popStats->costsTracker.addCost(this->popWideParams.costs[CostsTracker::CIRCUMCISION], CostsTracker::CIRCUMCISION,
-			                                     _eventParams.currTime);
+			this->popStats->costsTracker.addCost(this->popWideParams.costs[CostsTracker::CIRCUMCISION], CostsTracker::CIRCUMCISION, _eventParams.currTime);
 		}
 	}
 
@@ -1543,7 +1535,7 @@ void Population::applyARTRollout(EventParams &_eventParams)
 				int randomPersonIndex = _eventParams.randomNums.randInt(0, currentRankingBucket.size() - 1);
 				startTreatment(currentRankingBucket[randomPersonIndex], _eventParams.treatedContext);
 
-				if(randomPersonIndex != currentRankingBucket.size() - 1)
+				if(randomPersonIndex != static_cast<int>(currentRankingBucket.size() - 1))
 				{
 					std::swap(currentRankingBucket[randomPersonIndex], currentRankingBucket.back());
 				}

@@ -44,7 +44,7 @@ void ParseCepacInput::getNonAIDSDeath(std::vector<double> &_maleProbs, std::vect
 
 	//generate the non-aids death probabilitiy
 	//we start the loop at 1 instead of 0 b/c first token contains a text label of the row. the probabilities start at index 1
-	for(int i = 1; i < maleValues.size(); ++i)
+	for(size_t i = 1; i < maleValues.size(); ++i)
 	{
 		_maleProbs.push_back(Util::fromString<double>(maleValues.at(i)));
 		_femaleProbs.push_back(Util::fromString<double>(femaleValues.at(i)));

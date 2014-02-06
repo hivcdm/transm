@@ -21,7 +21,7 @@ class BucketCounter
 
 		bool operator()(const BucketContainer::value_type &b)
 		{
-			for(int i = 0; i < indices.size(); i++)
+			for(size_t i = 0; i < indices.size(); i++)
 			{
 				if(indices[i] != -1 && b.first.GetValue(i) != indices[i])
 				{
