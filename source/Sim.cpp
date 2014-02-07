@@ -145,6 +145,11 @@ void Sim::FirstStep()
 		population_->printARTRolloutOutcomes(parameters_, parameters_.traceStreams[EventParams::ARTROLLOUT]);
 	}
 
+	if(parameters_.outputTrace[EventParams::COST])
+	{
+		population_->popStats->costsTracker.PrintCosts(parameters_.currTime, parameters_.traceStreams[EventParams::COST]);
+	}
+
 	if(parameters_.debugLevel == DEBUG1)
 	{
 		population_->printMethodResults(parameters_, "--", "initialization", 0, "--", Constants::SHOW_INFECTED);
@@ -218,6 +223,11 @@ bool Sim::Step()
 	if(parameters_.outputTrace[EventParams::ARTROLLOUT])
 	{
 		population_->printARTRolloutOutcomes(parameters_, parameters_.traceStreams[EventParams::ARTROLLOUT]);
+	}
+
+	if(parameters_.outputTrace[EventParams::COST])
+	{
+		population_->popStats->costsTracker.PrintCosts(parameters_.currTime, parameters_.traceStreams[EventParams::COST]);
 	}
 
 	if(parameters_.calibrationInputs.useCalibration && parameters_.calibrationInputs.monthOfCalibration == time_)
@@ -306,12 +316,6 @@ void Sim::LastStep()
 	if(parameters_.outputTrace[EventParams::INFECTION])
 	{
 		population_->popStats->printLMStats(parameters_.traceStreams[EventParams::INFECTION]);
-	}
-
-	//Print out all of the costs
-	if(parameters_.outputTrace[EventParams::COST])
-	{
-		population_->popStats->costsTracker.printCosts(parameters_.traceStreams[EventParams::COST]);
 	}
 
 	//finalize and print CEPAC output, but only if at least one patient went through CEPAC
@@ -755,7 +759,7 @@ bool Sim::SetCEPACSimContexts(ticpp::Element *cepacInterventionNode)
 	for(treatmentFileNode = treatmentFileNode.begin(treatmentFilesNode); treatmentFileNode != treatmentFileNode.end();
 	        treatmentFileNode++)
 	{
-		std::string fileName = (*treatmentFileNode).FirstChildElement("fileName")->GetText();
+		std::string fileName = (*treatmentFileNode).FirstChildElement("fileName")->GetTextOrDefault("");
 		int fileNumber = (*treatmentFileNode).FirstChildElement("fileNumber")->GetText<int>();
 		//Make sure the number of CEPAC input files from the .xml file is not greater than the number expected by the code!
 		assert(fileNumber < Constants::NUMBER_OF_CEPAC_FILES);

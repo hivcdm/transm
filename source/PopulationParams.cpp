@@ -274,10 +274,8 @@ void Population::Params::loadXML(ticpp::Element *_populationXML, EventParams &_e
 		this->initproportionRegular = (1 - pHigh) * (regularRateL * regularDurationL) + pHigh *
 		                              (regularRateH * regularDurationH);
 		//Costs
-		this->costs[CostsTracker::CONDOMS] =
-		    _populationXML->FirstChildElement("costs")->FirstChildElement("condomCost")->GetText<double>();
-		this->costs[CostsTracker::CIRCUMCISION] =
-		    _populationXML->FirstChildElement("costs")->FirstChildElement("circumcisionCost")->GetText<double>();
+		condomCost = _populationXML->FirstChildElement("costs")->FirstChildElement("condomCost")->GetText<double>();
+		circumcisionCost = _populationXML->FirstChildElement("costs")->FirstChildElement("circumcisionCost")->GetText<double>();
 	}
 	catch(ticpp::Exception &_e)
 	{
@@ -357,10 +355,8 @@ void Population::Params::reloadXML(ticpp::Element *_populationXML, EventParams &
 		}
 
 		//Costs
-		this->costs[CostsTracker::CONDOMS] =
-		    _populationXML->FirstChildElement("costs")->FirstChildElement("condomCost")->GetText<double>();
-		this->costs[CostsTracker::CIRCUMCISION] =
-		    _populationXML->FirstChildElement("costs")->FirstChildElement("circumcisionCost")->GetText<double>();
+		condomCost = _populationXML->FirstChildElement("costs")->FirstChildElement("condomCost")->GetText<double>();
+		circumcisionCost = _populationXML->FirstChildElement("costs")->FirstChildElement("circumcisionCost")->GetText<double>();
 	}
 	catch(ticpp::Exception &_e)
 	{

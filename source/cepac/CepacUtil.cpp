@@ -1,7 +1,3 @@
-#ifndef _WIN32
-#include <unistd.h>
-#endif
-
 #include "include.h"
 
 /* Empty constructor and destructor, should never create an instance of this class */

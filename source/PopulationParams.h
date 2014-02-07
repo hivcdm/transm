@@ -77,7 +77,8 @@ class Params
 	bool partnershipsHaveDuration[DmgProfile::ENDGender][SexualPartnership::ENDType];
 
 	//Costs
-	double costs[CostsTracker::EndCostSources];
+	double condomCost;
+	double circumcisionCost;
 
 	Params();
 	~Params();

@@ -275,6 +275,8 @@ public:
 	*/
 	int getNumPartners(SexualPartnership::Type, bool);
 
+	double getQualityOfLife() const { return cepacPatient != NULL ? cepacPatient->getGeneralState()->QOLMultiplier : 1; }
+
 	/**
 	* returns the number of partners in history
 	*/

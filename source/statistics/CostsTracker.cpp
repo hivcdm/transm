@@ -1,168 +1,317 @@
-/*
- * CostsTracker.cpp
- *
- *  Created on: Aug 20, 2010
- *      Author: errhode
- */
 #include "CostsTracker.h"
-#include <vector>
-
-const char CostsTracker::CostSourcesStr[CostsTracker::EndCostSources][24] =
-{
-	"Circumcision",
-	"Condoms",
-	// "Prep",
-	"CEPAC",
-};
-
-void CostsTracker::recordLifeMonth(Person::HIVStatus status, int time)
-{
-	//Check to see if a MonthlyCost already exists for this time
-	while(static_cast<size_t>(time) >= allCosts.size())
-	{
-		//Else create one
-		MonthlyCosts *monthlyCosts = new MonthlyCosts();
-		allCosts.push_back(monthlyCosts);
-	}
-
-	allCosts[time]->LifeMonths[status]++;
-}
-
-CostsTracker::MonthlyCosts::MonthlyCosts()
-{
-	//Initialize all costs to 0
-	for(int i = 0; i < CostsTracker::EndCostSources; i++)
-	{
-		this->Costs[i] = 0;
-	}
-}
-
-double CostsTracker::MonthlyCosts::getTotalCosts()
-{
-	double totalMonthlyCost = 0;
-
-	for(int i = 0; i < CostsTracker::EndCostSources; i++)
-	{
-		totalMonthlyCost += this->Costs[i];
-	}
-
-	return totalMonthlyCost;
-}
 
 CostsTracker::CostsTracker()
 {
-	//Initialize all costs to 0
-	for(int i = 0; i < CostsTracker::EndCostSources; i++)
-	{
-		this->totalCosts[i] = 0;
-	}
+	Reset();
 }
 
 CostsTracker::~CostsTracker()
 {
-	//Delete all of the MonthlyCosts
-	while(this->allCosts.size() > 0)
+}
+
+void CostsTracker::PrintCosts(int time, std::ostream &_outStream)
+{
+	if(time == 0)
 	{
-		MonthlyCosts *mCosts = this->allCosts.back();
-		this->allCosts.pop_back();
-		delete mCosts;
+		BuildHeader();
+		PrintHeader(_outStream);
+	}
+
+	BuildRow(time);
+	PrintRow(_outStream);
+	Reset();
+}
+
+void CostsTracker::RecordLifeMonth(const Person &person)
+{
+	undiscounted_.lifeMonthsByHivStatus[person.getHIVStatus()]++;
+	undiscounted_.qalmsByHivStatus[person.getHIVStatus()] += person.getQualityOfLife();
+}
+
+void CostsTracker::RecordCondomUse(double cost)
+{
+	undiscounted_.condomCosts += cost;
+}
+
+void CostsTracker::RecordCircumcision(double cost)
+{
+	undiscounted_.circumcisionCosts += cost;
+}
+
+void CostsTracker::RecordCepacCosts(double costUndiscounted, double costDiscounted, const Person &person)
+{
+	undiscounted_.medicalCostsByGender[person.getDmgProfileVal(DmgProfile::GENDER)] += costUndiscounted;
+	undiscounted_.medicalCostsByCd4[person.getCd4Stratum()] += costUndiscounted;
+	undiscounted_.medicalCostsByHvl[person.getHVL()] += costUndiscounted;
+
+	discounted_.medicalCostsByGender[person.getDmgProfileVal(DmgProfile::GENDER)] += costDiscounted;
+	discounted_.medicalCostsByCd4[person.getCd4Stratum()] += costDiscounted;
+	discounted_.medicalCostsByHvl[person.getHVL()] += costDiscounted;
+}
+
+void CostsTracker::RecordTreatmentCosts(const std::array<double, 3> &costsUndiscounted, int artLine, const Person &person)
+{
+	undiscounted_.artCosts[artLine] += costsUndiscounted[0];
+	undiscounted_.drugCosts += costsUndiscounted[1];
+	undiscounted_.toxicityCosts += costsUndiscounted[2];
+}
+
+void CostsTracker::RecordClinicalCosts(const std::array<double, 5> &costs, const Person &person)
+{
+	for(int i = 0; i < 5; i++)
+	{
+		undiscounted_.clinicalCosts[i] += costs[i];
 	}
 }
 
-//Total costs for each source
-double CostsTracker::getTotalCostsPerSource(CostsTracker::CostSources _costSource)
+void CostsTracker::RecordMedicalCosts(const std::array<double, 4> &costs, const Person &person)
 {
-	return this->totalCosts[_costSource];
+	for(int i = 0; i < 4; i++)
+	{
+		undiscounted_.medicalCosts[i] += costs[i];
+	}
 }
 
-//Total costs for each time step
-double CostsTracker::getTotalCostsPerTime(int _time)
+void CostsTracker::BuildHeader()
 {
-	if(_time >= static_cast<int>(allCosts.size()))
+	SetHeaderCell(1, 1, "Cost Effectiveness");
+	SetHeaderCell(1, 3, "Time");
+
+	int column = 2;
+
+	for(auto section_header : {"Undiscounted", "Discounted"})
 	{
-		//Default to 0 if time hasn't occurred
-		return 0;
+		SetHeaderCell(column, 1, section_header);
+		SetHeaderCell(column, 2, "Life Months");
+		SetHeaderCell(column++, 4, "Total");
+		SetHeaderCell(column, 3, "HIV Status");
+
+		for(auto status_header : {"Negative", "Acute (Observed)", "Acute (Unobserved)", "Chronic (Observed)",
+			"Chronic (Unobserved)", "Late-Stage (Observed)", "Late-Stage (Unobserved)"})
+		{
+			SetHeaderCell(column++, 4, status_header);
+		}
+
+		SetHeaderCell(column, 2, "QALMs");
+		SetHeaderCell(column++, 4, "Total");
+		SetHeaderCell(column, 3, "HIV Status");
+
+		for(auto status_header : {"Negative", "Acute (Observed)", "Acute (Unobserved)", "Chronic (Observed)",
+			"Chronic (Unobserved)", "Late-Stage (Observed)", "Late-Stage (Unobserved)"})
+		{
+			SetHeaderCell(column++, 4, status_header);
+		}
+
+		SetHeaderCell(column, 2, "Costs");
+		SetHeaderCell(column++, 4, "Overall");
+		SetHeaderCell(column, 2, "CDM Costs");
+		SetHeaderCell(column++, 4, "Total");
+		SetHeaderCell(column, 3, "Behavior");
+		SetHeaderCell(column++, 4, "Circumcision");
+		SetHeaderCell(column++, 4, "Condoms");
+		SetHeaderCell(column, 2, "CEPAC Costs");
+		SetHeaderCell(column++, 4, "Total");
+		SetHeaderCell(column, 3, "Medical");
+		SetHeaderCell(column++, 4, "Direct Medical");
+		SetHeaderCell(column++, 4, "Direct Non-Medical");
+		SetHeaderCell(column++, 4, "Time");
+		SetHeaderCell(column++, 4, "Indirect");
+		SetHeaderCell(column, 3, "Gender");
+		SetHeaderCell(column++, 4, "Male");
+		SetHeaderCell(column++, 4, "Female");
+		SetHeaderCell(column, 3, "Clinical");
+		SetHeaderCell(column++, 4, "CD4 Testing");
+		SetHeaderCell(column++, 4, "HVL Testing");
+		SetHeaderCell(column++, 4, "Clinic Visits");
+		SetHeaderCell(column++, 4, "HIV Screening Tests");
+		SetHeaderCell(column++, 4, "HIV Screening Misc");
+		SetHeaderCell(column, 3, "HIV State");
+		SetHeaderCell(column++, 4, "HIV Positive");
+		SetHeaderCell(column++, 4, "HIV Negative");
+		SetHeaderCell(column++, 4, "HIV Positive Unidentified");
+		SetHeaderCell(column++, 4, "HIV Positive Identified");
+		SetHeaderCell(column, 3, "CD4");
+		SetHeaderCell(column++, 4, "Very Low");
+		SetHeaderCell(column++, 4, "Low");
+		SetHeaderCell(column++, 4, "Medium Low");
+		SetHeaderCell(column++, 4, "Medium High");
+		SetHeaderCell(column++, 4, "High");
+		SetHeaderCell(column++, 4, "Very High");
+		SetHeaderCell(column, 3, "HVL");
+		SetHeaderCell(column++, 4, "Very Low");
+		SetHeaderCell(column++, 4, "Low");
+		SetHeaderCell(column++, 4, "Medium Low");
+		SetHeaderCell(column++, 4, "Medium");
+		SetHeaderCell(column++, 4, "Medium High");
+		SetHeaderCell(column++, 4, "High");
+		SetHeaderCell(column++, 4, "Very High");
+		SetHeaderCell(column, 3, "HVL Setpoint");
+		SetHeaderCell(column++, 4, "Very Low");
+		SetHeaderCell(column++, 4, "Low");
+		SetHeaderCell(column++, 4, "Medium Low");
+		SetHeaderCell(column++, 4, "Medium");
+		SetHeaderCell(column++, 4, "Medium High");
+		SetHeaderCell(column++, 4, "High");
+		SetHeaderCell(column++, 4, "Very High");
+		SetHeaderCell(column, 3, "ART");
+		SetHeaderCell(column++, 4, "Total");
+		SetHeaderCell(column++, 4, "ART1");
+		SetHeaderCell(column++, 4, "ART2");
+		SetHeaderCell(column++, 4, "ART3");
+		SetHeaderCell(column++, 4, "ART4");
+		SetHeaderCell(column++, 4, "Drugs");
+		SetHeaderCell(column++, 4, "Toxicity");
+		SetHeaderCell(column, 3, "No OI History");
+		SetHeaderCell(column++, 4, "Total");
+		SetHeaderCell(column, 3, "No OI History by CD4");
+		SetHeaderCell(column++, 4, "Very Low");
+		SetHeaderCell(column++, 4, "Low");
+		SetHeaderCell(column++, 4, "Medium Low");
+		SetHeaderCell(column++, 4, "Medium High");
+		SetHeaderCell(column++, 4, "High");
+		SetHeaderCell(column++, 4, "Very High");
+		SetHeaderCell(column, 3, "With OI History");
+		SetHeaderCell(column++, 4, "Total");
+		SetHeaderCell(column, 3, "With OI History by CD4");
+		SetHeaderCell(column++, 4, "Very Low");
+		SetHeaderCell(column++, 4, "Low");
+		SetHeaderCell(column++, 4, "Medium Low");
+		SetHeaderCell(column++, 4, "Medium High");
+		SetHeaderCell(column++, 4, "High");
+		SetHeaderCell(column++, 4, "Very High");
+		SetHeaderCell(column++, 4, "Proph");
+	}
+}
+
+void CostsTracker::BuildRow(int time)
+{
+	if(time == 0)
+	{
+		PushElement("init");
 	}
 	else
 	{
-		return allCosts.at(_time)->getTotalCosts();
-	}
-}
-
-//Total costs of all sources
-double CostsTracker::getTotalCosts()
-{
-	double totalCost = 0;
-
-	for(int i = 0; i < CostsTracker::EndCostSources; i++)
-	{
-		totalCost += this->totalCosts[i];
+		PushElement(time);
 	}
 
-	return totalCost;
-}
+	int column = 2;
 
-//Add a cost
-void CostsTracker::addCost(double _cost, CostsTracker::CostSources _costSource, int _currTime)
-{
-	//Check to see if a MonthlyCost already exists for this time
-	while(static_cast<size_t>(_currTime) >= this->allCosts.size())
+	for(const auto &costs : {undiscounted_, discounted_})
 	{
-		//Else create one
-		MonthlyCosts *monthlyCosts = new MonthlyCosts();
-		this->allCosts.push_back(monthlyCosts);
-	}
+		int totalLifeMonths = 0;
+		double totalQalms = 0;
+		double cepacTotalCost = 0;
 
-	//Add the cost to the monthlyCost
-	this->allCosts.at(_currTime)->Costs[_costSource] += _cost;
-	//Add the cost to the totalCosts
-	this->totalCosts[_costSource] += _cost;
-}
-
-//print all costs (call at end of simulation)
-void CostsTracker::printCosts(std::ostream &_outStream)
-{
-	this->printCostHeaders(_outStream);
-
-	//Print out each month
-	for(size_t month = 0; month < this->allCosts.size(); month++)
-	{
-		//Print time
-		_outStream << month << "\t";
-
-		//Print each monthly cost by source
-		for(int source = 0; source < CostsTracker::EndCostSources; source++)
+		for(int i = 0; i < Person::ENDHIVStatus; i++)
 		{
-			_outStream << this->allCosts.at(month)->Costs[source] << "\t";
+			totalLifeMonths += costs.lifeMonthsByHivStatus[i];
+			totalQalms += costs.qalmsByHivStatus[i];
 		}
 
-		//Print total monthly cost
-		_outStream << this->getTotalCostsPerTime(month) << std::endl;
+		for(int i = 0; i < Person::ENDCD4Strata; i++)
+		{
+			cepacTotalCost += costs.medicalCostsByCd4[i];
+		}
+
+		PushElement(totalLifeMonths);
+
+		for(int i = 0; i < Person::ENDHIVStatus; i++)
+		{
+			PushElement(costs.lifeMonthsByHivStatus[i]);
+		}
+
+		PushElement(totalQalms);
+
+		for(int i = 0; i < Person::ENDHIVStatus; i++)
+		{
+			PushElement(costs.qalmsByHivStatus[i]);
+		}
+
+		double cdmTotalCost = costs.circumcisionCosts + costs.condomCosts;
+
+		PushElement(cdmTotalCost + cepacTotalCost);
+
+		PushElement(cdmTotalCost);
+		PushElement(costs.circumcisionCosts);
+		PushElement(costs.condomCosts);
+
+		PushElement(cepacTotalCost);
+		for(int i = 0; i < SimContext::COST_NUM_TYPES; i++)
+		{
+			PushElement(costs.medicalCosts[i]);
+		}
+
+		for(int i = 0; i < DmgProfile::ENDGender; i++)
+		{
+			PushElement(costs.medicalCostsByGender[i]);
+		}
+
+		for(int i = 0; i < (int)ClinicalCostTypes::Last; i++)
+		{
+			PushElement(costs.clinicalCosts[i]);
+		}
+
+		PushElement(0);// costs.hivPositiveCosts);
+		for(int i = 0; i < SimContext::HIV_ID_NUM; i++)
+		{
+			PushElement(costs.medicalCostsByHivState[i]);
+		}
+
+		for(int i = 0; i < Person::ENDCD4Strata; i++)
+		{
+			PushElement(costs.medicalCostsByCd4[i]);
+		}
+
+		for(int i = 0; i < Person::ENDHIVStatus; i++)
+		{
+			PushElement(costs.medicalCostsByHvl[i]);
+		}
+
+		for(int i = 0; i < Person::ENDHIVStatus; i++)
+		{
+			PushElement(costs.medicalCostsByHvlSetpoint[i]);
+		}
+
+		double artTotalCost = 0;
+		for(int i = 0; i < NumArtLinesToRecord; i++)
+		{
+			artTotalCost += costs.artCosts[i];
+		}
+
+		for(int i = 0; i < NumArtLinesToRecord; i++)
+		{
+			PushElement(costs.artCosts[i]);
+		}
+
+		PushElement(costs.drugCosts);
+		PushElement(costs.toxicityCosts);
+
+		double noOiHistTotal = 0;
+		double oiHistTotal = 0;
+		for(int i = 0; i < Person::ENDCD4Strata; i++)
+		{
+			noOiHistTotal += costs.medicalCostsByCd4NoOiHist[i];
+			oiHistTotal += costs.medicalCostsByCd4WithOiHist[i];
+		}
+
+		PushElement(noOiHistTotal);
+		for(int i = 0; i < Person::ENDCD4Strata; i++)
+		{
+			PushElement(costs.medicalCostsByCd4NoOiHist[i]);
+		}
+
+		PushElement(oiHistTotal);
+		for(int i = 0; i < Person::ENDCD4Strata; i++)
+		{
+			PushElement(costs.medicalCostsByCd4WithOiHist[i]);
+		}
+
+		PushElement(0); //Proph
 	}
-
-	//Print out the totals
-	_outStream << "Total\t";
-
-	//By source
-	for(int source = 0; source < CostsTracker::EndCostSources; source++)
-	{
-		_outStream << this->totalCosts[source] << "\t";
-	}
-
-	//Overall total
-	_outStream << this->getTotalCosts() << std::endl;
 }
 
-//Helper function for printCosts
-void CostsTracker::printCostHeaders(std::ostream &_outStream)
+void CostsTracker::Reset()
 {
-	_outStream << "Costs" << std::endl;
-	_outStream << "Month\t";
-
-	for(int i = 0; i < CostsTracker::EndCostSources; i++)
-	{
-		_outStream << this->CostSourcesStr[i] << "\t";
-	}
-
-	_outStream << "Total" << std::endl;
+	discounted_ = Costs();
+	undiscounted_ = Costs();
 }
