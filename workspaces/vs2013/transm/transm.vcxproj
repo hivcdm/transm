@@ -174,7 +174,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(boostpath)\include;$(wxpath)\include\msvc;$(wxpath)\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>TIXML_USE_TICPP;WXUSINGDLL;wxMSVC_VERSION_AUTO;__WXMSW__;__WXDEBUG__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
