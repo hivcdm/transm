@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 	SummaryStats *cepacSummaryStats = new SummaryStats("cepacPopstats.out");
 	TransmissionSummaryStats *transSummaryStats = new TransmissionSummaryStats("summaryStats.out");
 
-	for(int i = 0; i < Util::transmFilesToRun.size(); i++)
+	for(size_t i = 0; i < Util::transmFilesToRun.size(); i++)
 	{
 		//Changing back to the input directory because over the course of Sim->run, the directory gets changed to results
 		CepacUtil::changeDirectoryToInputs();

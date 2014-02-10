@@ -594,7 +594,7 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 				}
 			}
 
-			popStats->costsTracker.RecordLifeMonth(*p);
+			popStats->costsTracker.RecordLifeMonth(p->getQualityOfLife(), p->getCepacDiscountFactor(), p->getHIVStatus());
 
 			p_Iter++;
 		}//while (p_Iter != this->entities->end(gender))
@@ -751,7 +751,8 @@ void Population::updatePartnerships(EventParams &_eventParams)
 		} //for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::ENDType; ++type) {
 
 		//Add the cost of condom usage
-		this->popStats->costsTracker.RecordCondomUse(initiator->getCondomsUsedThisMonth() * popWideParams.condomCost);
+		auto totalCondomCostUndiscounted = initiator->getCondomsUsedThisMonth() * popWideParams.condomCost;
+		popStats->costsTracker.RecordCondomUse(totalCondomCostUndiscounted, totalCondomCostUndiscounted * initiator->getCepacDiscountFactor());
 	} //for (p_Iter = this->entities->begin(DmgProfile::MALE); p_Iter != this->entities->end(DmgProfile::MALE); p_Iter++)
 
 	//Ends the second pass through (i.e. the sex acts pass through)
@@ -1109,7 +1110,7 @@ Person *Population::generatePerson(EventParams &_eventParams, DmgProfile::Gender
 
 		if(m->isCircumcised())
 		{
-			popStats->costsTracker.RecordCircumcision(popWideParams.circumcisionCost);
+			popStats->costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * m->getCepacDiscountFactor());
 		}
 	}
 

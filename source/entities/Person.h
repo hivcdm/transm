@@ -277,6 +277,8 @@ public:
 
 	double getQualityOfLife() const { return cepacPatient != NULL ? cepacPatient->getGeneralState()->QOLMultiplier : 1; }
 
+	double getCepacDiscountFactor() const { return cepacPatient != NULL ? cepacPatient->getGeneralState()->discountFactor : 1; }
+
 	/**
 	* returns the number of partners in history
 	*/

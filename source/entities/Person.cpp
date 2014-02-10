@@ -1121,6 +1121,14 @@ Person *Person::sexualActivity(Person *_p, int _numActs, SexualPartnership::Type
 	return NULL;
 }
 
+template<typename T>
+T Scale(const T &t, double factor)
+{
+	T r;
+	std::transform(t.begin(), t.end(), r.begin(), std::bind1st(std::multiplies<double>(), factor));
+	return r;
+}
+
 double Person::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTracker, CostsTracker *costsTracker)
 {
 	//if this person has died, then don't update.
@@ -1135,61 +1143,64 @@ double Person::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 		return 0;
 	}
 
-	double costThisMonth = 0;
-
-	if(_eventParams.useRollout)
-	{
-	}
-	else
+	if(!_eventParams.useRollout)
 	{
 		//Adjust the CEPAC SimContext depending on what time it is
 		if(_eventParams.itIsTimeToSwitchSimContext())
 		{
-			this->cepacPatient->setSimContext(_eventParams.cepacSimContexts[this->getCEPACSimContextIndex(_eventParams)]);
+			cepacPatient->setSimContext(_eventParams.cepacSimContexts[getCEPACSimContextIndex(_eventParams)]);
 		}
 	}
 
-	const RunStats::OverallCosts costsBefore = *_eventParams.cepacRunStats->getOverallCosts();
-	RunStats::HIVScreening hivScreeningBefore = *_eventParams.cepacRunStats->getHIVScreening();
+	const auto costsBefore = *_eventParams.cepacRunStats->getOverallCosts();
+	const auto hivScreeningBefore = *_eventParams.cepacRunStats->getHIVScreening();
+
 	//run this person's patient info one month forward in CEPAC
 	this->cepacPatient->simulateMonth();
-	RunStats::HIVScreening hivScreeningAfter = *_eventParams.cepacRunStats->getHIVScreening();
+
+	const auto costsAfter = *_eventParams.cepacRunStats->getOverallCosts();
+	const auto hivScreeningAfter = *_eventParams.cepacRunStats->getHIVScreening();
+	const auto discountFactor = cepacPatient->getGeneralState()->discountFactor;
 
 	//Update this patient's costs
-	costThisMonth = this->cepacPatient->getGeneralState()->costsDiscounted - this->CEPACcosts;
-	this->CEPACcosts = this->cepacPatient->getGeneralState()->costsDiscounted;
-	auto costThisMonthUndiscounted = costThisMonth / cepacPatient->getGeneralState()->discountFactor;
+	auto costThisMonthDiscounted = cepacPatient->getGeneralState()->costsDiscounted - CEPACcosts;
+	CEPACcosts = cepacPatient->getGeneralState()->costsDiscounted;
 
-	costsTracker->RecordCepacCosts(costThisMonthUndiscounted, costThisMonth, *this);
+	// We don't have access to the original undiscounted costs, so reverse the discounting factor
+	auto costThisMonthUndiscounted = costThisMonthDiscounted / cepacPatient->getGeneralState()->discountFactor;
 
-	std::array<double, SimContext::COST_NUM_TYPES> medicalCosts;
-	for(int i = 0; i < SimContext::COST_NUM_TYPES; i++)
+	if(costThisMonthUndiscounted > 0)
 	{
-		medicalCosts[i] = _eventParams.cepacRunStats->getOverallCosts()->totalUndiscountedCosts[i] - costsBefore.totalUndiscountedCosts[i];
+		costsTracker->RecordCepacCosts(costThisMonthUndiscounted, costThisMonthDiscounted,
+			static_cast<DmgProfile::Gender>(getDmgProfileVal(DmgProfile::GENDER)), getCd4Stratum(), 
+			getHVL(), getHIVStatus());
+
+		std::array<double, SimContext::COST_NUM_TYPES> medicalCostsUndiscounted;
+		for(int i = 0; i < SimContext::COST_NUM_TYPES; i++)
+		{
+			medicalCostsUndiscounted[i] = costsAfter.totalUndiscountedCosts[i] - costsBefore.totalUndiscountedCosts[i];
+		}
+		costsTracker->RecordMedicalCosts(medicalCostsUndiscounted, Scale(medicalCostsUndiscounted, discountFactor));
+
+		std::array<double, 5> clinicalCostsDiscounted;
+		clinicalCostsDiscounted[(size_t)ClinicalCostTypes::CD4Testing] = costsAfter.costsCD4Testing - costsBefore.costsCD4Testing;
+		clinicalCostsDiscounted[(size_t)ClinicalCostTypes::HvlTesting] = costsAfter.costsHVLTesting - costsBefore.costsHVLTesting;
+		clinicalCostsDiscounted[(size_t)ClinicalCostTypes::ClinicVisits] = costsAfter.costsClinicVisits - costsBefore.costsClinicVisits;
+		clinicalCostsDiscounted[(size_t)ClinicalCostTypes::HivScreeningTests] = costsAfter.costsHIVScreeningTests - costsBefore.costsHIVScreeningTests;
+		clinicalCostsDiscounted[(size_t)ClinicalCostTypes::HivScreeningMisc] = costsAfter.costsHIVScreeningMisc - costsBefore.costsHIVScreeningMisc;
+		costsTracker->RecordClinicalCosts(Scale(clinicalCostsDiscounted, 1 / discountFactor), clinicalCostsDiscounted);
+
+		if(isOnArt())
+		{
+			std::array<double, 3> treatmentCostsDiscounted;
+			int artLine = cepacPatient->getARTState()->currRegimenNum;
+			assert(artLine >= 0 && artLine < 4);
+			treatmentCostsDiscounted[0] = costsAfter.directCostsARTLine[artLine] - costsBefore.directCostsARTLine[artLine];
+			treatmentCostsDiscounted[1] = costsAfter.costsDrugs - costsBefore.costsDrugs;
+			treatmentCostsDiscounted[2] = costsAfter.costsToxicity - costsBefore.costsToxicity;
+			costsTracker->RecordTreatmentCosts(Scale(treatmentCostsDiscounted, 1 / discountFactor), treatmentCostsDiscounted, artLine);
+		}
 	}
-	costsTracker->RecordMedicalCosts(medicalCosts, *this);
-
-	std::array<double, 5> clinicalCosts;
-	clinicalCosts[(size_t)ClinicalCostTypes::CD4Testing] = _eventParams.cepacRunStats->getOverallCosts()->costsCD4Testing - costsBefore.costsCD4Testing;
-	clinicalCosts[(size_t)ClinicalCostTypes::HvlTesting] = _eventParams.cepacRunStats->getOverallCosts()->costsHVLTesting - costsBefore.costsHVLTesting;
-	clinicalCosts[(size_t)ClinicalCostTypes::CD4Testing] = _eventParams.cepacRunStats->getOverallCosts()->costsClinicVisits - costsBefore.costsClinicVisits;
-	clinicalCosts[(size_t)ClinicalCostTypes::HivScreeningTests] = _eventParams.cepacRunStats->getOverallCosts()->costsHIVScreeningTests - costsBefore.costsHIVScreeningTests;
-	clinicalCosts[(size_t)ClinicalCostTypes::HivScreeningMisc] = _eventParams.cepacRunStats->getOverallCosts()->costsHIVScreeningMisc - costsBefore.costsHIVScreeningMisc;
-	costsTracker->RecordClinicalCosts(clinicalCosts, *this);
-
-	if(isOnArt())
-	{
-		std::array<double, 3> treatmentCosts;
-		int artLine = cepacPatient->getARTState()->currRegimenNum;
-		assert(artLine >= 0 && artLine < 4);
-		treatmentCosts[0] = _eventParams.cepacRunStats->getOverallCosts()->directCostsARTLine[artLine] - costsBefore.directCostsARTLine[artLine];
-		treatmentCosts[1] = _eventParams.cepacRunStats->getOverallCosts()->costsDrugs - costsBefore.costsDrugs;
-		treatmentCosts[2] = _eventParams.cepacRunStats->getOverallCosts()->costsToxicity - costsBefore.costsToxicity;
-		costsTracker->RecordTreatmentCosts(treatmentCosts, artLine, *this);
-	}
-
-	//auto discountFactor = cepacPatient->getGeneralState()->discountFactor;
-	
 
 	//update HVL and CD4 for this Person if they are infected
 	if(this->isInfected())
@@ -1324,7 +1335,7 @@ double Person::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 		}
 	}
 
-	return costThisMonth;
+	return costThisMonthDiscounted;
 }
 
 //Call this after all transmission/population dynamics are done.

@@ -22,53 +22,73 @@ void CostsTracker::PrintCosts(int time, std::ostream &_outStream)
 	Reset();
 }
 
-void CostsTracker::RecordLifeMonth(const Person &person)
+void CostsTracker::RecordLifeMonth(double qualityOfLife, double discountFactor, Person::HIVStatus status)
 {
-	undiscounted_.lifeMonthsByHivStatus[person.getHIVStatus()]++;
-	undiscounted_.qalmsByHivStatus[person.getHIVStatus()] += person.getQualityOfLife();
+	undiscounted_.lifeMonthsByHivStatus[status]++;
+	undiscounted_.qalmsByHivStatus[status] += qualityOfLife;
+
+	discounted_.lifeMonthsByHivStatus[status] += discountFactor;
+	discounted_.qalmsByHivStatus[status] += qualityOfLife * discountFactor;
 }
 
-void CostsTracker::RecordCondomUse(double cost)
+void CostsTracker::RecordCondomUse(double costUndiscounted, double costDiscounted)
 {
-	undiscounted_.condomCosts += cost;
+	undiscounted_.condomCosts += costUndiscounted;
+	discounted_.condomCosts += costDiscounted;
 }
 
-void CostsTracker::RecordCircumcision(double cost)
+void CostsTracker::RecordCircumcision(double costUndiscounted, double costDiscounted)
 {
-	undiscounted_.circumcisionCosts += cost;
+	undiscounted_.circumcisionCosts += costUndiscounted;
+	discounted_.circumcisionCosts += costDiscounted;
 }
 
-void CostsTracker::RecordCepacCosts(double costUndiscounted, double costDiscounted, const Person &person)
+void CostsTracker::RecordCepacCosts(double costUndiscounted, double costDiscounted, DmgProfile::Gender gender, Person::CD4Strata cd4, 
+	Person::HVLStrata hvl, Person::HIVStatus status)
 {
-	undiscounted_.medicalCostsByGender[person.getDmgProfileVal(DmgProfile::GENDER)] += costUndiscounted;
-	undiscounted_.medicalCostsByCd4[person.getCd4Stratum()] += costUndiscounted;
-	undiscounted_.medicalCostsByHvl[person.getHVL()] += costUndiscounted;
+	undiscounted_.totalCostsByHivState[status] += costUndiscounted;
+	discounted_.totalCostsByHivState[status] += costDiscounted;
 
-	discounted_.medicalCostsByGender[person.getDmgProfileVal(DmgProfile::GENDER)] += costDiscounted;
-	discounted_.medicalCostsByCd4[person.getCd4Stratum()] += costDiscounted;
-	discounted_.medicalCostsByHvl[person.getHVL()] += costDiscounted;
+	undiscounted_.totalCostsByGender[gender] += costUndiscounted;
+	discounted_.totalCostsByGender[gender] += costDiscounted;
+
+	if(status != Person::NEGATIVE)
+	{
+		undiscounted_.totalCostsByCd4[cd4] += costUndiscounted;
+		undiscounted_.totalCostsByHvl[hvl + 1] += costUndiscounted;
+
+		discounted_.totalCostsByCd4[cd4] += costDiscounted;
+		discounted_.totalCostsByHvl[hvl + 1] += costDiscounted;
+	}
 }
 
-void CostsTracker::RecordTreatmentCosts(const std::array<double, 3> &costsUndiscounted, int artLine, const Person &person)
+void CostsTracker::RecordTreatmentCosts(const std::array<double, 3> &costsUndiscounted, const std::array<double, 3> &costsDiscounted, 
+	int artLine)
 {
 	undiscounted_.artCosts[artLine] += costsUndiscounted[0];
 	undiscounted_.drugCosts += costsUndiscounted[1];
 	undiscounted_.toxicityCosts += costsUndiscounted[2];
+
+	discounted_.artCosts[artLine] += costsDiscounted[0];
+	discounted_.drugCosts += costsDiscounted[1];
+	discounted_.toxicityCosts += costsDiscounted[2];
 }
 
-void CostsTracker::RecordClinicalCosts(const std::array<double, 5> &costs, const Person &person)
+void CostsTracker::RecordClinicalCosts(const std::array<double, 5> &costsUndiscounted, const std::array<double, 5> &costsDiscounted)
 {
 	for(int i = 0; i < 5; i++)
 	{
-		undiscounted_.clinicalCosts[i] += costs[i];
+		undiscounted_.clinicalCosts[i] += costsUndiscounted[i];
+		discounted_.clinicalCosts[i] += costsDiscounted[i];
 	}
 }
 
-void CostsTracker::RecordMedicalCosts(const std::array<double, 4> &costs, const Person &person)
+void CostsTracker::RecordMedicalCosts(const std::array<double, 4> &costsUndiscounted, const std::array<double, 4> &costsDiscounted)
 {
 	for(int i = 0; i < 4; i++)
 	{
-		undiscounted_.medicalCosts[i] += costs[i];
+		undiscounted_.medicalCosts[i] += costsUndiscounted[i];
+		discounted_.medicalCosts[i] += costsDiscounted[i];
 	}
 }
 
@@ -106,53 +126,26 @@ void CostsTracker::BuildHeader()
 		SetHeaderCell(column++, 4, "Overall");
 		SetHeaderCell(column, 2, "CDM Costs");
 		SetHeaderCell(column++, 4, "Total");
-		SetHeaderCell(column, 3, "Behavior");
 		SetHeaderCell(column++, 4, "Circumcision");
 		SetHeaderCell(column++, 4, "Condoms");
+
 		SetHeaderCell(column, 2, "CEPAC Costs");
+
 		SetHeaderCell(column++, 4, "Total");
+
 		SetHeaderCell(column, 3, "Medical");
 		SetHeaderCell(column++, 4, "Direct Medical");
 		SetHeaderCell(column++, 4, "Direct Non-Medical");
 		SetHeaderCell(column++, 4, "Time");
 		SetHeaderCell(column++, 4, "Indirect");
-		SetHeaderCell(column, 3, "Gender");
-		SetHeaderCell(column++, 4, "Male");
-		SetHeaderCell(column++, 4, "Female");
+
 		SetHeaderCell(column, 3, "Clinical");
 		SetHeaderCell(column++, 4, "CD4 Testing");
 		SetHeaderCell(column++, 4, "HVL Testing");
 		SetHeaderCell(column++, 4, "Clinic Visits");
 		SetHeaderCell(column++, 4, "HIV Screening Tests");
 		SetHeaderCell(column++, 4, "HIV Screening Misc");
-		SetHeaderCell(column, 3, "HIV State");
-		SetHeaderCell(column++, 4, "HIV Positive");
-		SetHeaderCell(column++, 4, "HIV Negative");
-		SetHeaderCell(column++, 4, "HIV Positive Unidentified");
-		SetHeaderCell(column++, 4, "HIV Positive Identified");
-		SetHeaderCell(column, 3, "CD4");
-		SetHeaderCell(column++, 4, "Very Low");
-		SetHeaderCell(column++, 4, "Low");
-		SetHeaderCell(column++, 4, "Medium Low");
-		SetHeaderCell(column++, 4, "Medium High");
-		SetHeaderCell(column++, 4, "High");
-		SetHeaderCell(column++, 4, "Very High");
-		SetHeaderCell(column, 3, "HVL");
-		SetHeaderCell(column++, 4, "Very Low");
-		SetHeaderCell(column++, 4, "Low");
-		SetHeaderCell(column++, 4, "Medium Low");
-		SetHeaderCell(column++, 4, "Medium");
-		SetHeaderCell(column++, 4, "Medium High");
-		SetHeaderCell(column++, 4, "High");
-		SetHeaderCell(column++, 4, "Very High");
-		SetHeaderCell(column, 3, "HVL Setpoint");
-		SetHeaderCell(column++, 4, "Very Low");
-		SetHeaderCell(column++, 4, "Low");
-		SetHeaderCell(column++, 4, "Medium Low");
-		SetHeaderCell(column++, 4, "Medium");
-		SetHeaderCell(column++, 4, "Medium High");
-		SetHeaderCell(column++, 4, "High");
-		SetHeaderCell(column++, 4, "Very High");
+
 		SetHeaderCell(column, 3, "ART");
 		SetHeaderCell(column++, 4, "Total");
 		SetHeaderCell(column++, 4, "ART1");
@@ -161,25 +154,38 @@ void CostsTracker::BuildHeader()
 		SetHeaderCell(column++, 4, "ART4");
 		SetHeaderCell(column++, 4, "Drugs");
 		SetHeaderCell(column++, 4, "Toxicity");
-		SetHeaderCell(column, 3, "No OI History");
-		SetHeaderCell(column++, 4, "Total");
-		SetHeaderCell(column, 3, "No OI History by CD4");
+
+		SetHeaderCell(column, 3, "Gender");
+		SetHeaderCell(column++, 4, "Male");
+		SetHeaderCell(column++, 4, "Female");
+
+		SetHeaderCell(column, 3, "HIV Status");
+
+		for(auto status_header : {"Negative", "Acute (Observed)", "Acute (Unobserved)", "Chronic (Observed)",
+			"Chronic (Unobserved)", "Late-Stage (Observed)", "Late-Stage (Unobserved)"})
+		{
+			SetHeaderCell(column++, 4, status_header);
+		}
+
+		SetHeaderCell(column, 3, "CD4");
 		SetHeaderCell(column++, 4, "Very Low");
 		SetHeaderCell(column++, 4, "Low");
 		SetHeaderCell(column++, 4, "Medium Low");
 		SetHeaderCell(column++, 4, "Medium High");
 		SetHeaderCell(column++, 4, "High");
 		SetHeaderCell(column++, 4, "Very High");
-		SetHeaderCell(column, 3, "With OI History");
-		SetHeaderCell(column++, 4, "Total");
-		SetHeaderCell(column, 3, "With OI History by CD4");
+
+		SetHeaderCell(column, 3, "HVL");
+		SetHeaderCell(column++, 4, "Uninfected");
 		SetHeaderCell(column++, 4, "Very Low");
 		SetHeaderCell(column++, 4, "Low");
 		SetHeaderCell(column++, 4, "Medium Low");
+		SetHeaderCell(column++, 4, "Medium");
 		SetHeaderCell(column++, 4, "Medium High");
 		SetHeaderCell(column++, 4, "High");
 		SetHeaderCell(column++, 4, "Very High");
-		SetHeaderCell(column++, 4, "Proph");
+		SetHeaderCell(column++, 4, "Primary");
+		SetHeaderCell(column++, 4, "Late-Stage");
 	}
 }
 
@@ -194,11 +200,9 @@ void CostsTracker::BuildRow(int time)
 		PushElement(time);
 	}
 
-	int column = 2;
-
 	for(const auto &costs : {undiscounted_, discounted_})
 	{
-		int totalLifeMonths = 0;
+		double totalLifeMonths = 0;
 		double totalQalms = 0;
 		double cepacTotalCost = 0;
 
@@ -210,7 +214,7 @@ void CostsTracker::BuildRow(int time)
 
 		for(int i = 0; i < Person::ENDCD4Strata; i++)
 		{
-			cepacTotalCost += costs.medicalCostsByCd4[i];
+			cepacTotalCost += costs.totalCostsByCd4[i];
 		}
 
 		PushElement(totalLifeMonths);
@@ -241,42 +245,18 @@ void CostsTracker::BuildRow(int time)
 			PushElement(costs.medicalCosts[i]);
 		}
 
-		for(int i = 0; i < DmgProfile::ENDGender; i++)
-		{
-			PushElement(costs.medicalCostsByGender[i]);
-		}
-
 		for(int i = 0; i < (int)ClinicalCostTypes::Last; i++)
 		{
 			PushElement(costs.clinicalCosts[i]);
 		}
 
-		PushElement(0);// costs.hivPositiveCosts);
-		for(int i = 0; i < SimContext::HIV_ID_NUM; i++)
-		{
-			PushElement(costs.medicalCostsByHivState[i]);
-		}
-
-		for(int i = 0; i < Person::ENDCD4Strata; i++)
-		{
-			PushElement(costs.medicalCostsByCd4[i]);
-		}
-
-		for(int i = 0; i < Person::ENDHIVStatus; i++)
-		{
-			PushElement(costs.medicalCostsByHvl[i]);
-		}
-
-		for(int i = 0; i < Person::ENDHIVStatus; i++)
-		{
-			PushElement(costs.medicalCostsByHvlSetpoint[i]);
-		}
-
-		double artTotalCost = 0;
+		double artTotalCost = costs.toxicityCosts;
 		for(int i = 0; i < NumArtLinesToRecord; i++)
 		{
 			artTotalCost += costs.artCosts[i];
 		}
+
+		PushElement(artTotalCost);
 
 		for(int i = 0; i < NumArtLinesToRecord; i++)
 		{
@@ -286,27 +266,25 @@ void CostsTracker::BuildRow(int time)
 		PushElement(costs.drugCosts);
 		PushElement(costs.toxicityCosts);
 
-		double noOiHistTotal = 0;
-		double oiHistTotal = 0;
-		for(int i = 0; i < Person::ENDCD4Strata; i++)
+		for(int i = 0; i < DmgProfile::ENDGender; i++)
 		{
-			noOiHistTotal += costs.medicalCostsByCd4NoOiHist[i];
-			oiHistTotal += costs.medicalCostsByCd4WithOiHist[i];
+			PushElement(costs.totalCostsByGender[i]);
 		}
 
-		PushElement(noOiHistTotal);
-		for(int i = 0; i < Person::ENDCD4Strata; i++)
+		for(int i = 0; i < Person::ENDHIVStatus; i++)
 		{
-			PushElement(costs.medicalCostsByCd4NoOiHist[i]);
+			PushElement(costs.totalCostsByHivState[i]);
 		}
 
-		PushElement(oiHistTotal);
 		for(int i = 0; i < Person::ENDCD4Strata; i++)
 		{
-			PushElement(costs.medicalCostsByCd4WithOiHist[i]);
+			PushElement(costs.totalCostsByCd4[i]);
 		}
 
-		PushElement(0); //Proph
+		for(int i = -1; i < Person::ENDHVLStrata; i++)
+		{
+			PushElement(costs.totalCostsByHvl[i + 1]);
+		}
 	}
 }
 

@@ -33,19 +33,20 @@ public:
 	CostsTracker();
 	~CostsTracker();
 
-	void RecordCircumcision(double cost);
+	void RecordCircumcision(double costUndiscounted, double costDiscounted);
 
-	void RecordCondomUse(double cost);
+	void RecordCondomUse(double costUndiscounted, double costDiscounted);
 
-	void RecordMedicalCosts(const std::array<double, 4> &medicalCosts, const Person &person);
+	void RecordMedicalCosts(const std::array<double, 4> &costsUndiscounted, const std::array<double, 4> &costsDiscounted);
 
-	void RecordClinicalCosts(const std::array<double, (size_t)ClinicalCostTypes::Last> &medicalCosts, const Person &person);
+	void RecordClinicalCosts(const std::array<double, 5> &costsUndiscounted, const std::array<double, 5> &costsDiscounted);
 
-	void RecordTreatmentCosts(const std::array<double, 3> &medicalCosts, int artLine, const Person &person);
+	void RecordTreatmentCosts(const std::array<double, 3> &costsUndiscounted, const std::array<double, 3> &costsDiscounted, int artLine);
 
-	void RecordCepacCosts(double costsUndiscounted, double costsDiscounted, const Person &person);
+	void RecordCepacCosts(double costsUndiscounted, double costsDiscounted, DmgProfile::Gender gender, Person::CD4Strata cd4,
+		Person::HVLStrata hvl, Person::HIVStatus status);
 
-	void RecordLifeMonth(const Person &person);
+	void RecordLifeMonth(double qualityOfLife, double discountFactor, Person::HIVStatus status);
 
 	void PrintCosts(int time, std::ostream &_outStream);
 
@@ -59,17 +60,14 @@ private:
 		double condomCosts;
 		double circumcisionCosts;
 		std::array<double, SimContext::COST_NUM_TYPES> medicalCosts;
-		std::array<double, DmgProfile::ENDGender> medicalCostsByGender;
 		std::array<double, (size_t)ClinicalCostTypes::Last> clinicalCosts;
-		std::array<double, SimContext::HIV_ID_NUM> medicalCostsByHivState;
-		std::array<double, Person::ENDCD4Strata> medicalCostsByCd4;
-		std::array<double, SimContext::HVL_NUM_STRATA> medicalCostsByHvl;
-		std::array<double, SimContext::HVL_NUM_STRATA> medicalCostsByHvlSetpoint;
 		std::array<double, NumArtLinesToRecord> artCosts;
 		double drugCosts;
 		double toxicityCosts;
-		std::array<double, Person::ENDCD4Strata> medicalCostsByCd4NoOiHist;
-		std::array<double, Person::ENDCD4Strata> medicalCostsByCd4WithOiHist;
+		std::array<double, DmgProfile::ENDGender> totalCostsByGender;
+		std::array<double, Person::ENDHIVStatus> totalCostsByHivState;
+		std::array<double, Person::ENDCD4Strata> totalCostsByCd4;
+		std::array<double, Person::ENDHVLStrata + 1> totalCostsByHvl;
 	};
 
 	Costs undiscounted_;
