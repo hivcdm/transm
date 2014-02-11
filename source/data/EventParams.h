@@ -25,24 +25,26 @@ class EventParams
 private :
 
 public :
-	enum TraceFiles
+	enum TraceFileType
 	{
-		POPULATION,
-		INFECTION,
-		PARTNERSHIP,
-		SURVIVAL,
-		COST,
-		CLINICAL,
-		EVENTS,
-		HEALTH,
-		SINGLEPERSON,
-		LE,
-		PARTACQ,
-		CALIBSTATS,
-		ARTROLLOUT,
-		SHIFTEDOUTCOMES,
-		ENDTraceFiles
+		Population,
+		Infection,
+		Partnership,
+		Survival,
+		CostEffectiveness,
+		Clinical,
+		Events,
+		Health,
+		Singleperson,
+		LifeExpectancy,
+		PartnershipAcquisition,
+		CalibrationStatistics,
+		ArtRollout,
+		ShiftedOutcomes,
+		Last,
+		First = Population
 	};
+
 	/**
 	this structure gives information about the rollout file to use and when to apply it if ART Rollout intervention is turned on
 	*/

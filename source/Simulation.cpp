@@ -82,34 +82,34 @@ void Simulation::FirstStep()
 		}
 	}
 
-	if(parameters_.outputTrace[EventParams::INFECTION])
+	if(parameters_.outputTrace[EventParams::TraceFileType::Infection])
 	{
-		population_->popStats->infectionsTracker.printInfections(parameters_, time_, parameters_.traceStreams[EventParams::INFECTION], population_);
+		population_->popStats->infectionsTracker.printInfections(parameters_, time_, parameters_.traceStreams[EventParams::TraceFileType::Infection], population_);
 	}
 
-	if(parameters_.outputTrace[EventParams::PARTNERSHIP])
+	if(parameters_.outputTrace[EventParams::TraceFileType::Partnership])
 	{
-		population_->printPartnerships(parameters_, time_, parameters_.traceStreams[EventParams::PARTNERSHIP]);
+		population_->printPartnerships(parameters_, time_, parameters_.traceStreams[EventParams::TraceFileType::Partnership]);
 	}
 
-	if(parameters_.outputTrace[EventParams::CLINICAL])
+	if(parameters_.outputTrace[EventParams::TraceFileType::Clinical])
 	{
-		population_->printClinical(parameters_, time_, parameters_.traceStreams[EventParams::CLINICAL]);
+		population_->printClinical(parameters_, time_, parameters_.traceStreams[EventParams::TraceFileType::Clinical]);
 	}
 
-	if(parameters_.outputTrace[EventParams::POPULATION])
+	if(parameters_.outputTrace[EventParams::TraceFileType::Population])
 	{
-		population_->printPopulation(parameters_, time_, parameters_.traceStreams[EventParams::POPULATION]);
+		population_->printPopulation(parameters_, time_, parameters_.traceStreams[EventParams::TraceFileType::Population]);
 	}
 
-	if(parameters_.outputTrace[EventParams::ARTROLLOUT])
+	if(parameters_.outputTrace[EventParams::TraceFileType::ArtRollout])
 	{
-		population_->printARTRolloutOutcomes(parameters_, parameters_.traceStreams[EventParams::ARTROLLOUT]);
+		population_->printARTRolloutOutcomes(parameters_, parameters_.traceStreams[EventParams::TraceFileType::ArtRollout]);
 	}
 
-	if(parameters_.outputTrace[EventParams::COST])
+	if(parameters_.outputTrace[EventParams::TraceFileType::CostEffectiveness])
 	{
-		population_->popStats->costsTracker.PrintCosts(parameters_.currTime, parameters_.traceStreams[EventParams::COST]);
+		population_->popStats->costsTracker.PrintCosts(parameters_.currTime, parameters_.traceStreams[EventParams::TraceFileType::CostEffectiveness]);
 	}
 
 	if(parameters_.debugLevel == DEBUG1)
@@ -139,40 +139,40 @@ bool Simulation::Step()
 	//print out new infection stats
 	population_->calcPrevalentPopulation(time_);
 
-	if(parameters_.outputTrace[EventParams::INFECTION])
+	if(parameters_.outputTrace[EventParams::TraceFileType::Infection])
 	{
-		prevalence_ = population_->popStats->infectionsTracker.printInfections(parameters_, time_, parameters_.traceStreams[EventParams::INFECTION], population_);
+		prevalence_ = population_->popStats->infectionsTracker.printInfections(parameters_, time_, parameters_.traceStreams[EventParams::TraceFileType::Infection], population_);
 	}
 
-	if(parameters_.outputTrace[EventParams::POPULATION])
+	if(parameters_.outputTrace[EventParams::TraceFileType::Population])
 	{
-		population_->printPopulation(parameters_, time_, parameters_.traceStreams[EventParams::POPULATION]);
+		population_->printPopulation(parameters_, time_, parameters_.traceStreams[EventParams::TraceFileType::Population]);
 	}
 
-	if(parameters_.outputTrace[EventParams::PARTNERSHIP])
+	if(parameters_.outputTrace[EventParams::TraceFileType::Partnership])
 	{
-		population_->printPartnerships(parameters_, time_, parameters_.traceStreams[EventParams::PARTNERSHIP]);
+		population_->printPartnerships(parameters_, time_, parameters_.traceStreams[EventParams::TraceFileType::Partnership]);
 	}
 
-	if(parameters_.outputTrace[EventParams::CLINICAL])
+	if(parameters_.outputTrace[EventParams::TraceFileType::Clinical])
 	{
-		population_->printClinical(parameters_, time_, parameters_.traceStreams[EventParams::CLINICAL]);
+		population_->printClinical(parameters_, time_, parameters_.traceStreams[EventParams::TraceFileType::Clinical]);
 	}
 
 	//For now, this must come after infectionsTracker.printInfections as it is what calculate prevalence
-	if(parameters_.outputTrace[EventParams::SHIFTEDOUTCOMES])
+	if(parameters_.outputTrace[EventParams::TraceFileType::ShiftedOutcomes])
 	{
-		population_->recordShiftedOutcomes(parameters_, parameters_.traceStreams[EventParams::SHIFTEDOUTCOMES]);
+		population_->recordShiftedOutcomes(parameters_, parameters_.traceStreams[EventParams::TraceFileType::ShiftedOutcomes]);
 	}
 
-	if(parameters_.outputTrace[EventParams::ARTROLLOUT])
+	if(parameters_.outputTrace[EventParams::TraceFileType::ArtRollout])
 	{
-		population_->printARTRolloutOutcomes(parameters_, parameters_.traceStreams[EventParams::ARTROLLOUT]);
+		population_->printARTRolloutOutcomes(parameters_, parameters_.traceStreams[EventParams::TraceFileType::ArtRollout]);
 	}
 
-	if(parameters_.outputTrace[EventParams::COST])
+	if(parameters_.outputTrace[EventParams::TraceFileType::CostEffectiveness])
 	{
-		population_->popStats->costsTracker.PrintCosts(parameters_.currTime, parameters_.traceStreams[EventParams::COST]);
+		population_->popStats->costsTracker.PrintCosts(parameters_.currTime, parameters_.traceStreams[EventParams::TraceFileType::CostEffectiveness]);
 	}
 
 	if(parameters_.calibrationInputs.useCalibration && parameters_.calibrationInputs.monthOfCalibration == time_)
@@ -235,9 +235,9 @@ bool Simulation::Step()
 void Simulation::LastStep()
 {
 	//print survival statistics
-	if(parameters_.outputTrace[EventParams::SURVIVAL])
+	if(parameters_.outputTrace[EventParams::TraceFileType::Survival])
 	{
-		population_->popStats->printSurvivalStats(parameters_.traceStreams[EventParams::SURVIVAL]);
+		population_->popStats->printSurvivalStats(parameters_.traceStreams[EventParams::TraceFileType::Survival]);
 	}
 
 	//Run every infected person left through CEPAC until they die
@@ -252,9 +252,9 @@ void Simulation::LastStep()
 		parameters_.displayOut("Done!\n");
 	}
 
-	if(parameters_.outputTrace[EventParams::INFECTION])
+	if(parameters_.outputTrace[EventParams::TraceFileType::Infection])
 	{
-		population_->popStats->printLMStats(parameters_.traceStreams[EventParams::INFECTION]);
+		population_->popStats->printLMStats(parameters_.traceStreams[EventParams::TraceFileType::Infection]);
 	}
 
 	//finalize and print CEPAC output, but only if at least one patient went through CEPAC
@@ -547,10 +547,10 @@ void Simulation::LoadInput(const std::string &xmlFile)
 	}
 
 	//output seed used for this run
-	if(parameters_.outputTrace[EventParams::EVENTS])
+	if(parameters_.outputTrace[EventParams::TraceFileType::Events])
 	{
-		parameters_.traceStreams[EventParams::EVENTS] << "Seed = " << parameters_.randomNums.getSeed() << std::endl;
-		parameters_.traceStreams[EventParams::EVENTS] << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+		parameters_.traceStreams[EventParams::TraceFileType::Events] << "Seed = " << parameters_.randomNums.getSeed() << std::endl;
+		parameters_.traceStreams[EventParams::TraceFileType::Events] << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
 			Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << "Sexually Active Population"
 			<< Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
 			Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
@@ -567,7 +567,7 @@ void Simulation::LoadInput(const std::string &xmlFile)
 	population_ = new Population(parameters_, simParams->FirstChildElement("population"),
 		simParams->FirstChildElement("lifeExpectancyOutput"), simParams->FirstChildElement("partnerAcqOutput"), duration_);
 
-	if(parameters_.monthOf1990 > 0 && parameters_.outputTrace[EventParams::SHIFTEDOUTCOMES])
+	if(parameters_.monthOf1990 > 0 && parameters_.outputTrace[EventParams::TraceFileType::ShiftedOutcomes])
 	{
 		population_->popStats->enableShiftedOutcomes(parameters_.monthOf1990);
 	}
@@ -1028,14 +1028,14 @@ int Simulation::SimulateMonth()
 	}
 
 	//output the current timestep of the simulation
-	if(parameters_.debugLevel > DEBUG1 && parameters_.outputTrace[EventParams::EVENTS])
+	if(parameters_.debugLevel > DEBUG1 && parameters_.outputTrace[EventParams::TraceFileType::Events])
 	{
-		parameters_.traceStreams[EventParams::EVENTS] << "T:" << time_ << " : Start of Timestep" << std::endl;
+		parameters_.traceStreams[EventParams::TraceFileType::Events] << "T:" << time_ << " : Start of Timestep" << std::endl;
 	}
 
-	if(parameters_.outputTrace[EventParams::SINGLEPERSON])
+	if(parameters_.outputTrace[EventParams::TraceFileType::Singleperson])
 	{
-		parameters_.traceStreams[EventParams::SINGLEPERSON] << std::endl << "** Time " << time_ << ": " << std::endl;
+		parameters_.traceStreams[EventParams::TraceFileType::Singleperson] << std::endl << "** Time " << time_ << ": " << std::endl;
 	}
 
 	bool recordLE = false;
@@ -1076,9 +1076,9 @@ int Simulation::SimulateMonth()
 	{
 		population_->updateAgeBucketsLE();
 
-		if(parameters_.outputTrace[EventParams::LE])
+		if(parameters_.outputTrace[EventParams::TraceFileType::LifeExpectancy])
 		{
-			population_->popStats->printLEStats(parameters_.traceStreams[EventParams::LE], time_);
+			population_->popStats->printLEStats(parameters_.traceStreams[EventParams::TraceFileType::LifeExpectancy], time_);
 		}
 
 		delete population_->popStats->selectedLEStats;
@@ -1093,9 +1093,9 @@ int Simulation::SimulateMonth()
 		population_->popStats->selectedPartAcqStats = new PopStats::SinglePartAcqStats();
 		population_->recordPartAcqFreq();
 
-		if(parameters_.outputTrace[EventParams::PARTACQ])
+		if(parameters_.outputTrace[EventParams::TraceFileType::PartnershipAcquisition])
 		{
-			population_->popStats->printPartAcqStats(parameters_.traceStreams[EventParams::PARTACQ], time_);
+			population_->popStats->printPartAcqStats(parameters_.traceStreams[EventParams::TraceFileType::PartnershipAcquisition], time_);
 		}
 
 		delete population_->popStats->selectedPartAcqStats;

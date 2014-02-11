@@ -361,19 +361,19 @@ double Male::getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventP
 
 	double FOI = this->getTransmissionCoeff() *	(1 - condomEff);
 
-	if(_eventParams.outputTrace[EventParams::SINGLEPERSON] && (this->trace() || _p->trace()))
+	if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && (this->trace() || _p->trace()))
 	{
-		_eventParams.traceStreams[EventParams::SINGLEPERSON] << " !Transmission coefficient from " << this->getID() << " to " <<
+		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " !Transmission coefficient from " << this->getID() << " to " <<
 		        _p->getID() << " is " << this->getTransmissionCoeff();
-		_eventParams.traceStreams[EventParams::SINGLEPERSON] << ";" << endl << " !A condom was ";
+		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << ";" << endl << " !A condom was ";
 
 		if(!this->condomUsedLastFOICalculation)
 		{
-			_eventParams.traceStreams[EventParams::SINGLEPERSON] << "NOT ";
+			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "NOT ";
 		}
 
-		_eventParams.traceStreams[EventParams::SINGLEPERSON] << "used (efficacy " << this->getCondomProtectEff();
-		_eventParams.traceStreams[EventParams::SINGLEPERSON] << ");" << endl << " !Total FOI = " << FOI << endl;
+		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "used (efficacy " << this->getCondomProtectEff();
+		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << ");" << endl << " !Total FOI = " << FOI << endl;
 	}
 
 	return FOI;
@@ -569,20 +569,20 @@ void Male::rerollRiskGroup(EventParams &_eventParams)
 		}
 	}
 
-	if(_eventParams.outputTrace[EventParams::SINGLEPERSON] && this->trace())
+	if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && this->trace())
 	{
-		_eventParams.traceStreams[EventParams::SINGLEPERSON] << " % Male " << this->getID() << " rerolls as ";
+		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " % Male " << this->getID() << " rerolls as ";
 
 		if(this->risk == HIGH)
 		{
-			_eventParams.traceStreams[EventParams::SINGLEPERSON] << "High";
+			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "High";
 		}
 		else
 		{
-			_eventParams.traceStreams[EventParams::SINGLEPERSON] << "Low";
+			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "Low";
 		}
 
-		_eventParams.traceStreams[EventParams::SINGLEPERSON] << " risk" << endl;
+		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " risk" << endl;
 	}
 }
 

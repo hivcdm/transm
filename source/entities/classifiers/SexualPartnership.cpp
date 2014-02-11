@@ -47,9 +47,9 @@ SexualPartnership::SexualPartnership(Person *_person1, Person *_person2, EventPa
 		}
 	}
 
-	if((_person1->trace() || _person2->trace()) && _eventParams.outputTrace[EventParams::SINGLEPERSON])
+	if((_person1->trace() || _person2->trace()) && _eventParams.outputTrace[EventParams::TraceFileType::Singleperson])
 	{
-		_eventParams.traceStreams[EventParams::SINGLEPERSON] << " of duration " << maxDuration << endl;
+		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " of duration " << maxDuration << endl;
 	}
 
 	//set time for partnership to dissolve

@@ -141,26 +141,26 @@ double Female::getFOI(Person *_p, SexualPartnership::Type _partnershipType, Even
 
 	double FOI = this->getTransmissionCoeff() * (1 - condomEff) * (1 - circEff);
 
-	if(_eventParams.outputTrace[EventParams::SINGLEPERSON] && (this->trace() || _p->trace()))
+	if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && (this->trace() || _p->trace()))
 	{
-		_eventParams.traceStreams[EventParams::SINGLEPERSON] << " !Transmission coefficient from " << this->getID() << " to " <<
+		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " !Transmission coefficient from " << this->getID() << " to " <<
 		        _p->getID() << " is " << this->getTransmissionCoeff();
-		_eventParams.traceStreams[EventParams::SINGLEPERSON] << ";" << endl << " !A condom was ";
+		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << ";" << endl << " !A condom was ";
 
 		if(!this->condomUsedLastFOICalculation)
 		{
-			_eventParams.traceStreams[EventParams::SINGLEPERSON] << "NOT ";
+			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "NOT ";
 		}
 
-		_eventParams.traceStreams[EventParams::SINGLEPERSON] << "used (efficacy " << m->getCondomProtectEff();
+		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "used (efficacy " << m->getCondomProtectEff();
 
 		if(m->isCircumcised())
 		{
-			_eventParams.traceStreams[EventParams::SINGLEPERSON] << ");" << endl << " !" << m->getID() <<
+			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << ");" << endl << " !" << m->getID() <<
 			        " is circumcised (efficacy " << circEff;
 		}
 
-		_eventParams.traceStreams[EventParams::SINGLEPERSON] << ");" << endl << " !Total FOI = " << FOI << endl;
+		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << ");" << endl << " !Total FOI = " << FOI << endl;
 	}
 
 	return FOI;
@@ -199,20 +199,20 @@ void Female::rerollRiskGroup(EventParams &_eventParams)
 		this->risk = LOW;
 	}
 
-	if(_eventParams.outputTrace[EventParams::SINGLEPERSON] && this->trace())
+	if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && this->trace())
 	{
-		_eventParams.traceStreams[EventParams::SINGLEPERSON] << " % Female " << this->getID() << " rerolls as ";
+		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " % Female " << this->getID() << " rerolls as ";
 
 		if(this->risk == HIGH)
 		{
-			_eventParams.traceStreams[EventParams::SINGLEPERSON] << "High";
+			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "High";
 		}
 		else
 		{
-			_eventParams.traceStreams[EventParams::SINGLEPERSON] << "Low";
+			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "Low";
 		}
 
-		_eventParams.traceStreams[EventParams::SINGLEPERSON] << " risk" << endl;
+		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " risk" << endl;
 	}
 }
 

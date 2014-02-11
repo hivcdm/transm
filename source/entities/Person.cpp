@@ -205,29 +205,29 @@ void Person::becomeInfected(int _generationOfInfection, EventParams &_eventParam
 	this->ageInfected = this->age;
 	this->generationOfInfection = _generationOfInfection;
 
-	if(_eventParams.outputTrace[EventParams::SINGLEPERSON] && this->trace())
+	if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && this->trace())
 	{
 		if(this->getDmgProfileVal(DmgProfile::GENDER) == DmgProfile::MALE)
 		{
-			_eventParams.traceStreams[EventParams::SINGLEPERSON] << "@ Male ";
+			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "@ Male ";
 		}
 		else
 		{
-			_eventParams.traceStreams[EventParams::SINGLEPERSON] << "@ Female ";
+			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "@ Female ";
 		}
 
-		_eventParams.traceStreams[EventParams::SINGLEPERSON] << this->getID() << " has ";
+		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << this->getID() << " has ";
 
 		if(_generationOfInfection == 0)
 		{
-			_eventParams.traceStreams[EventParams::SINGLEPERSON] << "a prevalent case of HIV";
+			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "a prevalent case of HIV";
 		}
 		else
 		{
-			_eventParams.traceStreams[EventParams::SINGLEPERSON] << "an incident case of HIV";
+			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "an incident case of HIV";
 		}
 
-		_eventParams.traceStreams[EventParams::SINGLEPERSON] << "!" << endl;
+		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "!" << endl;
 	}
 
 	this->stats.setStat(Person::STAT_TIME_OF_INFECTION_MTH, _eventParams.currTime);
@@ -553,18 +553,18 @@ void Person::becomeSexuallyActive(EventParams &_eventParams)
 	//Pass the info the personNode
 	this->graphNode->timeSA = _eventParams.currTime;
 
-	if(_eventParams.outputTrace[EventParams::SINGLEPERSON] && this->trace())
+	if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && this->trace())
 	{
 		if(this->getDmgProfileVal(DmgProfile::GENDER) == DmgProfile::MALE)
 		{
-			_eventParams.traceStreams[EventParams::SINGLEPERSON] << " % Male ";
+			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " % Male ";
 		}
 		else
 		{
-			_eventParams.traceStreams[EventParams::SINGLEPERSON] << " % Female ";
+			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " % Female ";
 		}
 
-		_eventParams.traceStreams[EventParams::SINGLEPERSON] << this->getID() << " becomes sexually active" << endl;
+		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << this->getID() << " becomes sexually active" << endl;
 	}
 }
 
@@ -892,18 +892,18 @@ void Person::rollForBecomeSexWorker(EventParams &_eventParams, bool _isInit, dou
 
 	if(_eventParams.randomNums.chance(currGenderChanceBecomeCSW))
 	{
-		if(_eventParams.outputTrace[EventParams::SINGLEPERSON] && this->trace())
+		if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && this->trace())
 		{
 			if(this->getDmgProfileVal(DmgProfile::GENDER) == DmgProfile::MALE)
 			{
-				_eventParams.traceStreams[EventParams::SINGLEPERSON] << " % Male ";
+				_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " % Male ";
 			}
 			else
 			{
-				_eventParams.traceStreams[EventParams::SINGLEPERSON] << " % Female ";
+				_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " % Female ";
 			}
 
-			_eventParams.traceStreams[EventParams::SINGLEPERSON] << this->getID() << " becomes CSW" << endl;
+			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << this->getID() << " becomes CSW" << endl;
 		}
 
 		this->dmgProfile.set(DmgProfile::EMPLOYMENT, DmgProfile::CSW);
@@ -912,18 +912,18 @@ void Person::rollForBecomeSexWorker(EventParams &_eventParams, bool _isInit, dou
 
 void Person::quitSexWork(EventParams &_eventParams)
 {
-	if(_eventParams.outputTrace[EventParams::SINGLEPERSON] && this->trace())
+	if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && this->trace())
 	{
 		if(this->getDmgProfileVal(DmgProfile::GENDER) == DmgProfile::MALE)
 		{
-			_eventParams.traceStreams[EventParams::SINGLEPERSON] << " % Male ";
+			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " % Male ";
 		}
 		else
 		{
-			_eventParams.traceStreams[EventParams::SINGLEPERSON] << " % Female ";
+			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " % Female ";
 		}
 
-		_eventParams.traceStreams[EventParams::SINGLEPERSON] << this->getID() << " quits being CSW" << endl;
+		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << this->getID() << " quits being CSW" << endl;
 	}
 
 	this->dmgProfile.set(DmgProfile::EMPLOYMENT, DmgProfile::NON_CSW);
@@ -1033,16 +1033,16 @@ Person *Person::sexualActivity(Person *_p, int _numActs, SexualPartnership::Type
 	assert(_partnershipType < SexualPartnership::ENDType);
 	//TODO: CONDOM STUFF!
 
-	if(_eventParams.outputTrace[EventParams::SINGLEPERSON] && (this->trace() || _p->trace()))
+	if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && (this->trace() || _p->trace()))
 	{
 		if(this->trace())
 		{
-			_eventParams.traceStreams[EventParams::SINGLEPERSON] << "# Male " << this->getID() << " engages in " << _numActs <<
+			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "# Male " << this->getID() << " engages in " << _numActs <<
 			        " acts with his " << *(SexualPartnership::TypeEnum.toString(_partnershipType)) << " " << _p->getID() << endl;
 		}
 		else
 		{
-			_eventParams.traceStreams[EventParams::SINGLEPERSON] << "# Female " << _p->getID() << " engages in " << _numActs <<
+			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "# Female " << _p->getID() << " engages in " << _numActs <<
 			        " acts with her " << *(SexualPartnership::TypeEnum.toString(_partnershipType)) << " " << this->getID() << endl;
 		}
 	}
@@ -1085,9 +1085,9 @@ Person *Person::sexualActivity(Person *_p, int _numActs, SexualPartnership::Type
 	//perform _numActs and see whether someone gets infected
 	if(transmissionOccured)
 	{
-		if(_eventParams.outputTrace[EventParams::SINGLEPERSON] && (this->trace() || _p->trace()))
+		if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && (this->trace() || _p->trace()))
 		{
-			_eventParams.traceStreams[EventParams::SINGLEPERSON] << " !!# " << infected->getID() << " infected " <<
+			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " !!# " << infected->getID() << " infected " <<
 			        uninfected->getID() << "!" << endl;
 		}
 
@@ -1108,9 +1108,9 @@ Person *Person::sexualActivity(Person *_p, int _numActs, SexualPartnership::Type
 	}
 	else
 	{
-		if(_eventParams.outputTrace[EventParams::SINGLEPERSON] && (this->trace() || _p->trace()))
+		if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && (this->trace() || _p->trace()))
 		{
-			_eventParams.traceStreams[EventParams::SINGLEPERSON] << " !# " << infected->getID() << " exposed but did not infect " <<
+			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " !# " << infected->getID() << " exposed but did not infect " <<
 			        uninfected->getID() << "!" << endl;
 		}
 
@@ -1327,7 +1327,7 @@ double Person::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 		}
 	}
 
-	if(_eventParams.outputTrace[EventParams::ARTROLLOUT])
+	if(_eventParams.outputTrace[EventParams::TraceFileType::ArtRollout])
 	{
 		if(offeredTest)
 		{
