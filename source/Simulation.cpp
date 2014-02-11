@@ -19,12 +19,12 @@
 #include "Constants.h"
 #include "Population.h"
 #include "cepac/include.h"
-#include "cepacbridge/ParseCepacInput.h"
+#include "cepacbridge/CepacInputParser.h"
 #include "data/eventParams.h"
-#include "entities/classifiers/DmgProfile.h"
 #include "graphviz/graphVizParse.h"
 #include "util/HighResolutionTimer.h"
 #include "util/Util.h"
+#include "entities/classifiers/DmgProfile.h"
 #include "entities/behaviors/SexualBehaviorParams.h"
 
 Simulation::Simulation(const std::string &xmlFile)
@@ -651,9 +651,10 @@ bool Simulation::SetCEPACSimContexts(ticpp::Element *cepacInterventionNode)
 		//From the first file only, get the death tables for non-AIDS death
 		if(fileNumber == 0)
 		{
-			ParseCepacInput cepacInput(fileName);
-			cepacInput.getNonAIDSDeath(Person::probDeathNatCauses[DmgProfile::MALE],
-			                           Person::probDeathNatCauses[DmgProfile::FEMALE]);
+			CepacInputParser cepacInput(fileName);
+			auto probabilities = cepacInput.parseNonAidsDeathProbabilities();
+			Person::probDeathNatCauses[DmgProfile::MALE] = probabilities[0];
+			Person::probDeathNatCauses[DmgProfile::FEMALE] = probabilities[1];
 		}
 	}
 
@@ -743,9 +744,10 @@ bool Simulation::SetRolloutSimContexts(ticpp::Element *rolloutInterventionNode)
 		//From the first file only, get the death tables for non-AIDS death
 		if(fileNumber == 0)
 		{
-			ParseCepacInput cepacInput(fileName);
-			cepacInput.getNonAIDSDeath(Person::probDeathNatCauses[DmgProfile::MALE],
-			                           Person::probDeathNatCauses[DmgProfile::FEMALE]);
+			CepacInputParser cepacInput(fileName);
+			auto probabilities = cepacInput.parseNonAidsDeathProbabilities();
+			Person::probDeathNatCauses[DmgProfile::MALE] = probabilities[0];
+			Person::probDeathNatCauses[DmgProfile::FEMALE] = probabilities[1];
 		}
 	}
 

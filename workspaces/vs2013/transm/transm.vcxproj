@@ -334,7 +334,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\source\cepacbridge\ParseCepacInput.cpp" />
+    <ClCompile Include="..\..\..\source\cepacbridge\CepacInputParser.cpp" />
     <ClCompile Include="..\..\..\source\Constants.cpp" />
     <ClCompile Include="..\..\..\source\data\Enum.cpp" />
     <ClCompile Include="..\..\..\source\entities\behaviors\SexualBehaviorParams.cpp" />
@@ -369,7 +369,7 @@
     <ClCompile Include="..\..\..\source\util\Util.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\source\cepacbridge\ParseCepacInput.h" />
+    <ClInclude Include="..\..\..\source\cepacbridge\CepacInputParser.h" />
     <ClInclude Include="..\..\..\source\Constants.h" />
     <ClInclude Include="..\..\..\source\data\Enum.h" />
     <ClInclude Include="..\..\..\source\data\EventParams.h" />

@@ -76,9 +76,6 @@
     <ClCompile Include="..\..\..\source\data\Enum.cpp">
       <Filter>data</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\cepacbridge\ParseCepacInput.cpp">
-      <Filter>cepacbridge</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\statistics\TabularOutput.cpp">
       <Filter>statistics</Filter>
     </ClCompile>
@@ -91,6 +88,9 @@
     <ClCompile Include="..\..\..\source\Simulation.cpp" />
     <ClCompile Include="..\..\..\source\util\HighResolutionTimerWindows.cpp">
       <Filter>util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\cepacbridge\CepacInputParser.cpp">
+      <Filter>cepacbridge</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -184,9 +184,6 @@
     <ClInclude Include="..\..\..\source\data\EventParams.h">
       <Filter>data</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\cepacbridge\ParseCepacInput.h">
-      <Filter>cepacbridge</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\statistics\TabularOutput.h">
       <Filter>statistics</Filter>
     </ClInclude>
@@ -199,6 +196,9 @@
     <ClInclude Include="..\..\..\source\Simulation.h" />
     <ClInclude Include="..\..\..\source\util\HighResolutionTimer.h">
       <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\cepacbridge\CepacInputParser.h">
+      <Filter>cepacbridge</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
