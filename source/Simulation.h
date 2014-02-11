@@ -14,12 +14,12 @@ struct TimeDependentParameter
 	std::string value;
 };
 
-class Sim
+class Simulation
 {
 public:
-	Sim(const std::string &xmlFile);		//creates a simulation object
+	Simulation(const std::string &xmlFile);		//creates a simulation object
 
-	~Sim();
+	~Simulation();
 
 	void Initialize();
 
@@ -39,6 +39,8 @@ public:
 
 	int GetTime() { return time_; }
 
+	void SetMessageCallback(const std::function<void(const std::string &)> &callback) { parameters_.messageCallback = callback; }
+
 private:
 	void FirstStep();
 
@@ -51,8 +53,7 @@ private:
 	bool SetRolloutSimContexts(ticpp::Element *rolloutInterventionNode);
 
 	/** Sets the Non aids death from a cepac simcontext */
-	void SetNonAidsDeathFromCepac(SimContext *cepacSimContext, std::vector<double> &_maleProbs ,
-	                              std::vector<double> &_femaleProbs);
+	void SetNonAidsDeathFromCepac(SimContext &context, std::vector<double> &male, std::vector<double> &female);
 
 	/** perform one timestep of simulation */
 	int SimulateMonth();

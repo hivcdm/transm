@@ -40,7 +40,7 @@ class Params
 		//int numberInfected[DmgProfile::ENDGender][Person::ENDRiskLevel]; //Calculation involves knowing population size and
 	};
 
-	//this will be set as the Sim::eventParams.debugLevel
+	//this will be set as the Simulation::eventParams.debugLevel
 	DebugLevel debugLevel;
 
 	int maxTime;			//make timesteps to this simulation (in months)

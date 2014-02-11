@@ -4,7 +4,6 @@
     <ClCompile Include="..\..\..\source\Constants.cpp" />
     <ClCompile Include="..\..\..\source\Population.cpp" />
     <ClCompile Include="..\..\..\source\PopulationParams.cpp" />
-    <ClCompile Include="..\..\..\source\Sim.cpp" />
     <ClCompile Include="..\..\..\source\util\Util.cpp">
       <Filter>util</Filter>
     </ClCompile>
@@ -89,12 +88,12 @@
     <ClCompile Include="..\..\..\source\statistics\ArtRolloutTracker.cpp">
       <Filter>statistics</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\Simulation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\Constants.h" />
     <ClInclude Include="..\..\..\source\Population.h" />
     <ClInclude Include="..\..\..\source\PopulationParams.h" />
-    <ClInclude Include="..\..\..\source\Sim.h" />
     <ClInclude Include="..\..\..\source\util\Util.h">
       <Filter>util</Filter>
     </ClInclude>
@@ -197,6 +196,10 @@
     <ClInclude Include="..\..\..\source\statistics\ArtRolloutTracker.h">
       <Filter>statistics</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\util\ThreadSafeQueue.h">
+      <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\Simulation.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="util">

@@ -10,7 +10,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include "Population.h"
-#include "Sim.h"
+#include "Simulation.h"
 #include "Constants.h"
 #include "entities/Female.h"
 #include "entities/Male.h"

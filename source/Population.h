@@ -34,7 +34,8 @@ class Population
 	/** string name of population */
 	string populationLabel;
 
-	friend class Sim;
+	friend class Simulation;
+
 #include "PopulationParams.h"
 
 	/** current size of the population */

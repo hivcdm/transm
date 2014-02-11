@@ -14,7 +14,7 @@
 #include <crtdbg.h>
 #endif
 
-#include "Sim.h"
+#include "Simulation.h"
 
 #include "Constants.h"
 #include "Population.h"
@@ -27,7 +27,7 @@
 #include "util/Util.h"
 #include "entities/behaviors/SexualBehaviorParams.h"
 
-Sim::Sim(const std::string &xmlFile)
+Simulation::Simulation(const std::string &xmlFile)
     : xmlFile_(xmlFile),
 	  failedCalibration_(false),
 	  hasPassedFirstMonthCalibPrev_(false),
@@ -36,7 +36,7 @@ Sim::Sim(const std::string &xmlFile)
 	
 }
 
-Sim::~Sim()
+Simulation::~Simulation()
 {
 	parameters_.close();
 
@@ -48,7 +48,7 @@ Sim::~Sim()
 	DmgProfile::deallocStaticMembers();
 }
 
-void Sim::Initialize()
+void Simulation::Initialize()
 {
 	boost::filesystem::path xmlPath(xmlFile_);
 	parameters_.simName = xmlPath.stem().string();
@@ -58,7 +58,7 @@ void Sim::Initialize()
 	parameters_.displayOut("Sim name is " + parameters_.simName + "\n");
 }
 
-void Sim::FirstStep()
+void Simulation::FirstStep()
 {
 	//initialize/reset monthly stats
 	population_->resetMonthlyStats();
@@ -118,7 +118,7 @@ void Sim::FirstStep()
 	}
 }
 
-bool Sim::Step()
+bool Simulation::Step()
 {
 	time_++;
 
@@ -234,7 +234,7 @@ bool Sim::Step()
 	return true;
 }
 
-void Sim::LastStep()
+void Simulation::LastStep()
 {
 	//print survival statistics
 	if(parameters_.outputTrace[EventParams::SURVIVAL])
@@ -296,7 +296,7 @@ void Sim::LastStep()
 	}
 }
 
-void Sim::LoadInput(const std::string &xmlFile)
+void Simulation::LoadInput(const std::string &xmlFile)
 {
 	ticpp::Document doc(xmlFile);
 	doc.LoadFile();
@@ -577,7 +577,7 @@ void Sim::LoadInput(const std::string &xmlFile)
 	LoadTimeDependentParameters(simParams->FirstChildElement("timeDependentParameters", false));
 }
 
-void Sim::LoadTimeDependentParameters(ticpp::Element *timeDependentParametersElement)
+void Simulation::LoadTimeDependentParameters(ticpp::Element *timeDependentParametersElement)
 {
 	if(!timeDependentParametersElement)
 	{
@@ -602,7 +602,7 @@ void Sim::LoadTimeDependentParameters(ticpp::Element *timeDependentParametersEle
 * This function records all of the SimContext files to be used by the CEPAC disease model throughout the run of the transmission model
 */
 
-bool Sim::SetCEPACSimContexts(ticpp::Element *cepacInterventionNode)
+bool Simulation::SetCEPACSimContexts(ticpp::Element *cepacInterventionNode)
 {
 	parameters_.displayOut("CEPAC Files: \n");
 	ticpp::Element *treatmentFilesNode = cepacInterventionNode->FirstChildElement("cepacTreatmentFiles");
@@ -687,7 +687,7 @@ bool Sim::SetCEPACSimContexts(ticpp::Element *cepacInterventionNode)
 * This function records all of the Rollout SimContext files to be used by the CEPAC disease model throughout the run of the transmission model
 */
 
-bool Sim::SetRolloutSimContexts(ticpp::Element *rolloutInterventionNode)
+bool Simulation::SetRolloutSimContexts(ticpp::Element *rolloutInterventionNode)
 {
 	parameters_.displayOut("Rollout CEPAC Files: \n");
 	ticpp::Element *rolloutFilesNode = rolloutInterventionNode->FirstChildElement("rolloutTreatmentFiles");
@@ -823,16 +823,15 @@ bool Sim::SetRolloutSimContexts(ticpp::Element *rolloutInterventionNode)
 /***
 Sets the Non aids death from a cepac simcontext
 ***/
-void Sim::SetNonAidsDeathFromCepac(SimContext *cepacSimContext, std::vector<double> &_maleProbs ,
-                                   std::vector<double> &_femaleProbs)
+void Simulation::SetNonAidsDeathFromCepac(SimContext &cepacSimContext, std::vector<double> &male, std::vector<double> &female)
 {
-	_maleProbs.clear();
-	_femaleProbs.clear();
+	male.clear();
+	female.clear();
 
 	for(int i = 0; i <= SimContext::AGE_YRS; i++)
 	{
-		_maleProbs.push_back(cepacSimContext->getNatHistInputs()->monthlyNonAIDSDeathProb[SimContext::GENDER_MALE][i]);
-		_femaleProbs.push_back(cepacSimContext->getNatHistInputs()->monthlyNonAIDSDeathProb[SimContext::GENDER_FEMALE][i]);
+		male.push_back(cepacSimContext.getNatHistInputs()->monthlyNonAIDSDeathProb[SimContext::GENDER_MALE][i]);
+		female.push_back(cepacSimContext.getNatHistInputs()->monthlyNonAIDSDeathProb[SimContext::GENDER_FEMALE][i]);
 	}
 }
 
@@ -862,7 +861,7 @@ BetaDist ParseBeta(const std::string &distributionString)
 	return dist;
 }
 
-void Sim::UpdateTimeDependentParameters()
+void Simulation::UpdateTimeDependentParameters()
 {
 	bool checkRanks = false;
 
@@ -1006,7 +1005,7 @@ void Sim::UpdateTimeDependentParameters()
 This function executes one timestep of the simulation
 The ordering of events within this function determines the ordering of events in each timestep
 ****/
-int Sim::SimulateMonth()
+int Simulation::SimulateMonth()
 {
 	parameters_.currTime = time_;
 
@@ -1025,7 +1024,7 @@ int Sim::SimulateMonth()
 			}
 		}
 
-		SetNonAidsDeathFromCepac(parameters_.cepacSimContexts[simIndex], Person::probDeathNatCauses[DmgProfile::MALE], Person::probDeathNatCauses[DmgProfile::FEMALE]);
+		SetNonAidsDeathFromCepac(*parameters_.cepacSimContexts[simIndex], Person::probDeathNatCauses[DmgProfile::MALE], Person::probDeathNatCauses[DmgProfile::FEMALE]);
 	}
 
 	//output the current timestep of the simulation
@@ -1113,17 +1112,17 @@ int Sim::SimulateMonth()
 	return population_->updateSize();
 }
 
-RunStats *Sim::GetCEPACRunStats()
+RunStats *Simulation::GetCEPACRunStats()
 {
 	return parameters_.cepacRunStats;
 }
 
-PopStats *Sim::GetPopStats()
+PopStats *Simulation::GetPopStats()
 {
 	return population_->popStats;
 }
 
-EventParams *Sim::GetEventParams()
+EventParams *Simulation::GetEventParams()
 {
 	return &parameters_;
 }

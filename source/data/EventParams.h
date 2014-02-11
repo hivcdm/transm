@@ -1,14 +1,14 @@
 #pragma once
 
-#include <deque>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
 
-#include "../util/rand/RandomNums.h"
 #include "../Constants.h"
 #include "../cepac/include.h"
+#include "../util/ThreadSafeQueue.h"
+#include "../util/rand/RandomNums.h"
 
 //these are found in Constants.h
 enum DebugLevel;
@@ -261,11 +261,10 @@ public :
 
 	inline void displayOut(const std::string &message)
 	{
-		outputMessageQueue.push_back(message);
+		messageCallback(message);
 	}
 
-	std::deque<std::string> outputMessageQueue;
-
+	std::function<void(const std::string &)> messageCallback;
 	DebugLevel debugLevel;		//determines how much output is printed to the traces
 	RandomNums randomNums;		//random number generator that is used throughout the simulation
 
