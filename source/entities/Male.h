@@ -78,6 +78,8 @@ public :
 		double getPartneringAcqDiscMult(int _ageYrs) const;
 		double getPartneringActsDiscMult(int _ageYrs) const;
 
+		void setChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist);
+
 		//-----------< END getters >--------------------//
 	};
 	//----------------< END class SubPopParams >--------------------------//
@@ -117,7 +119,7 @@ public:
 	/**
 	Access a set of population parameters to be used by Males of that population
 	**/
-	static const SubPopParams *getPopParams(unsigned int _populationID);
+	static SubPopParams *getPopParams(unsigned int _populationID);
 
 	/**
 	this constructor creates a Male that can be simulated

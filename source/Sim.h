@@ -7,6 +7,13 @@
 class Population;
 class InfectionsTracker;
 
+struct TimeDependentParameter
+{
+	int time;
+	std::string key;
+	std::string value;
+};
+
 class Sim
 {
 public:
@@ -50,11 +57,12 @@ private:
 	/** perform one timestep of simulation */
 	int SimulateMonth();
 
-	/** Load new eligibility when rollout sim context changes */
-	void UpdateEligibility(ticpp::Element *rolloutInterventionNode);
-
 	/** loads the next set of input files if seq: returns false if no next input */
-	bool LoadInput(const std::string &xmlFile);
+	void LoadInput(const std::string &xmlFile);
+
+	void LoadTimeDependentParameters(ticpp::Element *timeDependentParametersElement);
+
+	void UpdateTimeDependentParameters();
 
 	const std::string xmlFile_;
 
@@ -70,15 +78,6 @@ private:
 	/** housekeeping parameters that are universal to each event in the simulation */
 	EventParams parameters_;
 
-	/** determines whether this simulation is a sequence of .xml files */
-	bool isSequence_;
-
-	/** position in sequence */
-	int sequencePosition_;
-
-	/** number of total files in sequence */
-	int numberInSequence_;
-
 	/** number of months to delay application of initial prevalence inputs */
 	int prevalenceDelay_;
 
@@ -93,5 +92,7 @@ private:
 	double incidence_;
 
 	double prevalence_;
+
+	std::vector<TimeDependentParameter> timeDependentParameters_;
 };
 

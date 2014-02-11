@@ -219,6 +219,11 @@ double Male::SubPopParams::getTransmitPerEventCoeff(HVLStrata _hvl) const
 	return this->transmitPerEventCoeffs.at(_hvl);
 }
 
+void Male::SubPopParams::setChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist)
+{
+	sexualBehaviorParams[partnershipType]->setChanceCondomUsePerEvent(risk, dist);
+}
+
 //------------ < End getters >-----------------//
 
 //-----------------< End population-level parameters for males >-----------------------/
@@ -226,7 +231,7 @@ double Male::SubPopParams::getTransmitPerEventCoeff(HVLStrata _hvl) const
 
 vector<Male::SubPopParams *> Male::populationSpecificParams;
 
-const Male::SubPopParams *Male::getPopParams(unsigned int _populationID)
+Male::SubPopParams *Male::getPopParams(unsigned int _populationID)
 {
 	assert(_populationID < Male::populationSpecificParams.size());
 	return Male::populationSpecificParams.at(_populationID);

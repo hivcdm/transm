@@ -75,7 +75,7 @@ double Female::SubPopParams::getTransmitPerEventCoeff(HVLStrata _hvl) const
 
 vector<Female::SubPopParams *> Female::populationSpecificParams;
 
-const Female::SubPopParams *Female::getPopParams(unsigned int _populationID)
+Female::SubPopParams *Female::getPopParams(unsigned int _populationID)
 {
 	assert(_populationID < Female::populationSpecificParams.size());
 	return Female::populationSpecificParams.at(_populationID);

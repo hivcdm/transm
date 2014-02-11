@@ -378,7 +378,7 @@ void Population::Params::reloadXML(ticpp::Element *_populationXML, EventParams &
 	_eventParams.displayOut("\n");
 }
 
-double Population::Params::getBirthRate()
+double Population::Params::getBirthRate() const
 {
 	return this->birthRate;
 }

@@ -70,7 +70,7 @@ public:
 	Access a set of population parameters to be used by Males of that population
 	@author schung5
 	**/
-	static const SubPopParams *getPopParams(unsigned int _populationID);
+	static SubPopParams *getPopParams(unsigned int _populationID);
 
 
 	/**

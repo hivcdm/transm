@@ -94,5 +94,6 @@ public :
 	const NormalDist getAverageYearsYounger() const;
 	const ShiftedLogNormalDist getPartnershipDurationMth(Person::RiskLevel risk) const;
 	SexualPartnership::Type getPartnershipType() const;
+	void setChanceCondomUsePerEvent(Person::RiskLevel risk, BetaDist dist) { chanceCondomUsePerEvent[risk] = dist; }
 	//-----< End getters and setters of fields >-----------//
 };

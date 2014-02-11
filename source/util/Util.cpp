@@ -3,8 +3,8 @@
 #include "Util.h"
 #include <boost/filesystem.hpp>
 
-const double Util::MODEL_VERSION = 3.33;
-const double Util::INPUT_VERSION = 3.33;
+const double Util::MODEL_VERSION = 3.34;
+const double Util::INPUT_VERSION = 3.34;
 
 double Util::dayToMonthMult = 1.0 / 30;
 double Util::dayToYearMult = 1.0 / 365;

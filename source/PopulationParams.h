@@ -70,8 +70,8 @@ class Params
 	std::vector<AgeBucketPrevalenceInfo *> initialAgeBuckets;
 
 	//holds the population-level parameters for population of males and the population of females
-	const Male::SubPopParams *maleParams;
-	const Female::SubPopParams *femaleParams;
+	Male::SubPopParams *maleParams;
+	Female::SubPopParams *femaleParams;
 	//this is a quick way to check whether a partnership is technically a fling or not
 	// right now, behavior for males is the only one that has been coded
 	bool partnershipsHaveDuration[DmgProfile::ENDGender][SexualPartnership::ENDType];
@@ -86,5 +86,11 @@ class Params
 	void init(ticpp::Element *_populationXML, unsigned int _populationID, EventParams &_eventParams);
 
 public:
-	double getBirthRate();
+	double getBirthRate() const;
+	double getProportionCircumcised() const { return circumcised; }
+	void setProportionCircumcised(double value) { circumcised = value; }
+	void setChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist)
+	{
+		maleParams->setChanceCondomUsePerEvent(risk, partnershipType, dist);
+	}
 };
