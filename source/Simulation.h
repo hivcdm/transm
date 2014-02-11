@@ -2,6 +2,7 @@
 
 #include "data/EventParams.h"
 #include "statistics/PopStats.h"
+#include "util/HighResolutionTimer.h"
 #include "util/ticpp/ticpp.h"
 
 class Population;
@@ -95,5 +96,7 @@ private:
 	double prevalence_;
 
 	std::vector<TimeDependentParameter> timeDependentParameters_;
+
+	HighResolutionTimer timer_;
 };
 

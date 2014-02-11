@@ -359,6 +359,7 @@
     <ClCompile Include="..\..\..\source\statistics\PopStats.cpp" />
     <ClCompile Include="..\..\..\source\statistics\TabularOutput.cpp" />
     <ClCompile Include="..\..\..\source\statistics\TransmissionSummaryStats.cpp" />
+    <ClCompile Include="..\..\..\source\util\HighResolutionTimerWindows.cpp" />
     <ClCompile Include="..\..\..\source\util\rand\RandomNums.cpp" />
     <ClCompile Include="..\..\..\source\util\ticpp\ticpp.cpp" />
     <ClCompile Include="..\..\..\source\util\ticpp\tinystr.cpp" />
@@ -399,12 +400,11 @@
     <ClInclude Include="..\..\..\source\util\rand\Distributions.h" />
     <ClInclude Include="..\..\..\source\util\rand\IsaacRand.h" />
     <ClInclude Include="..\..\..\source\util\rand\RandomNums.h" />
-    <ClInclude Include="..\..\..\source\util\ThreadSafeQueue.h" />
     <ClInclude Include="..\..\..\source\util\ticpp\ticpp.h" />
     <ClInclude Include="..\..\..\source\util\ticpp\ticpprc.h" />
     <ClInclude Include="..\..\..\source\util\ticpp\tinystr.h" />
     <ClInclude Include="..\..\..\source\util\ticpp\tinyxml.h" />
-    <ClInclude Include="..\..\..\source\util\Timer.h" />
+    <ClInclude Include="..\..\..\source\util\HighResolutionTimer.h" />
     <ClInclude Include="..\..\..\source\util\Util.h" />
     <ClInclude Include="..\..\..\source\util\XMLUtil.h" />
   </ItemGroup>

@@ -7,7 +7,6 @@
 
 #include "../Constants.h"
 #include "../cepac/include.h"
-#include "../util/ThreadSafeQueue.h"
 #include "../util/rand/RandomNums.h"
 
 //these are found in Constants.h

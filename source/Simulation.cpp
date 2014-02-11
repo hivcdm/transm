@@ -23,7 +23,7 @@
 #include "data/eventParams.h"
 #include "entities/classifiers/DmgProfile.h"
 #include "graphviz/graphVizParse.h"
-#include "util/Timer.h"
+#include "util/HighResolutionTimer.h"
 #include "util/Util.h"
 #include "entities/behaviors/SexualBehaviorParams.h"
 
@@ -127,10 +127,7 @@ bool Simulation::Step()
 		FirstStep();
 	}
 
-	SimulationTimer timer;
-	timer.Start();
-
-	double begin = timer.GetTime();
+	double begin = timer_.GetTime();
 
 	if(parameters_.useRollout)
 	{
@@ -138,21 +135,7 @@ bool Simulation::Step()
 	}
 
 	long totalSize = SimulateMonth();
-	//keeps track of the time it takes to run 1 timestep of this model
-	double end = timer.GetTime();
-	std::ostringstream elapsedStringStream;
-	elapsedStringStream.precision(3);
-	elapsedStringStream << std::fixed << (end - begin);
-	std::string elapsedString = elapsedStringStream.str();
 
-	parameters_.displayOut("Timestep(");
-	std::string timeString = boost::lexical_cast<std::string>(time_);
-	parameters_.displayOut(timeString.c_str());
-	parameters_.displayOut("): compute time elapsed = ");
-	parameters_.displayOut(elapsedString.c_str());
-	parameters_.displayOut(". size = ");
-	parameters_.displayOut(boost::lexical_cast<std::string>(totalSize).c_str());
-	parameters_.displayOut("\n");
 	//print out new infection stats
 	population_->calcPrevalentPopulation(time_);
 
@@ -224,6 +207,21 @@ bool Simulation::Step()
 	}
 
 	population_->resetMonthlyStats();
+
+	double end = timer_.GetTime();
+	std::ostringstream elapsedStringStream;
+	elapsedStringStream.precision(3);
+	elapsedStringStream << std::fixed << (end - begin);
+	std::string elapsedString = elapsedStringStream.str();
+
+	parameters_.displayOut("Timestep(");
+	std::string timeString = boost::lexical_cast<std::string>(time_);
+	parameters_.displayOut(timeString.c_str());
+	parameters_.displayOut("): compute time elapsed = ");
+	parameters_.displayOut(elapsedString.c_str());
+	parameters_.displayOut(". size = ");
+	parameters_.displayOut(boost::lexical_cast<std::string>(totalSize).c_str());
+	parameters_.displayOut("\n");
 
 	if(time_ == duration_)
 	{

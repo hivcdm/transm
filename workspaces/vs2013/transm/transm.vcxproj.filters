@@ -89,6 +89,9 @@
       <Filter>statistics</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\Simulation.cpp" />
+    <ClCompile Include="..\..\..\source\util\HighResolutionTimerWindows.cpp">
+      <Filter>util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\Constants.h" />
@@ -184,9 +187,6 @@
     <ClInclude Include="..\..\..\source\cepacbridge\ParseCepacInput.h">
       <Filter>cepacbridge</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\util\Timer.h">
-      <Filter>util</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\statistics\TabularOutput.h">
       <Filter>statistics</Filter>
     </ClInclude>
@@ -196,10 +196,10 @@
     <ClInclude Include="..\..\..\source\statistics\ArtRolloutTracker.h">
       <Filter>statistics</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\util\ThreadSafeQueue.h">
+    <ClInclude Include="..\..\..\source\Simulation.h" />
+    <ClInclude Include="..\..\..\source\util\HighResolutionTimer.h">
       <Filter>util</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\Simulation.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="util">
