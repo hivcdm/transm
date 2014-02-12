@@ -16,6 +16,7 @@ OBJS = source/util/ticpp/ticpp.o \
 	source/util/ticpp/tinyxmlparser.o \
 	source/util/rand/RandomNums.o \
 	source/util/Util.o	\
+	source/util/HighResolutionTimerPosix.o \
 	source/statistics/InfectionsTracker.o \
 	source/statistics/PopStats.o \
 	source/statistics/CostsTracker.o	\
@@ -33,11 +34,11 @@ OBJS = source/util/ticpp/ticpp.o \
 	source/entities/Male.o \
 	source/entities/Person.o \
 	source/data/Enum.o \
-	source/cepacbridge/ParseCepacInput.o \
+	source/cepacbridge/CepacInputParser.o \
 	source/Constants.o \
 	source/Population.o \
 	source/PopulationParams.o \
-	source/Sim.o \
+	source/Simulation.o \
 	source/cepac/AcuteOIUpdater.o	\
 	source/cepac/BeginMonthUpdater.o	\
 	source/cepac/BehaviorUpdater.o	\
@@ -77,8 +78,8 @@ CONSOLE_OBJS = $(OBJS) source/main.o
 CC = gcc
 CFLAGS = -I. -O3 -D__LINUX__
 CXX = g++
-CXXFLAGS = -I. -O3 -std=c++11 -D__LINUX__ -I/PHShome/nna6/build/boost_1_55_0/
-LDFLAGS = -lm -ldl -lpthread -lboost_filesystem -lboost_system
+CXXFLAGS = -I. -O3 -std=c++11 -D__LINUX__ -I/data/cepac/cdm/utils/boost-1.55.0/include
+LDFLAGS = -L/data/cepac/cdm/utils/boost-1.55.0/lib -lm -ldl -lpthread -lboost_filesystem -lboost_system
 
 #rules for compiling C and CPP files
 .SUFFIXES: .c .cpp
