@@ -20,7 +20,7 @@
 #include "Population.h"
 #include "cepac/include.h"
 #include "cepacbridge/CepacInputParser.h"
-#include "data/eventParams.h"
+#include "data/EventParams.h"
 #include "graphviz/graphVizParse.h"
 #include "util/HighResolutionTimer.h"
 #include "util/Util.h"
