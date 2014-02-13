@@ -123,7 +123,7 @@ public:
 	//this is a enum class wrapper that has helpful enum-related functions
 	static EnumCls<Stats> StatsEnum;
 	//this is a type declaration of a class that keeps track of statistics defined in enum Stats
-	typedef ::StatsRecord<Stats, BaseEnumCls::NULL_ENUM> StatsRecord;
+	typedef ::StatsRecord<Stats, BaseEnumCls::nullptr_ENUM> StatsRecord;
 
 
 	//the CEPAC death table has stats for 0-100 years old.
@@ -275,9 +275,9 @@ public:
 	*/
 	int getNumPartners(SexualPartnership::Type, bool);
 
-	double getQualityOfLife() const { return cepacPatient != NULL ? cepacPatient->getGeneralState()->QOLMultiplier : 1; }
+	double getQualityOfLife() const { return cepacPatient != nullptr ? cepacPatient->getGeneralState()->QOLMultiplier : 1; }
 
-	double getCepacDiscountFactor() const { return cepacPatient != NULL ? cepacPatient->getGeneralState()->discountFactor : 1; }
+	double getCepacDiscountFactor() const { return cepacPatient != nullptr ? cepacPatient->getGeneralState()->discountFactor : 1; }
 
 	/**
 	* returns the number of partners in history
@@ -472,7 +472,7 @@ public:
 	// fling with Person _p
 	// this is used for SexualPartnership::Type where there is no duration associated with the partnership (i.e. CASUAL, CSW)
 	//  will roll dice to see how many encounters there are during this fling...
-	//  returns pointer to a newly infected person. returns NULL if no infection occurred
+	//  returns pointer to a newly infected person. returns nullptr if no infection occurred
 	Person *fling(Person *_p, SexualPartnership::Type _partnershipType, EventParams &_eventParams,
 	              InfectionsTracker *infTrack);
 
@@ -556,7 +556,7 @@ public:
 	@param _numActs number of sexual acts that happened
 	@param _randomNums random number generator
 	@param _infectionsTracker tracks the number of inf
-	returns a pointer to a person who has been newly infected. NULL if no infection occured
+	returns a pointer to a person who has been newly infected. nullptr if no infection occured
 	*/
 	Person *sexualActivity(Person *_p, int _numActs, SexualPartnership::Type _partnershipType, EventParams &_eventParams,
 	                       InfectionsTracker *infTrack);

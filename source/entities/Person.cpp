@@ -135,8 +135,8 @@ Person *Person::allPartnerSexualActivity(EventParams &_eventParams, SexualPartne
 	//iterate through all partnerships of SexualActivity::Type _partnershipType and have them engage in sexual activity
 	list<SexualPartnership *>::iterator iter = this->partners[_partnershipType].begin();
 	list<SexualPartnership *>::iterator iterEnd = this->partners[_partnershipType].end();
-	//becomes non-NULL only when this person gets infected. We are saving the partner who infected this person
-	Person *infectedMe = NULL;
+	//becomes non-nullptr only when this person gets infected. We are saving the partner who infected this person
+	Person *infectedMe = nullptr;
 
 	while(iter != iterEnd)
 	{
@@ -146,7 +146,7 @@ Person *Person::allPartnerSexualActivity(EventParams &_eventParams, SexualPartne
 			Person *infected = (*iter)->monthlySexualActivity(_eventParams, infTrack);
 
 			//if you or your partners got infected, the infected joins the _newlyInfected list
-			if(infected != NULL)
+			if(infected != nullptr)
 			{
 				_newlyInfected.push_back(infected);
 
@@ -155,7 +155,7 @@ Person *Person::allPartnerSexualActivity(EventParams &_eventParams, SexualPartne
 				{
 					infectedMe = (*iter)->getOtherPartner(this);
 				}
-			} //if(infected != NULL) {
+			} //if(infected != nullptr) {
 		}
 
 		iter++;
@@ -178,10 +178,10 @@ bool Person::availableForPartnership(SexualPartnership::Type _partnershipType) c
 
 void Person::addPartnership(SexualPartnership *_partnership)
 {
-	assert(_partnership != NULL);
-	assert((_partnership->getPartner1() != NULL));
+	assert(_partnership != nullptr);
+	assert((_partnership->getPartner1() != nullptr));
 	assert(_partnership->getPartner1()->isAlive());
-	assert((_partnership->getPartner2() != NULL));
+	assert((_partnership->getPartner2() != nullptr));
 	assert((_partnership->getPartner2()->isAlive()));
 	this->partners[_partnership->getType()].push_back(_partnership);
 	this->numPartnersInHistory[_partnership->getType()]++;
@@ -571,7 +571,7 @@ void Person::becomeSexuallyActive(EventParams &_eventParams)
 Person *Person::fling(Person *_p, SexualPartnership::Type _partnershipType, EventParams &_eventParams,
                       InfectionsTracker *infTrack)
 {
-	assert((_p != NULL));
+	assert((_p != nullptr));
 	assert(_p->isAlive());
 	assert(_partnershipType < SexualPartnership::ENDType);
 	int numActs = this->rollNumEventsPerPartner(_p, _eventParams.randomNums, _partnershipType);
@@ -698,7 +698,7 @@ bool Person::inCorrectDmgProfileBucket()
 
 bool Person::isAlive() const
 {
-	if(this == NULL)
+	if(this == nullptr)
 	{
 		return false;
 	}
@@ -708,7 +708,7 @@ bool Person::isAlive() const
 
 bool Person::isPartneredWith(Person *_p)
 {
-	assert((_p != NULL));
+	assert((_p != nullptr));
 	assert(_p->isAlive());
 
 	for(SexualPartnership::Type partnershipType = SexualPartnership::Type(0); partnershipType < SexualPartnership::ENDType;
@@ -863,7 +863,7 @@ bool Person::isInfected()
 
 void Person::removePartnership(SexualPartnership *_partnership)
 {
-	assert(_partnership != NULL);
+	assert(_partnership != nullptr);
 	this->partners[_partnership->getType()].remove(_partnership);
 
 	//if a STEADY partnership was removed and we have no more, then we should be set to SINGLE
@@ -1028,7 +1028,7 @@ void Person::setSimContext(SimContext *newSimContext)
 Person *Person::sexualActivity(Person *_p, int _numActs, SexualPartnership::Type _partnershipType,
                                EventParams &_eventParams, InfectionsTracker *infTrack)
 {
-	assert((_p != NULL));
+	assert((_p != nullptr));
 	assert(_p->isAlive());
 	assert(_partnershipType < SexualPartnership::ENDType);
 	//TODO: CONDOM STUFF!
@@ -1054,7 +1054,7 @@ Person *Person::sexualActivity(Person *_p, int _numActs, SexualPartnership::Type
 	//people are either both already infected or both uninfected
 	if(this->isInfected() == _p->isInfected())
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	//if infection occurs, return true
@@ -1118,7 +1118,7 @@ Person *Person::sexualActivity(Person *_p, int _numActs, SexualPartnership::Type
 		uninfected->stats.incrStat(Person::STAT_EXPOSURES_BEFORE_INF, _numActs);
 	}//if( !_eventParams.randomNums.chance(pow( 1-foifPerEvent, eventsThisMonth)) ) {
 
-	return NULL;
+	return nullptr;
 }
 
 template<typename T>
@@ -1618,13 +1618,13 @@ int Person::getSexualActivity()
 
 Person::Person()
 {
-	/*this->healthAfterInfection = NULL;*/
+	/*this->healthAfterInfection = nullptr;*/
 	this->risk = LOW;
 	this->traceMe = false;
 	this->generationOfInfection = -1;
 	this->ageInfected = -1;
 	this->wentThroughCEPAC = false;
-	this->cepacPatient = NULL;
+	this->cepacPatient = nullptr;
 
 	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::ENDType; ++type)
 	{
@@ -1667,8 +1667,8 @@ Person::Person(EventParams &_eventParams, int _age, unsigned int _populationID)
 	this->death = false;
 	this->deathStatus = ALIVE;
 	this->sexualActivityLevel = 1.0;
-	//this->healthAfterInfection = NULL;
-	this->cepacPatient = NULL;
+	//this->healthAfterInfection = nullptr;
+	this->cepacPatient = nullptr;
 	this->CEPACcosts = 0;
 	this->wentThroughCEPAC = false;
 	this->generationOfInfection = -1;
@@ -1793,7 +1793,7 @@ Person *Person::choosePartner(SexualPartnership::Type /*_partnershipType*/, Enti
 {
 	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
 	cerr << "Called Person::choosePartner()" << endl;
-	return NULL;
+	return nullptr;
 }
 
 double Person::getFOI(Person * /*_p*/, SexualPartnership::Type /*_partnershipType*/, EventParams &/*_eventParams*/)

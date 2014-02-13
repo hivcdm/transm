@@ -58,7 +58,7 @@ public:
 	virtual ~QTIsaac(void);
 	T rand(void);
 	virtual void randinit(randctx *ctx, bool bUseSeed);
-	virtual void srand(T a = 0, T b = 0, T c = 0, T *s = NULL);
+	virtual void srand(T a = 0, T b = 0, T c = 0, T *s = nullptr);
 
 
 	inline T ind(T *mm, T x)
@@ -242,7 +242,7 @@ inline void QTIsaac<T>::srand(T a, T b, T c, T *s)
 {
 	for(UINT32 i = 0; i < N; i++)
 	{
-		m_rc.randrsl[i] = s != NULL ? s[i] : 0;
+		m_rc.randrsl[i] = s != nullptr ? s[i] : 0;
 	}
 
 	m_rc.randa = a;

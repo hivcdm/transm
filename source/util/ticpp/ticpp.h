@@ -316,7 +316,7 @@ protected:
 	{
 		if(m_impRC->IsNull())
 		{
-			TICPPTHROW("Internal TiXml Pointer is NULL");
+			TICPPTHROW("Internal TiXml Pointer is nullptr");
 		}
 	}
 
@@ -544,8 +544,8 @@ public:
 	The Parent of this Node.
 	Simple wrapper for TiXmlNode::Parent.
 
-	@param throwIfNoParent [DEF] If true, throws when Parent = NULL.
-	@return The parent of this node, NULL if there is no Parent.
+	@param throwIfNoParent [DEF] If true, throws when Parent = nullptr.
+	@return The parent of this node, nullptr if there is no Parent.
 	@throws Exception When throwIfNoParent is true, and TiXmlNode::Parent returns Null.
 	*/
 	Node *Parent(bool throwIfNoParent = true) const;
@@ -623,7 +623,7 @@ public:
 	Simple wrapper for TiXmlNode::IterateChildren.
 
 	@param previous The previous Node* that was returned from IterateChildren.
-	@return NULL When there are no more children.
+	@return nullptr When there are no more children.
 	*/
 	Node *IterateChildren(Node *previous) const;
 
@@ -633,7 +633,7 @@ public:
 
 	@param value	The value you want to search for.
 	@param previous The previous Node* that was returned from IterateChildren.
-	@return NULL When there are no more children.
+	@return nullptr When there are no more children.
 	*/
 	Node *IterateChildren(const std::string &value, Node *previous) const;
 
@@ -919,7 +919,7 @@ public:
 	Return a pointer to the Document this node lives in.
 
 	@param throwIfNoDocument [DEF] If true, will throw an exception if this node is not linked under a Document.
-	@return A pointer to the Document this node lives in, NULL if not linked under a Document, and 'throwIfNoDocument' is false.
+	@return A pointer to the Document this node lives in, nullptr if not linked under a Document, and 'throwIfNoDocument' is false.
 	@throws Exception When this node is not linked under a Document and 'throwIfNoDocument' is true.
 	*/
 	Document *GetDocument(bool throwIfNoDocument = true) const;
@@ -1114,7 +1114,7 @@ public:
 
 	/**
 	For for loop comparisons.
-	@return NULL
+	@return nullptr
 	@code
 	ticpp::Iterator< ticpp::Node > child;
 	for ( child = child.begin( parent ); child != child.end(); child++ )
@@ -1300,7 +1300,7 @@ protected:
 	*/
 	NodeImp(T *tiXmlPointer)
 	{
-		// Check for NULL pointers
+		// Check for nullptr pointers
 		if(0 == tiXmlPointer)
 		{
 #ifdef TICPP_NO_RTTI
@@ -1536,7 +1536,7 @@ public:
 	Access the first attribute in this element.
 
 	@param throwIfNoAttributes [DEF] If true, throws when there are no attributes
-	@return The first attribute, NULL if there are none and @a throwIfNoAttributes is true
+	@return The first attribute, nullptr if there are none and @a throwIfNoAttributes is true
 	*/
 	Attribute *FirstAttribute(bool throwIfNoAttributes = true) const;
 
@@ -1544,7 +1544,7 @@ public:
 	Access the last attribute in this element.
 
 	@param throwIfNoAttributes [DEF] If true, throws when there are no attributes
-	@return The last attribute, NULL if there are none and @a throwIfNoAttributes is true
+	@return The last attribute, nullptr if there are none and @a throwIfNoAttributes is true
 	*/
 	Attribute *LastAttribute(bool throwIfNoAttributes = true) const;
 

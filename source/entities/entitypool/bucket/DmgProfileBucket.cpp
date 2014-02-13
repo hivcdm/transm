@@ -40,13 +40,13 @@ const string *DmgProfileBucket::getLabel()
 //------------------< Begin DmgProfileBucket Virtual methods >------------------//
 void DmgProfileBucket::clear()
 {
-	assert(this->simpleEntityIndex != NULL);
+	assert(this->simpleEntityIndex != nullptr);
 	this->simpleEntityIndex->clear();
 }
 
 Person *DmgProfileBucket::drawMember(RandomNums &_randomNums, SexualPartnership::Type _partnershipType, bool _remove)
 {
-	assert(this->simpleEntityIndex != NULL);
+	assert(this->simpleEntityIndex != nullptr);
 	Person *removed = this->simpleEntityIndex->drawMember(_randomNums, _partnershipType, _remove);
 
 	//we have to tell the person that they are not part of a bucket anymore
@@ -77,8 +77,8 @@ Person *DmgProfileBucket::drawMember(RandomNums &_randomNums, Person *UNUSED(_ch
 
 bool DmgProfileBucket::erase(Person *_person)
 {
-	assert(this->simpleEntityIndex != NULL);
-	assert(_person != NULL);
+	assert(this->simpleEntityIndex != nullptr);
+	assert(_person != nullptr);
 
 	try
 	{
@@ -98,27 +98,27 @@ bool DmgProfileBucket::erase(Person *_person)
 
 bool DmgProfileBucket::exists(Person *_person)
 {
-	assert(this->simpleEntityIndex != NULL);
-	assert(_person != NULL);
+	assert(this->simpleEntityIndex != nullptr);
+	assert(_person != nullptr);
 	return this->simpleEntityIndex->exists(_person);
 }
 
 unsigned long DmgProfileBucket::getNumInfected()
 {
-	assert(this->simpleEntityIndex != NULL);
+	assert(this->simpleEntityIndex != nullptr);
 	return this->simpleEntityIndex->getNumInfected();
 }
 
 unsigned long DmgProfileBucket::getNumInfected(int generation)
 {
-	assert(this->simpleEntityIndex != NULL);
+	assert(this->simpleEntityIndex != nullptr);
 	return this->simpleEntityIndex->getNumInfected(generation);
 }
 
 bool DmgProfileBucket::insert(Person *_person)
 {
-	assert(this->simpleEntityIndex != NULL);
-	assert(_person != NULL);
+	assert(this->simpleEntityIndex != nullptr);
+	assert(_person != nullptr);
 	this->simpleEntityIndex->insert(_person);
 	//let the _person know of their new DmgProfileBucket membership
 	_person->setCurrBucketProfileID(this->getProfileID());
@@ -126,19 +126,19 @@ bool DmgProfileBucket::insert(Person *_person)
 }
 
 /*DmgProfileBucket::JIterator DmgProfileBucket::iterator() {
-	assert(this->simpleEntityIndex != NULL);
+	assert(this->simpleEntityIndex != nullptr);
 	return JIterator( new JavaStyleIterator(this) );
 }*/
 
 void DmgProfileBucket::print(std::ostream &_outStream, std::string _prefix)
 {
-	assert(this->simpleEntityIndex != NULL);
+	assert(this->simpleEntityIndex != nullptr);
 	this->simpleEntityIndex->print(_outStream, _prefix);
 }
 
 unsigned long DmgProfileBucket::size()
 {
-	assert(this->simpleEntityIndex != NULL);
+	assert(this->simpleEntityIndex != nullptr);
 	return this->simpleEntityIndex->size();
 }
 
@@ -165,7 +165,7 @@ list<Person *> DmgProfileBucket::ageOneTimeStep()
 //this function should not be used in this sim, it's just here for a default constructor
 DmgProfileBucket::DmgProfileBucket()
 {
-	simpleEntityIndex = NULL;
+	simpleEntityIndex = nullptr;
 }
 
 //this creates a simple DmgProfileBucket with an index that is sorted by age
@@ -174,7 +174,7 @@ DmgProfileBucket::DmgProfileBucket(int _id, const string *_bucketLabel, bool _si
 	this->dmgProfileID = _id;
 	this->bucketLabel = _bucketLabel;
 	//if this is a simple index, then use field simpleEntityIndex
-	this->simpleEntityIndex = _simpleIndex ? new PersonSet() : NULL;
+	this->simpleEntityIndex = _simpleIndex ? new PersonSet() : nullptr;
 }
 
 DmgProfileBucket::~DmgProfileBucket(void)

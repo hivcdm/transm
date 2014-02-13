@@ -146,8 +146,8 @@ public :
 		currTime = 0;
 		genGraphViz = false;
 		useRollout = false;
-		untreatedContext = NULL;
-		treatedContext = NULL;
+		untreatedContext = nullptr;
+		treatedContext = nullptr;
 	}
 
 	//current internal clock for a particular Population

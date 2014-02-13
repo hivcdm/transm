@@ -232,7 +232,7 @@ void EntityIndex<_PSC, _KeyValType>::JavaStyleIterator::reset()
 template <Person::SelectingCriteria _PSC, class _KeyValType>
 EntityIndex<_PSC, _KeyValType>::JavaStyleIterator::~JavaStyleIterator()
 {
-	this->index = NULL;
+	this->index = nullptr;
 }
 
 //-----------< End Methods for EntityIndex<_PSC,_KeyValType>::JavaStyleIterator >--------------//
@@ -278,13 +278,13 @@ Person *EntityIndex<_PSC, _KeyValType>::drawMember(RandomNums &_randomNums,
 	//assume that everyone in this pool has an equal shot at being chosen
 	int numPotentials = this->size();
 
-	//return NULL if this index is empty
+	//return nullptr if this index is empty
 	if(numPotentials == 0)
 	{
-		return NULL;
+		return nullptr;
 	}
 
-	return this->drawMember(_randomNums, NULL, SexualPartnership::ENDType, _remove);
+	return this->drawMember(_randomNums, nullptr, SexualPartnership::ENDType, _remove);
 }
 
 template <Person::SelectingCriteria _PSC, class _KeyValType>
@@ -298,7 +298,7 @@ Person *EntityIndex<_PSC, _KeyValType>::drawMember(RandomNums &_randomNums, Pers
 	_KeyValType maxDesired = std::numeric_limits<_KeyValType>::max();
 
 	//if there is a specific choose then make sure they want a specific kind of partnership
-	if(_chooser != NULL)
+	if(_chooser != nullptr)
 	{
 		assert(_partnershipType != SexualPartnership::ENDType);
 		minDesired = (_KeyValType)_chooser->getMinPartnerSelectVal(_PSC, _partnershipType);
@@ -321,7 +321,7 @@ Person *EntityIndex<_PSC, _KeyValType>::drawMember(RandomNums &_randomNums, Pers
 	//if nobody is available, stop now
 	if(numPotentials == 0)
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	//get an individual
@@ -354,10 +354,10 @@ Person *EntityIndex<_PSC, _KeyValType>::getMember(unsigned long _randomAccessInd
 {
 	assert(_randomAccessIndex < this->numPeople);
 
-	//return NULL if there are no more people
+	//return nullptr if there are no more people
 	if(this->numPeople == 0)
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	//traverse to person at _randomAccessIndex

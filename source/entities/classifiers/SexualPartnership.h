@@ -132,7 +132,7 @@ public :
 
 	/**
 	//models sexual activity in a couple.
-	@return returns a pointer to a person who has been newly infected. NULL if no infection occured
+	@return returns a pointer to a person who has been newly infected. nullptr if no infection occured
 	@author schung5
 	**/
 	Person *monthlySexualActivity(EventParams &_eventParams, InfectionsTracker *infTrack);

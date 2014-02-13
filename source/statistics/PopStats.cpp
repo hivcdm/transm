@@ -25,12 +25,12 @@ PopStats::PopStats(long maxTime, ticpp::Element *_LEOutputNode, ticpp::Element *
 	yearlyTestsByResult(4)
 {
 	enumClass = new EnumCls<PopStats::LifeStats>(PopStats::LifeStatsStr, PopStats::ENDLifeStats);
-	lifeStats = new StatsRecord<PopStats::LifeStats, BaseEnumCls::NULL_ENUM>(enumClass);
+	lifeStats = new StatsRecord<PopStats::LifeStats, BaseEnumCls::nullptr_ENUM>(enumClass);
 	survivalStats = new SurvivalStats();
 	//Set up the timeToRecord vector... by default, record at every 1/4 of the maxTime
 	this->timeToRecord[0] = 1;
-	this->selectedLEStats = NULL;
-	this->selectedPartAcqStats = NULL;
+	this->selectedLEStats = nullptr;
+	this->selectedPartAcqStats = nullptr;
 
 	for(int i = 1; i < NUM_TIMES_TO_RECORD; i++)
 	{
@@ -133,7 +133,7 @@ PopStats::~PopStats()
 }
 void PopStats::processDeath(Person *_p, EventParams &_eventParams)
 {
-	assert((_p != NULL));
+	assert((_p != nullptr));
 	assert((!_p->isAlive()));
 	DmgProfile::Gender gend = (DmgProfile::Gender) _p->getDmgProfileVal(DmgProfile::GENDER);
 	DmgProfile::Employment cswStatus = (DmgProfile::Employment) _p->getDmgProfileVal(DmgProfile::EMPLOYMENT);
@@ -208,7 +208,7 @@ void PopStats::processDeath(Person *_p, EventParams &_eventParams)
 
 void PopStats::processPostMaxTimeDeath(Person *_p)
 {
-	assert((_p != NULL));
+	assert((_p != nullptr));
 	//assert((!_p->isAlive()));
 	//assert(!(_p->cepacPatient->isAlive()));
 	const Person::StatsRecord *stats = _p->getStats();
@@ -575,7 +575,7 @@ void PopStats::printSurvivalStats(std::ostream &_outStream)
 }
 void PopStats::printLEStats(std::ostream &_outStream, long currTime)
 {
-	assert((this->selectedLEStats != NULL));
+	assert((this->selectedLEStats != nullptr));
 	double proportionalDeathRate[Person::maxYrForDeathStats];//proportionaldeathrate=number of deaths/total number of people for each age bucket
 	double lifeTablePop[Person::maxYrForDeathStats];//number of people who survive to age bucket for a hypothetical Pop of n people
 	double lifeTableDeaths[Person::maxYrForDeathStats];//number of deaths in life table for hypothetical Population
@@ -757,7 +757,7 @@ void PopStats::printShiftedOutcomes(std::ostream &_outStream, int year)
 
 void PopStats::printPartAcqStats(std::ostream &_outStream, long currTime)
 {
-	assert(this->selectedPartAcqStats != NULL);
+	assert(this->selectedPartAcqStats != nullptr);
 
 	if(this->printHeaderPartAcq)
 	{
@@ -785,8 +785,8 @@ void PopStats::printPartAcqStats(std::ostream &_outStream, long currTime)
 void PopStats::recordIncidentInfection(EventParams &_eventParams, long _time, SexualPartnership::Type _partnershipType,
                                        const  Person *_infector, const Person *_infected, bool _print, ostream &_traceOutStream)
 {
-	assert((_infector != NULL) && (_infector->isAlive()));
-	assert((_infected != NULL) && (_infected->isAlive()));
+	assert((_infector != nullptr) && (_infector->isAlive()));
+	assert((_infected != nullptr) && (_infected->isAlive()));
 	assert(_time >= 0);
 	DmgProfile::Gender gend = (DmgProfile::Gender) _infected->getDmgProfileVal(DmgProfile::GENDER);
 	DmgProfile::Employment cswStatus = (DmgProfile::Employment) _infected->getDmgProfileVal(DmgProfile::EMPLOYMENT);

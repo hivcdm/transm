@@ -17,7 +17,7 @@ int ID_NEWINFECTSELECT = 6;
 int ID_PREVSASELECT = 7;
 
 SetupBatchStatsDialog::SetupBatchStatsDialog(const wxString &title, DisplayBox *dbox)
-	: wxDialog(NULL, -1, title, wxDefaultPosition, wxSize(350, 280))
+	: wxDialog(nullptr, -1, title, wxDefaultPosition, wxSize(350, 280))
 {
 	wxBoxSizer *vbox = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer *hbox = new wxBoxSizer(wxHORIZONTAL);

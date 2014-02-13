@@ -158,7 +158,7 @@
     <TargetName>cepac45bd</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug (CLI)|Win32'">
-    <TargetName>cepac45bd</TargetName>
+    <TargetName>cepac44ad</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetName>cepac45b</TargetName>

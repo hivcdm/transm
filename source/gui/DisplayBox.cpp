@@ -37,7 +37,7 @@ int ID_BATCHSTATS = 7;
 int ID_FIXEDSEED = 8;
 
 DisplayBox::DisplayBox(const wxString &title)
-	: wxFrame(NULL, wxID_ANY, title, wxPoint(-1, -1), wxSize(600, 600))
+	: wxFrame(nullptr, wxID_ANY, title, wxPoint(-1, -1), wxSize(600, 600))
 {
 	//Set frame icon
 	SetIcon(wxIcon(trans1_xpm));

@@ -4,7 +4,7 @@
 //-----------< Begin Constructors >-----------------//
 RandomNums::RandomNums()
 {
-	this->mtRand.seed(static_cast<uint32_t>(time(NULL)));
+	this->mtRand.seed(static_cast<uint32_t>(time(nullptr)));
 	this->mtRand_OneOverMaxMult = 1.0 / mtRand.max();
 }
 

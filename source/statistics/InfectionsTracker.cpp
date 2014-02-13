@@ -175,7 +175,7 @@ double InfectionsTracker::getSAPrev(Population *_population)
 	DmgProfile NAProfile;
 	NAProfile.set(DmgProfile::SEXUAL_ACTIVITY_STATUS, DmgProfile::NA);
 	vector<DmgProfile::ProfileID> NAProfileIDs;
-	NAProfile.selectProfileIDs(NAProfileIDs, NULL);
+	NAProfile.selectProfileIDs(NAProfileIDs, nullptr);
 
 	for(size_t i = 0; i < NAProfileIDs.size(); i++)
 	{
@@ -291,9 +291,9 @@ void InfectionsTracker::recordIncidentInfection(long _time, SexualPartnership::T
 {
 	assert(_time >= 0);
 	//check to see if the people are valid: not null, not dead, in a valid bucket
-	assert((_infector != NULL) && (_infector->isAlive())
+	assert((_infector != nullptr) && (_infector->isAlive())
 	       && (Util::withinRange(_infector->getDmgProfile()->getProfileID(), DmgProfile::MIN, DmgProfile::MAX)));
-	assert((_infected != NULL) && (_infected->isAlive())
+	assert((_infected != nullptr) && (_infected->isAlive())
 	       && (Util::withinRange(_infected->getDmgProfile()->getProfileID(), DmgProfile::MIN, DmgProfile::MAX)));
 	assert(_partnershipType < SexualPartnership::ENDType);
 
@@ -817,7 +817,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	DmgProfile NAProfile;
 	NAProfile.set(DmgProfile::SEXUAL_ACTIVITY_STATUS, DmgProfile::NA);
 	vector<DmgProfile::ProfileID> NAProfileIDs;
-	NAProfile.selectProfileIDs(NAProfileIDs, NULL);
+	NAProfile.selectProfileIDs(NAProfileIDs, nullptr);
 
 	for(size_t i = 0; i < NAProfileIDs.size(); i++)
 	{
@@ -872,7 +872,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	//First tally the infected men
 	GenderProfile.set(DmgProfile::GENDER, DmgProfile::MALE);
 	vector<DmgProfile::ProfileID> GenderProfileIDs;
-	GenderProfile.selectProfileIDs(GenderProfileIDs, NULL);
+	GenderProfile.selectProfileIDs(GenderProfileIDs, nullptr);
 
 	for(size_t i = 0; i < GenderProfileIDs.size(); i++)
 	{
@@ -885,7 +885,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	//Next tally the infected women
 	GenderProfile.set(DmgProfile::GENDER, DmgProfile::FEMALE);
 	GenderProfileIDs.clear();
-	GenderProfile.selectProfileIDs(GenderProfileIDs, NULL);
+	GenderProfile.selectProfileIDs(GenderProfileIDs, nullptr);
 
 	for(size_t i = 0; i < GenderProfileIDs.size(); i++)
 	{
@@ -920,7 +920,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	DmgProfile CSWProfile;
 	CSWProfile.set(DmgProfile::EMPLOYMENT, DmgProfile::CSW);
 	vector<DmgProfile::ProfileID> CSWProfileIDs;
-	CSWProfile.selectProfileIDs(CSWProfileIDs, NULL);
+	CSWProfile.selectProfileIDs(CSWProfileIDs, nullptr);
 
 	for(size_t i = 0; i < CSWProfileIDs.size(); i++)
 	{

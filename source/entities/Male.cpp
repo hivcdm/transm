@@ -18,7 +18,7 @@ Male::SubPopParams::SubPopParams()
 
 Male::SubPopParams::SubPopParams(ticpp::Element *_maleParams, EventParams &_eventParams)
 {
-	assert(_maleParams != NULL);
+	assert(_maleParams != nullptr);
 	this->loadParamsXML(_maleParams, _eventParams);
 }
 
@@ -29,7 +29,7 @@ The order we read parameters in should match the ordering of the static variable
 //was throw(...)
 int Male::SubPopParams::loadParamsXML(ticpp::Element *_maleParams, EventParams &_eventParams) throw()
 {
-	assert(_maleParams != NULL);
+	assert(_maleParams != nullptr);
 
 	try
 	{
@@ -312,7 +312,7 @@ Male::~Male(void)
 
 double Male::getCondomUseProb(Person *_p, SexualPartnership::Type _partnershipType)
 {
-	assert((_p != NULL));
+	assert((_p != nullptr));
 	assert(_p->isAlive());
 	assert(_partnershipType < SexualPartnership::ENDType);
 	return this->chanceCondomUsePerEvent[_partnershipType];
@@ -346,7 +346,7 @@ double Male::getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventP
 	//transmission coeff				1-	(condoms are used and succeed)
 	assert(Util::validProbability(this->getCondomUseProb(_p, _partnershipType)));
 	assert(Util::validProbability(this->getCondomProtectEff()));
-	assert((_p != NULL));
+	assert((_p != nullptr));
 	assert(_p->isAlive());
 	assert(_partnershipType < SexualPartnership::ENDType);
 	//Determine if a condom was used and record
@@ -452,7 +452,7 @@ double Male::getTransmissionCoeff()
 
 bool Male::possibleMatch(SexualPartnership::Type _partnershipType, Person *_p)
 {
-	assert((_p != NULL));
+	assert((_p != nullptr));
 	assert(_p->isAlive());
 	assert(_partnershipType < SexualPartnership::ENDType);
 	assert(false);  // check if we are using years instead of Month
@@ -500,7 +500,7 @@ int Male::rollForNumPartners(RandomNums &_randomNums, SexualPartnership::Type _p
 
 int Male::rollNumEventsPerPartner(Person *_p, RandomNums &_randomNums, SexualPartnership::Type _partnershipType)
 {
-	assert((_p != NULL));
+	assert((_p != nullptr));
 	assert(_p->isAlive());
 	assert(_partnershipType < SexualPartnership::ENDType);
 	double meanCoitalEvents = this->numActsPerMonth[_partnershipType];
@@ -527,7 +527,7 @@ int Male::rollNumEventsPerPartner(Person *_p, RandomNums &_randomNums, SexualPar
 
 int Male::rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNums &_randomNums, Person *_p)
 {
-	assert((_p != NULL));
+	assert((_p != nullptr));
 	assert(_p->isAlive());
 	assert(_partnershipType < SexualPartnership::ENDType);
 	ShiftedLogNormalDist duration = Male::populationSpecificParams.at(this->populationID)->getSexualBehaviorParams(

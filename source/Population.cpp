@@ -33,8 +33,8 @@ Population::Population(EventParams &_eventParams, ticpp::Element *_popParamsNode
                        ticpp::Element *_partAcqOutputNode, long _maxTime) :
 	rankedForTreatment(5)
 {
-	assert(_popParamsNode != NULL);
-	assert(_LEOutputNode != NULL);
+	assert(_popParamsNode != nullptr);
+	assert(_LEOutputNode != nullptr);
 	//save Population ID number and increment sim-wide counter
 	this->populationID = Population::idCounter++;
 
@@ -50,13 +50,13 @@ Population::Population(EventParams &_eventParams, ticpp::Element *_popParamsNode
 	//create EntityPool - this will contain all Entities
 	this->entities = new EntityPool(this->popWideParams.SAEntAgeMths, this->populationID, this->popWideParams.assort);
 	//initialize infection trace generator print detailed info about certain ProfileID's
-	// in this case, all ProfileID's w/ non-NULL DmgProfileBuckets
+	// in this case, all ProfileID's w/ non-nullptr DmgProfileBuckets
 	DmgProfile::ProfileID currProfileID = DmgProfile::MIN;
 
 	while(currProfileID <= DmgProfile::MAX)
 	{
 		//if it is being used in this Population, then append to _profileIDs
-		if((this->entities->getBucket(currProfileID) != NULL) &&
+		if((this->entities->getBucket(currProfileID) != nullptr) &&
 		        (DmgProfile::get(currProfileID, DmgProfile::SEXUAL_ACTIVITY_STATUS) != DmgProfile::NA))
 		{
 			this->popStats->infectionsTracker.addToDetailedTrace(currProfileID);
@@ -131,11 +131,11 @@ Population::Population(EventParams &_eventParams, ticpp::Element *_popParamsNode
 	//fix code below, i've put placeholders for multiple singles buckets, but right now we only use 1 of each gender
 	//errhode: Is this taken care of with the whole agebucket inside SexualMixingBucket thing?
 	assert(Constants::TODO_LO_PRI);
-	selector.selectProfileIDs(bucketIDs, NULL);
+	selector.selectProfileIDs(bucketIDs, nullptr);
 	DmgProfileBucket *singleMales = this->entities->getBucket(bucketIDs.at(0));
 	selector.set(DmgProfile::GENDER, DmgProfile::FEMALE);
 	bucketIDs.clear();
-	selector.selectProfileIDs(bucketIDs, NULL);
+	selector.selectProfileIDs(bucketIDs, nullptr);
 	DmgProfileBucket *singleFemales = this->entities->getBucket(bucketIDs.at(0));
 	/** create prevalent formSteadyPartnerships (time = 0) **/
 	//the demographics that we are pulling the eligibles from -- same as for regular;
@@ -158,14 +158,14 @@ Population::Population(EventParams &_eventParams, ticpp::Element *_popParamsNode
 		//choose a random male from the pool
 		Male *m = (Male *)singleMales->drawMember(_eventParams.randomNums, SexualPartnership::STEADY, Constants::DONT_REMOVE);
 
-		if(m == NULL)
+		if(m == nullptr)
 		{
 			_eventParams.displayOut("Not enough single males\n");
 			break;
 		}
 
 		//try to form partnership, will add Male back to the pool if partnership was formed
-		this->createPartnerships(_eventParams, m, NULL, SexualPartnership::STEADY, true);
+		this->createPartnerships(_eventParams, m, nullptr, SexualPartnership::STEADY, true);
 		numCouples--;
 	} //while(numCouples > 0) {
 
@@ -189,14 +189,14 @@ Population::Population(EventParams &_eventParams, ticpp::Element *_popParamsNode
 		//choose a random male from the pool
 		Male *m = (Male *)singleMales->drawMember(_eventParams.randomNums, SexualPartnership::REGULAR, Constants::DONT_REMOVE);
 
-		if(m == NULL)
+		if(m == nullptr)
 		{
 			_eventParams.displayOut("Not enough single males!\n");
 			break;
 		}
 
 		//form partnership, will add Male back to the pool if partnership was formed
-		this->createPartnerships(_eventParams, m, NULL, SexualPartnership::REGULAR, true);
+		this->createPartnerships(_eventParams, m, nullptr, SexualPartnership::REGULAR, true);
 		numCouples--;
 	} //while(numCouples > 0) {
 
@@ -229,7 +229,7 @@ void Population::initPartnershipBuckets()
 	selector.set(DmgProfile::EMPLOYMENT, DmgProfile::NON_CSW);
 	//all SA, non-CSW males can form partnerships of any type
 	vector<DmgProfile::ProfileID> eligibleInitiators;
-	selector.selectProfileIDs(eligibleInitiators, NULL);
+	selector.selectProfileIDs(eligibleInitiators, nullptr);
 	//men can form all types of partnerships
 	vector<SexualPartnership::Type> availPartnershipTypes;
 
@@ -243,8 +243,8 @@ void Population::initPartnershipBuckets()
 	{
 		BucketSexualMixing *bucket = (BucketSexualMixing *)this->entities->getBucket(eligibleInitiators.at(i));
 
-		//if this Bucket is NULL, the skip
-		if(bucket != NULL)
+		//if this Bucket is nullptr, the skip
+		if(bucket != nullptr)
 		{
 			this->partneringInitiators[bucket] = availPartnershipTypes;
 			this->profilesToPartnershipTypes[bucket->getProfileID()] = availPartnershipTypes;
@@ -266,7 +266,7 @@ void Population::initPartnershipBuckets()
 			selectedIDs.clear();
 			//contains profile ID's that were selected from
 			currProfileSelector.set(partneringParams->getAvailableBucket(j).dmgProfileSelector);
-			currProfileSelector.selectProfileIDs(selectedIDs, NULL);
+			currProfileSelector.selectProfileIDs(selectedIDs, nullptr);
 			assert(selectedIDs.size() == 1);	//we don't want any wild cards in the DmgProfile string.
 			assert(Constants::TODO_DEF);		//eventually, we should change this.
 
@@ -284,7 +284,7 @@ void Population::initPartnershipBuckets()
 
 			BucketSexualMixing *bucket = (BucketSexualMixing *)this->entities->getBucket(selectedIDs.at(0));
 
-			if(bucket == NULL)
+			if(bucket == nullptr)
 			{
 				cerr << "This Demographic Profile " << *DmgProfile::toString(selectedIDs.at(0)) <<
 				     " has not been instantiated and so cannot be used" << endl;
@@ -322,7 +322,7 @@ void Population::births(EventParams &_eventParams)
 	unsigned long numBorn = Util::round(this->currSize * this->popWideParams.birthRate);
 	unsigned long numMales = static_cast<unsigned long>(this->popWideParams.proportionMale * numBorn);
 	DmgProfile::Gender gender;
-	Person *p = NULL;
+	Person *p = nullptr;
 
 	//create this->currSize * this->birthRate New people
 	for(unsigned long i = 0; i < numBorn; ++i)
@@ -337,7 +337,7 @@ void Population::births(EventParams &_eventParams)
 			_eventParams.numNewbornsTraced++;
 		}
 
-		p = this->generatePerson(_eventParams, gender, NULL, toTrace);
+		p = this->generatePerson(_eventParams, gender, nullptr, toTrace);
 
 		if(_eventParams.debugLevel > DEBUG1 && _eventParams.outputTrace[EventParams::TraceFileType::Events])
 		{
@@ -376,9 +376,9 @@ void Population::updateAgeBucketsLE()
 		while(p_Iter != this->entities->end(gender))
 		{
 			Person *p = (*p_Iter);
-			assert(p != NULL);
+			assert(p != nullptr);
 			//calculate life expectancy
-			assert((this->popStats->selectedLEStats != NULL));
+			assert((this->popStats->selectedLEStats != nullptr));
 			assert(p->getAge(YEAR) >= 0);
 			assert(p->getAge(YEAR) < Person::maxYrForDeathStats);
 			this->popStats->selectedLEStats->popByAge[p->getAge(YEAR)]++;
@@ -394,7 +394,7 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 {
 	int totalDied = 0;		//keeps track of deaths this timestep
 	//holds a pointer to the current bucket we are looking at
-	DmgProfileBucket *currBucket = NULL;
+	DmgProfileBucket *currBucket = nullptr;
 	//helps us iterate through all DemographicProfileBuckets
 	DmgProfile::ProfileID currProfileID = DmgProfile::MIN;
 	//Used to iterate through persons
@@ -413,7 +413,7 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 		currBucket = this->entities->getBucket(currProfileID);
 
 		//if people of this particular profile don't exist in the population, move on.
-		if((currBucket == NULL) || (currBucket->size() == 0))
+		if((currBucket == nullptr) || (currBucket->size() == 0))
 		{
 			currProfileID++;
 			continue;
@@ -426,7 +426,7 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 		{
 			if((*p_Iter)->rollForDeath(_eventParams.randomNums))
 			{
-				assert((*p_Iter) != NULL);
+				assert((*p_Iter) != nullptr);
 				assert(!(*p_Iter)->isAlive());
 				//Don't process death until main loop from list so person can be removed from iterator list
 			}
@@ -447,7 +447,7 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 		while(p_Iter != this->entities->end(gender))
 		{
 			Person *p = (*p_Iter);
-			assert(p != NULL);
+			assert(p != nullptr);
 
 			if(!p->isAlive())
 			{
@@ -679,7 +679,7 @@ void Population::updatePartnerships(EventParams &_eventParams)
 		//Reset the initiator's condom count
 		initiator->resetCondomUsage();
 		//(The non-initiators (i.e. women) will never have their condom count reset... I don't think we care?)
-		assert(initiator != NULL);
+		assert(initiator != nullptr);
 		//Get available partnership types
 		vector<SexualPartnership::Type> partnershipTypes =
 		    this->profilesToPartnershipTypes[initiator->getCurrBucketProfileID()];
@@ -851,7 +851,7 @@ long Population::updateSize()
 	GenderProfile.set(DmgProfile::GENDER, DmgProfile::MALE);
 	vector<DmgProfile::ProfileID> GenderProfileIDs;
 	this->currSizeGender[DmgProfile::MALE] = 0;
-	GenderProfile.selectProfileIDs(GenderProfileIDs, NULL);
+	GenderProfile.selectProfileIDs(GenderProfileIDs, nullptr);
 
 	for(size_t i = 0; i < GenderProfileIDs.size(); i++)
 	{
@@ -862,7 +862,7 @@ long Population::updateSize()
 	GenderProfile.set(DmgProfile::GENDER, DmgProfile::FEMALE);
 	GenderProfileIDs.clear();
 	this->currSizeGender[DmgProfile::FEMALE] = 0;
-	GenderProfile.selectProfileIDs(GenderProfileIDs, NULL);
+	GenderProfile.selectProfileIDs(GenderProfileIDs, nullptr);
 
 	for(size_t i = 0; i < GenderProfileIDs.size(); i++)
 	{
@@ -874,7 +874,7 @@ long Population::updateSize()
 	CSWProfile.set(DmgProfile::EMPLOYMENT, DmgProfile::CSW);
 	vector<DmgProfile::ProfileID> CSWProfileIDs;
 	this->currCSWSize = 0;
-	CSWProfile.selectProfileIDs(CSWProfileIDs, NULL);
+	CSWProfile.selectProfileIDs(CSWProfileIDs, nullptr);
 
 	for(size_t i = 0; i < CSWProfileIDs.size(); i++)
 	{
@@ -893,7 +893,7 @@ long Population::updateSize()
 		}
 
 		//loop through all buckets
-		DmgProfileBucket *currBucket = NULL;
+		DmgProfileBucket *currBucket = nullptr;
 		DmgProfile::ProfileID currProfileID = DmgProfile::MIN;
 
 		//iterate through all buckets
@@ -902,7 +902,7 @@ long Population::updateSize()
 			currBucket = this->entities->getBucket(currProfileID);
 
 			//if people of this particular profile don't exist in the population, move on.
-			if((currBucket == NULL) || (currBucket->size() == 0))
+			if((currBucket == nullptr) || (currBucket->size() == 0))
 			{
 				currProfileID++;
 				continue;
@@ -972,7 +972,7 @@ void Population::updateFinalPhysicalState(EventParams &_eventParams)
 		while(p_Iter != this->entities->end(gender))
 		{
 			Person *p = (*p_Iter);
-			assert(p != NULL);
+			assert(p != nullptr);
 
 			if(p->isAlive())
 			{
@@ -1068,7 +1068,7 @@ void Population::dissolveSexualPartnerships(EventParams &_eventParams, Person *_
 		{
 			//try {
 			/* Code that can throw */
-			this->entities->refreshDmgProfileBucket(partner, NULL);
+			this->entities->refreshDmgProfileBucket(partner, nullptr);
 			/*}
 			catch (std::out_of_range& e) {
 			std::cout << "Out of range: " << e.what() << "\n";
@@ -1086,10 +1086,10 @@ Person *Population::generatePerson(EventParams &_eventParams, DmgProfile::Gender
                                    Population::Params::AgeBucketPrevalenceInfo *_ageBucketParams, bool toTrace)
 {
 	assert(_gender < DmgProfile::ENDGender);
-	Person *toReturn = NULL;	//pointer to the person that was just generated
+	Person *toReturn = nullptr;	//pointer to the person that was just generated
 	//determine age of current person. If we have no age _ageBucketParams, then this is a newborn.
 	//Otherwise, generate an age from a uniform distribution bounded by _ageBucketParams
-	int ageMth = (_ageBucketParams == NULL) ? 0 : _eventParams.randomNums.randInt(_ageBucketParams->minAgeMth,
+	int ageMth = (_ageBucketParams == nullptr) ? 0 : _eventParams.randomNums.randInt(_ageBucketParams->minAgeMth,
 	             _ageBucketParams->maxAgeMth);
 
 	//create the person
@@ -1993,7 +1993,7 @@ bool Population::passesPartnershipCalibration(EventParams &_eventParams)
 unsigned long Population::createPartnerships(EventParams &_eventParams, Person *_initiator,
         std::list<Person *>::iterator * /*_p_Iter*/, SexualPartnership::Type _partnershipType, bool _forceNumPartnersOne)
 {
-	assert((_initiator != NULL));
+	assert((_initiator != nullptr));
 	assert((_initiator->isAlive()));
 	//Boolean for determining whether we print this creation to singlePersonTrace
 	bool printToTrace = false;
@@ -2029,10 +2029,10 @@ unsigned long Population::createPartnerships(EventParams &_eventParams, Person *
 		//pick the bucket that we will attempt to choose from
 		DmgProfileBucket *bucket = potentialPartnerBuckets[_partnershipType].at(_eventParams.randomNums.chooseIndex(
 		                               Population::eligibleBucketWeights[_partnershipType]));
-		assert(bucket != NULL);
+		assert(bucket != nullptr);
 		std::list<Person *> attemptedPartners;
 		bool foundPartner = false;
-		Person *chosenPartner = NULL;
+		Person *chosenPartner = nullptr;
 		bool printTracePartner = false;
 
 		//the partner that this man will have a relationship with
@@ -2041,7 +2041,7 @@ unsigned long Population::createPartnerships(EventParams &_eventParams, Person *
 		{
 			Person *partner = bucket->drawMember(_eventParams.randomNums, _initiator, _partnershipType, Constants::REMOVE);
 
-			if(partner == NULL)
+			if(partner == nullptr)
 			{
 				if(printToTrace)
 				{
@@ -2062,7 +2062,7 @@ unsigned long Population::createPartnerships(EventParams &_eventParams, Person *
 				printTracePartner = true;
 			}
 
-			assert(partner != NULL);
+			assert(partner != nullptr);
 			assert(partner->isAlive());
 			attemptedPartners.push_back(partner);
 
@@ -2163,7 +2163,7 @@ unsigned long Population::createPartnerships(EventParams &_eventParams, Person *
 
 		if(!_initiator->inCorrectDmgProfileBucket())
 		{
-			this->entities->refreshDmgProfileBucket(_initiator, NULL);
+			this->entities->refreshDmgProfileBucket(_initiator, nullptr);
 		}
 
 		assert(chosenPartner->inCorrectDmgProfileBucket());
@@ -2181,13 +2181,13 @@ unsigned long Population::createPartnerships(EventParams &_eventParams, Person *
 
 void Population::processDeath(EventParams &_eventParams, Person *_p, bool calculateLE)
 {
-	assert((_p != NULL));
+	assert((_p != nullptr));
 	assert((!_p->isAlive()));
 
 	//Calculate life expectancy info
 	if(calculateLE)
 	{
-		assert((this->popStats->selectedLEStats != NULL));
+		assert((this->popStats->selectedLEStats != nullptr));
 		assert(_p->getAge(YEAR) >= 0);
 		assert(_p->getAge(YEAR) <= Person::maxYrForDeathStats);
 		this->popStats->selectedLEStats->deathsByAge[_p->getAge(YEAR)]++;
@@ -2244,7 +2244,7 @@ long Population::calcPrevalentPopulation(long _time)
 	assert(_time >= 0);
 	int totalInfected = 0;		//total infected in the while population
 	//holds a pointer to the current bucket we are looking at
-	DmgProfileBucket *currBucket = NULL;
+	DmgProfileBucket *currBucket = nullptr;
 	//holds number of prevalent infections
 	unsigned long prevalenceByBucket[DmgProfile::TotalNumBuckets][InfectionsTracker::NUMBER_GENERATIONS_TO_TRACE];
 	unsigned long prevalenceByRiskGenderEmployment[Person::ENDRiskLevel][DmgProfile::ENDGender][DmgProfile::ENDEmployment];
@@ -2292,7 +2292,7 @@ long Population::calcPrevalentPopulation(long _time)
 		currBucket = this->entities->getBucket(currProfileID);
 
 		//if people of this particular profile don't exist in the population, move on.
-		if((currBucket == NULL) || (currBucket->size() == 0))
+		if((currBucket == nullptr) || (currBucket->size() == 0))
 		{
 			currProfileID++;
 			continue;
@@ -2353,7 +2353,7 @@ long Population::calcPrevalentPopulation(long _time)
 Population::Params::AgeBucketPrevalenceInfo *Population::getAgeBucket(Person *p)
 {
 	int age = p->getAge(MONTH);
-	Population::Params::AgeBucketPrevalenceInfo *ageBucketParams = NULL;
+	Population::Params::AgeBucketPrevalenceInfo *ageBucketParams = nullptr;
 
 	for(unsigned int ageBucket = 0; ageBucket < this->popWideParams.initialAgeBuckets.size(); ageBucket++)
 	{
@@ -3048,7 +3048,7 @@ void Population::printClinical(EventParams &/*_eventParams*/, long _time, std::o
 
 	//iterate through bucket
 	//holds a pointer to the current bucket we are looking at
-	DmgProfileBucket *currBucket = NULL;
+	DmgProfileBucket *currBucket = nullptr;
 	DmgProfile::ProfileID currProfileID = DmgProfile::MIN;
 
 	while(currProfileID <= DmgProfile::MAX)
@@ -3056,7 +3056,7 @@ void Population::printClinical(EventParams &/*_eventParams*/, long _time, std::o
 		currBucket = this->entities->getBucket(currProfileID);
 
 		//if people of this particular profile don't exist in the population, move on.
-		if((currBucket == NULL) || (currBucket->size() == 0))
+		if((currBucket == nullptr) || (currBucket->size() == 0))
 		{
 			currProfileID++;
 			continue;
@@ -3378,7 +3378,7 @@ void Population::saveState(std::ostream &_outStream, long currTime)
 		while(p_Iter != this->entities->end(gender))
 		{
 			Person *p = (*p_Iter);
-			assert(p != NULL);
+			assert(p != nullptr);
 
 			if(!isFirst)
 			{
@@ -3405,7 +3405,7 @@ this is called at specified time points to record the partner history frequency
 **/
 void Population::recordPartAcqFreq()
 {
-	assert(this->popStats->selectedPartAcqStats != NULL);
+	assert(this->popStats->selectedPartAcqStats != nullptr);
 	std::list<Person *>::iterator p_Iter;
 
 	//Double loop: first iterate through the men, then the women

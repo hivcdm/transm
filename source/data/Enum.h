@@ -42,7 +42,7 @@ public:
 
 	typedef unsigned int Enum;
 
-	enum NULL_ENUM {	};
+	enum nullptr_ENUM {	};
 
 	const static std::string WILDCARD;
 	/*

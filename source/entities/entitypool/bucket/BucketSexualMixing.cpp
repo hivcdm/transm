@@ -107,7 +107,7 @@ Person *BucketSexualMixing::drawMember(RandomNums &_randomNums, SexualPartnershi
 {
 	if(this->size() == 0)
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	//Use minAge and maxAge for bucket
@@ -146,7 +146,7 @@ Person *BucketSexualMixing::drawMember(RandomNums &_randomNums, Person *_chooser
 //will remove this Person (if he or she exists) from the index
 bool BucketSexualMixing::erase(Person *_person)
 {
-	assert(_person != NULL);
+	assert(_person != nullptr);
 	unsigned int correctIndex = this->getCorrectBufferIndex(_person);
 
 	//if this person wouldn't be in this DmgProfileBucket, then return false
@@ -262,7 +262,7 @@ Person *BucketSexualMixing::getRandomPerson(RandomNums &_randomNums, unsigned in
 		currIndex++;
 	}
 
-	//If no one is within the requested age range, return NULL.
+	//If no one is within the requested age range, return nullptr.
 	if(numMarbles == 0)
 	{
 		//Recursively expand search with _ageLowerBound and _ageUpperBound expanding by 6 months
@@ -295,12 +295,12 @@ Person *BucketSexualMixing::getRandomPerson(RandomNums &_randomNums, unsigned in
 			}
 			else
 			{
-				return NULL;
+				return nullptr;
 			}
 		}
 		else
 		{
-			return NULL;
+			return nullptr;
 		}
 	}
 
@@ -330,7 +330,7 @@ Person *BucketSexualMixing::getRandomPerson(RandomNums &_randomNums, unsigned in
 		currIndex++;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //will index a New Person
@@ -674,7 +674,7 @@ bool BucketSexualMixing::JavaStyleIterator::hasNext() {
 		//else, find next grid index with people in it
 		while ((this->currBuffIndex + 1) < this->entityCircularBuff->size())		{
 			//we are relinquishing the auto_ptr control...
-			this->currNumIndexJIterator.reset(NULL);
+			this->currNumIndexJIterator.reset(nullptr);
 			this->currBuffIndex = this->currBuffIndex+1;
 
 			//if this has any elements, then iterate through
@@ -693,7 +693,7 @@ Person* BucketSexualMixing::JavaStyleIterator::next() {
 	if(this->hasNext()) {
 		return this->currNumIndexJIterator->next();
 	} else
-		return NULL;
+		return nullptr;
 }
 
 //removes from the collection the last element returned by the iterator
@@ -720,9 +720,9 @@ void BucketSexualMixing::JavaStyleIterator::reset() {
 
 BucketSexualMixing::JavaStyleIterator::~JavaStyleIterator() {
 	//cout << "BucketSexualMixing::JavaStyleIterator::~JavaStyleIterator()" << endl;
-	this->currNumIndexJIterator.reset(NULL);
+	this->currNumIndexJIterator.reset(nullptr);
 
-	entityCircularBuff = NULL;
+	entityCircularBuff = nullptr;
 
 }*/
 

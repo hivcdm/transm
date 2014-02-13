@@ -18,7 +18,7 @@ bool EntityPool::addEntity(Person *_person)
 {
 	//gets the DmgProfileBucket that this person is supposed to be a part of based on their DmgProfile
 	DmgProfileBucket *bucket = this->entityBuckets->at(_person->getDmgProfile()->getProfileID());
-	assert(bucket != NULL);
+	assert(bucket != nullptr);
 	//bucket's insert method should take care of the _person->setCurrBucketProfileID(...)
 	return bucket->insert(_person);
 }
@@ -30,7 +30,7 @@ DmgProfileBucket *EntityPool::getBucket(DmgProfile::ProfileID _profileID)
 
 void EntityPool::print(ostream &_outStream)
 {
-	DmgProfileBucket *bucket = NULL;
+	DmgProfileBucket *bucket = nullptr;
 	//iterate through all buckets
 	size_t currBucketIndex = 0;
 
@@ -38,8 +38,8 @@ void EntityPool::print(ostream &_outStream)
 	{
 		bucket = this->entityBuckets->at(currBucketIndex);
 
-		//if bucket == NULL, that means we are not using this particular DmgProfile during this simulation
-		if(bucket == NULL)
+		//if bucket == nullptr, that means we are not using this particular DmgProfile during this simulation
+		if(bucket == nullptr)
 		{
 			currBucketIndex++;
 			continue;
@@ -59,7 +59,7 @@ void EntityPool::print(ostream &_outStream)
 //if _printPropInfected == true, then include a column for #infected for each DmgProfileBucket
 void EntityPool::printBucketLabels(ostream &_outStream, bool _printPropInfected)
 {
-	DmgProfileBucket *bucket = NULL;
+	DmgProfileBucket *bucket = nullptr;
 	size_t currBucketIndex = 0;
 
 	//iterate through all buckets
@@ -67,8 +67,8 @@ void EntityPool::printBucketLabels(ostream &_outStream, bool _printPropInfected)
 	{
 		bucket = this->entityBuckets->at(currBucketIndex);
 
-		//if bucket == NULL, that means we are not using this particular DmgProfile during this sim
-		if(bucket == NULL)
+		//if bucket == nullptr, that means we are not using this particular DmgProfile during this sim
+		if(bucket == nullptr)
 		{
 			currBucketIndex++;
 			continue;
@@ -101,7 +101,7 @@ void EntityPool::printBucketSizes(ostream &_outStream, string _prefix, bool _pri
 	_totalInSteady = 0;
 	_totalInRegular = 0;
 	_totalSexuallyActive = 0;
-	DmgProfileBucket *bucket = NULL;	//pointer to current DmgProfileBucket we are looking at
+	DmgProfileBucket *bucket = nullptr;	//pointer to current DmgProfileBucket we are looking at
 	size_t currBucketIndex = 0;		//the ProfileID of the current DmgProfileBucket we are looking at
 
 	//iterate through all buckets and append current DmgProfileBucket sizes to a string buffer
@@ -109,7 +109,7 @@ void EntityPool::printBucketSizes(ostream &_outStream, string _prefix, bool _pri
 	{
 		bucket = this->entityBuckets->at(currBucketIndex);
 
-		if(bucket == NULL)
+		if(bucket == nullptr)
 		{
 			currBucketIndex++;
 			continue;
@@ -200,7 +200,7 @@ void EntityPool::printBucketSizes(ostream &_outStream, string _prefix, bool _pri
 
 bool EntityPool::removeEntity(Person *_person)
 {
-	assert(_person != NULL);
+	assert(_person != nullptr);
 	bool removed = false;
 	//bucket will take care of the _person->setCurrBucketProfileID(DmgProfile::END)
 	DmgProfile::ProfileID personProfID = _person->getCurrBucketProfileID();
@@ -235,7 +235,7 @@ bool EntityPool::removeEntity(Person *_person)
 
 bool EntityPool::refreshDmgProfileBucket(Person *_person, list<Person *>::iterator * /*_p_Iter*/, bool forceRefresh)
 {
-	assert(_person != NULL);
+	assert(_person != nullptr);
 	bool success = false;
 
 	if(!forceRefresh)
@@ -263,7 +263,7 @@ bool EntityPool::refreshDmgProfileBucket(Person *_person, list<Person *>::iterat
 
 unsigned long EntityPool::size()
 {
-	DmgProfileBucket *bucket = NULL;
+	DmgProfileBucket *bucket = nullptr;
 	unsigned long size = 0;		//total of the zie
 	size_t currBucketIndex = 0;
 
@@ -272,8 +272,8 @@ unsigned long EntityPool::size()
 	{
 		bucket = this->entityBuckets->at(currBucketIndex);
 
-		//if bucket == NULL, that means we are not using this particular DmgProfile during this sim
-		if(bucket == NULL)
+		//if bucket == nullptr, that means we are not using this particular DmgProfile during this sim
+		if(bucket == nullptr)
 		{
 			currBucketIndex++;
 			continue;
@@ -291,7 +291,7 @@ unsigned long EntityPool::size(DmgProfile::ProfileID _profileID)
 {
 	DmgProfileBucket *bucket = this->getBucket(_profileID);
 
-	if(bucket == NULL)
+	if(bucket == nullptr)
 	{
 		return 0;
 	}
@@ -304,7 +304,7 @@ unsigned long EntityPool::size(DmgProfile::ProfileID _profileID)
 //calculate the current number of persons that are not sexually active in the entity pool
 unsigned long EntityPool::sizeNotSexuallyActive()
 {
-	DmgProfileBucket *bucket = NULL;
+	DmgProfileBucket *bucket = nullptr;
 	unsigned long size = 0;		//total of the zie
 	size_t currBucketIndex = 0;
 
@@ -313,8 +313,8 @@ unsigned long EntityPool::sizeNotSexuallyActive()
 	{
 		bucket = this->entityBuckets->at(currBucketIndex);
 
-		//if bucket == NULL, that means we are not using this particular DmgProfile during this sim
-		if(bucket == NULL)
+		//if bucket == nullptr, that means we are not using this particular DmgProfile during this sim
+		if(bucket == nullptr)
 		{
 			currBucketIndex++;
 			continue;
@@ -335,7 +335,7 @@ unsigned long EntityPool::sizeNotSexuallyActive()
 //calculate the current number of persons that are not sexually active in the entity pool with a given demographic
 unsigned long EntityPool::sizeNotSexuallyActive(DmgProfile::Gender _gender)
 {
-	DmgProfileBucket *bucket = NULL;
+	DmgProfileBucket *bucket = nullptr;
 	unsigned long size = 0;		//total of the zie
 	size_t currBucketIndex = 0;
 
@@ -344,8 +344,8 @@ unsigned long EntityPool::sizeNotSexuallyActive(DmgProfile::Gender _gender)
 	{
 		bucket = this->entityBuckets->at(currBucketIndex);
 
-		//if bucket == NULL, that means we are not using this particular DmgProfile during this sim
-		if(bucket == NULL)
+		//if bucket == nullptr, that means we are not using this particular DmgProfile during this sim
+		if(bucket == nullptr)
 		{
 			currBucketIndex++;
 			continue;
@@ -369,7 +369,7 @@ unsigned long EntityPool::sizeNotSexuallyActive(DmgProfile::Gender _gender)
 //calculate the current number of persons that are sexually active in the entity pool with a given demographic
 unsigned long EntityPool::sizeSexuallyActive(DmgProfile::Gender _gender, Person::RiskLevel _risk)
 {
-	DmgProfileBucket *bucket = NULL;
+	DmgProfileBucket *bucket = nullptr;
 	unsigned long size = 0;		//total of the zie
 	size_t currBucketIndex = 0;
 
@@ -378,8 +378,8 @@ unsigned long EntityPool::sizeSexuallyActive(DmgProfile::Gender _gender, Person:
 	{
 		bucket = this->entityBuckets->at(currBucketIndex);
 
-		//if bucket == NULL, that means we are not using this particular DmgProfile during this sim
-		if(bucket == NULL)
+		//if bucket == nullptr, that means we are not using this particular DmgProfile during this sim
+		if(bucket == nullptr)
 		{
 			currBucketIndex++;
 			continue;
@@ -402,7 +402,7 @@ unsigned long EntityPool::sizeSexuallyActive(DmgProfile::Gender _gender, Person:
 //calculate the current number of sexually active persons within the specified age range
 unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths)
 {
-	DmgProfileBucket *bucket = NULL;
+	DmgProfileBucket *bucket = nullptr;
 	unsigned long size = 0;		//total of the zie
 	size_t currBucketIndex = 0;
 
@@ -411,8 +411,8 @@ unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMo
 	{
 		bucket = this->entityBuckets->at(currBucketIndex);
 
-		//if bucket == NULL, that means we are not using this particular DmgProfile during this sim
-		if(bucket == NULL)
+		//if bucket == nullptr, that means we are not using this particular DmgProfile during this sim
+		if(bucket == nullptr)
 		{
 			currBucketIndex++;
 			continue;
@@ -433,7 +433,7 @@ unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMo
 //calculate the current number of sexually active persons within the specified age range and gender
 unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths, DmgProfile::Gender _gender)
 {
-	DmgProfileBucket *bucket = NULL;
+	DmgProfileBucket *bucket = nullptr;
 	unsigned long size = 0;		//total of the zie
 	size_t currBucketIndex = 0;
 
@@ -442,8 +442,8 @@ unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMo
 	{
 		bucket = this->entityBuckets->at(currBucketIndex);
 
-		//if bucket == NULL, that means we are not using this particular DmgProfile during this sim
-		if(bucket == NULL)
+		//if bucket == nullptr, that means we are not using this particular DmgProfile during this sim
+		if(bucket == nullptr)
 		{
 			currBucketIndex++;
 			continue;
@@ -547,8 +547,8 @@ list<Person *>::iterator EntityPool::end(DmgProfile::Gender _gender)
 // @param _SAEntAgeMths age of sexual debut
 EntityPool::EntityPool(int _SAEntAgeMths, unsigned int _popID, const double _assort[])
 {
-	//allocate space for Buckets and set to NULL
-	this->entityBuckets = new std::vector<DmgProfileBucket *>(DmgProfile::TotalNumBuckets, NULL);
+	//allocate space for Buckets and set to nullptr
+	this->entityBuckets = new std::vector<DmgProfileBucket *>(DmgProfile::TotalNumBuckets, nullptr);
 	//this helps us select the buckets we want to use in the sim
 	// initializing to END values will select all buckets
 	DmgProfile selector;
@@ -560,14 +560,14 @@ EntityPool::EntityPool(int _SAEntAgeMths, unsigned int _popID, const double _ass
 	selector.set(DmgProfile::SEXUAL_ORIENTATION, DmgProfile::HETERO);
 	selector.set(DmgProfile::RELATIONSHIP_STATUS, DmgProfile::SINGLE);
 	selector.set(DmgProfile::EMPLOYMENT, DmgProfile::NON_CSW);
-	selector.selectProfileIDs(validBucketIDs, NULL);
+	selector.selectProfileIDs(validBucketIDs, nullptr);
 	//check if we only have 2 buckets
 	assert(validBucketIDs.size() == DmgProfile::ENDGender);
 	//We want to instantiate all heterosexual SA Buckets
 	selector.set(DmgProfile::END);
 	selector.set(DmgProfile::SEXUAL_ACTIVITY_STATUS, DmgProfile::SA);
 	selector.set(DmgProfile::SEXUAL_ORIENTATION, DmgProfile::HETERO);
-	selector.selectProfileIDs(validBucketIDs, NULL);
+	selector.selectProfileIDs(validBucketIDs, nullptr);
 
 	//instantiate the spaces for all our buckets. The # of buckets depends on class BucketClassifiers
 	//these people are stored in a more complicated DmgProfileBucket b/c they are involved in sexual mixing
@@ -633,7 +633,7 @@ EntityPool::~EntityPool(void)
 	//iterate through all buckets and delete them
 	for(BaseEnumCls::Enum j = 0; j < this->entityBuckets->size(); ++j)
 	{
-		if(this->entityBuckets->at(j) != NULL)
+		if(this->entityBuckets->at(j) != nullptr)
 		{
 			if(DmgProfile::NA !=
 			        DmgProfile::get(this->entityBuckets->at(j)->getProfileID(), DmgProfile::SEXUAL_ACTIVITY_STATUS))

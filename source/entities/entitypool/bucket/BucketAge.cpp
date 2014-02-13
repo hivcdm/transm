@@ -172,7 +172,7 @@ Person *BucketAge::drawMember(RandomNums &_randomNums, Person::RiskLevel _riskLe
 {
 	if(this->numPersons == 0)
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	FullVector *toDrawFrom;
@@ -192,7 +192,7 @@ Person *BucketAge::drawMember(RandomNums &_randomNums, Person::RiskLevel _riskLe
 	else
 	{
 		cerr << "Error: attempting to draw a member from invalid risk level: " << _riskLevel << endl;
-		return NULL;
+		return nullptr;
 	}
 
 	if(toDrawFrom->size() > 0)
@@ -214,7 +214,7 @@ Person *BucketAge::drawMember(RandomNums &_randomNums, Person::RiskLevel _riskLe
 	else
 	{
 		cerr << "Error: requesting person from empty set: " << DmgProfile::toString(this->currentBinID) << endl;
-		return NULL;
+		return nullptr;
 	}
 }
 

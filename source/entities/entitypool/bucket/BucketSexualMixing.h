@@ -91,7 +91,7 @@ public :
 	@param _randomNums
 	@param _remove - will remove this person from the BucketSexualMixing if this is true
 	@return person that fits age range criteria for _chooser and _partnershipType.  If no such
-	person exists, returns NULL
+	person exists, returns nullptr
 	***/
 	//TESTED
 	Person *drawMember(RandomNums &_randomNums, Person *_chooser, SexualPartnership::Type _partnershipType, bool _remove);

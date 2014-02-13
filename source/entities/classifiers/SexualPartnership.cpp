@@ -140,6 +140,6 @@ SexualPartnership::~SexualPartnership()
 {
 	partners[0]->removePartnership(this);
 	partners[1]->removePartnership(this);
-	partners[0] = NULL;
-	partners[1] = NULL;
+	partners[0] = nullptr;
+	partners[1] = nullptr;
 }

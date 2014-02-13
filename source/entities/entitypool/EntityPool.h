@@ -72,7 +72,7 @@ public:
 	/**
 	if someone is a member of the wrong Bucket (based on their DmgProfile), will remove and place them in the correct one
 	@param _person person that we have to move
-	@param _p_Iter if this is not NULL, then use this _iter to remove the person. It will be a faster operation than finding them again within the map
+	@param _p_Iter if this is not nullptr, then use this _iter to remove the person. It will be a faster operation than finding them again within the map
 	**/
 	bool refreshDmgProfileBucket(Person *_person, list<Person *>::iterator *_p_Iter, bool forceRefresh = false);
 

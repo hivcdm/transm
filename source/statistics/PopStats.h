@@ -158,7 +158,7 @@ public:
 
 	EnumCls<PopStats::LifeStats> *enumClass; //used in lifeStats; declared here so that deletion is possible
 
-	StatsRecord<LifeStats, BaseEnumCls::NULL_ENUM> *lifeStats;
+	StatsRecord<LifeStats, BaseEnumCls::nullptr_ENUM> *lifeStats;
 
 	PopStats(long maxTime, ticpp::Element *_LEOutputNode, ticpp::Element *_partAcqOutputNode);
 	~PopStats();

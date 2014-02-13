@@ -220,7 +220,7 @@ public:
 	Given the enums in this object, returns any Buckets that match the enum pattern
 	Right now, we can only specify 1 desired value for each enum, or a wildcard for each enum.
 	@param _selected This method will append matching ProfileID's to this std::vector
-	@param _available If != NULL, then this method will select from ProfileID's in this std::vector
+	@param _available If != nullptr, then this method will select from ProfileID's in this std::vector
 	**/
 	void selectProfileIDs(std::vector<ProfileID> &_selected, const std::vector<ProfileID> *_available) const;
 

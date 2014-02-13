@@ -211,7 +211,7 @@ Node *Node::NodeFactory(TiXmlNode *tiXmlNode, bool throwIfNull, bool rememberSpa
 	{
 		if(throwIfNull)
 		{
-			TICPPTHROW("tiXmlNode is NULL")
+			TICPPTHROW("tiXmlNode is nullptr")
 		}
 		else
 		{
@@ -983,7 +983,7 @@ bool Element::GetAttributeImp(const std::string &name, std::string *value) const
 	// Get value from TinyXML, if the attribute exists
 	const char *retVal = m_tiXmlPointer->Attribute(name.c_str());
 
-	// TinyXML returns NULL if the attribute doesn't exist
+	// TinyXML returns nullptr if the attribute doesn't exist
 	if(0 == retVal)
 	{
 		return false;
@@ -1001,7 +1001,7 @@ bool Element::GetTextImp(std::string *value) const
 	// Get value from TinyXML, if the attribute exists
 	const char *retVal = m_tiXmlPointer->GetText();
 
-	// TinyXML returns NULL if the attribute doesn't exist
+	// TinyXML returns nullptr if the attribute doesn't exist
 	if(0 == retVal)
 	{
 		return false;
@@ -1116,7 +1116,7 @@ void TiCppRC::DeleteSpawnedWrappers()
 TiCppRC::~TiCppRC()
 {
 	DeleteSpawnedWrappers();
-	// Set pointer held by reference counter to NULL
+	// Set pointer held by reference counter to nullptr
 	this->m_tiRC->Nullify();
 	// Decrement reference - so reference counter will delete itself if necessary
 	this->m_tiRC->DecRef();

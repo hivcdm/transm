@@ -83,8 +83,8 @@ public:
 		SexualPartnership partnership;
 		p.addPartnership(&partnership);
 		p.removePartnership(&partnership);
-		EntityPool *pool = NULL;
-		Person *partner = NULL;
+		EntityPool *pool = nullptr;
+		Person *partner = nullptr;
 		partner = p.choosePartner((SexualPartnership::Type)0, pool, true);
 		partner = p.choosePartner((SexualPartnership::Type)0, pool, false);
 		Person testMatchPerson;
@@ -171,6 +171,6 @@ public:
 			p.getAge(TimeGranularity(granularity));
 		}
 
-		p.isPartneredWith(NULL);
+		p.isPartneredWith(nullptr);
 	}
 };

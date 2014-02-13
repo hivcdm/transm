@@ -40,7 +40,7 @@ Simulation::~Simulation()
 {
 	parameters_.close();
 
-	if(population_ != NULL)
+	if(population_ != nullptr)
 	{
 		delete population_;
 	}
@@ -709,7 +709,7 @@ bool Simulation::SetRolloutSimContexts(ticpp::Element *rolloutInterventionNode)
 		parameters_.displayOut(fileName.c_str());
 		parameters_.displayOut("\n");
 		//Set the CEPAC simContext from the specified CEPAC .in file
-		SimContext *contextToAdd = NULL;
+		SimContext *contextToAdd = nullptr;
 
 		if(fileName == "" || timeToApply == -1)
 		{
@@ -1082,7 +1082,7 @@ int Simulation::SimulateMonth()
 		}
 
 		delete population_->popStats->selectedLEStats;
-		population_->popStats->selectedLEStats = NULL;
+		population_->popStats->selectedLEStats = nullptr;
 	}
 
 	//steadyCouple, flings, and dissolveSexualPartnerships
@@ -1099,7 +1099,7 @@ int Simulation::SimulateMonth()
 		}
 
 		delete population_->popStats->selectedPartAcqStats;
-		population_->popStats->selectedPartAcqStats = NULL;
+		population_->popStats->selectedPartAcqStats = nullptr;
 	}
 
 	//apply incident prevalence

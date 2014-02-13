@@ -208,7 +208,7 @@ private:
 	@param _eventParams
 	@param _initiator person who is trying to find a STEADY REGULAR, CASUAL, or CSW partner
 	//ERINSAYS: _p_Iter removed for now -- may be replaced when list of allMales and allFemales are implemented
-	@param _p_Iter an iterator that points to _initiator for fast removal from a DmgProfileBucket. If this is NULL, then it's ignored
+	@param _p_Iter an iterator that points to _initiator for fast removal from a DmgProfileBucket. If this is nullptr, then it's ignored
 	@param _partnershipType particular type of partnership that _initiator is looking to form
 	@param _forceNumPartnersOne if true will force _initiator to create just one partnership of type _partnership type (useful for initial regular partnerships
 	@return number of partnerships formed
@@ -224,7 +224,7 @@ private:
 
 	/**
 	   @param _gender gender of person we want to create
-	   @param _ageBucketParams	parameters that determine a prevalent person's characteristics. If this is NULL, then this method will create a newborn
+	   @param _ageBucketParams	parameters that determine a prevalent person's characteristics. If this is nullptr, then this method will create a newborn
 	   @return a newly formed person
 	**/
 	Person *generatePerson(EventParams &_eventParams, DmgProfile::Gender _gender,

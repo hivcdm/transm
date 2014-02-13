@@ -428,7 +428,7 @@ void DmgProfile::deallocStaticMembers()
 	for(size_t i = 0; i < DmgProfile::ProfileIDtoProfile.size(); ++i)
 	{
 		delete DmgProfile::ProfileIDtoProfile.at(i);
-		DmgProfile::ProfileIDtoProfile.at(i) = NULL;
+		DmgProfile::ProfileIDtoProfile.at(i) = nullptr;
 	}
 
 	DmgProfile::ProfileToProfileID.clear();

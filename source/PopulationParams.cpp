@@ -126,14 +126,14 @@ Population::Params::~Params()
 
 void Population::Params::init(ticpp::Element *_populationXML, unsigned int _populationID, EventParams &_eventParams)
 {
-	assert(_populationXML != NULL);
+	assert(_populationXML != nullptr);
 	populationID = _populationID;
 	this->loadXML(_populationXML, _eventParams);
 }
 
 void Population::Params::loadXML(ticpp::Element *_populationXML, EventParams &_eventParams)
 {
-	assert(_populationXML != NULL);
+	assert(_populationXML != nullptr);
 	_eventParams.displayOut("Population Parameters\n");
 	std::string temp;
 
@@ -302,7 +302,7 @@ void Population::Params::loadXML(ticpp::Element *_populationXML, EventParams &_e
 **/
 void Population::Params::reloadXML(ticpp::Element *_populationXML, EventParams &_eventParams)
 {
-	assert(_populationXML != NULL);
+	assert(_populationXML != nullptr);
 	_eventParams.displayOut("Population Parameters\n");
 	std::string temp;
 
