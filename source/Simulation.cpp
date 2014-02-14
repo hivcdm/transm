@@ -869,29 +869,10 @@ void Simulation::UpdateTimeDependentParameters()
 	{
 		if(parameter.time == parameters_.currTime)
 		{
+			// OIHist
 			if(parameter.key == "artRolloutIntervention/rolloutEligibility/OIHist/rank")
 			{
 				parameters_.rolloutEligibility.oiHistRank = std::stoi(parameter.value);
-				checkRanks = true;
-			}
-			else if(parameter.key == "artRolloutIntervention/rolloutEligibility/CD4/rank")
-			{
-				parameters_.rolloutEligibility.cd4Rank = std::stoi(parameter.value);
-				checkRanks = true;
-			}
-			else if(parameter.key == "artRolloutIntervention/rolloutEligibility/CD4OIHist/rank")
-			{
-				parameters_.rolloutEligibility.cd4OiHistRank = std::stoi(parameter.value);
-				checkRanks = true;
-			}
-			else if(parameter.key == "artRolloutIntervention/rolloutEligibility/HVL/rank")
-			{
-				parameters_.rolloutEligibility.hvlRank = std::stoi(parameter.value);
-				checkRanks = true;
-			}
-			else if(parameter.key == "artRolloutIntervention/rolloutEligibility/CD4HVL/rank")
-			{
-				parameters_.rolloutEligibility.cd4HvlRank = std::stoi(parameter.value);
 				checkRanks = true;
 			}
 			else if(parameter.key == "artRolloutIntervention/rolloutEligibility/OIHist/OI0"
@@ -917,6 +898,16 @@ void Simulation::UpdateTimeDependentParameters()
 				}
 				parameters_.rolloutEligibility.oiHistOIs[oiNumber] = std::stoi(parameter.value) != 0;
 			}
+			else if(parameter.key == "artRolloutIntervention/rolloutEligibility/OIHist/numOIToStart")
+			{
+				parameters_.rolloutEligibility.oiHistNumToStart = std::stoi(parameter.value);
+			}
+			// CD4
+			else if(parameter.key == "artRolloutIntervention/rolloutEligibility/CD4/rank")
+			{
+				parameters_.rolloutEligibility.cd4Rank = std::stoi(parameter.value);
+				checkRanks = true;
+			}
 			else if(parameter.key == "artRolloutIntervention/rolloutEligibility/CD4/CD4Upp")
 			{
 				parameters_.rolloutEligibility.cd4Bounds[1] = std::stoi(parameter.value);
@@ -924,6 +915,41 @@ void Simulation::UpdateTimeDependentParameters()
 			else if(parameter.key == "artRolloutIntervention/rolloutEligibility/CD4/CD4Lwr")
 			{
 				parameters_.rolloutEligibility.cd4Bounds[0] = std::stoi(parameter.value);
+			}
+			// CD4OIHist
+			else if(parameter.key == "artRolloutIntervention/rolloutEligibility/CD4OIHist/rank")
+			{
+				parameters_.rolloutEligibility.cd4OiHistRank = std::stoi(parameter.value);
+				checkRanks = true;
+			}
+			else if(parameter.key == "artRolloutIntervention/rolloutEligibility/CD4OIHist/OI0"
+				|| parameter.key == "artRolloutIntervention/rolloutEligibility/CD4OIHist/OI1"
+				|| parameter.key == "artRolloutIntervention/rolloutEligibility/CD4OIHist/OI2"
+				|| parameter.key == "artRolloutIntervention/rolloutEligibility/CD4OIHist/OI3"
+				|| parameter.key == "artRolloutIntervention/rolloutEligibility/CD4OIHist/OI4"
+				|| parameter.key == "artRolloutIntervention/rolloutEligibility/CD4OIHist/OI5"
+				|| parameter.key == "artRolloutIntervention/rolloutEligibility/CD4OIHist/OI6"
+				|| parameter.key == "artRolloutIntervention/rolloutEligibility/CD4OIHist/OI7"
+				|| parameter.key == "artRolloutIntervention/rolloutEligibility/CD4OIHist/OI8"
+				|| parameter.key == "artRolloutIntervention/rolloutEligibility/CD4OIHist/OI9"
+				|| parameter.key == "artRolloutIntervention/rolloutEligibility/CD4OIHist/OI10"
+				|| parameter.key == "artRolloutIntervention/rolloutEligibility/CD4OIHist/OI11"
+				|| parameter.key == "artRolloutIntervention/rolloutEligibility/CD4OIHist/OI12"
+				|| parameter.key == "artRolloutIntervention/rolloutEligibility/CD4OIHist/OI13"
+				|| parameter.key == "artRolloutIntervention/rolloutEligibility/CD4OIHist/OI14")
+			{
+				int oiNumber = std::stoi(parameter.key.substr(parameter.key.length() - 1, 1));
+				if(parameter.key[parameter.key.length() - 2] != 'I')
+				{
+					oiNumber = std::stoi(parameter.key.substr(parameter.key.length() - 2, 2));
+				}
+				parameters_.rolloutEligibility.oiHistOIs[oiNumber] = std::stoi(parameter.value) != 0;
+			}
+			// HVL
+			else if(parameter.key == "artRolloutIntervention/rolloutEligibility/HVL/rank")
+			{
+				parameters_.rolloutEligibility.hvlRank = std::stoi(parameter.value);
+				checkRanks = true;
 			}
 			else if(parameter.key == "artRolloutIntervention/rolloutEligibility/HVL/HVLUpp")
 			{
@@ -933,9 +959,27 @@ void Simulation::UpdateTimeDependentParameters()
 			{
 				parameters_.rolloutEligibility.hvlBounds[0] = std::stoi(parameter.value);
 			}
-			else if(parameter.key == "population/proportionCircumcised")
+			// CD4HVL
+			else if(parameter.key == "artRolloutIntervention/rolloutEligibility/CD4HVL/rank")
 			{
-				population_->popWideParams.setProportionCircumcised(std::stod(parameter.value));
+				parameters_.rolloutEligibility.cd4HvlRank = std::stoi(parameter.value);
+				checkRanks = true;
+			}
+			else if(parameter.key == "artRolloutIntervention/rolloutEligibility/CD4HVL/CD4Upp")
+			{
+				parameters_.rolloutEligibility.cd4HvlCd4Bounds[1] = std::stoi(parameter.value);
+			}
+			else if(parameter.key == "artRolloutIntervention/rolloutEligibility/CD4HVL/CD4Lwr")
+			{
+				parameters_.rolloutEligibility.cd4HvlCd4Bounds[0] = std::stoi(parameter.value);
+			}
+			else if(parameter.key == "artRolloutIntervention/rolloutEligibility/CD4HVL/HVLUpp")
+			{
+				parameters_.rolloutEligibility.cd4HvlHvlBounds[1] = std::stoi(parameter.value);
+			}
+			else if(parameter.key == "artRolloutIntervention/rolloutEligibility/CD4HVL/HVLLwr")
+			{
+				parameters_.rolloutEligibility.cd4HvlHvlBounds[0] = std::stoi(parameter.value);
 			}
 			else if(parameter.key == "behavior/male/steady/chanceCondomUsePerEventHighRisk")
 			{
@@ -976,6 +1020,10 @@ void Simulation::UpdateTimeDependentParameters()
 			{
 				auto beta = ParseBeta(parameter.value);
 				population_->popWideParams.setChanceCondomUsePerEvent(Person::LOW, SexualPartnership::CSW, beta);
+			}
+			else if(parameter.key == "population/proportionCircumcised")
+			{
+				population_->popWideParams.setProportionCircumcised(std::stod(parameter.value));
 			}
 			else
 			{
