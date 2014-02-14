@@ -945,6 +945,14 @@ void Simulation::UpdateTimeDependentParameters()
 				}
 				parameters_.rolloutEligibility.oiHistOIs[oiNumber] = std::stoi(parameter.value) != 0;
 			}
+			else if(parameter.key == "artRolloutIntervention/rolloutEligibility/CD4OIHist/CD4Upp")
+			{
+				parameters_.rolloutEligibility.cd4OiHistCd4Bounds[1] = std::stoi(parameter.value);
+			}
+			else if(parameter.key == "artRolloutIntervention/rolloutEligibility/CD4OIHist/CD4Lwr")
+			{
+				parameters_.rolloutEligibility.cd4OiHistCd4Bounds[0] = std::stoi(parameter.value);
+			}
 			// HVL
 			else if(parameter.key == "artRolloutIntervention/rolloutEligibility/HVL/rank")
 			{
