@@ -119,8 +119,7 @@ Person *BucketSexualMixing::drawMember(RandomNums &_randomNums, SexualPartnershi
 /***
 @param _remove - will remove this person from the BucketSexualMixing if this is true
 ***/
-Person *BucketSexualMixing::drawMember(RandomNums &_randomNums, Person *_chooser,
-                                       SexualPartnership::Type _partnershipType, bool _remove)
+Person *BucketSexualMixing::drawMember(RandomNums &_randomNums, Person *_chooser, SexualPartnership::Type _partnershipType, bool _remove)
 {
 	//these determine the bounds of which ages we will consider
 	int minDesired = 0;
@@ -139,8 +138,7 @@ Person *BucketSexualMixing::drawMember(RandomNums &_randomNums, Person *_chooser
 	//min and max age of Entitys that _chooser can pick from this Person container
 	int minAgeDesired = max((int)(this->minAge), minDesired);
 	int maxAgeDesired = min((int)(this->maxAge), maxDesired);
-	return this->getRandomPerson(_randomNums, minAgeDesired, maxAgeDesired, _chooser->getRiskLevel(), _partnershipType,
-	                             _remove);
+	return this->getRandomPerson(_randomNums, minAgeDesired, maxAgeDesired, _chooser->getRiskLevel(), _partnershipType, _remove);
 }
 
 //will remove this Person (if he or she exists) from the index
