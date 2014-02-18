@@ -7,10 +7,9 @@
 #include <cmath>
 #include <string>
 
-const std::string SexualPartnership::TypeEnumStrs[ENDType] = {"Steady", "Regular", "Casual", "CSW"};
+const std::vector<std::string> SexualPartnership::TypeEnumStrs = {"Steady", "Regular", "Casual", "CSW"};
 
-EnumCls<SexualPartnership::Type> SexualPartnership::TypeEnum(SexualPartnership::TypeEnumStrs,
-        SexualPartnership::ENDType);
+EnumCls<SexualPartnership::Type> SexualPartnership::TypeEnum(SexualPartnership::TypeEnumStrs);
 
 SexualPartnership::SexualPartnership()
 {
