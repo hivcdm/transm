@@ -42,7 +42,7 @@ public:
 		ENDLifeStats
 	};
 
-	static const std::string LifeStatsStr[PopStats::ENDLifeStats];
+	static const std::vector<std::string> LifeStatsStr;
 
 
 	struct SingleTimeStats

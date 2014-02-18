@@ -4,7 +4,7 @@
 #include <vector>
 #include <boost/math/special_functions/erf.hpp>
 
-const std::string PopStats::LifeStatsStr[PopStats::ENDLifeStats] =
+const std::vector<std::string> PopStats::LifeStatsStr =
 {
 	"TOTAL_LM",
 	"TOTAL_HIV_NEG_LM",
@@ -15,6 +15,7 @@ const std::string PopStats::LifeStatsStr[PopStats::ENDLifeStats] =
 	"TOTAL_HIV_POS_DTHS",
 	"TOTAL_HIV_POS",
 };
+
 //declare strings of Enums
 const int NUM_LE_CAT = 12; //number of life expectancy categories
 const char *lifeExpectancyStrs[NUM_LE_CAT] = {"Age(yr)", "raw deaths", "raw pop", "n", "deaths", "death rate", "midpoint survivorship", "total remaining time", "life expectancy", "median LE", "median LE Standard Error", "median LE Confidence Bounds"};
@@ -24,7 +25,8 @@ PopStats::PopStats(long maxTime, ticpp::Element *_LEOutputNode, ticpp::Element *
 	monthOf1990(0),
 	yearlyTestsByResult(4)
 {
-	enumClass = new EnumCls<PopStats::LifeStats>(PopStats::LifeStatsStr, PopStats::ENDLifeStats);
+	assert(PopStats::LifeStatsStr.size() == PopStats::ENDLifeStats);
+	enumClass = new EnumCls<PopStats::LifeStats>(PopStats::LifeStatsStr);
 	lifeStats = new StatsRecord<PopStats::LifeStats, BaseEnumCls::nullptr_ENUM>(enumClass);
 	survivalStats = new SurvivalStats();
 	//Set up the timeToRecord vector... by default, record at every 1/4 of the maxTime
