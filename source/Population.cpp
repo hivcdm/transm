@@ -124,7 +124,7 @@ Population::Population(EventParams &_eventParams, ticpp::Element *_popParamsNode
 	DmgProfile selector;
 	selector.set(DmgProfile::SEXUAL_ACTIVITY_STATUS, DmgProfile::SA);
 	selector.set(DmgProfile::GENDER, DmgProfile::MALE);
-	selector.set(DmgProfile::SEXUAL_ORIENTATION, DmgProfile::HETERO);
+	selector.set(DmgProfile::SEXUAL_ORIENTATION, DmgProfile::HOMO);
 	selector.set(DmgProfile::RELATIONSHIP_STATUS, DmgProfile::SINGLE);
 	selector.set(DmgProfile::EMPLOYMENT, DmgProfile::NON_CSW);
 	std::vector<DmgProfile::ProfileID> bucketIDs;
@@ -2111,7 +2111,7 @@ unsigned long Population::createPartnerships(EventParams &_eventParams, Person *
 					_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "   x Repeat partnership not formed!" << endl;
 				}
 			}
-			else
+			else if(partner != _initiator)
 			{
 				foundPartner = true;
 				chosenPartner = partner;
