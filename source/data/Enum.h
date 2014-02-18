@@ -78,7 +78,7 @@ public :
 
 	BaseEnumCls();
 
-	BaseEnumCls(const std::string _strs[], unsigned int _numEnums);
+	BaseEnumCls(const std::vector<std::string> _strs);
 
 	~BaseEnumCls();
 
@@ -107,7 +107,7 @@ public :
 	/**
 	Stores the string representation of enum
 	**/
-	void init(const std::string _strs[], unsigned int _numEnums);
+	void init(const std::vector<std::string> _strs);
 
 	/**
 	Returns true if _e is in [max, min] or is the wildcard value
@@ -140,7 +140,7 @@ public:
 
 	EnumCls();
 
-	EnumCls(const std::string _strs[], unsigned int _numEnums);
+	EnumCls(const std::vector<std::string> _strs);
 
 	/**
 	Takes the string representation of _e and appends it to _output
@@ -169,9 +169,9 @@ EnumCls<E>::EnumCls()
 }
 
 template <class E>
-EnumCls<E>::EnumCls(const std::string _strs[], unsigned int _numEnums)
+EnumCls<E>::EnumCls(const std::vector<std::string> _strs)
 {
-	this->init(_strs, _numEnums);
+	this->init(_strs);
 }
 
 template <class E>
