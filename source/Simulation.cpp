@@ -857,6 +857,10 @@ BetaDist ParseBeta(const std::string &distributionString)
 		dist.alpha = std::stod(distributionString.substr(commaIndex + 1, secondCommaIndex - commaIndex));
 		dist.beta = std::stod(distributionString.substr(secondCommaIndex + 1));
 	}
+	else
+	{
+		throw std::runtime_error("unknown distribution");
+	}
 
 	return dist;
 }
