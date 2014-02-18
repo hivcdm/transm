@@ -120,12 +120,12 @@ void Simulation::FirstStep()
 
 bool Simulation::Step()
 {
-	time_++;
-
-	if(time_ == 1)
+	if(time_ == 0)
 	{
 		FirstStep();
 	}
+
+	time_++;
 
 	double begin = timer_.GetTime();
 
@@ -1051,7 +1051,7 @@ void Simulation::UpdateTimeDependentParameters()
 				+ int(parameters_.rolloutEligibility.cd4HvlRank == i);
 			if(matching != 1)
 			{
-				throw std::runtime_error("need a single elegibility criterion for each rank 1..5");
+				throw std::runtime_error("need a single elegibility criterion for each rank 1..5: " + std::to_string(matching));
 			}
 		}
 	}
