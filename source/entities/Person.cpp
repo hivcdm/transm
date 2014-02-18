@@ -19,7 +19,7 @@ int Person::numTracesSoFar = 0;
 //TODO: But maybe they shouldn't?
 vector<double> Person::probDeathNatCauses[DmgProfile::ENDGender];
 
-const std::string Person::StatsStr[Person::STAT_ENDStats] =
+const std::vector<std::string> Person::StatsStr =
 {
 	"TOTAL_LM",
 	"HIV_NEG_LM_INSIM",
@@ -31,7 +31,7 @@ const std::string Person::StatsStr[Person::STAT_ENDStats] =
 	"GENERATION_OF_INFECTION"
 };
 
-EnumCls<Person::Stats> Person::StatsEnum(Person::StatsStr, Person::STAT_ENDStats);
+EnumCls<Person::Stats> Person::StatsEnum(Person::StatsStr);
 
 //----------------< Start Methods for Person >-------------------//
 //All implemented methods are in alphabetical order execept for the constructors/destructors (at bottom of Person section)
