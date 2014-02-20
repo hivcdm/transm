@@ -5,9 +5,9 @@
 #include <sstream>
 
 //declare strings of Enums
-const std::string demographicStrs[DmgProfile::ENDDemographic] = {"SEXUAL_ACTIVITY_STATUS", "GENDER", "SEXUAL_ORIENTATION", "RELATIONSHIP_STATUS", "EMPLOYMENT"};
-//fix this... not all dmgProfile will only have 2 choices
-const std::string enumStrs[DmgProfile::ENDDemographic][2] =
+const std::vector<std::string> demographicStrs = {"SEXUAL_ACTIVITY_STATUS", "GENDER", "SEXUAL_ORIENTATION", "RELATIONSHIP_STATUS", "EMPLOYMENT"};
+
+const std::vector<std::vector<std::string>> enumStrs =
 {
 	{"SA", "NA"},
 	{"MALE", "FEMALE"},
@@ -439,14 +439,11 @@ void DmgProfile::deallocStaticMembers()
 
 void DmgProfile::initEnums()
 {
-	DmgProfile::DemographicEnumCls.push_back(EnumCls<SexualActivityStatus>(enumStrs[SEXUAL_ACTIVITY_STATUS],
-	        ENDSexualActivityStatus));
-	DmgProfile::DemographicEnumCls.push_back(EnumCls<Gender>(enumStrs[GENDER], ENDGender));
-	DmgProfile::DemographicEnumCls.push_back(EnumCls<SexualOrientation>(enumStrs[SEXUAL_ORIENTATION],
-	        ENDSexualOrientation));
-	DmgProfile::DemographicEnumCls.push_back(EnumCls<RelationshipStatus>(enumStrs[RELATIONSHIP_STATUS],
-	        ENDRelationshipStatus));
-	DmgProfile::DemographicEnumCls.push_back(EnumCls<Employment>(enumStrs[EMPLOYMENT], ENDEmployment));
+	DmgProfile::DemographicEnumCls.push_back(EnumCls<SexualActivityStatus>(enumStrs[SEXUAL_ACTIVITY_STATUS]));
+	DmgProfile::DemographicEnumCls.push_back(EnumCls<Gender>(enumStrs[GENDER]));
+	DmgProfile::DemographicEnumCls.push_back(EnumCls<SexualOrientation>(enumStrs[SEXUAL_ORIENTATION]));
+	DmgProfile::DemographicEnumCls.push_back(EnumCls<RelationshipStatus>(enumStrs[RELATIONSHIP_STATUS]));
+	DmgProfile::DemographicEnumCls.push_back(EnumCls<Employment>(enumStrs[EMPLOYMENT]));
 }
 
 void DmgProfile::initProfileIDMap()
