@@ -1,9 +1,9 @@
 ###
 #
 #Determines the name of the executables. Change for each new version
-VERSION = 333a
+VERSION = 3.34.c
 
-EXE = transm$(VERSION)
+EXE = transm-$(VERSION)
 
 #header files
 HEADERS = source/util/ticpp/*.h source/util/rand/*.h source/util/*.h source/statistics/*.h source/graphviz/*.h source/entities/entitypool/bucket/*.h source/entities/entitypool/*.h source/entities/classifiers/*.h source/entities/behaviors/*.h source/entities/*.h source/data/*.h source/cepacbridge/*.h source/*.h source/cepac/*.h
@@ -75,17 +75,12 @@ GUI_OBJS = $(OBJS) source/gui/widgets/statusWidget.o \
 CONSOLE_OBJS = $(OBJS) source/main.o
 
 #compiler and related flags
-CC = gcc
-CFLAGS = -I. -O3 -D__LINUX__
 CXX = g++
-CXXFLAGS = -I. -O3 -std=c++11 -D__LINUX__ -I/data/cepac/cdm/utils/boost-1.55.0/include
-LDFLAGS = -L/data/cepac/cdm/utils/boost-1.55.0/lib -lm -ldl -lpthread -lboost_filesystem -lboost_system
+CXXFLAGS = -I. -g -O3 -std=c++11
+LDFLAGS = -L/n/seage_lab/cepac_dynamic_model/local/lib -lm -lboost_filesystem -lboost_system
 
 #rules for compiling C and CPP files
-.SUFFIXES: .c .cpp
-
-%.o : %.c $(HEADERS)
-	$(CC) $(CFLAGS) -c $< -o $@
+.SUFFIXES: .cpp
 
 %.o: %.cpp $(HEADERS)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
@@ -100,10 +95,10 @@ LDFLAGS = -L/data/cepac/cdm/utils/boost-1.55.0/lib -lm -ldl -lpthread -lboost_fi
 
 all : console
 
-console : CXXFLAGS += -DCONSOLE $(BOOST_CXXFLAGS)
+console : CXXFLAGS += $(BOOST_CXXFLAGS)
 console : LDFLAGS += $(BOOST_LDFLAGS)
 console : $(CONSOLE_OBJS)
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $(EXE)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $(EXE)
 
 gui : CXXFLAGS += `wx-config --cxxflags` -D__WXDEBUG__
 gui : LDFLAGS += `wx-config --libs`
