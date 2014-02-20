@@ -602,8 +602,7 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 
 	if(_eventParams.debugLevel > DEBUG0)
 	{
-		this->printMethodResults(_eventParams, "UpdatePhysicalState", "People Died", totalDied, "total died",
-		                         Constants::SHOW_INFECTED);
+		printMethodResults(_eventParams, "UpdatePhysicalState", "People Died", totalDied, "total died", Constants::SHOW_INFECTED);
 	}
 }
 
