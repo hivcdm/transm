@@ -124,7 +124,7 @@ Population::Population(EventParams &_eventParams, ticpp::Element *_popParamsNode
 	DmgProfile selector;
 	selector.set(DmgProfile::SEXUAL_ACTIVITY_STATUS, DmgProfile::SA);
 	selector.set(DmgProfile::GENDER, DmgProfile::MALE);
-	selector.set(DmgProfile::SEXUAL_ORIENTATION, DmgProfile::HOMO);
+	selector.set(DmgProfile::SEXUAL_ORIENTATION, DmgProfile::HETERO);
 	selector.set(DmgProfile::RELATIONSHIP_STATUS, DmgProfile::SINGLE);
 	selector.set(DmgProfile::EMPLOYMENT, DmgProfile::NON_CSW);
 	std::vector<DmgProfile::ProfileID> bucketIDs;
