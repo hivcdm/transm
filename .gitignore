@@ -8,6 +8,7 @@ results/
 *.opensdf
 *.vcxproj.user
 *.o
+*.d
 #*#
 *~
 .DS_Store
