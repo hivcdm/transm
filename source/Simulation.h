@@ -1,9 +1,10 @@
 #pragma once
 
+#include <ticpp/ticpp.h>
+
 #include "data/EventParams.h"
 #include "statistics/PopStats.h"
 #include "util/HighResolutionTimer.h"
-#include "util/ticpp/ticpp.h"
 
 class Population;
 class InfectionsTracker;

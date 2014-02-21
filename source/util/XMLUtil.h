@@ -22,8 +22,8 @@ public :
 	static void getDistFromXMLNode(ticpp::Element *_distContainingNode, NormalDist &_normalDist)
 	{
 		ticpp::Element *distParams = _distContainingNode->FirstChildElement("Distrib");
-		_normalDist.mean = distParams->FirstChildElement("mean")->GetText<double>();
-		_normalDist.stddev = distParams->FirstChildElement("stdDev")->GetText<double>();
+		distParams->FirstChildElement("mean")->GetText<double>(&_normalDist.mean);
+		distParams->FirstChildElement("stdDev")->GetText<double>(&_normalDist.stddev);
 	}
 
 	static void getLogNormalDistFromXMLNode(ticpp::Element *_distContainingNode, LogNormalDist &_logNormalDist,
@@ -33,14 +33,14 @@ public :
 
 		try
 		{
-			_logNormalDist.mu = distParams->FirstChildElement("mu")->GetText<double>();
-			_logNormalDist.sigma = distParams->FirstChildElement("sigma")->GetText<double>();
+			distParams->FirstChildElement("mu")->GetText<double>(&_logNormalDist.mu);
+			distParams->FirstChildElement("sigma")->GetText<double>(&_logNormalDist.sigma);
 		}
 		catch(ticpp::Exception e)
 		{
 			double mean;
 			double stddev;
-			mean = distParams->FirstChildElement("mean")->GetText<double>();
+			distParams->FirstChildElement("mean")->GetText<double>(&mean);
 
 			if(mean <= 0)
 			{
@@ -56,7 +56,7 @@ public :
 			}
 			else
 			{
-				stddev = distParams->FirstChildElement("stdDev")->GetText<double>();
+				distParams->FirstChildElement("stdDev")->GetText<double>(&stddev);
 			}
 
 			_logNormalDist.mu = log(mean) - 0.5 * log(1 + (stddev * stddev) / (mean * mean));
@@ -71,16 +71,16 @@ public :
 
 		try
 		{
-			_shiftedLogNormalDist.mu = distParams->FirstChildElement("mu")->GetText<double>();
-			_shiftedLogNormalDist.sigma = distParams->FirstChildElement("sigma")->GetText<double>();
-			_shiftedLogNormalDist.shift = distParams->FirstChildElement("shift")->GetText<double>();
+			distParams->FirstChildElement("mu")->GetText<double>(&_shiftedLogNormalDist.mu);
+			distParams->FirstChildElement("sigma")->GetText<double>(&_shiftedLogNormalDist.sigma);
+			distParams->FirstChildElement("shift")->GetText<double>(&_shiftedLogNormalDist.shift);
 		}
 		catch(ticpp::Exception e)
 		{
-			double mean;
-			double stddev;
-			double shift;
-			mean = distParams->FirstChildElement("mean")->GetText<double>();
+		    double mean = 0;
+		    double stddev = 0;
+		    double shift = 0;
+			distParams->FirstChildElement("mean")->GetText<double>(&mean);
 
 			if(mean <= 0)
 			{
@@ -91,8 +91,8 @@ public :
 				return;
 			}
 
-			stddev = distParams->FirstChildElement("stdDev")->GetText<double>();
-			shift = distParams->FirstChildElement("shift")->GetText<double>();
+			distParams->FirstChildElement("stdDev")->GetText<double>(&stddev);
+			distParams->FirstChildElement("shift")->GetText<double>(&shift);
 			_shiftedLogNormalDist.mu = log(mean - shift) - 0.5 * log(1 + (stddev * stddev) / ((mean - shift) * (mean - shift)));
 			_shiftedLogNormalDist.sigma = sqrt(log(1 + (stddev * stddev) / ((mean - shift) * (mean - shift))));
 			_shiftedLogNormalDist.shift = shift;
@@ -106,8 +106,8 @@ public :
 
 		try
 		{
-			_betaDist.alpha = distParams->FirstChildElement("alpha")->GetText<double>();
-			_betaDist.beta = distParams->FirstChildElement("beta")->GetText<double>();
+		        distParams->FirstChildElement("alpha")->GetText<double>(&_betaDist.alpha);
+			distParams->FirstChildElement("beta")->GetText<double>(&_betaDist.beta);
 		}
 		catch(ticpp::Exception e)
 		{
@@ -116,13 +116,13 @@ public :
 
 			if(useCoeffVar)
 			{
-				mean = distParams->FirstChildElement("mean")->GetText<double>();
+				distParams->FirstChildElement("mean")->GetText<double>(&mean);
 				stddev = mean * coeffVar;
 			}
 			else
 			{
-				mean = distParams->FirstChildElement("mean")->GetText<double>();
-				stddev = distParams->FirstChildElement("stdDev")->GetText<double>();
+				distParams->FirstChildElement("mean")->GetText<double>(&mean);
+				distParams->FirstChildElement("stdDev")->GetText<double>(&stddev);
 			}
 
 			double sampleSize = mean * (1 - mean) / (stddev * stddev) - 1;
@@ -135,13 +135,17 @@ public :
 	static double getExpDistMeanFromXMLNode(ticpp::Element *_distContainingNode)
 	{
 		ticpp::Element *distParams = _distContainingNode->FirstChildElement("Distrib");
-		return distParams->FirstChildElement("mean")->GetText<double>();
+		double mean = 0;
+		distParams->FirstChildElement("mean")->GetText<double>(&mean);
+		return mean;
 	}
 
 	static double getPoissonDistMeanFromXMLNode(ticpp::Element *_distContainingNode)
 	{
 		ticpp::Element *distParams = _distContainingNode->FirstChildElement("Distrib");
-		return distParams->FirstChildElement("mean")->GetText<int>();
+		double mean = 0;
+		distParams->FirstChildElement("mean")->GetText<double>(&mean);
+		return mean;
 	}
 
 

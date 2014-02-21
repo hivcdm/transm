@@ -1,7 +1,9 @@
 #pragma once
+
+#include <ticpp/ticpp.h>
+
 #include "Person.h"
 #include "../data/EventParams.h"
-#include "../util/ticpp/ticpp.h"
 #include "../util/rand/RandomNums.h"
 
 /***

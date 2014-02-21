@@ -1,15 +1,16 @@
 #pragma once
 
-#include <list>
-#include "../statistics/StatsRecord.h"
-#include "./classifiers/DmgProfile.h"
-#include "./classifiers/SexualPartnership.h"
-#include "./../Constants.h"
-#include "../util/Util.h"
-#include "./entitypool/bucket/FullVector.h"
 #include <iostream>
-#include <vector>
+#include <list>
 #include <set>
+#include <vector>
+
+#include "classifiers/DmgProfile.h"
+#include "classifiers/SexualPartnership.h"
+#include "entitypool/bucket/FullVector.h"
+#include "../Constants.h"
+#include "../statistics/StatsRecord.h"
+#include "../util/Util.h"
 #include "../cepac/Patient.h"
 #include "../graphviz/graphVizParse.h"
 

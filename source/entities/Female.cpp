@@ -24,20 +24,21 @@ int Female::SubPopParams::loadParamsXML(ticpp::Element *_femaleParams, EventPara
 	{
 		//get behavioral params
 		ticpp::Element *behaviorElem = _femaleParams->FirstChildElement("behavior");
-		this->chanceBecomeCSW = behaviorElem->FirstChildElement("chanceBecomeSexWorker")->GetText<double>();
-		this->proportionHighRisk[DmgProfile::CSW] = behaviorElem->FirstChildElement("proportionHighRiskCSW")->GetText<double>();
-		this->proportionHighRisk[DmgProfile::NON_CSW] =
-		    behaviorElem->FirstChildElement("proportionHighRiskNonCSW")->GetText<double>();
+		behaviorElem->FirstChildElement("chanceBecomeSexWorker")->GetText<double>(&chanceBecomeCSW);
+		behaviorElem->FirstChildElement("proportionHighRiskCSW")->GetText<double>(&proportionHighRisk[DmgProfile::CSW]);
+		behaviorElem->FirstChildElement("proportionHighRiskNonCSW")->GetText<double>(&proportionHighRisk[DmgProfile::NON_CSW]);
 		XMLUtil::getDistFromXMLNode(behaviorElem->FirstChildElement("activityLevel"), this->activityLevel);
 		//get the health params
 		ticpp::Element *healthElem = _femaleParams->FirstChildElement("health");
 		ticpp::Element *transmitCoeffElem = healthElem->FirstChildElement("transmissionCoefficients");
 		//get the transmission coefficients
-		this->transmitPerEventCoeffs.clear();
-		XMLUtil::getTabDelimitedNode(transmitCoeffElem->FirstChildElement("valsByHVL"),
-		                             this->transmitPerEventCoeffs);
-		this->transmitPerEventCoeffs.push_back(transmitCoeffElem->FirstChildElement("primary")->GetText<double>());
-		this->transmitPerEventCoeffs.push_back(transmitCoeffElem->FirstChildElement("lateStage")->GetText<double>());
+		transmitPerEventCoeffs.clear();
+		XMLUtil::getTabDelimitedNode(transmitCoeffElem->FirstChildElement("valsByHVL"), transmitPerEventCoeffs);
+		double coeff = 0;
+		transmitCoeffElem->FirstChildElement("primary")->GetText<double>(&coeff);
+		transmitPerEventCoeffs.push_back(coeff);
+		transmitCoeffElem->FirstChildElement("lateStage")->GetText<double>(&coeff);
+		transmitPerEventCoeffs.push_back(coeff);
 	}
 	catch(ticpp::Exception &_e)
 	{

@@ -5,6 +5,7 @@
 #include <fstream>
 #include <boost/tuple/tuple.hpp>
 #include <unordered_map>
+#include <ticpp/ticpp.h>
 
 #include "entities/Person.h"
 #include "entities/Male.h"
@@ -12,7 +13,6 @@
 #include "statistics/PopStats.h"
 #include "entities/entitypool/EntityPool.h"
 #include "util/rand/RandomNums.h"
-#include "util/ticpp/ticpp.h"
 #include "graphviz/graphVizParse.h"
 
 enum DebugLevel;

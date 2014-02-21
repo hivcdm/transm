@@ -140,7 +140,7 @@ void Population::Params::loadXML(ticpp::Element *_populationXML, EventParams &_e
 	try
 	{
 		ticpp::Element *initialState = _populationXML->FirstChildElement("initialState");
-		this->initSize = initialState->FirstChildElement("size")->GetText<int>();
+		initialState->FirstChildElement("size")->GetText<long>(&initSize);
 		_eventParams.displayOut("\tsize = ");
 		_eventParams.displayOut(boost::lexical_cast<std::string>(initSize).c_str());
 		_eventParams.displayOut("\n");
@@ -154,29 +154,55 @@ void Population::Params::loadXML(ticpp::Element *_populationXML, EventParams &_e
 		for(rangeIter = initialState->FirstChildElement("ageDistributionYrs")->FirstChildElement("range");
 		        rangeIter != rangeIter.end(); rangeIter++)
 		{
+		    int minAge = 0;
+		    rangeIter->FirstChildElement("minAge")->GetText<int>(&minAge);
+		    int maxAge = 0;
+		    rangeIter->FirstChildElement("maxAge")->GetText<int>(&maxAge);
+		    double distribMale = 0;
+		    rangeIter->FirstChildElement("distribMale")->GetText<double>(&distribMale);
+		    double distribFemale = 0;
+		    rangeIter->FirstChildElement("distribFemale")->GetText<double>(&distribFemale);
+		    int numInfectedMaleCSW = 0;
+		    rangeIter->FirstChildElement("numInfectedMaleCSW")->GetText<int>(&numInfectedMaleCSW);
+		    int numInfectedFemaleCSW = 0;
+		    rangeIter->FirstChildElement("numInfectedFemaleCSW")->GetText<int>(&numInfectedFemaleCSW);
+		    int numInfectedMaleLowRisk = 0;
+		    rangeIter->FirstChildElement("numInfectedMaleLowRisk")->GetText<int>(&numInfectedMaleLowRisk);
+		    int numInfectedFemaleLowRisk = 0;
+		    rangeIter->FirstChildElement("numInfectedFemaleLowRisk")->GetText<int>(&numInfectedFemaleLowRisk);
+		    int numInfectedMaleHighRisk = 0;
+		    rangeIter->FirstChildElement("numInfectedMaleHighRisk")->GetText<int>(&numInfectedMaleHighRisk);
+		    int numInfectedFemaleHighRisk = 0;
+		    rangeIter->FirstChildElement("numInfectedFemaleHighRisk")->GetText<int>(&numInfectedFemaleHighRisk);
+		    
 			//get data for each age bucket and save it
 			this->initialAgeBuckets.push_back(
 			    new AgeBucketPrevalenceInfo(
-			        Util::convertTime(YEAR, MONTH, rangeIter->FirstChildElement("minAge")->GetText<int>()),
-			        Util::convertTime(YEAR, MONTH, rangeIter->FirstChildElement("maxAge")->GetText<int>()) + 11,
-			        rangeIter->FirstChildElement("distribMale")->GetText<double>(),
-			        rangeIter->FirstChildElement("distribFemale")->GetText<double>(),
-			        rangeIter->FirstChildElement("numInfectedMaleCSW")->GetText<double>(),
-			        rangeIter->FirstChildElement("numInfectedFemaleCSW")->GetText<double>(),
-			        rangeIter->FirstChildElement("numInfectedMaleLowRisk")->GetText<double>(),
-			        rangeIter->FirstChildElement("numInfectedFemaleLowRisk")->GetText<double>(),
-			        rangeIter->FirstChildElement("numInfectedMaleHighRisk")->GetText<double>(),
-			        rangeIter->FirstChildElement("numInfectedFemaleHighRisk")->GetText<double>()
+			        Util::convertTime(YEAR, MONTH, minAge),
+			        Util::convertTime(YEAR, MONTH, maxAge) + 11,
+				distribMale,
+				distribFemale,
+				numInfectedMaleCSW,
+				numInfectedFemaleCSW,
+				numInfectedMaleLowRisk,
+				numInfectedFemaleLowRisk,
+				numInfectedMaleHighRisk,
+				numInfectedFemaleHighRisk
 			    )
 			);
 		}
 
-		this->initProbCSW[DmgProfile::MALE] = initialState->FirstChildElement("chanceBeingCSWMale")->GetText<double>();
-		this->initProbCSW[DmgProfile::FEMALE] = initialState->FirstChildElement("chanceBeingCSWFemale")->GetText<double>();
-		this->CSWEndAgeMth[DmgProfile::MALE] = Util::convertTime(YEAR, MONTH,
-		                                       initialState->FirstChildElement("CSWEndAgeMale")->GetText<double>());
-		this->CSWEndAgeMth[DmgProfile::FEMALE] = Util::convertTime(YEAR, MONTH,
-		        initialState->FirstChildElement("CSWEndAgeFemale")->GetText<double>());
+		initialState->FirstChildElement("chanceBeingCSWMale")->GetText<double>(&initProbCSW[DmgProfile::MALE]);
+		initialState->FirstChildElement("chanceBeingCSWFemale")->GetText<double>(&initProbCSW[DmgProfile::FEMALE]);
+
+		double cswEndAgeYear = 0;
+
+		initialState->FirstChildElement("CSWEndAgeMale")->GetText<double>(&cswEndAgeYear);
+	        CSWEndAgeMth[DmgProfile::MALE] = Util::convertTime(YEAR, MONTH, cswEndAgeYear);
+
+		initialState->FirstChildElement("CSWEndAgeFemale")->GetText<double>(&cswEndAgeYear);
+	        CSWEndAgeMth[DmgProfile::FEMALE] = Util::convertTime(YEAR, MONTH, cswEndAgeYear);
+		        
 		//normalize %population values for each age bucket
 		double totalPopulationproportionages[DmgProfile::ENDGender];
 
@@ -205,23 +231,20 @@ void Population::Params::loadXML(ticpp::Element *_populationXML, EventParams &_e
 		}
 
 		//dmgProfile parameters
-		birthRate = _populationXML->FirstChildElement("birthRate")->GetText<double>();
+		_populationXML->FirstChildElement("birthRate")->GetText<double>(&birthRate);
 		XMLUtil::printParam("", "birthRate", birthRate, _eventParams);
-		proportionMale = _populationXML->FirstChildElement("proportionMale")->GetText<double>();
+		_populationXML->FirstChildElement("proportionMale")->GetText<double>(&proportionMale);
 		XMLUtil::printParam("", "proportionMale", proportionMale, _eventParams);
-		circumcised = _populationXML->FirstChildElement("proportionCircumcised")->GetText<double>();
+		_populationXML->FirstChildElement("proportionCircumcised")->GetText<double>(&circumcised);
 		XMLUtil::printParam("", "proportionCircumcised", circumcised, _eventParams);
-		SAEntAgeMths = Util::convertTime(YEAR, MONTH, _populationXML->FirstChildElement("ageSexualDebutYrs")->GetText<int>());
+		_populationXML->FirstChildElement("ageSexualDebutYrs")->GetText<int>(&SAEntAgeMths);
+		SAEntAgeMths = Util::convertTime(YEAR, MONTH, SAEntAgeMths);
 		XMLUtil::printParam("", "SAEntAge (month)", SAEntAgeMths, _eventParams);
 		//ASSORTATIVENESS GOES HERE
-		assort[SexualPartnership::STEADY] =
-		    _populationXML->FirstChildElement("assortativeness")->FirstChildElement("steady")->GetText<double>();
-		assort[SexualPartnership::REGULAR] =
-		    _populationXML->FirstChildElement("assortativeness")->FirstChildElement("regular")->GetText<double>();
-		assort[SexualPartnership::CASUAL] =
-		    _populationXML->FirstChildElement("assortativeness")->FirstChildElement("casual")->GetText<double>();
-		assort[SexualPartnership::CSW] =
-		    _populationXML->FirstChildElement("assortativeness")->FirstChildElement("csw")->GetText<double>();
+		_populationXML->FirstChildElement("assortativeness")->FirstChildElement("steady")->GetText<double>(&assort[SexualPartnership::STEADY]);
+		_populationXML->FirstChildElement("assortativeness")->FirstChildElement("regular")->GetText<double>(&assort[SexualPartnership::REGULAR]);
+		_populationXML->FirstChildElement("assortativeness")->FirstChildElement("casual")->GetText<double>(&assort[SexualPartnership::CASUAL]);
+		_populationXML->FirstChildElement("assortativeness")->FirstChildElement("csw")->GetText<double>(&assort[SexualPartnership::CSW]);
 		// Get an EntityTypes element
 		ticpp::Element *entityTypes =
 		    _populationXML->FirstChildElement("entityTypes")->FirstChildElement("baseEntities")->FirstChildElement("baseEntity");
@@ -274,8 +297,8 @@ void Population::Params::loadXML(ticpp::Element *_populationXML, EventParams &_e
 		this->initproportionRegular = (1 - pHigh) * (regularRateL * regularDurationL) + pHigh *
 		                              (regularRateH * regularDurationH);
 		//Costs
-		condomCost = _populationXML->FirstChildElement("costs")->FirstChildElement("condomCost")->GetText<double>();
-		circumcisionCost = _populationXML->FirstChildElement("costs")->FirstChildElement("circumcisionCost")->GetText<double>();
+		_populationXML->FirstChildElement("costs")->FirstChildElement("condomCost")->GetText<double>(&condomCost);
+		_populationXML->FirstChildElement("costs")->FirstChildElement("circumcisionCost")->GetText<double>(&circumcisionCost);
 	}
 	catch(ticpp::Exception &_e)
 	{
@@ -309,23 +332,20 @@ void Population::Params::reloadXML(ticpp::Element *_populationXML, EventParams &
 	try
 	{
 		//dmgProfile parameters
-		birthRate = _populationXML->FirstChildElement("birthRate")->GetText<double>();
+		_populationXML->FirstChildElement("birthRate")->GetText<double>(&birthRate);
 		XMLUtil::printParam("", "birthRate", birthRate, _eventParams);
-		proportionMale = _populationXML->FirstChildElement("proportionMale")->GetText<double>();
+		_populationXML->FirstChildElement("proportionMale")->GetText<double>(&proportionMale);
 		XMLUtil::printParam("", "proportionMale", proportionMale, _eventParams);
-		circumcised = _populationXML->FirstChildElement("proportionCircumcised")->GetText<double>();
+		_populationXML->FirstChildElement("proportionCircumcised")->GetText<double>(&circumcised);
 		XMLUtil::printParam("", "proportionCircumcised", circumcised, _eventParams);
-		SAEntAgeMths = Util::convertTime(YEAR, MONTH, _populationXML->FirstChildElement("ageSexualDebutYrs")->GetText<int>());
+		_populationXML->FirstChildElement("ageSexualDebutYrs")->GetText<int>(&SAEntAgeMths);
+		SAEntAgeMths = Util::convertTime(YEAR, MONTH, SAEntAgeMths);
 		XMLUtil::printParam("", "SAEntAge (month)", SAEntAgeMths, _eventParams);
 		//ASSORTATIVENESS GOES HERE
-		assort[SexualPartnership::STEADY] =
-		    _populationXML->FirstChildElement("assortativeness")->FirstChildElement("steady")->GetText<double>();
-		assort[SexualPartnership::REGULAR] =
-		    _populationXML->FirstChildElement("assortativeness")->FirstChildElement("regular")->GetText<double>();
-		assort[SexualPartnership::CASUAL] =
-		    _populationXML->FirstChildElement("assortativeness")->FirstChildElement("casual")->GetText<double>();
-		assort[SexualPartnership::CSW] =
-		    _populationXML->FirstChildElement("assortativeness")->FirstChildElement("csw")->GetText<double>();
+		_populationXML->FirstChildElement("assortativeness")->FirstChildElement("steady")->GetText<double>(&assort[SexualPartnership::STEADY]);
+		_populationXML->FirstChildElement("assortativeness")->FirstChildElement("regular")->GetText<double>(&assort[SexualPartnership::REGULAR]);
+		_populationXML->FirstChildElement("assortativeness")->FirstChildElement("casual")->GetText<double>(&assort[SexualPartnership::CASUAL]);
+		_populationXML->FirstChildElement("assortativeness")->FirstChildElement("csw")->GetText<double>(&assort[SexualPartnership::CSW]);
 		// Get an EntityTypes element
 		ticpp::Element *entityTypes =
 		    _populationXML->FirstChildElement("entityTypes")->FirstChildElement("baseEntities")->FirstChildElement("baseEntity");
@@ -339,12 +359,12 @@ void Population::Params::reloadXML(ticpp::Element *_populationXML, EventParams &
 			if(baseEntityElem.compare("Male") == 0)
 			{
 				Male::updatePopParams(this->populationID, entityTypesIter->ToElement(), _eventParams);
-				this->maleParams = Male::getPopParams(this->populationID);
+				maleParams = Male::getPopParams(this->populationID);
 			}
 			else if(baseEntityElem.compare("Female") == 0)
 			{
 				Female::updatePopParams(this->populationID, entityTypesIter->ToElement(), _eventParams);
-				this->femaleParams = Female::getPopParams(this->populationID);
+				femaleParams = Female::getPopParams(this->populationID);
 			}
 			else
 			{
@@ -355,8 +375,8 @@ void Population::Params::reloadXML(ticpp::Element *_populationXML, EventParams &
 		}
 
 		//Costs
-		condomCost = _populationXML->FirstChildElement("costs")->FirstChildElement("condomCost")->GetText<double>();
-		circumcisionCost = _populationXML->FirstChildElement("costs")->FirstChildElement("circumcisionCost")->GetText<double>();
+		_populationXML->FirstChildElement("costs")->FirstChildElement("condomCost")->GetText<double>(&condomCost);
+		_populationXML->FirstChildElement("costs")->FirstChildElement("circumcisionCost")->GetText<double>(&circumcisionCost);
 	}
 	catch(ticpp::Exception &_e)
 	{

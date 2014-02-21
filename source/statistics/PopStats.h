@@ -3,6 +3,7 @@
 #include <fstream>
 #include <unordered_map>
 #include <vector>
+#include <ticpp/ticpp.h>
 
 #include "ArtRolloutTracker.h"
 #include "CostsTracker.h"
@@ -10,7 +11,6 @@
 #include "StatsRecord.h"
 #include "../data/Enum.h"
 #include "../entities/classifiers/SexualPartnership.h"
-#include "../util/ticpp/ticpp.h"
 
 class Person;
 

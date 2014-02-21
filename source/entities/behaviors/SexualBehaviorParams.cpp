@@ -22,8 +22,7 @@ int SexualBehaviorParams::loadParamsXML(ticpp::Element *_sexualBehaviourParams, 
 		cout << "Using High Risk multiplier of " << _highRiskMultiplier << endl;
 	}*/
 	//read in behavior twig
-	this->partnershipType = SexualPartnership::TypeEnum.toEnum(
-	                            _sexualBehaviourParams->FirstChildElement("type")->GetText<string>());
+	SexualPartnership::TypeEnum.toEnum(_sexualBehaviourParams->FirstChildElement("type")->GetText());
 	double multiplier = _highRiskMultiplier;
 
 	if(this->partnershipType == SexualPartnership::CSW && _useHighRiskMultiplier && _useHighRiskMultiplierCSW)
@@ -73,9 +72,9 @@ int SexualBehaviorParams::loadParamsXML(ticpp::Element *_sexualBehaviourParams, 
 	        bucketsIter != bucketsIter.end(); bucketsIter++)
 	{
 		//not very efficient, but we only do this once at the beginning of the sim
-		this->availableBuckets.resize(this->availableBuckets.size() + 1);
-		this->availableBuckets.back().dmgProfileSelector.parse(bucketsIter->FirstChildElement("DmgProfile")->GetText());
-		this->availableBuckets.back().weight = bucketsIter->FirstChildElement("weightedValue")->GetText<double>();
+		availableBuckets.resize(availableBuckets.size() + 1);
+		availableBuckets.back().dmgProfileSelector.parse(bucketsIter->FirstChildElement("DmgProfile")->GetText());
+		bucketsIter->FirstChildElement("weightedValue")->GetText<double>(&availableBuckets.back().weight);
 	} //for ( bucketsIter = selectionCriteria->FirstChildElement("availableBuckets")->FirstChildElement("bucket");
 
 	//get the average age difference

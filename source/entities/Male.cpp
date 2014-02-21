@@ -34,17 +34,16 @@ int Male::SubPopParams::loadParamsXML(ticpp::Element *_maleParams, EventParams &
 	try
 	{
 		ticpp::Element *behaviorElem = _maleParams->FirstChildElement("behavior");
-		this->chanceBecomeCSW = behaviorElem->FirstChildElement("chanceBecomeSexWorker")->GetText<double>();
-		this->partnerAcqMultWithSteady[Person::HIGH] =
-		    behaviorElem->FirstChildElement("partnerAcqMultWithSteadyHighRisk")->GetText<double>();
-		this->partnerAcqMultWithSteady[Person::LOW] =
-		    behaviorElem->FirstChildElement("partnerAcqMultWithSteadyLowRisk")->GetText<double>();
+		behaviorElem->FirstChildElement("chanceBecomeSexWorker")->GetText<double>(&chanceBecomeCSW);
+		behaviorElem->FirstChildElement("partnerAcqMultWithSteadyHighRisk")->GetText<double>(&partnerAcqMultWithSteady[Person::HIGH]);
+		behaviorElem->FirstChildElement("partnerAcqMultWithSteadyLowRisk")->GetText<double>(&partnerAcqMultWithSteady[Person::LOW]);
 		//Use these to determine if the high risk acquisition rates will be pulled from user input or by multiplying the low risk rates
 		bool useMultiplierForHighRiskAcqRates = false;
 
 		try
 		{
-			useMultiplierForHighRiskAcqRates = (behaviorElem->FirstChildElement("UseHighRiskMultiplier")->GetText<int>() == 1);
+		    
+			useMultiplierForHighRiskAcqRates = behaviorElem->FirstChildElement("UseHighRiskMultiplier")->GetText() != "0";
 		}
 		catch(ticpp::Exception &)
 		{
@@ -55,7 +54,7 @@ int Male::SubPopParams::loadParamsXML(ticpp::Element *_maleParams, EventParams &
 
 		try
 		{
-			highRiskAcqRateMultiplier = behaviorElem->FirstChildElement("HighRiskAcqRateMultiplier")->GetText<double>();
+			behaviorElem->FirstChildElement("HighRiskAcqRateMultiplier")->GetText<double>(&highRiskAcqRateMultiplier);
 		}
 		catch(ticpp::Exception &)
 		{
@@ -66,7 +65,7 @@ int Male::SubPopParams::loadParamsXML(ticpp::Element *_maleParams, EventParams &
 
 		try
 		{
-			useMultiplierForHighRiskCSW = (behaviorElem->FirstChildElement("UseCSWHighRiskMultiplier")->GetText<int>() == 1);
+			behaviorElem->FirstChildElement("UseCSWHighRiskMultiplier")->GetText<bool>(&useMultiplierForHighRiskCSW);
 		}
 		catch(ticpp::Exception &)
 		{
@@ -77,7 +76,7 @@ int Male::SubPopParams::loadParamsXML(ticpp::Element *_maleParams, EventParams &
 
 		try
 		{
-			highRiskAcqRateMultiplierCSW = behaviorElem->FirstChildElement("CSWHighRiskAcqRateMultiplier")->GetText<double>();
+			behaviorElem->FirstChildElement("CSWHighRiskAcqRateMultiplier")->GetText<double>(&highRiskAcqRateMultiplierCSW);
 		}
 		catch(ticpp::Exception &)
 		{
@@ -85,10 +84,8 @@ int Male::SubPopParams::loadParamsXML(ticpp::Element *_maleParams, EventParams &
 		}
 
 		//Coefficient of Variation
-		_eventParams.useCoefficientVariation =
-		    behaviorElem->FirstChildElement("heterogeneity")->FirstChildElement("varMethod")->GetText<int>() == 0;
-		_eventParams.coefficientOfVariation =
-		    behaviorElem->FirstChildElement("heterogeneity")->FirstChildElement("coeffVar")->GetText<double>();
+		_eventParams.useCoefficientVariation = behaviorElem->FirstChildElement("heterogeneity")->FirstChildElement("varMethod")->GetText() == "0";
+		behaviorElem->FirstChildElement("heterogeneity")->FirstChildElement("coeffVar")->GetText<double>(&_eventParams.coefficientOfVariation);
 		//iterate through each Person in partnershipTypes
 		ticpp::Iterator<ticpp::Element> partnershipTypesIter;
 		string partnershipType;
@@ -102,15 +99,15 @@ int Male::SubPopParams::loadParamsXML(ticpp::Element *_maleParams, EventParams &
 			this->sexualBehaviorParams.push_back(currPartnershipParams);
 		} //end for partnershipTypesIter
 
-		this->proportionHighRisk[DmgProfile::CSW] = behaviorElem->FirstChildElement("proportionHighRiskCSW")->GetText<double>();
-		this->proportionHighRisk[DmgProfile::NON_CSW] =
-		    behaviorElem->FirstChildElement("proportionHighRiskNonCSW")->GetText<double>();
-		XMLUtil::getDistFromXMLNode(behaviorElem->FirstChildElement("activityLevel"), this->activityLevel);
+		behaviorElem->FirstChildElement("proportionHighRiskCSW")->GetText<double>(&proportionHighRisk[DmgProfile::CSW]);
+		behaviorElem->FirstChildElement("proportionHighRiskNonCSW")->GetText<double>(&proportionHighRisk[DmgProfile::NON_CSW]);
+		XMLUtil::getDistFromXMLNode(behaviorElem->FirstChildElement("activityLevel"), activityLevel);
+
 		//saves partner acq rate and acts discounting
 		ticpp::Element *discounting = behaviorElem->FirstChildElement("ageDiscounting");
-		this->partneringDiscStartAgeYrs = discounting->FirstChildElement("startAgeYrs")->GetText<int>();
-		this->partneringAcqDiscPerYr = discounting->FirstChildElement("acquisitionDiscByYr")->GetText<double>();
-		this->partneringActsDiscPerYr = discounting->FirstChildElement("coitalActsDiscByYr")->GetText<double>();
+		discounting->FirstChildElement("startAgeYrs")->GetText<int>(&partneringDiscStartAgeYrs);
+		discounting->FirstChildElement("acquisitionDiscByYr")->GetText<double>(&partneringAcqDiscPerYr);
+		discounting->FirstChildElement("coitalActsDiscByYr")->GetText<double>(&partneringActsDiscPerYr);
 		int numMults = Person::maxYrForDeathStats - this->partneringDiscStartAgeYrs + 1;
 		double acqMult = 1 - this->partneringAcqDiscPerYr;
 		double actsMult = 1 - this->partneringActsDiscPerYr;
@@ -129,16 +126,18 @@ int Male::SubPopParams::loadParamsXML(ticpp::Element *_maleParams, EventParams &
 		//get the health stats
 		ticpp::Element *healthElem = _maleParams->FirstChildElement("health");
 		//get protective efficacy of circumcision
-		this->circumProtectEff = healthElem->FirstChildElement("circumcisionProtectEfficacy")->GetText<double>();
+		healthElem->FirstChildElement("circumcisionProtectEfficacy")->GetText<double>(&circumProtectEff);
 		//get protective efficacy of condoms
-		this->condomProtectEff  = healthElem->FirstChildElement("condomProtectEfficacy")->GetText<double>();
+		healthElem->FirstChildElement("condomProtectEfficacy")->GetText<double>(&condomProtectEff);
 		//get the transmission coefficients
-		this->transmitPerEventCoeffs.clear();
+		transmitPerEventCoeffs.clear();
 		ticpp::Element *transmitCoeffElem = healthElem->FirstChildElement("transmissionCoefficients");
-		XMLUtil::getTabDelimitedNode(transmitCoeffElem->FirstChildElement("valsByHVL"),
-		                             this->transmitPerEventCoeffs);
-		this->transmitPerEventCoeffs.push_back(transmitCoeffElem->FirstChildElement("primary")->GetText<double>());
-		this->transmitPerEventCoeffs.push_back(transmitCoeffElem->FirstChildElement("lateStage")->GetText<double>());
+		XMLUtil::getTabDelimitedNode(transmitCoeffElem->FirstChildElement("valsByHVL"), transmitPerEventCoeffs);
+		double coeff = 0;
+		transmitCoeffElem->FirstChildElement("primary")->GetText<double>(&coeff);
+		transmitPerEventCoeffs.push_back(coeff);
+		transmitCoeffElem->FirstChildElement("lateStage")->GetText<double>(&coeff);
+		transmitPerEventCoeffs.push_back(coeff);
 	}
 	catch(ticpp::Exception &_e)
 	{

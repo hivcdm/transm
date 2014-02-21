@@ -1,10 +1,11 @@
 #pragma once
 
-#include "./../classifiers/DmgProfile.h"
-#include "./../classifiers/SexualPartnership.h"
-#include "../../util/ticpp/ticpp.h"
-#include "../Person.h"
 #include <vector>
+#include <ticpp/ticpp.h>
+
+#include "../Person.h"
+#include "../classifiers/DmgProfile.h"
+#include "../classifiers/SexualPartnership.h"
 
 /**
 This can parse XML that contains info about sexual behavior for a particular

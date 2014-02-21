@@ -1,9 +1,12 @@
 #pragma once
+
 #include <map>
+
+#include "Person.h"
 #include "../data/EventParams.h"
 #include "../util/rand/RandomNums.h"
-#include "../util/ticpp/ticpp.h"
-#include "Person.h"
+
+#include <ticpp/ticpp.h>
 
 class SexualBehaviorParams;
 /**
