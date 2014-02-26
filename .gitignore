@@ -3,6 +3,9 @@ Test/
 Release/
 build/
 results/
+x64/
+Debug*/
+Release*/
 *.sdf
 *.suo
 *.opensdf
