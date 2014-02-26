@@ -15,6 +15,8 @@ ifndef CXX
   CXX = g++
 endif
 
+LIBS = -lticpp -lboost_filesystem -lboost_system
+
 ifeq ($(config),debug)
   OBJDIR     = build/debug
   TARGETDIR  = bin
@@ -22,13 +24,13 @@ ifeq ($(config),debug)
   DEFINES   += 
   INCLUDES  += 
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
-  CFLAGS    += $(CPPFLAGS) $(ARCH) -Wall -g 
+  CFLAGS    += $(CPPFLAGS) $(ARCH) -Wall -Wextra -Wno-unknown-pragmas -g 
   CXXFLAGS  += $(CFLAGS) -std=c++11
   LDFLAGS   += 
   LIBS      += 
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
   LDDEPS    += 
-  LINKCMD    = $(CXX) $(OBJECTS) -o $(TARGET)
+  LINKCMD    = $(CXX) $(OBJECTS) -o $(TARGET) $(LIBS)
   define PREBUILDCMDS
   endef
   define PRELINKCMDS
@@ -50,7 +52,7 @@ ifeq ($(config),release)
   LIBS      += 
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
   LDDEPS    += 
-  LINKCMD    = $(CXX) $(OBJECTS) -o $(TARGET)
+  LINKCMD    = $(CXX) $(OBJECTS) -o $(TARGET) $(LIBS)
   define PREBUILDCMDS
   endef
   define PRELINKCMDS
@@ -60,6 +62,7 @@ ifeq ($(config),release)
 endif
 
 OBJECTS := \
+	source/main.o \
 	source/util/rand/RandomNums.o \
 	source/util/Util.o	\
 	source/util/HighResolutionTimerPosix.o \
@@ -153,6 +156,8 @@ clean:
 ifeq (posix,$(SHELLTYPE))
 	$(SILENT) rm -f  $(TARGET)
 	$(SILENT) rm -rf $(OBJDIR)
+	$(SILENT) rm -rf build/
+	$(SILENT) rm -rf bin/
 else
 	$(SILENT) if exist $(subst /,\\,$(TARGET)) del $(subst /,\\,$(TARGET))
 	$(SILENT) if exist $(subst /,\\,$(OBJDIR)) rmdir /s /q $(subst /,\\,$(OBJDIR))

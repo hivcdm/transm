@@ -60,7 +60,7 @@ void PrintUsage()
 
 void PrintVersion()
 {
-	std::cout << "transm version 3.34a" << std::endl;
+	std::cout << "transm version 3.35.0" << std::endl;
 }
 
 int RunSimulation(const std::string &directory = "")
