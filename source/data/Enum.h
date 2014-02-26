@@ -42,43 +42,15 @@ public:
 
 	typedef unsigned int Enum;
 
-	enum nullptr_ENUM {	};
+	enum NULL_ENUM {};
 
 	const static std::string WILDCARD;
-	/*
-		class ExceptionBadEnum : public exception {
-
-			Enum e;
-
-			ExceptionBadEnum(Enum _e) {
-				this->e = _e;
-			}
-
-			virtual const char* what() const throw() {
-				ostringstream o
-				return "Bad Enum
-			}
-		};
-	*/
-protected:
-	//flag is set to true if this class has been initialized with string values
-	bool initialized;
-
-	//string representation of the enums
-	std::vector<std::string> strs;
-
-	//kept for bounds checking
-	Enum max;
-	Enum min;
-
-	//total number of available enums
-	unsigned int numEnums;
 
 public :
 
 	BaseEnumCls();
 
-	BaseEnumCls(const std::vector<std::string> _strs);
+	BaseEnumCls(const std::vector<std::string> &_strs);
 
 	~BaseEnumCls();
 
@@ -87,7 +59,7 @@ public :
 	/**
 	Return the number of non-wildcard values for this EnumCls
 	**/
-	unsigned int getNumEnums() const;
+	std::size_t getNumEnums() const;
 
 	//gets lowest non-wildcard value as an int
 	Enum getMin() const;
@@ -107,7 +79,7 @@ public :
 	/**
 	Stores the string representation of enum
 	**/
-	void init(const std::vector<std::string> _strs);
+	void init(const std::vector<std::string> &_strs);
 
 	/**
 	Returns true if _e is in [max, min] or is the wildcard value
@@ -125,6 +97,20 @@ public :
 	new string to be allocated cor each call
 	**/
 	const std::string *toString(Enum _enum) const;
+
+protected:
+	//flag is set to true if this class has been initialized with string values
+	bool initialized;
+
+	//string representation of the enums
+	std::vector<std::string> strs;
+
+	//kept for bounds checking
+	Enum max;
+	Enum min;
+
+	//total number of available enums
+	std::size_t numEnums;
 };
 
 /**
@@ -140,7 +126,7 @@ public:
 
 	EnumCls();
 
-	EnumCls(const std::vector<std::string> _strs);
+	EnumCls(const std::vector<std::string> &_strs);
 
 	/**
 	Takes the string representation of _e and appends it to _output
@@ -154,7 +140,7 @@ public:
 	/**
 	Converts a string representation of an enumeraion to its enum value
 	**/
-	E toEnum(std::string _enumStr);
+	E toEnum(const std::string &_enumStr);
 
 	/**
 	returns _enum as
@@ -165,55 +151,55 @@ public:
 template <class E>
 EnumCls<E>::EnumCls()
 {
-	this->initialized = false;
+	initialized = false;
 }
 
 template <class E>
-EnumCls<E>::EnumCls(const std::vector<std::string> _strs)
+EnumCls<E>::EnumCls(const std::vector<std::string> &_strs)
 {
-	this->init(_strs);
+	init(_strs);
 }
 
 template <class E>
 void EnumCls<E>::appendEnumStr(std::ostream &_output, E &_e)
 {
-	_output << this->toString(_e);
+	_output << toString(_e);
 }
 
 template <class E>
 E EnumCls<E>::getMin()
 {
-	return E(this->min);
+	return E(min);
 }
 
 template <class E>
 E EnumCls<E>::getMax()
 {
-	return E(this->max);
+	return E(max);
 }
 
 template <class E>
 E EnumCls<E>::toEnum(int _enum)
 {
 	assert(_enum >= 0);
-	assert(_enum <= this->numEnums);
+	assert(_enum <= numEnums);
 	return E(_enum);
 }
 
 template <class E>
-E EnumCls<E>::toEnum(std::string _enumStr)
+E EnumCls<E>::toEnum(const std::string &_enumStr)
 {
 	//look through all enum strings to see if we have a match
-	for(size_t i = 0; i < this->numEnums; i++)
+	for(std::size_t i = 0; i < numEnums; i++)
 	{
-		if(_enumStr.compare(this->strs.at(i)) == 0)
+		if(_enumStr == strs.at(i))
 		{
 			return E(i);
 		}
 	}
 
 	std::cerr << "Error: EnumCls " << _enumStr << " does not exist" << std::endl;
-	return E(this->numEnums);
+	return E(numEnums);
 }
 
 

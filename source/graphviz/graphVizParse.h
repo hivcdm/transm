@@ -72,7 +72,7 @@ public:
 	{
 	public:
 		/** The ID of the person who "owns" this node */
-		unsigned long personID;
+		unsigned int personID;
 		/** True if the owner of the node is a male */
 		bool isMale;
 		/** A list of the person's relationships (should be empty if the person is female) */
@@ -132,7 +132,7 @@ public:
 		 * @param timeEnd the time step the relationship ended
 		 * @param relationshipType the type of relationship formed
 		 */
-		void addRelationship(unsigned long partnerID, int timeStart, int timeEnd, SexualPartnership::Type relationshipType);
+		void addRelationship(unsigned int partnerID, int timeStart, int timeEnd, SexualPartnership::Type relationshipType);
 	};
 
 	/** A vector of all person nodes making up the graph.  Male persons store all of their own edges.  */

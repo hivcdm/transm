@@ -18,7 +18,7 @@ class DmgProfileBucket
 {
 
 	//this is an index based on person's ID
-	typedef EntityIndex<Person::ID, unsigned long> PersonSet;
+	typedef EntityIndex<Person::ID, unsigned int> PersonSet;
 
 	friend class JavaStyleIterator;
 
@@ -68,8 +68,8 @@ public:
 
 	/** Methods to get information about pool **/
 	//counts number of infected people this EntityPool
-	virtual unsigned long getNumInfected();
-	virtual unsigned long getNumInfected(int generation);
+	virtual unsigned int getNumInfected();
+	virtual unsigned int getNumInfected(int generation);
 
 	//this adds member into the pool
 	//  _toInsert - the Person being added to the pool.
@@ -79,7 +79,7 @@ public:
 	virtual bool erase(Person *_p);
 
 	//returns the size of this DmgProfileBucket
-	virtual unsigned long size();
+	virtual unsigned int size();
 
 	/** Methods to help with debugging **/
 

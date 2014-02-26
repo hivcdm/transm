@@ -59,9 +59,9 @@ public:
 	 @param _totalSize this will be set to total # of people in the population
 	 @param _includeLabls if == true, then will additionally print DmgProfileBucket labels on the same line as the size
 	*/
-	void printBucketSizes(ostream &_outStream, string _prefix, bool _printPropInfected, unsigned long &_totalInfected,
-	                      unsigned long &_totalSize, unsigned long &_totalSexuallyActive, unsigned long &_totalInSteady,
-	                      unsigned long &_totalInRegular, bool _includeLabels);
+	void printBucketSizes(ostream &_outStream, string _prefix, bool _printPropInfected, unsigned int &_totalInfected,
+	                      unsigned int &_totalSize, unsigned int &_totalSexuallyActive, unsigned int &_totalInSteady,
+	                      unsigned int &_totalInRegular, bool _includeLabels);
 
 	/**
 	remove _person if exists in pool. returns false if _person is not in pool
@@ -77,25 +77,25 @@ public:
 	bool refreshDmgProfileBucket(Person *_person, list<Person *>::iterator *_p_Iter, bool forceRefresh = false);
 
 	//calculates the current size of the EntityPool
-	unsigned long size();
+	unsigned int size();
 
 	//calculate the current number of persons with a given DmgProfile ID
-	unsigned long size(DmgProfile::ProfileID _profileID);
+	unsigned int size(DmgProfile::ProfileID _profileID);
 
 	//calculate the current number of persons that are not sexually active in the entity pool
-	unsigned long sizeNotSexuallyActive();
+	unsigned int sizeNotSexuallyActive();
 
 	//calculate the current number of sexually active persons by risk and gender
-	unsigned long sizeSexuallyActive(DmgProfile::Gender _gender, Person::RiskLevel risk);
+	unsigned int sizeSexuallyActive(DmgProfile::Gender _gender, Person::RiskLevel risk);
 
 	//calculate the current number of persons that are not sexually active in the entity pool with a given gender
-	unsigned long sizeNotSexuallyActive(DmgProfile::Gender _gender);
+	unsigned int sizeNotSexuallyActive(DmgProfile::Gender _gender);
 
 	//calculate the current number of sexually active persons within the specified age range
-	unsigned long sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths);
+	unsigned int sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths);
 
 	//calculate the current number of sexually active persons within the specified age range and gender
-	unsigned long sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths, DmgProfile::Gender _gender);
+	unsigned int sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths, DmgProfile::Gender _gender);
 
 
 	//-------------------< Begin allMale and allFemale functions >----------------//

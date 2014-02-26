@@ -11,19 +11,25 @@
 
 #include "Bucket.h"
 
+struct QueryField
+{
+	std::size_t value;
+	bool wildcard;
+};
+
 class BucketCounter
 {
-	typedef std::unordered_map<Bucket, std::vector<int>, bucket_hash<Bucket>, bucket_equal_to<Bucket>> BucketContainer;
+	typedef std::unordered_map<Bucket, std::vector<std::size_t>, bucket_hash<Bucket>, bucket_equal_to<Bucket>> BucketContainer;
 
 	struct query_equal
 	{
-		query_equal(const std::vector<int> &indices) : indices(indices) {}
+		query_equal(const std::vector<QueryField> &indices) : indices(indices) {}
 
 		bool operator()(const BucketContainer::value_type &b)
 		{
-			for(size_t i = 0; i < indices.size(); i++)
+			for(std::size_t i = 0; i < indices.size(); i++)
 			{
-				if(indices[i] != -1 && b.first.GetValue(i) != indices[i])
+				if(!indices[i].wildcard && b.first.GetValue(i) != indices[i].value)
 				{
 					return false;
 				}
@@ -32,7 +38,7 @@ class BucketCounter
 			return true;
 		}
 
-		std::vector<int> indices;
+		std::vector<QueryField> indices;
 	};
 
 public:
@@ -57,12 +63,12 @@ public:
 	void Increment(const Bucket &bucket, const std::string &count);
 
 	template<typename ... Ts>
-	int GetCount(const std::string &count, const Ts &... query)
+	std::size_t GetCount(const std::string &count, const Ts &... query)
 	{
 		auto predicate = query_equal(BuildQueryIndices(query...));
 		auto bucketIterator = std::find_if(counts_.begin(), counts_.end(), predicate);
-		int sum = 0;
-		int countIndex = std::distance(countNames_.begin(), std::find(countNames_.begin(), countNames_.end(), count));
+		std::size_t sum = 0;
+		auto countIndex = std::distance(countNames_.begin(), std::find(countNames_.begin(), countNames_.end(), count));
 
 		while(bucketIterator != counts_.end())
 		{
@@ -91,21 +97,22 @@ public:
 
 private:
 	template<typename ... Ts>
-	std::vector<int> BuildQueryIndices(const Ts &... query)
+	std::vector<QueryField> BuildQueryIndices(const Ts &... query)
 	{
-		const int size = sizeof...(query);
-		std::pair<std::string, int> r[size] = {query...};
+		const std::size_t size = sizeof...(query);
+		std::pair<std::string, std::size_t> r[size] = {query...};
 
-		std::vector<int> indices;
+		std::vector<QueryField> indices;
 
 		for(auto key : bucketNames_)
 		{
-			indices.push_back(-1);
+			indices.push_back({0, true});
 			for(auto pair : r)
 			{
 				if(pair.first == key)
 				{
-					indices.back() = pair.second;
+					indices.back().value = pair.second;
+					indices.back().wildcard = false;
 					break;
 				}
 			}

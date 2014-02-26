@@ -37,7 +37,7 @@ class Person
 
 	//used to create unique id's for each person
 	//this increments every time a New person is created
-	static long idCounter;
+	static int idCounter;
 
 public:
 
@@ -124,7 +124,7 @@ public:
 	//this is a enum class wrapper that has helpful enum-related functions
 	static EnumCls<Stats> StatsEnum;
 	//this is a type declaration of a class that keeps track of statistics defined in enum Stats
-	typedef ::StatsRecord<Stats, BaseEnumCls::nullptr_ENUM> StatsRecord;
+	typedef ::StatsRecord<Stats, BaseEnumCls::NULL_ENUM> StatsRecord;
 
 
 	//the CEPAC death table has stats for 0-100 years old.
@@ -145,7 +145,7 @@ protected:
 
 	//identifying information
 	unsigned int populationID;			//keeps track of which population this Person belongs to
-	unsigned long id;					//person's unique id number
+	unsigned int id;					//person's unique id number
 
 	//person's current demographic profile - values in here depend on person's physical, relational state, and other preferences
 	DmgProfile dmgProfile;
@@ -394,7 +394,7 @@ public:
 	 * @effects: none
 	 * @return: copy of this.FVindices
 	 */
-	vector<unsigned int> getFVindices(FullVector *FV);
+	vector<unsigned int> getFVindices(const FullVector *FV);
 
 	//----------------< End FullVector related methods >-------------------------//
 
@@ -519,7 +519,7 @@ public:
 	@param _partnershipsToEnd when method is complete, _partnershipsToEnd will contain partnerships that should end.
 	@return number of partnerships ended
 	*/
-	long getPartnershipsToEnd(long _currTime, SexualPartnership::Type _partnershipType,
+	int getPartnershipsToEnd(int _currTime, SexualPartnership::Type _partnershipType,
 	                          list<SexualPartnership *> &_partnershipsToEnd, bool _fromDeath);
 
 	/*
@@ -571,7 +571,7 @@ public:
 	int getAge(TimeGranularity _granularity) const;
 
 	//returns the unique id number of this person
-	unsigned long getID();
+	unsigned int getID();
 
 	unsigned int getPopulationID();
 
@@ -588,7 +588,7 @@ public:
 	void printCurrentPartners(ostream &_outStream, string _prefix);
 
 	//Writes the state of the patient to file.  This state can be reloaded on a different run.
-	virtual void saveState(ostream &_outStream, long currTime);
+	virtual void saveState(ostream &_outStream, int currTime);
 
 	//Unformed partnership tallies getters and setters -- the total should never be reset, only the "latest" (i.e. current time step)
 	int getTotalUnformedPartnerships(SexualPartnership::Type type);

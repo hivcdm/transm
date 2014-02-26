@@ -4,11 +4,9 @@
  *  Created on: Nov 3, 2008
  *      Author: errhode
  */
+#pragma once
 
-#ifndef FULLVECTOR_H_
-#define FULLVECTOR_H_
 #include <vector>
-#include "../../Person.h"
 
 class Person;
 
@@ -23,56 +21,98 @@ class Person;
 
 class FullVector
 {
-	static long FVcounter;
-
 public:
-	//Base Constructor
+	// Member types
+	typedef Person * value_type;
+	typedef std::vector<value_type> container;
+	typedef container::allocator_type allocator_type;
+	typedef container::size_type size_type;
+	typedef container::difference_type difference_type;
+	typedef container::reference reference;
+	typedef container::const_reference const_reference;
+	typedef container::pointer pointer;
+	typedef container::const_pointer const_pointer;
+	typedef container::iterator iterator;
+	typedef container::const_iterator const_iterator;
+	typedef container::reverse_iterator reverse_iterator;
+	typedef container::const_reverse_iterator const_reverse_iterator;
+
+	// Member functions
 	FullVector();
-	FullVector(vector<Person *> vP);
+
+	FullVector(const container &vP);
+
 	FullVector(int num, Person *p);
 
-	//Destructor
-	~FullVector();
+	~FullVector() {}
 
-	//Wrapper functions for those in the vector class
+	// ELement access
+	reference at(size_type pos) { return vPerson.at(pos); }
 
-	/*
-	* WARNING: This operator can be used to retrieve values, but NOT to set them.
-	* Use the protected function "set" to set values at a specific index.
-	*/
-	Person *operator[](int index);
+	const_reference at(size_type pos) const { return vPerson.at(pos); }
 
-	Person *at(int loc);
+	reference operator[](size_type pos) { return vPerson[pos]; }
 
-	Person *back();
+	const_reference operator[](size_type pos) const { return vPerson[pos]; }
 
-	vector<Person *>::iterator begin();
+	reference front() { return vPerson.front(); }
 
-	int capacity();
+	const_reference front() const { return vPerson.front(); }
 
-	void clear();
+	reference back() { return vPerson.back(); }
 
-	bool empty();
+	const_reference back() const { return vPerson.back(); }
 
-	bool exists(Person *_p);
+	pointer data() { return vPerson.data(); }
 
-	vector<Person *>::iterator end();
+	const_pointer data() const { return vPerson.data(); }
 
-	Person *front();
+	// Iterators
+	iterator begin() { return vPerson.begin(); }
 
-	int max_size();
+	const_iterator begin() const { return vPerson.cbegin(); }
 
-	void push_back(Person *p);
+	const_iterator cbegin() const { return vPerson.cbegin(); }
 
-	vector<Person *>::reverse_iterator rbegin();
+	iterator end() { return vPerson.end(); }
 
-	vector<Person *>::reverse_iterator rend();
+	const_iterator end() const { return vPerson.cend(); }
 
-	void reserve(int size);
+	const_iterator cend() const { return vPerson.cend(); }
 
-	int size();
+	reverse_iterator rbegin() { return vPerson.rbegin(); }
+
+	const_reverse_iterator rbegin() const { return vPerson.crbegin(); }
+
+	const_reverse_iterator crbegin() const { return vPerson.crbegin(); }
+
+	reverse_iterator rend() { return vPerson.rend(); }
+
+	const_reverse_iterator rend() const { return vPerson.crend(); }
+
+	const_reverse_iterator crend() const { return vPerson.crend(); }
+
+	// Capacity
+	bool empty() const { return vPerson.empty(); }
+
+	size_type size() const { return vPerson.size(); }
+
+	size_type max_size() const { return vPerson.max_size(); }
+
+	void reserve(size_type new_cap) { vPerson.reserve(new_cap); }
+
+	size_type capacity() const { return vPerson.capacity(); }
+
+	// Modifiers
+	void clear() { vPerson.clear(); }
+
+	void push_back(const reference value);
+
+	//void push_back(value_type &&value) { vPerson.push_back(value); }
 
 	//New functions specific to the FullVector class
+
+	bool contains(Person *_p) const;
 
 	/* @function remove
 	 * @arguments: Person* p
@@ -85,14 +125,14 @@ public:
 	 * @arguments: Person* p, int num
 	 * @effects: Adds num copies of p to this; updates p.FVindices accordingly
 	 */
-	void add(Person *p, int num);
+	void add(Person *p, size_type num);
 
 	/* @function selectout
 	 * @arguments: int index
 	 * @effects: removes Person* p at index from FullVector while keeping the vector dense
 	 * @returns: Person* p at index
 	 */
-	Person *selectout(int index);
+	Person *selectout(size_type index);
 
 	/* @function swapelements
 	 * @arguments: int index1, int index2
@@ -100,20 +140,16 @@ public:
 	 * updates the FVindices of moved persons accordingly
 	 * @returns: true if the swap was made, false otherwise
 	 */
-	bool swapelements(int index1, int index2);
+	bool swapelements(size_type index1, size_type index2);
 
-	void print();
+	void print() const;
 
-	int getID();
+	int getID() const { return ID; }
 
 protected:
-	vector<Person *> vPerson;
+	static int FVcounter;
+
+	container vPerson;
+
 	int ID;
-
-
-
-
 };
-
-
-#endif /* FULLVECTOR_H_ */

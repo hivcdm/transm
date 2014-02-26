@@ -105,7 +105,7 @@ bool GraphVizGraphElements::personNode::hadDied(int time)
 	return (time > this->timeDied);
 }
 
-void GraphVizGraphElements::personNode::addRelationship(unsigned long partnerID, int timeStart, int timeEnd,
+void GraphVizGraphElements::personNode::addRelationship(unsigned int partnerID, int timeStart, int timeEnd,
         SexualPartnership::Type relationshipType)
 {
 	/** Form a TimePair for this relationship */
@@ -117,7 +117,7 @@ void GraphVizGraphElements::personNode::addRelationship(unsigned long partnerID,
 	/** Check if a relationship edge already exists with this partner */
 	for(auto relationshipsIt = relationships.begin(); relationshipsIt != relationships.end(); ++relationshipsIt)
 	{
-		if(static_cast<unsigned long>((*relationshipsIt).partnerID) == partnerID)
+		if(static_cast<unsigned int>((*relationshipsIt).partnerID) == partnerID)
 		{
 			/** If we previously formed a relationship with this partner, add the new time pair to the existing edge and be done */
 			(*relationshipsIt).times.push_back(newTimePair);

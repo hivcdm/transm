@@ -179,10 +179,10 @@ bool BucketSexualMixing::exists(Person *_person)
 }
 
 //counts number of infected people this EntityPool
-unsigned long BucketSexualMixing::getNumInfected()
+unsigned int BucketSexualMixing::getNumInfected()
 {
 	BucketAllAges::iterator ageBucketIter;
-	unsigned long totalInfected = 0;
+	unsigned int totalInfected = 0;
 
 	//go through each Index and get # infected.
 	for(ageBucketIter = personsByAge->begin(); ageBucketIter != personsByAge->end(); ageBucketIter++)
@@ -194,10 +194,10 @@ unsigned long BucketSexualMixing::getNumInfected()
 }
 
 //counts number of infected people this EntityPool by generation
-unsigned long BucketSexualMixing::getNumInfected(int generation)
+unsigned int BucketSexualMixing::getNumInfected(int generation)
 {
 	BucketAllAges::iterator ageBucketIter;
-	unsigned long totalInfected = 0;
+	unsigned int totalInfected = 0;
 
 	//go through each Index and get # infected.
 	for(ageBucketIter = personsByAge->begin(); ageBucketIter != personsByAge->end(); ageBucketIter++)
@@ -211,10 +211,10 @@ unsigned long BucketSexualMixing::getNumInfected(int generation)
 /*
  * @returns: total number of infected persons in this risk group
  */
-unsigned long BucketSexualMixing::getNumInfected(Person::RiskLevel _risk)
+unsigned int BucketSexualMixing::getNumInfected(Person::RiskLevel _risk)
 {
 	BucketAllAges::iterator ageBucketIter;
-	unsigned long totalInfected = 0;
+	unsigned int totalInfected = 0;
 
 	//go through each Index and get # infected by risk.
 	for(ageBucketIter = personsByAge->begin(); ageBucketIter != personsByAge->end(); ageBucketIter++)
@@ -252,7 +252,7 @@ Person *BucketSexualMixing::getRandomPerson(RandomNums &_randomNums, unsigned in
 
 	//figure out # of eligible people
 	unsigned int currIndex = minIndex;
-	unsigned long numMarbles = 0;
+	unsigned int numMarbles = 0;
 
 	while(currIndex <= maxIndex)
 	{
@@ -398,10 +398,10 @@ void BucketSexualMixing::print(ostream &_outStream, std::string _prefix)
 }
 
 //returns the # of entities in this index
-unsigned long BucketSexualMixing::size()
+unsigned int BucketSexualMixing::size()
 {
 	BucketAllAges::iterator bucketIter;
-	unsigned long total = 0;
+	unsigned int total = 0;
 
 	//go through each Index and get # infected.
 	for(bucketIter = personsByAge->begin(); bucketIter != personsByAge->end(); bucketIter++)
@@ -438,14 +438,14 @@ BucketAge *BucketSexualMixing::getYoungest()
 /*
  * @returns: total number of persons in this with age between minMonthAge and maxMonthAge
  */
-unsigned long BucketSexualMixing::sizeByAge(int minMonthAge, int maxMonthAge)
+unsigned int BucketSexualMixing::sizeByAge(int minMonthAge, int maxMonthAge)
 {
 	//get the age buckets that we will count within
 	unsigned int minIndex = std::max<unsigned int>(minMonthAge - this->minAge, 0);
 	unsigned int maxIndex = std::min<unsigned int>(maxMonthAge - this->minAge,
 	                        (unsigned int)this->personsByAge->size() - 1);
 	unsigned int currIndex = minIndex;
-	unsigned long total = 0;
+	unsigned int total = 0;
 
 	while(currIndex <= maxIndex)
 	{
@@ -459,14 +459,14 @@ unsigned long BucketSexualMixing::sizeByAge(int minMonthAge, int maxMonthAge)
 /*
  * @returns: total number of infected persons in this with age between minMonthAge and maxMonthAge
  */
-unsigned long BucketSexualMixing::sizeInfectedByAge(int minMonthAge, int maxMonthAge)
+unsigned int BucketSexualMixing::sizeInfectedByAge(int minMonthAge, int maxMonthAge)
 {
 	//get the age buckets that we will count within
 	unsigned int minIndex = std::max<unsigned int>(minMonthAge - this->minAge, 0);
 	unsigned int maxIndex = std::min<unsigned int>(maxMonthAge - this->minAge,
 	                        (unsigned int)this->personsByAge->size() - 1);
 	unsigned int currIndex = minIndex;
-	unsigned long total = 0;
+	unsigned int total = 0;
 
 	while(currIndex <= maxIndex)
 	{
@@ -481,11 +481,11 @@ unsigned long BucketSexualMixing::sizeInfectedByAge(int minMonthAge, int maxMont
  * @returns: total number of marbles in all FVs associated with _risk
  * BucketAges in this
  */
-unsigned long BucketSexualMixing::sizeRisk(Person::RiskLevel _risk)
+unsigned int BucketSexualMixing::sizeRisk(Person::RiskLevel _risk)
 {
 	assert(_risk <= Person::ENDRiskLevel);
 	BucketAllAges::iterator bucketIter;
-	unsigned long total = 0;
+	unsigned int total = 0;
 
 	//go through each Index and get # random marbles
 	for(bucketIter = personsByAge->begin(); bucketIter != personsByAge->end(); bucketIter++)
@@ -500,11 +500,11 @@ unsigned long BucketSexualMixing::sizeRisk(Person::RiskLevel _risk)
  * @returns: total number of unique persons in this bucket that is CSW with given _risk
  * BucketAges in this
  */
-unsigned long BucketSexualMixing::sizeRiskCSW(Person::RiskLevel _risk)
+unsigned int BucketSexualMixing::sizeRiskCSW(Person::RiskLevel _risk)
 {
 	assert(_risk <= Person::ENDRiskLevel);
 	BucketAllAges::iterator bucketIter;
-	unsigned long total = 0;
+	unsigned int total = 0;
 
 	//go through each Index and get # random marbles
 	for(bucketIter = personsByAge->begin(); bucketIter != personsByAge->end(); bucketIter++)
@@ -518,12 +518,12 @@ unsigned long BucketSexualMixing::sizeRiskCSW(Person::RiskLevel _risk)
  * @returns: total number of unique persons in this bucket with given risk level and hiv status
  * across all BucketAges in this;
  */
-unsigned long BucketSexualMixing::sizeRiskHIVStatus(Person::RiskLevel _risk, Person::HIVStatus _hivStatus)
+unsigned int BucketSexualMixing::sizeRiskHIVStatus(Person::RiskLevel _risk, Person::HIVStatus _hivStatus)
 {
 	assert(_risk <= Person::ENDRiskLevel);
 	assert(_hivStatus <= Person::ENDHIVStatus);
 	BucketAllAges::iterator bucketIter;
-	unsigned long total = 0;
+	unsigned int total = 0;
 
 	//go through each Index and get # random marbles
 	for(bucketIter = personsByAge->begin(); bucketIter != personsByAge->end(); bucketIter++)
@@ -538,10 +538,10 @@ unsigned long BucketSexualMixing::sizeRiskHIVStatus(Person::RiskLevel _risk, Per
  * @returns: total number of marbles in all Random Risk FVs across all
  * BucketAges in this
  */
-unsigned long BucketSexualMixing::sizeRandom()
+unsigned int BucketSexualMixing::sizeRandom()
 {
 	BucketAllAges::iterator bucketIter;
-	unsigned long total = 0;
+	unsigned int total = 0;
 
 	//go through each Index and get # random marbles
 	for(bucketIter = personsByAge->begin(); bucketIter != personsByAge->end(); bucketIter++)

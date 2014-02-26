@@ -43,26 +43,38 @@ class Params
 	//this will be set as the Simulation::eventParams.debugLevel
 	DebugLevel debugLevel;
 
-	int maxTime;			//make timesteps to this simulation (in months)
-	long initSize;
-	string cepacInputFile;
+	// Continue simulation until this time
+	int maxTime;
+
+	// Initial population size at time 0
+	int initialSize;
+
+	std::string cepacInputFile;
+
 	//Per month per person based on WHI data
 	double birthRate;
-	int SAEntAgeMths;		//age in months
+
+	//age in months
+	int SAEntAgeMths;
 	double proportionMale;
 	double circumcised;
 	double hivInfected;
 
-	double assort[SexualPartnership::ENDType]; //assortativeness parameter one for each partnership type
+	//assortativeness parameter one for each partnership type
+	double assort[SexualPartnership::ENDType];
 
-	unsigned int populationID;	//the ID of the population that these parameters correspond to
+	//the ID of the population that these parameters correspond to
+	unsigned int populationID;
 
 	//initial stats -- determines the prevalence of a demographic before the simulation starts
 	double initproportionMarried;
+
 	//determines percentage of people in regular relationships at start
 	double initproportionRegular;
+
 	//initial proportion of pop as CSW
 	double initProbCSW[DmgProfile::ENDGender];
+
 	//max age of csw in months
 	int CSWEndAgeMth[DmgProfile::ENDGender];
 
@@ -72,6 +84,7 @@ class Params
 	//holds the population-level parameters for population of males and the population of females
 	Male::SubPopParams *maleParams;
 	Female::SubPopParams *femaleParams;
+
 	//this is a quick way to check whether a partnership is technically a fling or not
 	// right now, behavior for males is the only one that has been coded
 	bool partnershipsHaveDuration[DmgProfile::ENDGender][SexualPartnership::ENDType];

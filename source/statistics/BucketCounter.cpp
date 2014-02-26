@@ -15,7 +15,7 @@ void BucketCounter::Increment(const Bucket &bucket, const std::string &count)
 {
 	if(counts_.find(bucket) == counts_.end())
 	{
-		counts_[bucket] = std::vector<int>(countNames_.size(), 0);
+		counts_[bucket] = std::vector<std::size_t>(countNames_.size(), 0);
 	}
 
 	size_t countIndex = std::distance(countNames_.begin(), std::find(countNames_.begin(), countNames_.end(), count));

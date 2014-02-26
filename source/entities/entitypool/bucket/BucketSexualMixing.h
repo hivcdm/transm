@@ -106,14 +106,14 @@ public :
 
 	//counts number of infected people this EntityPool
 	//TESTED*
-	unsigned long getNumInfected();
+	unsigned int getNumInfected();
 	//UNTESTED
-	unsigned long getNumInfected(int generation);
+	unsigned int getNumInfected(int generation);
 
 	/*
 	*returns the number of unique infected people by risk group
 	*/
-	unsigned long getNumInfected(Person::RiskLevel _risk);
+	unsigned int getNumInfected(Person::RiskLevel _risk);
 
 	//will index a new Person
 	//TESTED
@@ -124,7 +124,7 @@ public :
 
 	//returns the # of entities in this index
 	//TESTED
-	unsigned long size();
+	unsigned int size();
 
 	//-------------< End inherited from class DmgProfileBucket >---------------------//
 	//-------------< Begin iterator methods >------------------//
@@ -140,13 +140,13 @@ public :
 	 * @params: minMonthAge, maxMonthAge
 	 * @returns: total number of persons in this with age between minMonthAge and maxMonthAge
 	 */
-	unsigned long sizeByAge(int minMonthAge, int maxMonthAge);
+	unsigned int sizeByAge(int minMonthAge, int maxMonthAge);
 
 	/*
 	 * @params: minMonthAge, maxMonthAge
 	 * @returns: total number of inftected persons in this with age between minMonthAge and maxMonthAge
 	 */
-	unsigned long sizeInfectedByAge(int minMonthAge, int maxMonthAge);
+	unsigned int sizeInfectedByAge(int minMonthAge, int maxMonthAge);
 
 	/*
 	 * @returns: total number of marbles in all FVs associated with _risk
@@ -154,27 +154,27 @@ public :
 	 * returns the number of persons in the random risk bucket
 	 */
 	//TESTED
-	unsigned long sizeRisk(Person::RiskLevel _risk);
+	unsigned int sizeRisk(Person::RiskLevel _risk);
 
 	/*
 	 * @returns: total number of unique persons in this bucket with given risk level that is CSW
 	 * across all BucketAges in this; If _risk = Person::ENDRiskLevel,
 	 * returns the number of persons in the random risk bucket
 	 */
-	unsigned long sizeRiskCSW(Person::RiskLevel _risk);
+	unsigned int sizeRiskCSW(Person::RiskLevel _risk);
 
 	/*
 	 * @returns: total number of unique persons in this bucket with given risk level and hiv status
 	 * across all BucketAges in this;
 	 */
-	unsigned long sizeRiskHIVStatus(Person::RiskLevel _risk, Person::HIVStatus _hivStatus);
+	unsigned int sizeRiskHIVStatus(Person::RiskLevel _risk, Person::HIVStatus _hivStatus);
 
 	/*
 	 * @returns: total number of marbles in all Random Risk FVs across all
 	 * BucketAges in this
 	 */
 	//TESTED
-	unsigned long sizeRandom();
+	unsigned int sizeRandom();
 
 	/*
 	 * @function: increaseInfected();

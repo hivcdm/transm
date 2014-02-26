@@ -101,26 +101,23 @@ void Population::Params::AgeBucketPrevalenceInfo::copyToSelf(AgeBucketPrevalence
 //-------------< Begin Population::Params methods >-------------------//
 
 Population::Params::Params()
+: debugLevel(DEBUG1),
+  maxTime(100),
+  initialSize(10000),
+  cepacInputFile("artproph.in"),
+  birthRate(0.0038),
+  SAEntAgeMths(180),
+  proportionMale(0.51),
+  circumcised(0.2),
+  hivInfected(0.1)
 {
-	//set default values of fields
-	debugLevel = DEBUG1;
-	maxTime = 100;
-	initSize = 10000;
-	cepacInputFile = "./artproph.in";
-	birthRate = 0.0038;
-	SAEntAgeMths = 180;
-	proportionMale = 0.51;
-	circumcised = 0.20;
-	hivInfected = 0.10;
 }
 
 Population::Params::~Params()
 {
-	unsigned int ageBucketNum = this->initialAgeBuckets.size();
-
-	for(unsigned int i = 0; i < ageBucketNum; ++i)
+	for(auto ageBucket : initialAgeBuckets)
 	{
-		delete initialAgeBuckets.at(i);
+		delete ageBucket;
 	}
 }
 
@@ -140,10 +137,8 @@ void Population::Params::loadXML(ticpp::Element *_populationXML, EventParams &_e
 	try
 	{
 		ticpp::Element *initialState = _populationXML->FirstChildElement("initialState");
-		initialState->FirstChildElement("size")->GetText<long>(&initSize);
-		_eventParams.displayOut("\tsize = ");
-		_eventParams.displayOut(boost::lexical_cast<std::string>(initSize).c_str());
-		_eventParams.displayOut("\n");
+		initialState->FirstChildElement("size")->GetText<int>(&initialSize);
+		_eventParams.displayOut("\tsize = " + std::to_string(initialSize) + "\n");
 		//initial proportion married
 		//TODO: Change me based on marriage acquisition rates et al
 		//this->initproportionMarried  = initialState->FirstChildElement("proportionMarried")->GetText<double>();

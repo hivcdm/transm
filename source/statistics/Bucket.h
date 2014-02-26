@@ -8,17 +8,17 @@
 class Bucket
 {
 public:
-	int GetValue(int i) const
+	std::size_t GetValue(std::size_t i) const
 	{
 		return values_[i];
 	}
 
-	size_t Hash() const
+	std::size_t Hash() const
 	{
-		size_t seed = 0;
+		std::size_t seed = 0;
 		for(auto value : values_)
 		{
-			boost::hash_combine<int>(seed, value);
+			boost::hash_combine(seed, value);
 		}
 		return seed;
 	}
@@ -30,7 +30,7 @@ public:
 			return false;
 		}
 
-		for(size_t i = 0; i < values_.size(); i++)
+		for(std::size_t i = 0; i < values_.size(); i++)
 		{
 			if(values_[i] != other.values_[i])
 			{
@@ -42,7 +42,7 @@ public:
 	}
 
 protected:
-	std::vector<int> values_;
+	std::vector<std::size_t> values_;
 };
 
 template<class T> struct bucket_hash;
@@ -51,7 +51,7 @@ template<class T> struct bucket_equal_to;
 template<>
 struct bucket_hash<Bucket>
 {
-	size_t operator()(const Bucket &bucket) const
+	std::size_t operator()(const Bucket &bucket) const
 	{
 		return bucket.Hash();
 	}

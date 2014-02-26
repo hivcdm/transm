@@ -85,7 +85,7 @@ public :
 	 this is used to allow class Male to set aside some temporary space
 	@author schung5
 	**/
-	unsigned int getNumAvailableBuckets() const;
+	std::size_t getNumAvailableBuckets() const;
 
 	//-----< Begin getters and setters of fields >-----------//
 	const LogNormalDist getAcquisitionRatePerMonth(Person::RiskLevel risk) const;

@@ -115,29 +115,29 @@ void BucketAge::clear()
 //tells whether _person exists in the index
 bool BucketAge::exists(Person *p)
 {
-	return (this->FVNoDist.exists(p));
+	return FVNoDist.contains(p);
 }
 
 //will return how many HIV infected people are currently in the index
 //Store as a number?  No -- Not costing significant time
-unsigned long BucketAge::getNumInfected()
+unsigned int BucketAge::getNumInfected()
 {
-	unsigned long total = 0;
+	std::size_t total = 0;
 
-	for(int i = 0; i < this->NUMBER_GENERATIONS_TO_TRACE; i++)
+	for(int i = 0; i < NUMBER_GENERATIONS_TO_TRACE; i++)
 	{
-		total += this->FVinfected[i]->size();
+		total += FVinfected[i]->size();
 	}
 
-	return total;
+	return static_cast<unsigned int>(total);
 }
 
-unsigned long BucketAge::getNumInfected(int generation)
+unsigned int BucketAge::getNumInfected(int generation)
 {
-	return this->FVinfected[generation]->size();
+	return static_cast<unsigned int>(FVinfected[generation]->size());
 }
 
-unsigned long BucketAge::getNumInfected(Person::RiskLevel _risk)
+unsigned int BucketAge::getNumInfected(Person::RiskLevel _risk)
 {
 	return this->numInfectedRisk[_risk];
 }
@@ -197,7 +197,7 @@ Person *BucketAge::drawMember(RandomNums &_randomNums, Person::RiskLevel _riskLe
 
 	if(toDrawFrom->size() > 0)
 	{
-		int toPick = _randomNums.randInt(0, toDrawFrom->size() - 1);
+		int toPick = _randomNums.randInt(0, static_cast<uint32_t>(toDrawFrom->size() - 1));
 
 		if(_remove)
 		{
@@ -370,15 +370,15 @@ DmgProfile::ProfileID BucketAge::getBinID()
 /* @function: size
  * @returns: The integer number of unique Persons in the bucket
  */
-unsigned long BucketAge::size()
+unsigned int BucketAge::size()
 {
-	return this->FVNoDist.size();
+	return static_cast<unsigned int>(FVNoDist.size());
 }
 
 /* @function: getNumRisk
  * @returns: The integer number of unique Persons in the bucket with given risk
  */
-unsigned long BucketAge::getNumRisk(Person::RiskLevel _risk)
+unsigned int BucketAge::getNumRisk(Person::RiskLevel _risk)
 {
 	return this->numRisk[_risk];
 }
@@ -386,7 +386,7 @@ unsigned long BucketAge::getNumRisk(Person::RiskLevel _risk)
 /* @function: getNumRiskCSW
  * @returns: The integer number of unique Persons in the bucket with given risk that is CSW
  */
-unsigned long BucketAge::getNumRiskCSW(Person::RiskLevel _risk)
+unsigned int BucketAge::getNumRiskCSW(Person::RiskLevel _risk)
 {
 	return this->numRiskCSW[_risk];
 }
@@ -394,7 +394,7 @@ unsigned long BucketAge::getNumRiskCSW(Person::RiskLevel _risk)
 /* @function: getNumRiskHIVStatus
  * @returns: The integer number of unique Persons in the bucket with given risk and HIV Status
  */
-unsigned long BucketAge::getNumRiskHIVStatus(Person::RiskLevel _risk, Person::HIVStatus _hivStatus)
+unsigned int BucketAge::getNumRiskHIVStatus(Person::RiskLevel _risk, Person::HIVStatus _hivStatus)
 {
 	return this->numRiskHIVStatus[_risk][_hivStatus];
 }
@@ -405,7 +405,7 @@ unsigned long BucketAge::getNumRiskHIVStatus(Person::RiskLevel _risk, Person::HI
 //TESTED
 int BucketAge::numHighRiskChoices()
 {
-	return this->FVProbDist_high.size();
+	return static_cast<int>(FVProbDist_high.size());
 }
 
 /* @function: numLowRiskChoices
@@ -414,7 +414,7 @@ int BucketAge::numHighRiskChoices()
 //TESTED
 int BucketAge::numLowRiskChoices()
 {
-	return this->FVProbDist_low.size();
+	return static_cast<int>(FVProbDist_low.size());
 }
 
 /* @function: numRandomRiskChoices
@@ -423,7 +423,7 @@ int BucketAge::numLowRiskChoices()
 //TESTED
 int BucketAge::numRandomRiskChoices()
 {
-	return this->FVProbDist_random.size();
+	return static_cast<int>(FVProbDist_random.size());
 }
 
 /* @function: numChoices
@@ -460,7 +460,7 @@ bool BucketAge::increaseInfected(Person *_p)
 {
 	if(_p->isInfected())
 	{
-		if(this->FVuninfected.exists(_p))
+		if(FVuninfected.contains(_p))
 		{
 			this->numInfected++;
 			this->numInfectedRisk[_p->getRiskLevel()]++;

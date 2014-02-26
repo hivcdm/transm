@@ -8,7 +8,7 @@ RandomNums::RandomNums()
 	this->mtRand_OneOverMaxMult = 1.0 / mtRand.max();
 }
 
-RandomNums::RandomNums(unsigned long _seed)
+RandomNums::RandomNums(unsigned int _seed)
 {
 	this->reset(_seed);
 	this->mtRand_OneOverMaxMult = 1.0 / mtRand.max();
@@ -69,21 +69,20 @@ double RandomNums::rand()
 	return mtRand() * mtRand_OneOverMaxMult;
 }
 
-uint32 RandomNums::randInt()
+uint32_t RandomNums::randInt()
 {
 	return mtRand();
 }
 
-uint32 RandomNums::randInt(const uint32 &_max)
+uint32_t RandomNums::randInt(const uint32_t &_max)
 {
-	return Util::round(this->rand() * _max);
+	return Util::round<uint32_t>(rand() * _max);
 }
 
-uint32 RandomNums::randInt(const uint32 &_min, const uint32 &_max)
+uint32_t RandomNums::randInt(const uint32_t &_min, const uint32_t &_max)
 {
 	assert(_max >= _min);
-	const uint32 diff = _max - _min;
-	return _min + this->randInt(diff);
+	return _min + randInt(_max - _min);
 }
 
 double RandomNums::randExponential(double _mean)
@@ -172,7 +171,7 @@ double ShiftedLogNormalDist::getMean() const
 	return exp(mu + ((sigma * sigma) / 2)) + shift;
 }
 
-unsigned long int RandomNums::randNorm_NaturalNum(const NormalDist &_normDist)
+unsigned int RandomNums::randNorm_NaturalNum(const NormalDist &_normDist)
 {
 	assert(_normDist.stddev >= 0);
 
@@ -192,7 +191,7 @@ unsigned long int RandomNums::randNorm_NaturalNum(const NormalDist &_normDist)
 			//Return a double as an int will always return the floor of the double.  We want to round to the nearest integer.
 			//Adding 0.5 assures that the floor of the new number will be the nearest integer of the old number
 			rd = rd + 0.5;
-			return static_cast<unsigned long>(rd);
+			return static_cast<unsigned int>(rd);
 		}
 
 		tries--;
@@ -234,7 +233,7 @@ int RandomNums::randPoisson(double _mu)
 //-----------< End rand num functions >-----------------//
 
 //-----------< Begin Getters and Setters >---------------//
-unsigned long RandomNums::getSeed()
+unsigned int RandomNums::getSeed()
 {
 	return this->seed;
 }
@@ -244,7 +243,7 @@ void RandomNums::reset()
 	this->reset(this->seed);
 }
 
-void RandomNums::reset(unsigned long _seed)
+void RandomNums::reset(unsigned int _seed)
 {
 	this->seed = _seed;
 	mtRand.seed((boost::mt19937::result_type) _seed);

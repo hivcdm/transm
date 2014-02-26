@@ -274,37 +274,41 @@ void DmgProfile::selectProfileIDs(std::vector<ProfileID> &_selected, const std::
 		DmgProfile::initProfileIDMap();
 	}
 
-	size_t i = 0;
-
 	if(_available)
 	{
+		std::size_t i = 0;
+
 		//loop through subset of all possible ProfileID's
 		while(i < _available->size())
 		{
 			//if the profile that correponds to the ProfileID is matched by this(which is the selector here)
 			//  then add the ProfileID to the resulting vector
-			if(DmgProfile::ProfileIDtoProfile.at(_available->at(i))->match(*this))
-			{
-				_selected.push_back(_available->at(i));
-			}
+			auto profileId = (*_available)[i];
 
-			i++;
-		} //while(i < _available->size()) {
-	}
-	else
-	{
-		//loop though all possible ProfileID
-		do
-		{
-			if(DmgProfile::ProfileIDtoProfile.at(i)->match(*this))
+			if(DmgProfile::ProfileIDtoProfile[profileId]->match(*this))
 			{
-				_selected.push_back(i);
+				_selected.push_back(profileId);
 			}
 
 			i++;
 		}
-		while(i <= DmgProfile::MAX);
-	}//if(_available) {
+	}
+	else
+	{
+		DmgProfile::ProfileID profileId = 0;
+
+		//loop though all possible ProfileID
+		do
+		{
+			if(DmgProfile::ProfileIDtoProfile[profileId]->match(*this))
+			{
+				_selected.push_back(profileId);
+			}
+
+			profileId++;
+		}
+		while(profileId <= DmgProfile::MAX);
+	}
 }
 
 void DmgProfile::set(DmgProfile::Demographic _demographic, BaseEnumCls::Enum _enum)
@@ -342,9 +346,10 @@ void DmgProfile::set(DmgProfile::ProfileID _profileID)
 
 		while(currDemographic < DmgProfile::ENDDemographic)
 		{
-			this->set(currDemographic, DmgProfile::DemographicEnumCls.at(currDemographic).getNumEnums());
+			auto numEnums = DmgProfile::DemographicEnumCls.at(currDemographic).getNumEnums();
+			set(currDemographic, static_cast<BaseEnumCls::Enum>(numEnums));
 			currDemographic = DmgProfile::Demographic(currDemographic + 1);
-		}//while(currDemographic < DmgProfile::ENDDemographic) {
+		}
 	}
 	else
 	{

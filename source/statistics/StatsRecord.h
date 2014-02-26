@@ -161,7 +161,7 @@ StatsRecord<PointStatIDs, StratifiedStatIDs>::~StatsRecord()
 template<typename PointStatIDs, typename StratifiedStatIDs>
 void StatsRecord<PointStatIDs, StratifiedStatIDs>::init(EnumCls<PointStatIDs> *_statIDEnumCls)
 {
-	assert(typeid(StratifiedStatIDs) == typeid(BaseEnumCls::nullptr_ENUM));
+	assert(typeid(StratifiedStatIDs) == typeid(BaseEnumCls::NULL_ENUM));
 	this->statIDEnumCls = _statIDEnumCls;
 	//make room internally to store numSingleStats values
 	this->singleValStats.resize(_statIDEnumCls->getNumEnums(), 0.0);

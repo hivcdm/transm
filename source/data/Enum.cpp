@@ -10,9 +10,9 @@ BaseEnumCls::BaseEnumCls()
 	initialized = false;
 }
 
-BaseEnumCls::BaseEnumCls(const std::vector<std::string> _strs)
+BaseEnumCls::BaseEnumCls(const std::vector<std::string> &_strs)
 {
-	this->init(_strs);
+	init(_strs);
 }
 
 BaseEnumCls::~BaseEnumCls()
@@ -21,29 +21,29 @@ BaseEnumCls::~BaseEnumCls()
 
 void BaseEnumCls::appendEnumStr(std::ostream &_output, BaseEnumCls::Enum _e) const
 {
-	assert(this->initialized);
-	assert(this->isValidNonWildCard(_e));
-	_output << this->strs.at(_e);
+	assert(initialized);
+	assert(isValidNonWildCard(_e));
+	_output << strs.at(_e);
 }
 
 //gets lowest valid value as an int
 BaseEnumCls::Enum BaseEnumCls::getMin() const
 {
-	assert(this->initialized);
-	return this->min;
+	assert(initialized);
+	return min;
 }
 
 //gets highest valid value as an int
 BaseEnumCls::Enum BaseEnumCls::getMax() const
 {
-	assert(this->initialized);
-	return this->max;
+	assert(initialized);
+	return max;
 }
 
 BaseEnumCls::Enum BaseEnumCls::getWildcard() const
 {
-	assert(this->initialized);
-	return this->max + 1;
+	assert(initialized);
+	return max + 1;
 }
 
 BaseEnumCls::Enum BaseEnumCls::fromString(const std::string &_str) const
@@ -74,9 +74,9 @@ BaseEnumCls::Enum BaseEnumCls::fromString(const std::string &_str) const
 /**
 Return the number of valid values for this Enum
 **/
-unsigned int BaseEnumCls::getNumEnums() const
+std::size_t BaseEnumCls::getNumEnums() const
 {
-	assert(this->initialized);
+	assert(initialized);
 	return numEnums;
 }
 
@@ -84,39 +84,38 @@ unsigned int BaseEnumCls::getNumEnums() const
 /**
 Stores the string representation of enum E
 **/
-void BaseEnumCls::init(const std::vector<std::string> _strs)
+void BaseEnumCls::init(const std::vector<std::string> &_strs)
 {
 	initialized = true;
-	this->numEnums = _strs.size();
-	this->min = 0;
-	this->max = this->numEnums - 1;
+	numEnums = _strs.size();
+	min = 0;
+	max = static_cast<Enum>(numEnums - 1);
 
 	//save all the strings
-	for(size_t i = 0; i < this->numEnums; i++)
+	for(std::size_t i = 0; i < numEnums; i++)
 	{
-		std::string to_push = _strs[i];
-		this->strs.push_back(to_push);
+		strs.push_back(_strs[i]);
 	}
 
 	//make an extra space for wildcard
-	this->strs.push_back("*");
+	strs.push_back("*");
 }
 
 bool BaseEnumCls::isValidEnum(BaseEnumCls::Enum _e) const
 {
-	assert(this->initialized);
-	return (this->isValidNonWildCard(_e) || (_e == this->getWildcard()));
+	assert(initialized);
+	return (isValidNonWildCard(_e) || (_e == getWildcard()));
 }
 
 bool BaseEnumCls::isValidNonWildCard(BaseEnumCls::Enum _e) const
 {
-	assert(this->initialized);
-	return Util::withinRange<BaseEnumCls::Enum>(_e, this->getMin(), this->getMax());
+	assert(initialized);
+	return Util::withinRange<BaseEnumCls::Enum>(_e, getMin(), getMax());
 }
 
 const std::string *BaseEnumCls::toString(BaseEnumCls::Enum _e) const
 {
-	assert(this->initialized);
-	assert(this->isValidEnum(_e));
-	return &this->strs.at(_e);
+	assert(initialized);
+	assert(isValidEnum(_e));
+	return &strs.at(_e);
 }

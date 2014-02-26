@@ -93,8 +93,8 @@ void EntityPool::printBucketLabels(ostream &_outStream, bool _printPropInfected)
 
 //list out # people in each DmgProfileBucket
 void EntityPool::printBucketSizes(ostream &_outStream, string _prefix, bool _printPropInfected,
-                                  unsigned long &_totalInfected, unsigned long &_totalSize, unsigned long &_totalSexuallyActive,
-                                  unsigned long &_totalInSteady, unsigned long &_totalInRegular, bool _includeLabels)
+                                  unsigned int &_totalInfected, unsigned int &_totalSize, unsigned int &_totalSexuallyActive,
+                                  unsigned int &_totalInSteady, unsigned int &_totalInRegular, bool _includeLabels)
 {
 	_totalInfected = 0;
 	_totalSize = 0;
@@ -123,7 +123,7 @@ void EntityPool::printBucketSizes(ostream &_outStream, string _prefix, bool _pri
 		}
 
 		//# people infected in current DmgProfileBucket
-		long numInfected = bucket->getNumInfected();
+		int numInfected = bucket->getNumInfected();
 
 		//if _printPropInfected == true, print out number of infected folk in the DmgProfileBucket
 		if(_printPropInfected)
@@ -142,13 +142,13 @@ void EntityPool::printBucketSizes(ostream &_outStream, string _prefix, bool _pri
 		}
 
 		//print out # people in current DmgProfileBucket
-		long bucketSize = bucket->size();
+		int bucketSize = bucket->size();
 		_outStream << bucketSize << Constants::TAB;
 
 		if(DmgProfile::get(bucket->getProfileID(), DmgProfile::SEXUAL_ACTIVITY_STATUS) == DmgProfile::SA)
 		{
-			long bucketSizeHR = ((BucketSexualMixing *) bucket)->sizeRisk(Person::HIGH);
-			long bucketSizeLR = ((BucketSexualMixing *) bucket)->sizeRisk(Person::LOW);
+			int bucketSizeHR = ((BucketSexualMixing *) bucket)->sizeRisk(Person::HIGH);
+			int bucketSizeLR = ((BucketSexualMixing *) bucket)->sizeRisk(Person::LOW);
 			_outStream << bucketSizeHR << Constants::TAB << bucketSizeLR << Constants::TAB;
 		}
 
@@ -261,10 +261,10 @@ bool EntityPool::refreshDmgProfileBucket(Person *_person, list<Person *>::iterat
 	return success && this->addEntity(_person);
 }
 
-unsigned long EntityPool::size()
+unsigned int EntityPool::size()
 {
 	DmgProfileBucket *bucket = nullptr;
-	unsigned long size = 0;		//total of the zie
+	unsigned int size = 0;		//total of the zie
 	size_t currBucketIndex = 0;
 
 	//iterate through all buckets
@@ -287,7 +287,7 @@ unsigned long EntityPool::size()
 }
 
 //calculate the current number of persons with a given DmgProfile ID
-unsigned long EntityPool::size(DmgProfile::ProfileID _profileID)
+unsigned int EntityPool::size(DmgProfile::ProfileID _profileID)
 {
 	DmgProfileBucket *bucket = this->getBucket(_profileID);
 
@@ -302,10 +302,10 @@ unsigned long EntityPool::size(DmgProfile::ProfileID _profileID)
 }
 
 //calculate the current number of persons that are not sexually active in the entity pool
-unsigned long EntityPool::sizeNotSexuallyActive()
+unsigned int EntityPool::sizeNotSexuallyActive()
 {
 	DmgProfileBucket *bucket = nullptr;
-	unsigned long size = 0;		//total of the zie
+	unsigned int size = 0;		//total of the zie
 	size_t currBucketIndex = 0;
 
 	//iterate through all buckets
@@ -333,10 +333,10 @@ unsigned long EntityPool::sizeNotSexuallyActive()
 }
 
 //calculate the current number of persons that are not sexually active in the entity pool with a given demographic
-unsigned long EntityPool::sizeNotSexuallyActive(DmgProfile::Gender _gender)
+unsigned int EntityPool::sizeNotSexuallyActive(DmgProfile::Gender _gender)
 {
 	DmgProfileBucket *bucket = nullptr;
-	unsigned long size = 0;		//total of the zie
+	unsigned int size = 0;		//total of the zie
 	size_t currBucketIndex = 0;
 
 	//iterate through all buckets
@@ -367,10 +367,10 @@ unsigned long EntityPool::sizeNotSexuallyActive(DmgProfile::Gender _gender)
 }
 
 //calculate the current number of persons that are sexually active in the entity pool with a given demographic
-unsigned long EntityPool::sizeSexuallyActive(DmgProfile::Gender _gender, Person::RiskLevel _risk)
+unsigned int EntityPool::sizeSexuallyActive(DmgProfile::Gender _gender, Person::RiskLevel _risk)
 {
 	DmgProfileBucket *bucket = nullptr;
-	unsigned long size = 0;		//total of the zie
+	unsigned int size = 0;		//total of the zie
 	size_t currBucketIndex = 0;
 
 	//iterate through all buckets
@@ -400,10 +400,10 @@ unsigned long EntityPool::sizeSexuallyActive(DmgProfile::Gender _gender, Person:
 	return size;
 }
 //calculate the current number of sexually active persons within the specified age range
-unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths)
+unsigned int EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths)
 {
 	DmgProfileBucket *bucket = nullptr;
-	unsigned long size = 0;		//total of the zie
+	unsigned int size = 0;		//total of the zie
 	size_t currBucketIndex = 0;
 
 	//iterate through all buckets
@@ -431,10 +431,10 @@ unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMo
 }
 
 //calculate the current number of sexually active persons within the specified age range and gender
-unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths, DmgProfile::Gender _gender)
+unsigned int EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths, DmgProfile::Gender _gender)
 {
 	DmgProfileBucket *bucket = nullptr;
-	unsigned long size = 0;		//total of the zie
+	unsigned int size = 0;		//total of the zie
 	size_t currBucketIndex = 0;
 
 	//iterate through all buckets

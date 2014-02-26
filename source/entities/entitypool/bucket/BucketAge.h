@@ -4,17 +4,17 @@
  *  Created on: Nov 13, 2008
  *      Author: errhode
  */
+#pragma once
 
-#ifndef BUCKETAGE_H_
-#define BUCKETAGE_H_
+#include <iostream>
+#include <vector>
 
 #include "FullVector.h"
+#include "../../Person.h"
 #include "../../classifiers/DmgProfile.h"
-#include <vector>
 
 class BucketAge
 {
-
 	//If this number gets changed, also change it in InfectionsTracker.h
 	static const int NUMBER_GENERATIONS_TO_TRACE = 6;
 
@@ -37,13 +37,13 @@ public:
 
 	//will return how many HIV infected people are currently in the index
 	//Store as a number?
-	unsigned long getNumInfected();
+	unsigned int getNumInfected();
 
-	unsigned long getNumInfected(int generation);
-	unsigned long getNumInfected(Person::RiskLevel _risk);
+	unsigned int getNumInfected(int generation);
+	unsigned int getNumInfected(Person::RiskLevel _risk);
 
 	//prints every person in this index to _outStream
-	void print(ostream &_outStream, std::string _prefix);
+	void print(std::ostream &_outStream, std::string _prefix);
 
 	//-------------< End Methods taken from EntityIndex >--------------//
 
@@ -55,12 +55,12 @@ public:
 	 * -- Removes returned person from this is _remove == true
 	 */
 	Person *drawMember(RandomNums &_randomNums, Person::RiskLevel _riskLevel, SexualPartnership::Type _partnershipType,
-	                   bool _use_random, bool _remove);
+		bool _use_random, bool _remove);
 	//draw a member from this pool
 	//Person* drawMember(int _randomNums, Person *_chooser, int _partnershipType, bool _remove);
 
 	//draws person at position _randomAccessIndex in this index. This is random access...slow but necessary
-	//Person* getMember(unsigned long _randomAccessIndex, bool _remove);
+	//Person* getMember(unsigned int _randomAccessIndex, bool _remove);
 
 	/* @function: erase
 	 * @effects: removes _person from this by removing _person from all FVs; decrements numPersons by 1;
@@ -103,22 +103,22 @@ public:
 	/* @function: size
 	 * @returns: The integer number of unique Persons in the bucket
 	 */
-	unsigned long size();
+	unsigned int size();
 
 	/* @function: getNumRisk
 	 * @returns: The integer number of unique Persons in the bucket with a given risk
 	 */
-	unsigned long getNumRisk(Person::RiskLevel _risk);
+	unsigned int getNumRisk(Person::RiskLevel _risk);
 
 	/* @function: getNumRiskCSW
 	 * @returns: The integer number of unique Persons in the bucket with a given risk that is CSW
 	 */
-	unsigned long getNumRiskCSW(Person::RiskLevel _risk);
+	unsigned int getNumRiskCSW(Person::RiskLevel _risk);
 
 	/* @function: getNumRiskHIVStatus
 	 * @returns: The integer number of unique Persons in the bucket with a given risk and hivStatus
 	 */
-	unsigned long getNumRiskHIVStatus(Person::RiskLevel _risk, Person::HIVStatus _hivStatus);
+	unsigned int getNumRiskHIVStatus(Person::RiskLevel _risk, Person::HIVStatus _hivStatus);
 
 	/* @function: numHighRiskChoices
 	 * @returns: The integer number of (non-unique) Persons in the high risk bucket
@@ -186,12 +186,10 @@ private:
 	bool UpdateNeeded;
 	DmgProfile::ProfileID currentBinID;
 	unsigned int populationID;
-	unsigned long numPersons;
-	unsigned long numInfected;
-	unsigned long numRisk[Person::ENDRiskLevel];
-	unsigned long numRiskCSW[Person::ENDRiskLevel]; // number of csw persons by risk bucket
-	unsigned long numInfectedRisk[Person::ENDRiskLevel];
-	unsigned long numRiskHIVStatus[Person::ENDRiskLevel][Person::ENDHIVStatus];
+	unsigned int numPersons;
+	unsigned int numInfected;
+	unsigned int numRisk[Person::ENDRiskLevel];
+	unsigned int numRiskCSW[Person::ENDRiskLevel]; // number of csw persons by risk bucket
+	unsigned int numInfectedRisk[Person::ENDRiskLevel];
+	unsigned int numRiskHIVStatus[Person::ENDRiskLevel][Person::ENDHIVStatus];
 };
-
-#endif /* BUCKETAGE_H_ */

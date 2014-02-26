@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <cstdlib>
 #include <vector>
 #include <boost/random/mersenne_twister.hpp>
@@ -7,48 +8,35 @@
 #include <boost/random/poisson_distribution.hpp>
 #include <boost/math/distributions/beta.hpp>
 
-typedef unsigned long uint32;
-
-class NormalDist
+struct NormalDist
 {
-public :
 	double mean;
 	double stddev;
 };
 
-class LogNormalDist
+struct LogNormalDist
 {
-public :
 	double mu;
 	double sigma;
-	bool isZeroDistrib;
+	bool isZeroDistrib = false;
 	double getMean() const;
-	LogNormalDist()
-	{
-		isZeroDistrib = false;
-	}
 };
 
-class ShiftedLogNormalDist
+struct ShiftedLogNormalDist
 {
-public :
 	double mu;
 	double sigma;
 	double shift;
-	bool isZeroDistrib;
+	bool isZeroDistrib = false;
 	double getMean() const;
-	ShiftedLogNormalDist()
-	{
-		isZeroDistrib = false;
-	}
 };
 
-class BetaDist
+struct BetaDist
 {
-public:
 	double alpha;
 	double beta;
 };
+
 /***
 This is a wrapper class that draws numbers from several random number generators
 Current number generators:
@@ -57,18 +45,6 @@ Current number generators:
 ***/
 class RandomNums
 {
-
-	//the current seed for this random number generator
-	uint32 seed;
-
-	//random number generators
-	//seeding the the Mersenne Twister w/ the current time
-	boost::mt19937 mtRand;			//Mersenne Twister
-	double mtRand_OneOverMaxMult;	//used to generate a number between 0.0 and 1.0 for mtRand
-	//division is slower than mult so use 1/mtRand.max()
-
-	//	QTIsaac<UINT32> isaac;	//Isaac
-
 public :
 	bool chance(const double _probability);
 	/***
@@ -79,16 +55,16 @@ public :
 	int chooseIndex(const std::vector<double> &_indexProbabilities);
 
 	double rand();						// returns a double between 0 and 1
-	uint32 randInt();       // integer in [0,n] for n < 2^32
-	uint32 randInt(const uint32 &_max);        // integer in [0,n] for n < 2^32
-	uint32 randInt(const uint32 &_min, const uint32 &_max);        // integer in [min,max] for n < 2^32
+	uint32_t randInt();       // integer in [0,n] for n < 2^32
+	uint32_t randInt(const uint32_t &_max);        // integer in [0,n] for n < 2^32
+	uint32_t randInt(const uint32_t &_min, const uint32_t &_max);        // integer in [min,max] for n < 2^32
 
 	//draws a number from the _normDist
 	double randNorm(const NormalDist &_normDist);
 	//draws a number from the _normDist, but only returns natural numbers
 	//  if we draw a # under 0, then draws from distribution again
 	//TODO: Isn't LogNormal more correct here?  Convert the distribution to a log normal distribution?
-	unsigned long int randNorm_NaturalNum(const NormalDist &_normDist);
+	unsigned int randNorm_NaturalNum(const NormalDist &_normDist);
 
 	double randLogNormal(const LogNormalDist &_logNormDist);
 	double randShiftedLogNormal(const ShiftedLogNormalDist &_shiftedLogNormDist);
@@ -97,14 +73,26 @@ public :
 	double randBeta(const BetaDist &_betaDist);
 
 	//getters and setters
-	uint32 getSeed();
+	uint32_t getSeed();
 	//reset the generator w/ the current seed
 	void reset();
 	//reset the generator and use a diff seed
-	void reset(unsigned long _seed);
+	void reset(unsigned int _seed);
 
 	//constructors
 	RandomNums();
-	RandomNums(unsigned long _seed);
+	RandomNums(unsigned int _seed);
+
+private:
+	//the current seed for this random number generator
+	uint32_t seed;
+
+	//random number generators
+	//seeding the the Mersenne Twister w/ the current time
+	boost::mt19937 mtRand;			//Mersenne Twister
+	double mtRand_OneOverMaxMult;	//used to generate a number between 0.0 and 1.0 for mtRand
+	//division is slower than mult so use 1/mtRand.max()
+
+	//	QTIsaac<UINT32> isaac;	//Isaac
 };
 

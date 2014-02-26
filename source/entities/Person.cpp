@@ -12,7 +12,7 @@
 
 class EntityPool;
 
-long Person::idCounter = 0;
+int Person::idCounter = 0;
 int Person::numTracesSoFar = 0;
 
 //This is pretty much only used by the NA folks who are NA at the end of the model and need to have their LMs added to total
@@ -486,7 +486,7 @@ int Person::getGenerationOfInfection()
 
 int Person::getNumPartners(SexualPartnership::Type _type)
 {
-	return this->partners[_type].size();
+	return static_cast<int>(partners[_type].size());
 }
 
 int Person::getNumPartners(SexualPartnership::Type _type, bool sameRisk)
@@ -608,12 +608,12 @@ BaseEnumCls::Enum Person::getDmgProfileVal(DmgProfile::Demographic _demographic)
 	return this->dmgProfile.get(_demographic);
 }
 
-unsigned long Person::getID()
+unsigned int Person::getID()
 {
 	return this->id;
 }
 
-long Person::getPartnershipsToEnd(long _currTime, SexualPartnership::Type _partnershipType,
+int Person::getPartnershipsToEnd(int _currTime, SexualPartnership::Type _partnershipType,
                                   list<SexualPartnership *> &_partnershipsToEnd, bool _fromDeath)
 {
 	assert(_partnershipType < SexualPartnership::ENDType);
@@ -628,7 +628,7 @@ long Person::getPartnershipsToEnd(long _currTime, SexualPartnership::Type _partn
 	//The iterator points to class SexualPartnership
 	list<SexualPartnership *>::iterator iter = this->partners[_partnershipType].begin();
 	list<SexualPartnership *>::iterator iterEnd = this->partners[_partnershipType].end();
-	long numEnded = 0;
+	int numEnded = 0;
 
 	//go through all partnerships
 	while(iter != iterEnd)
@@ -781,7 +781,7 @@ void Person::printCurrentPartners(ostream &_outStream, string _prefix)
 *This function saves the state of the patient to file
 *Uses Json like notation
 */
-void Person::saveState(ostream &_outStream, long currTime)
+void Person::saveState(ostream &_outStream, int currTime)
 {
 	_outStream << "id:" << this->id << "," << endl; //id
 	this->dmgProfile.saveState(_outStream); //dmg profile
@@ -1567,20 +1567,20 @@ bool Person::memberFVindices(int index, FullVector *FV)
  * @effects: none
  * @return: copy of this.FVindices
  */
-vector<unsigned int> Person::getFVindices(FullVector *FV)
+std::vector<unsigned int> Person::getFVindices(const FullVector *FV)
 {
-	vector<unsigned int> vcopy;
-	/*map<FullVector*, vector<int> >::iterator iter = this->FVindices.find(FV);
-	if (iter != this->FVindices.end()){
-		vcopy.assign(iter->second.begin(), iter->second.end());
-	}*/
-	//ERINWASHERE
-	//NEW
-	vector<unsigned int> personsIndices = this->FVindices[FV];
+	std::vector<unsigned int> vcopy;
 
-	if(personsIndices.size() > 0)
+	for(auto pair : FVindices)
 	{
-		vcopy.assign(personsIndices.begin(), personsIndices.end());
+		if(pair.first == FV)
+		{
+			if(pair.second.size() > 0)
+			{
+				vcopy.assign(pair.second.begin(), pair.second.end());
+				break;
+			}
+		}
 	}
 
 	//ENDNEW

@@ -20,14 +20,13 @@ const std::vector<std::string> PopStats::LifeStatsStr =
 const int NUM_LE_CAT = 12; //number of life expectancy categories
 const char *lifeExpectancyStrs[NUM_LE_CAT] = {"Age(yr)", "raw deaths", "raw pop", "n", "deaths", "death rate", "midpoint survivorship", "total remaining time", "life expectancy", "median LE", "median LE Standard Error", "median LE Confidence Bounds"};
 
-PopStats::PopStats(long maxTime, ticpp::Element *_LEOutputNode, ticpp::Element *_partAcqOutputNode) :
+PopStats::PopStats(int maxTime, ticpp::Element *_LEOutputNode, ticpp::Element *_partAcqOutputNode) :
 	calculateShiftedOutcomes(false),
-	monthOf1990(0),
-	yearlyTestsByResult(4)
+	monthOf1990(0)
 {
 	assert(PopStats::LifeStatsStr.size() == PopStats::ENDLifeStats);
 	enumClass = new EnumCls<PopStats::LifeStats>(PopStats::LifeStatsStr);
-	lifeStats = new StatsRecord<PopStats::LifeStats, BaseEnumCls::nullptr_ENUM>(enumClass);
+	lifeStats = new StatsRecord<PopStats::LifeStats, BaseEnumCls::NULL_ENUM>(enumClass);
 	survivalStats = new SurvivalStats();
 	//Set up the timeToRecord vector... by default, record at every 1/4 of the maxTime
 	this->timeToRecord[0] = 1;
@@ -36,13 +35,13 @@ PopStats::PopStats(long maxTime, ticpp::Element *_LEOutputNode, ticpp::Element *
 
 	for(int i = 1; i < NUM_TIMES_TO_RECORD; i++)
 	{
-		this->timeToRecord[i] = (long((1 / ((double) NUM_TIMES_TO_RECORD - 1)) * maxTime * i + 0.5));
+		this->timeToRecord[i] = (int((1 / ((double) NUM_TIMES_TO_RECORD - 1)) * maxTime * i + 0.5));
 	}
 
 	//Set up the time to record LE vector using inputs from the .xml file
 	for(int i = 1; i <= NUM_TIMES_TO_RECORD_LE; i++)
 	{
-		this->timeToRecordLE[i - 1] = boost::lexical_cast<long>(_LEOutputNode->FirstChildElement("time" +
+		this->timeToRecordLE[i - 1] = boost::lexical_cast<int>(_LEOutputNode->FirstChildElement("time" +
 		                              boost::lexical_cast<std::string>(i))->GetText());
 	}
 
@@ -51,7 +50,7 @@ PopStats::PopStats(long maxTime, ticpp::Element *_LEOutputNode, ticpp::Element *
 	//Set up the time to record partAcq vector using inputs from the .xml file
 	for(int i = 1; i <= NUM_TIMES_TO_RECORD_PARTACQ; i++)
 	{
-		this->timeToRecordPartAcq[i - 1] = boost::lexical_cast<long>(_partAcqOutputNode->FirstChildElement("time" +
+		this->timeToRecordPartAcq[i - 1] = boost::lexical_cast<int>(_partAcqOutputNode->FirstChildElement("time" +
 		                                   boost::lexical_cast<std::string>(i))->GetText());
 	}
 
@@ -238,12 +237,12 @@ void PopStats::processPostMaxTimeDeath(Person *_p)
 
 void PopStats::printLMStats(std::ostream &_outStream)
 {
-	long infectedDeaths = static_cast<long>(this->lifeStats->getStat(PopStats::TOTAL_HIV_POS_DTHS));
-	long uninfectedDeaths = static_cast<long>(this->lifeStats->getStat(PopStats::TOTAL_HIV_NEG_DTHS));
-	long totalDeaths = infectedDeaths + uninfectedDeaths;
-	long infectedPersons = static_cast<long>(this->lifeStats->getStat(PopStats::TOTAL_HIV_POS));
-	long uninfectedPersons = static_cast<long>(this->lifeStats->getStat(PopStats::TOTAL_HIV_NEG));
-	long totalPersons = infectedPersons + uninfectedPersons;
+	int infectedDeaths = static_cast<int>(this->lifeStats->getStat(PopStats::TOTAL_HIV_POS_DTHS));
+	int uninfectedDeaths = static_cast<int>(this->lifeStats->getStat(PopStats::TOTAL_HIV_NEG_DTHS));
+	int totalDeaths = infectedDeaths + uninfectedDeaths;
+	int infectedPersons = static_cast<int>(this->lifeStats->getStat(PopStats::TOTAL_HIV_POS));
+	int uninfectedPersons = static_cast<int>(this->lifeStats->getStat(PopStats::TOTAL_HIV_NEG));
+	int totalPersons = infectedPersons + uninfectedPersons;
 	string invalid("----");
 	_outStream << "Statistics (Only includes negative people who have died)\tValue\tUnits" << endl;
 	_outStream << "Infected Deaths (in time period)\t" << infectedDeaths << endl;
@@ -575,7 +574,7 @@ void PopStats::printSurvivalStats(std::ostream &_outStream)
 	_outStream << fourthRow.str() << endl;
 	_outStream << fifthRow.str() << endl;
 }
-void PopStats::printLEStats(std::ostream &_outStream, long currTime)
+void PopStats::printLEStats(std::ostream &_outStream, int currTime)
 {
 	assert((this->selectedLEStats != nullptr));
 	double proportionalDeathRate[Person::maxYrForDeathStats];//proportionaldeathrate=number of deaths/total number of people for each age bucket
@@ -757,7 +756,7 @@ void PopStats::printShiftedOutcomes(std::ostream &_outStream, int year)
 	_outStream << std::endl;
 }
 
-void PopStats::printPartAcqStats(std::ostream &_outStream, long currTime)
+void PopStats::printPartAcqStats(std::ostream &_outStream, int currTime)
 {
 	assert(this->selectedPartAcqStats != nullptr);
 
@@ -784,7 +783,7 @@ void PopStats::printPartAcqStats(std::ostream &_outStream, long currTime)
 
 	_outStream << endl;
 }
-void PopStats::recordIncidentInfection(EventParams &_eventParams, long _time, SexualPartnership::Type _partnershipType,
+void PopStats::recordIncidentInfection(EventParams &_eventParams, int _time, SexualPartnership::Type _partnershipType,
                                        const  Person *_infector, const Person *_infected, bool _print, ostream &_traceOutStream)
 {
 	assert((_infector != nullptr) && (_infector->isAlive()));
@@ -810,7 +809,7 @@ void PopStats::recordIncidentInfection(EventParams &_eventParams, long _time, Se
 	this->infectionsTracker.recordIncidentInfection(_time, _partnershipType, _infector, _infected, _print, _traceOutStream);
 }
 
-long PopStats::getNextTimeToRecord(long currTime)
+int PopStats::getNextTimeToRecord(int currTime)
 {
 	int nextTime = std::numeric_limits<int>().max();
 
@@ -825,7 +824,7 @@ long PopStats::getNextTimeToRecord(long currTime)
 	return nextTime;
 }
 
-bool PopStats::isTimeToRecord(long currTime)
+bool PopStats::isTimeToRecord(int currTime)
 {
 	for(int i = 0; i < NUM_TIMES_TO_RECORD; i++)
 	{
@@ -838,7 +837,7 @@ bool PopStats::isTimeToRecord(long currTime)
 	return false;
 }
 
-bool PopStats::isTimeToRecordLE(long currTime)
+bool PopStats::isTimeToRecordLE(int currTime)
 {
 	for(int i = 0; i < NUM_TIMES_TO_RECORD_LE; i++)
 	{
@@ -851,7 +850,7 @@ bool PopStats::isTimeToRecordLE(long currTime)
 	return false;
 }
 
-bool PopStats::isTimeToRecordPartAcq(long currTime)
+bool PopStats::isTimeToRecordPartAcq(int currTime)
 {
 	for(int i = 0; i < NUM_TIMES_TO_RECORD_PARTACQ; i++)
 	{
@@ -864,7 +863,7 @@ bool PopStats::isTimeToRecordPartAcq(long currTime)
 	return false;
 }
 
-bool PopStats::isFirstMonthToRecordLE(long currTime)
+bool PopStats::isFirstMonthToRecordLE(int currTime)
 {
 	for(int i = 0; i < NUM_TIMES_TO_RECORD_LE; i++)
 	{
@@ -877,7 +876,7 @@ bool PopStats::isFirstMonthToRecordLE(long currTime)
 	return false;
 }
 
-bool PopStats::isTimeToPrintLE(long currTime)
+bool PopStats::isTimeToPrintLE(int currTime)
 {
 	for(int i = 0; i < NUM_TIMES_TO_RECORD_LE; i++)
 	{
@@ -897,7 +896,7 @@ void PopStats::enableShiftedOutcomes(int monthOf1990)
 	resetYear(1990);
 }
 
-void PopStats::recordPrevalenceAndIncidence(long currTime, double _prevalence, double _SAprevalence, double _incidence,
+void PopStats::recordPrevalenceAndIncidence(int currTime, double _prevalence, double _SAprevalence, double _incidence,
         int saPopSize, int monthlyIncident, int monthlyPrevalent)
 {
 	for(int i = 0; i < NUM_TIMES_TO_RECORD; i++)
@@ -908,8 +907,8 @@ void PopStats::recordPrevalenceAndIncidence(long currTime, double _prevalence, d
 			statistics->timeOfStats = currTime;
 			statistics->prevalence = _prevalence;
 			statistics->incidence  = _incidence;
-			statistics->SAprevalence = static_cast<long>(_SAprevalence);
-			statistics->cumulativeNumberDead = static_cast<long>(this->lifeStats->getStat(PopStats::TOTAL_HIV_NEG_DTHS) +
+			statistics->SAprevalence = static_cast<int>(_SAprevalence);
+			statistics->cumulativeNumberDead = static_cast<int>(this->lifeStats->getStat(PopStats::TOTAL_HIV_NEG_DTHS) +
 			                                   this->lifeStats->getStat(PopStats::TOTAL_HIV_POS_DTHS));
 			this->selectedSummaryStats.push_back(statistics);
 			break;
@@ -939,7 +938,7 @@ void PopStats::recordYearStartStats(int sexuallyActivePopSize, int prevalentCase
 	yearStartPrevalentInfections = prevalentCases;
 }
 
-void PopStats::recordTestStats(int numTests, const std::vector<int> &numTestsByResult)
+void PopStats::recordTestStats(int numTests, const std::array<std::size_t, SimContext::TEST_RESULT_NUM> &numTestsByResult)
 {
 	yearlyTests += numTests;
 
@@ -983,7 +982,7 @@ void PopStats::resetYear(int newYear)
 	yearlyIncidentInfections = 0;
 	yearlyTests = 0;
 
-	yearlyTestsByResult.assign(yearlyTestsByResult.size(), 0);
+	yearlyTestsByResult.fill(0);
 
 	uniqueYearlyEligibleForTreatmentAccess.clear();
 	uniqueYearlyAccessingTreatment.clear();

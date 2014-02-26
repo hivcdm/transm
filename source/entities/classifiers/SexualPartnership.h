@@ -46,8 +46,8 @@ protected :
 	//identifies the type of sexual relationship this is
 	Type type;
 
-	long timePartnerFormation;				//the time that this couple was formed
-	long timePartnerDissolution;			//time that this partnership will dissolve
+	int timePartnerFormation;				//the time that this couple was formed
+	int timePartnerDissolution;			//time that this partnership will dissolve
 
 	Person *partners[2];			//this contains copies of pointers of partners
 
@@ -84,7 +84,7 @@ public :
 	@returns true if _currTime >= timePartnerDissolution
 	@author schung5
 	**/
-	bool checkTimeForSplit(long _currTime);
+	bool checkTimeForSplit(int _currTime);
 
 	/**
 	Gets the pointer to partner 1. Should be male if this couple is heterosexual
@@ -130,7 +130,7 @@ public :
 	/**
 	* Saves state of this partnership to file
 	**/
-	void saveState(ostream &_outStream, int personID, long currTime);
+	void saveState(ostream &_outStream, int personID, int currTime);
 
 	/**
 	//models sexual activity in a couple.

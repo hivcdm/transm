@@ -7,7 +7,7 @@
 #include <vector>
 #include <boost/functional/hash.hpp>
 
-typedef std::pair<int, int> Coordinate;
+typedef std::pair<std::size_t, std::size_t> Coordinate;
 
 namespace std
 {
@@ -35,27 +35,43 @@ struct equal_to<Coordinate>
 
 }
 
-typedef std::unordered_map<Coordinate, std::string> SparseTable;
-
 class TabularOutput
 {
+	typedef std::unordered_map<Coordinate, std::string> SparseTable;
+
 public:
 	TabularOutput();
 	~TabularOutput();
 
 	void PrintHeader(std::ostream &outStream);
+
 	void PrintRow(std::ostream &outStream, bool clearAfterWriting = true);
-	void SetHeaderCell(int column, int row, const std::string &value);
-	void PushElement(int element);
-	void PushElement(double element);
-	void PushElement(const std::string &element);
+
+	void SetHeaderCell(std::size_t column, std::size_t row, const std::string &value);
+
+	template<typename T>
+	void PushElement(T element)
+	{
+		std::stringstream elementStream;
+		elementStream << element;
+		PushElement<const std::string &>(elementStream.str());
+	}
+
+	template<>
+	void PushElement<const std::string &>(const std::string &element)
+	{
+		assert(currentColumn < numColumns);
+		currentRow[currentColumn++] = element;
+	}
+
 	void PushEmptyElement();
+
 	void ClearRow();
 
 private:
-	int numHeaderRows;
-	int numColumns;
-	int currentColumn;
+	std::size_t numHeaderRows;
+	std::size_t numColumns;
+	std::size_t currentColumn;
 	SparseTable header;
 	std::vector<std::string> currentRow;
 };

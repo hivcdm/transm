@@ -32,7 +32,7 @@ private:
 
 	PersonMultiMap personMultiMap;
 
-	unsigned long numPeople;		//number of people in index
+	unsigned int numPeople;		//number of people in index
 public :
 
 	EntityIndex();
@@ -64,11 +64,11 @@ public :
 	bool exists(Person *_person);
 
 	//draws person at position _randomAccessIndex in this index. This is random access...slow but necessary
-	Person *getMember(unsigned long _randomAccessIndex, bool _remove);
+	Person *getMember(unsigned int _randomAccessIndex, bool _remove);
 
 	//will return how many HIV infected people are currently in the index
-	unsigned long getNumInfected();
-	unsigned long getNumInfected(int generation);
+	unsigned int getNumInfected();
+	unsigned int getNumInfected(int generation);
 
 	//will index a new person
 	bool insert(Person *_person);
@@ -350,7 +350,7 @@ Person *EntityIndex<_PSC, _KeyValType>::drawMember(RandomNums &_randomNums, Pers
 }
 
 template <Person::SelectingCriteria _PSC, class _KeyValType>
-Person *EntityIndex<_PSC, _KeyValType>::getMember(unsigned long _randomAccessIndex, bool _remove)
+Person *EntityIndex<_PSC, _KeyValType>::getMember(unsigned int _randomAccessIndex, bool _remove)
 {
 	assert(_randomAccessIndex < this->numPeople);
 
@@ -456,9 +456,9 @@ typename EntityIndex<_PSC, _KeyValType>::CPPIterator EntityIndex<_PSC, _KeyValTy
 }
 
 template <Person::SelectingCriteria _PSC, class _KeyValType>
-unsigned long EntityIndex<_PSC, _KeyValType>::getNumInfected()
+unsigned int EntityIndex<_PSC, _KeyValType>::getNumInfected()
 {
-	unsigned long numInfected = 0;
+	unsigned int numInfected = 0;
 	//iterates through all elements
 	//EntityIndex<_PSC, _KeyValType>::
 	CPPIterator iter = this->personMultiMap.begin();
@@ -477,9 +477,9 @@ unsigned long EntityIndex<_PSC, _KeyValType>::getNumInfected()
 }
 
 template <Person::SelectingCriteria _PSC, class _KeyValType>
-unsigned long EntityIndex<_PSC, _KeyValType>::getNumInfected(int generation)
+unsigned int EntityIndex<_PSC, _KeyValType>::getNumInfected(int generation)
 {
-	unsigned long numInfected = 0;
+	unsigned int numInfected = 0;
 	//iterates through all elements
 	//EntityIndex<_PSC, _KeyValType>::
 	CPPIterator iter = this->personMultiMap.begin();

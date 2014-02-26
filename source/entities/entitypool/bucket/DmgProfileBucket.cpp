@@ -103,13 +103,13 @@ bool DmgProfileBucket::exists(Person *_person)
 	return this->simpleEntityIndex->exists(_person);
 }
 
-unsigned long DmgProfileBucket::getNumInfected()
+unsigned int DmgProfileBucket::getNumInfected()
 {
 	assert(this->simpleEntityIndex != nullptr);
 	return this->simpleEntityIndex->getNumInfected();
 }
 
-unsigned long DmgProfileBucket::getNumInfected(int generation)
+unsigned int DmgProfileBucket::getNumInfected(int generation)
 {
 	assert(this->simpleEntityIndex != nullptr);
 	return this->simpleEntityIndex->getNumInfected(generation);
@@ -136,7 +136,7 @@ void DmgProfileBucket::print(std::ostream &_outStream, std::string _prefix)
 	this->simpleEntityIndex->print(_outStream, _prefix);
 }
 
-unsigned long DmgProfileBucket::size()
+unsigned int DmgProfileBucket::size()
 {
 	assert(this->simpleEntityIndex != nullptr);
 	return this->simpleEntityIndex->size();
@@ -149,7 +149,7 @@ unsigned long DmgProfileBucket::size()
 list<Person *> DmgProfileBucket::ageOneTimeStep()
 {
 	list<Person *> lP;
-	multimap<unsigned long, Person *>::iterator pIter;
+	multimap<unsigned int, Person *>::iterator pIter;
 
 	for(pIter = this->simpleEntityIndex->begin(); pIter != this->simpleEntityIndex->end(); pIter++)
 	{

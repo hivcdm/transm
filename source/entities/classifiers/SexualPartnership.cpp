@@ -66,7 +66,7 @@ SexualPartnership::SexualPartnership(Person *_person1, Person *_person2, EventPa
 	assert(this->timePartnerDissolution >= 0);
 }
 
-bool SexualPartnership::checkTimeForSplit(long _currTime)
+bool SexualPartnership::checkTimeForSplit(int _currTime)
 {
 	return (_currTime >= this->timePartnerDissolution);
 }
@@ -129,7 +129,7 @@ void SexualPartnership::printPartners(ostream &_outStream, string _prefix)
 	partners[1]->print(_outStream, Constants::TAB);
 }
 
-void SexualPartnership::saveState(ostream &_outStream, int personID, long currTime)
+void SexualPartnership::saveState(ostream &_outStream, int personID, int currTime)
 {
 	//Saves the type of partnership, the id of partner, and months left in partnership
 	auto partnerID = static_cast<int>(partners[0]->getID()) == personID ? partners[1]->getID() : partners[0]->getID();

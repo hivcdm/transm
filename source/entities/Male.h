@@ -149,7 +149,7 @@ public:
 
 	void rerollRiskGroup(EventParams &_eventParams);
 	//writes state of person to file
-	void saveState(ostream &_outStream, long currTime);
+	void saveState(ostream &_outStream, int currTime);
 
 	/** End: Inherited from Person **/
 

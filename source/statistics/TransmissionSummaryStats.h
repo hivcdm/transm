@@ -39,7 +39,7 @@ public:
 		//int numCohorts;
 		//TODO: Have structure for prevalence and incidence at 5 time points (maybe by default these are 1, 0.2*maxTime, 0.4*maxTime, etc?)
 		//These times have to be defined!
-		long timeToRecord[NUM_TIMES_TO_RECORD];
+		int timeToRecord[NUM_TIMES_TO_RECORD];
 		std::vector<PopStats::SingleTimeStats *> *selectedSummaryStats;
 		double LMsAverage;
 		double HIVPosLMAverage;

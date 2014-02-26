@@ -585,7 +585,7 @@ void Male::rerollRiskGroup(EventParams &_eventParams)
 	}
 }
 
-void Male::saveState(ostream &_outStream, long currTime)
+void Male::saveState(ostream &_outStream, int currTime)
 {
 	_outStream << "gend:m," << endl;
 	Person::saveState(_outStream, currTime);

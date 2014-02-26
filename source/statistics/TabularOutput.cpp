@@ -59,34 +59,14 @@ void TabularOutput::PrintRow(std::ostream &outStream, bool clearAfterWriting)
 	}
 }
 
-void TabularOutput::SetHeaderCell(int column, int row, const std::string &value)
+void TabularOutput::SetHeaderCell(std::size_t column, std::size_t row, const std::string &value)
 {
 	assert(column > 0);
 	assert(row > 0);
-	numHeaderRows = std::max<int>(row, numHeaderRows);
-	numColumns = std::max<int>(column, numColumns);
+	numHeaderRows = std::max<size_t>(row, numHeaderRows);
+	numColumns = std::max<size_t>(column, numColumns);
 	currentRow.resize(numColumns);
 	header[Coordinate(row, column)] = value;
-}
-
-void TabularOutput::PushElement(int element)
-{
-	std::stringstream elementStream;
-	elementStream << element;
-	PushElement(elementStream.str());
-}
-
-void TabularOutput::PushElement(double element)
-{
-	std::stringstream elementStream;
-	elementStream << element;
-	PushElement(elementStream.str());
-}
-
-void TabularOutput::PushElement(const std::string &element)
-{
-	assert(currentColumn < numColumns);
-	currentRow[currentColumn++] = element;
 }
 
 void TabularOutput::PushEmptyElement()

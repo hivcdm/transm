@@ -30,13 +30,13 @@ int SexualBehaviorParams::loadParamsXML(ticpp::Element *_sexualBehaviourParams, 
 		multiplier = _highRiskMultiplierCSW;
 	}
 
-	for(int risk = Person::LOW; risk < Person::ENDRiskLevel; risk++)
+	for(auto risk = Person::LOW; risk < Person::ENDRiskLevel; ++risk)
 	{
 		//save acquisition rate
 		//If high risk, check if using multiplier or reading rates in directly
 		if(risk == Person::LOW || !_useHighRiskMultiplier)
 		{
-			//The user is no longer inputting rates in a logNormal distribution and we are converting from mean and std dev
+			//The user is no inter inputting rates in a logNormal distribution and we are converting from mean and std dev
 			XMLUtil::getLogNormalDistFromXMLNode(_sexualBehaviourParams->FirstChildElement((risk == Person::LOW) ?
 			                                     "acquisitionRateLowRisk" : "acquisitionRateHighRisk"), this->acquisitionRatePerMonth[risk],
 			                                     _eventParams.useCoefficientVariation, _eventParams.coefficientOfVariation);
@@ -98,9 +98,9 @@ int SexualBehaviorParams::loadParamsXML(ticpp::Element *_sexualBehaviourParams, 
 }
 
 
-unsigned int SexualBehaviorParams::getNumAvailableBuckets()  const
+std::size_t SexualBehaviorParams::getNumAvailableBuckets()  const
 {
-	return this->availableBuckets.size();
+	return availableBuckets.size();
 }
 
 

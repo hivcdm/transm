@@ -26,19 +26,19 @@ public:
 		values_.push_back(employment);
         Person::RiskLevel riskLevel = person.getRiskLevel();
 		values_.push_back(riskLevel);
-        int ageGroup = -1;
-        int age = person.getAge(MONTH);
 
+        auto ageGroupIndex = ageGroups.size();
+        int age = person.getAge(MONTH);
         for(size_t i = 0; i < ageGroups.size(); ++i)
         {
                 if(age >= ageGroups[i].first && age <= ageGroups[i].second)
                 {
-                        ageGroup = i;
+                        ageGroupIndex = i;
                 }
         }
+        assert(ageGroupIndex < ageGroups.size());
+		values_.push_back(static_cast<int>(ageGroupIndex));
 
-        assert(ageGroup != -1);
-		values_.push_back(ageGroup);
         Person::CD4Strata cd4Stratum = person.getCd4Stratum();
 		values_.push_back(cd4Stratum);
 	}

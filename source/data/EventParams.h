@@ -151,7 +151,7 @@ public :
 	}
 
 	//current internal clock for a particular Population
-	long currTime;
+	int currTime;
 
 	//Sim name -- primarily used for generating names of GraphViz files and CEPAC output files; will be name of input sheet minus .xml
 	std::string simName;
