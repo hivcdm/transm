@@ -10,21 +10,6 @@
     <ClCompile Include="..\..\..\source\util\rand\RandomNums.cpp">
       <Filter>util\rand</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\util\ticpp\ticpp.cpp">
-      <Filter>util\ticpp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\util\ticpp\tinystr.cpp">
-      <Filter>util\ticpp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\util\ticpp\tinyxml.cpp">
-      <Filter>util\ticpp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\util\ticpp\tinyxmlerror.cpp">
-      <Filter>util\ticpp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\util\ticpp\tinyxmlparser.cpp">
-      <Filter>util\ticpp</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\statistics\CostsTracker.cpp">
       <Filter>statistics</Filter>
     </ClCompile>
@@ -112,18 +97,6 @@
     <ClInclude Include="..\..\..\source\util\rand\RandomNums.h">
       <Filter>util\rand</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\util\ticpp\ticpp.h">
-      <Filter>util\ticpp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\util\ticpp\ticpprc.h">
-      <Filter>util\ticpp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\util\ticpp\tinystr.h">
-      <Filter>util\ticpp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\util\ticpp\tinyxml.h">
-      <Filter>util\ticpp</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\statistics\CostsTracker.h">
       <Filter>statistics</Filter>
     </ClInclude>
@@ -207,9 +180,6 @@
     </Filter>
     <Filter Include="util\rand">
       <UniqueIdentifier>{3cc184c9-9714-4ea9-ba95-7e71ac201754}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="util\ticpp">
-      <UniqueIdentifier>{a35fabb2-4a8a-4645-8886-633d26782f89}</UniqueIdentifier>
     </Filter>
     <Filter Include="statistics">
       <UniqueIdentifier>{7625ecdd-1071-492b-bbb7-54b57e273e60}</UniqueIdentifier>

@@ -172,8 +172,8 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(boostpath)\include;$(wxpath)\include\msvc;$(wxpath)\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>TIXML_USE_TICPP;WXUSINGDLL;wxMSVC_VERSION_AUTO;__WXMSW__;__WXDEBUG__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ticpp_prefix)/include;$(boost_prefix)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NOMINMAX</PreprocessorDefinitions>
       <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -207,8 +207,8 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(boostpath)\include;$(wxpath)\include\msvc;$(wxpath)\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>TIXML_USE_TICPP;_CRT_SECURE_NO_WARNINGS;WIN32;WXUSINGDLL;wxMSVC_VERSION_AUTO;__WXMSW__;__WXDEBUG__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ticpp_prefix)/include;$(boost_prefix)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NOMINMAX</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -242,7 +242,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(boostpath)\include;$(wxpath)\include\msvc;$(wxpath)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ticpp_prefix)/include;$(boost_prefix)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>TIXML_USE_TICPP;_CRT_SECURE_NO_WARNINGS;WIN32;WXUSINGDLL;wxMSVC_VERSION_AUTO;__WXMSW__;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -296,7 +296,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\taf656\Development\libraries\boost\boost_1_55_0;$(wxpath)\include\msvc;$(wxpath)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ticpp_prefix)/include;$(boost_prefix)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>TIXML_USE_TICPP;_CRT_SECURE_NO_WARNINGS;WIN32;WXUSINGDLL;wxMSVC_VERSION_AUTO;__WXMSW__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4703</DisableSpecificWarnings>
     </ClCompile>
@@ -361,11 +361,6 @@
     <ClCompile Include="..\..\..\source\statistics\TransmissionSummaryStats.cpp" />
     <ClCompile Include="..\..\..\source\util\HighResolutionTimerWindows.cpp" />
     <ClCompile Include="..\..\..\source\util\rand\RandomNums.cpp" />
-    <ClCompile Include="..\..\..\source\util\ticpp\ticpp.cpp" />
-    <ClCompile Include="..\..\..\source\util\ticpp\tinystr.cpp" />
-    <ClCompile Include="..\..\..\source\util\ticpp\tinyxml.cpp" />
-    <ClCompile Include="..\..\..\source\util\ticpp\tinyxmlerror.cpp" />
-    <ClCompile Include="..\..\..\source\util\ticpp\tinyxmlparser.cpp" />
     <ClCompile Include="..\..\..\source\util\Util.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -400,10 +395,6 @@
     <ClInclude Include="..\..\..\source\util\rand\Distributions.h" />
     <ClInclude Include="..\..\..\source\util\rand\IsaacRand.h" />
     <ClInclude Include="..\..\..\source\util\rand\RandomNums.h" />
-    <ClInclude Include="..\..\..\source\util\ticpp\ticpp.h" />
-    <ClInclude Include="..\..\..\source\util\ticpp\ticpprc.h" />
-    <ClInclude Include="..\..\..\source\util\ticpp\tinystr.h" />
-    <ClInclude Include="..\..\..\source\util\ticpp\tinyxml.h" />
     <ClInclude Include="..\..\..\source\util\HighResolutionTimer.h" />
     <ClInclude Include="..\..\..\source\util\Util.h" />
     <ClInclude Include="..\..\..\source\util\XMLUtil.h" />

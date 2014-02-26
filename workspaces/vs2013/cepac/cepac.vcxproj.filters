@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\..\..\source\cepac\AcuteOIUpdater.cpp" />
-    <ClCompile Include="..\..\..\source\cepac\BeginMonthUpdater.cpp" />
-    <ClCompile Include="..\..\..\source\cepac\BehaviorUpdater.cpp" />
     <ClCompile Include="..\..\..\source\cepac\CD4HVLUpdater.cpp" />
     <ClCompile Include="..\..\..\source\cepac\CD4TestUpdater.cpp" />
     <ClCompile Include="..\..\..\source\cepac\CepacUtil.cpp" />
@@ -24,11 +21,11 @@
     <ClCompile Include="..\..\..\source\cepac\SummaryStats.cpp" />
     <ClCompile Include="..\..\..\source\cepac\TBDiseaseUpdater.cpp" />
     <ClCompile Include="..\..\..\source\cepac\Tracer.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\AcuteOIUpdater.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\BeginMonthUpdater.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\BehaviorUpdater.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\source\cepac\AcuteOIUpdater.h" />
-    <ClInclude Include="..\..\..\source\cepac\BeginMonthUpdater.h" />
-    <ClInclude Include="..\..\..\source\cepac\BehaviorUpdater.h" />
     <ClInclude Include="..\..\..\source\cepac\CD4HVLUpdater.h" />
     <ClInclude Include="..\..\..\source\cepac\CD4TestUpdater.h" />
     <ClInclude Include="..\..\..\source\cepac\CepacUtil.h" />
@@ -51,5 +48,8 @@
     <ClInclude Include="..\..\..\source\cepac\SummaryStats.h" />
     <ClInclude Include="..\..\..\source\cepac\TBDiseaseUpdater.h" />
     <ClInclude Include="..\..\..\source\cepac\Tracer.h" />
+    <ClInclude Include="..\..\..\source\cepac\AcuteOIUpdater.h" />
+    <ClInclude Include="..\..\..\source\cepac\BeginMonthUpdater.h" />
+    <ClInclude Include="..\..\..\source\cepac\BehaviorUpdater.h" />
   </ItemGroup>
 </Project>

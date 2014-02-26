@@ -42,6 +42,58 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\source\cepac\AcuteOIUpdater.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\BeginMonthUpdater.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\BehaviorUpdater.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\CD4HVLUpdater.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\CD4TestUpdater.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\CepacUtil.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\CHRMsUpdater.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\ClinicVisitUpdater.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\DrugEfficacyUpdater.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\DrugToxicityUpdater.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\EndMonthUpdater.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\HIVInfectionUpdater.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\HIVTestingUpdater.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\HVLTestUpdater.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\MortalityUpdater.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\mtrand.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\Patient.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\RunStats.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\SimContext.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\StateUpdater.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\SummaryStats.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\TBDiseaseUpdater.cpp" />
+    <ClCompile Include="..\..\..\source\cepac\Tracer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\source\cepac\AcuteOIUpdater.h" />
+    <ClInclude Include="..\..\..\source\cepac\BeginMonthUpdater.h" />
+    <ClInclude Include="..\..\..\source\cepac\BehaviorUpdater.h" />
+    <ClInclude Include="..\..\..\source\cepac\CD4HVLUpdater.h" />
+    <ClInclude Include="..\..\..\source\cepac\CD4TestUpdater.h" />
+    <ClInclude Include="..\..\..\source\cepac\CepacUtil.h" />
+    <ClInclude Include="..\..\..\source\cepac\CHRMsUpdater.h" />
+    <ClInclude Include="..\..\..\source\cepac\ClinicVisitUpdater.h" />
+    <ClInclude Include="..\..\..\source\cepac\DrugEfficacyUpdater.h" />
+    <ClInclude Include="..\..\..\source\cepac\DrugToxicityUpdater.h" />
+    <ClInclude Include="..\..\..\source\cepac\EndMonthUpdater.h" />
+    <ClInclude Include="..\..\..\source\cepac\HIVInfectionUpdater.h" />
+    <ClInclude Include="..\..\..\source\cepac\HIVTestingUpdater.h" />
+    <ClInclude Include="..\..\..\source\cepac\HVLTestUpdater.h" />
+    <ClInclude Include="..\..\..\source\cepac\include.h" />
+    <ClInclude Include="..\..\..\source\cepac\MortalityUpdater.h" />
+    <ClInclude Include="..\..\..\source\cepac\mtrand.h" />
+    <ClInclude Include="..\..\..\source\cepac\Patient.h" />
+    <ClInclude Include="..\..\..\source\cepac\Resource.h" />
+    <ClInclude Include="..\..\..\source\cepac\RunStats.h" />
+    <ClInclude Include="..\..\..\source\cepac\SimContext.h" />
+    <ClInclude Include="..\..\..\source\cepac\StateUpdater.h" />
+    <ClInclude Include="..\..\..\source\cepac\SummaryStats.h" />
+    <ClInclude Include="..\..\..\source\cepac\TBDiseaseUpdater.h" />
+    <ClInclude Include="..\..\..\source\cepac\Tracer.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{51C7E2DB-A80C-4CF7-B741-7ED60E361CFD}</ProjectGuid>
     <RootNamespace>cepac</RootNamespace>
@@ -315,58 +367,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\..\source\cepac\AcuteOIUpdater.cpp" />
-    <ClCompile Include="..\..\..\source\cepac\BeginMonthUpdater.cpp" />
-    <ClCompile Include="..\..\..\source\cepac\BehaviorUpdater.cpp" />
-    <ClCompile Include="..\..\..\source\cepac\CD4HVLUpdater.cpp" />
-    <ClCompile Include="..\..\..\source\cepac\CD4TestUpdater.cpp" />
-    <ClCompile Include="..\..\..\source\cepac\CepacUtil.cpp" />
-    <ClCompile Include="..\..\..\source\cepac\CHRMsUpdater.cpp" />
-    <ClCompile Include="..\..\..\source\cepac\ClinicVisitUpdater.cpp" />
-    <ClCompile Include="..\..\..\source\cepac\DrugEfficacyUpdater.cpp" />
-    <ClCompile Include="..\..\..\source\cepac\DrugToxicityUpdater.cpp" />
-    <ClCompile Include="..\..\..\source\cepac\EndMonthUpdater.cpp" />
-    <ClCompile Include="..\..\..\source\cepac\HIVInfectionUpdater.cpp" />
-    <ClCompile Include="..\..\..\source\cepac\HIVTestingUpdater.cpp" />
-    <ClCompile Include="..\..\..\source\cepac\HVLTestUpdater.cpp" />
-    <ClCompile Include="..\..\..\source\cepac\MortalityUpdater.cpp" />
-    <ClCompile Include="..\..\..\source\cepac\mtrand.cpp" />
-    <ClCompile Include="..\..\..\source\cepac\Patient.cpp" />
-    <ClCompile Include="..\..\..\source\cepac\RunStats.cpp" />
-    <ClCompile Include="..\..\..\source\cepac\SimContext.cpp" />
-    <ClCompile Include="..\..\..\source\cepac\StateUpdater.cpp" />
-    <ClCompile Include="..\..\..\source\cepac\SummaryStats.cpp" />
-    <ClCompile Include="..\..\..\source\cepac\TBDiseaseUpdater.cpp" />
-    <ClCompile Include="..\..\..\source\cepac\Tracer.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\..\source\cepac\AcuteOIUpdater.h" />
-    <ClInclude Include="..\..\..\source\cepac\BeginMonthUpdater.h" />
-    <ClInclude Include="..\..\..\source\cepac\BehaviorUpdater.h" />
-    <ClInclude Include="..\..\..\source\cepac\CD4HVLUpdater.h" />
-    <ClInclude Include="..\..\..\source\cepac\CD4TestUpdater.h" />
-    <ClInclude Include="..\..\..\source\cepac\CepacUtil.h" />
-    <ClInclude Include="..\..\..\source\cepac\CHRMsUpdater.h" />
-    <ClInclude Include="..\..\..\source\cepac\ClinicVisitUpdater.h" />
-    <ClInclude Include="..\..\..\source\cepac\DrugEfficacyUpdater.h" />
-    <ClInclude Include="..\..\..\source\cepac\DrugToxicityUpdater.h" />
-    <ClInclude Include="..\..\..\source\cepac\EndMonthUpdater.h" />
-    <ClInclude Include="..\..\..\source\cepac\HIVInfectionUpdater.h" />
-    <ClInclude Include="..\..\..\source\cepac\HIVTestingUpdater.h" />
-    <ClInclude Include="..\..\..\source\cepac\HVLTestUpdater.h" />
-    <ClInclude Include="..\..\..\source\cepac\include.h" />
-    <ClInclude Include="..\..\..\source\cepac\MortalityUpdater.h" />
-    <ClInclude Include="..\..\..\source\cepac\mtrand.h" />
-    <ClInclude Include="..\..\..\source\cepac\Patient.h" />
-    <ClInclude Include="..\..\..\source\cepac\Resource.h" />
-    <ClInclude Include="..\..\..\source\cepac\RunStats.h" />
-    <ClInclude Include="..\..\..\source\cepac\SimContext.h" />
-    <ClInclude Include="..\..\..\source\cepac\StateUpdater.h" />
-    <ClInclude Include="..\..\..\source\cepac\SummaryStats.h" />
-    <ClInclude Include="..\..\..\source\cepac\TBDiseaseUpdater.h" />
-    <ClInclude Include="..\..\..\source\cepac\Tracer.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
