@@ -54,7 +54,7 @@
     <ClInclude Include="..\..\..\source\tests\PopulationTestSuite.h" />
     <ClInclude Include="..\..\..\source\tests\RandTestSuite.h" />
     <ClInclude Include="..\..\..\source\tests\SimContextTestSuite.h" />
-    <ClInclude Include="..\..\..\source\tests\SimTestSuite.h" />
+    <ClInclude Include="..\..\..\source\tests\SimulationTestSuite.h" />
     <ClInclude Include="..\..\..\source\tests\UtilTestSuite.h" />
     <ClInclude Include="..\..\..\source\tests\XmlUtilTestSuite.h" />
   </ItemGroup>
@@ -68,6 +68,10 @@
     <ProjectReference Include="..\transm\transm.vcxproj">
       <Project>{dec9ac53-5217-490a-8fcb-ca552f7e6112}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="..\..\..\source\tests\simulation-bad.xml" />
+    <Xml Include="..\..\..\source\tests\simulation-good.xml" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4562F51A-A950-4B82-8872-16C57801DB56}</ProjectGuid>
@@ -212,11 +216,17 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(cxxtestpath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(boost_prefix);$(ticpp_prefix)/include;$(cxxtestpath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ticpp_prefix)\lib\lib64d;$(boost_prefix)\lib64-msvc-12.0;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ticpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ShowProgress>NotSet</ShowProgress>
     </Link>
+    <PreBuildEvent>
+      <Command>$(cxxtestpath)\bin\cxxtestgen.bat --error-printer -o all-tests-autogen.cpp ../../../source/tests/SimulationTestSuite.h</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>

@@ -31,7 +31,8 @@ Simulation::Simulation(const std::string &xmlFile)
     : xmlFile_(xmlFile),
 	  failedCalibration_(false),
 	  hasPassedFirstMonthCalibPrev_(false),
-	  monthOfFirstMonthCalibPrev_(0)
+	  monthOfFirstMonthCalibPrev_(0),
+	  initialized_(false)
 {
 	
 }
@@ -56,6 +57,7 @@ void Simulation::Initialize()
 	LoadInput(xmlFile_);
 
 	parameters_.displayOut("Sim name is " + parameters_.simName + "\n");
+	initialized_ = true;
 }
 
 void Simulation::FirstStep()

@@ -33,13 +33,17 @@ public:
 
 	EventParams *GetEventParams();
 
-	double GetPrevalence() { return prevalence_; }
+	bool IsInitialized() const { return initialized_; }
 
-	double GetIncidence() { return incidence_; }
+	double GetPrevalence() const { return prevalence_; }
 
-	int GetTotalTime() { return totalTime_; }
+	double GetIncidence() const { return incidence_; }
 
-	int GetTime() { return time_; }
+	int GetTotalTime() const { return totalTime_; }
+
+	int GetTime() const { return time_; }
+
+	std::string GetXmlFilename() const { return xmlFile_; }
 
 	void SetMessageCallback(const std::function<void(const std::string &)> &callback) { parameters_.messageCallback = callback; }
 
@@ -68,6 +72,8 @@ private:
 	void UpdateTimeDependentParameters();
 
 	const std::string xmlFile_;
+
+	bool initialized_;
 
 	/** current time in the simulation */
 	int time_;

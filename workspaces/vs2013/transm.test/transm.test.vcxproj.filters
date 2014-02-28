@@ -4,7 +4,6 @@
     <ClInclude Include="..\..\..\source\tests\PopulationTestSuite.h" />
     <ClInclude Include="..\..\..\source\tests\RandTestSuite.h" />
     <ClInclude Include="..\..\..\source\tests\SimContextTestSuite.h" />
-    <ClInclude Include="..\..\..\source\tests\SimTestSuite.h" />
     <ClInclude Include="..\..\..\source\tests\UtilTestSuite.h" />
     <ClInclude Include="..\..\..\source\tests\XmlUtilTestSuite.h" />
     <ClInclude Include="..\..\..\source\tests\CepacUtilTestSuite.h" />
@@ -15,8 +14,13 @@
     <ClInclude Include="..\..\..\source\tests\MaleTestSuite.h" />
     <ClInclude Include="..\..\..\source\tests\PatientTestSuite.h" />
     <ClInclude Include="..\..\..\source\tests\PersonTestSuite.h" />
+    <ClInclude Include="..\..\..\source\tests\SimulationTestSuite.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\tests\all-tests-autogen.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="..\..\..\source\tests\simulation-bad.xml" />
+    <Xml Include="..\..\..\source\tests\simulation-good.xml" />
   </ItemGroup>
 </Project>
