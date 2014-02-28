@@ -131,8 +131,8 @@ public:
 
 	/** Start: Inherited from Person, comments found there **/
 
-	Person *choosePartner(RandomNums &_randomNums, EntityPool *_availableEntities ,
-	                      SexualPartnership::Type _partnershipType, bool _remove);
+	virtual Person *choosePartner(SexualPartnership::Type _partnershipType, EntityPool *_availableEntities,
+	                      RandomNums &_randomNums, bool _remove);
 
 	double getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventParams &_eventParams);
 

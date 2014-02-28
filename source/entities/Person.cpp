@@ -1703,7 +1703,7 @@ Person::Person(EventParams &_eventParams, int _age, unsigned int _populationID)
 	        (this->dmgProfile.get(DmgProfile::GENDER) == DmgProfile::MALE), _eventParams.currTime);
 }
 
-Person::~Person(void)
+virtual Person::~Person()
 {
 	//If this person went through CEPAC, delete their CEPACpatient
 	//TODO: If they're not dead, force kill them (in CEPAC) to log the stats (?)

@@ -124,7 +124,7 @@ const NormalDist SexualBehaviorParams::getAverageYearsYounger() const
 	return this->averageYearsYounger;
 }
 
-const double SexualBehaviorParams::getCoitalEventsPerMonth(Person::RiskLevel risk) const
+double SexualBehaviorParams::getCoitalEventsPerMonth(Person::RiskLevel risk) const
 {
 	return this->coitalEventsPerMonth[risk];
 }

@@ -92,7 +92,7 @@ void EntityPool::printBucketLabels(ostream &_outStream, bool _printPropInfected)
 }
 
 //list out # people in each DmgProfileBucket
-void EntityPool::printBucketSizes(ostream &_outStream, string _prefix, bool _printPropInfected,
+void EntityPool::printBucketSizes(ostream &_outStream, string /*_prefix*/, bool _printPropInfected,
                                   unsigned int &_totalInfected, unsigned int &_totalSize, unsigned int &_totalSexuallyActive,
                                   unsigned int &_totalInSteady, unsigned int &_totalInRegular, bool _includeLabels)
 {

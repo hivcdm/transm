@@ -266,7 +266,7 @@ public :
 	static const BaseEnumCls *getEnumCls(Demographic _demographic);
 
 	//given a ProfileID and a category, returns the value of that category that corresponds with the _profileID
-	static const BaseEnumCls::Enum get(ProfileID _profileID, Demographic _demographic);
+	static BaseEnumCls::Enum get(ProfileID _profileID, Demographic _demographic);
 
 	//given a ProfileID, returns a tuple of dmgProfile
 	static const DmgProfile *getDemographics(ProfileID _profileID);

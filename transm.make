@@ -24,7 +24,7 @@ ifeq ($(config),debug)
   DEFINES   += 
   INCLUDES  += 
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
-  CFLAGS    += $(CPPFLAGS) $(ARCH) -Wall -Wextra -Wno-unknown-pragmas -g 
+  CFLAGS    += $(CPPFLAGS) $(ARCH) -Wall -Wextra -Wno-unknown-pragmas -Werror -g 
   CXXFLAGS  += $(CFLAGS) -std=c++11
   LDFLAGS   += 
   LIBS      += 
@@ -158,6 +158,9 @@ ifeq (posix,$(SHELLTYPE))
 	$(SILENT) rm -rf $(OBJDIR)
 	$(SILENT) rm -rf build/
 	$(SILENT) rm -rf bin/
+	$(SILENT) find . -name '*~' -delete
+	$(SILENT) find . -name '*.d' -delete
+	$(SILENT) find . -name '*.o' -delete
 else
 	$(SILENT) if exist $(subst /,\\,$(TARGET)) del $(subst /,\\,$(TARGET))
 	$(SILENT) if exist $(subst /,\\,$(OBJDIR)) rmdir /s /q $(subst /,\\,$(OBJDIR))

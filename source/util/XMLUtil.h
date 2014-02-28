@@ -167,7 +167,7 @@ public :
 
 
 	template <class T>
-	static string fromArray(T *_array, int _size, string _delim = Constants::TAB)
+	static string fromArray(T *_array, int _size)
 	{
 		std::ostringstream result;
 
@@ -181,7 +181,7 @@ public :
 	}
 
 	template <class T>
-	static string fromVector(vector<T> &_vector, string _delim = Constants::TAB)
+	static string fromVector(vector<T> &_vector)
 	{
 		std::ostringstream result;
 
