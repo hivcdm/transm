@@ -20,9 +20,9 @@ const std::vector<std::string> PopStats::LifeStatsStr =
 const int NUM_LE_CAT = 12; //number of life expectancy categories
 const char *lifeExpectancyStrs[NUM_LE_CAT] = {"Age(yr)", "raw deaths", "raw pop", "n", "deaths", "death rate", "midpoint survivorship", "total remaining time", "life expectancy", "median LE", "median LE Standard Error", "median LE Confidence Bounds"};
 
-PopStats::PopStats(int maxTime, ticpp::Element *_LEOutputNode, ticpp::Element *_partAcqOutputNode) :
-	calculateShiftedOutcomes(false),
-	monthOf1990(0)
+PopStats::PopStats(int maxTime, ticpp::Element *_LEOutputNode, ticpp::Element *_partAcqOutputNode)
+	: monthOf1990(0),
+	  calculateShiftedOutcomes(false)
 {
 	assert(PopStats::LifeStatsStr.size() == PopStats::ENDLifeStats);
 	enumClass = new EnumCls<PopStats::LifeStats>(PopStats::LifeStatsStr);

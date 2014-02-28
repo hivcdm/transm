@@ -54,15 +54,10 @@ public:
 	{
 		std::stringstream elementStream;
 		elementStream << element;
-		PushElement<const std::string &>(elementStream.str());
+		PushString(elementStream.str());
 	}
 
-	template<>
-	void PushElement<const std::string &>(const std::string &element)
-	{
-		assert(currentColumn < numColumns);
-		currentRow[currentColumn++] = element;
-	}
+	void PushString(const std::string &string);
 
 	void PushEmptyElement();
 

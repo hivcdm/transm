@@ -90,7 +90,7 @@ public :
 	//-----< Begin getters and setters of fields >-----------//
 	const LogNormalDist getAcquisitionRatePerMonth(Person::RiskLevel risk) const;
 	const AvailableBucket getAvailableBucket(int _bucket) const;
-	const double getCoitalEventsPerMonth(Person::RiskLevel risk) const;
+	double getCoitalEventsPerMonth(Person::RiskLevel risk) const;
 	const BetaDist getChanceCondomUsePerEvent(Person::RiskLevel risk) const;
 	const NormalDist getAverageYearsYounger() const;
 	const ShiftedLogNormalDist getPartnershipDurationMth(Person::RiskLevel risk) const;

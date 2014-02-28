@@ -44,7 +44,7 @@ private:
 
 	/** This is a copy of the sim clock. We keep a copy to know when the time has advanced
 		and when we need to reset incidence for the timestep */
-	unsigned int currTimeStep;
+	int currTimeStep;
 
 	/** Infections in the current time step, stratified by HVL of the infector */
 	unsigned int currTimeStepIncidentInfs[Person::ENDHVLStrata];

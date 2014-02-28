@@ -384,7 +384,7 @@ const string *DmgProfile::toString() const
 
 //--------------------< Begin Static Methods >-----------------------//
 
-const BaseEnumCls::Enum DmgProfile::get(ProfileID _profileID, Demographic _demographic)
+BaseEnumCls::Enum DmgProfile::get(ProfileID _profileID, Demographic _demographic)
 {
 	assert(Util::withinRange(_profileID, DmgProfile::MIN, DmgProfile::MAX));
 	assert(Util::withinRange(_demographic, DmgProfile::Demographic(0), DmgProfile::MaxDemographic));
