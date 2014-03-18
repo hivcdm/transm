@@ -4,11 +4,10 @@
  *  Created on: Jun 24, 2010
  *      Author: errhode
  */
-
-#ifndef TRANSMISSIONSUMMARYSTATS_H_
-#define TRANSMISSIONSUMMARYSTATS_H_
+#pragma once
 
 #include <fstream>
+
 #include "PopStats.h"
 #include "../data/EventParams.h"
 
@@ -70,6 +69,3 @@ private:
 	/* writes out popstats file header */
 	void writeSummariesFileHeader();
 };
-
-
-#endif /* TRANSMISSIONSUMMARYSTATS_H_ */

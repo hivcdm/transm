@@ -1,7 +1,3 @@
-#pragma once
-
-#ifndef __ISAAC_HPP
-#define __ISAAC_HPP
 /* C++ TEMPLATE VERSION OF Robert J. Jenkins Jr.'s ISAAC Random Number Generator.
 Ported from vanilla C to to template C++ class by Quinn Tyler Jackson on 16-23 July 1998.
 quinn@qtj.net The function for the expected period of this random number generator,
@@ -9,6 +5,8 @@ according to Jenkins is: f(a,b) = 2**((a+b*(3+2^^a)-1) (where a is ALPHA and b i
 bitwidth) So, for a bitwidth of 32 and an ALPHA of 8, the expected period of ISAAC
 is: 2^^(8+32*(3+2^^8)-1) = 2^^8295 Jackson has been able to run implementations with
 an ALPHA as high as 16, or 2^^2097263 */
+
+#pragma once
 
 #ifndef __ISAAC64
 //	typedef unsigned long int UINT32;
@@ -349,7 +347,3 @@ inline void QTIsaac<T>::randinit(randctx *ctx, bool bUseSeed)
 	ctx->randcnt = N;
 	// prepare to use the first set of results
 }
-
-
-
-#endif // __ISAAC_HPP

@@ -4,13 +4,12 @@
  *  Created on: Nov 13, 2008
  *      Author: errhode
  */
+#pragma once
 
-#ifndef BUCKETAGE_H_
-#define BUCKETAGE_H_
+#include <vector>
 
 #include "FullVector.h"
 #include "../../classifiers/DmgProfile.h"
-#include <vector>
 
 class BucketAge
 {
@@ -193,5 +192,3 @@ private:
 	unsigned long numInfectedRisk[Person::ENDRiskLevel];
 	unsigned long numRiskHIVStatus[Person::ENDRiskLevel][Person::ENDHIVStatus];
 };
-
-#endif /* BUCKETAGE_H_ */

@@ -4,9 +4,8 @@
  *  Created on: Nov 3, 2008
  *      Author: errhode
  */
+#pragma once
 
-#ifndef FULLVECTOR_H_
-#define FULLVECTOR_H_
 #include <vector>
 #include "../../Person.h"
 
@@ -109,11 +108,4 @@ public:
 protected:
 	vector<Person *> vPerson;
 	int ID;
-
-
-
-
 };
-
-
-#endif /* FULLVECTOR_H_ */

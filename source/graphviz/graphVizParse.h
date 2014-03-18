@@ -4,9 +4,7 @@
  *  Created on: Sep 14, 2009
  *      Author: errhode
  */
-
-#ifndef GRAPHVIZPARSE_H_
-#define GRAPHVIZPARSE_H_
+#pragma once
 
 #include <fstream>
 #include <iostream>
@@ -145,5 +143,3 @@ public:
 	 */
 	void printGraphVizFiles(int _timeSteps, std::string _simName);
 };
-
-#endif /* GRAPHVIZPARSE_H_ */
