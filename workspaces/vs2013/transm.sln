@@ -11,13 +11,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "transm.gui", "transm.gui\tr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "transm.test", "transm.test\transm.test.vcxproj", "{4562F51A-A950-4B82-8872-16C57801DB56}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "transm.gui3", "transm.gui3\transm.gui3.csproj", "{AD144BA3-FF08-4854-89CF-1B830A3EBBA5}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "transm.wrapper", "transm.wrapper\transm.wrapper.vcxproj", "{DE4BBC33-3EF7-4607-9D02-57F1D12EE366}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "transm.cli", "transm.cli\transm.cli.vcxproj", "{55EBC133-869F-4F48-9FA4-2221E67BE9C6}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "transm2", "transm2\transm2.vcxproj", "{A407B9DC-F1D0-44D3-BA28-5692DC5053FF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -98,26 +92,6 @@ Global
 		{4562F51A-A950-4B82-8872-16C57801DB56}.Test|x64.Build.0 = Test|x64
 		{4562F51A-A950-4B82-8872-16C57801DB56}.Test|x86.ActiveCfg = Test|Win32
 		{4562F51A-A950-4B82-8872-16C57801DB56}.Test|x86.Build.0 = Test|Win32
-		{AD144BA3-FF08-4854-89CF-1B830A3EBBA5}.Debug (CLI)|x64.ActiveCfg = Debug (CLI)|x64
-		{AD144BA3-FF08-4854-89CF-1B830A3EBBA5}.Debug (CLI)|x86.ActiveCfg = Debug|x86
-		{AD144BA3-FF08-4854-89CF-1B830A3EBBA5}.Debug (GUI)|x64.ActiveCfg = Debug|x64
-		{AD144BA3-FF08-4854-89CF-1B830A3EBBA5}.Debug (GUI)|x86.ActiveCfg = Debug (CLI)|x86
-		{AD144BA3-FF08-4854-89CF-1B830A3EBBA5}.Release (CLI)|x64.ActiveCfg = Release (CLI)|x64
-		{AD144BA3-FF08-4854-89CF-1B830A3EBBA5}.Release (CLI)|x86.ActiveCfg = Release (CLI)|x86
-		{AD144BA3-FF08-4854-89CF-1B830A3EBBA5}.Release (GUI)|x64.ActiveCfg = Release|x64
-		{AD144BA3-FF08-4854-89CF-1B830A3EBBA5}.Release (GUI)|x86.ActiveCfg = Release (CLI)|x86
-		{AD144BA3-FF08-4854-89CF-1B830A3EBBA5}.Test|x64.ActiveCfg = Test|x64
-		{AD144BA3-FF08-4854-89CF-1B830A3EBBA5}.Test|x86.ActiveCfg = Test|x86
-		{DE4BBC33-3EF7-4607-9D02-57F1D12EE366}.Debug (CLI)|x64.ActiveCfg = Debug (CLI)|x64
-		{DE4BBC33-3EF7-4607-9D02-57F1D12EE366}.Debug (CLI)|x86.ActiveCfg = Debug (CLI)|Win32
-		{DE4BBC33-3EF7-4607-9D02-57F1D12EE366}.Debug (GUI)|x64.ActiveCfg = Debug|x64
-		{DE4BBC33-3EF7-4607-9D02-57F1D12EE366}.Debug (GUI)|x86.ActiveCfg = Debug (CLI)|Win32
-		{DE4BBC33-3EF7-4607-9D02-57F1D12EE366}.Release (CLI)|x64.ActiveCfg = Release (CLI)|x64
-		{DE4BBC33-3EF7-4607-9D02-57F1D12EE366}.Release (CLI)|x86.ActiveCfg = Release (CLI)|Win32
-		{DE4BBC33-3EF7-4607-9D02-57F1D12EE366}.Release (GUI)|x64.ActiveCfg = Release|x64
-		{DE4BBC33-3EF7-4607-9D02-57F1D12EE366}.Release (GUI)|x86.ActiveCfg = Release (CLI)|Win32
-		{DE4BBC33-3EF7-4607-9D02-57F1D12EE366}.Test|x64.ActiveCfg = Test|x64
-		{DE4BBC33-3EF7-4607-9D02-57F1D12EE366}.Test|x86.ActiveCfg = Test|Win32
 		{55EBC133-869F-4F48-9FA4-2221E67BE9C6}.Debug (CLI)|x64.ActiveCfg = Debug (CLI)|x64
 		{55EBC133-869F-4F48-9FA4-2221E67BE9C6}.Debug (CLI)|x64.Build.0 = Debug (CLI)|x64
 		{55EBC133-869F-4F48-9FA4-2221E67BE9C6}.Debug (CLI)|x86.ActiveCfg = Debug (CLI)|Win32
@@ -133,16 +107,6 @@ Global
 		{55EBC133-869F-4F48-9FA4-2221E67BE9C6}.Release (GUI)|x86.ActiveCfg = Release (CLI)|Win32
 		{55EBC133-869F-4F48-9FA4-2221E67BE9C6}.Test|x64.ActiveCfg = Test|x64
 		{55EBC133-869F-4F48-9FA4-2221E67BE9C6}.Test|x86.ActiveCfg = Test|Win32
-		{A407B9DC-F1D0-44D3-BA28-5692DC5053FF}.Debug (CLI)|x64.ActiveCfg = Debug (CLI)|x64
-		{A407B9DC-F1D0-44D3-BA28-5692DC5053FF}.Debug (CLI)|x86.ActiveCfg = Debug (CLI)|Win32
-		{A407B9DC-F1D0-44D3-BA28-5692DC5053FF}.Debug (GUI)|x64.ActiveCfg = Debug|x64
-		{A407B9DC-F1D0-44D3-BA28-5692DC5053FF}.Debug (GUI)|x86.ActiveCfg = Debug (CLI)|Win32
-		{A407B9DC-F1D0-44D3-BA28-5692DC5053FF}.Release (CLI)|x64.ActiveCfg = Release (CLI)|x64
-		{A407B9DC-F1D0-44D3-BA28-5692DC5053FF}.Release (CLI)|x86.ActiveCfg = Release (CLI)|Win32
-		{A407B9DC-F1D0-44D3-BA28-5692DC5053FF}.Release (GUI)|x64.ActiveCfg = Release|x64
-		{A407B9DC-F1D0-44D3-BA28-5692DC5053FF}.Release (GUI)|x86.ActiveCfg = Release (CLI)|Win32
-		{A407B9DC-F1D0-44D3-BA28-5692DC5053FF}.Test|x64.ActiveCfg = Test|x64
-		{A407B9DC-F1D0-44D3-BA28-5692DC5053FF}.Test|x86.ActiveCfg = Test|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
