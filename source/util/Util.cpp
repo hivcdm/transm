@@ -157,23 +157,6 @@ double Util::rateToProb(double _rate)
 	return 1 - exp(-_rate);
 }
 
-/**
-   rounds a double into a long
-**/
-long Util::round(double _d)
-{
-	double decimals = _d - floor(_d);
-
-	if(decimals >= 0.5)
-	{
-		return (long)ceil(_d);
-	}
-	else
-	{
-		return (long)floor(_d);
-	}
-}
-
 //this function was taken from
 // http://www.oopweb.com/CPP/Documents/CPPHOWTO/Volume/C++Programming-HOWTO-7.html
 void Util::Tokenize(const std::string &str,

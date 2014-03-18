@@ -54,10 +54,21 @@ public:
 	static double probToRate(double _prob);
 	//converts a rate to a probability
 	static double rateToProb(double _rate);
-	/**
-	rounds a double into a long
-	**/
-	static long round(double _d);
+
+	template <typename T>
+	static T round(double d)
+	{
+		double decimals = d - floor(d);
+
+		if(decimals >= 0.5)
+		{
+			return static_cast<T>(ceil(d));
+		}
+		else
+		{
+			return static_cast<T>(floor(d));
+		}
+	}
 
 	static bool isNormDistZero(const NormalDist _normDist);
 	/**
