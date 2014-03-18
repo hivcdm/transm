@@ -35,31 +35,31 @@ const DmgProfile::ProfileID DmgProfile::END = DmgProfile::ProfileID((1 + ENDSexu
 
 DmgProfile::DmgProfile()
 {
-	this->set(DmgProfile::END);
+	set(DmgProfile::END);
 }
 
 DmgProfile::DmgProfile(const DmgProfile &_dmgProfile)
 {
-	this->set(_dmgProfile);
+	set(_dmgProfile);
 }
 
 DmgProfile::DmgProfile(ProfileID _profileID)
 {
 	assert((_profileID == DmgProfile::END) || Util::withinRange(_profileID, DmgProfile::MIN, DmgProfile::MAX));
-	this->set(_profileID);
+	set(_profileID);
 }
 
 bool DmgProfile::operator==(const DmgProfile _a) const
 {
 	//i don't know why we can't use memcmp, but it seems to not be working correctly.
-	//return (::memcmp( this->enums, _a.enums, DmgProfile::ENDDemographic) == 0);
+	//return (::memcmp( enums, _a.enums, DmgProfile::ENDDemographic) == 0);
 	// it thinks that {1,0,0,0} is equal to {1,1,1,1}
 	//check from left-most value for equality
 	DmgProfile::Demographic currDemographic = DmgProfile::Demographic(0);
 
 	while(currDemographic < DmgProfile::ENDDemographic)
 	{
-		if(this->enums[currDemographic] != _a.enums[currDemographic])
+		if(enums[currDemographic] != _a.enums[currDemographic])
 		{
 			return false;
 		}
@@ -88,12 +88,12 @@ bool DmgProfile::operator<(const DmgProfile _a) const
 
 	while(currDemographic >= min)
 	{
-		if(this->enums[currDemographic] > _a.enums[currDemographic])
+		if(enums[currDemographic] > _a.enums[currDemographic])
 		{
 			return false;
 		}
 
-		if(this->enums[currDemographic] < _a.enums[currDemographic])
+		if(enums[currDemographic] < _a.enums[currDemographic])
 		{
 			return true;
 		}
@@ -126,7 +126,7 @@ void DmgProfile::operator=(const DmgProfile _a)
 	//set the internal enum fields equal to _a
 	while(currDemographic < DmgProfile::ENDDemographic)
 	{
-		this->set(currDemographic, _a.get(currDemographic));
+		set(currDemographic, _a.get(currDemographic));
 	}
 }
 
@@ -138,12 +138,12 @@ void DmgProfile::operator++(int)
 	}
 
 	//set an assert to check if we are at max value
-	assert(this->getProfileID() != DmgProfile::MAX);
-	assert(this->getProfileID() != DmgProfile::END);
+	assert(getProfileID() != DmgProfile::MAX);
+	assert(getProfileID() != DmgProfile::END);
 	DmgProfile::Demographic currPlace = DmgProfile::MaxDemographic;
 	DmgProfile::Demographic min = DmgProfile::Demographic(0);
 	//add one to the right-most column
-	this->set(currPlace, this->get(currPlace) + 1);
+	set(currPlace, get(currPlace) + 1);
 	//carry if needed
 	bool carry = false;
 
@@ -151,13 +151,13 @@ void DmgProfile::operator++(int)
 	{
 		if(carry)
 		{
-			this->set(currPlace, this->get(currPlace) + 1);
+			set(currPlace, get(currPlace) + 1);
 		}
 
-		if(this->get(currPlace) > DmgProfile::getEnumCls(currPlace)->getMax())
+		if(get(currPlace) > DmgProfile::getEnumCls(currPlace)->getMax())
 		{
 			carry = true;
-			this->set(currPlace, DmgProfile::getEnumCls(currPlace)->getMin());
+			set(currPlace, DmgProfile::getEnumCls(currPlace)->getMin());
 		}
 		else
 		{
@@ -171,7 +171,7 @@ void DmgProfile::operator++(int)
 BaseEnumCls::Enum DmgProfile::get(DmgProfile::Demographic _demographic) const
 {
 	assert(Util::withinRange(_demographic, DmgProfile::Demographic(0), DmgProfile::MaxDemographic));
-	return this->enums[_demographic];
+	return enums[_demographic];
 }
 
 DmgProfile::ProfileID DmgProfile::getProfileID() const
@@ -196,7 +196,7 @@ bool DmgProfile::match(const DmgProfile &_selector) const
 		}
 
 		//if enums don't match, then this tuple doesn't match
-		if(_selector.get(currDemographic) != (this->enums[currDemographic]))
+		if(_selector.get(currDemographic) != (enums[currDemographic]))
 		{
 			return false;
 		}
@@ -239,7 +239,7 @@ void DmgProfile::parse(string _tupleStr)
 		BaseEnumCls::Enum e = currCategoryCls->fromString(tokens.at(currDemographic));
 		//if we get currCategoryCls->fromString(tokens.at(currDemographic)) to throw an exception, then we can use a better error msg
 		//cerr << "Tuple String " << _tupleStr << " is not valid. (" << _tupleStr.at(currDemographic) << ")" << endl;
-		this->set(currDemographic, e);
+		set(currDemographic, e);
 		currDemographic = DmgProfile::Demographic(currDemographic + 1);
 	} //while(currDemographic < DmgProfile::ENDDemographic) {
 }
@@ -247,7 +247,7 @@ void DmgProfile::parse(string _tupleStr)
 
 void DmgProfile::print(ostream &_outStream, string _prefix) const
 {
-	_outStream << _prefix << DmgProfile::ProfileIDtoStr[this->getProfileID()];
+	_outStream << _prefix << DmgProfile::ProfileIDtoStr[getProfileID()];
 }
 
 void DmgProfile::saveState(ostream &_outStream)
@@ -255,11 +255,11 @@ void DmgProfile::saveState(ostream &_outStream)
 	_outStream << "dmg:";
 	_outStream << "[";
 
-	for(int i = 0; i < this->ENDDemographic; i++)
+	for(int i = 0; i < ENDDemographic; i++)
 	{
-		_outStream << this->enums[i];
+		_outStream << enums[i];
 
-		if(i != this->ENDDemographic - 1)
+		if(i != ENDDemographic - 1)
 		{
 			_outStream << ",";
 		}
@@ -317,7 +317,7 @@ void DmgProfile::set(DmgProfile::Demographic _demographic, BaseEnumCls::Enum _en
 	assert(Util::withinRange(_demographic, DmgProfile::Demographic(0), DmgProfile::MaxDemographic));
 	assert(DmgProfile::getEnumCls(_demographic)->isValidNonWildCard(_enum)
 	       || (_enum == DmgProfile::getEnumCls(_demographic)->getWildcard()));
-	this->enums[_demographic] = _enum;
+	enums[_demographic] = _enum;
 }
 
 
@@ -342,7 +342,7 @@ void DmgProfile::set(DmgProfile::ProfileID _profileID)
 
 		while(currDemographic < DmgProfile::ENDDemographic)
 		{
-			this->set(currDemographic, DmgProfile::DemographicEnumCls.at(currDemographic).getNumEnums());
+			set(currDemographic, DmgProfile::DemographicEnumCls.at(currDemographic).getNumEnums());
 			currDemographic = DmgProfile::Demographic(currDemographic + 1);
 		}//while(currDemographic < DmgProfile::ENDDemographic) {
 	}
@@ -354,7 +354,7 @@ void DmgProfile::set(DmgProfile::ProfileID _profileID)
 			DmgProfile::initProfileIDMap();
 		}
 
-		this->set(*(this->ProfileIDtoProfile.at(_profileID)));
+		set(*(ProfileIDtoProfile.at(_profileID)));
 	}
 }
 
@@ -364,14 +364,14 @@ void DmgProfile::set(const DmgProfile &_dmgProfile)
 
 	while(currDemographic < DmgProfile::ENDDemographic)
 	{
-		this->set(currDemographic, _dmgProfile.get(currDemographic));
+		set(currDemographic, _dmgProfile.get(currDemographic));
 		currDemographic = DmgProfile::Demographic(currDemographic + 1);
 	}
 }
 
 const string *DmgProfile::toString() const
 {
-	return &DmgProfile::ProfileIDtoStr[this->getProfileID()];
+	return &DmgProfile::ProfileIDtoStr[getProfileID()];
 }
 
 //----------------< End Functions for class DmgProfile >--------------------//

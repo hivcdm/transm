@@ -36,19 +36,19 @@ Population::Population(EventParams &_eventParams, ticpp::Element *_popParamsNode
 	assert(_popParamsNode != nullptr);
 	assert(_LEOutputNode != nullptr);
 	//save Population ID number and increment sim-wide counter
-	this->populationID = Population::idCounter++;
+	populationID = Population::idCounter++;
 
 	if(_eventParams.useRollout)
 	{
-		this->applyRolloutContext(_eventParams, 0);
+		applyRolloutContext(_eventParams, 0);
 	}
 
 	//create the PopStats
-	this->popStats = new PopStats(_maxTime, _LEOutputNode, _partAcqOutputNode);
+	popStats = new PopStats(_maxTime, _LEOutputNode, _partAcqOutputNode);
 	//save population parameters
-	this->popWideParams.init(_popParamsNode, this->populationID, _eventParams);
+	popWideParams.init(_popParamsNode, populationID, _eventParams);
 	//create EntityPool - this will contain all Entities
-	this->entities = new EntityPool(this->popWideParams.SAEntAgeMths, this->populationID, this->popWideParams.assort);
+	entities = new EntityPool(popWideParams.SAEntAgeMths, populationID, popWideParams.assort);
 	//initialize infection trace generator print detailed info about certain ProfileID's
 	// in this case, all ProfileID's w/ non-nullptr DmgProfileBuckets
 	DmgProfile::ProfileID currProfileID = DmgProfile::MIN;
@@ -56,32 +56,32 @@ Population::Population(EventParams &_eventParams, ticpp::Element *_popParamsNode
 	while(currProfileID <= DmgProfile::MAX)
 	{
 		//if it is being used in this Population, then append to _profileIDs
-		if((this->entities->getBucket(currProfileID) != nullptr) &&
+		if((entities->getBucket(currProfileID) != nullptr) &&
 		        (DmgProfile::get(currProfileID, DmgProfile::SEXUAL_ACTIVITY_STATUS) != DmgProfile::NA))
 		{
-			this->popStats->infectionsTracker.addToDetailedTrace(currProfileID);
+			popStats->infectionsTracker.addToDetailedTrace(currProfileID);
 		}
 
 		currProfileID++;
 	} //while(currProfileID <= DmgProfile::MAX) {
 
 	//initialize structures that hold people who can initiate and 'agree' to relationships.
-	this->initPartnershipBuckets();
+	initPartnershipBuckets();
 	_eventParams.displayOut("About to create the populations\n");
 	/** Create the people in the population **/
 	long numPeople = 0;
-	long totalNumMales = Util::round(this->popWideParams.initSize * this->popWideParams.proportionMale);
-	long totalNumFemales = std::max<long>(this->popWideParams.initSize - totalNumMales, 0);
+	long totalNumMales = Util::round<long>(popWideParams.initSize * popWideParams.proportionMale);
+	long totalNumFemales = std::max<long>(popWideParams.initSize - totalNumMales, 0);
 	//the params.xml file should have detailed the prevalent characteristics of each age bucket
 	//  we will go through each age bucket and create the part of the prevalent population that falls within the bucket
 	int j = 0;
 
-	for(unsigned int ageBucket = 0; ageBucket < this->popWideParams.initialAgeBuckets.size(); ageBucket++)
+	for(unsigned int ageBucket = 0; ageBucket < popWideParams.initialAgeBuckets.size(); ageBucket++)
 	{
 		//holds the parameters for the current age bucket
-		Population::Params::AgeBucketPrevalenceInfo *ageBucketParams = this->popWideParams.initialAgeBuckets.at(ageBucket);
-		long numMalesStrata = Util::round(totalNumMales * ageBucketParams->proportionOfPopulation[DmgProfile::MALE]);
-		long numFemalesStrata = Util::round(totalNumFemales * ageBucketParams->proportionOfPopulation[DmgProfile::FEMALE]);
+		Population::Params::AgeBucketPrevalenceInfo *ageBucketParams = popWideParams.initialAgeBuckets.at(ageBucket);
+		long numMalesStrata = Util::round<long>(totalNumMales * ageBucketParams->proportionOfPopulation[DmgProfile::MALE]);
+		long numFemalesStrata = Util::round<long>(totalNumFemales * ageBucketParams->proportionOfPopulation[DmgProfile::FEMALE]);
 		//calc how many people are in the current age range
 		long strataSize = numMalesStrata + numFemalesStrata;
 		//Number of persons of each gender to be traced in detailed output file
@@ -94,20 +94,20 @@ Population::Population(EventParams &_eventParams, ticpp::Element *_popParamsNode
 			//Determine whether or not person should be traced in SinglePersonTrace
 			bool toTrace = (count < numToTrace || (count >= numMalesStrata && (count - numMalesStrata) < numToTrace));
 			//create a person, males first and females second
-			Person *p = this->generatePerson(_eventParams, (count < numMalesStrata) ? DmgProfile::MALE : DmgProfile::FEMALE,
+			Person *p = generatePerson(_eventParams, (count < numMalesStrata) ? DmgProfile::MALE : DmgProfile::FEMALE,
 			                                 ageBucketParams, toTrace);
 			i++;
 			//add the created person to the EntityPool
-			this->entities->addPersonToAll(p);
+			entities->addPersonToAll(p);
 			numPeople++;
 		}//end for (int count
 
 		//Add a tuple to the currSizeByAgeRange vector along with the initial size of the age range
-		this->currSizeByAgeRange.push_back(boost::make_tuple(strataSize, ageBucketParams->minAgeMth,
+		currSizeByAgeRange.push_back(boost::make_tuple(strataSize, ageBucketParams->minAgeMth,
 		                                   ageBucketParams->maxAgeMth));
-		this->currSizeByAgeRangeMale.push_back(boost::make_tuple(strataSize, ageBucketParams->minAgeMth,
+		currSizeByAgeRangeMale.push_back(boost::make_tuple(strataSize, ageBucketParams->minAgeMth,
 		                                       ageBucketParams->maxAgeMth));
-		this->currSizeByAgeRangeFemale.push_back(boost::make_tuple(strataSize, ageBucketParams->minAgeMth,
+		currSizeByAgeRangeFemale.push_back(boost::make_tuple(strataSize, ageBucketParams->minAgeMth,
 		        ageBucketParams->maxAgeMth));
 		j++;
 	} //for(ageBucket = 0...
@@ -132,17 +132,16 @@ Population::Population(EventParams &_eventParams, ticpp::Element *_popParamsNode
 	//errhode: Is this taken care of with the whole agebucket inside SexualMixingBucket thing?
 	assert(Constants::TODO_LO_PRI);
 	selector.selectProfileIDs(bucketIDs, nullptr);
-	DmgProfileBucket *singleMales = this->entities->getBucket(bucketIDs.at(0));
+	DmgProfileBucket *singleMales = entities->getBucket(bucketIDs.at(0));
 	selector.set(DmgProfile::GENDER, DmgProfile::FEMALE);
 	bucketIDs.clear();
 	selector.selectProfileIDs(bucketIDs, nullptr);
-	DmgProfileBucket *singleFemales = this->entities->getBucket(bucketIDs.at(0));
+	DmgProfileBucket *singleFemales = entities->getBucket(bucketIDs.at(0));
 	/** create prevalent formSteadyPartnerships (time = 0) **/
 	//the demographics that we are pulling the eligibles from -- same as for regular;
 	//can just use the previous singleMales and singleFemales buckets
 	//number of couples -- % married of adult population by DmgProfile::SAStatus / 2
-	int numCouples = Util::round(this->popWideParams.initproportionMarried * (singleMales->size() + singleFemales->size()) *
-	                             0.5);
+	int numCouples = Util::round<long>(popWideParams.initproportionMarried * (singleMales->size() + singleFemales->size()) * 0.5);
 	_eventParams.displayOut("Creating ");
 	_eventParams.displayOut(boost::lexical_cast<std::string>(numCouples).c_str());
 	_eventParams.displayOut(" initial steady partnerships\n");
@@ -165,14 +164,13 @@ Population::Population(EventParams &_eventParams, ticpp::Element *_popParamsNode
 		}
 
 		//try to form partnership, will add Male back to the pool if partnership was formed
-		this->createPartnerships(_eventParams, m, nullptr, SexualPartnership::STEADY, true);
+		createPartnerships(_eventParams, m, nullptr, SexualPartnership::STEADY, true);
 		numCouples--;
 	} //while(numCouples > 0) {
 
 	//number of regular couples -- % married of adult population by DmgProfile::SAStatus / 2
 	//Note that some people may end up in multiple relationships -- this should come out in the wash (?)
-	numCouples = Util::round(this->popWideParams.initproportionRegular * (singleMales->size() + singleFemales->size()) *
-	                         0.5);
+	numCouples = Util::round<int>(popWideParams.initproportionRegular * (singleMales->size() + singleFemales->size()) * 0.5);
 	_eventParams.displayOut("Creating ");
 	_eventParams.displayOut(boost::lexical_cast<std::string>(numCouples).c_str());
 	_eventParams.displayOut(" initial regular partnerships\n");
@@ -196,14 +194,14 @@ Population::Population(EventParams &_eventParams, ticpp::Element *_popParamsNode
 		}
 
 		//form partnership, will add Male back to the pool if partnership was formed
-		this->createPartnerships(_eventParams, m, nullptr, SexualPartnership::REGULAR, true);
+		createPartnerships(_eventParams, m, nullptr, SexualPartnership::REGULAR, true);
 		numCouples--;
 	} //while(numCouples > 0) {
 
 	//count the size of the population and store value
-	this->updateSize();
+	updateSize();
 	_eventParams.displayOut("Population created\n");
-	this->graph = new GraphVizGraphElements();
+	graph = new GraphVizGraphElements();
 }
 
 /**
@@ -211,7 +209,7 @@ Updates population based on new parameters
 **/
 void Population::updatePopulation(EventParams &_eventParams, ticpp::Element *_popParamsNode)
 {
-	this->popWideParams.reloadXML(_popParamsNode, _eventParams);
+	popWideParams.reloadXML(_popParamsNode, _eventParams);
 }
 
 /**
@@ -241,13 +239,13 @@ void Population::initPartnershipBuckets()
 	//For each initiator demographic profile, store the fact that they can have any partner type
 	for(size_t i = 0; i < eligibleInitiators.size(); i++)
 	{
-		BucketSexualMixing *bucket = (BucketSexualMixing *)this->entities->getBucket(eligibleInitiators.at(i));
+		BucketSexualMixing *bucket = (BucketSexualMixing *)entities->getBucket(eligibleInitiators.at(i));
 
 		//if this Bucket is nullptr, the skip
 		if(bucket != nullptr)
 		{
-			this->partneringInitiators[bucket] = availPartnershipTypes;
-			this->profilesToPartnershipTypes[bucket->getProfileID()] = availPartnershipTypes;
+			partneringInitiators[bucket] = availPartnershipTypes;
+			profilesToPartnershipTypes[bucket->getProfileID()] = availPartnershipTypes;
 		}
 	}
 
@@ -258,7 +256,7 @@ void Population::initPartnershipBuckets()
 	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::ENDType; ++type)
 	{
 		//get the parameters for current relationship type
-		const SexualBehaviorParams *partneringParams = this->popWideParams.maleParams->getSexualBehaviorParams(type);
+		const SexualBehaviorParams *partneringParams = popWideParams.maleParams->getSexualBehaviorParams(type);
 
 		//get available demographicProfiles that are available for this partnership
 		for(unsigned int j = 0; j < partneringParams->getNumAvailableBuckets(); ++j)
@@ -271,18 +269,18 @@ void Population::initPartnershipBuckets()
 			assert(Constants::TODO_DEF);		//eventually, we should change this.
 
 			//check to see whether we have a repeat Bucket.
-			for(size_t i = 0; i < this->potentialPartnerBuckets[type].size(); ++i)
+			for(size_t i = 0; i < potentialPartnerBuckets[type].size(); ++i)
 			{
-				if(this->potentialPartnerBuckets[type].at(i)->getProfileID() == selectedIDs.at(0))
+				if(potentialPartnerBuckets[type].at(i)->getProfileID() == selectedIDs.at(0))
 				{
 					cerr << "For available buckets for partnership type '" << *SexualPartnership::TypeEnum.toString(type);
 					cerr << "', " << *DmgProfile::toString(selectedIDs.at(0)) <<
 					     " is listed multiple times either via repeat or wildcard overlaps";
 					Util::exitWithPrompt(-1);
-				} //if(this->potentialPartnerBuckets[type].at(i)->getProfileID() == selectedIDs.at(0)) {
-			} //for(int i = 0; i < this->potentialPartnerBuckets[type].size(); ++i) {
+				} //if(potentialPartnerBuckets[type].at(i)->getProfileID() == selectedIDs.at(0)) {
+			} //for(int i = 0; i < potentialPartnerBuckets[type].size(); ++i) {
 
-			BucketSexualMixing *bucket = (BucketSexualMixing *)this->entities->getBucket(selectedIDs.at(0));
+			BucketSexualMixing *bucket = (BucketSexualMixing *)entities->getBucket(selectedIDs.at(0));
 
 			if(bucket == nullptr)
 			{
@@ -292,13 +290,13 @@ void Population::initPartnershipBuckets()
 			}
 			else
 			{
-				this->potentialPartnerBuckets[type].push_back(bucket);
-				this->eligibleBucketWeights[type].push_back(partneringParams->getAvailableBucket(j).weight);
+				potentialPartnerBuckets[type].push_back(bucket);
+				eligibleBucketWeights[type].push_back(partneringParams->getAvailableBucket(j).weight);
 			}
 		}
 
 		//make sure that the weights sum to 1
-		Util::normalize(this->eligibleBucketWeights[type]);
+		Util::normalize(eligibleBucketWeights[type]);
 	} //for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::ENDType; ++type) {
 }
 
@@ -308,8 +306,8 @@ Population::~Population(void)
 	delete entities;
 	//delete popStats -- but after they get passed on to the TransmissionSummaryStats
 	delete popStats;
-	delete Male::getPopParams(this->populationID);
-	delete Female::getPopParams(this->populationID);
+	delete Male::getPopParams(populationID);
+	delete Female::getPopParams(populationID);
 	delete graph;
 }
 
@@ -319,12 +317,12 @@ Population::~Population(void)
 void Population::births(EventParams &_eventParams)
 {
 	//number of people to be born this month
-	unsigned long numBorn = Util::round(this->currSize * this->popWideParams.birthRate);
-	unsigned long numMales = static_cast<unsigned long>(this->popWideParams.proportionMale * numBorn);
+	unsigned long numBorn = Util::round<unsigned long>(currSize * popWideParams.birthRate);
+	unsigned long numMales = static_cast<unsigned long>(popWideParams.proportionMale * numBorn);
 	DmgProfile::Gender gender;
 	Person *p = nullptr;
 
-	//create this->currSize * this->birthRate New people
+	//create currSize * birthRate New people
 	for(unsigned long i = 0; i < numBorn; ++i)
 	{
 		//determine gender
@@ -337,7 +335,7 @@ void Population::births(EventParams &_eventParams)
 			_eventParams.numNewbornsTraced++;
 		}
 
-		p = this->generatePerson(_eventParams, gender, nullptr, toTrace);
+		p = generatePerson(_eventParams, gender, nullptr, toTrace);
 
 		if(_eventParams.debugLevel > DEBUG1 && _eventParams.outputTrace[EventParams::TraceFileType::Events])
 		{
@@ -346,12 +344,12 @@ void Population::births(EventParams &_eventParams)
 
 		//add the newborn to the EntityPool
 		//Use addPersonToAll here (initial entrance into population)
-		this->entities->addPersonToAll(p);
+		entities->addPersonToAll(p);
 	}
 
 	if(_eventParams.debugLevel > DEBUG0)
 	{
-		this->printMethodResults(_eventParams, "Births", "People Born", numBorn, "total born", Constants::SHOW_INFECTED);
+		printMethodResults(_eventParams, "Births", "People Born", numBorn, "total born", Constants::SHOW_INFECTED);
 	}
 }
 
@@ -371,19 +369,19 @@ void Population::updateAgeBucketsLE()
 			gender = DmgProfile::FEMALE;
 		}
 
-		p_Iter = this->entities->begin(gender);
+		p_Iter = entities->begin(gender);
 
-		while(p_Iter != this->entities->end(gender))
+		while(p_Iter != entities->end(gender))
 		{
 			Person *p = (*p_Iter);
 			assert(p != nullptr);
 			//calculate life expectancy
-			assert((this->popStats->selectedLEStats != nullptr));
+			assert((popStats->selectedLEStats != nullptr));
 			assert(p->getAge(YEAR) >= 0);
 			assert(p->getAge(YEAR) < Person::maxYrForDeathStats);
-			this->popStats->selectedLEStats->popByAge[p->getAge(YEAR)]++;
+			popStats->selectedLEStats->popByAge[p->getAge(YEAR)]++;
 			p_Iter++;
-		}//while (p_Iter != this->entities->end(gender))
+		}//while (p_Iter != entities->end(gender))
 	}//	for (DmgProfile::Gender gend = DmgProfile::MALE; gend < DmgProfile::ENDGender; gend++){
 }
 
@@ -403,14 +401,14 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 	//Reset the class to calculate LE
 	if(newLEPeriod)
 	{
-		this->popStats->selectedLEStats = new PopStats::SingleLEStats;
+		popStats->selectedLEStats = new PopStats::SingleLEStats;
 	}
 
 	//check if there is another bucket of entities to check
 	//if there is a bucket, then iterate through people in bucket
 	while(currProfileID <= DmgProfile::MAX)
 	{
-		currBucket = this->entities->getBucket(currProfileID);
+		currBucket = entities->getBucket(currProfileID);
 
 		//if people of this particular profile don't exist in the population, move on.
 		if((currBucket == nullptr) || (currBucket->size() == 0))
@@ -442,9 +440,9 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 	//Double loop: first iterate through the men, then the women
 	for(DmgProfile::Gender gender = DmgProfile::MALE; gender != DmgProfile::ENDGender; ++gender)
 	{
-		p_Iter = this->entities->begin(gender);
+		p_Iter = entities->begin(gender);
 
-		while(p_Iter != this->entities->end(gender))
+		while(p_Iter != entities->end(gender))
 		{
 			Person *p = (*p_Iter);
 			assert(p != nullptr);
@@ -452,26 +450,26 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 			if(!p->isAlive())
 			{
 				//Advances p_Iter one in the list, so no increment is necessary
-				p_Iter = this->entities->removePersonFromAll(p_Iter);
-				this->processDeath(_eventParams, p, calculateLE);
+				p_Iter = entities->removePersonFromAll(p_Iter);
+				processDeath(_eventParams, p, calculateLE);
 
 				if(_eventParams.useRollout)
 				{
 					//Remove people from the treated/untreated pool if they die
 					std::list<Person *>::iterator poolIterator;
-					poolIterator = std::find(this->rolloutUntreatedPool.begin(), this->rolloutUntreatedPool.end(), p);
+					poolIterator = std::find(rolloutUntreatedPool.begin(), rolloutUntreatedPool.end(), p);
 
-					if(poolIterator != this->rolloutUntreatedPool.end())
+					if(poolIterator != rolloutUntreatedPool.end())
 					{
-						this->rolloutUntreatedPool.erase(poolIterator);
+						rolloutUntreatedPool.erase(poolIterator);
 					}
 					else
 					{
-						poolIterator = std::find(this->rolloutTreatedPool.begin(), this->rolloutTreatedPool.end(), p);
+						poolIterator = std::find(rolloutTreatedPool.begin(), rolloutTreatedPool.end(), p);
 
-						if(poolIterator != this->rolloutTreatedPool.end())
+						if(poolIterator != rolloutTreatedPool.end())
 						{
-							this->rolloutTreatedPool.erase(poolIterator);
+							rolloutTreatedPool.erase(poolIterator);
 						}
 					}
 				}
@@ -488,7 +486,7 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 			{
 				if(p->getDmgProfile()->get(p->getDmgProfile()->getProfileID(), DmgProfile::SEXUAL_ACTIVITY_STATUS) != DmgProfile::NA)
 				{
-					((BucketSexualMixing *) this->entities->getBucket(p->getDmgProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
+					((BucketSexualMixing *) entities->getBucket(p->getDmgProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
 					        p->hivStatus);
 				}
 			}
@@ -499,28 +497,28 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 			if(p->rollForDeath(_eventParams.randomNums))
 			{
 				bool wasProcessed = false;
-				p_Iter = this->entities->removePersonFromAll(p_Iter);
+				p_Iter = entities->removePersonFromAll(p_Iter);
 				wasProcessed = true;
-				this->processDeath(_eventParams, p, calculateLE);
+				processDeath(_eventParams, p, calculateLE);
 				totalDied++;
 
 				if(_eventParams.useRollout)
 				{
 					//Remove people from the treated/untreated pool if they die
 					std::list<Person *>::iterator poolIterator;
-					poolIterator = std::find(this->rolloutUntreatedPool.begin(), this->rolloutUntreatedPool.end(), p);
+					poolIterator = std::find(rolloutUntreatedPool.begin(), rolloutUntreatedPool.end(), p);
 
-					if(poolIterator != this->rolloutUntreatedPool.end())
+					if(poolIterator != rolloutUntreatedPool.end())
 					{
-						this->rolloutUntreatedPool.erase(poolIterator);
+						rolloutUntreatedPool.erase(poolIterator);
 					}
 					else
 					{
-						poolIterator = std::find(this->rolloutTreatedPool.begin(), this->rolloutTreatedPool.end(), p);
+						poolIterator = std::find(rolloutTreatedPool.begin(), rolloutTreatedPool.end(), p);
 
-						if(poolIterator != this->rolloutTreatedPool.end())
+						if(poolIterator != rolloutTreatedPool.end())
 						{
-							this->rolloutTreatedPool.erase(poolIterator);
+							rolloutTreatedPool.erase(poolIterator);
 						}
 					}
 				}
@@ -532,7 +530,7 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 
 			//if this person wasn't sexually active but is now old enough to
 			if((p->getDmgProfileVal(DmgProfile::SEXUAL_ACTIVITY_STATUS) != DmgProfile::SA)
-			        && (p->getAge(MONTH) >= this->popWideParams.SAEntAgeMths))
+			        && (p->getAge(MONTH) >= popWideParams.SAEntAgeMths))
 			{
 				// set them as SA and potentially CSWs
 				if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && p->trace())
@@ -556,12 +554,12 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 				{
 					if(p->getDmgProfile()->get(p->getDmgProfile()->getProfileID(), DmgProfile::SEXUAL_ACTIVITY_STATUS) != DmgProfile::NA)
 					{
-						((BucketSexualMixing *) this->entities->getBucket(p->getDmgProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
+						((BucketSexualMixing *) entities->getBucket(p->getDmgProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
 						        p->hivStatus);
 					}
 				}
 
-				if(p->getAge(MONTH) < this->popWideParams.CSWEndAgeMth[p->getDmgProfileVal(DmgProfile::GENDER)])
+				if(p->getAge(MONTH) < popWideParams.CSWEndAgeMth[p->getDmgProfileVal(DmgProfile::GENDER)])
 				{
 					p->rollForBecomeSexWorker(_eventParams, false);
 				}
@@ -570,15 +568,15 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 				//reroll risk group
 				p->rerollRiskGroup(_eventParams);
 				//refresh risk group in dmg bucket and refresh DmgProfileBucket
-				this->entities->refreshDmgProfileBucket(p, &p_Iter, oldRisk != p->getRiskLevel());
+				entities->refreshDmgProfileBucket(p, &p_Iter, oldRisk != p->getRiskLevel());
 			}
 
 			//Check for age to stop becoming CSW
 			if(p->getDmgProfileVal(DmgProfile::EMPLOYMENT) == DmgProfile::CSW
-			        && p->getAge(MONTH) >= this->popWideParams.CSWEndAgeMth[p->getDmgProfileVal(DmgProfile::GENDER)])
+			        && p->getAge(MONTH) >= popWideParams.CSWEndAgeMth[p->getDmgProfileVal(DmgProfile::GENDER)])
 			{
 				p->quitSexWork(_eventParams);
-				this->entities->refreshDmgProfileBucket(p, &p_Iter);
+				entities->refreshDmgProfileBucket(p, &p_Iter);
 			}
             
 			if(_eventParams.useRollout && _eventParams.treatedContext && p->isInfected())
@@ -597,7 +595,7 @@ void Population::updatePhysicalState(EventParams &_eventParams, bool calculateLE
 			popStats->costsTracker.RecordLifeMonth(p->getQualityOfLife(), p->getCepacDiscountFactor(), p->getHIVStatus());
 
 			p_Iter++;
-		}//while (p_Iter != this->entities->end(gender))
+		}//while (p_Iter != entities->end(gender))
 	}//	for (DmgProfile::Gender gend = DmgProfile::MALE; gend < DmgProfile::ENDGender; gend++){
 
 	if(_eventParams.debugLevel > DEBUG0)
@@ -632,7 +630,7 @@ void Population::updatePartnerships(EventParams &_eventParams)
 
 	//Iterate twice...
 	//First pass: Dissolve ended partnerships
-	for(p_Iter = this->entities->begin(DmgProfile::MALE); p_Iter != this->entities->end(DmgProfile::MALE); p_Iter++)
+	for(p_Iter = entities->begin(DmgProfile::MALE); p_Iter != entities->end(DmgProfile::MALE); p_Iter++)
 	{
 		Person *person = (*p_Iter);
 		Male *initiator = (Male *)person; //We're dealing with this dude
@@ -647,25 +645,25 @@ void Population::updatePartnerships(EventParams &_eventParams)
 		}//foreach SexualPartnership::type
 
 		//Now, split them up... man, it would suck for their kids (if they had any)
-		this->dissolveSexualPartnerships(_eventParams, initiator, partnershipsToEnd);
+		dissolveSexualPartnerships(_eventParams, initiator, partnershipsToEnd);
 
 		//if this initiator is now single, then make sure they are in singles pool
 		if(!initiator->inCorrectDmgProfileBucket())
 		{
-			this->entities->refreshDmgProfileBucket(initiator, &p_Iter);
+			entities->refreshDmgProfileBucket(initiator, &p_Iter);
 		}
-	} //for (p_Iter = this->entities->begin(DmgProfile::MALE); p_Iter != this->entities->end(DmgProfile::MALE); p_Iter++) {
+	} //for (p_Iter = entities->begin(DmgProfile::MALE); p_Iter != entities->end(DmgProfile::MALE); p_Iter++) {
 
 	//Ending the first pass (dissolving partnerships)
 
 	//reset num acts for females
-	for(p_Iter = this->entities->begin(DmgProfile::FEMALE); p_Iter != this->entities->end(DmgProfile::FEMALE); p_Iter++)
+	for(p_Iter = entities->begin(DmgProfile::FEMALE); p_Iter != entities->end(DmgProfile::FEMALE); p_Iter++)
 	{
 		(*p_Iter)->resetNumActs();
 	}
 
 	//Second pass: Form new partnerships and have sex
-	for(p_Iter = this->entities->begin(DmgProfile::MALE); p_Iter != this->entities->end(DmgProfile::MALE); p_Iter++)
+	for(p_Iter = entities->begin(DmgProfile::MALE); p_Iter != entities->end(DmgProfile::MALE); p_Iter++)
 	{
 		Person *person = (*p_Iter);
 		Male *initiator = (Male *)person;
@@ -681,7 +679,7 @@ void Population::updatePartnerships(EventParams &_eventParams)
 		assert(initiator != nullptr);
 		//Get available partnership types
 		vector<SexualPartnership::Type> partnershipTypes =
-		    this->profilesToPartnershipTypes[initiator->getCurrBucketProfileID()];
+		    profilesToPartnershipTypes[initiator->getCurrBucketProfileID()];
 
 		//iterate through the SexualPartnership::Type that people in the current bucket engage in
 		// form new partnerships
@@ -694,7 +692,7 @@ void Population::updatePartnerships(EventParams &_eventParams)
 			//First, reset the tally of latest unformed partnerships (unformed but intended to form)
 			initiator->resetLatestUnformedPartnerships(type);
 			//TODO: Get the ratio of numFormed to numIntendedToForm
-			int numFormed = this->createPartnerships(_eventParams, initiator, &p_Iter, type);
+			int numFormed = createPartnerships(_eventParams, initiator, &p_Iter, type);
 			//if(numFormed > 0) {
 			newPartnershipCount[type] += numFormed;
 			//} //if(numFormed > 0) {
@@ -708,7 +706,7 @@ void Population::updatePartnerships(EventParams &_eventParams)
 			std::list<Person *> newlyInfected;
 			//sexual activity among any existing partnerships that have a duration associated with them
 			Person *infectedMe = initiator->allPartnerSexualActivity(_eventParams, type, newlyInfected,
-			                     &(this->popStats->infectionsTracker));
+			                     &(popStats->infectionsTracker));
 			//TODO: Get a condom use count here!
 			//record all incident infections
 			std::list<Person *>::iterator newlyInfectedIter = newlyInfected.begin();
@@ -720,11 +718,11 @@ void Population::updatePartnerships(EventParams &_eventParams)
 				if(wasUninfected->getDmgProfile()->get(wasUninfected->getDmgProfile()->getProfileID(),
 				                                       DmgProfile::SEXUAL_ACTIVITY_STATUS) != DmgProfile::NA)
 				{
-					((BucketSexualMixing *) this->entities->getBucket(wasUninfected->getDmgProfile()->getProfileID()))->changeHIVStatus(
+					((BucketSexualMixing *) entities->getBucket(wasUninfected->getDmgProfile()->getProfileID()))->changeHIVStatus(
 					    wasUninfected, Person::NEGATIVE, wasUninfected->hivStatus);
 				}
 
-				((BucketSexualMixing *) this->entities->getBucket(wasUninfected->getDmgProfile()->getProfileID()))->increaseInfected(
+				((BucketSexualMixing *) entities->getBucket(wasUninfected->getDmgProfile()->getProfileID()))->increaseInfected(
 				    wasUninfected);
 				//initiator only gets infected once...
 				Person *wasInfected = (*newlyInfectedIter == initiator) ? infectedMe : initiator;
@@ -732,12 +730,12 @@ void Population::updatePartnerships(EventParams &_eventParams)
 				//Adds person to the untreated pool if using rollout
 				if(_eventParams.useRollout)
 				{
-					this->rolloutUntreatedPool.push_back(wasUninfected);
+					rolloutUntreatedPool.push_back(wasUninfected);
 				}
 
 				if(_eventParams.outputTrace[EventParams::TraceFileType::Events])
 				{
-					this->popStats->recordIncidentInfection(_eventParams, _eventParams.currTime,
+					popStats->recordIncidentInfection(_eventParams, _eventParams.currTime,
 					                                        type,
 					                                        wasInfected,
 					                                        wasUninfected,
@@ -752,7 +750,7 @@ void Population::updatePartnerships(EventParams &_eventParams)
 		//Add the cost of condom usage
 		auto totalCondomCostUndiscounted = initiator->getCondomsUsedThisMonth() * popWideParams.condomCost;
 		popStats->costsTracker.RecordCondomUse(totalCondomCostUndiscounted, totalCondomCostUndiscounted * initiator->getCepacDiscountFactor());
-	} //for (p_Iter = this->entities->begin(DmgProfile::MALE); p_Iter != this->entities->end(DmgProfile::MALE); p_Iter++)
+	} //for (p_Iter = entities->begin(DmgProfile::MALE); p_Iter != entities->end(DmgProfile::MALE); p_Iter++)
 
 	//Ends the second pass through (i.e. the sex acts pass through)
 
@@ -764,20 +762,20 @@ void Population::updatePartnerships(EventParams &_eventParams)
 			//print out how many partnerships were attempted
 			std::ostringstream attemptedLabel;
 			attemptedLabel << *SexualPartnership::TypeEnum.toString(type) << " Attempted";
-			this->printMethodResults(_eventParams, "updatePartnerships(...)", attemptedLabel.str(), attemptedPartnershipCount[type],
+			printMethodResults(_eventParams, "updatePartnerships(...)", attemptedLabel.str(), attemptedPartnershipCount[type],
 			                         "Attempted" + *SexualPartnership::TypeEnum.toString(type), Constants::SHOW_INFECTED);
 			//print out how many partnerships were formed
 			std::ostringstream formedLabel;
 			formedLabel << *SexualPartnership::TypeEnum.toString(type) << " Formed";
-			this->printMethodResults(_eventParams, "updatePartnerships(...)", formedLabel.str(), newPartnershipCount[type],
+			printMethodResults(_eventParams, "updatePartnerships(...)", formedLabel.str(), newPartnershipCount[type],
 			                         "New " + *SexualPartnership::TypeEnum.toString(type), Constants::SHOW_INFECTED);
 
 			//if these partnerships have a duration beyond the month, print out how many were ended
-			if(this->popWideParams.partnershipsHaveDuration[DmgProfile::MALE][type])
+			if(popWideParams.partnershipsHaveDuration[DmgProfile::MALE][type])
 			{
 				std::ostringstream endedLabel;
 				endedLabel << *SexualPartnership::TypeEnum.toString(type) << " Ended";
-				this->printMethodResults(_eventParams, "updatePartnerships(...)", endedLabel.str(), endedPartnershipCount[type],
+				printMethodResults(_eventParams, "updatePartnerships(...)", endedLabel.str(), endedPartnershipCount[type],
 				                         "Number Ended", Constants::SHOW_INFECTED);
 			}
 		}
@@ -790,9 +788,9 @@ void Population::updatePartnerships(EventParams &_eventParams)
 		//update concurrency status
 		for(int gender = DmgProfile::MALE; gender < DmgProfile::ENDGender; gender++)
 		{
-			std::list<Person *>::iterator p_Iter = this->entities->begin((DmgProfile::Gender) gender);
+			std::list<Person *>::iterator p_Iter = entities->begin((DmgProfile::Gender) gender);
 
-			while(p_Iter != this->entities->end((DmgProfile::Gender) gender))
+			while(p_Iter != entities->end((DmgProfile::Gender) gender))
 			{
 				//tally concurrent partners
 				//create a number between 0 and 15 representing the combination of partnership types person has
@@ -830,17 +828,17 @@ Iterates through current entities in the population and returns a total number o
 long Population::updateSize()
 {
 	size_t i; //Used in forloop to iterate through vector of age range tuples
-	this->currSize = this->entities->size();
+	currSize = entities->size();
 	//Also update size of non-sexually active
-	this->currNASize = this->entities->sizeNotSexuallyActive();
+	currNASize = entities->sizeNotSexuallyActive();
 
 	for(int i = 0; i < DmgProfile::ENDGender; i++)
 	{
-		this->currNASizeByGender[i] = this->entities->sizeNotSexuallyActive((DmgProfile::Gender) i);
+		currNASizeByGender[i] = entities->sizeNotSexuallyActive((DmgProfile::Gender) i);
 
 		for(int j = 0; j < Person::ENDRiskLevel; j++)
 		{
-			this->currSASizeGenderRisk[i][j] = this->entities->sizeSexuallyActive((DmgProfile::Gender) i, (Person::RiskLevel) j);
+			currSASizeGenderRisk[i][j] = entities->sizeSexuallyActive((DmgProfile::Gender) i, (Person::RiskLevel) j);
 		}
 	}
 
@@ -849,42 +847,42 @@ long Population::updateSize()
 	//First tally the men
 	GenderProfile.set(DmgProfile::GENDER, DmgProfile::MALE);
 	vector<DmgProfile::ProfileID> GenderProfileIDs;
-	this->currSizeGender[DmgProfile::MALE] = 0;
+	currSizeGender[DmgProfile::MALE] = 0;
 	GenderProfile.selectProfileIDs(GenderProfileIDs, nullptr);
 
 	for(size_t i = 0; i < GenderProfileIDs.size(); i++)
 	{
-		this->currSizeGender[DmgProfile::MALE] += this->entities->size(GenderProfileIDs[i]);
+		currSizeGender[DmgProfile::MALE] += entities->size(GenderProfileIDs[i]);
 	}
 
 	//Next tally the women
 	GenderProfile.set(DmgProfile::GENDER, DmgProfile::FEMALE);
 	GenderProfileIDs.clear();
-	this->currSizeGender[DmgProfile::FEMALE] = 0;
+	currSizeGender[DmgProfile::FEMALE] = 0;
 	GenderProfile.selectProfileIDs(GenderProfileIDs, nullptr);
 
 	for(size_t i = 0; i < GenderProfileIDs.size(); i++)
 	{
-		this->currSizeGender[DmgProfile::FEMALE] += this->entities->size(GenderProfileIDs[i]);
+		currSizeGender[DmgProfile::FEMALE] += entities->size(GenderProfileIDs[i]);
 	}
 
 	//Count all the CSW's
 	DmgProfile CSWProfile;
 	CSWProfile.set(DmgProfile::EMPLOYMENT, DmgProfile::CSW);
 	vector<DmgProfile::ProfileID> CSWProfileIDs;
-	this->currCSWSize = 0;
+	currCSWSize = 0;
 	CSWProfile.selectProfileIDs(CSWProfileIDs, nullptr);
 
 	for(size_t i = 0; i < CSWProfileIDs.size(); i++)
 	{
-		this->currCSWSize += this->entities->size(CSWProfileIDs[i]);
+		currCSWSize += entities->size(CSWProfileIDs[i]);
 	}
 
 	//Update size by risk level
 	for(int risk = Person::LOW; risk < Person::ENDRiskLevel; risk++)
 	{
-		this->currSizeRisk[risk] = 0;
-		this->currSizeRiskCSW[risk] = 0;
+		currSizeRisk[risk] = 0;
+		currSizeRiskCSW[risk] = 0;
 
 		for(int j = 0; j < DmgProfile::ENDGender; j++)
 		{
@@ -898,7 +896,7 @@ long Population::updateSize()
 		//iterate through all buckets
 		while(currProfileID <= DmgProfile::MAX)
 		{
-			currBucket = this->entities->getBucket(currProfileID);
+			currBucket = entities->getBucket(currProfileID);
 
 			//if people of this particular profile don't exist in the population, move on.
 			if((currBucket == nullptr) || (currBucket->size() == 0))
@@ -910,34 +908,34 @@ long Population::updateSize()
 			if(DmgProfile::get(currBucket->getProfileID(), DmgProfile::SEXUAL_ACTIVITY_STATUS) != DmgProfile::NA)
 			{
 				//Add all people in bucket of particular risk group
-				this->currSizeRisk[risk] += ((BucketSexualMixing *)(currBucket))->sizeRisk((Person::RiskLevel) risk);
+				currSizeRisk[risk] += ((BucketSexualMixing *)(currBucket))->sizeRisk((Person::RiskLevel) risk);
 
 				if(DmgProfile::get(currBucket->getProfileID(), DmgProfile::EMPLOYMENT) == DmgProfile::CSW)
 				{
-					this->currSizeRiskCSW[risk] += ((BucketSexualMixing *)(currBucket))->sizeRiskCSW((Person::RiskLevel)risk);
-					this->currSizeGenderRiskCSW[DmgProfile::get(currBucket->getProfileID(),
+					currSizeRiskCSW[risk] += ((BucketSexualMixing *)(currBucket))->sizeRiskCSW((Person::RiskLevel)risk);
+					currSizeGenderRiskCSW[DmgProfile::get(currBucket->getProfileID(),
 					                            DmgProfile::GENDER)][risk] += ((BucketSexualMixing *)(currBucket))->sizeRiskCSW((Person::RiskLevel)risk);
 				}
 			}
 
 			currProfileID++;
-		}	//while(currBucketIndex < this->entityBuckets->size()) {
+		}	//while(currBucketIndex < entityBuckets->size()) {
 	}
 
 	//Update size by age range
-	for(i = 0; i < this->currSizeByAgeRange.size(); i++)
+	for(i = 0; i < currSizeByAgeRange.size(); i++)
 	{
-		int minAge = boost::tuples::get<Population::MIN_AGE_IN_MONTHS>(this->currSizeByAgeRange.at(i));
-		int maxAge = boost::tuples::get<Population::MAX_AGE_IN_MONTHS>(this->currSizeByAgeRange.at(i));
-		boost::tuples::get<Population::AGE_RANGE_SIZE>(this->currSizeByAgeRange.at(i)) =
-		    this->entities->sizeSexuallyActiveByAge(minAge, maxAge);
-		boost::tuples::get<Population::AGE_RANGE_SIZE>(this->currSizeByAgeRangeMale.at(i)) =
-		    this->entities->sizeSexuallyActiveByAge(minAge, maxAge, DmgProfile::MALE);
-		boost::tuples::get<Population::AGE_RANGE_SIZE>(this->currSizeByAgeRangeFemale.at(i)) =
-		    this->entities->sizeSexuallyActiveByAge(minAge, maxAge, DmgProfile::FEMALE);
+		int minAge = boost::tuples::get<Population::MIN_AGE_IN_MONTHS>(currSizeByAgeRange.at(i));
+		int maxAge = boost::tuples::get<Population::MAX_AGE_IN_MONTHS>(currSizeByAgeRange.at(i));
+		boost::tuples::get<Population::AGE_RANGE_SIZE>(currSizeByAgeRange.at(i)) =
+		    entities->sizeSexuallyActiveByAge(minAge, maxAge);
+		boost::tuples::get<Population::AGE_RANGE_SIZE>(currSizeByAgeRangeMale.at(i)) =
+		    entities->sizeSexuallyActiveByAge(minAge, maxAge, DmgProfile::MALE);
+		boost::tuples::get<Population::AGE_RANGE_SIZE>(currSizeByAgeRangeFemale.at(i)) =
+		    entities->sizeSexuallyActiveByAge(minAge, maxAge, DmgProfile::FEMALE);
 	}
 
-	return this->currSize;
+	return currSize;
 }
 
 //Resets Monthly Population Statistics
@@ -946,7 +944,7 @@ void Population::resetMonthlyStats()
 	//reset curr month death stats
 	for(int i = 0; i < Person::ENDDeathStatus; i++)
 	{
-		this->currDeathCauses[i] = 0;
+		currDeathCauses[i] = 0;
 	}
 }
 
@@ -966,9 +964,9 @@ void Population::updateFinalPhysicalState(EventParams &_eventParams)
 			gender = DmgProfile::FEMALE;
 		}
 
-		p_Iter = this->entities->begin(gender);
+		p_Iter = entities->begin(gender);
 
-		while(p_Iter != this->entities->end(gender))
+		while(p_Iter != entities->end(gender))
 		{
 			Person *p = (*p_Iter);
 			assert(p != nullptr);
@@ -978,17 +976,17 @@ void Population::updateFinalPhysicalState(EventParams &_eventParams)
 				//Set their death in the graph node to be the end of time (i.e. now)
 				p->getPersonNode()->timeDied = _eventParams.currTime + 1;
 				//Add this person to the graph
-				this->graph->persons.push_back(p->getPersonNode());
+				graph->persons.push_back(p->getPersonNode());
 			}
 
 			//Removing entity because the age is about to change and this will fuck up being able to find the person!
-			this->entities->removeEntity(p);
+			entities->removeEntity(p);
 			p->runCEPACtoDeath(_eventParams.randomNums);
-			this->popStats->processPostMaxTimeDeath(p);
+			popStats->processPostMaxTimeDeath(p);
 			//Putting them back after age is updated
-			this->entities->addEntity(p);
+			entities->addEntity(p);
 			p_Iter++;
-		}//while (p_Iter != this->entities->end(gender))
+		}//while (p_Iter != entities->end(gender))
 	}//	for (DmgProfile::Gender gend = DmgProfile::MALE; gend < DmgProfile::ENDGender; gend++){
 }
 
@@ -1067,7 +1065,7 @@ void Population::dissolveSexualPartnerships(EventParams &_eventParams, Person *_
 		{
 			//try {
 			/* Code that can throw */
-			this->entities->refreshDmgProfileBucket(partner, nullptr);
+			entities->refreshDmgProfileBucket(partner, nullptr);
 			/*}
 			catch (std::out_of_range& e) {
 			std::cout << "Out of range: " << e.what() << "\n";
@@ -1094,12 +1092,12 @@ Person *Population::generatePerson(EventParams &_eventParams, DmgProfile::Gender
 	//create the person
 	if(_gender == DmgProfile::MALE)
 	{
-		toReturn = new Male(_eventParams, ageMth, _eventParams.randomNums.chance(this->popWideParams.circumcised),
-		                    this->populationID);
+		toReturn = new Male(_eventParams, ageMth, _eventParams.randomNums.chance(popWideParams.circumcised),
+		                    populationID);
 	}
 	else
 	{
-		toReturn = new Female(_eventParams, ageMth, this->populationID);
+		toReturn = new Female(_eventParams, ageMth, populationID);
 	}
 
 	//If it was a boy and he was circumcised, add the costs
@@ -1121,12 +1119,12 @@ Person *Population::generatePerson(EventParams &_eventParams, DmgProfile::Gender
 
 	//if person is of sexually active age, roll and see if they are a CSW
 	//DO NOT SET THEM AS SEXUALLY ACTIVE UNTIL AFTER DETERMINING IF THEY ARE A PREVALENT CASE BECAUSE THE CEPAC PERSON IS CREATED HERE!
-	if(ageMth >= this->popWideParams.SAEntAgeMths)
+	if(ageMth >= popWideParams.SAEntAgeMths)
 	{
 		//see if they will be a CSW
-		if(ageMth < this->popWideParams.CSWEndAgeMth[_gender])
+		if(ageMth < popWideParams.CSWEndAgeMth[_gender])
 		{
-			toReturn->rollForBecomeSexWorker(_eventParams, true, this->popWideParams.initProbCSW[_gender]);
+			toReturn->rollForBecomeSexWorker(_eventParams, true, popWideParams.initProbCSW[_gender]);
 		}
 
 		//reroll their risk group
@@ -1140,7 +1138,7 @@ Person *Population::generatePerson(EventParams &_eventParams, DmgProfile::Gender
 			if(toReturn->getDmgProfile()->get(toReturn->getDmgProfile()->getProfileID(),
 			                                  DmgProfile::SEXUAL_ACTIVITY_STATUS) != DmgProfile::NA)
 			{
-				((BucketSexualMixing *) this->entities->getBucket(toReturn->getDmgProfile()->getProfileID()))->changeHIVStatus(toReturn,
+				((BucketSexualMixing *) entities->getBucket(toReturn->getDmgProfile()->getProfileID()))->changeHIVStatus(toReturn,
 				        oldStatus, toReturn->hivStatus);
 			}
 		}
@@ -1165,15 +1163,15 @@ void Population::initIncidentInfectionsByAge()
 	vector <boost::tuple<long, int, int>> incidentInfsAgeFemale;
 	vector <boost::tuple<long, int, int>> totalIncidentInfsAge;
 
-	for(unsigned int ageBucket = 0; ageBucket < this->popWideParams.initialAgeBuckets.size(); ageBucket++)
+	for(unsigned int ageBucket = 0; ageBucket < popWideParams.initialAgeBuckets.size(); ageBucket++)
 	{
-		Population::Params::AgeBucketPrevalenceInfo *ageBucketParams = this->popWideParams.initialAgeBuckets.at(ageBucket);
+		Population::Params::AgeBucketPrevalenceInfo *ageBucketParams = popWideParams.initialAgeBuckets.at(ageBucket);
 		incidentInfsAgeMale.push_back(boost::make_tuple(0, ageBucketParams->minAgeMth, ageBucketParams->maxAgeMth));
 		incidentInfsAgeFemale.push_back(boost::make_tuple(0, ageBucketParams->minAgeMth, ageBucketParams->maxAgeMth));
 		totalIncidentInfsAge.push_back(boost::make_tuple(0, ageBucketParams->minAgeMth, ageBucketParams->maxAgeMth));
 	}
 
-	this->popStats->infectionsTracker.initializeIncidentInfectionsByAge(incidentInfsAgeMale, incidentInfsAgeFemale,
+	popStats->infectionsTracker.initializeIncidentInfectionsByAge(incidentInfsAgeMale, incidentInfsAgeFemale,
 	        totalIncidentInfsAge);
 }
 void Population::applyIncidentPrevalence(EventParams &_eventParams)
@@ -1183,19 +1181,19 @@ void Population::applyIncidentPrevalence(EventParams &_eventParams)
 	vector <boost::tuple<int, int, int>> numInfectedByAgeBucketMale;
 	vector <boost::tuple<int, int, int>> numInfectedByAgeBucketFemale;
 
-	for(size_t ageBucketNum = 0; ageBucketNum < this->popWideParams.initialAgeBuckets.size(); ageBucketNum++)
+	for(size_t ageBucketNum = 0; ageBucketNum < popWideParams.initialAgeBuckets.size(); ageBucketNum++)
 	{
 		numInfectedByAgeBucketMale.push_back(boost::make_tuple(0, 0, 0));
 		numInfectedByAgeBucketFemale.push_back(boost::make_tuple(0, 0, 0));
 	}
 
 	//loop through all males and apply prevalence to population
-	for(std::list<Person *>::iterator males_iter = this->entities->begin(DmgProfile::MALE);
-	        males_iter != this->entities->end(DmgProfile::MALE); males_iter++)
+	for(std::list<Person *>::iterator males_iter = entities->begin(DmgProfile::MALE);
+	        males_iter != entities->end(DmgProfile::MALE); males_iter++)
 	{
 		Person *p = *(males_iter);
-		int ageBucketIndex = this->getAgeBucketIndex(p);
-		Population::Params::AgeBucketPrevalenceInfo *_ageBucketParams = this->popWideParams.initialAgeBuckets.at(
+		int ageBucketIndex = getAgeBucketIndex(p);
+		Population::Params::AgeBucketPrevalenceInfo *_ageBucketParams = popWideParams.initialAgeBuckets.at(
 		            ageBucketIndex);
 		DmgProfile::Gender _gender = DmgProfile::MALE;
 		//if this is a prevalent person, see if they're infected. Right now, newborns cannot be infected
@@ -1251,31 +1249,31 @@ void Population::applyIncidentPrevalence(EventParams &_eventParams)
 
 				if(oldStatus != p->hivStatus)
 				{
-					((BucketSexualMixing *) this->entities->getBucket(p->getDmgProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
+					((BucketSexualMixing *) entities->getBucket(p->getDmgProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
 					        p->hivStatus);
 				}
 
 				//Adds person to the untreated pool if using rollout
 				if(_eventParams.useRollout)
 				{
-					this->rolloutUntreatedPool.push_back(p);
+					rolloutUntreatedPool.push_back(p);
 				}
 
 				if(p->getDmgProfile()->get(p->getDmgProfile()->getProfileID(), DmgProfile::SEXUAL_ACTIVITY_STATUS) != DmgProfile::NA)
 				{
-					((BucketSexualMixing *)this->entities->getBucket(p->getDmgProfile()->getProfileID()))->increaseInfected(p);
+					((BucketSexualMixing *)entities->getBucket(p->getDmgProfile()->getProfileID()))->increaseInfected(p);
 				}
 			}
 		} //if(_ageBucketParams) {
 	}//for()
 
 	//loop through all females and apply prevalence to population
-	for(std::list<Person *>::iterator females_iter = this->entities->begin(DmgProfile::FEMALE);
-	        females_iter != this->entities->end(DmgProfile::FEMALE); females_iter++)
+	for(std::list<Person *>::iterator females_iter = entities->begin(DmgProfile::FEMALE);
+	        females_iter != entities->end(DmgProfile::FEMALE); females_iter++)
 	{
 		Person *p = *(females_iter);
-		int ageBucketIndex = this->getAgeBucketIndex(p);
-		Population::Params::AgeBucketPrevalenceInfo *_ageBucketParams = this->popWideParams.initialAgeBuckets.at(
+		int ageBucketIndex = getAgeBucketIndex(p);
+		Population::Params::AgeBucketPrevalenceInfo *_ageBucketParams = popWideParams.initialAgeBuckets.at(
 		            ageBucketIndex);
 		DmgProfile::Gender _gender = DmgProfile::FEMALE;
 		//if this is a prevalent person, see if they're infected. Right now, newborns cannot be infected
@@ -1330,18 +1328,18 @@ void Population::applyIncidentPrevalence(EventParams &_eventParams)
 
 				if(oldStatus != p->hivStatus)
 				{
-					((BucketSexualMixing *) this->entities->getBucket(p->getDmgProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
+					((BucketSexualMixing *) entities->getBucket(p->getDmgProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
 					        p->hivStatus);
 				}
 
 				if(_eventParams.useRollout)
 				{
-					this->rolloutUntreatedPool.push_back(p);
+					rolloutUntreatedPool.push_back(p);
 				}
 
 				if(p->getDmgProfile()->get(p->getDmgProfile()->getProfileID(), DmgProfile::SEXUAL_ACTIVITY_STATUS) != DmgProfile::NA)
 				{
-					((BucketSexualMixing *)this->entities->getBucket(p->getDmgProfile()->getProfileID()))->increaseInfected(p);
+					((BucketSexualMixing *)entities->getBucket(p->getDmgProfile()->getProfileID()))->increaseInfected(p);
 				}
 			}
 		} //if(_ageBucketParams) {
@@ -1373,7 +1371,7 @@ void Population::applyRolloutContext(EventParams &_eventParams, int time)
 				//Apply to all current treated patients
 				std::list<Person *>::iterator personIter;
 
-				for(personIter = this->rolloutTreatedPool.begin(); personIter != this->rolloutTreatedPool.end(); personIter++)
+				for(personIter = rolloutTreatedPool.begin(); personIter != rolloutTreatedPool.end(); personIter++)
 				{
 					(*personIter)->setSimContext(_eventParams.treatedContext);
 				}
@@ -1408,10 +1406,10 @@ void Population::determineRankings(const EventParams::RolloutEligibility &criter
 
 		if(checkOiHist || checkCd4 || checkCd4OiHist || checkHvl || checkCd4Hvl)
 		{
-			list <Person *>::iterator untIter = this->rolloutUntreatedPool.begin();
+			list <Person *>::iterator untIter = rolloutUntreatedPool.begin();
 
 			//loop through people in the untreated pool to check for their eligibility
-			while(untIter != this->rolloutUntreatedPool.end())
+			while(untIter != rolloutUntreatedPool.end())
 			{
 				bool isEligible = false;
 				Person *untPerson = *untIter;
@@ -1645,9 +1643,9 @@ bool Population::passesPartnershipCalibration(EventParams &_eventParams)
 
 	for(int gender = DmgProfile::MALE; gender < DmgProfile::ENDGender; gender++)
 	{
-		std::list<Person *>::iterator p_Iter = this->entities->begin((DmgProfile::Gender) gender);
+		std::list<Person *>::iterator p_Iter = entities->begin((DmgProfile::Gender) gender);
 
-		while(p_Iter != this->entities->end((DmgProfile::Gender) gender))
+		while(p_Iter != entities->end((DmgProfile::Gender) gender))
 		{
 			if((*p_Iter)->getDmgProfileVal(DmgProfile::SEXUAL_ACTIVITY_STATUS) != DmgProfile::SA)
 			{
@@ -2128,7 +2126,7 @@ unsigned long Population::createPartnerships(EventParams &_eventParams, Person *
 				//If woman was removed from entity pool, put her back!
 				if((*it)->getCurrBucketProfileID() == DmgProfile::END)
 				{
-					this->entities->addEntity((*it));
+					entities->addEntity((*it));
 				}
 			}
 
@@ -2156,13 +2154,13 @@ unsigned long Population::createPartnerships(EventParams &_eventParams, Person *
 			//If woman was removed from entity pool, put her back!
 			if((*it)->getCurrBucketProfileID() == DmgProfile::END)
 			{
-				this->entities->addEntity((*it));
+				entities->addEntity((*it));
 			}
 		}
 
 		if(!_initiator->inCorrectDmgProfileBucket())
 		{
-			this->entities->refreshDmgProfileBucket(_initiator, nullptr);
+			entities->refreshDmgProfileBucket(_initiator, nullptr);
 		}
 
 		assert(chosenPartner->inCorrectDmgProfileBucket());
@@ -2186,10 +2184,10 @@ void Population::processDeath(EventParams &_eventParams, Person *_p, bool calcul
 	//Calculate life expectancy info
 	if(calculateLE)
 	{
-		assert((this->popStats->selectedLEStats != nullptr));
+		assert((popStats->selectedLEStats != nullptr));
 		assert(_p->getAge(YEAR) >= 0);
 		assert(_p->getAge(YEAR) <= Person::maxYrForDeathStats);
-		this->popStats->selectedLEStats->deathsByAge[_p->getAge(YEAR)]++;
+		popStats->selectedLEStats->deathsByAge[_p->getAge(YEAR)]++;
 	}
 
 	//print out this info to the trace
@@ -2213,15 +2211,15 @@ void Population::processDeath(EventParams &_eventParams, Person *_p, bool calcul
 		_p->getPartnershipsToEnd(_eventParams.currTime, type, formerPartnerships, true);
 	} //for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::ENDType; ++type) {
 
-	this->dissolveSexualPartnerships(_eventParams, _p, formerPartnerships);
-	this->currDeathCauses[_p->deathStatus]++;
-	this->popStats->processDeath(_p, _eventParams);
+	dissolveSexualPartnerships(_eventParams, _p, formerPartnerships);
+	currDeathCauses[_p->deathStatus]++;
+	popStats->processDeath(_p, _eventParams);
 
 	if(_eventParams.genGraphViz)
 	{
 		/** If we're using graphViz, update the time of death in the graph node add the persons node to the population graph */
 		_p->getPersonNode()->timeDied = _eventParams.currTime;
-		this->graph->persons.push_back(_p->getPersonNode());
+		graph->persons.push_back(_p->getPersonNode());
 		/** Need to keep person around to print out the black (dead) persons */
 		_p->deletePersonWithoutDeleting();
 	}
@@ -2251,9 +2249,9 @@ long Population::calcPrevalentPopulation(long _time)
 	std::vector<boost::tuple<long, int, int>> prevalenceByAgeFemale;
 
 	//initialize prevalent infections by age
-	for(unsigned int ageBucket = 0; ageBucket < this->popWideParams.initialAgeBuckets.size(); ageBucket++)
+	for(unsigned int ageBucket = 0; ageBucket < popWideParams.initialAgeBuckets.size(); ageBucket++)
 	{
-		Population::Params::AgeBucketPrevalenceInfo *ageBucketParams = this->popWideParams.initialAgeBuckets.at(ageBucket);
+		Population::Params::AgeBucketPrevalenceInfo *ageBucketParams = popWideParams.initialAgeBuckets.at(ageBucket);
 		prevalenceByAgeMale.push_back(boost::make_tuple(0, ageBucketParams->minAgeMth, ageBucketParams->maxAgeMth));
 		prevalenceByAgeFemale.push_back(boost::make_tuple(0, ageBucketParams->minAgeMth, ageBucketParams->maxAgeMth));
 	}
@@ -2274,7 +2272,7 @@ long Population::calcPrevalentPopulation(long _time)
 
 	while(currProfileID <= DmgProfile::MAX)
 	{
-		for(int i = 0; i < this->popStats->infectionsTracker.NUMBER_GENERATIONS_TO_TRACE; i++)
+		for(int i = 0; i < popStats->infectionsTracker.NUMBER_GENERATIONS_TO_TRACE; i++)
 		{
 			prevalenceByBucket[currProfileID][i] = 0;
 		}
@@ -2288,7 +2286,7 @@ long Population::calcPrevalentPopulation(long _time)
 
 	while(currProfileID <= DmgProfile::MAX)
 	{
-		currBucket = this->entities->getBucket(currProfileID);
+		currBucket = entities->getBucket(currProfileID);
 
 		//if people of this particular profile don't exist in the population, move on.
 		if((currBucket == nullptr) || (currBucket->size() == 0))
@@ -2298,7 +2296,7 @@ long Population::calcPrevalentPopulation(long _time)
 		}
 
 		for(int generation = Constants::PREVALENT_INFECTION;
-		        generation < this->popStats->infectionsTracker.NUMBER_GENERATIONS_TO_TRACE; generation++)
+		        generation < popStats->infectionsTracker.NUMBER_GENERATIONS_TO_TRACE; generation++)
 		{
 			//count number of infected in bucket
 			prevalenceByBucket[currProfileID][generation] = currBucket->getNumInfected(generation);
@@ -2344,7 +2342,7 @@ long Population::calcPrevalentPopulation(long _time)
 	}
 
 	//save the prevalent infections by bucket in the PopStats
-	this->popStats->infectionsTracker.setPrevalentInfections(_time, prevalenceByBucket, prevalenceByAgeMale,
+	popStats->infectionsTracker.setPrevalentInfections(_time, prevalenceByBucket, prevalenceByAgeMale,
 	        prevalenceByAgeFemale, prevalenceByRiskGenderEmployment);
 	return totalInfected;
 }
@@ -2354,10 +2352,10 @@ Population::Params::AgeBucketPrevalenceInfo *Population::getAgeBucket(Person *p)
 	int age = p->getAge(MONTH);
 	Population::Params::AgeBucketPrevalenceInfo *ageBucketParams = nullptr;
 
-	for(unsigned int ageBucket = 0; ageBucket < this->popWideParams.initialAgeBuckets.size(); ageBucket++)
+	for(unsigned int ageBucket = 0; ageBucket < popWideParams.initialAgeBuckets.size(); ageBucket++)
 	{
 		//holds the parameters for the current age bucket
-		ageBucketParams = this->popWideParams.initialAgeBuckets.at(ageBucket);
+		ageBucketParams = popWideParams.initialAgeBuckets.at(ageBucket);
 
 		if(age >= ageBucketParams->minAgeMth && age <= ageBucketParams->maxAgeMth)
 		{
@@ -2374,10 +2372,10 @@ int Population::getAgeBucketIndex(Person *p)
 	Population::Params::AgeBucketPrevalenceInfo *ageBucketParams;
 	unsigned int ageBucket;
 
-	for(ageBucket = 0; ageBucket < this->popWideParams.initialAgeBuckets.size(); ageBucket++)
+	for(ageBucket = 0; ageBucket < popWideParams.initialAgeBuckets.size(); ageBucket++)
 	{
 		//holds the parameters for the current age bucket
-		ageBucketParams = this->popWideParams.initialAgeBuckets.at(ageBucket);
+		ageBucketParams = popWideParams.initialAgeBuckets.at(ageBucket);
 
 		if(age >= ageBucketParams->minAgeMth && age <= ageBucketParams->maxAgeMth)
 		{
@@ -2390,32 +2388,32 @@ int Population::getAgeBucketIndex(Person *p)
 
 long Population::getSize()
 {
-	return this->currSize;
+	return currSize;
 }
 
 long Population::getNASize()
 {
-	return this->currNASize;
+	return currNASize;
 }
 
 long Population::getSize(DmgProfile::Gender gender)
 {
-	return this->currSizeGender[gender];
+	return currSizeGender[gender];
 }
 
 long Population::getSASize(DmgProfile::Gender _gender, Person::RiskLevel _risk)
 {
-	return this->currSASizeGenderRisk[_gender][_risk];
+	return currSASizeGenderRisk[_gender][_risk];
 }
 
 long Population::getCSWSize(DmgProfile::Gender _gender, Person::RiskLevel _risk)
 {
-	return this->currSizeGenderRiskCSW[_gender][_risk];
+	return currSizeGenderRiskCSW[_gender][_risk];
 }
 
 std::vector<boost::tuple<long, int, int>> Population::getSizeByAgeRange()
 {
-	return this->currSizeByAgeRange;
+	return currSizeByAgeRange;
 }
 
 void Population::printMethodResults(EventParams &_eventParams, std::string _methodName, std::string _eventLabel,
@@ -2441,13 +2439,13 @@ void Population::printMethodResults(EventParams &_eventParams, std::string _meth
 			_eventParams.traceStreams[EventParams::TraceFileType::Events] << "Steady Partnership Population" << Constants::TAB;
 			_eventParams.traceStreams[EventParams::TraceFileType::Events] << "Regular Partnership Population" << Constants::TAB;
 			_eventParams.traceStreams[EventParams::TraceFileType::Events] << Constants::TAB;
-			this->entities->printBucketLabels(_eventParams.traceStreams[EventParams::TraceFileType::Events], _showInfections);
+			entities->printBucketLabels(_eventParams.traceStreams[EventParams::TraceFileType::Events], _showInfections);
 			_eventParams.traceStreams[EventParams::TraceFileType::Events] << endl;
 		} //if( _eventParams.currTime == 0 ) {
 
 		//print out the sizes of the buckets to a string stream
 		std::ostringstream bucketTotalsStr;
-		this->entities->printBucketSizes(bucketTotalsStr, Constants::TAB, _showInfections, totalInfected, totalPopSize,
+		entities->printBucketSizes(bucketTotalsStr, Constants::TAB, _showInfections, totalInfected, totalPopSize,
 		                                 totalSexuallyActive, totalInSteady, totalInRegular, (_eventParams.debugLevel > DEBUG1));
 
 		//if debug level > 1, then print trace format in verbose form and include labels
@@ -2484,7 +2482,7 @@ void Population::printMethodResults(EventParams &_eventParams, std::string _meth
 		if(_eventParams.debugLevel > DEBUG2)
 		{
 			_eventParams.traceStreams[EventParams::TraceFileType::Events] << endl;
-			this->entities->print(_eventParams.traceStreams[EventParams::TraceFileType::Events]);
+			entities->print(_eventParams.traceStreams[EventParams::TraceFileType::Events]);
 		}
 
 		_eventParams.traceStreams[EventParams::TraceFileType::Events] << endl;
@@ -2710,9 +2708,9 @@ void Population::printPartnerships(EventParams &_eventParams, long _time, std::o
 
 	for(int gender = DmgProfile::MALE; gender < DmgProfile::ENDGender; gender++)
 	{
-		std::list<Person *>::iterator p_Iter = this->entities->begin((DmgProfile::Gender)gender);
+		std::list<Person *>::iterator p_Iter = entities->begin((DmgProfile::Gender)gender);
 
-		while(p_Iter != this->entities->end((DmgProfile::Gender) gender))
+		while(p_Iter != entities->end((DmgProfile::Gender) gender))
 		{
 			int numPartners[SexualPartnership::ENDType];
 			bool hasType[SexualPartnership::ENDType];
@@ -3052,7 +3050,7 @@ void Population::printClinical(EventParams &/*_eventParams*/, long _time, std::o
 
 	while(currProfileID <= DmgProfile::MAX)
 	{
-		currBucket = this->entities->getBucket(currProfileID);
+		currBucket = entities->getBucket(currProfileID);
 
 		//if people of this particular profile don't exist in the population, move on.
 		if((currBucket == nullptr) || (currBucket->size() == 0))
@@ -3196,7 +3194,7 @@ void Population::printClinical(EventParams &/*_eventParams*/, long _time, std::o
 		}
 	}
 
-	this->popStats->infectionsTracker.recordCD4AtTransmission(_outStream);
+	popStats->infectionsTracker.recordCD4AtTransmission(_outStream);
 	_outStream << endl;
 }
 
@@ -3204,7 +3202,7 @@ void Population::printPopulation(EventParams &/*_eventParams*/, long _time, std:
 {
 	assert(_time >= 0);
 	//total # of age ranges to print out
-	std::vector<boost::tuple<long, int, int>> currSizeByAgeRange = this->getSizeByAgeRange();
+	std::vector<boost::tuple<long, int, int>> currSizeByAgeRange = getSizeByAgeRange();
 	int numAgeRanges = currSizeByAgeRange.size();
 
 	//write headers for infections sheet
@@ -3296,39 +3294,39 @@ void Population::printPopulation(EventParams &/*_eventParams*/, long _time, std:
 	}
 
 	//output population size and SA pop size
-	_outStream << this->getSize() << Constants::TAB;
-	_outStream << this->getSize() - this->getNASize() << Constants::TAB;
+	_outStream << getSize() << Constants::TAB;
+	_outStream << getSize() - getNASize() << Constants::TAB;
 	//output deaths by causes
-	_outStream << this->currDeathCauses[Person::DTH_OI] << Constants::TAB << this->currDeathCauses[Person::DTH_CHRAIDS] <<
-	           Constants::TAB << this->currDeathCauses[Person::DTH_NONAIDS] << Constants::TAB <<
-	           this->currDeathCauses[Person::DTH_TOX_ART] << Constants::TAB << this->currDeathCauses[Person::DTH_TOX_PROPH] <<
-	           Constants::TAB << this->currDeathCauses[Person::DTH_OTHER] << Constants::TAB;
+	_outStream << currDeathCauses[Person::DTH_OI] << Constants::TAB << currDeathCauses[Person::DTH_CHRAIDS] <<
+	           Constants::TAB << currDeathCauses[Person::DTH_NONAIDS] << Constants::TAB <<
+	           currDeathCauses[Person::DTH_TOX_ART] << Constants::TAB << currDeathCauses[Person::DTH_TOX_PROPH] <<
+	           Constants::TAB << currDeathCauses[Person::DTH_OTHER] << Constants::TAB;
 	long totalDeaths = 0;
 
 	for(int i = 1; i < Person::ENDDeathStatus; i++)
 	{
-		totalDeaths += this->currDeathCauses[i];
+		totalDeaths += currDeathCauses[i];
 	}
 
 	_outStream << totalDeaths << Constants::TAB;
 	//output size of male and female populations
-	_outStream << this->getSize(DmgProfile::MALE) << Constants::TAB;
-	_outStream << this->getSize(DmgProfile::FEMALE) << Constants::TAB;
+	_outStream << getSize(DmgProfile::MALE) << Constants::TAB;
+	_outStream << getSize(DmgProfile::FEMALE) << Constants::TAB;
 	//output size by risk
-	_outStream << this->currSizeRiskCSW[Person::HIGH] << Constants::TAB << this->currSizeRiskCSW[Person::LOW] <<
+	_outStream << currSizeRiskCSW[Person::HIGH] << Constants::TAB << currSizeRiskCSW[Person::LOW] <<
 	           Constants::TAB;
 
 	for(int i = Person::HIGH; i >= 0; i--)
 	{
 		for(int j = 0; j < DmgProfile::ENDGender; j++)
 		{
-			_outStream << this->getSASize((DmgProfile::Gender) j,
-			                              (Person::RiskLevel) i) - this->currSizeGenderRiskCSW[j][i] << Constants::TAB;
+			_outStream << getSASize((DmgProfile::Gender) j,
+			                              (Person::RiskLevel) i) - currSizeGenderRiskCSW[j][i] << Constants::TAB;
 		}
 	}
 
 	//output size by age
-	_outStream << this->getNASize() << Constants::TAB;
+	_outStream << getNASize() << Constants::TAB;
 
 	for(vector<boost::tuple<long, int, int>>::iterator ageIter = currSizeByAgeRange.begin();
 	        ageIter != currSizeByAgeRange.end(); ageIter++)
@@ -3337,7 +3335,7 @@ void Population::printPopulation(EventParams &/*_eventParams*/, long _time, std:
 	}
 
 	//output size by age and gender
-	_outStream << this->currNASizeByGender[0] << Constants::TAB;
+	_outStream << currNASizeByGender[0] << Constants::TAB;
 
 	for(vector<boost::tuple<long, int, int>>::iterator ageIter = currSizeByAgeRangeMale.begin();
 	        ageIter != currSizeByAgeRangeMale.end(); ageIter++)
@@ -3345,7 +3343,7 @@ void Population::printPopulation(EventParams &/*_eventParams*/, long _time, std:
 		_outStream << (*ageIter).get<0>() << Constants::TAB;
 	}
 
-	_outStream << this->currNASizeByGender[1] << Constants::TAB;
+	_outStream << currNASizeByGender[1] << Constants::TAB;
 
 	for(vector<boost::tuple<long, int, int>>::iterator ageIter = currSizeByAgeRangeFemale.begin();
 	        ageIter != currSizeByAgeRangeFemale.end(); ageIter++)
@@ -3372,9 +3370,9 @@ void Population::saveState(std::ostream &_outStream, long currTime)
 			gender = DmgProfile::FEMALE;
 		}
 
-		p_Iter = this->entities->begin(gender);
+		p_Iter = entities->begin(gender);
 
-		while(p_Iter != this->entities->end(gender))
+		while(p_Iter != entities->end(gender))
 		{
 			Person *p = (*p_Iter);
 			assert(p != nullptr);
@@ -3390,7 +3388,7 @@ void Population::saveState(std::ostream &_outStream, long currTime)
 			p->saveState(_outStream, currTime);
 			_outStream << "}";
 			p_Iter++;
-		}//while (p_Iter != this->entities->end(gender))
+		}//while (p_Iter != entities->end(gender))
 	}//	for (DmgProfile::Gender gend = DmgProfile::MALE; gend < DmgProfile::ENDGender; gend++){
 }
 
@@ -3404,7 +3402,7 @@ this is called at specified time points to record the partner history frequency
 **/
 void Population::recordPartAcqFreq()
 {
-	assert(this->popStats->selectedPartAcqStats != nullptr);
+	assert(popStats->selectedPartAcqStats != nullptr);
 	std::list<Person *>::iterator p_Iter;
 
 	//Double loop: first iterate through the men, then the women
@@ -3417,9 +3415,9 @@ void Population::recordPartAcqFreq()
 			gender = DmgProfile::FEMALE;
 		}
 
-		p_Iter = this->entities->begin(gender);
+		p_Iter = entities->begin(gender);
 
-		while(p_Iter != this->entities->end(gender))
+		while(p_Iter != entities->end(gender))
 		{
 			int numPartnersInHistory = (*p_Iter)->getNumPartnersInHistory();
 
@@ -3433,7 +3431,7 @@ void Population::recordPartAcqFreq()
 				numPartnersInHistory = 0;
 			}
 
-			this->popStats->selectedPartAcqStats->partnerFreq[numPartnersInHistory]++;
+			popStats->selectedPartAcqStats->partnerFreq[numPartnersInHistory]++;
 			p_Iter++;
 		}
 	}

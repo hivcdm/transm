@@ -51,7 +51,7 @@ public:
 			Enum e;
 
 			ExceptionBadEnum(Enum _e) {
-				this->e = _e;
+				e = _e;
 			}
 
 			virtual const char* what() const throw() {
@@ -100,7 +100,7 @@ public :
 
 	/**
 	Given a string, respresents to return the enum value that matches it
-	If string does not match any value, returns this->getMax() + 1
+	If string does not match any value, returns getMax() + 1
 	**/
 	Enum fromString(const std::string &_str) const;
 
@@ -165,38 +165,38 @@ public:
 template <class E>
 EnumCls<E>::EnumCls()
 {
-	this->initialized = false;
+	initialized = false;
 }
 
 template <class E>
 EnumCls<E>::EnumCls(const std::vector<std::string> _strs)
 {
-	this->init(_strs);
+	init(_strs);
 }
 
 template <class E>
 void EnumCls<E>::appendEnumStr(std::ostream &_output, E &_e)
 {
-	_output << this->toString(_e);
+	_output << toString(_e);
 }
 
 template <class E>
 E EnumCls<E>::getMin()
 {
-	return E(this->min);
+	return E(min);
 }
 
 template <class E>
 E EnumCls<E>::getMax()
 {
-	return E(this->max);
+	return E(max);
 }
 
 template <class E>
 E EnumCls<E>::toEnum(int _enum)
 {
 	assert(_enum >= 0);
-	assert(_enum <= this->numEnums);
+	assert(_enum <= numEnums);
 	return E(_enum);
 }
 
@@ -204,16 +204,16 @@ template <class E>
 E EnumCls<E>::toEnum(std::string _enumStr)
 {
 	//look through all enum strings to see if we have a match
-	for(size_t i = 0; i < this->numEnums; i++)
+	for(size_t i = 0; i < numEnums; i++)
 	{
-		if(_enumStr.compare(this->strs.at(i)) == 0)
+		if(_enumStr.compare(strs.at(i)) == 0)
 		{
 			return E(i);
 		}
 	}
 
 	std::cerr << "Error: EnumCls " << _enumStr << " does not exist" << std::endl;
-	return E(this->numEnums);
+	return E(numEnums);
 }
 
 

@@ -149,7 +149,7 @@ StatsRecord<PointStatIDs, StratifiedStatIDs>::StatsRecord()
 template<typename PointStatIDs, typename StratifiedStatIDs>
 StatsRecord<PointStatIDs, StratifiedStatIDs>::StatsRecord(EnumCls<PointStatIDs> *_statIDs)
 {
-	this->init(_statIDs);
+	init(_statIDs);
 }
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
@@ -162,9 +162,9 @@ template<typename PointStatIDs, typename StratifiedStatIDs>
 void StatsRecord<PointStatIDs, StratifiedStatIDs>::init(EnumCls<PointStatIDs> *_statIDEnumCls)
 {
 	assert(typeid(StratifiedStatIDs) == typeid(BaseEnumCls::nullptr_ENUM));
-	this->statIDEnumCls = _statIDEnumCls;
+	statIDEnumCls = _statIDEnumCls;
 	//make room internally to store numSingleStats values
-	this->singleValStats.resize(_statIDEnumCls->getNumEnums(), 0.0);
+	singleValStats.resize(_statIDEnumCls->getNumEnums(), 0.0);
 }
 
 
@@ -173,19 +173,19 @@ template<typename PointStatIDs, typename StratifiedStatIDs>
 StatsRecord<PointStatIDs,StratifiedStatIDs>::StatsRecord(  EnumCls<PointStatIDs>* _statIDs,  EnumCls<StratifiedStatIDs> * _stratifiedStatIDs, size_t _stratifiedStatDims[]) {
 	assert( typeid(StratifiedStatIDs) != typeid(BaseEnumCls::nullptr_ENUM));
 
-	this->statIDEnumCls = _statIDs;
-	this->stratifiedStatIDEnumCls = _stratifiedStatIDs;
+	statIDEnumCls = _statIDs;
+	stratifiedStatIDEnumCls = _stratifiedStatIDs;
 
 	//make room internally to store numSingleStats values
-	this->singleValStats.resize(_statIDs->getNumEnums(), 0.0);
+	singleValStats.resize(_statIDs->getNumEnums(), 0.0);
 
 	//make room internally to store numArrayStatIDs vectors
-	this->stratifiedStats.resize(_stratifiedStatIDs->getNumEnums());
+	stratifiedStats.resize(_stratifiedStatIDs->getNumEnums());
 
 	//iterate through all stratified stats
 	for(size_t i = 0; i < _stratifiedStatIDs.getNumEnums(); i++) {
 		//make room internally to store numStrata values
-		this->stratifiedStats.at(i).resize( _stratifiedStatDims[i], 0.0);
+		stratifiedStats.at(i).resize( _stratifiedStatDims[i], 0.0);
 	}
 }
 */
@@ -194,21 +194,21 @@ template<typename PointStatIDs, typename StratifiedStatIDs>
 void StatsRecord<PointStatIDs, StratifiedStatIDs>::print(std::ostream &_outStream)
 {
 	//print out single value stats
-	for(PointStatIDs i = PointStatIDs(0); i < this->statIDEnumCls->getNumEnums(); ++i)
+	for(PointStatIDs i = PointStatIDs(0); i < statIDEnumCls->getNumEnums(); ++i)
 	{
-		this->statIDEnumCls->appendEnumStr(_outStream, i);
-		_outStream << "\t" << this->singleValStats.at(i) << std::endl;
+		statIDEnumCls->appendEnumStr(_outStream, i);
+		_outStream << "\t" << singleValStats.at(i) << std::endl;
 	}
 
 	//print out array stats
-	for(StratifiedStatIDs i = StratifiedStatIDs(0); i < this->stratifiedStatIDEnumCls->getNumEnums(); ++i)
+	for(StratifiedStatIDs i = StratifiedStatIDs(0); i < stratifiedStatIDEnumCls->getNumEnums(); ++i)
 	{
-		this->stratifiedStatIDEnumCls->appendEnumStr(_outStream, i);
+		stratifiedStatIDEnumCls->appendEnumStr(_outStream, i);
 		_outStream << ":\t(";
 
-		for(size_t j = 0; j < this->stratifiedStats.at(i).size(); j++)
+		for(size_t j = 0; j < stratifiedStats.at(i).size(); j++)
 		{
-			_outStream << this->stratifiedStats.at(i).at(j) << "\t";
+			_outStream << stratifiedStats.at(i).at(j) << "\t";
 		}
 
 		_outStream << ")" << std::endl;
@@ -220,29 +220,29 @@ void StatsRecord<PointStatIDs, StratifiedStatIDs>::print(std::ostream &_outStrea
 template<typename PointStatIDs, typename StratifiedStatIDs>
 double StatsRecord<PointStatIDs, StratifiedStatIDs>::getStat(PointStatIDs _statID)  const
 {
-	assert(this->validStatID(_statID));
-	return this->singleValStats.at(_statID);
+	assert(validStatID(_statID));
+	return singleValStats.at(_statID);
 }
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
 void StatsRecord<PointStatIDs, StratifiedStatIDs>::incrStat(PointStatIDs _statID, double _value)
 {
-	assert(this->validStatID(_statID));
-	this->singleValStats.at(_statID) += _value;
+	assert(validStatID(_statID));
+	singleValStats.at(_statID) += _value;
 }
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
 void StatsRecord<PointStatIDs, StratifiedStatIDs>::multStat(PointStatIDs _statID, double _value)
 {
-	assert(this->validStatID(_statID));
-	this->singleValStats.at(_statID) *= _value;
+	assert(validStatID(_statID));
+	singleValStats.at(_statID) *= _value;
 }
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
 void StatsRecord<PointStatIDs, StratifiedStatIDs>::setStat(PointStatIDs _statID, double _value)
 {
-	assert(this->validStatID(_statID));
-	this->singleValStats.at(_statID) = _value;
+	assert(validStatID(_statID));
+	singleValStats.at(_statID) = _value;
 }
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
@@ -257,33 +257,33 @@ bool StatsRecord<PointStatIDs, StratifiedStatIDs>::validStatID(PointStatIDs _sta
 //------------< Begin Stratified stats methods >---------------------//
 template<typename PointStatIDs, typename StratifiedStatIDs>
 double StatsRecord<PointStatIDs,StratifiedStatIDs>::getStat(StratifiedStatIDs _statID, int _index)  const{
-	assert( this->validStatID(_statID, _index) );
-	return this->stratifiedStats.at(_statID).at(_index);
+	assert( validStatID(_statID, _index) );
+	return stratifiedStats.at(_statID).at(_index);
 }
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
 void StatsRecord<PointStatIDs,StratifiedStatIDs>::incrStat(StratifiedStatIDs _statID, int _index, double _value){
-	assert( this->validStatID(_statID, _index) );
-	this->stratifiedStats.at(_statID).at(_index) += _value;
+	assert( validStatID(_statID, _index) );
+	stratifiedStats.at(_statID).at(_index) += _value;
 }
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
 void StatsRecord<PointStatIDs,StratifiedStatIDs>::multStat(StratifiedStatIDs _statID, int _index, double _value){
-	assert( this->validStatID(_statID, _index) );
-	this->stratifiedStats.at(_statID).at(_index) *= _value;
+	assert( validStatID(_statID, _index) );
+	stratifiedStats.at(_statID).at(_index) *= _value;
 }
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
 void StatsRecord<PointStatIDs,StratifiedStatIDs>::setStat(StratifiedStatIDs _statID, int _index, double _value){
-	assert( this->validStatID(_statID, _index) );
-	this->stratifiedStats.at(_statID).at(_index) = _value;
+	assert( validStatID(_statID, _index) );
+	stratifiedStats.at(_statID).at(_index) = _value;
 }
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
 bool StatsRecord<PointStatIDs,StratifiedStatIDs>::validStatID(StratifiedStatIDs _statID, int _index) const{
-	return ( this->stratifiedStatIDEnumCls->isValidNonWildCard(_statID)) &&
+	return ( stratifiedStatIDEnumCls->isValidNonWildCard(_statID)) &&
 			 (_index >= 0) &&
-			 (_index < this->stratifiedStats.at(_statID).size())
+			 (_index < stratifiedStats.at(_statID).size())
 		   );
 }
 

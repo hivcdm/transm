@@ -11,25 +11,25 @@ BucketSexualMixing::BucketSexualMixing(DmgProfile::ProfileID _id, const string *
 {
 	assert((_timeGranularity == MONTH) || (_timeGranularity == YEAR));
 	assert((_minAge >= 0) && (_maxAge >= _minAge));
-	this->timeGranularity = _timeGranularity;
-	this->minAge = _minAge;
-	this->maxAge = _maxAge;
-	this->popID = _popID;
+	timeGranularity = _timeGranularity;
+	minAge = _minAge;
+	maxAge = _maxAge;
+	popID = _popID;
 
 	for(int i = 0; i < SexualPartnership::ENDType; i++)
 	{
-		this->assort[i] = _assort[i];
+		assort[i] = _assort[i];
 	}
 
 	//ERINWASHERE
 	//set capacity of circular buffer
-	unsigned int numAgeBuckets = this->maxAge - this->minAge + 1;
+	unsigned int numAgeBuckets = maxAge - minAge + 1;
 	personsByAge = new BucketAllAges(numAgeBuckets);
 	//personsByAge = new BucketAllAges();
 	//initialize all the BucketAges in the BucketSexualMixing, a circular buffer will hold all people of a certain age
-	unsigned int currAge = this->minAge;
+	unsigned int currAge = minAge;
 
-	while(currAge <= this->maxAge)
+	while(currAge <= maxAge)
 	{
 		BucketAge *pToAge = new BucketAge(_id, _popID, _assort);
 		assert(pToAge->getBinID() == _id);
@@ -63,31 +63,31 @@ BucketSexualMixing::~BucketSexualMixing()
 unsigned int BucketSexualMixing::getCorrectBufferIndex(Person *_p)
 {
 	//get person's age in right time granularity
-	unsigned int pAge = _p->getAge(this->timeGranularity);
+	unsigned int pAge = _p->getAge(timeGranularity);
 
-	if(!Util::withinRange<unsigned int>(pAge, this->minAge, this->maxAge))
+	if(!Util::withinRange<unsigned int>(pAge, minAge, maxAge))
 	{
-		cout << "Age is " << _p->getAge(MONTH) << " but minAge is " << this->minAge << " and max age is " << this->maxAge <<
+		cout << "Age is " << _p->getAge(MONTH) << " but minAge is " << minAge << " and max age is " << maxAge <<
 		     endl;
 	}
 
-	assert(Util::withinRange(pAge, this->minAge, this->maxAge));
+	assert(Util::withinRange(pAge, minAge, maxAge));
 
-	/*//if this person's DmgProfile doesn't match this->DmgProfile, return -1
-	if (this->getProfileID() != _p->getDmgProfile()->getProfileID()){
+	/*//if this person's DmgProfile doesn't match DmgProfile, return -1
+	if (getProfileID() != _p->getDmgProfile()->getProfileID()){
 		cout << "WRONG PROFILE" << endl;
-		return (unsigned int)this->personsByAge->size();
+		return (unsigned int)personsByAge->size();
 	}*/
 
 	//age determines place in the circular buffer
-	if(!Util::withinRange<unsigned int>(pAge, this->minAge, this->maxAge))
+	if(!Util::withinRange<unsigned int>(pAge, minAge, maxAge))
 	{
 		//If person is out of range of this buffer, return -1 which is an invalid entry
-		return (unsigned int)this->personsByAge->size();
+		return (unsigned int)personsByAge->size();
 	}
 	else
 	{
-		return (pAge - this->minAge);
+		return (pAge - minAge);
 	}
 }
 
@@ -105,7 +105,7 @@ void BucketSexualMixing::clear()
 
 Person *BucketSexualMixing::drawMember(RandomNums &_randomNums, SexualPartnership::Type _partnershipType, bool _remove)
 {
-	if(this->size() == 0)
+	if(size() == 0)
 	{
 		return nullptr;
 	}
@@ -113,7 +113,7 @@ Person *BucketSexualMixing::drawMember(RandomNums &_randomNums, SexualPartnershi
 	//Use minAge and maxAge for bucket
 	//default use risk level of low
 	//Assortative param will set it to random anyhow
-	return this->getRandomPerson(_randomNums, this->minAge, this->maxAge, Person::LOW, _partnershipType, _remove);
+	return getRandomPerson(_randomNums, minAge, maxAge, Person::LOW, _partnershipType, _remove);
 }
 
 /***
@@ -130,31 +130,31 @@ Person *BucketSexualMixing::drawMember(RandomNums &_randomNums, Person *_chooser
 		double ageYoungerYears = _chooser->rollForAgeDifference(_partnershipType, _randomNums);
 		int ageYoungerMonths = (int)(12 * ageYoungerYears + 0.5);
 		//AgeYoungerMonths can be negative so we need to make sure the range stays between both the min and the max age
-		minDesired = min(_chooser->getAge(MONTH) - (ageYoungerMonths + 6), (int)(this->maxAge));
-		maxDesired = max(_chooser->getAge(MONTH) - (ageYoungerMonths - 6), (int)(this->minAge));
+		minDesired = min(_chooser->getAge(MONTH) - (ageYoungerMonths + 6), (int)(maxAge));
+		maxDesired = max(_chooser->getAge(MONTH) - (ageYoungerMonths - 6), (int)(minAge));
 		assert(minDesired <= maxDesired);
 	}
 
 	//min and max age of Entitys that _chooser can pick from this Person container
-	int minAgeDesired = max((int)(this->minAge), minDesired);
-	int maxAgeDesired = min((int)(this->maxAge), maxDesired);
-	return this->getRandomPerson(_randomNums, minAgeDesired, maxAgeDesired, _chooser->getRiskLevel(), _partnershipType, _remove);
+	int minAgeDesired = max((int)(minAge), minDesired);
+	int maxAgeDesired = min((int)(maxAge), maxDesired);
+	return getRandomPerson(_randomNums, minAgeDesired, maxAgeDesired, _chooser->getRiskLevel(), _partnershipType, _remove);
 }
 
 //will remove this Person (if he or she exists) from the index
 bool BucketSexualMixing::erase(Person *_person)
 {
 	assert(_person != nullptr);
-	unsigned int correctIndex = this->getCorrectBufferIndex(_person);
+	unsigned int correctIndex = getCorrectBufferIndex(_person);
 
 	//if this person wouldn't be in this DmgProfileBucket, then return false
-	if(correctIndex >= this->personsByAge->size())
+	if(correctIndex >= personsByAge->size())
 	{
 		return false;
 	}
 
-	//bool removed =  this->entitiesByAge->at(correctIndex)->erase(_person);
-	bool removed = this->personsByAge->at(correctIndex)->erase(_person);
+	//bool removed =  entitiesByAge->at(correctIndex)->erase(_person);
+	bool removed = personsByAge->at(correctIndex)->erase(_person);
 
 	if(removed)
 	{
@@ -167,15 +167,15 @@ bool BucketSexualMixing::erase(Person *_person)
 //tells whether _person exists in the index
 bool BucketSexualMixing::exists(Person *_person)
 {
-	unsigned int correctIndex = this->getCorrectBufferIndex(_person);
+	unsigned int correctIndex = getCorrectBufferIndex(_person);
 
 	//if this person wouldn't be in this DmgProfileBucket, then return false
-	if(correctIndex >= this->personsByAge->size())
+	if(correctIndex >= personsByAge->size())
 	{
 		return false;
 	}
 
-	return this->personsByAge->at(correctIndex)->exists(_person);
+	return personsByAge->at(correctIndex)->exists(_person);
 }
 
 //counts number of infected people this EntityPool
@@ -228,20 +228,20 @@ unsigned long BucketSexualMixing::getNumInfected(Person::RiskLevel _risk)
 Person *BucketSexualMixing::getRandomPerson(RandomNums &_randomNums, unsigned int _ageLowerBound,
         unsigned int _ageUpperBound, Person::RiskLevel _risk, SexualPartnership::Type _partnershipType, bool _remove)
 {
-	if(_ageLowerBound < this->minAge)
+	if(_ageLowerBound < minAge)
 	{
 		//Set this to avoid negative unsigned int, which is just asking for trouble
-		_ageLowerBound = this->minAge;
+		_ageLowerBound = minAge;
 	}
 
 	//get the age buckets that we will search within
-	unsigned int minIndex = std::max<unsigned int>(_ageLowerBound - this->minAge, 0);
-	unsigned int maxIndex = std::min<unsigned int>(_ageUpperBound - this->minAge,
-	                        (unsigned int)this->personsByAge->size() - 1);
-	//Use this->assort to determine whether to use random or _risk bin
+	unsigned int minIndex = std::max<unsigned int>(_ageLowerBound - minAge, 0);
+	unsigned int maxIndex = std::min<unsigned int>(_ageUpperBound - minAge,
+	                        (unsigned int)personsByAge->size() - 1);
+	//Use assort to determine whether to use random or _risk bin
 	Person::RiskLevel riskToDraw;
 
-	if(_randomNums.chance(this->assort[_partnershipType]))
+	if(_randomNums.chance(assort[_partnershipType]))
 	{
 		riskToDraw = _risk;
 	}
@@ -256,7 +256,7 @@ Person *BucketSexualMixing::getRandomPerson(RandomNums &_randomNums, unsigned in
 
 	while(currIndex <= maxIndex)
 	{
-		numMarbles += this->personsByAge->at(currIndex)->numChoices(riskToDraw);
+		numMarbles += personsByAge->at(currIndex)->numChoices(riskToDraw);
 		currIndex++;
 	}
 
@@ -267,15 +267,15 @@ Person *BucketSexualMixing::getRandomPerson(RandomNums &_randomNums, unsigned in
 		//Only recurse if there are partners available in this bucket to save time
 		numMarbles = 0;
 
-		for(currIndex = 0; currIndex < this->personsByAge->size(); currIndex++)
+		for(currIndex = 0; currIndex < personsByAge->size(); currIndex++)
 		{
-			numMarbles += this->personsByAge->at(currIndex)->numChoices(riskToDraw);
+			numMarbles += personsByAge->at(currIndex)->numChoices(riskToDraw);
 		}
 
 		if(numMarbles > 0)
 		{
-			//Check first that minIndex > 0 and maxIndex < this->personsByAge->size() - 1
-			if(minIndex > 0 || maxIndex < this->personsByAge->size() - 1)
+			//Check first that minIndex > 0 and maxIndex < personsByAge->size() - 1
+			if(minIndex > 0 || maxIndex < personsByAge->size() - 1)
 			{
 				unsigned int newAgeLowerBound = _ageLowerBound;
 
@@ -289,7 +289,7 @@ Person *BucketSexualMixing::getRandomPerson(RandomNums &_randomNums, unsigned in
 					newAgeLowerBound = _ageLowerBound - 6;
 				}
 
-				return this->getRandomPerson(_randomNums, newAgeLowerBound, _ageUpperBound + 6, _risk, _partnershipType, _remove);
+				return getRandomPerson(_randomNums, newAgeLowerBound, _ageUpperBound + 6, _risk, _partnershipType, _remove);
 			}
 			else
 			{
@@ -335,35 +335,35 @@ Person *BucketSexualMixing::getRandomPerson(RandomNums &_randomNums, unsigned in
 bool BucketSexualMixing::insert(Person *_person)
 {
 	//Don't allow person with wrong DmgProfile to be inserted
-	if(_person->getDmgProfile()->getProfileID() != this->getProfileID())
+	if(_person->getDmgProfile()->getProfileID() != getProfileID())
 	{
 		return false;
 	}
 
-	unsigned int correctIndex = this->getCorrectBufferIndex(_person);
+	unsigned int correctIndex = getCorrectBufferIndex(_person);
 
 	//if this person belongs in this DmgProfileBucket
-	if(correctIndex < this->personsByAge->size())
+	if(correctIndex < personsByAge->size())
 	{
 		//check to see that this person isn't already in here
-		if(this->personsByAge->at(correctIndex)->exists(_person))
+		if(personsByAge->at(correctIndex)->exists(_person))
 		{
 			return false;
 		}
 
-		bool inserted = this->personsByAge->at(correctIndex)->insert(_person);
+		bool inserted = personsByAge->at(correctIndex)->insert(_person);
 
 		if(inserted)
 		{
-			_person->setCurrBucketProfileID(this->getProfileID());
+			_person->setCurrBucketProfileID(getProfileID());
 		}
 
 		return inserted;
 	}
 	else
 	{
-		cerr << "Trying to insert person with invalid age (" << _person->getAge(this->timeGranularity) << " " << ((
-		            this->timeGranularity == MONTH) ? "months" : "years") << ")" << endl;
+		cerr << "Trying to insert person with invalid age (" << _person->getAge(timeGranularity) << " " << ((
+		            timeGranularity == MONTH) ? "months" : "years") << ")" << endl;
 		cerr << "Valid ages are between " << minAge << " and " <<  maxAge << " inclusive" << endl;
 		cerr << "If age is valid, person may have an invalid DmgProfile";
 		_person->print(cerr, "");
@@ -386,7 +386,7 @@ void BucketSexualMixing::print(ostream &_outStream, std::string _prefix)
 	//The iterator of the BucketAges in the circular buffer
 	BucketAllAges::iterator bucketIter;
 
-	for(bucketIter = this->begin(); bucketIter != this->end(); bucketIter++)
+	for(bucketIter = begin(); bucketIter != end(); bucketIter++)
 	{
 		//The iterator of all (unique) persons in the BucketAge
 		//for (personIter = (*bucketIter)->begin(); personIter != (*bucketIter)->end(); personIter++){
@@ -416,22 +416,22 @@ unsigned long BucketSexualMixing::size()
 //-------------< Begin iterator methods >------------------//
 BucketSexualMixing::BucketAllAges::iterator BucketSexualMixing::begin()
 {
-	return this->personsByAge->begin();
+	return personsByAge->begin();
 }
 
 BucketSexualMixing::BucketAllAges::iterator BucketSexualMixing::end()
 {
-	return this->personsByAge->end();
+	return personsByAge->end();
 }
 
 BucketAge *BucketSexualMixing::getOldest()
 {
-	return this->personsByAge->back();
+	return personsByAge->back();
 }
 
 BucketAge *BucketSexualMixing::getYoungest()
 {
-	return this->personsByAge->front();
+	return personsByAge->front();
 }
 //--------------< End iterator methods >-------------------//
 //-------< Begin additional methods based on this structure >-------//
@@ -441,15 +441,15 @@ BucketAge *BucketSexualMixing::getYoungest()
 unsigned long BucketSexualMixing::sizeByAge(int minMonthAge, int maxMonthAge)
 {
 	//get the age buckets that we will count within
-	unsigned int minIndex = std::max<unsigned int>(minMonthAge - this->minAge, 0);
-	unsigned int maxIndex = std::min<unsigned int>(maxMonthAge - this->minAge,
-	                        (unsigned int)this->personsByAge->size() - 1);
+	unsigned int minIndex = std::max<unsigned int>(minMonthAge - minAge, 0);
+	unsigned int maxIndex = std::min<unsigned int>(maxMonthAge - minAge,
+	                        (unsigned int)personsByAge->size() - 1);
 	unsigned int currIndex = minIndex;
 	unsigned long total = 0;
 
 	while(currIndex <= maxIndex)
 	{
-		total += this->personsByAge->at(currIndex)->size();
+		total += personsByAge->at(currIndex)->size();
 		currIndex++;
 	}
 
@@ -462,15 +462,15 @@ unsigned long BucketSexualMixing::sizeByAge(int minMonthAge, int maxMonthAge)
 unsigned long BucketSexualMixing::sizeInfectedByAge(int minMonthAge, int maxMonthAge)
 {
 	//get the age buckets that we will count within
-	unsigned int minIndex = std::max<unsigned int>(minMonthAge - this->minAge, 0);
-	unsigned int maxIndex = std::min<unsigned int>(maxMonthAge - this->minAge,
-	                        (unsigned int)this->personsByAge->size() - 1);
+	unsigned int minIndex = std::max<unsigned int>(minMonthAge - minAge, 0);
+	unsigned int maxIndex = std::min<unsigned int>(maxMonthAge - minAge,
+	                        (unsigned int)personsByAge->size() - 1);
 	unsigned int currIndex = minIndex;
 	unsigned long total = 0;
 
 	while(currIndex <= maxIndex)
 	{
-		total += this->personsByAge->at(currIndex)->getNumInfected();
+		total += personsByAge->at(currIndex)->getNumInfected();
 		currIndex++;
 	}
 
@@ -567,7 +567,7 @@ bool BucketSexualMixing::increaseInfected(Person *_person)
 		return false;
 	}
 
-	int index = this->getCorrectBufferIndex(_person);
+	int index = getCorrectBufferIndex(_person);
 
 	if(index >= static_cast<int>(personsByAge->size()))
 	{
@@ -575,7 +575,7 @@ bool BucketSexualMixing::increaseInfected(Person *_person)
 		return false;
 	}
 
-	return this->personsByAge->at(index)->increaseInfected(_person);
+	return personsByAge->at(index)->increaseInfected(_person);
 }
 
 /* @function: changeHIVstatus
@@ -583,14 +583,14 @@ bool BucketSexualMixing::increaseInfected(Person *_person)
  */
 void BucketSexualMixing::changeHIVStatus(Person *_p, Person::HIVStatus _orig, Person::HIVStatus _new)
 {
-	int index = this->getCorrectBufferIndex(_p);
+	int index = getCorrectBufferIndex(_p);
 
 	if(index >= static_cast<int>(personsByAge->size()))
 	{
 		return;
 	}
 
-	this->personsByAge->at(index)->changeHIVStatus(_p, _orig, _new);
+	personsByAge->at(index)->changeHIVStatus(_p, _orig, _new);
 }
 
 /*
@@ -602,7 +602,7 @@ void BucketSexualMixing::changeHIVStatus(Person *_p, Person::HIVStatus _orig, Pe
 list<Person *> BucketSexualMixing::ageOneTimeStep()
 {
 	//Kill off the oldest
-	BucketAge *oldestPersons = this->getOldest();
+	BucketAge *oldestPersons = getOldest();
 	//Iterate through all oldest remove them from this and put them in list of "expired" persons to be returned
 	list<Person *> toReturn;
 	vector<Person *>::iterator personIterator = oldestPersons->begin();
@@ -615,7 +615,7 @@ list<Person *> BucketSexualMixing::ageOneTimeStep()
 			//We're going to remove oldPerson, so advance the iterator now before it gets confused
 			personIterator++;
 			toReturn.push_back(oldPerson);
-			this->erase(oldPerson);
+			erase(oldPerson);
 			oldPerson->ageOneTimeUnit();
 		}
 		catch(std::exception &e)
@@ -626,22 +626,22 @@ list<Person *> BucketSexualMixing::ageOneTimeStep()
 	}
 
 	//Insert the new BucketAge for incoming youngest
-	BucketAge *pNewYoungest = new BucketAge(this->getProfileID(), this->popID, this->assort);
-	this->personsByAge->push_front(pNewYoungest);
+	BucketAge *pNewYoungest = new BucketAge(getProfileID(), popID, assort);
+	personsByAge->push_front(pNewYoungest);
 	//Delete the OldestPersons bucket
-	//this->personsByAge->pop_back();
+	//personsByAge->pop_back();
 	delete oldestPersons;
-	assert(this->personsByAge->size() <= this->maxAge - this->minAge + 1);
+	assert(personsByAge->size() <= maxAge - minAge + 1);
 	//Iterate through and age everyone
 	BucketAllAges::iterator bucketIter;
 
-	for(bucketIter = this->begin(); bucketIter != this->end(); bucketIter++)
+	for(bucketIter = begin(); bucketIter != end(); bucketIter++)
 	{
 		//The iterator of all (unique) persons in the BucketAge
 		for(personIterator = (*bucketIter)->begin(); personIterator != (*bucketIter)->end(); personIterator++)
 		{
 			(*personIterator)->ageOneTimeUnit();
-			assert(this->exists(*personIterator));
+			assert(exists(*personIterator));
 		}
 	}
 
@@ -653,31 +653,31 @@ list<Person *> BucketSexualMixing::ageOneTimeStep()
 //---------------< Begin methods for BucketSexualMixing::JavaStyleIterator >--------------------//
 /*
 BucketSexualMixing::JavaStyleIterator::JavaStyleIterator(BucketSexualMixing *_bucket){
-	this->currBuffIndex = 0;
-	this->entityCircularBuff = _bucket->entitiesByAge;
-	this->currNumIndexJIterator = this->entityCircularBuff->at(currBuffIndex)->iterator();
+	currBuffIndex = 0;
+	entityCircularBuff = _bucket->entitiesByAge;
+	currNumIndexJIterator = entityCircularBuff->at(currBuffIndex)->iterator();
 }
 
 //returns true if the element that was last returned by next() has been removed using remove()
 bool BucketSexualMixing::JavaStyleIterator::alreadyRemoved() {
-	return this->currNumIndexJIterator->alreadyRemoved();
+	return currNumIndexJIterator->alreadyRemoved();
 }
 
 //returns the spot right after last member of this pool
 bool BucketSexualMixing::JavaStyleIterator::hasNext() {
 	//if current grid index contains entities, then return true
-	if( this->currNumIndexJIterator->hasNext() )
+	if( currNumIndexJIterator->hasNext() )
 		return true;
 	else {
 		//else, find next grid index with people in it
-		while ((this->currBuffIndex + 1) < this->entityCircularBuff->size())		{
+		while ((currBuffIndex + 1) < entityCircularBuff->size())		{
 			//we are relinquishing the auto_ptr control...
-			this->currNumIndexJIterator.reset(nullptr);
-			this->currBuffIndex = this->currBuffIndex+1;
+			currNumIndexJIterator.reset(nullptr);
+			currBuffIndex = currBuffIndex+1;
 
 			//if this has any elements, then iterate through
-			if(this->entityCircularBuff->at(currBuffIndex)->size()) {
-				this->currNumIndexJIterator = this->entityCircularBuff->at(currBuffIndex)->iterator();
+			if(entityCircularBuff->at(currBuffIndex)->size()) {
+				currNumIndexJIterator = entityCircularBuff->at(currBuffIndex)->iterator();
 				return true;
 			}
 		} // end while
@@ -688,20 +688,20 @@ bool BucketSexualMixing::JavaStyleIterator::hasNext() {
 
 //this will be used to get the next in line
 Person* BucketSexualMixing::JavaStyleIterator::next() {
-	if(this->hasNext()) {
-		return this->currNumIndexJIterator->next();
+	if(hasNext()) {
+		return currNumIndexJIterator->next();
 	} else
 		return nullptr;
 }
 
 //removes from the collection the last element returned by the iterator
 bool BucketSexualMixing::JavaStyleIterator::remove() {
-	bool removed = this->currNumIndexJIterator->remove();
+	bool removed = currNumIndexJIterator->remove();
 
 	if(removed) {
 		//we need to change this
 		assert(Constants::TODO_DEF);
-		Person * p = this->currNumIndexJIterator->get();
+		Person * p = currNumIndexJIterator->get();
 		p->setCurrBucketProfileID( DmgProfile::END);
 	}
 
@@ -711,14 +711,14 @@ bool BucketSexualMixing::JavaStyleIterator::remove() {
 
 //lets us reuse an iterator, resets to beginning of current collection
 void BucketSexualMixing::JavaStyleIterator::reset() {
-	this->currNumIndexJIterator.reset(0);
+	currNumIndexJIterator.reset(0);
 	currBuffIndex = 0;
-	this->currNumIndexJIterator = this->entityCircularBuff->at(currBuffIndex)->iterator();
+	currNumIndexJIterator = entityCircularBuff->at(currBuffIndex)->iterator();
 }
 
 BucketSexualMixing::JavaStyleIterator::~JavaStyleIterator() {
 	//cout << "BucketSexualMixing::JavaStyleIterator::~JavaStyleIterator()" << endl;
-	this->currNumIndexJIterator.reset(nullptr);
+	currNumIndexJIterator.reset(nullptr);
 
 	entityCircularBuff = nullptr;
 

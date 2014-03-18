@@ -26,9 +26,9 @@ public:
 
 	bool Step();
 
-	RunStats *GetCEPACRunStats();	//returns this->eventParams.cepacRunStats for adding to the general popstats
+	RunStats *GetCEPACRunStats();	//returns eventParams.cepacRunStats for adding to the general popstats
 
-	PopStats *GetPopStats(); //returns this->population->popStats information for creating popStats-like file for transmission output
+	PopStats *GetPopStats(); //returns population->popStats information for creating popStats-like file for transmission output
 
 	EventParams *GetEventParams();
 

@@ -181,7 +181,7 @@ public :
 
 	inline bool itIsTimeToSwitchSimContext()
 	{
-		if(this->useRollout)
+		if(useRollout)
 		{
 			return false;
 		}
@@ -189,7 +189,7 @@ public :
 		for(int i = 0; i < Constants::NUMBER_OF_CEPAC_FILES; i++)
 		{
 			//Switching doesn't occur until 1 month later
-			if(this->currTime == this->timesToSwitchSimContext[i] + 1)
+			if(currTime == timesToSwitchSimContext[i] + 1)
 			{
 				return true;
 			}
@@ -276,51 +276,51 @@ public :
 	{
 		for(int i = 0; i < Constants::NUMBER_OF_TRACE_FILES; i++)
 		{
-			if(this->outputTrace[i])
+			if(outputTrace[i])
 			{
-				this->traceStreams[i].close();
+				traceStreams[i].close();
 			}
 		}
 
 		for(int i = 0; i < Constants::NUMBER_TIME_POINTS_SAVE_STATE; i++)
 		{
-			this->popStateStream[i].close();
+			popStateStream[i].close();
 		}
 
 		//For batchStats and summaryStats, print a new line character (all stats are on one line in these files)
 		for(BatchStatsVariables batchstat = BatchStatsVariables(0); batchstat < ENDBatchStatsVariables;
 		        batchstat = BatchStatsVariables(batchstat + 1))
 		{
-			if(this->BatchStatsStream[batchstat].is_open())
+			if(BatchStatsStream[batchstat].is_open())
 			{
-				this->BatchStatsStream[batchstat] << std::endl;
+				BatchStatsStream[batchstat] << std::endl;
 			}
 
-			this->BatchStatsStream[batchstat].close();
+			BatchStatsStream[batchstat].close();
 		}
 
-		//this->cepacTracer->closeTraceFile();
-		delete this->cepacRunStats;
+		//cepacTracer->closeTraceFile();
+		delete cepacRunStats;
 
-		while(this->cepacSimContexts.size() > 0)
+		while(cepacSimContexts.size() > 0)
 		{
-			SimContext *sc = this->cepacSimContexts.back();
-			this->cepacSimContexts.pop_back();
+			SimContext *sc = cepacSimContexts.back();
+			cepacSimContexts.pop_back();
 			delete sc;
 		}
 
-		while(this->rolloutSimContexts.size() > 0)
+		while(rolloutSimContexts.size() > 0)
 		{
-			RolloutContext *sc = this->rolloutSimContexts.back();
-			this->rolloutSimContexts.pop_back();
+			RolloutContext *sc = rolloutSimContexts.back();
+			rolloutSimContexts.pop_back();
 			delete sc;
 		}
 
-		delete this->cepacTracer;
+		delete cepacTracer;
 
 		for(int i = 0; i < Constants::NUMBER_CONCURRENCY_DEFS; i++)
 		{
-			delete this->concurrencyDef[i];
+			delete concurrencyDef[i];
 		}
 	}
 };

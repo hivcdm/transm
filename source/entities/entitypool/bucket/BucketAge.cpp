@@ -10,53 +10,53 @@
 //Constructor
 BucketAge::BucketAge()
 {
-	this->numPersons = 0;
-	this->numInfected = 0;
+	numPersons = 0;
+	numInfected = 0;
 
 	for(int i = 0; i < Person::ENDRiskLevel; i++)
 	{
-		this->numRisk[i] = 0;
-		this->numRiskCSW[i] = 0;
-		this->numInfectedRisk[i] = 0;
+		numRisk[i] = 0;
+		numRiskCSW[i] = 0;
+		numInfectedRisk[i] = 0;
 
 		for(int j = 0; j < Person::ENDHIVStatus; j++)
 		{
-			this->numRiskHIVStatus[i][j] = 0;
+			numRiskHIVStatus[i][j] = 0;
 		}
 	}
 
 	for(int i = 0; i < SexualPartnership::ENDType; i++)
 	{
-		this->assort[i] = 0;
+		assort[i] = 0;
 	}
 }
 
 BucketAge::BucketAge(DmgProfile::ProfileID BinID, unsigned int popID, const double _assort[])
 {
-	this->currentBinID = BinID;
-	this->populationID = popID;
-	this->numPersons = 0;
-	this->numInfected = 0;
+	currentBinID = BinID;
+	populationID = popID;
+	numPersons = 0;
+	numInfected = 0;
 
 	for(int i = 0; i < Person::ENDRiskLevel; i++)
 	{
-		this->numRisk[i] = 0;
-		this->numRiskCSW[i] = 0;
-		this->numInfectedRisk[i] = 0;
+		numRisk[i] = 0;
+		numRiskCSW[i] = 0;
+		numInfectedRisk[i] = 0;
 
 		for(int j = 0; j < Person::ENDHIVStatus; j++)
 		{
-			this->numRiskHIVStatus[i][j] = 0;
+			numRiskHIVStatus[i][j] = 0;
 		}
 	}
 
 	for(int i = 0; i < SexualPartnership::ENDType; i++)
 	{
-		this->assort[i] = _assort[i];
+		assort[i] = _assort[i];
 	}
 
 	//Initialize the infected FVs
-	for(int i = 0; i < this->NUMBER_GENERATIONS_TO_TRACE; i++)
+	for(int i = 0; i < NUMBER_GENERATIONS_TO_TRACE; i++)
 	{
 		FullVector *emptyFV = new FullVector();
 		FVinfected.push_back(emptyFV);
@@ -66,48 +66,48 @@ BucketAge::BucketAge(DmgProfile::ProfileID BinID, unsigned int popID, const doub
 //Destructor
 BucketAge::~BucketAge()
 {
-	for(int i = 0; i < this->NUMBER_GENERATIONS_TO_TRACE; i++)
+	for(int i = 0; i < NUMBER_GENERATIONS_TO_TRACE; i++)
 	{
-		this->FVinfected[i]->clear();
-		delete this->FVinfected[i];
+		FVinfected[i]->clear();
+		delete FVinfected[i];
 	}
 
 	FVinfected.clear();
-	this->FVinfected.clear();
-	this->FVuninfected.clear();
-	this->FVProbDist_low.clear();
-	this->FVProbDist_high.clear();
-	this->FVProbDist_random.clear();
-	this->FVNoDist.clear();
+	FVinfected.clear();
+	FVuninfected.clear();
+	FVProbDist_low.clear();
+	FVProbDist_high.clear();
+	FVProbDist_random.clear();
+	FVNoDist.clear();
 }
 
 //------------< Start Methods taken from EntityIndex >-------------//
 //clears all elements from this index
 void BucketAge::clear()
 {
-	for(int i = 0; i < this->NUMBER_GENERATIONS_TO_TRACE; i++)
+	for(int i = 0; i < NUMBER_GENERATIONS_TO_TRACE; i++)
 	{
 		assert(i < 6);
-		this->FVinfected[i]->clear();
+		FVinfected[i]->clear();
 	}
 
-	this->FVuninfected.clear();
-	this->FVProbDist_high.clear();
-	this->FVProbDist_low.clear();
-	this->FVProbDist_random.clear();
-	this->FVNoDist.clear();
-	this->numPersons = 0;
-	this->numInfected = 0;
+	FVuninfected.clear();
+	FVProbDist_high.clear();
+	FVProbDist_low.clear();
+	FVProbDist_random.clear();
+	FVNoDist.clear();
+	numPersons = 0;
+	numInfected = 0;
 
 	for(int i = 0; i < Person::ENDRiskLevel; i++)
 	{
-		this->numRisk[i] = 0;
-		this->numRiskCSW[i] = 0;
-		this->numInfectedRisk[i] = 0;
+		numRisk[i] = 0;
+		numRiskCSW[i] = 0;
+		numInfectedRisk[i] = 0;
 
 		for(int j = 0; j < Person::ENDHIVStatus; j++)
 		{
-			this->numRiskHIVStatus[i][j] = 0;
+			numRiskHIVStatus[i][j] = 0;
 		}
 	}
 }
@@ -115,7 +115,7 @@ void BucketAge::clear()
 //tells whether _person exists in the index
 bool BucketAge::exists(Person *p)
 {
-	return (this->FVNoDist.exists(p));
+	return (FVNoDist.exists(p));
 }
 
 //will return how many HIV infected people are currently in the index
@@ -124,9 +124,9 @@ unsigned long BucketAge::getNumInfected()
 {
 	unsigned long total = 0;
 
-	for(int i = 0; i < this->NUMBER_GENERATIONS_TO_TRACE; i++)
+	for(int i = 0; i < NUMBER_GENERATIONS_TO_TRACE; i++)
 	{
-		total += this->FVinfected[i]->size();
+		total += FVinfected[i]->size();
 	}
 
 	return total;
@@ -134,20 +134,20 @@ unsigned long BucketAge::getNumInfected()
 
 unsigned long BucketAge::getNumInfected(int generation)
 {
-	return this->FVinfected[generation]->size();
+	return FVinfected[generation]->size();
 }
 
 unsigned long BucketAge::getNumInfected(Person::RiskLevel _risk)
 {
-	return this->numInfectedRisk[_risk];
+	return numInfectedRisk[_risk];
 }
 
 //prints every person in this index to _outStream
 void BucketAge::print(ostream &_outStream, std::string _prefix)
 {
-	vector<Person *>::iterator PersonIter = this->begin();
+	vector<Person *>::iterator PersonIter = begin();
 
-	while(PersonIter != this->end())
+	while(PersonIter != end())
 	{
 		(*PersonIter)->print(_outStream, _prefix);
 		PersonIter++;
@@ -170,7 +170,7 @@ void BucketAge::print(ostream &_outStream, std::string _prefix)
 Person *BucketAge::drawMember(RandomNums &_randomNums, Person::RiskLevel _riskLevel,
                               SexualPartnership::Type /*_partnershipType*/, bool _use_random, bool _remove)
 {
-	if(this->numPersons == 0)
+	if(numPersons == 0)
 	{
 		return nullptr;
 	}
@@ -179,15 +179,15 @@ Person *BucketAge::drawMember(RandomNums &_randomNums, Person::RiskLevel _riskLe
 
 	if(_use_random)
 	{
-		toDrawFrom = &(this->FVProbDist_random);
+		toDrawFrom = &(FVProbDist_random);
 	}
 	else if(_riskLevel == Person::LOW)
 	{
-		toDrawFrom = &(this->FVProbDist_low);
+		toDrawFrom = &(FVProbDist_low);
 	}
 	else if(_riskLevel == Person::HIGH)
 	{
-		toDrawFrom = &(this->FVProbDist_high);
+		toDrawFrom = &(FVProbDist_high);
 	}
 	else
 	{
@@ -203,7 +203,7 @@ Person *BucketAge::drawMember(RandomNums &_randomNums, Person::RiskLevel _riskLe
 		{
 			//Remove person from all FV
 			Person *personToReturn = toDrawFrom->selectout(toPick);
-			this->erase(personToReturn);
+			erase(personToReturn);
 			return personToReturn;
 		}
 		else
@@ -213,7 +213,7 @@ Person *BucketAge::drawMember(RandomNums &_randomNums, Person::RiskLevel _riskLe
 	}
 	else
 	{
-		cerr << "Error: requesting person from empty set: " << DmgProfile::toString(this->currentBinID) << endl;
+		cerr << "Error: requesting person from empty set: " << DmgProfile::toString(currentBinID) << endl;
 		return nullptr;
 	}
 }
@@ -226,41 +226,41 @@ Person *BucketAge::drawMember(RandomNums &_randomNums, Person::RiskLevel _riskLe
  */
 bool BucketAge::erase(Person *_person)
 {
-	if(this->exists(_person))
+	if(exists(_person))
 	{
 		//Remove from all FVs
 		bool removed[6];
-		removed[0] = this->FVProbDist_high.remove(_person);
-		removed[1] = this->FVProbDist_low.remove(_person);
-		removed[2] = this->FVProbDist_random.remove(_person);
+		removed[0] = FVProbDist_high.remove(_person);
+		removed[1] = FVProbDist_low.remove(_person);
+		removed[2] = FVProbDist_random.remove(_person);
 		removed[3] = false;
 
-		for(int i = 0; i < this->NUMBER_GENERATIONS_TO_TRACE; i++)
+		for(int i = 0; i < NUMBER_GENERATIONS_TO_TRACE; i++)
 		{
-			bool removeInf = this->FVinfected[i]->remove(_person);
+			bool removeInf = FVinfected[i]->remove(_person);
 			removed[3] = (removed[3] || removeInf);
 		}
 
-		removed[4] = this->FVuninfected.remove(_person);
+		removed[4] = FVuninfected.remove(_person);
 		assert((removed[0] || removed[1] || removed[2]) && (removed[3] || removed[4]));
 		//Remove from linked list
-		this->FVNoDist.remove(_person);
+		FVNoDist.remove(_person);
 
 		//If infected, reduce count of numInfected
 		if(_person->isInfected())
 		{
-			this->numInfected--;
-			this->numInfectedRisk[_person->getRiskLevel()]--;
+			numInfected--;
+			numInfectedRisk[_person->getRiskLevel()]--;
 		}
 
 		//Reduce count of number of people
-		this->numPersons--;
-		this->numRisk[_person->getRiskLevel()]--;
-		this->numRiskHIVStatus[_person->getRiskLevel()][_person->getHIVStatus()]--;
+		numPersons--;
+		numRisk[_person->getRiskLevel()]--;
+		numRiskHIVStatus[_person->getRiskLevel()][_person->getHIVStatus()]--;
 
 		if(DmgProfile::get(_person->getCurrBucketProfileID(), DmgProfile::EMPLOYMENT) == DmgProfile::CSW)
 		{
-			this->numRiskCSW[_person->getRiskLevel()]--;
+			numRiskCSW[_person->getRiskLevel()]--;
 		}
 
 		return ((removed[0] || removed[1] || removed[2]) && (removed[3] || removed[4]));
@@ -280,7 +280,7 @@ bool BucketAge::erase(Person *_person)
 //TESTED (without global assort param)
 bool BucketAge::insert(Person *_person)
 {
-	if(this->exists(_person))
+	if(exists(_person))
 	{
 		cerr << "Adding person to a bucket they are already in!" << endl;
 		return false;
@@ -292,48 +292,48 @@ bool BucketAge::insert(Person *_person)
 	//Just put the same amount of marbles in each box
 	//Update again: Mathematically proved that the two methods are the same... putting the same number of marbles in each box has less potential for bugs`
 	int marblesInRandomFV = marbles;
-	//int marblesInRandomFV = (int)((1 - this->assort) * marbles + 0.5);
+	//int marblesInRandomFV = (int)((1 - assort) * marbles + 0.5);
 	int marblesInRiskFV = marbles;
 	//int marblesInRiskFV = marbles - marblesInRandomFV;
 
 	if(_person->getRiskLevel() == Person::HIGH)
 	{
-		this->FVProbDist_high.add(_person, marblesInRiskFV);
+		FVProbDist_high.add(_person, marblesInRiskFV);
 	}
 	else
 	{
-		this->FVProbDist_low.add(_person, marblesInRiskFV);
+		FVProbDist_low.add(_person, marblesInRiskFV);
 	}
 
-	this->FVProbDist_random.add(_person, marblesInRandomFV);
+	FVProbDist_random.add(_person, marblesInRandomFV);
 
 	//Add person to infected/uninfected list (as appropriate) for size purposes
 	if(_person->isInfected())
 	{
 		assert(_person->getGenerationOfInfection() >= 0);
-		this->FVinfected[_person->getGenerationOfInfection()]->add(_person, 1);
+		FVinfected[_person->getGenerationOfInfection()]->add(_person, 1);
 	}
 	else
 	{
-		this->FVuninfected.add(_person, 1);
+		FVuninfected.add(_person, 1);
 	}
 
 	//Also add single copy to linked list for iterating
-	this->FVNoDist.add(_person, 1);
+	FVNoDist.add(_person, 1);
 	//Increment number of persons and number of infected person (if necessary)
-	this->numPersons++;
-	this->numRisk[_person->getRiskLevel()]++;
-	this->numRiskHIVStatus[_person->getRiskLevel()][_person->getHIVStatus()]++;
+	numPersons++;
+	numRisk[_person->getRiskLevel()]++;
+	numRiskHIVStatus[_person->getRiskLevel()][_person->getHIVStatus()]++;
 
 	if(_person->getDmgProfileVal(DmgProfile::EMPLOYMENT) == DmgProfile::CSW)
 	{
-		this->numRiskCSW[_person->getRiskLevel()]++;
+		numRiskCSW[_person->getRiskLevel()]++;
 	}
 
 	if(_person->isInfected())
 	{
-		this->numInfected++;
-		this->numInfectedRisk[_person->getRiskLevel()]++;
+		numInfected++;
+		numInfectedRisk[_person->getRiskLevel()]++;
 	}
 
 	return true;
@@ -347,7 +347,7 @@ bool BucketAge::insert(Person *_person)
  */
 vector<Person *>::iterator BucketAge::begin()
 {
-	return this->FVNoDist.begin();
+	return FVNoDist.begin();
 }
 
 /* @function: end
@@ -356,7 +356,7 @@ vector<Person *>::iterator BucketAge::begin()
  */
 vector<Person *>::iterator BucketAge::end()
 {
-	return this->FVNoDist.end();
+	return FVNoDist.end();
 }
 
 //-------------------< End Iteration Methods >---------------------//
@@ -364,7 +364,7 @@ vector<Person *>::iterator BucketAge::end()
 
 DmgProfile::ProfileID BucketAge::getBinID()
 {
-	return this->currentBinID;
+	return currentBinID;
 }
 
 /* @function: size
@@ -372,7 +372,7 @@ DmgProfile::ProfileID BucketAge::getBinID()
  */
 unsigned long BucketAge::size()
 {
-	return this->FVNoDist.size();
+	return FVNoDist.size();
 }
 
 /* @function: getNumRisk
@@ -380,7 +380,7 @@ unsigned long BucketAge::size()
  */
 unsigned long BucketAge::getNumRisk(Person::RiskLevel _risk)
 {
-	return this->numRisk[_risk];
+	return numRisk[_risk];
 }
 
 /* @function: getNumRiskCSW
@@ -388,7 +388,7 @@ unsigned long BucketAge::getNumRisk(Person::RiskLevel _risk)
  */
 unsigned long BucketAge::getNumRiskCSW(Person::RiskLevel _risk)
 {
-	return this->numRiskCSW[_risk];
+	return numRiskCSW[_risk];
 }
 
 /* @function: getNumRiskHIVStatus
@@ -396,7 +396,7 @@ unsigned long BucketAge::getNumRiskCSW(Person::RiskLevel _risk)
  */
 unsigned long BucketAge::getNumRiskHIVStatus(Person::RiskLevel _risk, Person::HIVStatus _hivStatus)
 {
-	return this->numRiskHIVStatus[_risk][_hivStatus];
+	return numRiskHIVStatus[_risk][_hivStatus];
 }
 
 /* @function: numHighRiskChoices
@@ -405,7 +405,7 @@ unsigned long BucketAge::getNumRiskHIVStatus(Person::RiskLevel _risk, Person::HI
 //TESTED
 int BucketAge::numHighRiskChoices()
 {
-	return this->FVProbDist_high.size();
+	return FVProbDist_high.size();
 }
 
 /* @function: numLowRiskChoices
@@ -414,7 +414,7 @@ int BucketAge::numHighRiskChoices()
 //TESTED
 int BucketAge::numLowRiskChoices()
 {
-	return this->FVProbDist_low.size();
+	return FVProbDist_low.size();
 }
 
 /* @function: numRandomRiskChoices
@@ -423,7 +423,7 @@ int BucketAge::numLowRiskChoices()
 //TESTED
 int BucketAge::numRandomRiskChoices()
 {
-	return this->FVProbDist_random.size();
+	return FVProbDist_random.size();
 }
 
 /* @function: numChoices
@@ -435,15 +435,15 @@ int BucketAge::numChoices(Person::RiskLevel _risk)
 {
 	if(_risk == Person::HIGH)
 	{
-		return this->numHighRiskChoices();
+		return numHighRiskChoices();
 	}
 	else if(_risk == Person::LOW)
 	{
-		return this->numLowRiskChoices();
+		return numLowRiskChoices();
 	}
 	else if(_risk == Person::ENDRiskLevel)
 	{
-		return this->numRandomRiskChoices();
+		return numRandomRiskChoices();
 	}
 	else
 	{
@@ -460,12 +460,12 @@ bool BucketAge::increaseInfected(Person *_p)
 {
 	if(_p->isInfected())
 	{
-		if(this->FVuninfected.exists(_p))
+		if(FVuninfected.exists(_p))
 		{
-			this->numInfected++;
-			this->numInfectedRisk[_p->getRiskLevel()]++;
-			this->FVuninfected.remove(_p);
-			this->FVinfected[_p->getGenerationOfInfection()]->add(_p, 1);
+			numInfected++;
+			numInfectedRisk[_p->getRiskLevel()]++;
+			FVuninfected.remove(_p);
+			FVinfected[_p->getGenerationOfInfection()]->add(_p, 1);
 			return true;
 		}
 		else
@@ -485,8 +485,8 @@ bool BucketAge::increaseInfected(Person *_p)
  */
 void BucketAge::changeHIVStatus(Person *_p, Person::HIVStatus _orig, Person::HIVStatus _new)
 {
-	this->numRiskHIVStatus[_p->getRiskLevel()][_orig]--;
-	this->numRiskHIVStatus[_p->getRiskLevel()][_new]++;
+	numRiskHIVStatus[_p->getRiskLevel()][_orig]--;
+	numRiskHIVStatus[_p->getRiskLevel()][_new]++;
 }
 
 //Pseudo-TESTED... should use print function later on
@@ -495,17 +495,17 @@ void BucketAge::printAll(ostream &_outStream, string _prefix)
 	_outStream << _prefix << endl;
 	_outStream << "Infected:	";
 
-	for(int i = 0; i < this->NUMBER_GENERATIONS_TO_TRACE; i++)
+	for(int i = 0; i < NUMBER_GENERATIONS_TO_TRACE; i++)
 	{
-		this->FVinfected[i]->print();
+		FVinfected[i]->print();
 	}
 
 	_outStream << "Uninfected: 	";
-	this->FVuninfected.print();
+	FVuninfected.print();
 	_outStream << "Random Risk: ";
-	this->FVProbDist_random.print();
+	FVProbDist_random.print();
 	_outStream << "Low Risk:    ";
-	this->FVProbDist_low.print();
+	FVProbDist_low.print();
 	_outStream << "High Risk:   ";
-	this->FVProbDist_high.print();
+	FVProbDist_high.print();
 }

@@ -254,13 +254,13 @@ public:
 	void becomeInfected(int _generationOfInfection, EventParams &_eventParams);
 
 	/*
-	 * Initializes this->cepacPatient using the persons current age, gender, and infection status.
+	 * Initializes cepacPatient using the persons current age, gender, and infection status.
 	 * Prevalent cases should call "becomeInfected" before calling this function; incident cases will become infected later
 	 */
 	void initialCEPACpatient(EventParams &_eventParams);
 
 	/**
-	 * @return this->generationOfInfection
+	 * @return generationOfInfection
 	 */
 
 	int getGenerationOfInfection();
@@ -299,11 +299,11 @@ public:
 	int getMonthOfLatestConcurrent();
 
 	/**
-	 * @return this->hvl
+	 * @return hvl
 	 */
 	HVLStrata getHVL() const
 	{
-		return this->hvl;
+		return hvl;
 	}
 
 	/** this calculates the FOI towards Person _p (this uses the Transmission coefficient) per event
@@ -597,7 +597,7 @@ public:
 
 	GraphVizGraphElements::personNode *getPersonNode()
 	{
-		return this->graphNode;
+		return graphNode;
 	}
 
 	bool isOnArt()

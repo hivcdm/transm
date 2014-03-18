@@ -4,14 +4,14 @@
 //-----------< Begin Constructors >-----------------//
 RandomNums::RandomNums()
 {
-	this->mtRand.seed(static_cast<uint32_t>(time(nullptr)));
-	this->mtRand_OneOverMaxMult = 1.0 / mtRand.max();
+	mtRand.seed(static_cast<uint32_t>(time(nullptr)));
+	mtRand_OneOverMaxMult = 1.0 / mtRand.max();
 }
 
 RandomNums::RandomNums(unsigned int _seed)
 {
-	this->reset(_seed);
-	this->mtRand_OneOverMaxMult = 1.0 / mtRand.max();
+	reset(_seed);
+	mtRand_OneOverMaxMult = 1.0 / mtRand.max();
 }
 
 //-----------< End Constructors >-----------------//
@@ -23,7 +23,7 @@ RandomNums::RandomNums(unsigned int _seed)
 int RandomNums::chooseIndex(const std::vector<double> &_indexProbabilities)
 {
 	assert(_indexProbabilities.size() > 0);
-	double choice = this->rand();	//this is dice roll to see which pool we will draw from
+	double choice = rand();	//this is dice roll to see which pool we will draw from
 	double cumulativeProb = 0;				//this stores CDF for the current index
 	size_t currIndex;	//the index that we are currently considering
 
@@ -60,7 +60,7 @@ bool RandomNums::chance(double _probability)
 		return true;
 	}
 
-	double d = this->rand();
+	double d = rand();
 	return (d <= _probability);
 }
 
@@ -76,7 +76,7 @@ uint32_t RandomNums::randInt()
 
 uint32_t RandomNums::randInt(const uint32_t &_max)
 {
-	return Util::round(rand() * _max);
+	return Util::round<uint32_t>(rand() * _max);
 }
 
 uint32_t RandomNums::randInt(const uint32_t &_min, const uint32_t &_max)
@@ -92,7 +92,7 @@ double RandomNums::randExponential(double _mean)
 		return 0;
 	}
 
-	return (-log(this->rand())) / (1 / _mean);
+	return (-log(rand())) / (1 / _mean);
 }
 
 //generates a random number using the Masaglia Polar Method
@@ -108,8 +108,8 @@ double RandomNums::randNorm(const NormalDist &_normDist)
 
 	do
 	{
-		x = (this->rand() * 2) - 1;	//a number in [-1,1]
-		y = (this->rand() * 2) - 1;	//a number in [-1,1]
+		x = (rand() * 2) - 1;	//a number in [-1,1]
+		y = (rand() * 2) - 1;	//a number in [-1,1]
 		sq = (x * x + y * y);
 	} while(sq >= 1);
 
@@ -126,7 +126,7 @@ double RandomNums::randLogNormal(const LogNormalDist &_logNormDist)
 	NormalDist normDist;
 	normDist.mean = _logNormDist.mu;
 	normDist.stddev = _logNormDist.sigma;
-	return exp(this->randNorm(normDist));
+	return exp(randNorm(normDist));
 }
 
 double RandomNums::randShiftedLogNormal(const ShiftedLogNormalDist &_shiftedLogNormDist)
@@ -139,7 +139,7 @@ double RandomNums::randShiftedLogNormal(const ShiftedLogNormalDist &_shiftedLogN
 	LogNormalDist logNormDist;
 	logNormDist.mu = _shiftedLogNormDist.mu;
 	logNormDist.sigma = _shiftedLogNormDist.sigma;
-	return this->randLogNormal(logNormDist) + _shiftedLogNormDist.shift;
+	return randLogNormal(logNormDist) + _shiftedLogNormDist.shift;
 }
 
 double RandomNums::randBeta(const BetaDist &_betaDist)
@@ -147,7 +147,7 @@ double RandomNums::randBeta(const BetaDist &_betaDist)
 	assert(_betaDist.alpha > 0);
 	assert(_betaDist.beta > 0);
 	boost::math::beta_distribution<> betaDist(_betaDist.alpha, _betaDist.beta);
-	return boost::math::quantile(betaDist, this->rand());
+	return boost::math::quantile(betaDist, rand());
 }
 
 double LogNormalDist::getMean() const
@@ -220,7 +220,7 @@ int RandomNums::randPoisson(double _mu)
 
 	do
 	{
-		product *= this->rand();
+		product *= rand();
 		count++;
 	} while(product >= eMu);
 
@@ -232,17 +232,17 @@ int RandomNums::randPoisson(double _mu)
 //-----------< Begin Getters and Setters >---------------//
 unsigned int RandomNums::getSeed()
 {
-	return this->seed;
+	return seed;
 }
 
 void RandomNums::reset()
 {
-	this->reset(this->seed);
+	reset(seed);
 }
 
 void RandomNums::reset(unsigned int _seed)
 {
-	this->seed = _seed;
+	seed = _seed;
 	mtRand.seed((boost::mt19937::result_type) _seed);
 	//	isaac = QTIsaac<UINT32>(mtRand.randInt(), mtRand.randInt(),mtRand.randInt());	//Isaac
 }

@@ -12,7 +12,7 @@
 /* Constructor takes summariesFileName as input, clears summaries vector */
 TransmissionSummaryStats::TransmissionSummaryStats(string summariesFileName)
 {
-	this->summariesFileName = summariesFileName;
+	summariesFileName = summariesFileName;
 	summaries.clear();
 } /* end Constructor */
 
@@ -93,46 +93,46 @@ void TransmissionSummaryStats::writeSummariesFile()
 {
 	// Open the popstats file and write header if needed
 	CepacUtil::changeDirectoryToResults();
-	this->summaryStatsStream.open(this->summariesFileName.c_str(), ios::out | ios::app);
+	summaryStatsStream.open(summariesFileName.c_str(), ios::out | ios::app);
 	writeSummariesFileHeader();
 
 	// Loop over the individual run summaries of the summaries vector
-	for(vector<TransmissionSummary *>::iterator i = this->summaries.begin(); i != this->summaries.end(); i++)
+	for(vector<TransmissionSummary *>::iterator i = summaries.begin(); i != summaries.end(); i++)
 	{
 		TransmissionSummary *summary = *i;
-		this->summaryStatsStream << summary->runName << "\t";
-		this->summaryStatsStream << summary->LMsAverage << "\t";
-		this->summaryStatsStream << summary->HIVPosLMAverage << "\t";
-		this->summaryStatsStream << summary->HIVNegLMAverage << "\t";
-		this->summaryStatsStream << summary->HIVPosSurvivalAverage << "\t";
-		this->summaryStatsStream << summary->AverageNumberOfPeopleEachPersonInfects << "\t";
+		summaryStatsStream << summary->runName << "\t";
+		summaryStatsStream << summary->LMsAverage << "\t";
+		summaryStatsStream << summary->HIVPosLMAverage << "\t";
+		summaryStatsStream << summary->HIVNegLMAverage << "\t";
+		summaryStatsStream << summary->HIVPosSurvivalAverage << "\t";
+		summaryStatsStream << summary->AverageNumberOfPeopleEachPersonInfects << "\t";
 
 		for(size_t j = 0; j < summary->selectedSummaryStats->size(); j++)
 		{
 			PopStats::SingleTimeStats *singleTimeStat = summary->selectedSummaryStats->at(j);
-			this->summaryStatsStream << singleTimeStat->timeOfStats << "\t";
-			this->summaryStatsStream << singleTimeStat->prevalence << "\t";
-			this->summaryStatsStream << singleTimeStat->SAprevalence << "\t";
-			this->summaryStatsStream << singleTimeStat->incidence << "\t";
-			this->summaryStatsStream << singleTimeStat->cumulativeNumberDead << "\t";
+			summaryStatsStream << singleTimeStat->timeOfStats << "\t";
+			summaryStatsStream << singleTimeStat->prevalence << "\t";
+			summaryStatsStream << singleTimeStat->SAprevalence << "\t";
+			summaryStatsStream << singleTimeStat->incidence << "\t";
+			summaryStatsStream << singleTimeStat->cumulativeNumberDead << "\t";
 		}
 
-		this->summaryStatsStream << std::endl;
+		summaryStatsStream << std::endl;
 	}
 
-	this->summaryStatsStream.close();
+	summaryStatsStream.close();
 } /* end writeSummariesFile */
 
 /* writes out summaries file header */
 void TransmissionSummaryStats::writeSummariesFileHeader()
 {
 	int i;
-	this->summaryStatsStream << "RunName\t Average LM \t HIV+ LM\t HIV- LM\t HIV+ Survival\t R_0\t";
+	summaryStatsStream << "RunName\t Average LM \t HIV+ LM\t HIV- LM\t HIV+ Survival\t R_0\t";
 
 	for(i = 0; i < NUM_TIMES_TO_RECORD; i++)
 	{
-		this->summaryStatsStream << "Time\t Prevalence\t SA Prevalence\t Incidence\t Cumulative No. Dead\t";
+		summaryStatsStream << "Time\t Prevalence\t SA Prevalence\t Incidence\t Cumulative No. Dead\t";
 	}
 
-	this->summaryStatsStream << std::endl;
+	summaryStatsStream << std::endl;
 } /* end writeSummariesFileHeader */

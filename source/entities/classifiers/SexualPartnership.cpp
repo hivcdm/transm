@@ -21,9 +21,9 @@ SexualPartnership::SexualPartnership(Person *_person1, Person *_person2, EventPa
                                      SexualPartnership::Type _partnershipType)
 {
 	//save the type of partnership this is
-	this->type = _partnershipType;
+	type = _partnershipType;
 	//save time of partnership formation
-	this->timePartnerFormation = _eventParams.currTime;
+	timePartnerFormation = _eventParams.currTime;
 	//calculate when this partnership will dissolve. determined by _person1
 	int maxDuration =  _person1->rollForNewPartnershipDuration(_partnershipType, _eventParams.randomNums, _person2);
 
@@ -52,78 +52,78 @@ SexualPartnership::SexualPartnership(Person *_person1, Person *_person2, EventPa
 	}
 
 	//set time for partnership to dissolve
-	this->timePartnerDissolution = _eventParams.currTime + maxDuration;
+	timePartnerDissolution = _eventParams.currTime + maxDuration;
 	//save the members of this partnership
-	this->partners[0] = _person1;
-	this->partners[1] = _person2;
+	partners[0] = _person1;
+	partners[1] = _person2;
 	//give each person pointer to this couple so that we can simulate this partnership...
 	// all partnerships are stored within the individual Person objects
 	// We have made it this way to save on the time it takes to insert and delete objects from a large set of partnerships
 	// We give a copy to both of the partners in case one of the partners dies. That way we can end all
 	//   partnerships that person was involved in
-	this->partners[0]->addPartnership(this);
-	this->partners[1]->addPartnership(this);
-	assert(this->timePartnerDissolution >= 0);
+	partners[0]->addPartnership(this);
+	partners[1]->addPartnership(this);
+	assert(timePartnerDissolution >= 0);
 }
 
 bool SexualPartnership::checkTimeForSplit(long _currTime)
 {
-	return (_currTime >= this->timePartnerDissolution);
+	return (_currTime >= timePartnerDissolution);
 }
 
 Person *SexualPartnership::getPartner1()
 {
-	return this->partners[0];
+	return partners[0];
 }
 
 Person *SexualPartnership::getPartner2()
 {
-	return this->partners[1];
+	return partners[1];
 }
 
 Person *SexualPartnership::getOtherPartner(Person *_member)
 {
-	assert(this->isMember(_member));
+	assert(isMember(_member));
 
-	if(_member == this->getPartner1())
+	if(_member == getPartner1())
 	{
-		return this->getPartner2();
+		return getPartner2();
 	}
 	else
 	{
-		return this->getPartner1();
+		return getPartner1();
 	}
 }
 
 SexualPartnership::Type SexualPartnership::getType()
 {
-	return this->type;
+	return type;
 }
 
 int SexualPartnership::getDissolutionTime()
 {
-	return this->timePartnerDissolution;
+	return timePartnerDissolution;
 }
 bool SexualPartnership::isMember(Person *_p)
 {
-	return ((_p == this->partners[0]) || (_p == this->partners[1]));
+	return ((_p == partners[0]) || (_p == partners[1]));
 }
 
 Person *SexualPartnership::monthlySexualActivity(EventParams &_eventParams, InfectionsTracker *infTrack)
 {
-	int eventsThisMonth = this->partners[0]->rollNumEventsPerPartner(partners[1], _eventParams.randomNums, this->type);
+	int eventsThisMonth = partners[0]->rollNumEventsPerPartner(partners[1], _eventParams.randomNums, type);
 
 	if(eventsThisMonth <= 0)
 	{
 		eventsThisMonth = 1;
 	}
 
-	return this->partners[0]->sexualActivity(this->partners[1], eventsThisMonth, this->type, _eventParams, infTrack);
+	return partners[0]->sexualActivity(partners[1], eventsThisMonth, type, _eventParams, infTrack);
 }
 
 void SexualPartnership::printPartners(ostream &_outStream, string _prefix)
 {
-	_outStream << _prefix << "Sexual Relationship(" << *(SexualPartnership::TypeEnum.toString(this->type)) << ")" << endl;
+	_outStream << _prefix << "Sexual Relationship(" << *(SexualPartnership::TypeEnum.toString(type)) << ")" << endl;
 	partners[0]->print(_outStream, Constants::TAB);
 	_outStream << endl;
 	partners[1]->print(_outStream, Constants::TAB);

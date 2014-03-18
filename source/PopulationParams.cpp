@@ -38,42 +38,42 @@ Population::Params::AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(int _minAge
 void Population::Params::AgeBucketPrevalenceInfo::print(EventParams &_eventParams)
 {
 	_eventParams.displayOut("\tAges ");
-	_eventParams.displayOut(boost::lexical_cast<std::string>(this->minAgeMth).c_str());
+	_eventParams.displayOut(boost::lexical_cast<std::string>(minAgeMth).c_str());
 	_eventParams.displayOut(" - ");
-	_eventParams.displayOut(boost::lexical_cast<std::string>(this->maxAgeMth).c_str());
+	_eventParams.displayOut(boost::lexical_cast<std::string>(maxAgeMth).c_str());
 	_eventParams.displayOut("\n");
 	_eventParams.displayOut("\tproportion population male = ");
-	_eventParams.displayOut(boost::lexical_cast<std::string>(this->proportionOfPopulation[DmgProfile::MALE]).c_str());
+	_eventParams.displayOut(boost::lexical_cast<std::string>(proportionOfPopulation[DmgProfile::MALE]).c_str());
 	_eventParams.displayOut("\n");
 	_eventParams.displayOut("\tproportion population female = ");
-	_eventParams.displayOut(boost::lexical_cast<std::string>(this->proportionOfPopulation[DmgProfile::FEMALE]).c_str());
+	_eventParams.displayOut(boost::lexical_cast<std::string>(proportionOfPopulation[DmgProfile::FEMALE]).c_str());
 	_eventParams.displayOut("\n");
 	_eventParams.displayOut("\tchance csw males = ");
-	_eventParams.displayOut(boost::lexical_cast<std::string>(this->chanceCSW[DmgProfile::MALE]).c_str());
+	_eventParams.displayOut(boost::lexical_cast<std::string>(chanceCSW[DmgProfile::MALE]).c_str());
 	_eventParams.displayOut("\n");
 	_eventParams.displayOut("\tchance csw females = ");
-	_eventParams.displayOut(boost::lexical_cast<std::string>(this->chanceCSW[DmgProfile::FEMALE]).c_str());
+	_eventParams.displayOut(boost::lexical_cast<std::string>(chanceCSW[DmgProfile::FEMALE]).c_str());
 	_eventParams.displayOut("\n");
 	_eventParams.displayOut("\tnum infected csw males = ");
-	_eventParams.displayOut(boost::lexical_cast<std::string>(this->numInfectedCSW[DmgProfile::MALE]).c_str());
+	_eventParams.displayOut(boost::lexical_cast<std::string>(numInfectedCSW[DmgProfile::MALE]).c_str());
 	_eventParams.displayOut("\n");
 	_eventParams.displayOut("\tnum infected csw females = ");
-	_eventParams.displayOut(boost::lexical_cast<std::string>(this->numInfectedCSW[DmgProfile::FEMALE]).c_str());
+	_eventParams.displayOut(boost::lexical_cast<std::string>(numInfectedCSW[DmgProfile::FEMALE]).c_str());
 	_eventParams.displayOut("\n");
 	_eventParams.displayOut("\tnum infected high risk males = ");
 	_eventParams.displayOut(boost::lexical_cast<std::string>
-	                        (this->numInfectedRisk[DmgProfile::MALE][Person::HIGH]).c_str());
+	                        (numInfectedRisk[DmgProfile::MALE][Person::HIGH]).c_str());
 	_eventParams.displayOut("\n");
 	_eventParams.displayOut("\tnum infected high risk females = ");
 	_eventParams.displayOut(boost::lexical_cast<std::string>
-	                        (this->numInfectedRisk[DmgProfile::FEMALE][Person::HIGH]).c_str());
+	                        (numInfectedRisk[DmgProfile::FEMALE][Person::HIGH]).c_str());
 	_eventParams.displayOut("\n");
 	_eventParams.displayOut("\tnum infected low risk males = ");
-	_eventParams.displayOut(boost::lexical_cast<std::string>(this->numInfectedRisk[DmgProfile::MALE][Person::LOW]).c_str());
+	_eventParams.displayOut(boost::lexical_cast<std::string>(numInfectedRisk[DmgProfile::MALE][Person::LOW]).c_str());
 	_eventParams.displayOut("\n");
 	_eventParams.displayOut("\tnum infected low risk females = ");
 	_eventParams.displayOut(boost::lexical_cast<std::string>
-	                        (this->numInfectedRisk[DmgProfile::FEMALE][Person::LOW]).c_str());
+	                        (numInfectedRisk[DmgProfile::FEMALE][Person::LOW]).c_str());
 	_eventParams.displayOut("\n");
 }
 
@@ -116,7 +116,7 @@ Population::Params::Params()
 
 Population::Params::~Params()
 {
-	unsigned int ageBucketNum = this->initialAgeBuckets.size();
+	unsigned int ageBucketNum = initialAgeBuckets.size();
 
 	for(unsigned int i = 0; i < ageBucketNum; ++i)
 	{
@@ -128,7 +128,7 @@ void Population::Params::init(ticpp::Element *_populationXML, unsigned int _popu
 {
 	assert(_populationXML != nullptr);
 	populationID = _populationID;
-	this->loadXML(_populationXML, _eventParams);
+	loadXML(_populationXML, _eventParams);
 }
 
 void Population::Params::loadXML(ticpp::Element *_populationXML, EventParams &_eventParams)
@@ -140,14 +140,14 @@ void Population::Params::loadXML(ticpp::Element *_populationXML, EventParams &_e
 	try
 	{
 		ticpp::Element *initialState = _populationXML->FirstChildElement("initialState");
-		this->initSize = initialState->FirstChildElement("size")->GetText<int>();
+		initSize = initialState->FirstChildElement("size")->GetText<int>();
 		_eventParams.displayOut("\tsize = ");
 		_eventParams.displayOut(boost::lexical_cast<std::string>(initSize).c_str());
 		_eventParams.displayOut("\n");
 		//initial proportion married
 		//TODO: Change me based on marriage acquisition rates et al
-		//this->initproportionMarried  = initialState->FirstChildElement("proportionMarried")->GetText<double>();
-		//this->initproportionRegular = initialState->FirstChildElement("proportionRegular")->GetText<double>();
+		//initproportionMarried  = initialState->FirstChildElement("proportionMarried")->GetText<double>();
+		//initproportionRegular = initialState->FirstChildElement("proportionRegular")->GetText<double>();
 		//get initial age distribution
 		ticpp::Iterator<ticpp::Element> rangeIter;
 
@@ -155,7 +155,7 @@ void Population::Params::loadXML(ticpp::Element *_populationXML, EventParams &_e
 		        rangeIter != rangeIter.end(); rangeIter++)
 		{
 			//get data for each age bucket and save it
-			this->initialAgeBuckets.push_back(
+			initialAgeBuckets.push_back(
 			    new AgeBucketPrevalenceInfo(
 			        Util::convertTime(YEAR, MONTH, rangeIter->FirstChildElement("minAge")->GetText<int>()),
 			        Util::convertTime(YEAR, MONTH, rangeIter->FirstChildElement("maxAge")->GetText<int>()) + 11,
@@ -171,11 +171,11 @@ void Population::Params::loadXML(ticpp::Element *_populationXML, EventParams &_e
 			);
 		}
 
-		this->initProbCSW[DmgProfile::MALE] = initialState->FirstChildElement("chanceBeingCSWMale")->GetText<double>();
-		this->initProbCSW[DmgProfile::FEMALE] = initialState->FirstChildElement("chanceBeingCSWFemale")->GetText<double>();
-		this->CSWEndAgeMth[DmgProfile::MALE] = Util::convertTime(YEAR, MONTH,
+		initProbCSW[DmgProfile::MALE] = initialState->FirstChildElement("chanceBeingCSWMale")->GetText<double>();
+		initProbCSW[DmgProfile::FEMALE] = initialState->FirstChildElement("chanceBeingCSWFemale")->GetText<double>();
+		CSWEndAgeMth[DmgProfile::MALE] = Util::convertTime(YEAR, MONTH,
 		                                       initialState->FirstChildElement("CSWEndAgeMale")->GetText<double>());
-		this->CSWEndAgeMth[DmgProfile::FEMALE] = Util::convertTime(YEAR, MONTH,
+		CSWEndAgeMth[DmgProfile::FEMALE] = Util::convertTime(YEAR, MONTH,
 		        initialState->FirstChildElement("CSWEndAgeFemale")->GetText<double>());
 		//normalize %population values for each age bucket
 		double totalPopulationproportionages[DmgProfile::ENDGender];
@@ -187,21 +187,21 @@ void Population::Params::loadXML(ticpp::Element *_populationXML, EventParams &_e
 
 			for(size_t ageBucketNum = 0; ageBucketNum < initialAgeBuckets.size(); ageBucketNum++)
 			{
-				totalPopulationproportionages[i] = totalPopulationproportionages[i] + this->initialAgeBuckets.at(
+				totalPopulationproportionages[i] = totalPopulationproportionages[i] + initialAgeBuckets.at(
 				                                       ageBucketNum)->proportionOfPopulation[i];
 			}
 
 			//normalize each proportionage value so that the sum of them == 1
 			for(size_t ageBucketNum = 0; ageBucketNum < initialAgeBuckets.size(); ageBucketNum++)
 			{
-				this->initialAgeBuckets.at(ageBucketNum)->proportionOfPopulation[i] = this->initialAgeBuckets.at(
+				initialAgeBuckets.at(ageBucketNum)->proportionOfPopulation[i] = initialAgeBuckets.at(
 				            ageBucketNum)->proportionOfPopulation[i] / totalPopulationproportionages[i];
 			}
 		}
 
 		for(size_t ageBucketNum = 0; ageBucketNum < initialAgeBuckets.size(); ageBucketNum++)
 		{
-			this->initialAgeBuckets.at(ageBucketNum)->print(_eventParams);
+			initialAgeBuckets.at(ageBucketNum)->print(_eventParams);
 		}
 
 		//dmgProfile parameters
@@ -234,13 +234,13 @@ void Population::Params::loadXML(ticpp::Element *_populationXML, EventParams &_e
 
 			if(baseEntityElem.compare("Male") == 0)
 			{
-				Male::addPopParams(this->populationID, entityTypesIter->ToElement(), _eventParams);
-				this->maleParams = Male::getPopParams(this->populationID);
+				Male::addPopParams(populationID, entityTypesIter->ToElement(), _eventParams);
+				maleParams = Male::getPopParams(populationID);
 			}
 			else if(baseEntityElem.compare("Female") == 0)
 			{
-				Female::addPopParams(this->populationID, entityTypesIter->ToElement(), _eventParams);
-				this->femaleParams = Female::getPopParams(this->populationID);
+				Female::addPopParams(populationID, entityTypesIter->ToElement(), _eventParams);
+				femaleParams = Female::getPopParams(populationID);
 			}
 			else
 			{
@@ -251,27 +251,27 @@ void Population::Params::loadXML(ticpp::Element *_populationXML, EventParams &_e
 		}
 
 		//Get the initial marriage prevalence based on percent male high risk and rate and duration of steady relationships
-		double pHigh = this->maleParams->getProportionHighRisk(DmgProfile::NON_CSW);
-		double marriageRateH = this->maleParams->getSexualBehaviorParams(SexualPartnership::STEADY)->getAcquisitionRatePerMonth(
+		double pHigh = maleParams->getProportionHighRisk(DmgProfile::NON_CSW);
+		double marriageRateH = maleParams->getSexualBehaviorParams(SexualPartnership::STEADY)->getAcquisitionRatePerMonth(
 		                           Person::HIGH).getMean();
-		double marriageRateL = this->maleParams->getSexualBehaviorParams(SexualPartnership::STEADY)->getAcquisitionRatePerMonth(
+		double marriageRateL = maleParams->getSexualBehaviorParams(SexualPartnership::STEADY)->getAcquisitionRatePerMonth(
 		                           Person::LOW).getMean();
-		double marriageDurationH = this->maleParams->getSexualBehaviorParams(
+		double marriageDurationH = maleParams->getSexualBehaviorParams(
 		                               SexualPartnership::STEADY)->getPartnershipDurationMth(Person::HIGH).getMean();
-		double marriageDurationL = this->maleParams->getSexualBehaviorParams(
+		double marriageDurationL = maleParams->getSexualBehaviorParams(
 		                               SexualPartnership::STEADY)->getPartnershipDurationMth(Person::LOW).getMean();
-		this->initproportionMarried = (1 - pHigh) * (marriageRateL * marriageDurationL) / (1 + marriageRateL *
+		initproportionMarried = (1 - pHigh) * (marriageRateL * marriageDurationL) / (1 + marriageRateL *
 		                              marriageDurationL) + pHigh * (marriageRateH * marriageDurationH) / (1 + marriageRateH * marriageDurationH);
 		//Get the initial regular prevalence based on percent male high risk and rate and duration of regular relationships
-		double regularRateH = this->maleParams->getSexualBehaviorParams(SexualPartnership::REGULAR)->getAcquisitionRatePerMonth(
+		double regularRateH = maleParams->getSexualBehaviorParams(SexualPartnership::REGULAR)->getAcquisitionRatePerMonth(
 		                          Person::HIGH).getMean();
-		double regularRateL = this->maleParams->getSexualBehaviorParams(SexualPartnership::REGULAR)->getAcquisitionRatePerMonth(
+		double regularRateL = maleParams->getSexualBehaviorParams(SexualPartnership::REGULAR)->getAcquisitionRatePerMonth(
 		                          Person::LOW).getMean();
-		double regularDurationH = this->maleParams->getSexualBehaviorParams(
+		double regularDurationH = maleParams->getSexualBehaviorParams(
 		                              SexualPartnership::REGULAR)->getPartnershipDurationMth(Person::HIGH).getMean();
-		double regularDurationL = this->maleParams->getSexualBehaviorParams(
+		double regularDurationL = maleParams->getSexualBehaviorParams(
 		                              SexualPartnership::REGULAR)->getPartnershipDurationMth(Person::LOW).getMean();
-		this->initproportionRegular = (1 - pHigh) * (regularRateL * regularDurationL) + pHigh *
+		initproportionRegular = (1 - pHigh) * (regularRateL * regularDurationL) + pHigh *
 		                              (regularRateH * regularDurationH);
 		//Costs
 		condomCost = _populationXML->FirstChildElement("costs")->FirstChildElement("condomCost")->GetText<double>();
@@ -288,10 +288,10 @@ void Population::Params::loadXML(ticpp::Element *_populationXML, EventParams &_e
 	//save flags to indicate whether particular partnership types have duration or not
 	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::ENDType; ++type)
 	{
-		this->partnershipsHaveDuration[DmgProfile::MALE][type] = !(this->maleParams->getSexualBehaviorParams(
+		partnershipsHaveDuration[DmgProfile::MALE][type] = !(maleParams->getSexualBehaviorParams(
 		            type)->getPartnershipDurationMth(Person::LOW).isZeroDistrib)
-		        && !(this->maleParams->getSexualBehaviorParams(type)->getPartnershipDurationMth(Person::HIGH).isZeroDistrib);
-		this->partnershipsHaveDuration[DmgProfile::FEMALE][type] = false;
+		        && !(maleParams->getSexualBehaviorParams(type)->getPartnershipDurationMth(Person::HIGH).isZeroDistrib);
+		partnershipsHaveDuration[DmgProfile::FEMALE][type] = false;
 	}
 
 	_eventParams.displayOut("\n");
@@ -338,13 +338,13 @@ void Population::Params::reloadXML(ticpp::Element *_populationXML, EventParams &
 
 			if(baseEntityElem.compare("Male") == 0)
 			{
-				Male::updatePopParams(this->populationID, entityTypesIter->ToElement(), _eventParams);
-				this->maleParams = Male::getPopParams(this->populationID);
+				Male::updatePopParams(populationID, entityTypesIter->ToElement(), _eventParams);
+				maleParams = Male::getPopParams(populationID);
 			}
 			else if(baseEntityElem.compare("Female") == 0)
 			{
-				Female::updatePopParams(this->populationID, entityTypesIter->ToElement(), _eventParams);
-				this->femaleParams = Female::getPopParams(this->populationID);
+				Female::updatePopParams(populationID, entityTypesIter->ToElement(), _eventParams);
+				femaleParams = Female::getPopParams(populationID);
 			}
 			else
 			{
@@ -369,10 +369,10 @@ void Population::Params::reloadXML(ticpp::Element *_populationXML, EventParams &
 	//save flags to indicate whether particular partnership types have duration or not
 	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::ENDType; ++type)
 	{
-		this->partnershipsHaveDuration[DmgProfile::MALE][type] = (!this->maleParams->getSexualBehaviorParams(
+		partnershipsHaveDuration[DmgProfile::MALE][type] = (!maleParams->getSexualBehaviorParams(
 		            type)->getPartnershipDurationMth(Person::LOW).isZeroDistrib)
-		        && (!this->maleParams->getSexualBehaviorParams(type)->getPartnershipDurationMth(Person::HIGH).isZeroDistrib);
-		this->partnershipsHaveDuration[DmgProfile::FEMALE][type] = false;
+		        && (!maleParams->getSexualBehaviorParams(type)->getPartnershipDurationMth(Person::HIGH).isZeroDistrib);
+		partnershipsHaveDuration[DmgProfile::FEMALE][type] = false;
 	}
 
 	_eventParams.displayOut("\n");
@@ -380,7 +380,7 @@ void Population::Params::reloadXML(ticpp::Element *_populationXML, EventParams &
 
 double Population::Params::getBirthRate() const
 {
-	return this->birthRate;
+	return birthRate;
 }
 
 //-------------< End Population::Params methods >-------------------//

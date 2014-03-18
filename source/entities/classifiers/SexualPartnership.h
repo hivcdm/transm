@@ -139,10 +139,10 @@ public :
 
 	int getTimeOfFormation()
 	{
-		return this->timePartnerFormation;
+		return timePartnerFormation;
 	}
 	int getTimeOfDissolution()
 	{
-		return this->timePartnerDissolution;
+		return timePartnerDissolution;
 	}
 };

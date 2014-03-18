@@ -76,7 +76,7 @@ public:
 	/* @function: insert
 	 * @effects: adds _person to this by adding _person to appropriate FV: FVNoDist (every _person),
 	 * and FVProbDist_random and either FVProbDist_high or FVProbDist_low depending on _person.risk and
-	 * this->assort
+	 * assort
 	 * @returns: true if person was successfully added, false otherwise
 	 */
 	bool insert(Person *_person);

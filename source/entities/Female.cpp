@@ -14,7 +14,7 @@ Female::SubPopParams::SubPopParams()
 
 Female::SubPopParams::SubPopParams(ticpp::Element *_femaleParams, EventParams &_eventParams)
 {
-	this->loadParamsXML(_femaleParams, _eventParams);
+	loadParamsXML(_femaleParams, _eventParams);
 }
 
 
@@ -24,20 +24,20 @@ int Female::SubPopParams::loadParamsXML(ticpp::Element *_femaleParams, EventPara
 	{
 		//get behavioral params
 		ticpp::Element *behaviorElem = _femaleParams->FirstChildElement("behavior");
-		this->chanceBecomeCSW = behaviorElem->FirstChildElement("chanceBecomeSexWorker")->GetText<double>();
-		this->proportionHighRisk[DmgProfile::CSW] = behaviorElem->FirstChildElement("proportionHighRiskCSW")->GetText<double>();
-		this->proportionHighRisk[DmgProfile::NON_CSW] =
+		chanceBecomeCSW = behaviorElem->FirstChildElement("chanceBecomeSexWorker")->GetText<double>();
+		proportionHighRisk[DmgProfile::CSW] = behaviorElem->FirstChildElement("proportionHighRiskCSW")->GetText<double>();
+		proportionHighRisk[DmgProfile::NON_CSW] =
 		    behaviorElem->FirstChildElement("proportionHighRiskNonCSW")->GetText<double>();
-		XMLUtil::getDistFromXMLNode(behaviorElem->FirstChildElement("activityLevel"), this->activityLevel);
+		XMLUtil::getDistFromXMLNode(behaviorElem->FirstChildElement("activityLevel"), activityLevel);
 		//get the health params
 		ticpp::Element *healthElem = _femaleParams->FirstChildElement("health");
 		ticpp::Element *transmitCoeffElem = healthElem->FirstChildElement("transmissionCoefficients");
 		//get the transmission coefficients
-		this->transmitPerEventCoeffs.clear();
+		transmitPerEventCoeffs.clear();
 		XMLUtil::getTabDelimitedNode(transmitCoeffElem->FirstChildElement("valsByHVL"),
-		                             this->transmitPerEventCoeffs);
-		this->transmitPerEventCoeffs.push_back(transmitCoeffElem->FirstChildElement("primary")->GetText<double>());
-		this->transmitPerEventCoeffs.push_back(transmitCoeffElem->FirstChildElement("lateStage")->GetText<double>());
+		                             transmitPerEventCoeffs);
+		transmitPerEventCoeffs.push_back(transmitCoeffElem->FirstChildElement("primary")->GetText<double>());
+		transmitPerEventCoeffs.push_back(transmitCoeffElem->FirstChildElement("lateStage")->GetText<double>());
 	}
 	catch(ticpp::Exception &_e)
 	{
@@ -54,21 +54,21 @@ int Female::SubPopParams::reloadParamsXML(ticpp::Element *_femaleParams, EventPa
 
 double Female::SubPopParams::getChanceBecomeCSW() const
 {
-	return this->chanceBecomeCSW;
+	return chanceBecomeCSW;
 }
 
 double Female::SubPopParams::getProportionHighRisk(DmgProfile::Employment _cswStatus) const
 {
-	return this->proportionHighRisk[_cswStatus];
+	return proportionHighRisk[_cswStatus];
 }
 NormalDist Female::SubPopParams::getActivityLevel() const
 {
-	return this->activityLevel;
+	return activityLevel;
 }
 
 double Female::SubPopParams::getTransmitPerEventCoeff(HVLStrata _hvl) const
 {
-	return this->transmitPerEventCoeffs.at(_hvl);
+	return transmitPerEventCoeffs.at(_hvl);
 }
 
 //-----------------< End population-level parameters for females >-----------------------/
@@ -96,17 +96,17 @@ void Female::updatePopParams(unsigned int _populationID, ticpp::Element *_female
 Female::Female(EventParams &_eventParams, int _ageMths, unsigned int _populationID)
 	: Person(_eventParams, _ageMths, _populationID)
 {
-	this->dmgProfile.set(DmgProfile::GENDER, DmgProfile::FEMALE);
-	const Female::SubPopParams *femaleSubPopParams = this->getPopParams(this->populationID);
-	this->activityLevel = _eventParams.randomNums.randNorm_NaturalNum(femaleSubPopParams->getActivityLevel());
+	dmgProfile.set(DmgProfile::GENDER, DmgProfile::FEMALE);
+	const Female::SubPopParams *femaleSubPopParams = getPopParams(populationID);
+	activityLevel = _eventParams.randomNums.randNorm_NaturalNum(femaleSubPopParams->getActivityLevel());
 
 	//activity level should not ever be 0
-	if(this->activityLevel == 0)
+	if(activityLevel == 0)
 	{
-		this->activityLevel = 1;
+		activityLevel = 1;
 	}
 
-	this->risk = Person::LOW;
+	risk = Person::LOW;
 }
 
 Female::~Female(void)
@@ -130,24 +130,24 @@ double Female::getFOI(Person *_p, SexualPartnership::Type _partnershipType, Even
 	//transmission coeff				  (1 - (condoms are used and succeed)) * (1 - (male is circumcised))
 	double circEff = m->getCircumProtectEff();
 	//Determine if a condom was used and record
-	this->condomUsedLastFOICalculation = _eventParams.randomNums.chance(m->getCondomUseProb(this, _partnershipType));
+	condomUsedLastFOICalculation = _eventParams.randomNums.chance(m->getCondomUseProb(this, _partnershipType));
 	//Determine the condom efficacy --> 0 if no condom was used
 	double condomEff = 0;
 
-	if(this->condomUsedLastFOICalculation)
+	if(condomUsedLastFOICalculation)
 	{
 		condomEff = m->getCondomProtectEff();
 	}
 
-	double FOI = this->getTransmissionCoeff() * (1 - condomEff) * (1 - circEff);
+	double FOI = getTransmissionCoeff() * (1 - condomEff) * (1 - circEff);
 
-	if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && (this->trace() || _p->trace()))
+	if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && (trace() || _p->trace()))
 	{
-		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " !Transmission coefficient from " << this->getID() << " to " <<
-		        _p->getID() << " is " << this->getTransmissionCoeff();
+		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " !Transmission coefficient from " << getID() << " to " <<
+		        _p->getID() << " is " << getTransmissionCoeff();
 		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << ";" << endl << " !A condom was ";
 
-		if(!this->condomUsedLastFOICalculation)
+		if(!condomUsedLastFOICalculation)
 		{
 			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "NOT ";
 		}
@@ -181,29 +181,29 @@ double Female::getMaxPartnerSelectVal(Person::SelectingCriteria /*_PSC*/,
 
 double Female::getTransmissionCoeff()
 {
-	assert(Util::withinRange(this->hvl, HVL_ZERO, HVL_LATESTAGE));
-	return Female::populationSpecificParams.at(this->populationID)->getTransmitPerEventCoeff(this->hvl);
+	assert(Util::withinRange(hvl, HVL_ZERO, HVL_LATESTAGE));
+	return Female::populationSpecificParams.at(populationID)->getTransmitPerEventCoeff(hvl);
 }
 
 void Female::rerollRiskGroup(EventParams &_eventParams)
 {
-	DmgProfile::Employment cswStatus = (DmgProfile::Employment) this->getDmgProfileVal(DmgProfile::EMPLOYMENT);
-	double chanceHighRisk = getPopParams(this->populationID)->getProportionHighRisk(cswStatus);
+	DmgProfile::Employment cswStatus = (DmgProfile::Employment) getDmgProfileVal(DmgProfile::EMPLOYMENT);
+	double chanceHighRisk = getPopParams(populationID)->getProportionHighRisk(cswStatus);
 
 	if(_eventParams.randomNums.chance(chanceHighRisk))
 	{
-		this->risk = HIGH;
+		risk = HIGH;
 	}
 	else
 	{
-		this->risk = LOW;
+		risk = LOW;
 	}
 
-	if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && this->trace())
+	if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && trace())
 	{
-		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " % Female " << this->getID() << " rerolls as ";
+		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " % Female " << getID() << " rerolls as ";
 
-		if(this->risk == HIGH)
+		if(risk == HIGH)
 		{
 			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "High";
 		}

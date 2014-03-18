@@ -15,14 +15,14 @@ long FullVector::FVcounter = 0;
 FullVector::FullVector()
 {
 	vector<Person *> vP;
-	this->vPerson = vP;
-	this->ID = FullVector::FVcounter;
+	vPerson = vP;
+	ID = FullVector::FVcounter;
 	FullVector::FVcounter++;
 }
 
 FullVector::FullVector(vector<Person *> vP)
 {
-	this->vPerson = vP;
+	vPerson = vP;
 	vector<Person *>::iterator vPiter;
 	int i = 0;
 
@@ -32,14 +32,14 @@ FullVector::FullVector(vector<Person *> vP)
 		i++;
 	}
 
-	this->ID = FullVector::FVcounter;
+	ID = FullVector::FVcounter;
 	FullVector::FVcounter++;
 }
 
 FullVector::FullVector(int num, Person *p)
 {
 	vector<Person *> vP(num, p);
-	this->vPerson = vP;
+	vPerson = vP;
 	int i;
 
 	for(i = 0; i < num; i++)
@@ -48,7 +48,7 @@ FullVector::FullVector(int num, Person *p)
 		assert(p->memberFVindices(i, this));
 	}
 
-	this->ID = FullVector::FVcounter;
+	ID = FullVector::FVcounter;
 	FullVector::FVcounter++;
 }
 
@@ -56,7 +56,7 @@ FullVector::FullVector(int num, Person *p)
 
 FullVector::~FullVector()
 {
-	this->vPerson.clear();
+	vPerson.clear();
 }
 
 /*
@@ -66,7 +66,7 @@ FullVector::~FullVector()
 //TESTED
 Person *FullVector::operator[](int index)
 {
-	return this->vPerson[index];
+	return vPerson[index];
 }
 
 //TESTED
@@ -96,9 +96,9 @@ int FullVector::capacity()
 void FullVector::clear()
 {
 	/*while (vPerson.size() > 0){
-		this->remove(vPerson[0]);
+		remove(vPerson[0]);
 	}*/
-	this->vPerson.clear();
+	vPerson.clear();
 }
 
 //UNTESTED
@@ -110,7 +110,7 @@ bool FullVector::empty()
 bool FullVector::exists(Person *_p)
 {
 	//If this is empty, return false
-	if(this->empty())
+	if(empty())
 	{
 		return false;
 	}
@@ -120,7 +120,7 @@ bool FullVector::exists(Person *_p)
 
 	if(pind.size() > 0)
 	{
-		if(this->vPerson[pind[0]] == _p)
+		if(vPerson[pind[0]] == _p)
 		{
 			return true;
 		}
@@ -244,7 +244,7 @@ void FullVector::add(Person *p, int num)
 
 	for(i = 0; i < num; i++)
 	{
-		this->push_back(p);
+		push_back(p);
 	}
 }
 
@@ -316,7 +316,7 @@ void FullVector::print()
 	vector<Person *>::iterator iter;
 	cout << "FV = : ";
 
-	for(iter = this->begin(); iter != this->end(); iter++)
+	for(iter = begin(); iter != end(); iter++)
 	{
 		cout << (*iter)->getID() << " : ";
 	}
@@ -326,5 +326,5 @@ void FullVector::print()
 
 int FullVector::getID()
 {
-	return this->ID;
+	return ID;
 }

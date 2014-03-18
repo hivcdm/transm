@@ -200,12 +200,12 @@ public:
 		// Draw numbers until one is found in [0,n]
 		do{
 			outStream << "*";
-			i = this->rand() & used;  // toss unused bits to shorten search
+			i = rand() & used;  // toss unused bits to shorten search
 		}while( i > _max );
 		*/
 		//outStream << endl;
 		// Draw numbers until one is found in [0,n]
-		i = this->rand();
+		i = rand();
 
 		do
 		{

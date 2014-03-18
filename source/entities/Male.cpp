@@ -19,7 +19,7 @@ Male::SubPopParams::SubPopParams()
 Male::SubPopParams::SubPopParams(ticpp::Element *_maleParams, EventParams &_eventParams)
 {
 	assert(_maleParams != nullptr);
-	this->loadParamsXML(_maleParams, _eventParams);
+	loadParamsXML(_maleParams, _eventParams);
 }
 
 /***
@@ -34,10 +34,10 @@ int Male::SubPopParams::loadParamsXML(ticpp::Element *_maleParams, EventParams &
 	try
 	{
 		ticpp::Element *behaviorElem = _maleParams->FirstChildElement("behavior");
-		this->chanceBecomeCSW = behaviorElem->FirstChildElement("chanceBecomeSexWorker")->GetText<double>();
-		this->partnerAcqMultWithSteady[Person::HIGH] =
+		chanceBecomeCSW = behaviorElem->FirstChildElement("chanceBecomeSexWorker")->GetText<double>();
+		partnerAcqMultWithSteady[Person::HIGH] =
 		    behaviorElem->FirstChildElement("partnerAcqMultWithSteadyHighRisk")->GetText<double>();
-		this->partnerAcqMultWithSteady[Person::LOW] =
+		partnerAcqMultWithSteady[Person::LOW] =
 		    behaviorElem->FirstChildElement("partnerAcqMultWithSteadyLowRisk")->GetText<double>();
 		//Use these to determine if the high risk acquisition rates will be pulled from user input or by multiplying the low risk rates
 		bool useMultiplierForHighRiskAcqRates = false;
@@ -92,29 +92,29 @@ int Male::SubPopParams::loadParamsXML(ticpp::Element *_maleParams, EventParams &
 		//iterate through each Person in partnershipTypes
 		ticpp::Iterator<ticpp::Element> partnershipTypesIter;
 		string partnershipType;
-		this->sexualBehaviorParams.clear();
+		sexualBehaviorParams.clear();
 
 		for(partnershipTypesIter = behaviorElem->FirstChildElement("partnershipTypes")->FirstChildElement("partnership");
 		        partnershipTypesIter != partnershipTypesIter.end(); partnershipTypesIter++)
 		{
 			SexualBehaviorParams *currPartnershipParams = new SexualBehaviorParams(partnershipTypesIter->ToElement(), _eventParams,
 			        useMultiplierForHighRiskAcqRates, highRiskAcqRateMultiplier, useMultiplierForHighRiskCSW, highRiskAcqRateMultiplierCSW);
-			this->sexualBehaviorParams.push_back(currPartnershipParams);
+			sexualBehaviorParams.push_back(currPartnershipParams);
 		} //end for partnershipTypesIter
 
-		this->proportionHighRisk[DmgProfile::CSW] = behaviorElem->FirstChildElement("proportionHighRiskCSW")->GetText<double>();
-		this->proportionHighRisk[DmgProfile::NON_CSW] =
+		proportionHighRisk[DmgProfile::CSW] = behaviorElem->FirstChildElement("proportionHighRiskCSW")->GetText<double>();
+		proportionHighRisk[DmgProfile::NON_CSW] =
 		    behaviorElem->FirstChildElement("proportionHighRiskNonCSW")->GetText<double>();
-		XMLUtil::getDistFromXMLNode(behaviorElem->FirstChildElement("activityLevel"), this->activityLevel);
+		XMLUtil::getDistFromXMLNode(behaviorElem->FirstChildElement("activityLevel"), activityLevel);
 		//saves partner acq rate and acts discounting
 		ticpp::Element *discounting = behaviorElem->FirstChildElement("ageDiscounting");
-		this->partneringDiscStartAgeYrs = discounting->FirstChildElement("startAgeYrs")->GetText<int>();
-		this->partneringAcqDiscPerYr = discounting->FirstChildElement("acquisitionDiscByYr")->GetText<double>();
-		this->partneringActsDiscPerYr = discounting->FirstChildElement("coitalActsDiscByYr")->GetText<double>();
-		int numMults = Person::maxYrForDeathStats - this->partneringDiscStartAgeYrs + 1;
-		double acqMult = 1 - this->partneringAcqDiscPerYr;
-		double actsMult = 1 - this->partneringActsDiscPerYr;
-		//generate vectors that contain discount multipliers. will cover from [this->partneringDiscStartAgeYrs,Person::maxYrForDeathStats]
+		partneringDiscStartAgeYrs = discounting->FirstChildElement("startAgeYrs")->GetText<int>();
+		partneringAcqDiscPerYr = discounting->FirstChildElement("acquisitionDiscByYr")->GetText<double>();
+		partneringActsDiscPerYr = discounting->FirstChildElement("coitalActsDiscByYr")->GetText<double>();
+		int numMults = Person::maxYrForDeathStats - partneringDiscStartAgeYrs + 1;
+		double acqMult = 1 - partneringAcqDiscPerYr;
+		double actsMult = 1 - partneringActsDiscPerYr;
+		//generate vectors that contain discount multipliers. will cover from [partneringDiscStartAgeYrs,Person::maxYrForDeathStats]
 		partneringAcqDiscMult.clear();
 		partneringActsDiscMult.clear();
 		partneringAcqDiscMult.push_back(acqMult);
@@ -129,16 +129,16 @@ int Male::SubPopParams::loadParamsXML(ticpp::Element *_maleParams, EventParams &
 		//get the health stats
 		ticpp::Element *healthElem = _maleParams->FirstChildElement("health");
 		//get protective efficacy of circumcision
-		this->circumProtectEff = healthElem->FirstChildElement("circumcisionProtectEfficacy")->GetText<double>();
+		circumProtectEff = healthElem->FirstChildElement("circumcisionProtectEfficacy")->GetText<double>();
 		//get protective efficacy of condoms
-		this->condomProtectEff  = healthElem->FirstChildElement("condomProtectEfficacy")->GetText<double>();
+		condomProtectEff  = healthElem->FirstChildElement("condomProtectEfficacy")->GetText<double>();
 		//get the transmission coefficients
-		this->transmitPerEventCoeffs.clear();
+		transmitPerEventCoeffs.clear();
 		ticpp::Element *transmitCoeffElem = healthElem->FirstChildElement("transmissionCoefficients");
 		XMLUtil::getTabDelimitedNode(transmitCoeffElem->FirstChildElement("valsByHVL"),
-		                             this->transmitPerEventCoeffs);
-		this->transmitPerEventCoeffs.push_back(transmitCoeffElem->FirstChildElement("primary")->GetText<double>());
-		this->transmitPerEventCoeffs.push_back(transmitCoeffElem->FirstChildElement("lateStage")->GetText<double>());
+		                             transmitPerEventCoeffs);
+		transmitPerEventCoeffs.push_back(transmitCoeffElem->FirstChildElement("primary")->GetText<double>());
+		transmitPerEventCoeffs.push_back(transmitCoeffElem->FirstChildElement("lateStage")->GetText<double>());
 	}
 	catch(ticpp::Exception &_e)
 	{
@@ -154,46 +154,46 @@ int Male::SubPopParams::reloadParamsXML(ticpp::Element *_maleParams, EventParams
 }
 Male::SubPopParams::~SubPopParams()
 {
-	for(unsigned int i = 0; i < this->sexualBehaviorParams.size(); ++i)
+	for(unsigned int i = 0; i < sexualBehaviorParams.size(); ++i)
 	{
-		delete this->sexualBehaviorParams.at(i);
+		delete sexualBehaviorParams.at(i);
 	}
 }
 
 //------------ < Begin getters >-----------------//
 double Male::SubPopParams::getChanceBecomeCSW() const
 {
-	return this->chanceBecomeCSW;
+	return chanceBecomeCSW;
 }
 
 double Male::SubPopParams::getPartnerAcqMultWithSteady(Person::RiskLevel _risk) const
 {
-	return this->partnerAcqMultWithSteady[_risk];
+	return partnerAcqMultWithSteady[_risk];
 }
 
 //sexual behavior params for each type as specified by SexualPartnership::Type
 const SexualBehaviorParams *Male::SubPopParams::getSexualBehaviorParams(SexualPartnership::Type _type) const
 {
-	return this->sexualBehaviorParams.at(_type);
+	return sexualBehaviorParams.at(_type);
 }
 
 double Male::SubPopParams::getProportionHighRisk(DmgProfile::Employment _cswStatus) const
 {
-	return this->proportionHighRisk[_cswStatus];
+	return proportionHighRisk[_cswStatus];
 }
 NormalDist Male::SubPopParams::getActivityLevel() const
 {
-	return this->activityLevel;
+	return activityLevel;
 }
 
 double Male::SubPopParams::getCircumProtectEff()  const
 {
-	return this->circumProtectEff;
+	return circumProtectEff;
 }
 
 double Male::SubPopParams::getCondomProtectEff()  const
 {
-	return this->condomProtectEff;
+	return condomProtectEff;
 }
 
 int Male::SubPopParams::getPartneringDiscStartAgeYrs() const
@@ -204,19 +204,19 @@ int Male::SubPopParams::getPartneringDiscStartAgeYrs() const
 double Male::SubPopParams::getPartneringAcqDiscMult(int _ageYrs) const
 {
 	assert(Util::withinRange(_ageYrs, 0, Person::maxYrForDeathStats));
-	return this->partneringAcqDiscMult.at(_ageYrs - this->partneringDiscStartAgeYrs);
+	return partneringAcqDiscMult.at(_ageYrs - partneringDiscStartAgeYrs);
 }
 
 double Male::SubPopParams::getPartneringActsDiscMult(int _ageYrs) const
 {
 	assert(Util::withinRange(_ageYrs, 0, Person::maxYrForDeathStats));
-	return this->partneringActsDiscMult.at(_ageYrs - this->partneringDiscStartAgeYrs);
+	return partneringActsDiscMult.at(_ageYrs - partneringDiscStartAgeYrs);
 }
 
 double Male::SubPopParams::getTransmitPerEventCoeff(HVLStrata _hvl) const
 {
-	assert(Util::withinRange(_hvl, Person::HVLStrata(0), Person::HVLStrata(this->transmitPerEventCoeffs.size() - 1)));
-	return this->transmitPerEventCoeffs.at(_hvl);
+	assert(Util::withinRange(_hvl, Person::HVLStrata(0), Person::HVLStrata(transmitPerEventCoeffs.size() - 1)));
+	return transmitPerEventCoeffs.at(_hvl);
 }
 
 void Male::SubPopParams::setChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist)
@@ -255,7 +255,7 @@ Male::Male(EventParams &_eventParams, int _age, bool _circumcised, unsigned int 
 {
 	//Set the graphNode to being male!
 	//TODO: This is inelegantly placed and kind of a hack right now
-	this->graphNode->isMale = true;
+	graphNode->isMale = true;
 
 	//If age is out of range, set it at the closest boundary.
 	if(!Util::withinRange<int>(_age, 0, Util::convertTime(YEAR, MONTH, Person::maxYrForDeathStats)))
@@ -270,12 +270,12 @@ Male::Male(EventParams &_eventParams, int _age, bool _circumcised, unsigned int 
 		}
 	}
 
-	this->dmgProfile.set(DmgProfile::GENDER, DmgProfile::MALE);
+	dmgProfile.set(DmgProfile::GENDER, DmgProfile::MALE);
 	//check that the DmgProfile::RelationshipStatus is actually of a male
-	const Male::SubPopParams *maleSubPopParams = this->getPopParams(this->populationID);
-	this->circumcised = _circumcised;
+	const Male::SubPopParams *maleSubPopParams = getPopParams(populationID);
+	circumcised = _circumcised;
 	//Set this male's risk level assume everyone is low risk on creation. Risk is rerolled when they roll for become sex worker
-	this->risk = Person::LOW;
+	risk = Person::LOW;
 	//determining partnering and sexual behavior for this male.
 	EnumCls<SexualPartnership::Type>::Enum partneringType = SexualPartnership::TypeEnum.getMin();
 	EnumCls<SexualPartnership::Type>::Enum lastPartneringType = SexualPartnership::TypeEnum.getMax();
@@ -283,21 +283,21 @@ Male::Male(EventParams &_eventParams, int _age, bool _circumcised, unsigned int 
 	while(partneringType <= lastPartneringType)
 	{
 		const SexualBehaviorParams *sexualBehaviorParams = maleSubPopParams->getSexualBehaviorParams(partneringType);
-		this->partnerAcqRates[partneringType] = _eventParams.randomNums.randLogNormal(
-		        sexualBehaviorParams->getAcquisitionRatePerMonth(this->risk));
-		this->numActsPerMonth[partneringType] = sexualBehaviorParams->getCoitalEventsPerMonth(this->risk);
-		this->chanceCondomUsePerEvent[partneringType] = _eventParams.randomNums.randBeta(
-		            sexualBehaviorParams->getChanceCondomUsePerEvent(this->risk));
-		this->averageYearsYounger[partneringType] = sexualBehaviorParams->getAverageYearsYounger();
+		partnerAcqRates[partneringType] = _eventParams.randomNums.randLogNormal(
+		        sexualBehaviorParams->getAcquisitionRatePerMonth(risk));
+		numActsPerMonth[partneringType] = sexualBehaviorParams->getCoitalEventsPerMonth(risk);
+		chanceCondomUsePerEvent[partneringType] = _eventParams.randomNums.randBeta(
+		            sexualBehaviorParams->getChanceCondomUsePerEvent(risk));
+		averageYearsYounger[partneringType] = sexualBehaviorParams->getAverageYearsYounger();
 		partneringType = EnumCls<SexualPartnership::Type>::Enum(partneringType + 1);
 	}
 
-	this->activityLevel = _eventParams.randomNums.randNorm_NaturalNum(maleSubPopParams->getActivityLevel());
+	activityLevel = _eventParams.randomNums.randNorm_NaturalNum(maleSubPopParams->getActivityLevel());
 
 	//activity level should not ever be 0
-	if(this->activityLevel == 0)
+	if(activityLevel == 0)
 	{
-		this->activityLevel = 1;
+		activityLevel = 1;
 	}
 }
 
@@ -315,22 +315,22 @@ double Male::getCondomUseProb(Person *_p, SexualPartnership::Type _partnershipTy
 	assert((_p != nullptr));
 	assert(_p->isAlive());
 	assert(_partnershipType < SexualPartnership::ENDType);
-	return this->chanceCondomUsePerEvent[_partnershipType];
+	return chanceCondomUsePerEvent[_partnershipType];
 }
 
 double Male::getCircumProtectEff()
 {
-	return (this->circumcised ? Male::getPopParams(this->populationID)->getCircumProtectEff() : 0);
+	return (circumcised ? Male::getPopParams(populationID)->getCircumProtectEff() : 0);
 }
 
 double Male::getCondomProtectEff()
 {
-	return Male::getPopParams(this->populationID)->getCondomProtectEff();
+	return Male::getPopParams(populationID)->getCondomProtectEff();
 }
 
 bool Male::isCircumcised()
 {
-	return this->circumcised;
+	return circumcised;
 }
 
 //-------------< END methods that are for Males only >------------------------//
@@ -344,35 +344,35 @@ double Male::getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventP
 {
 	//note: in the case of male->female transmission, circumcision makes no difference
 	//transmission coeff				1-	(condoms are used and succeed)
-	assert(Util::validProbability(this->getCondomUseProb(_p, _partnershipType)));
-	assert(Util::validProbability(this->getCondomProtectEff()));
+	assert(Util::validProbability(getCondomUseProb(_p, _partnershipType)));
+	assert(Util::validProbability(getCondomProtectEff()));
 	assert((_p != nullptr));
 	assert(_p->isAlive());
 	assert(_partnershipType < SexualPartnership::ENDType);
 	//Determine if a condom was used and record
-	this->condomUsedLastFOICalculation = _eventParams.randomNums.chance(this->getCondomUseProb(_p, _partnershipType));
+	condomUsedLastFOICalculation = _eventParams.randomNums.chance(getCondomUseProb(_p, _partnershipType));
 	//Determine the condom efficacy --> 0 if no condom was used
 	double condomEff = 0;
 
-	if(this->condomUsedLastFOICalculation)
+	if(condomUsedLastFOICalculation)
 	{
-		condomEff = this->getCondomProtectEff();
+		condomEff = getCondomProtectEff();
 	}
 
-	double FOI = this->getTransmissionCoeff() *	(1 - condomEff);
+	double FOI = getTransmissionCoeff() *	(1 - condomEff);
 
-	if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && (this->trace() || _p->trace()))
+	if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && (trace() || _p->trace()))
 	{
-		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " !Transmission coefficient from " << this->getID() << " to " <<
-		        _p->getID() << " is " << this->getTransmissionCoeff();
+		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " !Transmission coefficient from " << getID() << " to " <<
+		        _p->getID() << " is " << getTransmissionCoeff();
 		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << ";" << endl << " !A condom was ";
 
-		if(!this->condomUsedLastFOICalculation)
+		if(!condomUsedLastFOICalculation)
 		{
 			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "NOT ";
 		}
 
-		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "used (efficacy " << this->getCondomProtectEff();
+		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "used (efficacy " << getCondomProtectEff();
 		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << ");" << endl << " !Total FOI = " << FOI << endl;
 	}
 
@@ -385,9 +385,9 @@ double Male::getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartne
 	switch(_PSC)
 	{
 	case Person::AGE :
-		if(this->getAge(MONTH) - (12 * this->averageYearsYounger[_partnershipType].mean + 6) > 0)
+		if(getAge(MONTH) - (12 * averageYearsYounger[_partnershipType].mean + 6) > 0)
 		{
-			return this->getAge(MONTH) - (12 * this->averageYearsYounger[_partnershipType].mean + 6);
+			return getAge(MONTH) - (12 * averageYearsYounger[_partnershipType].mean + 6);
 			break;
 		}
 		else
@@ -414,9 +414,9 @@ double Male::getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartne
 	switch(_PSC)
 	{
 	case Person::AGE :
-		if(this->getAge(MONTH) - (12 * this->averageYearsYounger[_partnershipType].mean - 6) > 0)
+		if(getAge(MONTH) - (12 * averageYearsYounger[_partnershipType].mean - 6) > 0)
 		{
-			return this->getAge(MONTH) - (12 * this->averageYearsYounger[_partnershipType].mean - 6);
+			return getAge(MONTH) - (12 * averageYearsYounger[_partnershipType].mean - 6);
 			break;
 		}
 		else
@@ -439,14 +439,14 @@ double Male::getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartne
 
 double Male::rollForAgeDifference(SexualPartnership::Type _partnershipType, RandomNums &_randomNums)
 {
-	double ageDifference = _randomNums.randNorm(this->averageYearsYounger[_partnershipType]);
+	double ageDifference = _randomNums.randNorm(averageYearsYounger[_partnershipType]);
 	return ageDifference;
 }
 
 double Male::getTransmissionCoeff()
 {
-	assert(Util::withinRange(this->hvl, HVL_ZERO, HVL_LATESTAGE));
-	return Male::populationSpecificParams.at(this->populationID)->getTransmitPerEventCoeff(this->hvl);
+	assert(Util::withinRange(hvl, HVL_ZERO, HVL_LATESTAGE));
+	return Male::populationSpecificParams.at(populationID)->getTransmitPerEventCoeff(hvl);
 }
 
 
@@ -466,26 +466,26 @@ int Male::rollForNumPartners(RandomNums &_randomNums, SexualPartnership::Type _p
 	assert(_partnershipType < SexualPartnership::ENDType);
 
 	//person can only have 1 steady partner at a time so return 0 if person is already in Steady
-	if((_partnershipType == SexualPartnership::STEADY) && (!this->partners[_partnershipType].empty()))
+	if((_partnershipType == SexualPartnership::STEADY) && (!partners[_partnershipType].empty()))
 	{
 		return 0;
 	}
 
 	//Male parameters for the population that this Male is in
-	const Male::SubPopParams *subPopParams = this->getPopParams(this->populationID);
+	const Male::SubPopParams *subPopParams = getPopParams(populationID);
 	//rate of acquiring partner
 	double partnerRate;
-	partnerRate = this->partnerAcqRates[_partnershipType];
+	partnerRate = partnerAcqRates[_partnershipType];
 
 	//if this person has a steady partner then adjust acquisition rate
-	if(!this->partners[SexualPartnership::STEADY].empty())
+	if(!partners[SexualPartnership::STEADY].empty())
 	{
 		//if we're thinking of getting another partner, then lower chances if we have a steady partner
-		partnerRate *= subPopParams->getPartnerAcqMultWithSteady(this->getRiskLevel());
+		partnerRate *= subPopParams->getPartnerAcqMultWithSteady(getRiskLevel());
 	}
 
 	//if person is over the age of partnering discounting, then discount acquisition rate
-	int ageYrs = this->getAge(YEAR);
+	int ageYrs = getAge(YEAR);
 
 	if(ageYrs >= subPopParams->getPartneringDiscStartAgeYrs())
 	{
@@ -503,10 +503,10 @@ int Male::rollNumEventsPerPartner(Person *_p, RandomNums &_randomNums, SexualPar
 	assert((_p != nullptr));
 	assert(_p->isAlive());
 	assert(_partnershipType < SexualPartnership::ENDType);
-	double meanCoitalEvents = this->numActsPerMonth[_partnershipType];
-	const Male::SubPopParams *subPopParams = this->getPopParams(this->populationID);
+	double meanCoitalEvents = numActsPerMonth[_partnershipType];
+	const Male::SubPopParams *subPopParams = getPopParams(populationID);
 	//if person is over the age of partnering discounting, then discount #acts
-	int ageYrs = this->getAge(YEAR);
+	int ageYrs = getAge(YEAR);
 
 	if(ageYrs >= subPopParams->getPartneringDiscStartAgeYrs())
 	{
@@ -530,29 +530,29 @@ int Male::rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType
 	assert((_p != nullptr));
 	assert(_p->isAlive());
 	assert(_partnershipType < SexualPartnership::ENDType);
-	ShiftedLogNormalDist duration = Male::populationSpecificParams.at(this->populationID)->getSexualBehaviorParams(
-	                                    _partnershipType)->getPartnershipDurationMth(this->risk);
+	ShiftedLogNormalDist duration = Male::populationSpecificParams.at(populationID)->getSexualBehaviorParams(
+	                                    _partnershipType)->getPartnershipDurationMth(risk);
 	return (int)(_randomNums.randShiftedLogNormal(duration) + .5);
 }
 
 void Male::rerollRiskGroup(EventParams &_eventParams)
 {
-	DmgProfile::Employment cswStatus = (DmgProfile::Employment) this->getDmgProfileVal(DmgProfile::EMPLOYMENT);
-	double chanceHighRisk = getPopParams(this->populationID)->getProportionHighRisk(cswStatus);
-	Person::RiskLevel oldRisk = this->risk;
+	DmgProfile::Employment cswStatus = (DmgProfile::Employment) getDmgProfileVal(DmgProfile::EMPLOYMENT);
+	double chanceHighRisk = getPopParams(populationID)->getProportionHighRisk(cswStatus);
+	Person::RiskLevel oldRisk = risk;
 
 	if(_eventParams.randomNums.chance(chanceHighRisk))
 	{
-		this->risk = HIGH;
+		risk = HIGH;
 	}
 	else
 	{
-		this->risk = LOW;
+		risk = LOW;
 	}
 
-	if(oldRisk != this->risk)
+	if(oldRisk != risk)
 	{
-		const Male::SubPopParams *maleSubPopParams = this->getPopParams(this->populationID);
+		const Male::SubPopParams *maleSubPopParams = getPopParams(populationID);
 		//determining partnering and sexual behavior for this male.
 		EnumCls<SexualPartnership::Type>::Enum partneringType = SexualPartnership::TypeEnum.getMin();
 		EnumCls<SexualPartnership::Type>::Enum lastPartneringType = SexualPartnership::TypeEnum.getMax();
@@ -560,20 +560,20 @@ void Male::rerollRiskGroup(EventParams &_eventParams)
 		while(partneringType <= lastPartneringType)
 		{
 			const SexualBehaviorParams *sexualBehaviorParams = maleSubPopParams->getSexualBehaviorParams(partneringType);
-			this->partnerAcqRates[partneringType] = _eventParams.randomNums.randLogNormal(
-			        sexualBehaviorParams->getAcquisitionRatePerMonth(this->risk));
-			this->numActsPerMonth[partneringType] = sexualBehaviorParams->getCoitalEventsPerMonth(this->risk);
-			this->chanceCondomUsePerEvent[partneringType] = _eventParams.randomNums.randBeta(
-			            sexualBehaviorParams->getChanceCondomUsePerEvent(this->risk));
+			partnerAcqRates[partneringType] = _eventParams.randomNums.randLogNormal(
+			        sexualBehaviorParams->getAcquisitionRatePerMonth(risk));
+			numActsPerMonth[partneringType] = sexualBehaviorParams->getCoitalEventsPerMonth(risk);
+			chanceCondomUsePerEvent[partneringType] = _eventParams.randomNums.randBeta(
+			            sexualBehaviorParams->getChanceCondomUsePerEvent(risk));
 			partneringType = EnumCls<SexualPartnership::Type>::Enum(partneringType + 1);
 		}
 	}
 
-	if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && this->trace())
+	if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && trace())
 	{
-		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " % Male " << this->getID() << " rerolls as ";
+		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " % Male " << getID() << " rerolls as ";
 
-		if(this->risk == HIGH)
+		if(risk == HIGH)
 		{
 			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "High";
 		}
@@ -590,7 +590,7 @@ void Male::saveState(ostream &_outStream, long currTime)
 {
 	_outStream << "gend:m," << endl;
 	Person::saveState(_outStream, currTime);
-	_outStream << "," << endl << "circ:" << this->circumcised << "," << endl;
+	_outStream << "," << endl << "circ:" << circumcised << "," << endl;
 	//partner acquisition rates
 	bool firstInSequence = true;
 	_outStream << "partAcqR:[";
@@ -603,7 +603,7 @@ void Male::saveState(ostream &_outStream, long currTime)
 		}
 
 		firstInSequence = false;
-		_outStream << this->partnerAcqRates[i];
+		_outStream << partnerAcqRates[i];
 	}
 
 	_outStream << "]," << endl;
@@ -619,7 +619,7 @@ void Male::saveState(ostream &_outStream, long currTime)
 		}
 
 		firstInSequence = false;
-		_outStream << this->numActsPerMonth[i];
+		_outStream << numActsPerMonth[i];
 	}
 
 	_outStream << "]," << endl;
@@ -635,7 +635,7 @@ void Male::saveState(ostream &_outStream, long currTime)
 		}
 
 		firstInSequence = false;
-		_outStream << this->chanceCondomUsePerEvent[i];
+		_outStream << chanceCondomUsePerEvent[i];
 	}
 
 	_outStream << "]";

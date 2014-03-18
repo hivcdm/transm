@@ -56,7 +56,7 @@
 SexualPartnership::Type GraphVizGraphElements::relationshipEdge::statusAtTime(int time)
 {
 	/** Iterate through the timePairs and check if time falls between them */
-	for(vector<timePair>::iterator timesIt = this->times.begin(); timesIt != times.end(); ++timesIt)
+	for(vector<timePair>::iterator timesIt = times.begin(); timesIt != times.end(); ++timesIt)
 	{
 		if(time >= (*timesIt).start && time <= (*timesIt).end)
 		{
@@ -71,38 +71,38 @@ SexualPartnership::Type GraphVizGraphElements::relationshipEdge::statusAtTime(in
 
 GraphVizGraphElements::personNode::personNode(int ID, bool _isMale, int timeBornAt)
 {
-	this->personID = ID;
-	this->isMale = _isMale;
-	this->timeBorn = timeBornAt;
+	personID = ID;
+	isMale = _isMale;
+	timeBorn = timeBornAt;
 	/** It is expected that timeDied and timeInfected will be updated when those events occur */
-	this->timeDied = INT_MAX;
-	this->timeInfected = INT_MAX;
-	this->timeSA = INT_MAX;
+	timeDied = INT_MAX;
+	timeInfected = INT_MAX;
+	timeSA = INT_MAX;
 }
 
 bool GraphVizGraphElements::personNode::wasAlive(int time)
 {
-	return (time >= this->timeBorn && time <= this->timeDied);
+	return (time >= timeBorn && time <= timeDied);
 }
 
 bool GraphVizGraphElements::personNode::wasInfected(int time)
 {
-	return (this->wasAlive(time) && time >= this->timeInfected);
+	return (wasAlive(time) && time >= timeInfected);
 }
 
 bool GraphVizGraphElements::personNode::wasBorn(int time)
 {
-	return (time >= this->timeBorn);
+	return (time >= timeBorn);
 }
 
 bool GraphVizGraphElements::personNode::wasSA(int time)
 {
-	return (time >= this->timeSA);
+	return (time >= timeSA);
 }
 
 bool GraphVizGraphElements::personNode::hadDied(int time)
 {
-	return (time > this->timeDied);
+	return (time > timeDied);
 }
 
 void GraphVizGraphElements::personNode::addRelationship(unsigned long partnerID, int timeStart, int timeEnd,
