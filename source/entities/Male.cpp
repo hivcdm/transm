@@ -384,7 +384,8 @@ double Male::getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartne
 {
 	switch(_PSC)
 	{
-	case Person::AGE :
+	case Person::AGE:
+	{
 		if(getAge(MONTH) - (12 * averageYearsYounger[_partnershipType].mean + 6) > 0)
 		{
 			return getAge(MONTH) - (12 * averageYearsYounger[_partnershipType].mean + 6);
@@ -395,17 +396,14 @@ double Male::getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartne
 			return 0;
 			break;
 		}
-
-	//case SEXUAL_ACTIVITY_LEVEL :
-	case ID :
-		return numeric_limits<double>::min();
-
-	default :
-		cerr << "Invalid Sorting key :" << _PSC;
-		Util::exitWithPrompt(-1);
 	}
-
-	return -1;
+	case ID:
+	{
+		return numeric_limits<double>::min();
+	}
+	}
+	std::cerr << "Invalid Sorting key :" << _PSC;
+	Util::exitWithPrompt(-1);
 }
 
 
@@ -413,7 +411,8 @@ double Male::getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartne
 {
 	switch(_PSC)
 	{
-	case Person::AGE :
+	case Person::AGE:
+	{
 		if(getAge(MONTH) - (12 * averageYearsYounger[_partnershipType].mean - 6) > 0)
 		{
 			return getAge(MONTH) - (12 * averageYearsYounger[_partnershipType].mean - 6);
@@ -424,17 +423,15 @@ double Male::getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartne
 			return 0;
 			break;
 		}
-
-	//case SEXUAL_ACTIVITY_LEVEL :
+	}
 	case ID:
+	{
 		return numeric_limits<double>::max();
-
-	default :
-		cerr << "Invalid Sorting key :" << _PSC;
-		Util::exitWithPrompt(-1);
+	}
 	}
 
-	return -1;
+	cerr << "Invalid Sorting key :" << _PSC;
+	Util::exitWithPrompt(-1);
 }
 
 double Male::rollForAgeDifference(SexualPartnership::Type _partnershipType, RandomNums &_randomNums)

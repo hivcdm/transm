@@ -626,21 +626,13 @@ public:
 		{
 			switch(_PSC)
 			{
-			case AGE :
-				return (_KeyValType)_p->age;
-
-			case SEXUAL_ACTIVITY_LEVEL :
-				return (_KeyValType)_p->sexualActivityLevel;
-
-			case ID :
-				return (_KeyValType)_p->id;
-
-			default :
-				cerr << "Invalid Sorting key :" << _PSC;
-				Util::exitWithPrompt(-1);
+			case AGE: return (_KeyValType)_p->age;
+			case SEXUAL_ACTIVITY_LEVEL: return (_KeyValType)_p->sexualActivityLevel;
+			case ID: return (_KeyValType)_p->id;
 			}
 
-			return 0;
+			cerr << "Invalid Sorting key :" << _PSC;
+			Util::exitWithPrompt(-1);
 		}
 
 		//functor associated with the < operator. Generally used for template args in in sets and maps
