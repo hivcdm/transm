@@ -1,5 +1,3 @@
-#include <thread>
-
 #include "Simulation.h"
 #include "cepac/include.h"
 #include "statistics/TransmissionSummaryStats.h"

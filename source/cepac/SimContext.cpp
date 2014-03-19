@@ -11,6 +11,7 @@ SimContext::SimContext(string runName) {
 SimContext::~SimContext(void) {
 	for (int i = 0; i < ART_NUM_LINES; i++) {
 		delete artInputs[i];
+		delete pedsARTInputs[i];
 	}
 	for (int i = 0; i < PROPH_NUM_TYPES; i++) {
 		for (int j = 0; j < OI_NUM; j++) {
