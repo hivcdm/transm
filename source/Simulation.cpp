@@ -1,37 +1,25 @@
-#include <time.h>
-#include <string.h>
-#include <cstdlib>
 #include <iostream>
-#include <stdio.h>
 #include <set>
-#include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 
-#ifdef WIN32
-#include <io.h>
-#define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
-#endif
-
 #include "Simulation.h"
-
 #include "Constants.h"
 #include "Population.h"
 #include "cepac/include.h"
 #include "cepacbridge/CepacInputParser.h"
 #include "data/EventParams.h"
+#include "entities/classifiers/DmgProfile.h"
+#include "entities/behaviors/SexualBehaviorParams.h"
 #include "graphviz/graphVizParse.h"
 #include "util/HighResolutionTimer.h"
 #include "util/Util.h"
-#include "entities/classifiers/DmgProfile.h"
-#include "entities/behaviors/SexualBehaviorParams.h"
 
 Simulation::Simulation(const std::string &xmlFile)
     : xmlFile_(xmlFile),
 	  failedCalibration_(false),
 	  hasPassedFirstMonthCalibPrev_(false),
-	  monthOfFirstMonthCalibPrev_(0)
+	  monthOfFirstMonthCalibPrev_(0),
+	  population_(nullptr)
 {
 	
 }

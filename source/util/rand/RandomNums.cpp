@@ -1,6 +1,8 @@
+#include <ctime>
+
 #include "RandomNums.h"
 #include "../Util.h"
-#include <ctime>
+
 //-----------< Begin Constructors >-----------------//
 RandomNums::RandomNums()
 {

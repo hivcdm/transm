@@ -103,12 +103,6 @@
     <ClInclude Include="..\..\..\source\util\XMLUtil.h">
       <Filter>util</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\util\rand\Distributions.h">
-      <Filter>util\rand</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\util\rand\IsaacRand.h">
-      <Filter>util\rand</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\util\rand\RandomNums.h">
       <Filter>util\rand</Filter>
     </ClInclude>

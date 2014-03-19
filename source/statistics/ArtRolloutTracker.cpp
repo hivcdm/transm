@@ -1,8 +1,8 @@
 #include "ArtRolloutTracker.h"
 #include "PersonBucket.h"
 #include "../Population.h"
-#include "../entities/Person.h"
 #include "../cepac/SimContext.h"
+#include "../entities/Person.h"
 
 const std::string ArtRolloutTracker::RISK_GROUP_NAMES[] =
 {

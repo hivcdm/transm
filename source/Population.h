@@ -1,20 +1,20 @@
 #pragma once
 
-#include <vector>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <unordered_map>
+#include <vector>
 
 #include "PopulationParams.h"
 #include "data/AgeRangeSizeContainer.h"
-#include "entities/Person.h"
-#include "entities/Male.h"
 #include "entities/Female.h"
-#include "statistics/PopStats.h"
+#include "entities/Male.h"
+#include "entities/Person.h"
 #include "entities/entitypool/EntityPool.h"
+#include "graphviz/graphVizParse.h"
+#include "statistics/PopStats.h"
 #include "util/rand/RandomNums.h"
 #include "util/ticpp/ticpp.h"
-#include "graphviz/graphVizParse.h"
 
 enum DebugLevel;
 

@@ -53,7 +53,7 @@ public:
 		std::stringstream elementStream;
 		elementStream << value;
 		assert(currentColumn < numColumns);
-		currentRow[currentColumn++] = value;
+		currentRow[currentColumn++] = elementStream.str();
 	}
 
 	void PushEmptyElement();

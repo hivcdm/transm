@@ -4,12 +4,12 @@
 #include <string>
 #include <vector>
 
-#include "TabularOutput.h"
 #include "BucketCounter.h"
+#include "TabularOutput.h"
 #include "../cepac/include.h"
 #include "../data/AgeRangeSizeContainer.h"
-#include "../entities/Person.h"
 #include "../data/EventParams.h"
+#include "../entities/Person.h"
 
 class Person;
 class Population;

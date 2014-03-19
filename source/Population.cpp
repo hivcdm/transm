@@ -1,25 +1,21 @@
 #include <algorithm>
-#include <ctime>
 #include <cstddef>
 #include <iostream>
 #include <list>
 #include <string>
-#include <vector>
-#include <assert.h>
-#include <math.h>
 #include <unordered_set>
-#include <boost/lexical_cast.hpp>
+#include <vector>
 
 #include "Population.h"
-#include "Simulation.h"
 #include "Constants.h"
+#include "Simulation.h"
 #include "entities/Female.h"
 #include "entities/Male.h"
 #include "entities/behaviors/SexualBehaviorParams.h"
 #include "statistics/InfectionsTracker.h"
 #include "statistics/CostsTracker.h"
-#include "util/rand/RandomNums.h"
 #include "util/Util.h"
+#include "util/rand/RandomNums.h"
 
 /***
 Data needed :
@@ -1174,14 +1170,8 @@ void Population::applyIncidentPrevalence(EventParams &_eventParams)
 {
 	_eventParams.displayOut("Applying incident prevalence data\n");
 	//counter for number of people in each age bucket who are infected (used to initialize prevalence) (CSW, High risk, Low risk)
-	vector <boost::tuple<int, int, int>> numInfectedByAgeBucketMale;
-	vector <boost::tuple<int, int, int>> numInfectedByAgeBucketFemale;
-
-	for(size_t ageBucketNum = 0; ageBucketNum < popWideParams.initialAgeBuckets.size(); ageBucketNum++)
-	{
-		numInfectedByAgeBucketMale.push_back(boost::make_tuple(0, 0, 0));
-		numInfectedByAgeBucketFemale.push_back(boost::make_tuple(0, 0, 0));
-	}
+	std::vector<std::array<int, 3>> numInfectedByAgeBucketMale(popWideParams.initialAgeBuckets.size());
+	std::vector<std::array<int, 3>> numInfectedByAgeBucketFemale(popWideParams.initialAgeBuckets.size());
 
 	//loop through all males and apply prevalence to population
 	for(std::list<Person *>::iterator males_iter = entities->begin(DmgProfile::MALE);
@@ -1189,8 +1179,7 @@ void Population::applyIncidentPrevalence(EventParams &_eventParams)
 	{
 		Person *p = *(males_iter);
 		int ageBucketIndex = getAgeBucketIndex(p);
-		PopulationParams::AgeBucketPrevalenceInfo *_ageBucketParams = popWideParams.initialAgeBuckets.at(
-		            ageBucketIndex);
+		auto _ageBucketParams = popWideParams.initialAgeBuckets.at(ageBucketIndex);
 		DmgProfile::Gender _gender = DmgProfile::MALE;
 		//if this is a prevalent person, see if they're infected. Right now, newborns cannot be infected
 		//TODO: Have counter in ageBucketParams for persons infected
@@ -1204,28 +1193,28 @@ void Population::applyIncidentPrevalence(EventParams &_eventParams)
 
 			if(isCSW)
 			{
-				if(numInfectedByAgeBucketMale.at(ageBucketIndex).get<0>() < _ageBucketParams->numInfectedCSW[_gender])
+				if(numInfectedByAgeBucketMale.at(ageBucketIndex)[0] < _ageBucketParams->numInfectedCSW[_gender])
 				{
 					isPrevalent = true;
-					numInfectedByAgeBucketMale.at(ageBucketIndex).get<0>()++;
+					numInfectedByAgeBucketMale.at(ageBucketIndex)[0]++;
 				}
 			}
 			else
 			{
 				if(risk == Person::HIGH)
 				{
-					if(numInfectedByAgeBucketMale.at(ageBucketIndex).get<1>() < _ageBucketParams->numInfectedRisk[_gender][risk])
+					if(numInfectedByAgeBucketMale.at(ageBucketIndex)[1] < _ageBucketParams->numInfectedRisk[_gender][risk])
 					{
 						isPrevalent = true;
-						numInfectedByAgeBucketMale.at(ageBucketIndex).get<1>()++;
+						numInfectedByAgeBucketMale.at(ageBucketIndex)[1]++;
 					}
 				}
 				else
 				{
-					if(numInfectedByAgeBucketMale.at(ageBucketIndex).get<2>() < _ageBucketParams->numInfectedRisk[_gender][risk])
+					if(numInfectedByAgeBucketMale.at(ageBucketIndex)[2] < _ageBucketParams->numInfectedRisk[_gender][risk])
 					{
 						isPrevalent = true;
-						numInfectedByAgeBucketMale.at(ageBucketIndex).get<2>()++;
+						numInfectedByAgeBucketMale.at(ageBucketIndex)[2]++;
 					}
 				}
 			}
@@ -1283,28 +1272,28 @@ void Population::applyIncidentPrevalence(EventParams &_eventParams)
 
 			if(isCSW)
 			{
-				if(numInfectedByAgeBucketFemale.at(ageBucketIndex).get<0>() < _ageBucketParams->numInfectedCSW[_gender])
+				if(numInfectedByAgeBucketFemale.at(ageBucketIndex)[0] < _ageBucketParams->numInfectedCSW[_gender])
 				{
 					isPrevalent = true;
-					numInfectedByAgeBucketFemale.at(ageBucketIndex).get<0>()++;
+					numInfectedByAgeBucketFemale.at(ageBucketIndex)[0]++;
 				}
 			}
 			else
 			{
 				if(risk == Person::HIGH)
 				{
-					if(numInfectedByAgeBucketFemale.at(ageBucketIndex).get<1>() < _ageBucketParams->numInfectedRisk[_gender][risk])
+					if(numInfectedByAgeBucketFemale.at(ageBucketIndex)[1] < _ageBucketParams->numInfectedRisk[_gender][risk])
 					{
 						isPrevalent = true;
-						numInfectedByAgeBucketFemale.at(ageBucketIndex).get<1>()++;
+						numInfectedByAgeBucketFemale.at(ageBucketIndex)[1]++;
 					}
 				}
 				else
 				{
-					if(numInfectedByAgeBucketFemale.at(ageBucketIndex).get<2>() < _ageBucketParams->numInfectedRisk[_gender][risk])
+					if(numInfectedByAgeBucketFemale.at(ageBucketIndex)[2] < _ageBucketParams->numInfectedRisk[_gender][risk])
 					{
 						isPrevalent = true;
-						numInfectedByAgeBucketFemale.at(ageBucketIndex).get<2>()++;
+						numInfectedByAgeBucketFemale.at(ageBucketIndex)[2]++;
 					}
 				}
 			}

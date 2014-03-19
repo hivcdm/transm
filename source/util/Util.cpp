@@ -1,7 +1,7 @@
 #include <iostream>
-#include <typeinfo>
-#include "Util.h"
 #include <boost/filesystem.hpp>
+
+#include "Util.h"
 
 Version Version::FromString(const std::string &version_string)
 {

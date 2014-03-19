@@ -3,10 +3,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <boost/tuple/tuple.hpp>
 
-#include "TabularOutput.h"
 #include "BucketCounter.h"
+#include "TabularOutput.h"
 #include "../cepac/include.h"
 #include "../entities/Person.h"
 #include "../data/EventParams.h"

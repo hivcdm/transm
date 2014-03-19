@@ -3,10 +3,10 @@
 #include <cstdint>
 #include <cstdlib>
 #include <vector>
+#include <boost/math/distributions/beta.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/poisson_distribution.hpp>
-#include <boost/math/distributions/beta.hpp>
 
 struct NormalDist
 {

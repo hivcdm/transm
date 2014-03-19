@@ -1,14 +1,12 @@
 #pragma once
 
-#include "./ticpp/ticpp.h"
-#include "./../Constants.h"
-#include "./rand/RandomNums.h"
-#include "boost/lexical_cast.hpp"
+#include "../Constants.h"
+#include "rand/RandomNums.h"
+#include "ticpp/ticpp.h"
+
 class XMLUtil
 {
 public :
-
-
 	//adds a child element to the end of the children list, the child must
 	//  have at most 1 value and no attributes
 	template <class T>
