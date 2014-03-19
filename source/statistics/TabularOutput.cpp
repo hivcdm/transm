@@ -69,26 +69,6 @@ void TabularOutput::SetHeaderCell(int column, int row, const std::string &value)
 	header[Coordinate(row, column)] = value;
 }
 
-void TabularOutput::PushElement(int element)
-{
-	std::stringstream elementStream;
-	elementStream << element;
-	PushElement(elementStream.str());
-}
-
-void TabularOutput::PushElement(double element)
-{
-	std::stringstream elementStream;
-	elementStream << element;
-	PushElement(elementStream.str());
-}
-
-void TabularOutput::PushElement(const std::string &element)
-{
-	assert(currentColumn < numColumns);
-	currentRow[currentColumn++] = element;
-}
-
 void TabularOutput::PushEmptyElement()
 {
 	++currentColumn;

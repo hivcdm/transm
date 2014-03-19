@@ -46,9 +46,16 @@ public:
 	void PrintHeader(std::ostream &outStream);
 	void PrintRow(std::ostream &outStream, bool clearAfterWriting = true);
 	void SetHeaderCell(int column, int row, const std::string &value);
-	void PushElement(int element);
-	void PushElement(double element);
-	void PushElement(const std::string &element);
+
+	template<typename T>
+	void PushElement(const T &value)
+	{
+		std::stringstream elementStream;
+		elementStream << value;
+		assert(currentColumn < numColumns);
+		currentRow[currentColumn++] = value;
+	}
+
 	void PushEmptyElement();
 	void ClearRow();
 
