@@ -3,8 +3,26 @@
 #include "Util.h"
 #include <boost/filesystem.hpp>
 
-const double Util::MODEL_VERSION = 3.34;
-const double Util::INPUT_VERSION = 3.34;
+Version Version::FromString(const std::string &version_string)
+{
+	Version v;
+	auto major_minor_separator = version_string.find('.');
+	v.major = std::stoi(version_string.substr(0, major_minor_separator));
+	auto revision_separator = version_string.find('.', major_minor_separator + 1);
+	v.minor = std::stoi(version_string.substr(major_minor_separator + 1, revision_separator));
+	if(revision_separator != std::string::npos)
+	{
+		v.revision = std::stoi(version_string.substr(revision_separator + 1));
+	}
+	return v;
+}
+
+std::string Version::ToString(const Version &version)
+{
+	return std::to_string(version.major) + "." + std::to_string(version.minor) + "." + std::to_string(version.revision);
+}
+
+const Version Util::MODEL_VERSION = {3, 4, 0};
 
 double Util::dayToMonthMult = 1.0 / 30;
 double Util::dayToYearMult = 1.0 / 365;

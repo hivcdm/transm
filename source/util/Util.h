@@ -10,6 +10,16 @@
 #include "rand/RandomNums.h"
 #include "../Constants.h"
 
+struct Version
+{
+	static Version FromString(const std::string &version_string);
+	static std::string ToString(const Version &version);
+
+	int major;
+	int minor;
+	int revision;
+};
+
 class Util
 {
 
@@ -20,8 +30,7 @@ class Util
 	static double monthToYearMult;
 public:
 	/* Constant values for transmission model version and file/directory information */
-	static const double MODEL_VERSION;
-	static const double INPUT_VERSION;
+	static const Version MODEL_VERSION;
 
 	static std::vector<std::string> transmFilesToRun;
 	static void findInputFiles(const std::string &inputDirectory);

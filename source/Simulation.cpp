@@ -322,18 +322,13 @@ void Simulation::LoadInput(const std::string &xmlFile)
 	parameters_.displayOut(seedMessageStr.c_str());
 	parameters_.monthOf1990 = simParams->FirstChildElement("monthOf1990")->GetText<int>();
 
-	double inputVersion = simParams->FirstChildElement("inputVersion")->GetText<double>();
-	parameters_.displayOut("Input Version =");
-	parameters_.displayOut(boost::lexical_cast<std::string>(inputVersion).c_str());
-	parameters_.displayOut("\n");
+	auto inputVersion = Version::FromString(simParams->FirstChildElement("inputVersion")->GetText());
+	parameters_.displayOut("Input Version =" + Version::ToString(inputVersion) + "\n");
 
-	if(inputVersion != Util::INPUT_VERSION)
+	if(inputVersion.major != Util::MODEL_VERSION.major || inputVersion.minor != Util::MODEL_VERSION.minor)
 	{
-		parameters_.displayOut("Input Version for ");
-		parameters_.displayOut(xmlFile.c_str());
-		parameters_.displayOut(" is not ");
-		parameters_.displayOut(boost::lexical_cast<std::string>(Util::INPUT_VERSION).c_str());
-		parameters_.displayOut(".  Stopping model execution!\n");
+		parameters_.displayOut("Input version for " + xmlFile + " is not " 
+			+ Version::ToString(Util::MODEL_VERSION) + ".  Stopping model execution!\n");
 
 		throw std::runtime_error("bad input version");
 	}
