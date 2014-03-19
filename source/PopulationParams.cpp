@@ -12,7 +12,7 @@
 
 //-------------< Begin AgeBucketPrevalenceInfo methods >-------------------//
 
-Population::Params::AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(int _minAgeMth, int _maxAgeMth,
+PopulationParams::AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(int _minAgeMth, int _maxAgeMth,
         double _proportionOfPopulationMale,
         double _proportionOfPopulationFemale,
         double _numInfectedCSWMale,
@@ -35,7 +35,7 @@ Population::Params::AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(int _minAge
 	numInfectedRisk[DmgProfile::FEMALE][Person::HIGH] = _numInfectedNonCSWFemalesHighRisk;
 }
 
-void Population::Params::AgeBucketPrevalenceInfo::print(EventParams &_eventParams)
+void PopulationParams::AgeBucketPrevalenceInfo::print(EventParams &_eventParams)
 {
 	_eventParams.displayOut("\tAges ");
 	_eventParams.displayOut(boost::lexical_cast<std::string>(minAgeMth).c_str());
@@ -77,7 +77,7 @@ void Population::Params::AgeBucketPrevalenceInfo::print(EventParams &_eventParam
 	_eventParams.displayOut("\n");
 }
 
-void Population::Params::AgeBucketPrevalenceInfo::copyToSelf(AgeBucketPrevalenceInfo _abpInfo)
+void PopulationParams::AgeBucketPrevalenceInfo::copyToSelf(AgeBucketPrevalenceInfo _abpInfo)
 {
 	minAgeMth = _abpInfo.minAgeMth;
 	maxAgeMth = _abpInfo.maxAgeMth;
@@ -98,9 +98,9 @@ void Population::Params::AgeBucketPrevalenceInfo::copyToSelf(AgeBucketPrevalence
 //-------------< End AgeBucketPrevalenceInfo methods >-------------------//
 
 
-//-------------< Begin Population::Params methods >-------------------//
+//-------------< Begin PopulationParams methods >-------------------//
 
-Population::Params::Params()
+PopulationParams::PopulationParams()
 {
 	//set default values of fields
 	debugLevel = DEBUG1;
@@ -114,7 +114,7 @@ Population::Params::Params()
 	hivInfected = 0.10;
 }
 
-Population::Params::~Params()
+PopulationParams::~PopulationParams()
 {
 	unsigned int ageBucketNum = initialAgeBuckets.size();
 
@@ -124,14 +124,14 @@ Population::Params::~Params()
 	}
 }
 
-void Population::Params::init(ticpp::Element *_populationXML, unsigned int _populationID, EventParams &_eventParams)
+void PopulationParams::init(ticpp::Element *_populationXML, unsigned int _populationID, EventParams &_eventParams)
 {
 	assert(_populationXML != nullptr);
 	populationID = _populationID;
 	loadXML(_populationXML, _eventParams);
 }
 
-void Population::Params::loadXML(ticpp::Element *_populationXML, EventParams &_eventParams)
+void PopulationParams::loadXML(ticpp::Element *_populationXML, EventParams &_eventParams)
 {
 	assert(_populationXML != nullptr);
 	_eventParams.displayOut("Population Parameters\n");
@@ -244,7 +244,7 @@ void Population::Params::loadXML(ticpp::Element *_populationXML, EventParams &_e
 			}
 			else
 			{
-				_eventParams.displayOut("Population::Params::loadXML(...): Ignoring Unknown type :");
+				_eventParams.displayOut("PopulationParams::loadXML(...): Ignoring Unknown type :");
 				_eventParams.displayOut(baseEntityElem.c_str());
 				_eventParams.displayOut("\n");
 			}
@@ -300,7 +300,7 @@ void Population::Params::loadXML(ticpp::Element *_populationXML, EventParams &_e
 /**reloads certain xml data from another xml file in a sequence of files
    only loads non initial data
 **/
-void Population::Params::reloadXML(ticpp::Element *_populationXML, EventParams &_eventParams)
+void PopulationParams::reloadXML(ticpp::Element *_populationXML, EventParams &_eventParams)
 {
 	assert(_populationXML != nullptr);
 	_eventParams.displayOut("Population Parameters\n");
@@ -348,7 +348,7 @@ void Population::Params::reloadXML(ticpp::Element *_populationXML, EventParams &
 			}
 			else
 			{
-				_eventParams.displayOut("Population::Params::loadXML(...): Ignoring Unknown type :");
+				_eventParams.displayOut("PopulationParams::loadXML(...): Ignoring Unknown type :");
 				_eventParams.displayOut(baseEntityElem.c_str());
 				_eventParams.displayOut("\n");
 			}
@@ -378,9 +378,9 @@ void Population::Params::reloadXML(ticpp::Element *_populationXML, EventParams &
 	_eventParams.displayOut("\n");
 }
 
-double Population::Params::getBirthRate() const
+double PopulationParams::getBirthRate() const
 {
 	return birthRate;
 }
 
-//-------------< End Population::Params methods >-------------------//
+//-------------< End PopulationParams methods >-------------------//

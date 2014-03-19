@@ -3,9 +3,10 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
-#include <boost/tuple/tuple.hpp>
 #include <unordered_map>
 
+#include "PopulationParams.h"
+#include "data/AgeRangeSizeContainer.h"
 #include "entities/Person.h"
 #include "entities/Male.h"
 #include "entities/Female.h"
@@ -16,7 +17,6 @@
 #include "graphviz/graphVizParse.h"
 
 enum DebugLevel;
-class Sim;
 
 /*
   This class contains the main simulation logic
@@ -26,92 +26,7 @@ class Sim;
 
 class Population
 {
-	/** this is used to assign each New population a unique id */
-	static unsigned int idCounter;
-
-	/** this number is used to access the Population stratified parameters for Male and Female*/
-	unsigned int populationID;
-	/** string name of population */
-	string populationLabel;
-
-	friend class Simulation;
-
-#include "PopulationParams.h"
-
-	/** current size of the population */
-	long currSize;
-	/** Size of non-sexually active */
-	long currNASize;
-	/** Size of CSW's */
-	long currCSWSize;
-	/** Size by Risk */
-	long currSizeRisk[Person::ENDRiskLevel];
-	/** Size of CSW's by Risk */
-	long currSizeRiskCSW[Person::ENDRiskLevel];
-	/** Size of CSW's by Risk and gender */
-	long currSizeGenderRiskCSW[DmgProfile::ENDGender][Person::ENDRiskLevel];
-	/** Size by gender */
-	long currSizeGender[DmgProfile::ENDGender];
-	/** non-sexually active by gender */
-	long currNASizeByGender[DmgProfile::ENDGender];
-	/** sexually active by risk and gender **/
-	long currSASizeGenderRisk[DmgProfile::ENDGender][Person::ENDRiskLevel];
-	/** Num Died this month by Death Cause */
-	long currDeathCauses[Person::ENDDeathStatus];
-	/** Size by age range: tuple is size, minAge, maxAge
-	 //These only include those who are sexually active
-	 * //Note: There is an enum for labeling the indices of the above tuple in the Public parameters
-	 **/
-	std::vector<boost::tuple<long, int, int>> currSizeByAgeRange;
-	std::vector<boost::tuple<long, int, int>> currSizeByAgeRangeMale;
-	std::vector<boost::tuple<long, int, int>> currSizeByAgeRangeFemale;
-	/** The people who are infected but still untreated (Only used for rollout)
-	 */
-	std::list<Person *> rolloutUntreatedPool;
-
-	/**The people who are currently being treated (Only used for rollout)
-	 */
-	std::list<Person *> rolloutTreatedPool;
-
-	Params popWideParams;
-
-	/** a container for all the people. This is a compartmentalized container that lets us
-	 //  access different types of people based on criteria. It also has an iterator that lets
-	 //  us access all the through a java style iterator interface */
-	EntityPool *entities;
-
-	/** fling initiators -- use BucketSexualMixing, not DmgProfileBucket because all persons
-	 //participating in partnerships are sexually active by definition */
-	std::map<BucketSexualMixing *, std::vector<SexualPartnership::Type>> partneringInitiators;
-	std::map<DmgProfile::ProfileID, std::vector<SexualPartnership::Type>> profilesToPartnershipTypes;
-	/** stores eligible receivers Buckets for each type of partnership -- use BucketSexualMixing,
-	 //not DmgProfileBucket because all persons participating in partnerships are sexually
-	 //active by definition */
-	std::vector<BucketSexualMixing *> potentialPartnerBuckets[SexualPartnership::ENDType];
-	/** stores weights of each eligible bucket. we keep this as a separate vector so we can
-	 //  use pre-existing normalization and random index chooser functions. */
-	std::vector<double> eligibleBucketWeights[SexualPartnership::ENDType];
-
-	std::vector<std::vector<Person *>> rankedForTreatment;
-
 public:
-	PopStats *popStats;	//tallies the statistics that the population generates throughout the simulation
-
-	/** The graph of all relationships over time, used to generate graphviz output */
-	GraphVizGraphElements *graph;
-
-	//Indices of the size by age range tuple
-	enum IndicesOfSizeByAgeRange
-	{
-		AGE_RANGE_SIZE = 0,
-		MIN_AGE_IN_MONTHS,
-		MAX_AGE_IN_MONTHS,
-		ENDIndicesOfSizeByAgeRange
-	};
-
-	//this is a pointer that will delete the object inside once there are no more pointers to it
-	//typedef boost::shared_ptr<BucketAge> SharedPtrToAgeBucket;
-
 	//This is the main circular buffer containing the BucketAge structures
 	typedef boost::circular_buffer_space_optimized<BucketAge *> BucketAllAges;
 
@@ -159,7 +74,6 @@ public:
 	//Applys calibration procedure to determine if partnership prevalence in population lies in the bounds provided
 	bool passesPartnershipCalibration(EventParams &_eventParams);
 
-	//-----------< BEGIN event-related methods...happen each timestep  >--------------------//
 	//create birthRate * currSize people who are age 0 and add them to the DmgProfile::NA population
 	void births(EventParams &_eventParams);
 	//everyone in population ages one year
@@ -184,7 +98,7 @@ public:
 	void updateFinalPhysicalState(EventParams &_eventParams);
 
 	//gets the age bucket of the person
-	Population::Params::AgeBucketPrevalenceInfo *getAgeBucket(Person *);
+	PopulationParams::AgeBucketPrevalenceInfo *getAgeBucket(Person *);
 	//gets the index of the age bucket of the person
 	int getAgeBucketIndex(Person *);
 
@@ -195,13 +109,11 @@ public:
 	long getSASize(DmgProfile::Gender _gender, Person::RiskLevel _risk);
 	long getCSWSize(DmgProfile::Gender _gender, Person::RiskLevel _risk);
 
-	std::vector<boost::tuple<long, int, int>> getSizeByAgeRange();
+	const AgeRangeSizeContainer &getSizeByAgeRange() const { return currSizeByAgeRange; }
 
-	//-----------< END event-related methods...happen each timestep  >--------------------//
+	PopStats *getPopStats() const { return popStats; }
+
 private:
-	//-----------< BEGIN helper methods  >--------------------//
-
-
 	/*
 	//forms creates partnerships of a particular type for 1 person. Will make sure that each partner is in the correct DmgProfileBucket
 	//if _partnershipType == STEADY, then this will remove the partner from the EntityIndex (as they are now NOT_SINGLE)
@@ -228,7 +140,7 @@ private:
 	   @return a newly formed person
 	**/
 	Person *generatePerson(EventParams &_eventParams, DmgProfile::Gender _gender,
-	                       Population::Params::AgeBucketPrevalenceInfo *_ageBucketParams, bool toTrace);
+	                       PopulationParams::AgeBucketPrevalenceInfo *_ageBucketParams, bool toTrace);
 
 	/*
 	  processes the death of 1 person, updates statistics, removes that person from any relationships
@@ -287,6 +199,74 @@ private:
 
 	void recordShiftedOutcomes(EventParams &_eventParams, std::ostream &_outStream);
 
-	//-----------< END getters,setters, and print functions >--------------------//
+	/** this is used to assign each New population a unique id */
+	static unsigned int idCounter;
 
+	/** this number is used to access the Population stratified parameters for Male and Female*/
+	unsigned int populationID;
+	/** string name of population */
+	string populationLabel;
+
+	friend class Simulation;
+
+	/** current size of the population */
+	long currSize;
+	/** Size of non-sexually active */
+	long currNASize;
+	/** Size of CSW's */
+	long currCSWSize;
+	/** Size by Risk */
+	long currSizeRisk[Person::ENDRiskLevel];
+	/** Size of CSW's by Risk */
+	long currSizeRiskCSW[Person::ENDRiskLevel];
+	/** Size of CSW's by Risk and gender */
+	long currSizeGenderRiskCSW[DmgProfile::ENDGender][Person::ENDRiskLevel];
+	/** Size by gender */
+	long currSizeGender[DmgProfile::ENDGender];
+	/** non-sexually active by gender */
+	long currNASizeByGender[DmgProfile::ENDGender];
+	/** sexually active by risk and gender **/
+	long currSASizeGenderRisk[DmgProfile::ENDGender][Person::ENDRiskLevel];
+	/** Num Died this month by Death Cause */
+	long currDeathCauses[Person::ENDDeathStatus];
+	/** Size by age range: tuple is size, minAge, maxAge
+	//These only include those who are sexually active
+	* //Note: There is an enum for labeling the indices of the above tuple in the Public parameters
+	**/
+	AgeRangeSizeContainer currSizeByAgeRange;
+	AgeRangeSizeContainer currSizeByAgeRangeMale;
+	AgeRangeSizeContainer currSizeByAgeRangeFemale;
+	/** The people who are infected but still untreated (Only used for rollout)
+	*/
+	std::list<Person *> rolloutUntreatedPool;
+
+	/**The people who are currently being treated (Only used for rollout)
+	*/
+	std::list<Person *> rolloutTreatedPool;
+
+	PopulationParams popWideParams;
+
+	/** a container for all the people. This is a compartmentalized container that lets us
+	//  access different types of people based on criteria. It also has an iterator that lets
+	//  us access all the through a java style iterator interface */
+	EntityPool *entities;
+
+	/** fling initiators -- use BucketSexualMixing, not DmgProfileBucket because all persons
+	//participating in partnerships are sexually active by definition */
+	std::map<BucketSexualMixing *, std::vector<SexualPartnership::Type>> partneringInitiators;
+	std::map<DmgProfile::ProfileID, std::vector<SexualPartnership::Type>> profilesToPartnershipTypes;
+	/** stores eligible receivers Buckets for each type of partnership -- use BucketSexualMixing,
+	//not DmgProfileBucket because all persons participating in partnerships are sexually
+	//active by definition */
+	std::vector<BucketSexualMixing *> potentialPartnerBuckets[SexualPartnership::ENDType];
+	/** stores weights of each eligible bucket. we keep this as a separate vector so we can
+	//  use pre-existing normalization and random index chooser functions. */
+	std::vector<double> eligibleBucketWeights[SexualPartnership::ENDType];
+
+	std::vector<std::vector<Person *>> rankedForTreatment;
+
+	PopStats *popStats;	//tallies the statistics that the population generates throughout the simulation
+
+	/** The graph of all relationships over time, used to generate graphviz output */
+	GraphVizGraphElements *graph;
 };

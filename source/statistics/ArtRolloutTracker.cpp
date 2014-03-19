@@ -55,17 +55,9 @@ ArtRolloutTracker::~ArtRolloutTracker()
 {
 }
 
-void ArtRolloutTracker::SetAgeRanges(const std::vector<boost::tuple<long, int, int>> &ageRangeSizes)
+void ArtRolloutTracker::SetAgeRanges(const std::vector<AgeRange> &ageRanges)
 {
-	ageRanges.clear();
-	int numAgeRanges = static_cast<int>(ageRangeSizes.size());
-
-	for(int i = 0; i < numAgeRanges; ++i)
-	{
-		int minAge = boost::tuples::get<Population::MIN_AGE_IN_MONTHS>(ageRangeSizes.at(i));
-		int maxAge = boost::tuples::get<Population::MAX_AGE_IN_MONTHS>(ageRangeSizes.at(i));
-		ageRanges.push_back(std::make_pair(minAge, maxAge));
-	}
+	this->ageRanges = ageRanges;
 }
 
 void ArtRolloutTracker::recordTest(Person *person, bool accepted, bool returned, SimContext::TEST_RESULT result)
@@ -166,7 +158,7 @@ void ArtRolloutTracker::buildHeader()
 			for(size_t i = 0; i < ageRanges.size(); ++i)
 			{
 				std::stringstream rangeString;
-				rangeString << std::get<0>(ageRanges[i]) << "-" << std::get<1>(ageRanges[i]);
+				rangeString << ageRanges[i].lower << "-" << ageRanges[i].upper;
 				SetHeaderCell(column + 1 + i, 3, rangeString.str());
 			}
 		}

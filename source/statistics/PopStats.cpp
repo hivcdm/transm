@@ -893,7 +893,7 @@ bool PopStats::isTimeToPrintLE(long currTime)
 void PopStats::enableShiftedOutcomes(int monthOf1990)
 {
 	calculateShiftedOutcomes = true;
-	monthOf1990 = monthOf1990;
+	this->monthOf1990 = monthOf1990;
 	resetYear(1990);
 }
 

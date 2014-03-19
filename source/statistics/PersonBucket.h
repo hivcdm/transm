@@ -7,7 +7,7 @@
 class PersonBucket : public Bucket
 {
 public:
-	PersonBucket(const Person &person, const std::vector<std::pair<int, int> > &ageGroups)
+	PersonBucket(const Person &person, const std::vector<AgeRange> &ageGroups)
 	{
 		const DmgProfile *demographicProfile = person.getDmgProfile();
         DmgProfile::SexualActivityStatus sexualActivityStatus = static_cast<DmgProfile::SexualActivityStatus>
@@ -31,7 +31,7 @@ public:
 
         for(size_t i = 0; i < ageGroups.size(); ++i)
         {
-                if(age >= ageGroups[i].first && age <= ageGroups[i].second)
+                if(age >= ageGroups[i].lower && age <= ageGroups[i].upper)
                 {
                         ageGroup = i;
                 }

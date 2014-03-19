@@ -200,6 +200,12 @@
     <ClInclude Include="..\..\..\source\cepacbridge\CepacInputParser.h">
       <Filter>cepacbridge</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\data\AgeRangeSizeContainer.h">
+      <Filter>data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\statistics\PersonBucket.h">
+      <Filter>statistics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="util">

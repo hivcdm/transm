@@ -5,8 +5,8 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <boost/tuple/tuple.hpp>
 
+#include "../data/AgeRangeSizeContainer.h"
 #include "../entities/Person.h"
 #include "../entities/classifiers/DmgProfile.h"
 #include "../entities/classifiers/SexualPartnership.h"
@@ -15,7 +15,6 @@ class Population;
 
 class InfectionsTracker
 {
-
 public:
 	/** If this number gets changed, also change it in BucketAge.h */
 	static const int NUMBER_GENERATIONS_TO_TRACE = 6;
@@ -36,8 +35,8 @@ private:
 	currPrevalentInfectionsRiskGenderEmployment[Person::ENDRiskLevel][DmgProfile::ENDGender][DmgProfile::ENDEmployment];
 
 	/** This contains prevalent infections of all buckets in an EntityPool stratified by age and gender. Should be sync'd w/ curr timestep */
-	vector<boost::tuple<long, int, int>> currPrevalentInfectionsAgeMale;
-	vector<boost::tuple<long, int, int>> currPrevalentInfectionsAgeFemale;
+	AgeRangeSizeContainer currPrevalentInfectionsAgeMale;
+	AgeRangeSizeContainer currPrevalentInfectionsAgeFemale;
 
 	/** This contains profileID's that we will include in our traces. */
 	list<DmgProfile::ProfileID> profileIDsForDetailedTrace;
@@ -52,8 +51,8 @@ private:
 	unsigned long
 	currTimeStepIncidentInfsRiskGenderEmployment[Person::ENDRiskLevel][DmgProfile::ENDGender][DmgProfile::ENDEmployment];
 	/** Infections in the current time step stratified by Age and Gender*/
-	vector<boost::tuple<long, int, int>> currTimeStepIncidentInfsAgeMale;
-	vector<boost::tuple<long, int, int>> currTimeStepIncidentInfsAgeFemale;
+	AgeRangeSizeContainer currTimeStepIncidentInfsAgeMale;
+	AgeRangeSizeContainer currTimeStepIncidentInfsAgeFemale;
 
 	/** sum of age of infection and diagnosis for incident infections in current time step*/
 	unsigned long currTimeStepAgeInfectionSumGender[DmgProfile::ENDGender];
@@ -76,7 +75,7 @@ private:
 	unsigned long getCurrTimeStepIncidentInfsTotal();
 
 	/** Total Infections in History*/
-	vector<boost::tuple<long, int, int>> totalIncidentInfsAge;
+	AgeRangeSizeContainer totalIncidentInfsAge;
 	unsigned long totalIncidentInfsGender[DmgProfile::ENDGender];
 	unsigned long
 	totalIncidentInfsRiskGenderEmployment[Person::ENDRiskLevel][DmgProfile::ENDGender][DmgProfile::ENDEmployment];
@@ -154,13 +153,14 @@ public :
 	/**
 	initializes the counters for incident infections by age and gender
 	**/
-	void initializeIncidentInfectionsByAge(vector<boost::tuple<long, int, int>> &_incMale,
-	                                       vector<boost::tuple<long, int, int>> &_incFemale,  vector<boost::tuple<long, int, int>> &_totalIncAge);
+	void initializeIncidentInfectionsByAge(const AgeRangeSizeContainer &_incMale, 
+		const AgeRangeSizeContainer &_incFemale, const AgeRangeSizeContainer &_totalIncAge);
+
 	//takes values of _prevalence and copies into internal prevalence representation DmgProfileBucket (keyed by _classifierVal)
 	void setPrevalentInfections(long _time,
 	                            unsigned long _prevalenceByBucket[DmgProfile::TotalNumBuckets][NUMBER_GENERATIONS_TO_TRACE],
-	                            const vector <boost::tuple<long, int, int>> &_prevalenceByAgeMale,
-	                            const vector <boost::tuple<long, int, int>> &_prevalenceByAgeFemale,
+								const AgeRangeSizeContainer &_prevalenceByAgeMale,
+								const AgeRangeSizeContainer &_prevalenceByAgeFemale,
 	                            unsigned long
 	                            _PrevalenceByRiskGenderEmployment[Person::ENDRiskLevel][DmgProfile::ENDGender][DmgProfile::ENDEmployment]);
 

@@ -237,7 +237,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release (CLI)|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -371,6 +371,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\source\cepacbridge\CepacInputParser.h" />
     <ClInclude Include="..\..\..\source\Constants.h" />
+    <ClInclude Include="..\..\..\source\data\AgeRangeSizeContainer.h" />
     <ClInclude Include="..\..\..\source\data\Enum.h" />
     <ClInclude Include="..\..\..\source\data\EventParams.h" />
     <ClInclude Include="..\..\..\source\entities\behaviors\SexualBehaviorParams.h" />
@@ -393,6 +394,7 @@
     <ClInclude Include="..\..\..\source\statistics\BucketCounter.h" />
     <ClInclude Include="..\..\..\source\statistics\CostsTracker.h" />
     <ClInclude Include="..\..\..\source\statistics\InfectionsTracker.h" />
+    <ClInclude Include="..\..\..\source\statistics\PersonBucket.h" />
     <ClInclude Include="..\..\..\source\statistics\PopStats.h" />
     <ClInclude Include="..\..\..\source\statistics\StatsRecord.h" />
     <ClInclude Include="..\..\..\source\statistics\TabularOutput.h" />

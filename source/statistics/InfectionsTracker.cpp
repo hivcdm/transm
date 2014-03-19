@@ -243,16 +243,14 @@ void InfectionsTracker::resetIncidentInfections(long _time)
 		}
 	}
 
-	for(vector<boost::tuple<long, int, int>>::iterator ageIt = currTimeStepIncidentInfsAgeMale.begin();
-	        ageIt != currTimeStepIncidentInfsAgeMale.end(); ageIt++)
+	for(auto &ageRangeSize : currTimeStepIncidentInfsAgeMale)
 	{
-		(*ageIt).get<Population::AGE_RANGE_SIZE>() = 0;
+		ageRangeSize.second = 0;
 	}
 
-	for(vector<boost::tuple<long, int, int>>::iterator ageIt = currTimeStepIncidentInfsAgeFemale.begin();
-	        ageIt != currTimeStepIncidentInfsAgeFemale.end(); ageIt++)
+	for(auto &ageRangeSize : currTimeStepIncidentInfsAgeFemale)
 	{
-		(*ageIt).get<Population::AGE_RANGE_SIZE>() = 0;
+		ageRangeSize.second = 0;
 	}
 
 	currTimeStep = _time;
@@ -262,8 +260,8 @@ void InfectionsTracker::resetIncidentInfections(long _time)
 /*
 initializes the counters for incident infections by age and gender
 */
-void InfectionsTracker::initializeIncidentInfectionsByAge(vector<boost::tuple<long, int, int>> &_incMale,
-        vector<boost::tuple<long, int, int>> &_incFemale,  vector<boost::tuple<long, int, int>> &_totalIncAge)
+void InfectionsTracker::initializeIncidentInfectionsByAge(const AgeRangeSizeContainer &_incMale, 
+	const AgeRangeSizeContainer &_incFemale, const AgeRangeSizeContainer &_totalIncAge)
 {
 	currTimeStepIncidentInfsAgeMale = _incMale;
 	currTimeStepIncidentInfsAgeFemale = _incFemale;
@@ -325,7 +323,7 @@ void InfectionsTracker::recordIncidentInfection(long _time, SexualPartnership::T
 	double infectorCD4 = _infector->cd4;
 	DmgProfile::Gender infectedGender = (DmgProfile::Gender) _infected->getDmgProfileVal(DmgProfile::GENDER);
 	Person::RiskLevel infectedRisk = _infected->getRiskLevel();
-	int minAge, maxAge;
+
 	currTimeStepNumInfected++;
 	currTimeStepCD4InfectionSum += infectorCD4;
 	currTimeStepCD4InfectionSumSq += infectorCD4 * infectorCD4;
@@ -348,50 +346,24 @@ void InfectionsTracker::recordIncidentInfection(long _time, SexualPartnership::T
 	totalIncidentInfsRiskGenderEmployment[_infected->getRiskLevel()][_infected->getDmgProfileVal(
 	            DmgProfile::GENDER)][_infected->getDmgProfileVal(DmgProfile::EMPLOYMENT)]++;
 
-	if(_infected->getDmgProfileVal(DmgProfile::GENDER) == DmgProfile::MALE)
+	bool isMale = _infected->getDmgProfileVal(DmgProfile::GENDER) == DmgProfile::MALE;
+	auto &genderIncidentInfectionsByAge = isMale ? currTimeStepIncidentInfsAgeMale : currTimeStepIncidentInfsAgeFemale;
+	totalIncidentInfsGender[isMale ? DmgProfile::MALE : DmgProfile::FEMALE]++;
+	
+	for(auto &ageRangeSize : genderIncidentInfectionsByAge)
 	{
-		totalIncidentInfsGender[DmgProfile::MALE]++;
-
-		for(vector<boost::tuple<long, int, int>>::iterator ageIt = currTimeStepIncidentInfsAgeMale.begin();
-		        ageIt != currTimeStepIncidentInfsAgeMale.end(); ageIt++)
+		if(infectedAge >= ageRangeSize.first.lower && infectedAge <= ageRangeSize.first.upper)
 		{
-			minAge = (*ageIt).get<Population::MIN_AGE_IN_MONTHS>();
-			maxAge = (*ageIt).get<Population::MAX_AGE_IN_MONTHS>();
-
-			if(infectedAge >= minAge && infectedAge <= maxAge)
-			{
-				(*ageIt).get<Population::AGE_RANGE_SIZE>()++;
-				break;
-			}
-		}
-	}
-	else if(_infected->getDmgProfileVal(DmgProfile::GENDER) == DmgProfile::FEMALE)
-	{
-		totalIncidentInfsGender[DmgProfile::FEMALE]++;
-
-		for(vector<boost::tuple<long, int, int>>::iterator ageIt = currTimeStepIncidentInfsAgeFemale.begin();
-		        ageIt != currTimeStepIncidentInfsAgeFemale.end(); ageIt++)
-		{
-			minAge = (*ageIt).get<Population::MIN_AGE_IN_MONTHS>();
-			maxAge = (*ageIt).get<Population::MAX_AGE_IN_MONTHS>();
-
-			if(infectedAge >= minAge && infectedAge <= maxAge)
-			{
-				(*ageIt).get<Population::AGE_RANGE_SIZE>()++;
-				break;
-			}
+			ageRangeSize.second++;
+			break;
 		}
 	}
 
-	for(vector<boost::tuple<long, int, int>>::iterator ageIt = totalIncidentInfsAge.begin();
-	        ageIt != totalIncidentInfsAge.end(); ageIt++)
+	for(auto &ageRangeSize : totalIncidentInfsAge)
 	{
-		minAge = (*ageIt).get<Population::MIN_AGE_IN_MONTHS>();
-		maxAge = (*ageIt).get<Population::MAX_AGE_IN_MONTHS>();
-
-		if(infectedAge >= minAge && infectedAge <= maxAge)
+		if(infectedAge >= ageRangeSize.first.lower && infectedAge <= ageRangeSize.first.upper)
 		{
-			(*ageIt).get<Population::AGE_RANGE_SIZE>()++;
+			ageRangeSize.second++;
 			break;
 		}
 	}
@@ -416,8 +388,8 @@ void InfectionsTracker::recordCD4AtTransmission(ostream &_outStream)
 
 void InfectionsTracker::setPrevalentInfections(long /*_time*/,
         unsigned long _prevalenceByBucket[DmgProfile::TotalNumBuckets][NUMBER_GENERATIONS_TO_TRACE],
-        const vector <boost::tuple<long, int, int>> &_prevalenceByAgeMale,
-        const vector <boost::tuple<long, int, int>> &_prevalenceByAgeFemale,
+		const AgeRangeSizeContainer &_prevalenceByAgeMale,
+		const AgeRangeSizeContainer &_prevalenceByAgeFemale,
         unsigned long
         _prevalenceByRiskGenderEmployment[Person::ENDRiskLevel][DmgProfile::ENDGender][DmgProfile::ENDEmployment])
 {
@@ -450,8 +422,7 @@ void InfectionsTracker::setPrevalentInfections(long /*_time*/,
 
 //-----------------< Begin functions to print out infections >-----------------------//
 
-int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, ostream &_outStream,
-                                       Population *_population)
+int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, ostream &_outStream, Population *_population)
 {
 	assert(_time >= 0);
 	//total # infections this month
@@ -460,7 +431,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	long currPopSize = _population->getSize();
 	long currSAPopSize = currPopSize - _population->getNASize();
 	//total # of age ranges to print out
-	vector<boost::tuple<long, int, int>> currSizeByAgeRange = _population->getSizeByAgeRange();
+	auto currSizeByAgeRange = _population->getSizeByAgeRange();
 	int numAgeRanges = currSizeByAgeRange.size();
 
 	//write headers for infections sheet
@@ -508,8 +479,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 			firstRow << Constants::TAB;
 			secondRow << Constants::TAB;
-			thirdRow << boost::tuples::get<Population::MIN_AGE_IN_MONTHS>(currSizeByAgeRange.at(
-			             i)) << "-" << boost::tuples::get<Population::MAX_AGE_IN_MONTHS>(currSizeByAgeRange.at(i)) << Constants::TAB;
+			thirdRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
 		}
 
 		//write out headers for population by gender
@@ -530,9 +500,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 			firstRow << Constants::TAB;
 			secondRow << Constants::TAB;
-			thirdRow << boost::tuples::get<Population::MIN_AGE_IN_MONTHS>(currPrevalentInfectionsAgeMale.at(
-			             i)) << "-" << boost::tuples::get<Population::MAX_AGE_IN_MONTHS>(currPrevalentInfectionsAgeMale.at(
-			                         i)) << Constants::TAB;
+			thirdRow << currPrevalentInfectionsAgeMale.at(i).first.lower << "-" << currPrevalentInfectionsAgeMale.at(i).first.upper << Constants::TAB;
 		}
 
 		firstRow << "Females" << Constants::TAB;
@@ -548,9 +516,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 			firstRow << Constants::TAB;
 			secondRow << Constants::TAB;
-			thirdRow << boost::tuples::get<Population::MIN_AGE_IN_MONTHS>(currPrevalentInfectionsAgeFemale.at(
-			             i)) << "-" << boost::tuples::get<Population::MAX_AGE_IN_MONTHS>(currPrevalentInfectionsAgeFemale.at(
-			                         i)) << Constants::TAB;
+			thirdRow << currPrevalentInfectionsAgeFemale.at(i).first.lower << "-" << currPrevalentInfectionsAgeFemale.at(i).first.upper << Constants::TAB;
 		}
 
 		//write out headers for number infected by risk
@@ -597,8 +563,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 			firstRow << Constants::TAB;
 			secondRow << Constants::TAB;
-			thirdRow << boost::tuples::get<Population::MIN_AGE_IN_MONTHS>(currSizeByAgeRange.at(
-			             i)) << "-" << boost::tuples::get<Population::MAX_AGE_IN_MONTHS>(currSizeByAgeRange.at(i)) << Constants::TAB;
+			thirdRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
 		}
 
 		firstRow << "Incident Cases" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB
@@ -619,8 +584,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 			firstRow << Constants::TAB;
 			secondRow << Constants::TAB;
-			thirdRow << boost::tuples::get<Population::MIN_AGE_IN_MONTHS>(currSizeByAgeRange.at(
-			             i)) << "-" << boost::tuples::get<Population::MAX_AGE_IN_MONTHS>(currSizeByAgeRange.at(i)) << Constants::TAB;
+			thirdRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
 		}
 
 		for(int i = 0; i < numAgeRanges; i++)
@@ -633,8 +597,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 			firstRow << Constants::TAB;
 			secondRow << Constants::TAB;
-			thirdRow << boost::tuples::get<Population::MIN_AGE_IN_MONTHS>(currSizeByAgeRange.at(
-			             i)) << "-" << boost::tuples::get<Population::MAX_AGE_IN_MONTHS>(currSizeByAgeRange.at(i)) << Constants::TAB;
+			thirdRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
 		}
 
 		firstRow << Constants::TAB;
@@ -692,8 +655,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 			firstRow << Constants::TAB;
 			secondRow << Constants::TAB;
-			thirdRow << boost::tuples::get<Population::MIN_AGE_IN_MONTHS>(currSizeByAgeRange.at(
-			             i)) << "-" << boost::tuples::get<Population::MAX_AGE_IN_MONTHS>(currSizeByAgeRange.at(i)) << Constants::TAB;
+			thirdRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
 		}
 
 		firstRow << "Total Infected in History (Prevalent Cases Excluded)" << Constants::TAB << Constants::TAB;
@@ -838,7 +800,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	}
 
 	//TODO: this should be done somewhere else, so we're not relying on side effects to record information
-	_population->popStats->recordPrevalenceAndIncidence(_time, currPrevalence, currPrevalenceSA, incidence, currSAPopSize,
+	_population->getPopStats()->recordPrevalenceAndIncidence(_time, currPrevalence, currPrevalenceSA, incidence, currSAPopSize,
 	        getCurrTimeStepIncidentInfsTotal(), totalInfectedSA);
 	//Multiply by 100 and round to nearest integer for graphical output
 	int intPrevalence = (int)(100 * currPrevalence + 0.5);
@@ -848,8 +810,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 	for(int i = 0; i < numAgeRanges; i++)
 	{
-		_outStream << boost::tuples::get<Population::AGE_RANGE_SIZE>(currPrevalentInfectionsAgeMale.at(
-		               i)) + boost::tuples::get<Population::AGE_RANGE_SIZE>(currPrevalentInfectionsAgeFemale.at(i)) << Constants::TAB;
+		_outStream << currPrevalentInfectionsAgeMale.at(i).second + currPrevalentInfectionsAgeFemale.at(i).second << Constants::TAB;
 	}
 
 	//Print out population size and number infected by gender
@@ -863,10 +824,8 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 	for(int i = 0; i < numAgeRanges; i++)
 	{
-		totalInfectedSAGender[DmgProfile::MALE] += boost::tuples::get<Population::AGE_RANGE_SIZE>
-		        (currPrevalentInfectionsAgeMale.at(i));
-		totalInfectedSAGender[DmgProfile::FEMALE] += boost::tuples::get<Population::AGE_RANGE_SIZE>
-		        (currPrevalentInfectionsAgeFemale.at(i));
+		totalInfectedSAGender[DmgProfile::MALE] += currPrevalentInfectionsAgeMale.at(i).second;
+		totalInfectedSAGender[DmgProfile::FEMALE] += currPrevalentInfectionsAgeFemale.at(i).second;
 	}
 
 	//First tally the infected men
@@ -903,16 +862,14 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 	for(int i = 0; i < numAgeRanges; i++)
 	{
-		_outStream << boost::tuples::get<Population::AGE_RANGE_SIZE>(currPrevalentInfectionsAgeMale.at(
-		               i)) << Constants::TAB;
+		_outStream << currPrevalentInfectionsAgeMale.at(i).second << Constants::TAB;
 	}
 
 	_outStream << totalInfectedGender[DmgProfile::FEMALE] - totalInfectedSAGender[DmgProfile::FEMALE] << Constants::TAB;
 
 	for(int i = 0; i < numAgeRanges; i++)
 	{
-		_outStream << boost::tuples::get<Population::AGE_RANGE_SIZE>(currPrevalentInfectionsAgeFemale.at(
-		               i)) << Constants::TAB;
+		_outStream << currPrevalentInfectionsAgeFemale.at(i).second << Constants::TAB;
 	}
 
 	//output prevalent infections by risk
@@ -980,10 +937,9 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 	for(int i = 0; i < numAgeRanges; i++)
 	{
-		_outStream << boost::tuples::get<Population::AGE_RANGE_SIZE>(currTimeStepIncidentInfsAgeMale.at(
-		               i)) + boost::tuples::get<Population::AGE_RANGE_SIZE>(currTimeStepIncidentInfsAgeFemale.at(i)) << Constants::TAB;
-		incidentInfsMale += boost::tuples::get<Population::AGE_RANGE_SIZE>(currTimeStepIncidentInfsAgeMale.at(i));
-		incidentInfsFemale += boost::tuples::get<Population::AGE_RANGE_SIZE>(currTimeStepIncidentInfsAgeFemale.at(i));
+		_outStream << currTimeStepIncidentInfsAgeMale.at(i).second + currTimeStepIncidentInfsAgeFemale.at(i).second << Constants::TAB;
+		incidentInfsMale += currTimeStepIncidentInfsAgeMale.at(i).second;
+		incidentInfsFemale += currTimeStepIncidentInfsAgeFemale.at(i).second;
 	}
 
 	_outStream << incidentInfsMale << Constants::TAB << incidentInfsFemale << Constants::TAB;
@@ -1001,14 +957,12 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 	for(int i = 0; i < numAgeRanges; i++)
 	{
-		_outStream << boost::tuples::get<Population::AGE_RANGE_SIZE>(currTimeStepIncidentInfsAgeMale.at(
-		               i)) << Constants::TAB;
+		_outStream << currTimeStepIncidentInfsAgeMale.at(i).second << Constants::TAB;
 	}
 
 	for(int i = 0; i < numAgeRanges; i++)
 	{
-		_outStream << boost::tuples::get<Population::AGE_RANGE_SIZE>(currTimeStepIncidentInfsAgeFemale.at(
-		               i)) << Constants::TAB;
+		_outStream << currTimeStepIncidentInfsAgeFemale.at(i).second << Constants::TAB;
 	}
 
 	// Print out incident infections by relationship type
@@ -1065,7 +1019,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	//write out all incident infections that happened in history stratified by age and gender and risk
 	for(int i = 0; i < numAgeRanges; i++)
 	{
-		_outStream << boost::tuples::get<Population::AGE_RANGE_SIZE>(totalIncidentInfsAge.at(i)) << Constants::TAB;
+		_outStream << totalIncidentInfsAge.at(i).second << Constants::TAB;
 	}
 
 	_outStream << totalIncidentInfsGender[DmgProfile::MALE] << Constants::TAB <<

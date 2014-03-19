@@ -1,8 +1,10 @@
 #pragma once
 
+#include "entities/Male.h"
+#include "entities/Female.h"
 #include "statistics/CostsTracker.h"
 
-class Params
+class PopulationParams
 {
 	friend class Population;
 
@@ -40,6 +42,7 @@ class Params
 		//int numberInfected[DmgProfile::ENDGender][Person::ENDRiskLevel]; //Calculation involves knowing population size and
 	};
 
+private:
 	//this will be set as the Simulation::eventParams.debugLevel
 	DebugLevel debugLevel;
 
@@ -80,8 +83,8 @@ class Params
 	double condomCost;
 	double circumcisionCost;
 
-	Params();
-	~Params();
+	PopulationParams();
+	~PopulationParams();
 
 	void init(ticpp::Element *_populationXML, unsigned int _populationID, EventParams &_eventParams);
 

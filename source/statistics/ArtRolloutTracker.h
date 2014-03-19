@@ -3,11 +3,11 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <boost/tuple/tuple.hpp>
 
 #include "TabularOutput.h"
 #include "BucketCounter.h"
 #include "../cepac/include.h"
+#include "../data/AgeRangeSizeContainer.h"
 #include "../entities/Person.h"
 #include "../data/EventParams.h"
 
@@ -20,7 +20,7 @@ public:
 	ArtRolloutTracker();
 	~ArtRolloutTracker();
 
-	void SetAgeRanges(const std::vector<boost::tuple<long, int, int>> &ageGroupSizes);
+	void SetAgeRanges(const std::vector<AgeRange> &ageRanges);
 
 	void recordTest(Person *person, bool accepted, bool returned, SimContext::TEST_RESULT result);
 
@@ -41,7 +41,7 @@ private:
 	std::vector<int> numTestsByResult;
 	BucketCounter counter;
 
-	std::vector<std::pair<int, int>> ageRanges;
+	std::vector<AgeRange> ageRanges;
 
 	void buildHeader();
 

@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <ctime>
+#include <cstddef>
 #include <iostream>
 #include <list>
 #include <string>
@@ -69,50 +70,47 @@ Population::Population(EventParams &_eventParams, ticpp::Element *_popParamsNode
 	initPartnershipBuckets();
 	_eventParams.displayOut("About to create the populations\n");
 	/** Create the people in the population **/
-	long numPeople = 0;
 	long totalNumMales = Util::round<long>(popWideParams.initSize * popWideParams.proportionMale);
 	long totalNumFemales = std::max<long>(popWideParams.initSize - totalNumMales, 0);
 	//the params.xml file should have detailed the prevalent characteristics of each age bucket
 	//  we will go through each age bucket and create the part of the prevalent population that falls within the bucket
-	int j = 0;
+	std::vector<AgeRange> ageRanges;
 
-	for(unsigned int ageBucket = 0; ageBucket < popWideParams.initialAgeBuckets.size(); ageBucket++)
+	for(auto ageBucketParams : popWideParams.initialAgeBuckets)
 	{
-		//holds the parameters for the current age bucket
-		Population::Params::AgeBucketPrevalenceInfo *ageBucketParams = popWideParams.initialAgeBuckets.at(ageBucket);
-		long numMalesStrata = Util::round<long>(totalNumMales * ageBucketParams->proportionOfPopulation[DmgProfile::MALE]);
-		long numFemalesStrata = Util::round<long>(totalNumFemales * ageBucketParams->proportionOfPopulation[DmgProfile::FEMALE]);
-		//calc how many people are in the current age range
-		long strataSize = numMalesStrata + numFemalesStrata;
-		//Number of persons of each gender to be traced in detailed output file
-		int numToTrace = _eventParams.numToTrace;
-		//create people by age bucket
-		int i = 0;
+		auto numMalesInCurrentBucket = Util::round<std::size_t>(totalNumMales * ageBucketParams->proportionOfPopulation[DmgProfile::MALE]);
+		auto numFemalesInCurrentBucket = Util::round<std::size_t>(totalNumFemales * ageBucketParams->proportionOfPopulation[DmgProfile::FEMALE]);
 
-		for(long count = 0; count < strataSize; count++)
+		//calc how many people are in the current age range
+		auto currentBucketSize = numMalesInCurrentBucket + numFemalesInCurrentBucket;
+
+		//Number of persons of each gender to be traced in detailed output file
+		auto numToTrace = static_cast<std::size_t>(_eventParams.numToTrace);
+
+		for(std::size_t count = 0; count < currentBucketSize; count++)
 		{
 			//Determine whether or not person should be traced in SinglePersonTrace
-			bool toTrace = (count < numToTrace || (count >= numMalesStrata && (count - numMalesStrata) < numToTrace));
+			bool tracePerson = (count < numToTrace || (count >= numMalesInCurrentBucket && (count - numMalesInCurrentBucket) < numToTrace));
+
 			//create a person, males first and females second
-			Person *p = generatePerson(_eventParams, (count < numMalesStrata) ? DmgProfile::MALE : DmgProfile::FEMALE,
-			                                 ageBucketParams, toTrace);
-			i++;
+			auto gender = (count < numMalesInCurrentBucket) ? DmgProfile::MALE : DmgProfile::FEMALE;
+			auto person = generatePerson(_eventParams, gender, ageBucketParams, tracePerson);
+
 			//add the created person to the EntityPool
-			entities->addPersonToAll(p);
-			numPeople++;
+			entities->addPersonToAll(person);
 		}//end for (int count
 
-		//Add a tuple to the currSizeByAgeRange vector along with the initial size of the age range
-		currSizeByAgeRange.push_back(boost::make_tuple(strataSize, ageBucketParams->minAgeMth,
-		                                   ageBucketParams->maxAgeMth));
-		currSizeByAgeRangeMale.push_back(boost::make_tuple(strataSize, ageBucketParams->minAgeMth,
-		                                       ageBucketParams->maxAgeMth));
-		currSizeByAgeRangeFemale.push_back(boost::make_tuple(strataSize, ageBucketParams->minAgeMth,
-		        ageBucketParams->maxAgeMth));
-		j++;
-	} //for(ageBucket = 0...
+		AgeRange ageRange = {ageBucketParams->minAgeMth, ageBucketParams->maxAgeMth};
+		AgeRangeSizePair ageRangeSize = std::make_pair(ageRange, currentBucketSize);
 
-	popStats->artTracker.SetAgeRanges(currSizeByAgeRange);
+		//Add a tuple to the currSizeByAgeRange vector along with the initial size of the age range
+		ageRanges.push_back(ageRange);
+		currSizeByAgeRange.push_back(ageRangeSize);
+		currSizeByAgeRangeMale.push_back(std::make_pair(ageRange, numMalesInCurrentBucket));
+		currSizeByAgeRangeFemale.push_back(std::make_pair(ageRange, numFemalesInCurrentBucket));
+	}
+
+	popStats->artTracker.SetAgeRanges(ageRanges);
 
 	if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson])
 	{
@@ -827,7 +825,6 @@ Iterates through current entities in the population and returns a total number o
 ***/
 long Population::updateSize()
 {
-	size_t i; //Used in forloop to iterate through vector of age range tuples
 	currSize = entities->size();
 	//Also update size of non-sexually active
 	currNASize = entities->sizeNotSexuallyActive();
@@ -922,17 +919,19 @@ long Population::updateSize()
 		}	//while(currBucketIndex < entityBuckets->size()) {
 	}
 
-	//Update size by age range
-	for(i = 0; i < currSizeByAgeRange.size(); i++)
+	for(auto &ageRangeSizePair : currSizeByAgeRange)
 	{
-		int minAge = boost::tuples::get<Population::MIN_AGE_IN_MONTHS>(currSizeByAgeRange.at(i));
-		int maxAge = boost::tuples::get<Population::MAX_AGE_IN_MONTHS>(currSizeByAgeRange.at(i));
-		boost::tuples::get<Population::AGE_RANGE_SIZE>(currSizeByAgeRange.at(i)) =
-		    entities->sizeSexuallyActiveByAge(minAge, maxAge);
-		boost::tuples::get<Population::AGE_RANGE_SIZE>(currSizeByAgeRangeMale.at(i)) =
-		    entities->sizeSexuallyActiveByAge(minAge, maxAge, DmgProfile::MALE);
-		boost::tuples::get<Population::AGE_RANGE_SIZE>(currSizeByAgeRangeFemale.at(i)) =
-		    entities->sizeSexuallyActiveByAge(minAge, maxAge, DmgProfile::FEMALE);
+		ageRangeSizePair.second = entities->sizeSexuallyActiveByAge(ageRangeSizePair.first.lower, ageRangeSizePair.first.upper);
+	}
+
+	for(auto &ageRangeSizePair : currSizeByAgeRangeMale)
+	{
+		ageRangeSizePair.second = entities->sizeSexuallyActiveByAge(ageRangeSizePair.first.lower, ageRangeSizePair.first.upper, DmgProfile::MALE);
+	}
+
+	for(auto &ageRangeSizePair : currSizeByAgeRangeFemale)
+	{
+		ageRangeSizePair.second = entities->sizeSexuallyActiveByAge(ageRangeSizePair.first.lower, ageRangeSizePair.first.upper, DmgProfile::FEMALE);
 	}
 
 	return currSize;
@@ -1080,7 +1079,7 @@ void Population::dissolveSexualPartnerships(EventParams &_eventParams, Person *_
 }
 
 Person *Population::generatePerson(EventParams &_eventParams, DmgProfile::Gender _gender,
-                                   Population::Params::AgeBucketPrevalenceInfo *_ageBucketParams, bool toTrace)
+                                   PopulationParams::AgeBucketPrevalenceInfo *_ageBucketParams, bool toTrace)
 {
 	assert(_gender < DmgProfile::ENDGender);
 	Person *toReturn = nullptr;	//pointer to the person that was just generated
@@ -1159,20 +1158,17 @@ Person *Population::generatePerson(EventParams &_eventParams, DmgProfile::Gender
 */
 void Population::initIncidentInfectionsByAge()
 {
-	vector <boost::tuple<long, int, int>> incidentInfsAgeMale;
-	vector <boost::tuple<long, int, int>> incidentInfsAgeFemale;
-	vector <boost::tuple<long, int, int>> totalIncidentInfsAge;
+	AgeRangeSizeContainer incidentInfsAgeMale, incidentInfsAgeFemale, totalIncidentInfsAge;
 
-	for(unsigned int ageBucket = 0; ageBucket < popWideParams.initialAgeBuckets.size(); ageBucket++)
+	for(auto ageBucketParams : popWideParams.initialAgeBuckets)
 	{
-		Population::Params::AgeBucketPrevalenceInfo *ageBucketParams = popWideParams.initialAgeBuckets.at(ageBucket);
-		incidentInfsAgeMale.push_back(boost::make_tuple(0, ageBucketParams->minAgeMth, ageBucketParams->maxAgeMth));
-		incidentInfsAgeFemale.push_back(boost::make_tuple(0, ageBucketParams->minAgeMth, ageBucketParams->maxAgeMth));
-		totalIncidentInfsAge.push_back(boost::make_tuple(0, ageBucketParams->minAgeMth, ageBucketParams->maxAgeMth));
+		AgeRange ageRange = {ageBucketParams->minAgeMth, ageBucketParams->maxAgeMth};
+		incidentInfsAgeMale.push_back({ageRange, 0});
+		incidentInfsAgeFemale.push_back({ageRange, 0});
+		totalIncidentInfsAge.push_back({ageRange, 0});
 	}
 
-	popStats->infectionsTracker.initializeIncidentInfectionsByAge(incidentInfsAgeMale, incidentInfsAgeFemale,
-	        totalIncidentInfsAge);
+	popStats->infectionsTracker.initializeIncidentInfectionsByAge(incidentInfsAgeMale, incidentInfsAgeFemale, totalIncidentInfsAge);
 }
 void Population::applyIncidentPrevalence(EventParams &_eventParams)
 {
@@ -1193,7 +1189,7 @@ void Population::applyIncidentPrevalence(EventParams &_eventParams)
 	{
 		Person *p = *(males_iter);
 		int ageBucketIndex = getAgeBucketIndex(p);
-		Population::Params::AgeBucketPrevalenceInfo *_ageBucketParams = popWideParams.initialAgeBuckets.at(
+		PopulationParams::AgeBucketPrevalenceInfo *_ageBucketParams = popWideParams.initialAgeBuckets.at(
 		            ageBucketIndex);
 		DmgProfile::Gender _gender = DmgProfile::MALE;
 		//if this is a prevalent person, see if they're infected. Right now, newborns cannot be infected
@@ -1273,7 +1269,7 @@ void Population::applyIncidentPrevalence(EventParams &_eventParams)
 	{
 		Person *p = *(females_iter);
 		int ageBucketIndex = getAgeBucketIndex(p);
-		Population::Params::AgeBucketPrevalenceInfo *_ageBucketParams = popWideParams.initialAgeBuckets.at(
+		PopulationParams::AgeBucketPrevalenceInfo *_ageBucketParams = popWideParams.initialAgeBuckets.at(
 		            ageBucketIndex);
 		DmgProfile::Gender _gender = DmgProfile::FEMALE;
 		//if this is a prevalent person, see if they're infected. Right now, newborns cannot be infected
@@ -2245,15 +2241,15 @@ long Population::calcPrevalentPopulation(long _time)
 	//holds number of prevalent infections
 	unsigned long prevalenceByBucket[DmgProfile::TotalNumBuckets][InfectionsTracker::NUMBER_GENERATIONS_TO_TRACE];
 	unsigned long prevalenceByRiskGenderEmployment[Person::ENDRiskLevel][DmgProfile::ENDGender][DmgProfile::ENDEmployment];
-	std::vector<boost::tuple<long, int, int>> prevalenceByAgeMale;
-	std::vector<boost::tuple<long, int, int>> prevalenceByAgeFemale;
+
+	AgeRangeSizeContainer prevalenceByAgeMale, prevalenceByAgeFemale;
 
 	//initialize prevalent infections by age
-	for(unsigned int ageBucket = 0; ageBucket < popWideParams.initialAgeBuckets.size(); ageBucket++)
+	for(auto ageBucketParams : popWideParams.initialAgeBuckets)
 	{
-		Population::Params::AgeBucketPrevalenceInfo *ageBucketParams = popWideParams.initialAgeBuckets.at(ageBucket);
-		prevalenceByAgeMale.push_back(boost::make_tuple(0, ageBucketParams->minAgeMth, ageBucketParams->maxAgeMth));
-		prevalenceByAgeFemale.push_back(boost::make_tuple(0, ageBucketParams->minAgeMth, ageBucketParams->maxAgeMth));
+		AgeRange range = {ageBucketParams->minAgeMth, ageBucketParams->maxAgeMth};
+		prevalenceByAgeMale.push_back({range, 0});
+		prevalenceByAgeFemale.push_back({range, 0});
 	}
 
 	//initialize prevalence tallies to 0
@@ -2316,25 +2312,14 @@ long Population::calcPrevalentPopulation(long _time)
 			}
 
 			//Update size by age range
-			if(DmgProfile::get(currBucket->getProfileID(), DmgProfile::GENDER) == DmgProfile::MALE)
+			bool isMale = DmgProfile::get(currBucket->getProfileID(), DmgProfile::GENDER) == DmgProfile::MALE;
+			auto &associatedAgeRangePrevalenceContainer = isMale ? prevalenceByAgeMale : prevalenceByAgeFemale;
+			auto currentSexualMixingBucket = static_cast<BucketSexualMixing *>(currBucket);
+
+			for(auto &ageRangeSize : associatedAgeRangePrevalenceContainer)
 			{
-				for(size_t i = 0; i < prevalenceByAgeMale.size(); i++)
-				{
-					int minAge = boost::tuples::get<Population::MIN_AGE_IN_MONTHS>(prevalenceByAgeMale.at(i));
-					int maxAge = boost::tuples::get<Population::MAX_AGE_IN_MONTHS>(prevalenceByAgeMale.at(i));
-					boost::tuples::get<Population::AGE_RANGE_SIZE>(prevalenceByAgeMale.at(i)) += ((BucketSexualMixing *)
-					        currBucket)->sizeInfectedByAge(minAge, maxAge);
-				}
-			}
-			else if(DmgProfile::get(currBucket->getProfileID(), DmgProfile::GENDER) == DmgProfile::FEMALE)
-			{
-				for(size_t i = 0; i < prevalenceByAgeFemale.size(); i++)
-				{
-					int minAge = boost::tuples::get<Population::MIN_AGE_IN_MONTHS>(prevalenceByAgeFemale.at(i));
-					int maxAge = boost::tuples::get<Population::MAX_AGE_IN_MONTHS>(prevalenceByAgeFemale.at(i));
-					boost::tuples::get<Population::AGE_RANGE_SIZE>(prevalenceByAgeFemale.at(i)) += ((BucketSexualMixing *)
-					        currBucket)->sizeInfectedByAge(minAge, maxAge);
-				}
+				auto prevalentInAgeGroup = currentSexualMixingBucket->sizeInfectedByAge(ageRangeSize.first.lower, ageRangeSize.first.upper);
+				ageRangeSize.second += prevalentInAgeGroup;
 			}
 		}
 
@@ -2342,15 +2327,15 @@ long Population::calcPrevalentPopulation(long _time)
 	}
 
 	//save the prevalent infections by bucket in the PopStats
-	popStats->infectionsTracker.setPrevalentInfections(_time, prevalenceByBucket, prevalenceByAgeMale,
-	        prevalenceByAgeFemale, prevalenceByRiskGenderEmployment);
+	popStats->infectionsTracker.setPrevalentInfections(_time, prevalenceByBucket, prevalenceByAgeMale, prevalenceByAgeFemale, prevalenceByRiskGenderEmployment);
+
 	return totalInfected;
 }
 
-Population::Params::AgeBucketPrevalenceInfo *Population::getAgeBucket(Person *p)
+PopulationParams::AgeBucketPrevalenceInfo *Population::getAgeBucket(Person *p)
 {
 	int age = p->getAge(MONTH);
-	Population::Params::AgeBucketPrevalenceInfo *ageBucketParams = nullptr;
+	PopulationParams::AgeBucketPrevalenceInfo *ageBucketParams = nullptr;
 
 	for(unsigned int ageBucket = 0; ageBucket < popWideParams.initialAgeBuckets.size(); ageBucket++)
 	{
@@ -2369,7 +2354,7 @@ Population::Params::AgeBucketPrevalenceInfo *Population::getAgeBucket(Person *p)
 int Population::getAgeBucketIndex(Person *p)
 {
 	int age = p->getAge(MONTH);
-	Population::Params::AgeBucketPrevalenceInfo *ageBucketParams;
+	PopulationParams::AgeBucketPrevalenceInfo *ageBucketParams;
 	unsigned int ageBucket;
 
 	for(ageBucket = 0; ageBucket < popWideParams.initialAgeBuckets.size(); ageBucket++)
@@ -2409,11 +2394,6 @@ long Population::getSASize(DmgProfile::Gender _gender, Person::RiskLevel _risk)
 long Population::getCSWSize(DmgProfile::Gender _gender, Person::RiskLevel _risk)
 {
 	return currSizeGenderRiskCSW[_gender][_risk];
-}
-
-std::vector<boost::tuple<long, int, int>> Population::getSizeByAgeRange()
-{
-	return currSizeByAgeRange;
 }
 
 void Population::printMethodResults(EventParams &_eventParams, std::string _methodName, std::string _eventLabel,
@@ -3202,7 +3182,7 @@ void Population::printPopulation(EventParams &/*_eventParams*/, long _time, std:
 {
 	assert(_time >= 0);
 	//total # of age ranges to print out
-	std::vector<boost::tuple<long, int, int>> currSizeByAgeRange = getSizeByAgeRange();
+	auto &currSizeByAgeRange = getSizeByAgeRange();
 	int numAgeRanges = currSizeByAgeRange.size();
 
 	//write headers for infections sheet
@@ -3244,8 +3224,7 @@ void Population::printPopulation(EventParams &/*_eventParams*/, long _time, std:
 			}
 
 			firstRow << Constants::TAB;
-			secondRow << boost::tuples::get<Population::MIN_AGE_IN_MONTHS>(currSizeByAgeRange.at(
-			              i)) << "-" << boost::tuples::get<Population::MAX_AGE_IN_MONTHS>(currSizeByAgeRange.at(i)) << Constants::TAB;
+			secondRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
 		}
 
 		firstRow << "Male (By Age)" << Constants::TAB;
@@ -3259,8 +3238,7 @@ void Population::printPopulation(EventParams &/*_eventParams*/, long _time, std:
 			}
 
 			firstRow << Constants::TAB;
-			secondRow << boost::tuples::get<Population::MIN_AGE_IN_MONTHS>(currSizeByAgeRange.at(
-			              i)) << "-" << boost::tuples::get<Population::MAX_AGE_IN_MONTHS>(currSizeByAgeRange.at(i)) << Constants::TAB;
+			secondRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
 		}
 
 		firstRow << "Female (By Age)" << Constants::TAB;
@@ -3274,8 +3252,7 @@ void Population::printPopulation(EventParams &/*_eventParams*/, long _time, std:
 			}
 
 			firstRow << Constants::TAB;
-			secondRow << boost::tuples::get<Population::MIN_AGE_IN_MONTHS>(currSizeByAgeRange.at(
-			              i)) << "-" << boost::tuples::get<Population::MAX_AGE_IN_MONTHS>(currSizeByAgeRange.at(i)) << Constants::TAB;
+			secondRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
 		}
 
 		//write out string buffers to trace file
@@ -3328,27 +3305,24 @@ void Population::printPopulation(EventParams &/*_eventParams*/, long _time, std:
 	//output size by age
 	_outStream << getNASize() << Constants::TAB;
 
-	for(vector<boost::tuple<long, int, int>>::iterator ageIter = currSizeByAgeRange.begin();
-	        ageIter != currSizeByAgeRange.end(); ageIter++)
+	for(auto &ageRangeSize : currSizeByAgeRange)
 	{
-		_outStream << (*ageIter).get<0>() << Constants::TAB;
+		_outStream << ageRangeSize.second << Constants::TAB;
 	}
 
 	//output size by age and gender
 	_outStream << currNASizeByGender[0] << Constants::TAB;
 
-	for(vector<boost::tuple<long, int, int>>::iterator ageIter = currSizeByAgeRangeMale.begin();
-	        ageIter != currSizeByAgeRangeMale.end(); ageIter++)
+	for(auto &ageRangeSize : currSizeByAgeRangeMale)
 	{
-		_outStream << (*ageIter).get<0>() << Constants::TAB;
+		_outStream << ageRangeSize.second << Constants::TAB;
 	}
 
 	_outStream << currNASizeByGender[1] << Constants::TAB;
 
-	for(vector<boost::tuple<long, int, int>>::iterator ageIter = currSizeByAgeRangeFemale.begin();
-	        ageIter != currSizeByAgeRangeFemale.end(); ageIter++)
+	for(auto &ageRangeSize : currSizeByAgeRangeFemale)
 	{
-		_outStream << (*ageIter).get<0>() << Constants::TAB;
+		_outStream << ageRangeSize.second << Constants::TAB;
 	}
 
 	_outStream << endl;
