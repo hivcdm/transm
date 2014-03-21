@@ -190,7 +190,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(boostpath)\include;$(wxpath)\include\msvc;$(wxpath)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(boost_prefix);$(ticpp_prefix)/include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>TIXML_USE_TICPP;_CRT_SECURE_NO_WARNINGS;WIN32;WXUSINGDLL;wxMSVC_VERSION_AUTO;__WXMSW__;__WXDEBUG__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -207,7 +207,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(boost_prefix)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(boost_prefix);$(ticpp_prefix)/include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>TIXML_USE_TICPP;_CRT_SECURE_NO_WARNINGS;WIN32;WXUSINGDLL;wxMSVC_VERSION_AUTO;__WXMSW__;__WXDEBUG__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -274,7 +274,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\taf656\Development\libraries\boost\boost_1_55_0;$(wxpath)\include\msvc;$(wxpath)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(boost_prefix);$(ticpp_prefix)/include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>TIXML_USE_TICPP;_CRT_SECURE_NO_WARNINGS;WIN32;WXUSINGDLL;wxMSVC_VERSION_AUTO;__WXMSW__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4703</DisableSpecificWarnings>
     </ClCompile>
@@ -296,7 +296,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\taf656\Development\libraries\boost\boost_1_55_0;$(wxpath)\include\msvc;$(wxpath)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(boost_prefix);$(ticpp_prefix)/include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>TIXML_USE_TICPP;_CRT_SECURE_NO_WARNINGS;WIN32;WXUSINGDLL;wxMSVC_VERSION_AUTO;__WXMSW__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4703</DisableSpecificWarnings>
     </ClCompile>
@@ -318,7 +318,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\taf656\Development\libraries\boost\boost_1_55_0;$(wxpath)\include\msvc;$(wxpath)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(boost_prefix);$(ticpp_prefix)/include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>TIXML_USE_TICPP;_CRT_SECURE_NO_WARNINGS;WIN32;WXUSINGDLL;wxMSVC_VERSION_AUTO;__WXMSW__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4703</DisableSpecificWarnings>
     </ClCompile>
