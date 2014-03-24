@@ -6,6 +6,24 @@
 
 class PopulationParams
 {
+public:
+	void setAgeSexualDebut(int ageSexualDebutMonths) { SAEntAgeMths = ageSexualDebutMonths; }
+
+	double getBirthRate() const;
+	void setBirthRate(double birth_rate) { birthRate = birth_rate; }
+
+	double getProportionCircumcised() const { return circumcised; }
+	void setProportionCircumcised(double value) { circumcised = value; }
+
+	void setChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist)
+	{
+		maleParams->setChanceCondomUsePerEvent(risk, partnershipType, dist);
+	}
+
+	double getProportionMale() const;
+	void setProportionMale(double proportion_male) { proportionMale = proportion_male; }
+
+protected:
 	friend class Population;
 
 	void loadXML(ticpp::Element *_populationXML, EventParams &_eventParams);
@@ -40,7 +58,7 @@ class PopulationParams
 		//private:
 		//Calculated statistics
 		//int numberInfected[DmgProfile::ENDGender][Person::ENDRiskLevel]; //Calculation involves knowing population size and
-	};
+	};	
 
 private:
 	//this will be set as the Simulation::eventParams.debugLevel
@@ -87,13 +105,4 @@ private:
 	~PopulationParams();
 
 	void init(ticpp::Element *_populationXML, unsigned int _populationID, EventParams &_eventParams);
-
-public:
-	double getBirthRate() const;
-	double getProportionCircumcised() const { return circumcised; }
-	void setProportionCircumcised(double value) { circumcised = value; }
-	void setChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist)
-	{
-		maleParams->setChanceCondomUsePerEvent(risk, partnershipType, dist);
-	}
 };

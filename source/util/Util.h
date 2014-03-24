@@ -12,9 +12,9 @@ struct Version
 	static Version FromString(const std::string &version_string);
 	static std::string ToString(const Version &version);
 
-	int major;
-	int minor;
-	int revision;
+	int major = 0;
+	int minor = 1;
+	int patch = 0;
 };
 
 class Util

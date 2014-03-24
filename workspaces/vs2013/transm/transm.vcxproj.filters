@@ -92,6 +92,7 @@
     <ClCompile Include="..\..\..\source\cepacbridge\CepacInputParser.cpp">
       <Filter>cepacbridge</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\Inputs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\Constants.h" />
@@ -200,6 +201,8 @@
     <ClInclude Include="..\..\..\source\statistics\PersonBucket.h">
       <Filter>statistics</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\Inputs.h" />
+    <ClInclude Include="..\..\..\source\Outputs.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="util">

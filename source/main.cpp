@@ -1,4 +1,5 @@
 #include "Simulation.h"
+#include "Inputs.h"
 #include "cepac/include.h"
 #include "statistics/TransmissionSummaryStats.h"
 #include "util/Util.h"
@@ -78,13 +79,12 @@ int RunSimulation(const std::string &directory = "")
 		//Changing back to the input directory because over the course of Sim->run, the directory gets changed to results
 		CepacUtil::changeDirectoryToInputs();
 		std::cout << "Running File: " << xml << std::endl;
-		//Console version will not use GraphViz and will use random seed by result
-		Simulation s(xml);
 
-		s.SetMessageCallback([](const std::string &s) { std::cout << s; });
+		auto inputs = Inputs::FromFile(xml);
+		auto message_callback = [](const std::string &s) { std::cout << s; };
 
-		s.Initialize();
-		while(s.Step()) {}
+		Simulation s(inputs, message_callback);
+		auto outputs = s.Run();
 
 		cepacSummaryStats.addRunStats(s.GetCEPACRunStats());
 		transSummaryStats.addPopStats(s.GetPopStats(), s.GetEventParams());

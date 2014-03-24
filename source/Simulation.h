@@ -1,34 +1,32 @@
 #pragma once
 
+#include "Outputs.h"
 #include "data/EventParams.h"
 #include "statistics/PopStats.h"
 #include "util/HighResolutionTimer.h"
 #include "util/ticpp/ticpp.h"
 
-class Population;
 class InfectionsTracker;
-
-struct TimeDependentParameter
-{
-	int time;
-	std::string key;
-	std::string value;
-};
+class Inputs;
+class Population;
 
 class Simulation
 {
 public:
-	Simulation(const std::string &xmlFile);		//creates a simulation object
+	typedef std::function<void(const std::string &)> MessageCallback;
+
+	//creates a simulation object
+	Simulation(const Inputs &inputs, MessageCallback message_callback);
 
 	~Simulation();
 
-	void Initialize();
+	Outputs Run();
 
-	bool Step();
+	//returns eventParams.cepacRunStats for adding to the general popstats
+	RunStats *GetCEPACRunStats();
 
-	RunStats *GetCEPACRunStats();	//returns eventParams.cepacRunStats for adding to the general popstats
-
-	PopStats *GetPopStats(); //returns population->popStats information for creating popStats-like file for transmission output
+	//returns population->popStats information for creating popStats-like file for transmission output
+	PopStats *GetPopStats();
 
 	EventParams *GetEventParams();
 
@@ -40,18 +38,18 @@ public:
 
 	int GetTime() { return time_; }
 
-	void SetMessageCallback(const std::function<void(const std::string &)> &callback) { parameters_.messageCallback = callback; }
-
 private:
 	void FirstStep();
 
 	void LastStep();
 
+	void Step();
+
 	/** Returns true if all simContexts loaded correctly */
-	bool SetCEPACSimContexts(ticpp::Element *cepacInterventionNode);
+	bool LoadCepacSimContexts(const std::array<Interventions::TreatmentFile, 5> &treatment_files);
 
 	/** */
-	bool SetRolloutSimContexts(ticpp::Element *rolloutInterventionNode);
+	bool LoadRolloutSimContexts(const std::array<Interventions::TreatmentFile, 13> &treatment_files);
 
 	/** Sets the Non aids death from a cepac simcontext */
 	void SetNonAidsDeathFromCepac(SimContext &context, std::vector<double> &male, std::vector<double> &female);
@@ -59,12 +57,9 @@ private:
 	/** perform one timestep of simulation */
 	int SimulateMonth();
 
-	/** loads the next set of input files if seq: returns false if no next input */
-	void LoadInput(const std::string &xmlFile);
-
-	void LoadTimeDependentParameters(ticpp::Element *timeDependentParametersElement);
-
 	void UpdateTimeDependentParameters();
+
+	const Inputs &inputs_;
 
 	const std::string xmlFile_;
 
@@ -94,8 +89,6 @@ private:
 	double incidence_;
 
 	double prevalence_;
-
-	std::vector<TimeDependentParameter> timeDependentParameters_;
 
 	HighResolutionTimer timer_;
 };

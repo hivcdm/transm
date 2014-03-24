@@ -349,6 +349,7 @@
     <ClCompile Include="..\..\..\source\entities\Male.cpp" />
     <ClCompile Include="..\..\..\source\entities\Person.cpp" />
     <ClCompile Include="..\..\..\source\graphviz\graphVizParse.cpp" />
+    <ClCompile Include="..\..\..\source\Inputs.cpp" />
     <ClCompile Include="..\..\..\source\Population.cpp" />
     <ClCompile Include="..\..\..\source\PopulationParams.cpp" />
     <ClCompile Include="..\..\..\source\Simulation.cpp" />
@@ -387,6 +388,8 @@
     <ClInclude Include="..\..\..\source\entities\Male.h" />
     <ClInclude Include="..\..\..\source\entities\Person.h" />
     <ClInclude Include="..\..\..\source\graphviz\graphVizParse.h" />
+    <ClInclude Include="..\..\..\source\Inputs.h" />
+    <ClInclude Include="..\..\..\source\Outputs.h" />
     <ClInclude Include="..\..\..\source\Population.h" />
     <ClInclude Include="..\..\..\source\PopulationParams.h" />
     <ClInclude Include="..\..\..\source\Simulation.h" />
