@@ -26,7 +26,7 @@ int SexualBehaviorParams::loadParamsXML(ticpp::Element *_sexualBehaviourParams, 
 	                            _sexualBehaviourParams->FirstChildElement("type")->GetText<string>());
 	double multiplier = _highRiskMultiplier;
 
-	if(partnershipType == SexualPartnership::CSW && _useHighRiskMultiplier && _useHighRiskMultiplierCSW)
+	if(partnershipType == SexualPartnership::Type::Csw && _useHighRiskMultiplier && _useHighRiskMultiplierCSW)
 	{
 		multiplier = _highRiskMultiplierCSW;
 	}

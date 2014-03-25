@@ -64,7 +64,7 @@ private :
 	int currIndexOfYoungest;
 
 	//Assortativeness parameter for Mark Lipsitch's assortativeness algorithm
-	double assort[SexualPartnership::ENDType];
+	double assort[SexualPartnership::Type::ENDType];
 
 public :
 

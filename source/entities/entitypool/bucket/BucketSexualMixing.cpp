@@ -16,7 +16,7 @@ BucketSexualMixing::BucketSexualMixing(DmgProfile::ProfileID _id, const string *
 	maxAge = _maxAge;
 	popID = _popID;
 
-	for(int i = 0; i < SexualPartnership::ENDType; i++)
+	for(int i = 0; i < SexualPartnership::Type::ENDType; i++)
 	{
 		assort[i] = _assort[i];
 	}

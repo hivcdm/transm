@@ -20,10 +20,11 @@ const std::vector<std::string> PopStats::LifeStatsStr =
 const int NUM_LE_CAT = 12; //number of life expectancy categories
 const char *lifeExpectancyStrs[NUM_LE_CAT] = {"Age(yr)", "raw deaths", "raw pop", "n", "deaths", "death rate", "midpoint survivorship", "total remaining time", "life expectancy", "median LE", "median LE Standard Error", "median LE Confidence Bounds"};
 
-PopStats::PopStats(long maxTime, ticpp::Element *_LEOutputNode, ticpp::Element *_partAcqOutputNode) :
-	calculateShiftedOutcomes(false),
-	monthOf1990(0),
-	yearlyTestsByResult(4)
+PopStats::PopStats(long maxTime, const std::vector<int> &life_expectancy_record_times,
+	double le_median_ci, const std::vector<int> &part_acq_record_times) 
+	: calculateShiftedOutcomes(false),
+	  monthOf1990(0),
+	  yearlyTestsByResult(4)
 {
 	assert(PopStats::LifeStatsStr.size() == PopStats::ENDLifeStats);
 	enumClass = new EnumCls<PopStats::LifeStats>(PopStats::LifeStatsStr);
@@ -40,27 +41,20 @@ PopStats::PopStats(long maxTime, ticpp::Element *_LEOutputNode, ticpp::Element *
 	}
 
 	//Set up the time to record LE vector using inputs from the .xml file
-	for(int i = 1; i <= NUM_TIMES_TO_RECORD_LE; i++)
+	for(int i = 0; i < NUM_TIMES_TO_RECORD_LE; i++)
 	{
-		timeToRecordLE[i - 1] = boost::lexical_cast<long>(_LEOutputNode->FirstChildElement("time" +
-		                              boost::lexical_cast<std::string>(i))->GetText());
+		timeToRecordLE[i] = life_expectancy_record_times[i];
 	}
 
-	medianLECI = boost::lexical_cast<double>(_LEOutputNode->FirstChildElement("medianCI")->GetText());
+	medianLECI = le_median_ci;
 
 	//Set up the time to record partAcq vector using inputs from the .xml file
-	for(int i = 1; i <= NUM_TIMES_TO_RECORD_PARTACQ; i++)
+	for(int i = 0; i < NUM_TIMES_TO_RECORD_PARTACQ; i++)
 	{
-		timeToRecordPartAcq[i - 1] = boost::lexical_cast<long>(_partAcqOutputNode->FirstChildElement("time" +
-		                                   boost::lexical_cast<std::string>(i))->GetText());
+		timeToRecordPartAcq[i] = part_acq_record_times[i];
 	}
 
 	printHeaderPartAcq = true;
-	/*std::cout << "Max time is " << maxTime << " and the times to record are ";
-	for (int i = 0; i < NUM_TIMES_TO_RECORD; i++){
-		std::cout << timeToRecord[i] << "; ";
-	}
-	std::cout << std::endl;*/
 }
 
 PopStats::SingleLEStats::SingleLEStats()

@@ -5,24 +5,9 @@
 #include <unordered_map>
 
 #include "entities/Person.h"
+#include "entities/classifiers/SexualPartnership.h"
 #include "util/Util.h"
 #include "util/ticpp/ticpp.h"
-
-enum class PartnershipType
-{
-	Steady,
-	Regular,
-	Casual,
-	CSW,
-	SteadyMsm,
-	RegularMsm,
-	CasualMsm,
-	CswMsm,
-	SteadyBisexual,
-	RegularBisexual,
-	CasualBisexual,
-	CswBisexual
-};
 
 struct Distribution
 {
@@ -99,6 +84,10 @@ struct PopulationSettings
 {
 	std::string id;
 	int initial_size;
+	double initial_chance_csw_male;
+	double initial_chance_csw_female;
+	int csw_end_age_male;
+	int csw_end_age_female;
 	int prevalence_delay;
 	struct AgeDistributionStratum
 	{
@@ -131,7 +120,8 @@ struct PopulationSettings
 		int coefficient_of_variation;
 		struct PartnershipSettings
 		{
-			PartnershipType type;
+			SexualPartnership::Type type;
+			double assortativeness;
 			Distribution acquisition_rate_high_risk;
 			Distribution acquisition_rate_low_risk;
 			std::unordered_map<std::string, double> available_buckets;
@@ -149,7 +139,7 @@ struct PopulationSettings
 			double acquisition_rate_discounting_yearly;
 			double coital_acts_discounting_yearly;
 		};
-		std::unordered_map<PartnershipType, PartnershipSettings> partnership_settings;
+		std::unordered_map<SexualPartnership::Type, PartnershipSettings> partnership_settings;
 		double circumcision_protection_efficacy;
 		double condom_protection_efficacy;
 		std::array<double, Person::ENDHVLStrata> transmission_coefficients;
@@ -323,7 +313,7 @@ public:
 		std::string key;
 		int time;
 		Nullable<PopulationTarget> target_population;
-		double value;
+		std::string value;
 	};
 
 	static Inputs FromFile(const std::string &filename);
@@ -336,9 +326,17 @@ public:
 	int GetMonthOf1990() const { return month_of_1990_; }
 	std::string GetFilename() const { return filename_; }
 	std::string GetRunName() const { return run_name_; }
+	int GetNumberToTrace() const { return number_to_trace_; }
+	int GetNumberNewbornsToTrace() const { return number_newborns_to_trace_; }
+	int GetMonthTraceNewborns() const { return month_trace_newborns_; }
+	bool GetTracePrevalentCases() const { return trace_prevalent_cases_; }
+	std::vector<int> GetLifeExpectancyRecordTimes() const { return life_expectancy_record_times_; }
+	double GetLifeExpectancyMedianConfidenceInterval() const { return life_expectancy_median_condfidence_interval_; }
+	std::vector<int> GetPartnerAcquisitionRecordTimes() const { return partner_acquisition_record_times_; }
 	ConcurrencyDefinitions GetConcurrencyDefinitions() const { return concurrency_definitions_; }
 	std::unordered_map<TraceFile::Type, TraceFile> GetTraceFiles() const { return trace_files_; }
 	CalibrationSettings GetCalibrationSettings() const { return calibration_settings_; }
+	Costs GetCosts() const { return costs_; }
 	Interventions GetInterventions() const { return interventions_; }
 	PopulationSettings GetPopulationSettings() const { return population_settings_; }
 	std::unordered_map<std::string, TemplateParameter> GetTemplateKeyMap() const { return template_key_map_; }
@@ -374,6 +372,13 @@ private:
 	int duration_;
 	int fixed_seed_;
 	int month_of_1990_;
+	int number_to_trace_;
+	int number_newborns_to_trace_;
+	int month_trace_newborns_;
+	bool trace_prevalent_cases_;
+	std::vector<int> life_expectancy_record_times_;
+	double life_expectancy_median_condfidence_interval_;
+	std::vector<int> partner_acquisition_record_times_;
 	std::unordered_map<TraceFile::Type, TraceFile> trace_files_;
 	ConcurrencyDefinitions concurrency_definitions_;
 	CalibrationSettings calibration_settings_;

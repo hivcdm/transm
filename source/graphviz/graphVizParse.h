@@ -57,7 +57,7 @@ public:
 
 		/**
 		 * @param time the time to check what the status was
-		 * @return SexualPartnership::Type indicating what type of sexual partnership this relationship was involved in at the given time or SexualPartnership::ENDType if no relationship existed
+		 * @return SexualPartnership::Type indicating what type of sexual partnership this relationship was involved in at the given time or SexualPartnership::Type::ENDType if no relationship existed
 		 */
 		SexualPartnership::Type statusAtTime(int time);
 	};

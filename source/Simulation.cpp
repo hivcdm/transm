@@ -64,25 +64,26 @@ Simulation::Simulation(const Inputs &inputs, MessageCallback message_callback)
 	if(parameters_.calibrationInputs.useCalibration)
 	{
 		parameters_.calibrationInputs.monthOfCalibration = inputs_.GetCalibrationSettings().month;
-		parameters_.calibrationInputs.steadyPrevPopulation = inputs_.GetCalibrationSettings().steady_target.target;
+		parameters_.calibrationInputs.steadyPrevPopulation = (int)inputs_.GetCalibrationSettings().steady_target.target;
 		parameters_.calibrationInputs.steadyPrevBounds[Constants::LOWER] = inputs_.GetCalibrationSettings().steady_target.lower;
 		parameters_.calibrationInputs.steadyPrevBounds[Constants::UPPER] = inputs_.GetCalibrationSettings().steady_target.upper;
-		parameters_.calibrationInputs.casualPrevPopulation = inputs_.GetCalibrationSettings().casual_target.target;
+		parameters_.calibrationInputs.casualPrevPopulation = (int)inputs_.GetCalibrationSettings().casual_target.target;
 		parameters_.calibrationInputs.casualPrevBounds[Constants::LOWER] = inputs_.GetCalibrationSettings().casual_target.lower;
 		parameters_.calibrationInputs.casualPrevBounds[Constants::UPPER] = inputs_.GetCalibrationSettings().casual_target.upper;
-		parameters_.calibrationInputs.CSWPrevPopulation = inputs_.GetCalibrationSettings().csw_target.target;
+		parameters_.calibrationInputs.CSWPrevPopulation = (int)inputs_.GetCalibrationSettings().csw_target.target;
 		parameters_.calibrationInputs.CSWPrevBounds[Constants::LOWER] = inputs_.GetCalibrationSettings().csw_target.lower;
 		parameters_.calibrationInputs.CSWPrevBounds[Constants::UPPER] = inputs_.GetCalibrationSettings().csw_target.upper;
-		parameters_.calibrationInputs.propInConcurrentPopulation = inputs_.GetCalibrationSettings().proportion_concurrent_target;
+		parameters_.calibrationInputs.propInConcurrentPopulation = (int)inputs_.GetCalibrationSettings().proportion_concurrent_target.target;
 		parameters_.calibrationInputs.propInConcurrentBounds[Constants::LOWER] = inputs_.GetCalibrationSettings().proportion_concurrent_target.lower;
 		parameters_.calibrationInputs.propInConcurrentBounds[Constants::UPPER] = inputs_.GetCalibrationSettings().proportion_concurrent_target.upper;
-		parameters_.calibrationInputs.numActsPopulation = inputs_.GetCalibrationSettings().num_acts_target.target;
+		parameters_.calibrationInputs.numActsPopulation = (int)inputs_.GetCalibrationSettings().num_acts_target.target;
 		parameters_.calibrationInputs.numActsBounds[Constants::LOWER] = inputs_.GetCalibrationSettings().num_acts_target.lower;
 		parameters_.calibrationInputs.numActsBounds[Constants::UPPER] = inputs_.GetCalibrationSettings().num_acts_target.upper;
 		parameters_.calibrationInputs.femaleCasualPrevRatio = inputs_.GetCalibrationSettings().female_casual_prevalence;
 		parameters_.calibrationInputs.femalePropInConcurrentRatio = inputs_.GetCalibrationSettings().female_proportion_in_concurrent;
 		parameters_.calibrationInputs.femaleNumActsLRtoHRRatio = inputs_.GetCalibrationSettings().female_proportion_lr_to_hr;
 
+		/*
 		for(int i = 0; i < Constants::NUMBER_CALIBRATION_PREVS; i++)
 		{
 			parameters_.calibrationInputs.calendarPrevs[i] =
@@ -98,6 +99,7 @@ Simulation::Simulation(const Inputs &inputs, MessageCallback message_callback)
 
 		parameters_.calibrationInputs.thresholdPrevMult =
 			calibParams->FirstChildElement("thresholdMultiplier")->GetText<double>();
+			*/
 	}
 
 	duration_ = inputs_.GetDuration();
@@ -116,29 +118,19 @@ Simulation::Simulation(const Inputs &inputs, MessageCallback message_callback)
 		filesLoaded = LoadRolloutSimContexts(inputs_.GetInterventions().rollout_treatment_files);
 
 		int proportionYear = 2002;
-		ticpp::Iterator<ticpp::Element> proportionIterator;
-
-		for(proportionIterator = proportionIterator.begin(simParams->FirstChildElement("population")->FirstChildElement("interventions")->FirstChildElement("artRolloutIntervention")->FirstChildElement("targetRolloutProportions")); proportionIterator != proportionIterator.end(); ++proportionIterator)
-		{
-			int year = boost::lexical_cast<int>(proportionIterator.Get()->GetAttribute("year"));
-			assert(year == proportionYear++);
-			parameters_.targetYearlyRolloutProportions.push_back(proportionIterator.Get()->GetText<double>());
-		}
+		parameters_.targetYearlyRolloutProportions = inputs_.GetInterventions().target_rollout_proportions;
 	}
 	else
 	{
 		//use standard cepac input files
 		parameters_.useRollout = false;
-		filesLoaded = SetCEPACSimContexts(simParams->FirstChildElement("population")->FirstChildElement("interventions")->FirstChildElement("cepacIntervention"));
+		filesLoaded = LoadCepacSimContexts(inputs_.GetInterventions().cepac_treatment_files);
 	}
 
 	if(!filesLoaded)
 	{
 		//If the files didn't successfully load, don't run the model!
-		parameters_.displayOut("FILE ERROR: Stopping model execution for ");
-		parameters_.displayOut(xmlFile.c_str());
-		parameters_.displayOut("\n");
-
+		parameters_.displayOut("FILE ERROR: Stopping model execution for " + inputs_.GetFilename() + "\n");
 		throw std::runtime_error("error loading files");
 	}
 
@@ -184,11 +176,11 @@ Simulation::Simulation(const Inputs &inputs, MessageCallback message_callback)
 		}
 	}
 
-	parameters_.numToTrace = simParams->FirstChildElement("numberToTracePerAgeRange")->GetText<int>();
-	parameters_.numNewbornsToTrace = simParams->FirstChildElement("numberNewbornsToTrace")->GetText<int>();
-	parameters_.monthTraceNewborns = simParams->FirstChildElement("monthTraceNewborns")->GetText<int>();
+	parameters_.numToTrace = inputs_.GetNumberToTrace();
+	parameters_.numNewbornsToTrace = inputs_.GetNumberNewbornsToTrace();
+	parameters_.monthTraceNewborns = inputs_.GetMonthTraceNewborns();
 	parameters_.numNewbornsTraced = 0;
-	parameters_.tracePrevalentCases = simParams->FirstChildElement("tracePrevalentCases")->GetText<int>() != 0;
+	parameters_.tracePrevalentCases = inputs_.GetTracePrevalentCases();
 
 	if(parameters_.calibrationInputs.useCalibration)
 	{
@@ -227,8 +219,7 @@ Simulation::Simulation(const Inputs &inputs, MessageCallback message_callback)
 	//create a population
 	// maybe someday we can have multiple interacting populations
 	//  in that case, we'll have to change the PopulationParams to not put the values in the static Male, Female, and SteadyCouple fields
-	population_ = new Population(parameters_, simParams->FirstChildElement("population"),
-		simParams->FirstChildElement("lifeExpectancyOutput"), simParams->FirstChildElement("partnerAcqOutput"), duration_);
+	population_ = new Population(parameters_, inputs_.GetPopulationSettings(), duration_);
 
 	if(parameters_.monthOf1990 > 0 && parameters_.outputTrace[EventParams::TraceFileType::ShiftedOutcomes])
 	{
@@ -527,25 +518,11 @@ bool Simulation::LoadCepacSimContexts(const Interventions::CepacTreatmentFiles &
 		}
 	}
 
-	//Get the times for the CEPAC input files to switch
-	//TODO: Eventually there will be different times for different 'cohorts' i.e. subpopulations
-	ticpp::Element *cohortTimesNode = cepacInterventionNode->FirstChildElement("cohortTimes")->FirstChildElement("cohort");
-
 	for(int i = 0; i < Constants::NUMBER_OF_CEPAC_FILES; i++)
 	{
 		//By default, the first "time to switch" should be 0 (i.e. the first CEPAC .in file applies at time 0)
-		if(i == 0)
-		{
-			parameters_.timesToSwitchSimContext[i] = 0;
-		}
-		else
-		{
-			std::string timeString = "time";
-			timeString.append(boost::lexical_cast<std::string>(i));
-			parameters_.timesToSwitchSimContext[i] = cohortTimesNode->FirstChildElement(timeString.c_str())->GetText<int>();
-		}
-
-		//std::cout << "Time " << i << ": " << parameters_.timesToSwitchSimContext[i] << "\n";
+		parameters_.timesToSwitchSimContext[i] = 
+			i == 0 ? 0 : inputs_.GetInterventions().cepac_treatment_files[i].time;
 	}
 
 	return true;
@@ -561,33 +538,26 @@ bool Simulation::LoadRolloutSimContexts(const Interventions::RolloutTreatmentFil
 
 	for(const auto &treatment_file : treatment_files)
 	{
-		std::string fileName = (*rolloutFileNode).FirstChildElement("fileName")->GetTextOrDefault("");
-		int fileNumber = (*rolloutFileNode).FirstChildElement("fileNumber")->GetText<int>();
-		int popToApply;
-		int timeToApply;
-		(*rolloutFileNode).FirstChildElement("popToApply")->GetTextOrDefault<int>(&popToApply, -1);
-		(*rolloutFileNode).FirstChildElement("time")->GetTextOrDefault<int>(&timeToApply, -1);
 		//Make sure the number of CEPAC input files from the .xml file is not greater than the number expected by the code!
-		assert(fileNumber < Constants::NUMBER_OF_ROLLOUT_FILES);
-		parameters_.displayOut("\t");
-		parameters_.displayOut(boost::lexical_cast<std::string>(fileNumber).c_str());
-		parameters_.displayOut(": ");
-		parameters_.displayOut(fileName.c_str());
-		parameters_.displayOut("\n");
+		assert(treatment_file.file_number < Constants::NUMBER_OF_ROLLOUT_FILES);
+
+		parameters_.displayOut("\t" + std::to_string(treatment_file.file_number) + ": " 
+			+ treatment_file.file_name + "\n");
+
 		//Set the CEPAC simContext from the specified CEPAC .in file
 		SimContext *contextToAdd = nullptr;
 
-		if(fileName == "" || timeToApply == -1)
+		if(treatment_file.file_name == "" || treatment_file.time == -1)
 		{
 			continue;
 		}
 
-		contextToAdd = new SimContext(fileName.substr(0, fileName.find(CepacUtil::FILE_EXTENSION_FOR_INPUT)));
-		parameters_.rolloutSimContexts.push_back(new EventParams::RolloutContext(timeToApply, contextToAdd, popToApply));
+		contextToAdd = new SimContext(treatment_file.file_name.substr(0, treatment_file.file_name.find(CepacUtil::FILE_EXTENSION_FOR_INPUT)));
+		parameters_.rolloutSimContexts.push_back(new EventParams::RolloutContext(treatment_file.time, contextToAdd, treatment_file.target_population));
 		//Don't trace any CEPAC patients -- the output doesn't make any sense and it just gets overly large for no reason
 		//TODO: The reason is because the CEPAC Patient number doesn't get updated until the patient dies: this should be changed!
 		//parameters_.cepacSimContext->numPatientsToTrace = 0;
-		parameters_.rolloutSimContexts.at(fileNumber)->rolloutSimContext->numPatientsToTrace = 0;
+		parameters_.rolloutSimContexts.at(treatment_file.file_number)->rolloutSimContext->numPatientsToTrace = 0;
 
 		//Read in the inputs
 		try
@@ -600,85 +570,66 @@ bool Simulation::LoadRolloutSimContexts(const Interventions::RolloutTreatmentFil
 			parameters_.displayOut("*****************************************\n");
 			parameters_.displayOut("WARNING!\n");
 			parameters_.displayOut("*****************************************\n");
-			parameters_.displayOut("File '");
-			parameters_.displayOut(fileName);
-			parameters_.displayOut("' generates error:\n\t");
-			parameters_.displayOut(errorString);
+			parameters_.displayOut("File '" + treatment_file.file_name + "' generates error:\n");
+			parameters_.displayOut("\t" + errorString);
 			return false;
 		}
 
 		//From the first file only, get the death tables for non-AIDS death
-		if(fileNumber == 0)
+		if(treatment_file.file_number == 0)
 		{
-			CepacInputParser cepacInput(fileName);
+			CepacInputParser cepacInput(treatment_file.file_name);
 			auto probabilities = cepacInput.parseNonAidsDeathProbabilities();
 			Person::probDeathNatCauses[DmgProfile::MALE] = probabilities[0];
 			Person::probDeathNatCauses[DmgProfile::FEMALE] = probabilities[1];
 		}
 	}
 
-	for(criteriaNode = criteriaNode.begin(eligNodes); criteriaNode != criteriaNode.end(); criteriaNode++)
-	{
-		std::string criteriaName = (*criteriaNode).FirstChildElement("name")->GetText();
+	parameters_.rolloutEligibility.oiHistRank =
+		inputs_.GetInterventions().rollout_eligibility.oi_history_criteria.rank;
 
-		if(criteriaName == "OIHist")
-		{
-			parameters_.rolloutEligibility.oiHistRank = (*criteriaNode).FirstChildElement("rank")->GetText<int>();
+	std::copy(inputs_.GetInterventions().rollout_eligibility.oi_history_criteria.require_oi_history.begin(),
+		inputs_.GetInterventions().rollout_eligibility.oi_history_criteria.require_oi_history.end(),
+		parameters_.rolloutEligibility.oiHistOIs);
 
-			for(int i = 0; i < Constants::NUMBER_OF_OIS; i++)
-			{
-				std::string index_string = boost::lexical_cast<std::string, int>(i);
-				bool enabled = (*criteriaNode).FirstChildElement("OI" + index_string)->GetText<int>() != 0;
-				parameters_.rolloutEligibility.oiHistOIs[i] = enabled;
-			}
+	parameters_.rolloutEligibility.oiHistNumToStart =
+		inputs_.GetInterventions().rollout_eligibility.oi_history_criteria.required_oi_number;
 
-			parameters_.rolloutEligibility.oiHistNumToStart =
-			    (*criteriaNode).FirstChildElement("numOIToStart")->GetText<int>();
-		}
-		else if(criteriaName == "CD4")
-		{
-			parameters_.rolloutEligibility.cd4Rank = (*criteriaNode).FirstChildElement("rank")->GetText<int>();
-			parameters_.rolloutEligibility.cd4Bounds[Constants::LOWER] =
-			    (*criteriaNode).FirstChildElement("CD4Lwr")->GetText<int>();
-			parameters_.rolloutEligibility.cd4Bounds[Constants::UPPER] =
-			    (*criteriaNode).FirstChildElement("CD4Upp")->GetText<int>();
-		}
-		else if(criteriaName == "CD4OIHist")
-		{
-			parameters_.rolloutEligibility.cd4OiHistRank = (*criteriaNode).FirstChildElement("rank")->GetText<int>();
-			parameters_.rolloutEligibility.cd4OiHistCd4Bounds[Constants::LOWER] =
-			    (*criteriaNode).FirstChildElement("CD4Lwr")->GetText<int>();
-			parameters_.rolloutEligibility.cd4OiHistCd4Bounds[Constants::UPPER] =
-			    (*criteriaNode).FirstChildElement("CD4Upp")->GetText<int>();
+	parameters_.rolloutEligibility.cd4Rank =
+		inputs_.GetInterventions().rollout_eligibility.cd4_criteria.rank;
+	parameters_.rolloutEligibility.cd4Bounds[Constants::LOWER] =
+		inputs_.GetInterventions().rollout_eligibility.cd4_criteria.cd4_lower_bound;
+	parameters_.rolloutEligibility.cd4Bounds[Constants::UPPER] = 
+		inputs_.GetInterventions().rollout_eligibility.cd4_criteria.cd4_upper_bound;
 
-			for(int i = 0; i < Constants::NUMBER_OF_OIS; i++)
-			{
-				std::string index_string = boost::lexical_cast<std::string, int>(i);
-				bool enabled = (*criteriaNode).FirstChildElement("OI" + index_string)->GetText<int>() != 0;
-				parameters_.rolloutEligibility.cd4OiHistOIs[i] = enabled;
-			}
-		}
-		else if(criteriaName == "HVL")
-		{
-			parameters_.rolloutEligibility.hvlRank = (*criteriaNode).FirstChildElement("rank")->GetText<int>();
-			parameters_.rolloutEligibility.hvlBounds[Constants::LOWER] =
-			    (*criteriaNode).FirstChildElement("HVLLwr")->GetText<int>();
-			parameters_.rolloutEligibility.hvlBounds[Constants::UPPER] =
-			    (*criteriaNode).FirstChildElement("HVLUpp")->GetText<int>();
-		}
-		else if(criteriaName == "CD4HVL")
-		{
-			parameters_.rolloutEligibility.cd4HvlRank = (*criteriaNode).FirstChildElement("rank")->GetText<int>();
-			parameters_.rolloutEligibility.cd4HvlCd4Bounds[Constants::LOWER] =
-			    (*criteriaNode).FirstChildElement("CD4Lwr")->GetText<int>();
-			parameters_.rolloutEligibility.cd4HvlCd4Bounds[Constants::UPPER] =
-			    (*criteriaNode).FirstChildElement("CD4Upp")->GetText<int>();
-			parameters_.rolloutEligibility.cd4HvlHvlBounds[Constants::LOWER] =
-			    (*criteriaNode).FirstChildElement("HVLLwr")->GetText<int>();
-			parameters_.rolloutEligibility.cd4HvlHvlBounds[Constants::UPPER] =
-			    (*criteriaNode).FirstChildElement("HVLUpp")->GetText<int>();
-		}
-	}
+	parameters_.rolloutEligibility.cd4OiHistRank = 
+		inputs_.GetInterventions().rollout_eligibility.cd4_oi_history_criteria.rank;
+	parameters_.rolloutEligibility.cd4OiHistCd4Bounds[Constants::LOWER] =
+		inputs_.GetInterventions().rollout_eligibility.cd4_oi_history_criteria.cd4_lower_bound;
+	parameters_.rolloutEligibility.cd4OiHistCd4Bounds[Constants::UPPER] =
+		inputs_.GetInterventions().rollout_eligibility.cd4_oi_history_criteria.cd4_upper_bound;
+
+	std::copy(inputs_.GetInterventions().rollout_eligibility.cd4_oi_history_criteria.require_oi_history.begin(),
+		inputs_.GetInterventions().rollout_eligibility.cd4_oi_history_criteria.require_oi_history.end(),
+		parameters_.rolloutEligibility.cd4OiHistOIs);
+
+	parameters_.rolloutEligibility.hvlRank 
+		= inputs_.GetInterventions().rollout_eligibility.hvl_criteria.rank;
+	parameters_.rolloutEligibility.hvlBounds[Constants::LOWER] 
+		= inputs_.GetInterventions().rollout_eligibility.hvl_criteria.hvl_lower_bound;
+	parameters_.rolloutEligibility.hvlBounds[Constants::UPPER] 
+		= inputs_.GetInterventions().rollout_eligibility.hvl_criteria.hvl_upper_bound;
+
+	parameters_.rolloutEligibility.cd4HvlRank 
+		= inputs_.GetInterventions().rollout_eligibility.cd4_hvl_criteria.rank;
+	parameters_.rolloutEligibility.cd4HvlCd4Bounds[Constants::LOWER] 
+		= inputs_.GetInterventions().rollout_eligibility.cd4_hvl_criteria.cd4_lower_bound;
+	parameters_.rolloutEligibility.cd4HvlCd4Bounds[Constants::UPPER] 
+		= inputs_.GetInterventions().rollout_eligibility.cd4_hvl_criteria.cd4_upper_bound;
+	parameters_.rolloutEligibility.cd4HvlHvlBounds[Constants::LOWER] 
+		= inputs_.GetInterventions().rollout_eligibility.cd4_hvl_criteria.hvl_lower_bound;
+	parameters_.rolloutEligibility.cd4HvlHvlBounds[Constants::UPPER] 
+		= inputs_.GetInterventions().rollout_eligibility.cd4_hvl_criteria.hvl_upper_bound;
 
 	return true;
 }
@@ -744,176 +695,176 @@ void Simulation::UpdateTimeDependentParameters()
 			switch(parameter_type)
 			{
 			case TemplateParameter::AgeSexualDebutYears:
-				population_->popWideParams.setAgeSexualDebut(parameter.value);
+				population_->popWideParams.setAgeSexualDebut(std::stod(parameter.value));
 				break;
 			case TemplateParameter::BirthRate:
-				population_->popWideParams.setBirthRate(parameter.value);
+				population_->popWideParams.setBirthRate(std::stod(parameter.value));
 				break;
 			case TemplateParameter::ProportionCircumcised:
-				population_->popWideParams.setProportionCircumcised(parameter.value);
+				population_->popWideParams.setProportionCircumcised(std::stod(parameter.value));
 				break;
 			case TemplateParameter::ProportionMale:
-				population_->popWideParams.setProportionMale(parameter.value);
+				population_->popWideParams.setProportionMale(std::stod(parameter.value));
 				break;
 			case TemplateParameter::OIHistRank:
-				parameters_.rolloutEligibility.oiHistRank = static_cast<int>(parameter.value);
+				parameters_.rolloutEligibility.oiHistRank = std::stoi(parameter.value);
 				checkRanks = true;
 				break;
 			case TemplateParameter::OIHistOI0:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI1:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI2:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI3:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI4:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI5:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI6:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI7:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI8:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI9:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI10:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI11:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI12:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI13:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI14:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
 				break; 
 			case TemplateParameter::OIHistNumOIToStart:
-				parameters_.rolloutEligibility.oiHistNumToStart = parameter.value;
+				parameters_.rolloutEligibility.oiHistNumToStart = std::stoi(parameter.value);
 				break;
 			case TemplateParameter::CD4Rank:
-				parameters_.rolloutEligibility.cd4Rank = parameter.value;
+				parameters_.rolloutEligibility.cd4Rank = std::stoi(parameter.value);
 				checkRanks = true;
 				break;
 			case TemplateParameter::CD4CD4Upp:
-				parameters_.rolloutEligibility.cd4Bounds[1] = parameter.value;
+				parameters_.rolloutEligibility.cd4Bounds[1] = std::stoi(parameter.value);
 				break;
 			case TemplateParameter::CD4CD4Lwr:
-				parameters_.rolloutEligibility.cd4Bounds[0] = parameter.value;
+				parameters_.rolloutEligibility.cd4Bounds[0] = std::stoi(parameter.value);
 				break;
 			case TemplateParameter::CD4OIHistRank:
-				parameters_.rolloutEligibility.cd4OiHistRank = parameter.value;
+				parameters_.rolloutEligibility.cd4OiHistRank = std::stoi(parameter.value);
 				checkRanks = true;
 				break;
 			case TemplateParameter::CD4OIHistOI0:
-				parameters_.rolloutEligibility.cd4OiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.cd4OiHistOIs[0] = parameter.value != "0";
 				break;
 			case TemplateParameter::CD4OIHistOI1:
-				parameters_.rolloutEligibility.cd4OiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.cd4OiHistOIs[1] = parameter.value != "0";
 				break;
 			case TemplateParameter::CD4OIHistOI2:
-				parameters_.rolloutEligibility.cd4OiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.cd4OiHistOIs[2] = parameter.value != "0";
 				break;
 			case TemplateParameter::CD4OIHistOI3:
-				parameters_.rolloutEligibility.cd4OiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.cd4OiHistOIs[3] = parameter.value != "0";
 				break;
 			case TemplateParameter::CD4OIHistOI4:
-				parameters_.rolloutEligibility.cd4OiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.cd4OiHistOIs[4] = parameter.value != "0";
 				break;
 			case TemplateParameter::CD4OIHistOI5:
-				parameters_.rolloutEligibility.cd4OiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.cd4OiHistOIs[5] = parameter.value != "0";
 				break;
 			case TemplateParameter::CD4OIHistOI6:
-				parameters_.rolloutEligibility.cd4OiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.cd4OiHistOIs[6] = parameter.value != "0";
 				break;
 			case TemplateParameter::CD4OIHistOI7:
-				parameters_.rolloutEligibility.cd4OiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.cd4OiHistOIs[7] = parameter.value != "0";
 				break;
 			case TemplateParameter::CD4OIHistOI8:
-				parameters_.rolloutEligibility.cd4OiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.cd4OiHistOIs[8] = parameter.value != "0";
 				break;
 			case TemplateParameter::CD4OIHistOI9:
-				parameters_.rolloutEligibility.cd4OiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.cd4OiHistOIs[9] = parameter.value != "0";
 				break;
 			case TemplateParameter::CD4OIHistOI10:
-				parameters_.rolloutEligibility.cd4OiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.cd4OiHistOIs[10] = parameter.value != "0";
 				break;
 			case TemplateParameter::CD4OIHistOI11:
-				parameters_.rolloutEligibility.cd4OiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.cd4OiHistOIs[11] = parameter.value != "0";
 				break;
 			case TemplateParameter::CD4OIHistOI12:
-				parameters_.rolloutEligibility.cd4OiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.cd4OiHistOIs[12] = parameter.value != "0";
 				break;
 			case TemplateParameter::CD4OIHistOI13:
-				parameters_.rolloutEligibility.cd4OiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.cd4OiHistOIs[13] = parameter.value != "0";
 				break;
 			case TemplateParameter::CD4OIHistOI14:
-				parameters_.rolloutEligibility.cd4OiHistOIs[0] = parameter.value != 0;
+				parameters_.rolloutEligibility.cd4OiHistOIs[14] = parameter.value != "0";
 				break;
 			case TemplateParameter::CD4OIHistCD4Upp:
-				parameters_.rolloutEligibility.cd4OiHistCd4Bounds[1] = parameter.value;
+				parameters_.rolloutEligibility.cd4OiHistCd4Bounds[1] = std::stoi(parameter.value);
 				break;
 			case TemplateParameter::CD4OIHistCD4Lwr:
-				parameters_.rolloutEligibility.cd4OiHistCd4Bounds[0] = parameter.value;
+				parameters_.rolloutEligibility.cd4OiHistCd4Bounds[0] = std::stoi(parameter.value);
 				break;
 			case TemplateParameter::HVLRank:
-				parameters_.rolloutEligibility.hvlRank = parameter.value;
+				parameters_.rolloutEligibility.hvlRank = std::stoi(parameter.value);
 				checkRanks = true;
 			case TemplateParameter::HVLHVLUpp:
-				parameters_.rolloutEligibility.hvlBounds[1] = parameter.value;
+				parameters_.rolloutEligibility.hvlBounds[1] = std::stoi(parameter.value);
 			case TemplateParameter::HVLHVLLwr:
-				parameters_.rolloutEligibility.hvlBounds[0] = parameter.value;
+				parameters_.rolloutEligibility.hvlBounds[0] = std::stoi(parameter.value);
 			case TemplateParameter::CD4HVLRank:
-				parameters_.rolloutEligibility.cd4HvlRank = parameter.value;
+				parameters_.rolloutEligibility.cd4HvlRank = std::stoi(parameter.value);
 				checkRanks = true;
 			case TemplateParameter::CD4HVLCD4Upp:
-				parameters_.rolloutEligibility.cd4HvlCd4Bounds[1] = parameter.value;
+				parameters_.rolloutEligibility.cd4HvlCd4Bounds[1] = std::stoi(parameter.value);
 			case TemplateParameter::CD4HVLCD4Lwr:
-				parameters_.rolloutEligibility.cd4HvlCd4Bounds[0] = parameter.value;
+				parameters_.rolloutEligibility.cd4HvlCd4Bounds[0] = std::stoi(parameter.value);
 			case TemplateParameter::CD4HVLHVLUpp:
-				parameters_.rolloutEligibility.cd4HvlHvlBounds[1] = parameter.value;
+				parameters_.rolloutEligibility.cd4HvlHvlBounds[1] = std::stoi(parameter.value);
 			case TemplateParameter::CD4HVLHVLLwr:
-				parameters_.rolloutEligibility.cd4HvlHvlBounds[0] = parameter.value;
+				parameters_.rolloutEligibility.cd4HvlHvlBounds[0] = std::stoi(parameter.value);
 			case TemplateParameter::SteadyChanceCondomUsePerEventHighRisk:
 				auto beta = ParseBeta(parameter.value);
-				population_->popWideParams.setChanceCondomUsePerEvent(Person::HIGH, SexualPartnership::STEADY, beta);
+				population_->popWideParams.setChanceCondomUsePerEvent(Person::HIGH, SexualPartnership::Type::Steady, beta);
 			case TemplateParameter::SteadyChanceCondomUsePerEventLowRisk:
 				auto beta = ParseBeta(parameter.value);
-				population_->popWideParams.setChanceCondomUsePerEvent(Person::LOW, SexualPartnership::STEADY, beta);
+				population_->popWideParams.setChanceCondomUsePerEvent(Person::LOW, SexualPartnership::Type::Steady, beta);
 			case TemplateParameter::RegularChanceCondomUsePerEventHighRisk:
 				auto beta = ParseBeta(parameter.value);
-				population_->popWideParams.setChanceCondomUsePerEvent(Person::HIGH, SexualPartnership::REGULAR, beta);
+				population_->popWideParams.setChanceCondomUsePerEvent(Person::HIGH, SexualPartnership::Type::Regular, beta);
 			case TemplateParameter::RegularChanceCondomUsePerEventLowRisk:
 				auto beta = ParseBeta(parameter.value);
-				population_->popWideParams.setChanceCondomUsePerEvent(Person::LOW, SexualPartnership::REGULAR, beta);
+				population_->popWideParams.setChanceCondomUsePerEvent(Person::LOW, SexualPartnership::Type::Regular, beta);
 			case TemplateParameter::CasualChanceCondomUsePerEventHighRisk:
 				auto beta = ParseBeta(parameter.value);
-				population_->popWideParams.setChanceCondomUsePerEvent(Person::HIGH, SexualPartnership::CASUAL, beta);
+				population_->popWideParams.setChanceCondomUsePerEvent(Person::HIGH, SexualPartnership::Type::Casual, beta);
 			case TemplateParameter::CasualChanceCondomUsePerEventLowRisk:
 				auto beta = ParseBeta(parameter.value);
-				population_->popWideParams.setChanceCondomUsePerEvent(Person::LOW, SexualPartnership::CASUAL, beta);
+				population_->popWideParams.setChanceCondomUsePerEvent(Person::LOW, SexualPartnership::Type::Casual, beta);
 			case TemplateParameter::CswChanceCondomUsePerEventHighRisk:
 				auto beta = ParseBeta(parameter.value);
-				population_->popWideParams.setChanceCondomUsePerEvent(Person::HIGH, SexualPartnership::CSW, beta);
+				population_->popWideParams.setChanceCondomUsePerEvent(Person::HIGH, SexualPartnership::Type::Csw, beta);
 			case TemplateParameter::CswChanceCondomUsePerEventLowRisk:
 				auto beta = ParseBeta(parameter.value);
-				population_->popWideParams.setChanceCondomUsePerEvent(Person::LOW, SexualPartnership::CSW, beta);
+				population_->popWideParams.setChanceCondomUsePerEvent(Person::LOW, SexualPartnership::Type::Csw, beta);
 				break;
 			default:
 				throw std::runtime_error("not implemented");

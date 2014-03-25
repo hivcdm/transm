@@ -184,6 +184,11 @@ void Inputs::LoadTracingSettings(const ticpp::Element &root_node, const ticpp::E
 		trace_file.toss = toss_files_node.FirstChildElement("traceFile" + std::to_string(int(type)))->GetText() != "0";
 		trace_files_[static_cast<TraceFile::Type>(type)] = trace_file;
 	}
+
+	number_to_trace_ = std::stoi(root_node.FirstChildElement("numberToTracePerAgeRange")->GetText());
+	number_newborns_to_trace_ = std::stoi(root_node.FirstChildElement("numberNewbornsToTrace")->GetText());
+	month_trace_newborns_ = std::stoi(root_node.FirstChildElement("monthTraceNewborns")->GetText());
+	trace_prevalent_cases_ = std::stoi(root_node.FirstChildElement("tracePrevalentCases")->GetText());
 }
 
 void Inputs::ValidateTracingSettings()

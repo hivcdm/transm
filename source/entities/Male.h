@@ -1,5 +1,7 @@
 #pragma once
 #include <map>
+
+#include "../Inputs.h"
 #include "../data/EventParams.h"
 #include "../util/rand/RandomNums.h"
 #include "../util/ticpp/ticpp.h"
@@ -56,8 +58,7 @@ public :
 		//-----------< END data fields >--------------------//
 	public:
 		SubPopParams();
-		SubPopParams(ticpp::Element *_maleParams, EventParams &_eventParams);
-		int reloadParamsXML(ticpp::Element *_maleParams, EventParams &_eventParams) throw();
+		SubPopParams(const PopulationSettings::MaleSettings &settings, EventParams &_eventParams);
 
 		~SubPopParams();
 		//-----------< BEGIN getters >--------------------//
@@ -90,16 +91,20 @@ private:
 	//	Rationale: So males don't really have to know much about the population they are in except for the ID
 	static vector<SubPopParams *> populationSpecificParams;
 
-	//------------< Begin parameters for individual males >-----------------//
-	bool circumcised;					//whether they are circumcised
-	double partnerAcqRates[SexualPartnership::ENDType];	//the rate at which this male acquires various partners -- this value is drawn from lognormal, but the male's number of partners each month will be drawn from poisson`
-	double numActsPerMonth[SexualPartnership::ENDType];	//the # acts per month (fits a poisson distribution with minimum value of 1)
-	double chanceCondomUsePerEvent[SexualPartnership::ENDType]; //chance that this male will use condom w/ different partner types
-	// Replace range with distribution centered around an age
-	//double maxMonthsOlder[SexualPartnership::ENDType];			//how many months older are they willing to go for a partner
-	//double maxMonthsYounger[SexualPartnership::ENDType];		//how many months younger are they willing to go for a partner
-	NormalDist
-	averageYearsYounger[SexualPartnership::ENDType];    // The distribution the males will draw from to determine how many years younger their partner should be (resulting difference may be negative for older women)
+	//whether they are circumcised
+	bool circumcised;
+
+	//the rate at which this male acquires various partners -- this value is drawn from lognormal, but the male's number of partners each month will be drawn from poisson`
+	double partnerAcqRates[(int)SexualPartnership::Type::ENDType];
+	
+	//the  acts per month (fits a poisson distribution with minimum value of 1)
+	double numActsPerMonth[(int)SexualPartnership::Type::ENDType];	
+	
+	//chance that this male will use condom w/ different partner types
+	double chanceCondomUsePerEvent[(int)SexualPartnership::Type::ENDType];
+
+	// The distribution the males will draw from to determine how many years younger their partner should be (resulting difference may be negative for older women)
+	NormalDist averageYearsYounger[(int)SexualPartnership::Type::ENDType];
 	//------------< End parameters for individual males >-----------------//
 
 public:
@@ -108,13 +113,7 @@ public:
 	@param _populationID basically a check to see that you have added parameters in the right order
 	@param _maleParams the XML node that contains the parameter data
 	**/
-	static void addPopParams(unsigned int _populationID, ticpp::Element *_maleParams, EventParams &_eventParams);
-	/**
-	Updates a set of population parameters to be used by Males of that population
-	@param _populationID basically a check to see that you have added parameters in the right order
-	@param _maleParams the XML node that contains the parameter data
-	**/
-	static void updatePopParams(unsigned int _populationID, ticpp::Element *_maleParams, EventParams &_eventParams);
+	static void addPopParams(unsigned int _populationID, const PopulationSettings::MaleSettings &settings, EventParams &_eventParams);
 
 	/**
 	Access a set of population parameters to be used by Males of that population

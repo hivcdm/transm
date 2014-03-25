@@ -120,59 +120,44 @@ PopulationParams::~PopulationParams()
 	}
 }
 
-void PopulationParams::init(ticpp::Element *_populationXML, unsigned int _populationID, EventParams &_eventParams)
+void PopulationParams::init(const Inputs &inputs, unsigned int _populationID, EventParams &_eventParams)
 {
-	assert(_populationXML != nullptr);
 	populationID = _populationID;
-	loadXML(_populationXML, _eventParams);
-}
-
-void PopulationParams::loadXML(ticpp::Element *_populationXML, EventParams &_eventParams)
-{
-	assert(_populationXML != nullptr);
+	
 	_eventParams.displayOut("Population Parameters\n");
 	std::string temp;
 
 	try
 	{
-		ticpp::Element *initialState = _populationXML->FirstChildElement("initialState");
-		initSize = initialState->FirstChildElement("size")->GetText<int>();
-		_eventParams.displayOut("\tsize = ");
-		_eventParams.displayOut(boost::lexical_cast<std::string>(initSize).c_str());
-		_eventParams.displayOut("\n");
+		initSize = inputs.GetPopulationSettings().initial_size;
+		_eventParams.displayOut("\tsize = " + std::to_string(initSize) + "\n");
+
 		//initial proportion married
 		//TODO: Change me based on marriage acquisition rates et al
 		//initproportionMarried  = initialState->FirstChildElement("proportionMarried")->GetText<double>();
 		//initproportionRegular = initialState->FirstChildElement("proportionRegular")->GetText<double>();
 		//get initial age distribution
-		ticpp::Iterator<ticpp::Element> rangeIter;
-
-		for(rangeIter = initialState->FirstChildElement("ageDistributionYrs")->FirstChildElement("range");
-		        rangeIter != rangeIter.end(); rangeIter++)
+		for(const auto &age_bucket : inputs.GetPopulationSettings().age_distributions)
 		{
-			//get data for each age bucket and save it
 			initialAgeBuckets.push_back(
-			    new AgeBucketPrevalenceInfo(
-			        Util::convertTime(YEAR, MONTH, rangeIter->FirstChildElement("minAge")->GetText<int>()),
-			        Util::convertTime(YEAR, MONTH, rangeIter->FirstChildElement("maxAge")->GetText<int>()) + 11,
-			        rangeIter->FirstChildElement("distribMale")->GetText<double>(),
-			        rangeIter->FirstChildElement("distribFemale")->GetText<double>(),
-			        rangeIter->FirstChildElement("numInfectedMaleCSW")->GetText<double>(),
-			        rangeIter->FirstChildElement("numInfectedFemaleCSW")->GetText<double>(),
-			        rangeIter->FirstChildElement("numInfectedMaleLowRisk")->GetText<double>(),
-			        rangeIter->FirstChildElement("numInfectedFemaleLowRisk")->GetText<double>(),
-			        rangeIter->FirstChildElement("numInfectedMaleHighRisk")->GetText<double>(),
-			        rangeIter->FirstChildElement("numInfectedFemaleHighRisk")->GetText<double>()
-			    )
-			);
+				new AgeBucketPrevalenceInfo(
+					Util::convertTime(YEAR, MONTH, age_bucket.lower),
+					Util::convertTime(YEAR, MONTH, age_bucket.upper) + 11,
+					age_bucket.male_distribution,
+					age_bucket.female_distribution,
+					age_bucket.num_infected_male_csw,
+					age_bucket.num_infected_female_csw,
+					age_bucket.num_infected_male_low_risk,
+					age_bucket.num_infected_female_low_risk,
+					age_bucket.num_infected_male_high_risk,
+					age_bucket.num_infected_female_high_risk));
 		}
 
-		initProbCSW[DmgProfile::MALE] = initialState->FirstChildElement("chanceBeingCSWMale")->GetText<double>();
-		initProbCSW[DmgProfile::FEMALE] = initialState->FirstChildElement("chanceBeingCSWFemale")->GetText<double>();
-		CSWEndAgeMth[DmgProfile::MALE] = Util::convertTime(YEAR, MONTH,
-		                                       initialState->FirstChildElement("CSWEndAgeMale")->GetText<double>());
-		CSWEndAgeMth[DmgProfile::FEMALE] = Util::convertTime(YEAR, MONTH,
-		        initialState->FirstChildElement("CSWEndAgeFemale")->GetText<double>());
+		initProbCSW[DmgProfile::MALE] = inputs.GetPopulationSettings().initial_chance_csw_male;
+		initProbCSW[DmgProfile::FEMALE] = inputs.GetPopulationSettings().initial_chance_csw_female;
+		CSWEndAgeMth[DmgProfile::MALE] = Util::convertTime(YEAR, MONTH, inputs.GetPopulationSettings().csw_end_age_male);
+		CSWEndAgeMth[DmgProfile::FEMALE] = Util::convertTime(YEAR, MONTH, inputs.GetPopulationSettings().csw_end_age_female);
+
 		//normalize %population values for each age bucket
 		double totalPopulationproportionages[DmgProfile::ENDGender];
 
@@ -184,14 +169,14 @@ void PopulationParams::loadXML(ticpp::Element *_populationXML, EventParams &_eve
 			for(size_t ageBucketNum = 0; ageBucketNum < initialAgeBuckets.size(); ageBucketNum++)
 			{
 				totalPopulationproportionages[i] = totalPopulationproportionages[i] + initialAgeBuckets.at(
-				                                       ageBucketNum)->proportionOfPopulation[i];
+					ageBucketNum)->proportionOfPopulation[i];
 			}
 
 			//normalize each proportionage value so that the sum of them == 1
 			for(size_t ageBucketNum = 0; ageBucketNum < initialAgeBuckets.size(); ageBucketNum++)
 			{
 				initialAgeBuckets.at(ageBucketNum)->proportionOfPopulation[i] = initialAgeBuckets.at(
-				            ageBucketNum)->proportionOfPopulation[i] / totalPopulationproportionages[i];
+					ageBucketNum)->proportionOfPopulation[i] / totalPopulationproportionages[i];
 			}
 		}
 
@@ -201,77 +186,52 @@ void PopulationParams::loadXML(ticpp::Element *_populationXML, EventParams &_eve
 		}
 
 		//dmgProfile parameters
-		birthRate = _populationXML->FirstChildElement("birthRate")->GetText<double>();
+		birthRate = inputs.GetPopulationSettings().birth_rate;
 		XMLUtil::printParam("", "birthRate", birthRate, _eventParams);
-		proportionMale = _populationXML->FirstChildElement("proportionMale")->GetText<double>();
+		proportionMale = inputs.GetPopulationSettings().proportion_male;
 		XMLUtil::printParam("", "proportionMale", proportionMale, _eventParams);
-		circumcised = _populationXML->FirstChildElement("proportionCircumcised")->GetText<double>();
+		circumcised = inputs.GetPopulationSettings().proportion_circumcised;
 		XMLUtil::printParam("", "proportionCircumcised", circumcised, _eventParams);
-		SAEntAgeMths = Util::convertTime(YEAR, MONTH, _populationXML->FirstChildElement("ageSexualDebutYrs")->GetText<int>());
+		SAEntAgeMths = inputs.GetPopulationSettings().age_sexual_debut;
 		XMLUtil::printParam("", "SAEntAge (month)", SAEntAgeMths, _eventParams);
 		//ASSORTATIVENESS GOES HERE
-		assort[SexualPartnership::STEADY] =
-		    _populationXML->FirstChildElement("assortativeness")->FirstChildElement("steady")->GetText<double>();
-		assort[SexualPartnership::REGULAR] =
-		    _populationXML->FirstChildElement("assortativeness")->FirstChildElement("regular")->GetText<double>();
-		assort[SexualPartnership::CASUAL] =
-		    _populationXML->FirstChildElement("assortativeness")->FirstChildElement("casual")->GetText<double>();
-		assort[SexualPartnership::CSW] =
-		    _populationXML->FirstChildElement("assortativeness")->FirstChildElement("csw")->GetText<double>();
-		// Get an EntityTypes element
-		ticpp::Element *entityTypes =
-		    _populationXML->FirstChildElement("entityTypes")->FirstChildElement("baseEntities")->FirstChildElement("baseEntity");
-		//iterate through each Person in EntityTypes
-		ticpp::Iterator<ticpp::Element> entityTypesIter;
+		assort[SexualPartnership::Type::Steady] = inputs.GetPopulationSettings().male_settings.partnership_settings[SexualPartnership::Type::Steady].assortativeness;
+		assort[SexualPartnership::Type::Regular] = inputs.GetPopulationSettings().male_settings.partnership_settings[SexualPartnership::Type::Regular].assortativeness;
+		assort[SexualPartnership::Type::Casual] = inputs.GetPopulationSettings().male_settings.partnership_settings[SexualPartnership::Type::Casual].assortativeness;
+		assort[SexualPartnership::Type::Csw] = inputs.GetPopulationSettings().male_settings.partnership_settings[SexualPartnership::Type::Csw].assortativeness;
 
-		for(entityTypesIter = entityTypes; entityTypesIter != entityTypesIter.end(); entityTypesIter++)
-		{
-			std::string baseEntityElem = entityTypesIter->FirstChildElement("type")->GetText();
+		Male::addPopParams(populationID, inputs.GetPopulationSettings().male_settings, _eventParams);
+		maleParams = Male::getPopParams(populationID);
 
-			if(baseEntityElem.compare("Male") == 0)
-			{
-				Male::addPopParams(populationID, entityTypesIter->ToElement(), _eventParams);
-				maleParams = Male::getPopParams(populationID);
-			}
-			else if(baseEntityElem.compare("Female") == 0)
-			{
-				Female::addPopParams(populationID, entityTypesIter->ToElement(), _eventParams);
-				femaleParams = Female::getPopParams(populationID);
-			}
-			else
-			{
-				_eventParams.displayOut("PopulationParams::loadXML(...): Ignoring Unknown type :");
-				_eventParams.displayOut(baseEntityElem.c_str());
-				_eventParams.displayOut("\n");
-			}
-		}
+		Female::addPopParams(populationID, entityTypesIter->ToElement(), _eventParams);
+		femaleParams = Female::getPopParams(populationID);
 
 		//Get the initial marriage prevalence based on percent male high risk and rate and duration of steady relationships
 		double pHigh = maleParams->getProportionHighRisk(DmgProfile::NON_CSW);
-		double marriageRateH = maleParams->getSexualBehaviorParams(SexualPartnership::STEADY)->getAcquisitionRatePerMonth(
-		                           Person::HIGH).getMean();
-		double marriageRateL = maleParams->getSexualBehaviorParams(SexualPartnership::STEADY)->getAcquisitionRatePerMonth(
-		                           Person::LOW).getMean();
+		double marriageRateH = maleParams->getSexualBehaviorParams(SexualPartnership::Type::Steady)->getAcquisitionRatePerMonth(
+			Person::HIGH).getMean();
+		double marriageRateL = maleParams->getSexualBehaviorParams(SexualPartnership::Type::Steady)->getAcquisitionRatePerMonth(
+			Person::LOW).getMean();
 		double marriageDurationH = maleParams->getSexualBehaviorParams(
-		                               SexualPartnership::STEADY)->getPartnershipDurationMth(Person::HIGH).getMean();
+			SexualPartnership::Type::Steady)->getPartnershipDurationMth(Person::HIGH).getMean();
 		double marriageDurationL = maleParams->getSexualBehaviorParams(
-		                               SexualPartnership::STEADY)->getPartnershipDurationMth(Person::LOW).getMean();
+			SexualPartnership::Type::Steady)->getPartnershipDurationMth(Person::LOW).getMean();
 		initproportionMarried = (1 - pHigh) * (marriageRateL * marriageDurationL) / (1 + marriageRateL *
-		                              marriageDurationL) + pHigh * (marriageRateH * marriageDurationH) / (1 + marriageRateH * marriageDurationH);
+			marriageDurationL) + pHigh * (marriageRateH * marriageDurationH) / (1 + marriageRateH * marriageDurationH);
 		//Get the initial regular prevalence based on percent male high risk and rate and duration of regular relationships
-		double regularRateH = maleParams->getSexualBehaviorParams(SexualPartnership::REGULAR)->getAcquisitionRatePerMonth(
-		                          Person::HIGH).getMean();
-		double regularRateL = maleParams->getSexualBehaviorParams(SexualPartnership::REGULAR)->getAcquisitionRatePerMonth(
-		                          Person::LOW).getMean();
+		double regularRateH = maleParams->getSexualBehaviorParams(SexualPartnership::Type::Regular)->getAcquisitionRatePerMonth(
+			Person::HIGH).getMean();
+		double regularRateL = maleParams->getSexualBehaviorParams(SexualPartnership::Type::Regular)->getAcquisitionRatePerMonth(
+			Person::LOW).getMean();
 		double regularDurationH = maleParams->getSexualBehaviorParams(
-		                              SexualPartnership::REGULAR)->getPartnershipDurationMth(Person::HIGH).getMean();
+			SexualPartnership::Type::Regular)->getPartnershipDurationMth(Person::HIGH).getMean();
 		double regularDurationL = maleParams->getSexualBehaviorParams(
-		                              SexualPartnership::REGULAR)->getPartnershipDurationMth(Person::LOW).getMean();
+			SexualPartnership::Type::Regular)->getPartnershipDurationMth(Person::LOW).getMean();
 		initproportionRegular = (1 - pHigh) * (regularRateL * regularDurationL) + pHigh *
-		                              (regularRateH * regularDurationH);
+			(regularRateH * regularDurationH);
 		//Costs
-		condomCost = _populationXML->FirstChildElement("costs")->FirstChildElement("condomCost")->GetText<double>();
-		circumcisionCost = _populationXML->FirstChildElement("costs")->FirstChildElement("circumcisionCost")->GetText<double>();
+		condomCost = inputs.GetCosts().condom_cost;
+		circumcisionCost = inputs.GetCosts().circumcision_cost;
 	}
 	catch(ticpp::Exception &_e)
 	{
@@ -282,92 +242,11 @@ void PopulationParams::loadXML(ticpp::Element *_populationXML, EventParams &_eve
 	}
 
 	//save flags to indicate whether particular partnership types have duration or not
-	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::ENDType; ++type)
+	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::Type::ENDType; ++type)
 	{
 		partnershipsHaveDuration[DmgProfile::MALE][type] = !(maleParams->getSexualBehaviorParams(
-		            type)->getPartnershipDurationMth(Person::LOW).isZeroDistrib)
-		        && !(maleParams->getSexualBehaviorParams(type)->getPartnershipDurationMth(Person::HIGH).isZeroDistrib);
-		partnershipsHaveDuration[DmgProfile::FEMALE][type] = false;
-	}
-
-	_eventParams.displayOut("\n");
-}
-
-/**reloads certain xml data from another xml file in a sequence of files
-   only loads non initial data
-**/
-void PopulationParams::reloadXML(ticpp::Element *_populationXML, EventParams &_eventParams)
-{
-	assert(_populationXML != nullptr);
-	_eventParams.displayOut("Population Parameters\n");
-	std::string temp;
-
-	try
-	{
-		//dmgProfile parameters
-		birthRate = _populationXML->FirstChildElement("birthRate")->GetText<double>();
-		XMLUtil::printParam("", "birthRate", birthRate, _eventParams);
-		proportionMale = _populationXML->FirstChildElement("proportionMale")->GetText<double>();
-		XMLUtil::printParam("", "proportionMale", proportionMale, _eventParams);
-		circumcised = _populationXML->FirstChildElement("proportionCircumcised")->GetText<double>();
-		XMLUtil::printParam("", "proportionCircumcised", circumcised, _eventParams);
-		SAEntAgeMths = Util::convertTime(YEAR, MONTH, _populationXML->FirstChildElement("ageSexualDebutYrs")->GetText<int>());
-		XMLUtil::printParam("", "SAEntAge (month)", SAEntAgeMths, _eventParams);
-		//ASSORTATIVENESS GOES HERE
-		assort[SexualPartnership::STEADY] =
-		    _populationXML->FirstChildElement("assortativeness")->FirstChildElement("steady")->GetText<double>();
-		assort[SexualPartnership::REGULAR] =
-		    _populationXML->FirstChildElement("assortativeness")->FirstChildElement("regular")->GetText<double>();
-		assort[SexualPartnership::CASUAL] =
-		    _populationXML->FirstChildElement("assortativeness")->FirstChildElement("casual")->GetText<double>();
-		assort[SexualPartnership::CSW] =
-		    _populationXML->FirstChildElement("assortativeness")->FirstChildElement("csw")->GetText<double>();
-		// Get an EntityTypes element
-		ticpp::Element *entityTypes =
-		    _populationXML->FirstChildElement("entityTypes")->FirstChildElement("baseEntities")->FirstChildElement("baseEntity");
-		//iterate through each Person in EntityTypes
-		ticpp::Iterator<ticpp::Element> entityTypesIter;
-
-		for(entityTypesIter = entityTypes; entityTypesIter != entityTypesIter.end(); entityTypesIter++)
-		{
-			std::string baseEntityElem = entityTypesIter->FirstChildElement("type")->GetText();
-
-			if(baseEntityElem.compare("Male") == 0)
-			{
-				Male::updatePopParams(populationID, entityTypesIter->ToElement(), _eventParams);
-				maleParams = Male::getPopParams(populationID);
-			}
-			else if(baseEntityElem.compare("Female") == 0)
-			{
-				Female::updatePopParams(populationID, entityTypesIter->ToElement(), _eventParams);
-				femaleParams = Female::getPopParams(populationID);
-			}
-			else
-			{
-				_eventParams.displayOut("PopulationParams::loadXML(...): Ignoring Unknown type :");
-				_eventParams.displayOut(baseEntityElem.c_str());
-				_eventParams.displayOut("\n");
-			}
-		}
-
-		//Costs
-		condomCost = _populationXML->FirstChildElement("costs")->FirstChildElement("condomCost")->GetText<double>();
-		circumcisionCost = _populationXML->FirstChildElement("costs")->FirstChildElement("circumcisionCost")->GetText<double>();
-	}
-	catch(ticpp::Exception &_e)
-	{
-		_eventParams.displayOut("PopulationParams: Exception raised: ");
-		_eventParams.displayOut(_e.m_details.c_str());
-		_eventParams.displayOut("\n");
-		Util::exitWithPrompt(-1);
-	}
-
-	//save flags to indicate whether particular partnership types have duration or not
-	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::ENDType; ++type)
-	{
-		partnershipsHaveDuration[DmgProfile::MALE][type] = (!maleParams->getSexualBehaviorParams(
-		            type)->getPartnershipDurationMth(Person::LOW).isZeroDistrib)
-		        && (!maleParams->getSexualBehaviorParams(type)->getPartnershipDurationMth(Person::HIGH).isZeroDistrib);
+			type)->getPartnershipDurationMth(Person::LOW).isZeroDistrib)
+			&& !(maleParams->getSexualBehaviorParams(type)->getPartnershipDurationMth(Person::HIGH).isZeroDistrib);
 		partnershipsHaveDuration[DmgProfile::FEMALE][type] = false;
 	}
 

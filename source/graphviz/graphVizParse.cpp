@@ -66,7 +66,7 @@ SexualPartnership::Type GraphVizGraphElements::relationshipEdge::statusAtTime(in
 	}
 
 	/** If time did not fall between any time pairs, return the ENDType */
-	return SexualPartnership::ENDType;
+	return SexualPartnership::Type::ENDType;
 }
 
 GraphVizGraphElements::personNode::personNode(int ID, bool _isMale, int timeBornAt)
@@ -207,19 +207,19 @@ void GraphVizGraphElements::printGraphVizFiles(int _timeSteps, std::string _simN
 				int headNode = (*nodeIt)->personID;
 				int tailNode = (*relsIt).partnerID;
 				SexualPartnership::Type pType = (*relsIt).statusAtTime(timeToGraph);
-				std::string style(pType == SexualPartnership::ENDType ? "invis" : "solid");
+				std::string style(pType == SexualPartnership::Type::ENDType ? "invis" : "solid");
 				std::string color("");
 
 				//Get the color based on the relationship type
-				if(pType == SexualPartnership::CASUAL)
+				if(pType == SexualPartnership::Type::Casual)
 				{
 					color.append("darkgreen");
 				}
-				else if(pType == SexualPartnership::CSW)
+				else if(pType == SexualPartnership::Type::Csw)
 				{
 					color.append("firebrick");
 				}
-				else if(pType == SexualPartnership::REGULAR)
+				else if(pType == SexualPartnership::Type::Regular)
 				{
 					color.append("darkviolet");
 				}

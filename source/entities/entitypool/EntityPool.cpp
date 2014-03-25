@@ -166,12 +166,12 @@ void EntityPool::printBucketSizes(ostream &_outStream, string _prefix, bool _pri
 			_totalSexuallyActive++;
 		}
 
-		if(male->hasPartnership(SexualPartnership::STEADY))
+		if(male->hasPartnership(SexualPartnership::Type::Steady))
 		{
 			_totalInSteady++;
 		}
 
-		if(male->hasPartnership(SexualPartnership::REGULAR))
+		if(male->hasPartnership(SexualPartnership::Type::Regular))
 		{
 			_totalInRegular++;
 		}
@@ -186,12 +186,12 @@ void EntityPool::printBucketSizes(ostream &_outStream, string _prefix, bool _pri
 			_totalSexuallyActive++;
 		}
 
-		if(female->hasPartnership(SexualPartnership::STEADY))
+		if(female->hasPartnership(SexualPartnership::Type::Steady))
 		{
 			_totalInSteady++;
 		}
 
-		if(female->hasPartnership(SexualPartnership::REGULAR))
+		if(female->hasPartnership(SexualPartnership::Type::Regular))
 		{
 			_totalInRegular++;
 		}

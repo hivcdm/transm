@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "Inputs.h"
 #include "PopulationParams.h"
 #include "data/AgeRangeSizeContainer.h"
 #include "entities/Female.h"
@@ -31,18 +32,13 @@ public:
 	typedef boost::circular_buffer_space_optimized<BucketAge *> BucketAllAges;
 
 	//creates a new population object given an XML input subtree which contains the parameters
-	Population(EventParams &_eventParams, ticpp::Element *_popParamsNode, ticpp::Element *_LEOutputNode,
-	           ticpp::Element *_partAcqOutputNode, long _maxTime);
+	Population(EventParams &_eventParams, const Inputs &inputs, long _maxTime);
 	~Population();
-
-	//updates population with parameters from new file
-	void updatePopulation(EventParams &_eventParams, ticpp::Element *_popParamsNode);
 
 	//initialization-related method
 	//determines which DemographicProfiles have the power to initiate relationships and determines which
 	//relationships they can have
 	void initPartnershipBuckets();
-
 
 	/*
 	 * Print out to a summary stats file -- this should only be run at the end of the simulation!
@@ -258,10 +254,10 @@ private:
 	/** stores eligible receivers Buckets for each type of partnership -- use BucketSexualMixing,
 	//not DmgProfileBucket because all persons participating in partnerships are sexually
 	//active by definition */
-	std::vector<BucketSexualMixing *> potentialPartnerBuckets[SexualPartnership::ENDType];
+	std::vector<BucketSexualMixing *> potentialPartnerBuckets[SexualPartnership::Type::ENDType];
 	/** stores weights of each eligible bucket. we keep this as a separate vector so we can
 	//  use pre-existing normalization and random index chooser functions. */
-	std::vector<double> eligibleBucketWeights[SexualPartnership::ENDType];
+	std::vector<double> eligibleBucketWeights[SexualPartnership::Type::ENDType];
 
 	std::vector<std::vector<Person *>> rankedForTreatment;
 

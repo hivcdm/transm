@@ -98,7 +98,7 @@ private:
 	//	the second dimension represents demographic profiles of infectors
 	//  the third dimension represents demographic profiles of people who were infected
 	//so you can use this to track infection patterns. e.g. how many SINGLE_MALEs were infected by CSW_FEMALE */
-	unsigned long incidentInfections[SexualPartnership::ENDType][DmgProfile::TotalNumBuckets][DmgProfile::TotalNumBuckets];
+	unsigned long incidentInfections[SexualPartnership::Type::ENDType][DmgProfile::TotalNumBuckets][DmgProfile::TotalNumBuckets];
 
 public :
 

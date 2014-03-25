@@ -26,9 +26,6 @@ public:
 protected:
 	friend class Population;
 
-	void loadXML(ticpp::Element *_populationXML, EventParams &_eventParams);
-	void reloadXML(ticpp::Element *_populationXML, EventParams &_eventParams);
-
 	//this data structure contains prevalence parameters differ in value by age buckets
 	class AgeBucketPrevalenceInfo
 	{
@@ -54,10 +51,6 @@ protected:
 		                        double _numInfectedNonCSWFemalesHighRisk);
 		void print(EventParams &_eventParams);
 		inline void copyToSelf(AgeBucketPrevalenceInfo _abpInfo);
-
-		//private:
-		//Calculated statistics
-		//int numberInfected[DmgProfile::ENDGender][Person::ENDRiskLevel]; //Calculation involves knowing population size and
 	};	
 
 private:
@@ -74,7 +67,7 @@ private:
 	double circumcised;
 	double hivInfected;
 
-	double assort[SexualPartnership::ENDType]; //assortativeness parameter one for each partnership type
+	double assort[SexualPartnership::Type::ENDType]; //assortativeness parameter one for each partnership type
 
 	unsigned int populationID;	//the ID of the population that these parameters correspond to
 
@@ -95,7 +88,7 @@ private:
 	Female::SubPopParams *femaleParams;
 	//this is a quick way to check whether a partnership is technically a fling or not
 	// right now, behavior for males is the only one that has been coded
-	bool partnershipsHaveDuration[DmgProfile::ENDGender][SexualPartnership::ENDType];
+	bool partnershipsHaveDuration[DmgProfile::ENDGender][SexualPartnership::Type::ENDType];
 
 	//Costs
 	double condomCost;
@@ -104,5 +97,5 @@ private:
 	PopulationParams();
 	~PopulationParams();
 
-	void init(ticpp::Element *_populationXML, unsigned int _populationID, EventParams &_eventParams);
+	void init(const Inputs &inputs, unsigned int _populationID, EventParams &_eventParams);
 };

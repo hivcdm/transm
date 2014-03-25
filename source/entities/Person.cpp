@@ -131,7 +131,7 @@ bool Person::isEligibleForTreatment(const SimContext::TreatmentInputs::ARTStartP
 Person *Person::allPartnerSexualActivity(EventParams &_eventParams, SexualPartnership::Type _partnershipType,
         list<Person *> &_newlyInfected, InfectionsTracker *infTrack)
 {
-	assert(_partnershipType < SexualPartnership::ENDType);
+	assert(_partnershipType < SexualPartnership::Type::ENDType);
 	//iterate through all partnerships of SexualActivity::Type _partnershipType and have them engage in sexual activity
 	list<SexualPartnership *>::iterator iter = partners[_partnershipType].begin();
 	list<SexualPartnership *>::iterator iterEnd = partners[_partnershipType].end();
@@ -166,9 +166,9 @@ Person *Person::allPartnerSexualActivity(EventParams &_eventParams, SexualPartne
 
 bool Person::availableForPartnership(SexualPartnership::Type _partnershipType) const
 {
-	if(_partnershipType == SexualPartnership::STEADY)
+	if(_partnershipType == SexualPartnership::Type::Steady)
 	{
-		return (partners[ SexualPartnership::STEADY].empty());
+		return (partners[ SexualPartnership::Type::Steady].empty());
 	}
 	else
 	{
@@ -189,8 +189,8 @@ void Person::addPartnership(SexualPartnership *_partnership)
 	            monthOfLatestPartnershipDissolution[_partnership->getType()], _partnership->getDissolutionTime());
 
 	//if a STEADY partnership was added && we are SINGLE, the we need to change or RELATIONSHIP_STATUS
-	if((_partnership->getType() == SexualPartnership::STEADY) &&
-	        (!partners[SexualPartnership::STEADY].empty()) &&
+	if((_partnership->getType() == SexualPartnership::Type::Steady) &&
+	        (!partners[SexualPartnership::Type::Steady].empty()) &&
 	        (getDmgProfileVal(DmgProfile::RELATIONSHIP_STATUS) == DmgProfile::SINGLE))
 	{
 		dmgProfile.set(DmgProfile::RELATIONSHIP_STATUS, DmgProfile::NON_SINGLE);
@@ -526,7 +526,7 @@ int Person::getNumPartnersInHistory()
 {
 	int total = 0;
 
-	for(int i = 0; i < SexualPartnership::ENDType; i++)
+	for(int i = 0; i < SexualPartnership::Type::ENDType; i++)
 	{
 		total += numPartnersInHistory[i];
 	}
@@ -573,7 +573,7 @@ Person *Person::fling(Person *_p, SexualPartnership::Type _partnershipType, Even
 {
 	assert((_p != nullptr));
 	assert(_p->isAlive());
-	assert(_partnershipType < SexualPartnership::ENDType);
+	assert(_partnershipType < SexualPartnership::Type::ENDType);
 	int numActs = rollNumEventsPerPartner(_p, _eventParams.randomNums, _partnershipType);
 	return sexualActivity(_p, numActs, _partnershipType, _eventParams, infTrack);
 }
@@ -616,7 +616,7 @@ unsigned long Person::getID()
 long Person::getPartnershipsToEnd(long _currTime, SexualPartnership::Type _partnershipType,
                                   list<SexualPartnership *> &_partnershipsToEnd, bool _fromDeath)
 {
-	assert(_partnershipType < SexualPartnership::ENDType);
+	assert(_partnershipType < SexualPartnership::Type::ENDType);
 	assert((_currTime >= 0) || _fromDeath);
 
 	if(partners[_partnershipType].size() == 0)
@@ -711,7 +711,7 @@ bool Person::isPartneredWith(Person *_p)
 	assert((_p != nullptr));
 	assert(_p->isAlive());
 
-	for(SexualPartnership::Type partnershipType = SexualPartnership::Type(0); partnershipType < SexualPartnership::ENDType;
+	for(SexualPartnership::Type partnershipType = SexualPartnership::Type(0); partnershipType < SexualPartnership::Type::ENDType;
 	        ++partnershipType)
 	{
 		//iterate through each partnership and check if _p is a member of one of them
@@ -759,7 +759,7 @@ void Person::print(ostream &_outStream, string _prefix) const
 
 void Person::printCurrentPartners(ostream &_outStream, string _prefix)
 {
-	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::ENDType; ++type)
+	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::Type::ENDType; ++type)
 	{
 		list<SexualPartnership *>::iterator iter = partners[type].begin();
 		list<SexualPartnership *>::iterator iterEnd = partners[type].end();
@@ -775,7 +775,7 @@ void Person::printCurrentPartners(ostream &_outStream, string _prefix)
 			partner->print(_outStream, "\t\t");
 			iter++;
 		}
-	} //	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::ENDType; ++type) {
+	} //	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::Type::ENDType; ++type) {
 }
 /**
 *This function saves the state of the patient to file
@@ -790,7 +790,7 @@ void Person::saveState(ostream &_outStream, long currTime)
 	_outStream << "partners:[";
 	bool firstPartner = true;
 
-	for(int i = 0; i < SexualPartnership::ENDType; i++)  //loop through partnership types
+	for(int i = 0; i < SexualPartnership::Type::ENDType; i++)  //loop through partnership types
 	{
 		for(list<SexualPartnership *>::iterator it = partners[i].begin(); it != partners[i].end();
 		        it++) //loop through all partners
@@ -809,7 +809,7 @@ void Person::saveState(ostream &_outStream, long currTime)
 	_outStream << "partnerHist:[";
 	firstPartner = true;
 
-	for(int i = 0; i < SexualPartnership::ENDType; i++)  //loop through partnership types
+	for(int i = 0; i < SexualPartnership::Type::ENDType; i++)  //loop through partnership types
 	{
 		if(!firstPartner)
 		{
@@ -867,8 +867,8 @@ void Person::removePartnership(SexualPartnership *_partnership)
 	partners[_partnership->getType()].remove(_partnership);
 
 	//if a STEADY partnership was removed and we have no more, then we should be set to SINGLE
-	if((_partnership->getType() == SexualPartnership::STEADY) &&
-	        (partners[SexualPartnership::STEADY].empty()) &&
+	if((_partnership->getType() == SexualPartnership::Type::Steady) &&
+	        (partners[SexualPartnership::Type::Steady].empty()) &&
 	        (getDmgProfileVal(DmgProfile::RELATIONSHIP_STATUS) == DmgProfile::NON_SINGLE))
 	{
 		dmgProfile.set(DmgProfile::RELATIONSHIP_STATUS, DmgProfile::SINGLE);
@@ -1030,7 +1030,7 @@ Person *Person::sexualActivity(Person *_p, int _numActs, SexualPartnership::Type
 {
 	assert((_p != nullptr));
 	assert(_p->isAlive());
-	assert(_partnershipType < SexualPartnership::ENDType);
+	assert(_partnershipType < SexualPartnership::Type::ENDType);
 	//TODO: CONDOM STUFF!
 
 	if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && (trace() || _p->trace()))
@@ -1626,7 +1626,7 @@ Person::Person()
 	wentThroughCEPAC = false;
 	cepacPatient = nullptr;
 
-	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::ENDType; ++type)
+	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::Type::ENDType; ++type)
 	{
 		unformedPartnershipsLatestTime[type] = 0;
 		unformedPartnershipsTotal[type] = 0;
@@ -1675,7 +1675,7 @@ Person::Person(EventParams &_eventParams, int _age, unsigned int _populationID)
 	stats.init(&Person::StatsEnum);
 	traceMe = false;
 
-	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::ENDType; ++type)
+	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::Type::ENDType; ++type)
 	{
 		unformedPartnershipsLatestTime[type] = 0;
 		unformedPartnershipsTotal[type] = 0;
@@ -1712,7 +1712,7 @@ Person::~Person(void)
 	//take person out of all current relationships
 	list<SexualPartnership *>::iterator toDelete;
 
-	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::ENDType; ++type)
+	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::Type::ENDType; ++type)
 	{
 		list<SexualPartnership *>::iterator iter = partners[type].begin();
 		list<SexualPartnership *>::iterator iterEnd = partners[type].end();
@@ -1740,7 +1740,7 @@ void Person::deletePersonWithoutDeleting()
 	//take person out of all current relationships
 	list<SexualPartnership *>::iterator toDelete;
 
-	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::ENDType; ++type)
+	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::Type::ENDType; ++type)
 	{
 		list<SexualPartnership *>::iterator iter = partners[type].begin();
 		list<SexualPartnership *>::iterator iterEnd = partners[type].end();

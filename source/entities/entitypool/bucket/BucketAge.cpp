@@ -25,7 +25,7 @@ BucketAge::BucketAge()
 		}
 	}
 
-	for(int i = 0; i < SexualPartnership::ENDType; i++)
+	for(int i = 0; i < SexualPartnership::Type::ENDType; i++)
 	{
 		assort[i] = 0;
 	}
@@ -50,7 +50,7 @@ BucketAge::BucketAge(DmgProfile::ProfileID BinID, unsigned int popID, const doub
 		}
 	}
 
-	for(int i = 0; i < SexualPartnership::ENDType; i++)
+	for(int i = 0; i < SexualPartnership::Type::ENDType; i++)
 	{
 		assort[i] = _assort[i];
 	}

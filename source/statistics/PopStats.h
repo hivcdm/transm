@@ -160,7 +160,8 @@ public:
 
 	StatsRecord<LifeStats, BaseEnumCls::nullptr_ENUM> *lifeStats;
 
-	PopStats(long maxTime, ticpp::Element *_LEOutputNode, ticpp::Element *_partAcqOutputNode);
+	PopStats(long maxTime, const std::vector<int> &life_expectancy_record_times, 
+		double le_median_ci, const std::vector<int> &part_acq_record_times);
 	~PopStats();
 
 	//processes a person's death

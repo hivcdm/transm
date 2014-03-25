@@ -16,79 +16,18 @@ Male::SubPopParams::SubPopParams()
 {
 }
 
-Male::SubPopParams::SubPopParams(ticpp::Element *_maleParams, EventParams &_eventParams)
+Male::SubPopParams::SubPopParams(const PopulationSettings::MaleSettings &settings, EventParams &_eventParams)
 {
-	assert(_maleParams != nullptr);
-	loadParamsXML(_maleParams, _eventParams);
-}
-
-/***
-The order we read parameters in should match the ordering of the static variables in class Male
-***/
-
-//was throw(...)
-int Male::SubPopParams::loadParamsXML(ticpp::Element *_maleParams, EventParams &_eventParams) throw()
-{
-	assert(_maleParams != nullptr);
-
 	try
 	{
-		ticpp::Element *behaviorElem = _maleParams->FirstChildElement("behavior");
-		chanceBecomeCSW = behaviorElem->FirstChildElement("chanceBecomeSexWorker")->GetText<double>();
-		partnerAcqMultWithSteady[Person::HIGH] =
-		    behaviorElem->FirstChildElement("partnerAcqMultWithSteadyHighRisk")->GetText<double>();
-		partnerAcqMultWithSteady[Person::LOW] =
-		    behaviorElem->FirstChildElement("partnerAcqMultWithSteadyLowRisk")->GetText<double>();
-		//Use these to determine if the high risk acquisition rates will be pulled from user input or by multiplying the low risk rates
-		bool useMultiplierForHighRiskAcqRates = false;
-
-		try
-		{
-			useMultiplierForHighRiskAcqRates = (behaviorElem->FirstChildElement("UseHighRiskMultiplier")->GetText<int>() == 1);
-		}
-		catch(ticpp::Exception &)
-		{
-			useMultiplierForHighRiskAcqRates = false;
-		}
-
-		double highRiskAcqRateMultiplier;
-
-		try
-		{
-			highRiskAcqRateMultiplier = behaviorElem->FirstChildElement("HighRiskAcqRateMultiplier")->GetText<double>();
-		}
-		catch(ticpp::Exception &)
-		{
-			highRiskAcqRateMultiplier = 1;
-		}
-
-		bool useMultiplierForHighRiskCSW = false;
-
-		try
-		{
-			useMultiplierForHighRiskCSW = (behaviorElem->FirstChildElement("UseCSWHighRiskMultiplier")->GetText<int>() == 1);
-		}
-		catch(ticpp::Exception &)
-		{
-			useMultiplierForHighRiskCSW = false;
-		}
-
-		double highRiskAcqRateMultiplierCSW;
-
-		try
-		{
-			highRiskAcqRateMultiplierCSW = behaviorElem->FirstChildElement("CSWHighRiskAcqRateMultiplier")->GetText<double>();
-		}
-		catch(ticpp::Exception &)
-		{
-			highRiskAcqRateMultiplierCSW = 1;
-		}
+		chanceBecomeCSW = settings.chance_become_sex_worker;
+		partnerAcqMultWithSteady[Person::HIGH] = settings.partner_acquisition_multiplier_with_steady_high;
+		partnerAcqMultWithSteady[Person::LOW] = settings.partner_acquisition_multiplier_with_steady_low;
 
 		//Coefficient of Variation
-		_eventParams.useCoefficientVariation =
-		    behaviorElem->FirstChildElement("heterogeneity")->FirstChildElement("varMethod")->GetText<int>() == 0;
-		_eventParams.coefficientOfVariation =
-		    behaviorElem->FirstChildElement("heterogeneity")->FirstChildElement("coeffVar")->GetText<double>();
+		_eventParams.useCoefficientVariation = settings.heterogeneity_var_method;
+		_eventParams.coefficientOfVariation = settings.coefficient_of_variation;
+
 		//iterate through each Person in partnershipTypes
 		ticpp::Iterator<ticpp::Element> partnershipTypesIter;
 		string partnershipType;
@@ -126,32 +65,17 @@ int Male::SubPopParams::loadParamsXML(ticpp::Element *_maleParams, EventParams &
 			partneringActsDiscMult.push_back(partneringActsDiscMult.at(i - 1)*actsMult);
 		}
 
-		//get the health stats
-		ticpp::Element *healthElem = _maleParams->FirstChildElement("health");
-		//get protective efficacy of circumcision
-		circumProtectEff = healthElem->FirstChildElement("circumcisionProtectEfficacy")->GetText<double>();
-		//get protective efficacy of condoms
-		condomProtectEff  = healthElem->FirstChildElement("condomProtectEfficacy")->GetText<double>();
-		//get the transmission coefficients
-		transmitPerEventCoeffs.clear();
-		ticpp::Element *transmitCoeffElem = healthElem->FirstChildElement("transmissionCoefficients");
-		XMLUtil::getTabDelimitedNode(transmitCoeffElem->FirstChildElement("valsByHVL"),
-		                             transmitPerEventCoeffs);
-		transmitPerEventCoeffs.push_back(transmitCoeffElem->FirstChildElement("primary")->GetText<double>());
-		transmitPerEventCoeffs.push_back(transmitCoeffElem->FirstChildElement("lateStage")->GetText<double>());
+		circumProtectEff = settings.circumcision_protection_efficacy;
+		condomProtectEff = settings.condom_protection_efficacy;
+		transmitPerEventCoeffs.assign(settings.transmission_coefficients.begin(), settings.transmission_coefficients.end());
 	}
 	catch(ticpp::Exception &_e)
 	{
 		cout << "Male: Exception raised: " << _e.m_details << endl;
 		Util::exitWithPrompt(-1);
 	}
-
-	return 0;
-} //end loadParamsXML(...)
-int Male::SubPopParams::reloadParamsXML(ticpp::Element *_maleParams, EventParams &_eventParams) throw()
-{
-	return loadParamsXML(_maleParams, _eventParams);
 }
+
 Male::SubPopParams::~SubPopParams()
 {
 	for(unsigned int i = 0; i < sexualBehaviorParams.size(); ++i)
@@ -174,7 +98,7 @@ double Male::SubPopParams::getPartnerAcqMultWithSteady(Person::RiskLevel _risk) 
 //sexual behavior params for each type as specified by SexualPartnership::Type
 const SexualBehaviorParams *Male::SubPopParams::getSexualBehaviorParams(SexualPartnership::Type _type) const
 {
-	return sexualBehaviorParams.at(_type);
+	return sexualBehaviorParams.at((int)_type);
 }
 
 double Male::SubPopParams::getProportionHighRisk(DmgProfile::Employment _cswStatus) const
@@ -221,7 +145,7 @@ double Male::SubPopParams::getTransmitPerEventCoeff(HVLStrata _hvl) const
 
 void Male::SubPopParams::setChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist)
 {
-	sexualBehaviorParams[partnershipType]->setChanceCondomUsePerEvent(risk, dist);
+	sexualBehaviorParams[(int)partnershipType]->setChanceCondomUsePerEvent(risk, dist);
 }
 
 //------------ < End getters >-----------------//
@@ -237,17 +161,11 @@ Male::SubPopParams *Male::getPopParams(unsigned int _populationID)
 	return Male::populationSpecificParams.at(_populationID);
 }
 
-void Male::addPopParams(unsigned int _populationID, ticpp::Element *_maleParams, EventParams &_eventParams)
+void Male::addPopParams(unsigned int _populationID, const PopulationSettings::MaleSettings &settings, EventParams &_eventParams)
 {
 	assert(_populationID == Male::populationSpecificParams.size());
-	Male::SubPopParams *subPopParams = new Male::SubPopParams(_maleParams, _eventParams);
+	Male::SubPopParams *subPopParams = new Male::SubPopParams(settings, _eventParams);
 	Male::populationSpecificParams.push_back(subPopParams);
-}
-
-void Male::updatePopParams(unsigned int _populationID, ticpp::Element *_maleParams, EventParams &_eventParams)
-{
-	assert(_populationID == Male::populationSpecificParams.size() - 1);
-	Male::populationSpecificParams.at(_populationID)->reloadParamsXML(_maleParams, _eventParams);
 }
 
 Male::Male(EventParams &_eventParams, int _age, bool _circumcised, unsigned int _populationID)
@@ -314,7 +232,7 @@ double Male::getCondomUseProb(Person *_p, SexualPartnership::Type _partnershipTy
 {
 	assert((_p != nullptr));
 	assert(_p->isAlive());
-	assert(_partnershipType < SexualPartnership::ENDType);
+	assert(_partnershipType < SexualPartnership::Type::ENDType);
 	return chanceCondomUsePerEvent[_partnershipType];
 }
 
@@ -348,7 +266,7 @@ double Male::getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventP
 	assert(Util::validProbability(getCondomProtectEff()));
 	assert((_p != nullptr));
 	assert(_p->isAlive());
-	assert(_partnershipType < SexualPartnership::ENDType);
+	assert(_partnershipType < SexualPartnership::Type::ENDType);
 	//Determine if a condom was used and record
 	condomUsedLastFOICalculation = _eventParams.randomNums.chance(getCondomUseProb(_p, _partnershipType));
 	//Determine the condom efficacy --> 0 if no condom was used
@@ -451,7 +369,7 @@ bool Male::possibleMatch(SexualPartnership::Type _partnershipType, Person *_p)
 {
 	assert((_p != nullptr));
 	assert(_p->isAlive());
-	assert(_partnershipType < SexualPartnership::ENDType);
+	assert(_partnershipType < SexualPartnership::Type::ENDType);
 	assert(false);  // check if we are using years instead of Month
 	int minAge = static_cast<int>(getMinPartnerSelectVal(Person::AGE, _partnershipType));
 	int maxAge = static_cast<int>(getMaxPartnerSelectVal(Person::AGE, _partnershipType));
@@ -460,10 +378,10 @@ bool Male::possibleMatch(SexualPartnership::Type _partnershipType, Person *_p)
 
 int Male::rollForNumPartners(RandomNums &_randomNums, SexualPartnership::Type _partnershipType)
 {
-	assert(_partnershipType < SexualPartnership::ENDType);
+	assert(_partnershipType < SexualPartnership::Type::ENDType);
 
 	//person can only have 1 steady partner at a time so return 0 if person is already in Steady
-	if((_partnershipType == SexualPartnership::STEADY) && (!partners[_partnershipType].empty()))
+	if((_partnershipType == SexualPartnership::Type::Steady) && (!partners[_partnershipType].empty()))
 	{
 		return 0;
 	}
@@ -475,7 +393,7 @@ int Male::rollForNumPartners(RandomNums &_randomNums, SexualPartnership::Type _p
 	partnerRate = partnerAcqRates[_partnershipType];
 
 	//if this person has a steady partner then adjust acquisition rate
-	if(!partners[SexualPartnership::STEADY].empty())
+	if(!partners[SexualPartnership::Type::Steady].empty())
 	{
 		//if we're thinking of getting another partner, then lower chances if we have a steady partner
 		partnerRate *= subPopParams->getPartnerAcqMultWithSteady(getRiskLevel());
@@ -492,14 +410,14 @@ int Male::rollForNumPartners(RandomNums &_randomNums, SexualPartnership::Type _p
 	/** To get the number of partners to draw this month, draw from a Poisson distribution */
 	int numPartners = _randomNums.randPoisson(partnerRate);
 	//if we are rolling for STEADY, make sure we have max of 1
-	return (_partnershipType != SexualPartnership::STEADY) ? numPartners : min(1, numPartners);
+	return (_partnershipType != SexualPartnership::Type::Steady) ? numPartners : min(1, numPartners);
 }
 
 int Male::rollNumEventsPerPartner(Person *_p, RandomNums &_randomNums, SexualPartnership::Type _partnershipType)
 {
 	assert((_p != nullptr));
 	assert(_p->isAlive());
-	assert(_partnershipType < SexualPartnership::ENDType);
+	assert(_partnershipType < SexualPartnership::Type::ENDType);
 	double meanCoitalEvents = numActsPerMonth[_partnershipType];
 	const Male::SubPopParams *subPopParams = getPopParams(populationID);
 	//if person is over the age of partnering discounting, then discount #acts
@@ -526,7 +444,7 @@ int Male::rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType
 {
 	assert((_p != nullptr));
 	assert(_p->isAlive());
-	assert(_partnershipType < SexualPartnership::ENDType);
+	assert(_partnershipType < SexualPartnership::Type::ENDType);
 	ShiftedLogNormalDist duration = Male::populationSpecificParams.at(populationID)->getSexualBehaviorParams(
 	                                    _partnershipType)->getPartnershipDurationMth(risk);
 	return (int)(_randomNums.randShiftedLogNormal(duration) + .5);
@@ -592,7 +510,7 @@ void Male::saveState(ostream &_outStream, long currTime)
 	bool firstInSequence = true;
 	_outStream << "partAcqR:[";
 
-	for(int i = 0; i < SexualPartnership::ENDType; i++)
+	for(int i = 0; i < SexualPartnership::Type::ENDType; i++)
 	{
 		if(!firstInSequence)
 		{
@@ -608,7 +526,7 @@ void Male::saveState(ostream &_outStream, long currTime)
 	firstInSequence = true;
 	_outStream << "actsPerMth:[";
 
-	for(int i = 0; i < SexualPartnership::ENDType; i++)
+	for(int i = 0; i < SexualPartnership::Type::ENDType; i++)
 	{
 		if(!firstInSequence)
 		{
@@ -624,7 +542,7 @@ void Male::saveState(ostream &_outStream, long currTime)
 	firstInSequence = true;
 	_outStream << "probCndm:[";
 
-	for(int i = 0; i < SexualPartnership::ENDType; i++)
+	for(int i = 0; i < SexualPartnership::Type::ENDType; i++)
 	{
 		if(!firstInSequence)
 		{

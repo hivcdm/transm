@@ -25,14 +25,21 @@ public :
 	//this enum is used for when we are matching people
 	//  will type of partnership determines partner criteria
 	//Note: if this enum is modified, then also modify TypeEnumStrs
-	enum Type
+	enum class Type
 	{
-		STEADY,
-		REGULAR,
-		CASUAL,
-		CSW,
-		ENDType,
-		//	RAPE,  //not used yet
+		Steady,
+		Regular,
+		Casual,
+		Csw,
+		//SteadyMsm,
+		//RegularMsm,
+		//CasualMsm,
+		//CswMsm,
+		//SteadyBisexual,
+		//RegularBisexual,
+		//CasualBisexual,
+		//CswBisexual
+		ENDType
 	};
 	static EnumCls<Type> TypeEnum;
 

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "../Constants.h"
@@ -232,7 +233,7 @@ public :
 	//prints BatchStats files for each of up to five variables as determined by user input
 	std::fstream BatchStatsStream[ENDBatchStatsVariables];
 
-	std::vector<double> targetYearlyRolloutProportions;
+	std::unordered_map<int, double> targetYearlyRolloutProportions;
 
 	double interpolateMonthlyRolloutProportion()
 	{
@@ -255,7 +256,8 @@ public :
 			}
 			else
 			{
-				return targetYearlyRolloutProportions.back();
+				throw std::runtime_error("");
+				return targetYearlyRolloutProportions[2025];
 			}
 		}
 	}
