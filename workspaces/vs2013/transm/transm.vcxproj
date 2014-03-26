@@ -208,7 +208,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(boost_prefix);$(ticpp_prefix)/include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>TIXML_USE_TICPP;_CRT_SECURE_NO_WARNINGS;WIN32;WXUSINGDLL;wxMSVC_VERSION_AUTO;__WXMSW__;__WXDEBUG__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TIXML_USE_TICPP;_CRT_SECURE_NO_WARNINGS;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -402,6 +402,7 @@
     <ClInclude Include="..\..\..\source\statistics\StatsRecord.h" />
     <ClInclude Include="..\..\..\source\statistics\TabularOutput.h" />
     <ClInclude Include="..\..\..\source\statistics\TransmissionSummaryStats.h" />
+    <ClInclude Include="..\..\..\source\util\enum_iterator.h" />
     <ClInclude Include="..\..\..\source\util\rand\RandomNums.h" />
     <ClInclude Include="..\..\..\source\util\ticpp\ticpp.h" />
     <ClInclude Include="..\..\..\source\util\ticpp\ticpprc.h" />

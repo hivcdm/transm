@@ -7,9 +7,13 @@
 #include <cmath>
 #include <string>
 
-const std::vector<std::string> SexualPartnership::TypeEnumStrs = {"Steady", "Regular", "Casual", "CSW"};
-
-EnumCls<SexualPartnership::Type> SexualPartnership::TypeEnum(SexualPartnership::TypeEnumStrs);
+const std::map<SexualPartnership::Type, std::string> SexualPartnership::TypeStrings = 
+{
+	{SexualPartnership::Type::Steady, "Steady"},
+	{SexualPartnership::Type::Regular, "Regular"},
+	{SexualPartnership::Type::Casual, "Casual"},
+	{SexualPartnership::Type::Csw, "CSW"}
+};
 
 SexualPartnership::SexualPartnership()
 {
@@ -123,7 +127,7 @@ Person *SexualPartnership::monthlySexualActivity(EventParams &_eventParams, Infe
 
 void SexualPartnership::printPartners(ostream &_outStream, string _prefix)
 {
-	_outStream << _prefix << "Sexual Relationship(" << *(SexualPartnership::TypeEnum.toString(type)) << ")" << endl;
+	_outStream << _prefix << "Sexual Relationship(" << TypeStrings.at(type) << ")" << endl;
 	partners[0]->print(_outStream, Constants::TAB);
 	_outStream << endl;
 	partners[1]->print(_outStream, Constants::TAB);
@@ -133,7 +137,7 @@ void SexualPartnership::saveState(ostream &_outStream, int personID, long currTi
 {
 	//Saves the type of partnership, the id of partner, and months left in partnership
 	auto partnerID = static_cast<int>(partners[0]->getID()) == personID ? partners[1]->getID() : partners[0]->getID();
-	_outStream << "{type:" << type << ", partID:" << partnerID << ",tLeft:" << timePartnerDissolution - currTime << "}";
+	_outStream << "{type:" << (int)type << ", partID:" << partnerID << ",tLeft:" << timePartnerDissolution - currTime << "}";
 }
 SexualPartnership::~SexualPartnership()
 {

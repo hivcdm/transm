@@ -12,44 +12,20 @@ Female::SubPopParams::SubPopParams()
 {
 }
 
-Female::SubPopParams::SubPopParams(ticpp::Element *_femaleParams, EventParams &_eventParams)
-{
-	loadParamsXML(_femaleParams, _eventParams);
-}
-
-
-int Female::SubPopParams::loadParamsXML(ticpp::Element *_femaleParams, EventParams &/*_eventParams*/)
+Female::SubPopParams::SubPopParams(const PopulationSettings::FemaleSettings &settings, EventParams &_eventParams)
 {
 	try
 	{
-		//get behavioral params
-		ticpp::Element *behaviorElem = _femaleParams->FirstChildElement("behavior");
-		chanceBecomeCSW = behaviorElem->FirstChildElement("chanceBecomeSexWorker")->GetText<double>();
-		proportionHighRisk[DmgProfile::CSW] = behaviorElem->FirstChildElement("proportionHighRiskCSW")->GetText<double>();
-		proportionHighRisk[DmgProfile::NON_CSW] =
-		    behaviorElem->FirstChildElement("proportionHighRiskNonCSW")->GetText<double>();
-		XMLUtil::getDistFromXMLNode(behaviorElem->FirstChildElement("activityLevel"), activityLevel);
-		//get the health params
-		ticpp::Element *healthElem = _femaleParams->FirstChildElement("health");
-		ticpp::Element *transmitCoeffElem = healthElem->FirstChildElement("transmissionCoefficients");
-		//get the transmission coefficients
-		transmitPerEventCoeffs.clear();
-		XMLUtil::getTabDelimitedNode(transmitCoeffElem->FirstChildElement("valsByHVL"),
-		                             transmitPerEventCoeffs);
-		transmitPerEventCoeffs.push_back(transmitCoeffElem->FirstChildElement("primary")->GetText<double>());
-		transmitPerEventCoeffs.push_back(transmitCoeffElem->FirstChildElement("lateStage")->GetText<double>());
+		chanceBecomeCSW = settings.chance_become_sex_worker;
+		proportionHighRisk[DmgProfile::CSW] = settings.proportion_high_risk_csw;
+		proportionHighRisk[DmgProfile::NON_CSW] = settings.proportion_high_risk_non_csw;
+		activityLevel = settings.activity_level;
+		transmitPerEventCoeffs.assign(settings.transmission_coefficients.begin(), settings.transmission_coefficients.end());
 	}
 	catch(ticpp::Exception &_e)
 	{
-		cout << "Female: Exception raised: " << _e.m_details << endl;
-		Util::exitWithPrompt(-1);
+		throw std::runtime_error("Female: Exception raised: " + _e.m_details);
 	}
-
-	return 0;
-}
-int Female::SubPopParams::reloadParamsXML(ticpp::Element *_femaleParams, EventParams &_eventParams) throw()
-{
-	return loadParamsXML(_femaleParams, _eventParams);
 }
 
 double Female::SubPopParams::getChanceBecomeCSW() const
@@ -80,18 +56,12 @@ Female::SubPopParams *Female::getPopParams(unsigned int _populationID)
 	assert(_populationID < Female::populationSpecificParams.size());
 	return Female::populationSpecificParams.at(_populationID);
 }
-void Female::addPopParams(unsigned int _populationID, ticpp::Element *_femaleParams, EventParams &_eventParams)
+void Female::addPopParams(unsigned int _populationID, const PopulationSettings::FemaleSettings &settings, EventParams &_eventParams)
 {
 	assert(_populationID == Female::populationSpecificParams.size());
-	Female::SubPopParams *subPopParams = new Female::SubPopParams(_femaleParams, _eventParams);
+	Female::SubPopParams *subPopParams = new Female::SubPopParams(settings, _eventParams);
 	Female::populationSpecificParams.push_back(subPopParams);
 }
-void Female::updatePopParams(unsigned int _populationID, ticpp::Element *_femaleParams, EventParams &_eventParams)
-{
-	assert(_populationID == Female::populationSpecificParams.size() - 1);
-	Female::populationSpecificParams.at(_populationID)->reloadParamsXML(_femaleParams, _eventParams);
-}
-
 
 Female::Female(EventParams &_eventParams, int _ageMths, unsigned int _populationID)
 	: Person(_eventParams, _ageMths, _populationID)

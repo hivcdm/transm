@@ -22,6 +22,8 @@ Simulation::Simulation(const Inputs &inputs, MessageCallback message_callback)
 	  population_(nullptr),
 	  inputs_(inputs)
 {
+	parameters_.messageCallback = message_callback;
+
 	parameters_.simName = inputs_.GetRunName();
 	parameters_.displayOut("Sim name is " + parameters_.simName + "\n");
 
@@ -219,7 +221,7 @@ Simulation::Simulation(const Inputs &inputs, MessageCallback message_callback)
 	//create a population
 	// maybe someday we can have multiple interacting populations
 	//  in that case, we'll have to change the PopulationParams to not put the values in the static Male, Female, and SteadyCouple fields
-	population_ = new Population(parameters_, inputs_.GetPopulationSettings(), duration_);
+	population_ = new Population(parameters_, inputs_, duration_);
 
 	if(parameters_.monthOf1990 > 0 && parameters_.outputTrace[EventParams::TraceFileType::ShiftedOutcomes])
 	{
@@ -301,11 +303,6 @@ void Simulation::FirstStep()
 
 void Simulation::Step()
 {
-	if(time_ == 0)
-	{
-		FirstStep();
-	}
-
 	time_++;
 
 	double begin = timer_.GetTime();
@@ -403,11 +400,6 @@ void Simulation::Step()
 	parameters_.displayOut(". size = ");
 	parameters_.displayOut(boost::lexical_cast<std::string>(totalSize).c_str());
 	parameters_.displayOut("\n");
-
-	if(time_ == duration_)
-	{
-		LastStep();
-	}
 }
 
 void Simulation::LastStep()
@@ -687,7 +679,7 @@ void Simulation::UpdateTimeDependentParameters()
 	{
 		auto key = template_key_pair.first;
 		auto parameter_type = template_key_pair.second;
-		auto parameter = inputs_.GetTimeDependentParameters()[parameter_type];
+		auto parameter = inputs_.GetTimeDependentParameters().at(parameter_type);
 
 		if(parameter.time == parameters_.currTime)
 		{
@@ -826,46 +818,77 @@ void Simulation::UpdateTimeDependentParameters()
 			case TemplateParameter::HVLRank:
 				parameters_.rolloutEligibility.hvlRank = std::stoi(parameter.value);
 				checkRanks = true;
+				break;
 			case TemplateParameter::HVLHVLUpp:
 				parameters_.rolloutEligibility.hvlBounds[1] = std::stoi(parameter.value);
+				break;
 			case TemplateParameter::HVLHVLLwr:
 				parameters_.rolloutEligibility.hvlBounds[0] = std::stoi(parameter.value);
+				break;
 			case TemplateParameter::CD4HVLRank:
 				parameters_.rolloutEligibility.cd4HvlRank = std::stoi(parameter.value);
 				checkRanks = true;
+				break;
 			case TemplateParameter::CD4HVLCD4Upp:
 				parameters_.rolloutEligibility.cd4HvlCd4Bounds[1] = std::stoi(parameter.value);
+				break;
 			case TemplateParameter::CD4HVLCD4Lwr:
 				parameters_.rolloutEligibility.cd4HvlCd4Bounds[0] = std::stoi(parameter.value);
+				break;
 			case TemplateParameter::CD4HVLHVLUpp:
 				parameters_.rolloutEligibility.cd4HvlHvlBounds[1] = std::stoi(parameter.value);
+				break;
 			case TemplateParameter::CD4HVLHVLLwr:
 				parameters_.rolloutEligibility.cd4HvlHvlBounds[0] = std::stoi(parameter.value);
+				break;
 			case TemplateParameter::SteadyChanceCondomUsePerEventHighRisk:
+			{
 				auto beta = ParseBeta(parameter.value);
 				population_->popWideParams.setChanceCondomUsePerEvent(Person::HIGH, SexualPartnership::Type::Steady, beta);
+				break;
+			}
 			case TemplateParameter::SteadyChanceCondomUsePerEventLowRisk:
+			{
 				auto beta = ParseBeta(parameter.value);
 				population_->popWideParams.setChanceCondomUsePerEvent(Person::LOW, SexualPartnership::Type::Steady, beta);
+				break;
+			}
 			case TemplateParameter::RegularChanceCondomUsePerEventHighRisk:
+			{
 				auto beta = ParseBeta(parameter.value);
 				population_->popWideParams.setChanceCondomUsePerEvent(Person::HIGH, SexualPartnership::Type::Regular, beta);
+				break;
+			}
 			case TemplateParameter::RegularChanceCondomUsePerEventLowRisk:
+			{
 				auto beta = ParseBeta(parameter.value);
 				population_->popWideParams.setChanceCondomUsePerEvent(Person::LOW, SexualPartnership::Type::Regular, beta);
+				break;
+			}
 			case TemplateParameter::CasualChanceCondomUsePerEventHighRisk:
+			{
 				auto beta = ParseBeta(parameter.value);
 				population_->popWideParams.setChanceCondomUsePerEvent(Person::HIGH, SexualPartnership::Type::Casual, beta);
+				break;
+			}
 			case TemplateParameter::CasualChanceCondomUsePerEventLowRisk:
+			{
 				auto beta = ParseBeta(parameter.value);
 				population_->popWideParams.setChanceCondomUsePerEvent(Person::LOW, SexualPartnership::Type::Casual, beta);
+				break;
+			}
 			case TemplateParameter::CswChanceCondomUsePerEventHighRisk:
+			{
 				auto beta = ParseBeta(parameter.value);
 				population_->popWideParams.setChanceCondomUsePerEvent(Person::HIGH, SexualPartnership::Type::Csw, beta);
+				break;
+			}
 			case TemplateParameter::CswChanceCondomUsePerEventLowRisk:
+			{
 				auto beta = ParseBeta(parameter.value);
 				population_->popWideParams.setChanceCondomUsePerEvent(Person::LOW, SexualPartnership::Type::Csw, beta);
 				break;
+			}
 			default:
 				throw std::runtime_error("not implemented");
 			}
@@ -1013,4 +1036,21 @@ PopStats *Simulation::GetPopStats()
 EventParams *Simulation::GetEventParams()
 {
 	return &parameters_;
+}
+
+Outputs Simulation::Run()
+{
+	if(time_ == 0)
+	{
+		FirstStep();
+	}
+
+	while(time_ < duration_)
+	{
+		Step();
+	}
+
+	LastStep();
+
+	return outputs_;
 }

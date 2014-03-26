@@ -39,12 +39,12 @@ public :
 		//RegularBisexual,
 		//CasualBisexual,
 		//CswBisexual
-		ENDType
+		ENDType,
+		Last = ENDType,
+		First = Steady
 	};
-	static EnumCls<Type> TypeEnum;
-
-	//contains the string representations of
-	static const std::vector<std::string> TypeEnumStrs;
+	
+	static const std::map<Type, std::string> TypeStrings;
 
 protected :
 

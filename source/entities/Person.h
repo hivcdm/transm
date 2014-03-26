@@ -155,21 +155,21 @@ protected:
 
 	//Person's relational state
 	//contains all current partnerships including CSW and Casual
-	list<SexualPartnership *> partners[SexualPartnership::Type::ENDType];
+	list<SexualPartnership *> partners[(int)SexualPartnership::Type::ENDType];
 
 	//array of number of partners over persons history stratified by partnership type
-	int numPartnersInHistory[SexualPartnership::Type::ENDType];
+	int numPartnersInHistory[(int)SexualPartnership::Type::ENDType];
 
 	//array of month of their farthest current partnership dissolution time for each partnership type.  initialized to zero
-	int monthOfLatestPartnershipDissolution[SexualPartnership::Type::ENDType];
+	int monthOfLatestPartnershipDissolution[(int)SexualPartnership::Type::ENDType];
 
 	//array of month of latest concurrent relationship for each partnership type. Only updated for 12 months before calibration
 	int monthOfLatestConcurrent;
 
 	// Contains the number of partnerships the person tried to form over time, but didn't
 	// (usually due to no partners available or re-hooking up with a current partner)
-	int unformedPartnershipsTotal[SexualPartnership::Type::ENDType];
-	int unformedPartnershipsLatestTime[SexualPartnership::Type::ENDType];
+	int unformedPartnershipsTotal[(int)SexualPartnership::Type::ENDType];
+	int unformedPartnershipsLatestTime[(int)SexualPartnership::Type::ENDType];
 
 
 

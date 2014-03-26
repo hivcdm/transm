@@ -5,6 +5,7 @@
 #include "behaviors/SexualBehaviorParams.h"
 #include "entitypool/EntityPool.h"
 #include "../util/Util.h"
+#include "../util/enum_iterator.h"
 #include "../util/XMLUtil.h"
 #include "../util/rand/RandomNums.h"
 
@@ -25,34 +26,32 @@ Male::SubPopParams::SubPopParams(const PopulationSettings::MaleSettings &setting
 		partnerAcqMultWithSteady[Person::LOW] = settings.partner_acquisition_multiplier_with_steady_low;
 
 		//Coefficient of Variation
-		_eventParams.useCoefficientVariation = settings.heterogeneity_var_method;
+		_eventParams.useCoefficientVariation = settings.use_coefficient_variation;
 		_eventParams.coefficientOfVariation = settings.coefficient_of_variation;
 
 		//iterate through each Person in partnershipTypes
-		ticpp::Iterator<ticpp::Element> partnershipTypesIter;
-		string partnershipType;
 		sexualBehaviorParams.clear();
 
-		for(partnershipTypesIter = behaviorElem->FirstChildElement("partnershipTypes")->FirstChildElement("partnership");
-		        partnershipTypesIter != partnershipTypesIter.end(); partnershipTypesIter++)
+		for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
 		{
-			SexualBehaviorParams *currPartnershipParams = new SexualBehaviorParams(partnershipTypesIter->ToElement(), _eventParams,
-			        useMultiplierForHighRiskAcqRates, highRiskAcqRateMultiplier, useMultiplierForHighRiskCSW, highRiskAcqRateMultiplierCSW);
-			sexualBehaviorParams.push_back(currPartnershipParams);
-		} //end for partnershipTypesIter
+			auto params = new SexualBehaviorParams(settings, partnership_type, _eventParams);
+			sexualBehaviorParams.push_back(params);
+		}
 
-		proportionHighRisk[DmgProfile::CSW] = behaviorElem->FirstChildElement("proportionHighRiskCSW")->GetText<double>();
-		proportionHighRisk[DmgProfile::NON_CSW] =
-		    behaviorElem->FirstChildElement("proportionHighRiskNonCSW")->GetText<double>();
-		XMLUtil::getDistFromXMLNode(behaviorElem->FirstChildElement("activityLevel"), activityLevel);
+		proportionHighRisk[DmgProfile::CSW] = settings.proportion_high_risk_csw;
+		proportionHighRisk[DmgProfile::NON_CSW] = settings.proportion_high_risk_non_csw;
+
+		activityLevel = settings.activity_level;
+
 		//saves partner acq rate and acts discounting
-		ticpp::Element *discounting = behaviorElem->FirstChildElement("ageDiscounting");
-		partneringDiscStartAgeYrs = discounting->FirstChildElement("startAgeYrs")->GetText<int>();
-		partneringAcqDiscPerYr = discounting->FirstChildElement("acquisitionDiscByYr")->GetText<double>();
-		partneringActsDiscPerYr = discounting->FirstChildElement("coitalActsDiscByYr")->GetText<double>();
+		partneringDiscStartAgeYrs = settings.age_discounting_start_age;
+		partneringAcqDiscPerYr = settings.acquisition_rate_discounting_yearly;
+		partneringActsDiscPerYr = settings.coital_acts_discounting_yearly;
+
 		int numMults = Person::maxYrForDeathStats - partneringDiscStartAgeYrs + 1;
 		double acqMult = 1 - partneringAcqDiscPerYr;
 		double actsMult = 1 - partneringActsDiscPerYr;
+
 		//generate vectors that contain discount multipliers. will cover from [partneringDiscStartAgeYrs,Person::maxYrForDeathStats]
 		partneringAcqDiscMult.clear();
 		partneringActsDiscMult.clear();
@@ -71,8 +70,7 @@ Male::SubPopParams::SubPopParams(const PopulationSettings::MaleSettings &setting
 	}
 	catch(ticpp::Exception &_e)
 	{
-		cout << "Male: Exception raised: " << _e.m_details << endl;
-		Util::exitWithPrompt(-1);
+		throw std::runtime_error("Male: Exception raised: " + _e.m_details);
 	}
 }
 
@@ -194,20 +192,22 @@ Male::Male(EventParams &_eventParams, int _age, bool _circumcised, unsigned int 
 	circumcised = _circumcised;
 	//Set this male's risk level assume everyone is low risk on creation. Risk is rerolled when they roll for become sex worker
 	risk = Person::LOW;
-	//determining partnering and sexual behavior for this male.
-	EnumCls<SexualPartnership::Type>::Enum partneringType = SexualPartnership::TypeEnum.getMin();
-	EnumCls<SexualPartnership::Type>::Enum lastPartneringType = SexualPartnership::TypeEnum.getMax();
 
-	while(partneringType <= lastPartneringType)
+	for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
 	{
-		const SexualBehaviorParams *sexualBehaviorParams = maleSubPopParams->getSexualBehaviorParams(partneringType);
-		partnerAcqRates[partneringType] = _eventParams.randomNums.randLogNormal(
-		        sexualBehaviorParams->getAcquisitionRatePerMonth(risk));
-		numActsPerMonth[partneringType] = sexualBehaviorParams->getCoitalEventsPerMonth(risk);
-		chanceCondomUsePerEvent[partneringType] = _eventParams.randomNums.randBeta(
-		            sexualBehaviorParams->getChanceCondomUsePerEvent(risk));
-		averageYearsYounger[partneringType] = sexualBehaviorParams->getAverageYearsYounger();
-		partneringType = EnumCls<SexualPartnership::Type>::Enum(partneringType + 1);
+		auto &sexualBehaviorParams = *maleSubPopParams->getSexualBehaviorParams(partnership_type);
+
+		auto acquisition_rate_dist = sexualBehaviorParams.getAcquisitionRatePerMonth(risk);
+		auto acquisition_rate = _eventParams.randomNums.randLogNormal(acquisition_rate_dist);
+		partnerAcqRates[(int)partnership_type] = acquisition_rate;
+			
+		numActsPerMonth[(int)partnership_type] = sexualBehaviorParams.getCoitalEventsPerMonth(risk);
+
+		auto chance_condom_use_dist = sexualBehaviorParams.getChanceCondomUsePerEvent(risk);
+		auto chance_condom_use = _eventParams.randomNums.randBeta(chance_condom_use_dist);
+		chanceCondomUsePerEvent[(int)partnership_type] = chance_condom_use;
+
+		averageYearsYounger[(int)partnership_type] = sexualBehaviorParams.getAverageYearsYounger();
 	}
 
 	activityLevel = _eventParams.randomNums.randNorm_NaturalNum(maleSubPopParams->getActivityLevel());
@@ -233,7 +233,7 @@ double Male::getCondomUseProb(Person *_p, SexualPartnership::Type _partnershipTy
 	assert((_p != nullptr));
 	assert(_p->isAlive());
 	assert(_partnershipType < SexualPartnership::Type::ENDType);
-	return chanceCondomUsePerEvent[_partnershipType];
+	return chanceCondomUsePerEvent[(int)_partnershipType];
 }
 
 double Male::getCircumProtectEff()
@@ -304,9 +304,9 @@ double Male::getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartne
 	{
 	case Person::AGE:
 	{
-		if(getAge(MONTH) - (12 * averageYearsYounger[_partnershipType].mean + 6) > 0)
+		if(getAge(MONTH) - (12 * averageYearsYounger[(int)_partnershipType].mean + 6) > 0)
 		{
-			return getAge(MONTH) - (12 * averageYearsYounger[_partnershipType].mean + 6);
+			return getAge(MONTH) - (12 * averageYearsYounger[(int)_partnershipType].mean + 6);
 			break;
 		}
 		else
@@ -331,9 +331,9 @@ double Male::getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartne
 	{
 	case Person::AGE:
 	{
-		if(getAge(MONTH) - (12 * averageYearsYounger[_partnershipType].mean - 6) > 0)
+		if(getAge(MONTH) - (12 * averageYearsYounger[(int)_partnershipType].mean - 6) > 0)
 		{
-			return getAge(MONTH) - (12 * averageYearsYounger[_partnershipType].mean - 6);
+			return getAge(MONTH) - (12 * averageYearsYounger[(int)_partnershipType].mean - 6);
 			break;
 		}
 		else
@@ -354,7 +354,7 @@ double Male::getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartne
 
 double Male::rollForAgeDifference(SexualPartnership::Type _partnershipType, RandomNums &_randomNums)
 {
-	double ageDifference = _randomNums.randNorm(averageYearsYounger[_partnershipType]);
+	double ageDifference = _randomNums.randNorm(averageYearsYounger[(int)_partnershipType]);
 	return ageDifference;
 }
 
@@ -381,7 +381,7 @@ int Male::rollForNumPartners(RandomNums &_randomNums, SexualPartnership::Type _p
 	assert(_partnershipType < SexualPartnership::Type::ENDType);
 
 	//person can only have 1 steady partner at a time so return 0 if person is already in Steady
-	if((_partnershipType == SexualPartnership::Type::Steady) && (!partners[_partnershipType].empty()))
+	if((_partnershipType == SexualPartnership::Type::Steady) && (!partners[(int)_partnershipType].empty()))
 	{
 		return 0;
 	}
@@ -390,10 +390,10 @@ int Male::rollForNumPartners(RandomNums &_randomNums, SexualPartnership::Type _p
 	const Male::SubPopParams *subPopParams = getPopParams(populationID);
 	//rate of acquiring partner
 	double partnerRate;
-	partnerRate = partnerAcqRates[_partnershipType];
+	partnerRate = partnerAcqRates[(int)_partnershipType];
 
 	//if this person has a steady partner then adjust acquisition rate
-	if(!partners[SexualPartnership::Type::Steady].empty())
+	if(!partners[(int)SexualPartnership::Type::Steady].empty())
 	{
 		//if we're thinking of getting another partner, then lower chances if we have a steady partner
 		partnerRate *= subPopParams->getPartnerAcqMultWithSteady(getRiskLevel());
@@ -417,8 +417,8 @@ int Male::rollNumEventsPerPartner(Person *_p, RandomNums &_randomNums, SexualPar
 {
 	assert((_p != nullptr));
 	assert(_p->isAlive());
-	assert(_partnershipType < SexualPartnership::Type::ENDType);
-	double meanCoitalEvents = numActsPerMonth[_partnershipType];
+
+	double meanCoitalEvents = numActsPerMonth[(int)_partnershipType];
 	const Male::SubPopParams *subPopParams = getPopParams(populationID);
 	//if person is over the age of partnering discounting, then discount #acts
 	int ageYrs = getAge(YEAR);
@@ -468,19 +468,19 @@ void Male::rerollRiskGroup(EventParams &_eventParams)
 	if(oldRisk != risk)
 	{
 		const Male::SubPopParams *maleSubPopParams = getPopParams(populationID);
-		//determining partnering and sexual behavior for this male.
-		EnumCls<SexualPartnership::Type>::Enum partneringType = SexualPartnership::TypeEnum.getMin();
-		EnumCls<SexualPartnership::Type>::Enum lastPartneringType = SexualPartnership::TypeEnum.getMax();
 
-		while(partneringType <= lastPartneringType)
+		for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
 		{
-			const SexualBehaviorParams *sexualBehaviorParams = maleSubPopParams->getSexualBehaviorParams(partneringType);
-			partnerAcqRates[partneringType] = _eventParams.randomNums.randLogNormal(
-			        sexualBehaviorParams->getAcquisitionRatePerMonth(risk));
-			numActsPerMonth[partneringType] = sexualBehaviorParams->getCoitalEventsPerMonth(risk);
-			chanceCondomUsePerEvent[partneringType] = _eventParams.randomNums.randBeta(
-			            sexualBehaviorParams->getChanceCondomUsePerEvent(risk));
-			partneringType = EnumCls<SexualPartnership::Type>::Enum(partneringType + 1);
+			const SexualBehaviorParams *sexualBehaviorParams = 
+				maleSubPopParams->getSexualBehaviorParams(partnership_type);
+			auto acquisition_rate = sexualBehaviorParams->getAcquisitionRatePerMonth(risk);
+			partnerAcqRates[(int)partnership_type] = 
+				_eventParams.randomNums.randLogNormal(acquisition_rate);
+			numActsPerMonth[(int)partnership_type] = 
+				sexualBehaviorParams->getCoitalEventsPerMonth(risk);
+			auto chance_condom_use = sexualBehaviorParams->getChanceCondomUsePerEvent(risk);
+			chanceCondomUsePerEvent[(int)partnership_type] = 
+				_eventParams.randomNums.randBeta(chance_condom_use);
 		}
 	}
 
@@ -510,7 +510,7 @@ void Male::saveState(ostream &_outStream, long currTime)
 	bool firstInSequence = true;
 	_outStream << "partAcqR:[";
 
-	for(int i = 0; i < SexualPartnership::Type::ENDType; i++)
+	for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
 	{
 		if(!firstInSequence)
 		{
@@ -518,7 +518,7 @@ void Male::saveState(ostream &_outStream, long currTime)
 		}
 
 		firstInSequence = false;
-		_outStream << partnerAcqRates[i];
+		_outStream << partnerAcqRates[(int)partnership_type];
 	}
 
 	_outStream << "]," << endl;
@@ -526,7 +526,7 @@ void Male::saveState(ostream &_outStream, long currTime)
 	firstInSequence = true;
 	_outStream << "actsPerMth:[";
 
-	for(int i = 0; i < SexualPartnership::Type::ENDType; i++)
+	for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
 	{
 		if(!firstInSequence)
 		{
@@ -534,7 +534,7 @@ void Male::saveState(ostream &_outStream, long currTime)
 		}
 
 		firstInSequence = false;
-		_outStream << numActsPerMonth[i];
+		_outStream << numActsPerMonth[(int)partnership_type];
 	}
 
 	_outStream << "]," << endl;
@@ -542,7 +542,7 @@ void Male::saveState(ostream &_outStream, long currTime)
 	firstInSequence = true;
 	_outStream << "probCndm:[";
 
-	for(int i = 0; i < SexualPartnership::Type::ENDType; i++)
+	for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
 	{
 		if(!firstInSequence)
 		{
@@ -550,7 +550,7 @@ void Male::saveState(ostream &_outStream, long currTime)
 		}
 
 		firstInSequence = false;
-		_outStream << chanceCondomUsePerEvent[i];
+		_outStream << chanceCondomUsePerEvent[(int)partnership_type];
 	}
 
 	_outStream << "]";

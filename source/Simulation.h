@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Inputs.h"
 #include "Outputs.h"
 #include "data/EventParams.h"
 #include "statistics/PopStats.h"
@@ -7,7 +8,6 @@
 #include "util/ticpp/ticpp.h"
 
 class InfectionsTracker;
-class Inputs;
 class Population;
 
 class Simulation
@@ -46,10 +46,10 @@ private:
 	void Step();
 
 	/** Returns true if all simContexts loaded correctly */
-	bool LoadCepacSimContexts(const std::array<Interventions::TreatmentFile, 5> &treatment_files);
+	bool LoadCepacSimContexts(const Interventions::CepacTreatmentFiles &treatment_files);
 
 	/** */
-	bool LoadRolloutSimContexts(const std::array<Interventions::TreatmentFile, 13> &treatment_files);
+	bool LoadRolloutSimContexts(const Interventions::RolloutTreatmentFiles &treatment_files);
 
 	/** Sets the Non aids death from a cepac simcontext */
 	void SetNonAidsDeathFromCepac(SimContext &context, std::vector<double> &male, std::vector<double> &female);
@@ -91,5 +91,7 @@ private:
 	double prevalence_;
 
 	HighResolutionTimer timer_;
+
+	Outputs outputs_;
 };
 

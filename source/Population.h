@@ -254,10 +254,10 @@ private:
 	/** stores eligible receivers Buckets for each type of partnership -- use BucketSexualMixing,
 	//not DmgProfileBucket because all persons participating in partnerships are sexually
 	//active by definition */
-	std::vector<BucketSexualMixing *> potentialPartnerBuckets[SexualPartnership::Type::ENDType];
+	std::vector<BucketSexualMixing *> potentialPartnerBuckets[(int)SexualPartnership::Type::ENDType];
 	/** stores weights of each eligible bucket. we keep this as a separate vector so we can
 	//  use pre-existing normalization and random index chooser functions. */
-	std::vector<double> eligibleBucketWeights[SexualPartnership::Type::ENDType];
+	std::vector<double> eligibleBucketWeights[(int)SexualPartnership::Type::ENDType];
 
 	std::vector<std::vector<Person *>> rankedForTreatment;
 

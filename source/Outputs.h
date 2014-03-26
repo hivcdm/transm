@@ -3,5 +3,5 @@
 class Outputs
 {
 public:
-	Outputs();
+	Outputs() {}
 };

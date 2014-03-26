@@ -233,7 +233,7 @@ public :
 	//prints BatchStats files for each of up to five variables as determined by user input
 	std::fstream BatchStatsStream[ENDBatchStatsVariables];
 
-	std::unordered_map<int, double> targetYearlyRolloutProportions;
+	std::map<int, double> targetYearlyRolloutProportions;
 
 	double interpolateMonthlyRolloutProportion()
 	{

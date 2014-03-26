@@ -7,20 +7,8 @@
 #include "entities/Person.h"
 #include "entities/classifiers/SexualPartnership.h"
 #include "util/Util.h"
+#include "util/rand/RandomNums.h"
 #include "util/ticpp/ticpp.h"
-
-struct Distribution
-{
-	enum class DistributionType
-	{
-		Poission,
-		Normal,
-		ShiftedLogNormal
-	} Type;
-	double mu;
-	double sigma;
-	double c;
-};
 
 struct TraceFile
 {
@@ -106,40 +94,40 @@ struct PopulationSettings
 	double birth_rate;
 	double proportion_male;
 	double proportion_circumcised;
-	double age_sexual_debut;
+	int age_sexual_debut;
 	struct MaleSettings
 	{
 		double chance_become_sex_worker;
 		double partner_acquisition_multiplier_with_steady_high;
 		double partner_acquisition_multiplier_with_steady_low;
 		bool enable_high_risk_multiplier;
-		double high_risk_acquisition_rate_multiplier;
-		bool enable_csw_high_risk_acquisition_rate_multiplier;
-		double csw_high_risk_acquisition_rate_multiplier;
-		int heterogeneity_var_method;
-		int coefficient_of_variation;
+		double high_risk_multiplier;
+		bool enable_csw_high_risk_multiplier;
+		double csw_high_risk_multiplier;
+		bool use_coefficient_variation;
+		double coefficient_of_variation;
 		struct PartnershipSettings
 		{
 			SexualPartnership::Type type;
 			double assortativeness;
-			Distribution acquisition_rate_high_risk;
-			Distribution acquisition_rate_low_risk;
+			LogNormalDist acquisition_rate_high_risk;
+			LogNormalDist acquisition_rate_low_risk;
 			std::unordered_map<std::string, double> available_buckets;
-			Distribution average_years_younger;
-			Distribution coital_events_per_month_high_risk;
-			Distribution chance_condom_user_per_event_high_risk;
-			Distribution partnership_duration_months_high_risk;
-			Distribution coital_events_per_month_low_risk;
-			Distribution chance_condom_user_per_event_low_risk;
-			Distribution partnership_duration_months_low_risk;
-			Distribution activity_level;
-			double proportion_high_risk_csw;
-			double proportion_high_risk_non_csw;
-			int age_discounting_start_age;
-			double acquisition_rate_discounting_yearly;
-			double coital_acts_discounting_yearly;
+			NormalDist average_years_younger;
+			double coital_events_per_month_high_risk;
+			BetaDist chance_condom_user_per_event_high_risk;
+			ShiftedLogNormalDist partnership_duration_months_high_risk;
+			double coital_events_per_month_low_risk;
+			BetaDist chance_condom_user_per_event_low_risk;
+			ShiftedLogNormalDist partnership_duration_months_low_risk;
 		};
 		std::unordered_map<SexualPartnership::Type, PartnershipSettings> partnership_settings;
+		NormalDist activity_level;
+		double proportion_high_risk_csw;
+		double proportion_high_risk_non_csw;
+		int age_discounting_start_age;
+		double acquisition_rate_discounting_yearly;
+		double coital_acts_discounting_yearly;
 		double circumcision_protection_efficacy;
 		double condom_protection_efficacy;
 		std::array<double, Person::ENDHVLStrata> transmission_coefficients;
@@ -150,7 +138,7 @@ struct PopulationSettings
 		double chance_become_sex_worker;
 		double proportion_high_risk_csw;
 		double proportion_high_risk_non_csw;
-		Distribution activity_level;
+		NormalDist activity_level;
 		std::array<double, Person::ENDHVLStrata> transmission_coefficients;
 	};
 	FemaleSettings female_settings;
@@ -215,7 +203,7 @@ struct Interventions
 		} cd4_hvl_criteria;
 	} rollout_eligibility;
 
-	std::unordered_map<int, double> target_rollout_proportions;
+	std::map<int, double> target_rollout_proportions;
 };
 
 template<typename T>
@@ -330,17 +318,17 @@ public:
 	int GetNumberNewbornsToTrace() const { return number_newborns_to_trace_; }
 	int GetMonthTraceNewborns() const { return month_trace_newborns_; }
 	bool GetTracePrevalentCases() const { return trace_prevalent_cases_; }
-	std::vector<int> GetLifeExpectancyRecordTimes() const { return life_expectancy_record_times_; }
+	const std::vector<int> &GetLifeExpectancyRecordTimes() const { return life_expectancy_record_times_; }
 	double GetLifeExpectancyMedianConfidenceInterval() const { return life_expectancy_median_condfidence_interval_; }
-	std::vector<int> GetPartnerAcquisitionRecordTimes() const { return partner_acquisition_record_times_; }
-	ConcurrencyDefinitions GetConcurrencyDefinitions() const { return concurrency_definitions_; }
-	std::unordered_map<TraceFile::Type, TraceFile> GetTraceFiles() const { return trace_files_; }
-	CalibrationSettings GetCalibrationSettings() const { return calibration_settings_; }
-	Costs GetCosts() const { return costs_; }
-	Interventions GetInterventions() const { return interventions_; }
-	PopulationSettings GetPopulationSettings() const { return population_settings_; }
-	std::unordered_map<std::string, TemplateParameter> GetTemplateKeyMap() const { return template_key_map_; }
-	std::unordered_map<TemplateParameter, TimeDependentParameter> GetTimeDependentParameters() const { return time_dependent_parameters_; }
+	const std::vector<int> &GetPartnerAcquisitionRecordTimes() const { return partner_acquisition_record_times_; }
+	const ConcurrencyDefinitions &GetConcurrencyDefinitions() const { return concurrency_definitions_; }
+	const std::unordered_map<TraceFile::Type, TraceFile> &GetTraceFiles() const { return trace_files_; }
+	const CalibrationSettings &GetCalibrationSettings() const { return calibration_settings_; }
+	const Costs &GetCosts() const { return costs_; }
+	const Interventions &GetInterventions() const { return interventions_; }
+	const PopulationSettings &GetPopulationSettings() const { return population_settings_; }
+	const std::unordered_map<std::string, TemplateParameter> &GetTemplateKeyMap() const { return template_key_map_; }
+	const std::unordered_map<TemplateParameter, TimeDependentParameter> &GetTimeDependentParameters() const { return time_dependent_parameters_; }
 
 private:
 	Inputs();
@@ -387,5 +375,6 @@ private:
 	Interventions interventions_;
 
 	std::unordered_map<std::string, TemplateParameter> template_key_map_;
+	std::vector<TimeDependentParameter> unmatched_parameters_;
 	std::unordered_map<TemplateParameter, TimeDependentParameter> time_dependent_parameters_;
 };

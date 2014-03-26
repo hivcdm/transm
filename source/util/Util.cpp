@@ -22,7 +22,7 @@ std::string Version::ToString(const Version &version)
 	return std::to_string(version.major) + "." + std::to_string(version.minor) + "." + std::to_string(version.patch);
 }
 
-const Version Util::MODEL_VERSION = {3, 4, 0};
+const Version Util::MODEL_VERSION = Version::FromString("3.4");
 
 double Util::dayToMonthMult = 1.0 / 30;
 double Util::dayToYearMult = 1.0 / 365;

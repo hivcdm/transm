@@ -35,20 +35,20 @@ protected:
 
 		double proportionOfPopulation[DmgProfile::ENDGender]; //determines size as proportion of the population
 		double chanceCSW[DmgProfile::ENDGender]; //determines chance of being csw on model initialization
-		double numInfectedCSW[DmgProfile::ENDGender];		//number of males and female csw in this bucket that are infected (at prevalence delay)
-		double numInfectedRisk[DmgProfile::ENDGender][Person::ENDRiskLevel]; //number of male and female non-csw in this bucket that are infected (at prevalence delay)
+		int numInfectedCSW[DmgProfile::ENDGender];		//number of males and female csw in this bucket that are infected (at prevalence delay)
+		int numInfectedRisk[DmgProfile::ENDGender][Person::ENDRiskLevel]; //number of male and female non-csw in this bucket that are infected (at prevalence delay)
 
 		inline AgeBucketPrevalenceInfo();
 
 		AgeBucketPrevalenceInfo(int _minAgeMth, int _maxAgeMth,
 		                        double _proportionOfPopulationMale,
 		                        double _proportionOfPopulationFemale,
-		                        double _numInfectedCSWMale,
-		                        double _numInfectedCSWFemale,
-		                        double _numInfectedNonCSWMalesLowRisk,
-		                        double _numInfectedNonCSWFemalesLowRisk,
-		                        double _numInfectedNonCSWMalesHighRisk,
-		                        double _numInfectedNonCSWFemalesHighRisk);
+								int _numInfectedCSWMale,
+								int _numInfectedCSWFemale,
+								int _numInfectedNonCSWMalesLowRisk,
+								int _numInfectedNonCSWFemalesLowRisk,
+								int _numInfectedNonCSWMalesHighRisk,
+								int _numInfectedNonCSWFemalesHighRisk);
 		void print(EventParams &_eventParams);
 		inline void copyToSelf(AgeBucketPrevalenceInfo _abpInfo);
 	};	
@@ -67,7 +67,7 @@ private:
 	double circumcised;
 	double hivInfected;
 
-	double assort[SexualPartnership::Type::ENDType]; //assortativeness parameter one for each partnership type
+	double assort[(int)SexualPartnership::Type::ENDType]; //assortativeness parameter one for each partnership type
 
 	unsigned int populationID;	//the ID of the population that these parameters correspond to
 
@@ -88,7 +88,7 @@ private:
 	Female::SubPopParams *femaleParams;
 	//this is a quick way to check whether a partnership is technically a fling or not
 	// right now, behavior for males is the only one that has been coded
-	bool partnershipsHaveDuration[DmgProfile::ENDGender][SexualPartnership::Type::ENDType];
+	bool partnershipsHaveDuration[DmgProfile::ENDGender][(int)SexualPartnership::Type::ENDType];
 
 	//Costs
 	double condomCost;

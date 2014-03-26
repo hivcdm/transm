@@ -11,12 +11,13 @@
 PopulationParams::AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(int _minAgeMth, int _maxAgeMth,
         double _proportionOfPopulationMale,
         double _proportionOfPopulationFemale,
-        double _numInfectedCSWMale,
-        double _numInfectedCSWFemale,
-        double _numInfectedNonCSWMalesLowRisk,
-        double _numInfectedNonCSWFemalesLowRisk,
-        double _numInfectedNonCSWMalesHighRisk,
-        double _numInfectedNonCSWFemalesHighRisk)
+        int _numInfectedCSWMale,
+		int _numInfectedCSWFemale,
+		int _numInfectedNonCSWMalesLowRisk,
+		int _numInfectedNonCSWFemalesLowRisk,
+		int _numInfectedNonCSWMalesHighRisk,
+		int _numInfectedNonCSWFemalesHighRisk)
+		: chanceCSW()
 {
 	assert((_minAgeMth >= 0) && (_maxAgeMth > 0) && (_maxAgeMth > _minAgeMth));
 	minAgeMth = _minAgeMth;
@@ -187,23 +188,20 @@ void PopulationParams::init(const Inputs &inputs, unsigned int _populationID, Ev
 
 		//dmgProfile parameters
 		birthRate = inputs.GetPopulationSettings().birth_rate;
-		XMLUtil::printParam("", "birthRate", birthRate, _eventParams);
 		proportionMale = inputs.GetPopulationSettings().proportion_male;
-		XMLUtil::printParam("", "proportionMale", proportionMale, _eventParams);
 		circumcised = inputs.GetPopulationSettings().proportion_circumcised;
-		XMLUtil::printParam("", "proportionCircumcised", circumcised, _eventParams);
-		SAEntAgeMths = inputs.GetPopulationSettings().age_sexual_debut;
-		XMLUtil::printParam("", "SAEntAge (month)", SAEntAgeMths, _eventParams);
+		SAEntAgeMths = Util::convertTime(YEAR, MONTH, inputs.GetPopulationSettings().age_sexual_debut);
+
 		//ASSORTATIVENESS GOES HERE
-		assort[SexualPartnership::Type::Steady] = inputs.GetPopulationSettings().male_settings.partnership_settings[SexualPartnership::Type::Steady].assortativeness;
-		assort[SexualPartnership::Type::Regular] = inputs.GetPopulationSettings().male_settings.partnership_settings[SexualPartnership::Type::Regular].assortativeness;
-		assort[SexualPartnership::Type::Casual] = inputs.GetPopulationSettings().male_settings.partnership_settings[SexualPartnership::Type::Casual].assortativeness;
-		assort[SexualPartnership::Type::Csw] = inputs.GetPopulationSettings().male_settings.partnership_settings[SexualPartnership::Type::Csw].assortativeness;
+		assort[(int)SexualPartnership::Type::Steady] = inputs.GetPopulationSettings().male_settings.partnership_settings.at(SexualPartnership::Type::Steady).assortativeness;
+		assort[(int)SexualPartnership::Type::Regular] = inputs.GetPopulationSettings().male_settings.partnership_settings.at(SexualPartnership::Type::Regular).assortativeness;
+		assort[(int)SexualPartnership::Type::Casual] = inputs.GetPopulationSettings().male_settings.partnership_settings.at(SexualPartnership::Type::Casual).assortativeness;
+		assort[(int)SexualPartnership::Type::Csw] = inputs.GetPopulationSettings().male_settings.partnership_settings.at(SexualPartnership::Type::Csw).assortativeness;
 
 		Male::addPopParams(populationID, inputs.GetPopulationSettings().male_settings, _eventParams);
 		maleParams = Male::getPopParams(populationID);
 
-		Female::addPopParams(populationID, entityTypesIter->ToElement(), _eventParams);
+		Female::addPopParams(populationID, inputs.GetPopulationSettings().female_settings, _eventParams);
 		femaleParams = Female::getPopParams(populationID);
 
 		//Get the initial marriage prevalence based on percent male high risk and rate and duration of steady relationships
@@ -242,11 +240,11 @@ void PopulationParams::init(const Inputs &inputs, unsigned int _populationID, Ev
 	}
 
 	//save flags to indicate whether particular partnership types have duration or not
-	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::Type::ENDType; ++type)
+	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
 	{
-		partnershipsHaveDuration[DmgProfile::MALE][type] = !(maleParams->getSexualBehaviorParams(
-			type)->getPartnershipDurationMth(Person::LOW).isZeroDistrib)
-			&& !(maleParams->getSexualBehaviorParams(type)->getPartnershipDurationMth(Person::HIGH).isZeroDistrib);
+		partnershipsHaveDuration[DmgProfile::MALE][type] = 
+			!(maleParams->getSexualBehaviorParams(SexualPartnership::Type(type))->getPartnershipDurationMth(Person::LOW).isZeroDistrib)
+			&& !(maleParams->getSexualBehaviorParams(SexualPartnership::Type(type))->getPartnershipDurationMth(Person::HIGH).isZeroDistrib);
 		partnershipsHaveDuration[DmgProfile::FEMALE][type] = false;
 	}
 

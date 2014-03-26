@@ -40,7 +40,7 @@ Population::Population(EventParams &_eventParams, const Inputs &inputs, long _ma
 		inputs.GetLifeExpectancyMedianConfidenceInterval(), inputs.GetPartnerAcquisitionRecordTimes());
 
 	//save population parameters
-	popWideParams.init(populationID, _eventParams);
+	popWideParams.init(inputs, populationID, _eventParams);
 	//create EntityPool - this will contain all Entities
 	entities = new EntityPool(popWideParams.SAEntAgeMths, populationID, popWideParams.assort);
 	//initialize infection trace generator print detailed info about certain ProfileID's
@@ -214,9 +214,9 @@ void Population::initPartnershipBuckets()
 	//men can form all types of partnerships
 	vector<SexualPartnership::Type> availPartnershipTypes;
 
-	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::Type::ENDType; ++type)
+	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
 	{
-		availPartnershipTypes.push_back(type);
+		availPartnershipTypes.push_back(SexualPartnership::Type(type));
 	}
 
 	//For each initiator demographic profile, store the fact that they can have any partner type
@@ -236,10 +236,10 @@ void Population::initPartnershipBuckets()
 	vector<DmgProfile::ProfileID> selectedIDs;
 
 	//iterate through all partnership types. the available Buckets are different by partnership
-	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::Type::ENDType; ++type)
+	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
 	{
 		//get the parameters for current relationship type
-		const SexualBehaviorParams *partneringParams = popWideParams.maleParams->getSexualBehaviorParams(type);
+		const SexualBehaviorParams *partneringParams = popWideParams.maleParams->getSexualBehaviorParams(SexualPartnership::Type(type));
 
 		//get available demographicProfiles that are available for this partnership
 		for(unsigned int j = 0; j < partneringParams->getNumAvailableBuckets(); ++j)
@@ -252,11 +252,11 @@ void Population::initPartnershipBuckets()
 			assert(Constants::TODO_DEF);		//eventually, we should change this.
 
 			//check to see whether we have a repeat Bucket.
-			for(size_t i = 0; i < potentialPartnerBuckets[type].size(); ++i)
+			for(size_t i = 0; i < potentialPartnerBuckets[(int)type].size(); ++i)
 			{
-				if(potentialPartnerBuckets[type].at(i)->getProfileID() == selectedIDs.at(0))
+				if(potentialPartnerBuckets[(int)type].at(i)->getProfileID() == selectedIDs.at(0))
 				{
-					cerr << "For available buckets for partnership type '" << *SexualPartnership::TypeEnum.toString(type);
+					cerr << "For available buckets for partnership type '" << SexualPartnership::TypeStrings.at(SexualPartnership::Type(type));
 					cerr << "', " << *DmgProfile::toString(selectedIDs.at(0)) <<
 					     " is listed multiple times either via repeat or wildcard overlaps";
 					Util::exitWithPrompt(-1);
@@ -273,13 +273,13 @@ void Population::initPartnershipBuckets()
 			}
 			else
 			{
-				potentialPartnerBuckets[type].push_back(bucket);
-				eligibleBucketWeights[type].push_back(partneringParams->getAvailableBucket(j).weight);
+				potentialPartnerBuckets[(int)type].push_back(bucket);
+				eligibleBucketWeights[(int)type].push_back(partneringParams->getAvailableBucket(j).weight);
 			}
 		}
 
 		//make sure that the weights sum to 1
-		Util::normalize(eligibleBucketWeights[type]);
+		Util::normalize(eligibleBucketWeights[(int)type]);
 	} //for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::Type::ENDType; ++type) {
 }
 
@@ -595,13 +595,13 @@ We hopefully only iterate through each initiator once.
 void Population::updatePartnerships(EventParams &_eventParams)
 {
 	//holds the tallies for any New partnerships that were made and ended this month
-	int newPartnershipCount[SexualPartnership::Type::ENDType];
+	int newPartnershipCount[(int)SexualPartnership::Type::ENDType];
 	//Number of attemptedPartnerships may be higher than the actual partnerships formed if there weren't enough females/males tried to repartner with current partners
-	int attemptedPartnershipCount[SexualPartnership::Type::ENDType];
-	int	endedPartnershipCount[SexualPartnership::Type::ENDType];
+	int attemptedPartnershipCount[(int)SexualPartnership::Type::ENDType];
+	int	endedPartnershipCount[(int)SexualPartnership::Type::ENDType];
 
 	//initialize counters
-	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::Type::ENDType; ++type)
+	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
 	{
 		newPartnershipCount[type] = 0;
 		attemptedPartnershipCount[type] = 0;
@@ -621,10 +621,10 @@ void Population::updatePartnerships(EventParams &_eventParams)
 		std::list<SexualPartnership *> partnershipsToEnd;	//list of all partnerships due to end
 
 		//Decide who needs to split up
-		for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::Type::ENDType; ++type)
+		for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
 		{
 			//get partnerships of 'type' whose durations have elapsed, i.e. time to split
-			endedPartnershipCount[type] += initiator->getPartnershipsToEnd(_eventParams.currTime, type, partnershipsToEnd, false);
+			endedPartnershipCount[type] += initiator->getPartnershipsToEnd(_eventParams.currTime, SexualPartnership::Type(type), partnershipsToEnd, false);
 		}//foreach SexualPartnership::type
 
 		//Now, split them up... man, it would suck for their kids (if they had any)
@@ -677,18 +677,18 @@ void Population::updatePartnerships(EventParams &_eventParams)
 			//TODO: Get the ratio of numFormed to numIntendedToForm
 			int numFormed = createPartnerships(_eventParams, initiator, &p_Iter, type);
 			//if(numFormed > 0) {
-			newPartnershipCount[type] += numFormed;
+			newPartnershipCount[(int)type] += numFormed;
 			//} //if(numFormed > 0) {
-			attemptedPartnershipCount[type] += numFormed + initiator->getLatestUnformedPartnerships(type);
+			attemptedPartnershipCount[(int)type] += numFormed + initiator->getLatestUnformedPartnerships(type);
 		} //for(int i =0; i < bucketIter->second.size(); i ++) {
 
 		//for existing partnerships, have sexual activity
 		//Have all the sexual activity with current partners (includes new partners)
-		for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::Type::ENDType; ++type)
+		for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
 		{
 			std::list<Person *> newlyInfected;
 			//sexual activity among any existing partnerships that have a duration associated with them
-			Person *infectedMe = initiator->allPartnerSexualActivity(_eventParams, type, newlyInfected,
+			Person *infectedMe = initiator->allPartnerSexualActivity(_eventParams, SexualPartnership::Type(type), newlyInfected,
 			                     &(popStats->infectionsTracker));
 			//TODO: Get a condom use count here!
 			//record all incident infections
@@ -719,7 +719,7 @@ void Population::updatePartnerships(EventParams &_eventParams)
 				if(_eventParams.outputTrace[EventParams::TraceFileType::Events])
 				{
 					popStats->recordIncidentInfection(_eventParams, _eventParams.currTime,
-					                                        type,
+						SexualPartnership::Type(type),
 					                                        wasInfected,
 					                                        wasUninfected,
 					                                        (_eventParams.debugLevel > DEBUG1),
@@ -738,26 +738,26 @@ void Population::updatePartnerships(EventParams &_eventParams)
 	//Ends the second pass through (i.e. the sex acts pass through)
 
 	//print out results to traces
-	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::Type::ENDType; ++type)
+	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
 	{
 		if(_eventParams.debugLevel > DEBUG0)
 		{
 			//print out how many partnerships were attempted
 			std::ostringstream attemptedLabel;
-			attemptedLabel << *SexualPartnership::TypeEnum.toString(type) << " Attempted";
+			attemptedLabel << SexualPartnership::TypeStrings.at(SexualPartnership::Type(type)) << " Attempted";
 			printMethodResults(_eventParams, "updatePartnerships(...)", attemptedLabel.str(), attemptedPartnershipCount[type],
-			                         "Attempted" + *SexualPartnership::TypeEnum.toString(type), Constants::SHOW_INFECTED);
+				"Attempted" + SexualPartnership::TypeStrings.at(SexualPartnership::Type(type)), Constants::SHOW_INFECTED);
 			//print out how many partnerships were formed
 			std::ostringstream formedLabel;
-			formedLabel << *SexualPartnership::TypeEnum.toString(type) << " Formed";
+			formedLabel << SexualPartnership::TypeStrings.at(SexualPartnership::Type(type)) << " Formed";
 			printMethodResults(_eventParams, "updatePartnerships(...)", formedLabel.str(), newPartnershipCount[type],
-			                         "New " + *SexualPartnership::TypeEnum.toString(type), Constants::SHOW_INFECTED);
+				"New " + SexualPartnership::TypeStrings.at(SexualPartnership::Type(type)), Constants::SHOW_INFECTED);
 
 			//if these partnerships have a duration beyond the month, print out how many were ended
 			if(popWideParams.partnershipsHaveDuration[DmgProfile::MALE][type])
 			{
 				std::ostringstream endedLabel;
-				endedLabel << *SexualPartnership::TypeEnum.toString(type) << " Ended";
+				endedLabel << SexualPartnership::TypeStrings.at(SexualPartnership::Type(type)) << " Ended";
 				printMethodResults(_eventParams, "updatePartnerships(...)", endedLabel.str(), endedPartnershipCount[type],
 				                         "Number Ended", Constants::SHOW_INFECTED);
 			}
@@ -779,10 +779,10 @@ void Population::updatePartnerships(EventParams &_eventParams)
 				//create a number between 0 and 15 representing the combination of partnership types person has
 				//e.g. if person has partnerships steady and casual concurrent will equal 8+2=10
 				int concurrent = 0;
-				int numPartners[SexualPartnership::Type::ENDType];
+				int numPartners[(int)SexualPartnership::Type::ENDType];
 				int totalNumPartners = 0;
 
-				for(int i = 0; i < SexualPartnership::Type::ENDType; i++)
+				for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
 				{
 					numPartners[i] = (*p_Iter)->getNumPartners((SexualPartnership::Type) i);
 					concurrent = (concurrent << 1) + (numPartners[i] != 0 ? 1 : 0);
@@ -1008,8 +1008,8 @@ void Population::dissolveSexualPartnerships(EventParams &_eventParams, Person *_
 					_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "- Female ";
 				}
 
-				_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << _initiator->getID() << " ends " << *
-				        (SexualPartnership::TypeEnum.toString((*partnerIter)->getType()));
+				_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << _initiator->getID() 
+					<< " ends " << (SexualPartnership::TypeStrings.at((*partnerIter)->getType()));
 				_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " partnership with " << partner->getID();
 			}
 			else
@@ -1023,8 +1023,7 @@ void Population::dissolveSexualPartnerships(EventParams &_eventParams, Person *_
 					_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "- Male ";
 				}
 
-				_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << partner->getID() << " ends " << *
-				        (SexualPartnership::TypeEnum.toString((*partnerIter)->getType()));
+				_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << partner->getID() << " ends " << (SexualPartnership::TypeStrings.at((*partnerIter)->getType()));
 				_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " partnership with " << _initiator->getID();
 			}
 
@@ -1567,7 +1566,7 @@ void Population::recordShiftedOutcomes(EventParams &_eventParams, std::ostream &
 bool Population::passesPartnershipCalibration(EventParams &_eventParams)
 {
 	//calculate partnership prevalence values
-	unsigned long numInPartnership[SexualPartnership::Type::ENDType][DmgProfile::ENDGender];
+	unsigned long numInPartnership[(int)SexualPartnership::Type::ENDType][DmgProfile::ENDGender];
 	unsigned long numInConcurrent[DmgProfile::ENDGender];
 	unsigned long numActsMonth[DmgProfile::ENDGender];
 	unsigned long numActsMonthRisk[DmgProfile::ENDGender][Person::ENDRiskLevel];
@@ -1594,7 +1593,7 @@ bool Population::passesPartnershipCalibration(EventParams &_eventParams)
 	          << "Casual Partnership Prev Ratio (FtM)" << Constants::TAB << "Prop in Concurrent Ratio (FtM)" << Constants::TAB <<
 	          "Avg Num Acts Ratio (LR to HR Females)" << Constants::TAB;
 
-	for(int i = 0; i < SexualPartnership::Type::ENDType; i++)
+	for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
 	{
 		for(int j = 0; j < DmgProfile::ENDGender; j++)
 		{
@@ -1633,7 +1632,7 @@ bool Population::passesPartnershipCalibration(EventParams &_eventParams)
 			numActsMonth[gender] += (*p_Iter)->getNumActsThisMonth();
 			numActsMonthRisk[gender][risk] += (*p_Iter)->getNumActsThisMonth();
 
-			for(int i = 0; i < SexualPartnership::Type::ENDType; i++)
+			for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
 			{
 				if((*p_Iter)->getMonthOfLatestPartnershipDissolution((SexualPartnership::Type) i) > max<int>((
 				            _eventParams.currTime - 12), 0))
@@ -1661,8 +1660,8 @@ bool Population::passesPartnershipCalibration(EventParams &_eventParams)
 	if(_eventParams.calibrationInputs.steadyPrevPopulation == 0)
 	{
 		firstRow << "Entire SA Pop" << Constants::TAB;
-		numInSteady = numInPartnership[SexualPartnership::Type::Steady][DmgProfile::MALE] +
-		              numInPartnership[SexualPartnership::Type::Steady][DmgProfile::FEMALE]; //entire SA pop
+		numInSteady = numInPartnership[(int)SexualPartnership::Type::Steady][DmgProfile::MALE] +
+			numInPartnership[(int)SexualPartnership::Type::Steady][DmgProfile::FEMALE]; //entire SA pop
 
 		if(totalSA != 0)
 		{
@@ -1683,7 +1682,7 @@ bool Population::passesPartnershipCalibration(EventParams &_eventParams)
 	else
 	{
 		firstRow << "Male SA Pop" << Constants::TAB;
-		numInSteady = numInPartnership[SexualPartnership::Type::Steady][DmgProfile::MALE]; //only male SA
+		numInSteady = numInPartnership[(int)SexualPartnership::Type::Steady][DmgProfile::MALE]; //only male SA
 
 		if(maleSA != 0)
 		{
@@ -1705,8 +1704,8 @@ bool Population::passesPartnershipCalibration(EventParams &_eventParams)
 	if(_eventParams.calibrationInputs.casualPrevPopulation == 0)
 	{
 		firstRow << "Entire SA Pop" << Constants::TAB;
-		numInCasual = numInPartnership[SexualPartnership::Type::Casual][DmgProfile::MALE] +
-		              numInPartnership[SexualPartnership::Type::Casual][DmgProfile::FEMALE]; //entire SA pop
+		numInCasual = numInPartnership[(int)SexualPartnership::Type::Casual][DmgProfile::MALE] +
+			numInPartnership[(int)SexualPartnership::Type::Casual][DmgProfile::FEMALE]; //entire SA pop
 
 		if(totalSA != 0)
 		{
@@ -1727,7 +1726,7 @@ bool Population::passesPartnershipCalibration(EventParams &_eventParams)
 	else
 	{
 		firstRow << "Male SA Pop" << Constants::TAB;
-		numInCasual = numInPartnership[SexualPartnership::Type::Casual][DmgProfile::MALE]; //only male SA
+		numInCasual = numInPartnership[(int)SexualPartnership::Type::Casual][DmgProfile::MALE]; //only male SA
 
 		if(maleSA != 0)
 		{
@@ -1749,8 +1748,8 @@ bool Population::passesPartnershipCalibration(EventParams &_eventParams)
 	if(_eventParams.calibrationInputs.CSWPrevPopulation == 0)
 	{
 		firstRow << "Entire SA Pop" << Constants::TAB;
-		numInCSW = numInPartnership[SexualPartnership::Type::Csw][DmgProfile::MALE] +
-		           numInPartnership[SexualPartnership::Type::Csw][DmgProfile::FEMALE]; //entire SA pop
+		numInCSW = numInPartnership[(int)SexualPartnership::Type::Csw][DmgProfile::MALE] +
+			numInPartnership[(int)SexualPartnership::Type::Csw][DmgProfile::FEMALE]; //entire SA pop
 
 		if(totalSA != 0)
 		{
@@ -1771,7 +1770,7 @@ bool Population::passesPartnershipCalibration(EventParams &_eventParams)
 	else
 	{
 		firstRow << "Male SA Pop" << Constants::TAB;
-		numInCSW = numInPartnership[SexualPartnership::Type::Csw][DmgProfile::MALE]; //only male SA
+		numInCSW = numInPartnership[(int)SexualPartnership::Type::Csw][DmgProfile::MALE]; //only male SA
 
 		if(maleSA != 0)
 		{
@@ -1877,8 +1876,8 @@ bool Population::passesPartnershipCalibration(EventParams &_eventParams)
 	}
 
 	//female to male ratios
-	unsigned long numInCasualMale = numInPartnership[SexualPartnership::Type::Casual][DmgProfile::MALE];
-	unsigned long numInCasualFemale = numInPartnership[SexualPartnership::Type::Casual][DmgProfile::FEMALE];
+	unsigned long numInCasualMale = numInPartnership[(int)SexualPartnership::Type::Casual][DmgProfile::MALE];
+	unsigned long numInCasualFemale = numInPartnership[(int)SexualPartnership::Type::Casual][DmgProfile::FEMALE];
 	double casualPartPrevRatio = -1;
 	firstRow << Constants::TAB;
 
@@ -1990,7 +1989,7 @@ unsigned long Population::createPartnerships(EventParams &_eventParams, Person *
 	if(printToTrace && numPartners > 0)
 	{
 		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "+ Male " << _initiator->getID() << " attempts to form " <<
-		        numPartners << " " << *(SexualPartnership::TypeEnum.toString(_partnershipType)) << " partnerships:" << endl;
+		        numPartners << " " << (SexualPartnership::TypeStrings.at(_partnershipType)) << " partnerships:" << endl;
 	}
 
 	while(numPartners > 0)
@@ -1998,8 +1997,8 @@ unsigned long Population::createPartnerships(EventParams &_eventParams, Person *
 		//Decrement numPartners
 		numPartners--;
 		//pick the bucket that we will attempt to choose from
-		DmgProfileBucket *bucket = potentialPartnerBuckets[_partnershipType].at(_eventParams.randomNums.chooseIndex(
-		                               Population::eligibleBucketWeights[_partnershipType]));
+		DmgProfileBucket *bucket = potentialPartnerBuckets[(int)_partnershipType].at(_eventParams.randomNums.chooseIndex(
+			Population::eligibleBucketWeights[(int)_partnershipType]));
 		assert(bucket != nullptr);
 		std::list<Person *> attemptedPartners;
 		bool foundPartner = false;
@@ -2028,8 +2027,8 @@ unsigned long Population::createPartnerships(EventParams &_eventParams, Person *
 
 			if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && partner->trace())
 			{
-				_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "+ Female " << partner->getID() << " is chosen for a " << *
-				        (SexualPartnership::TypeEnum.toString(_partnershipType)) << " partnership:" << endl;
+				_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "+ Female " << partner->getID() << " is chosen for a " << 
+				        (SexualPartnership::TypeStrings.at(_partnershipType)) << " partnership:" << endl;
 				printTracePartner = true;
 			}
 
@@ -2043,8 +2042,8 @@ unsigned long Population::createPartnerships(EventParams &_eventParams, Person *
 				if(_eventParams.debugLevel > DEBUG1)
 				{
 					_initiator->print(cerr, "");
-					cerr << _initiator->getID() << " Attempted repeat partnership with " << partner->getID() << ", " << *
-					     (SexualPartnership::TypeEnum.toString(_partnershipType)) << endl;
+					cerr << _initiator->getID() << " Attempted repeat partnership with " << partner->getID() << ", " <<
+					     (SexualPartnership::TypeStrings.at(_partnershipType)) << endl;
 					_initiator->printCurrentPartners(cerr, "");
 				}
 
@@ -2111,8 +2110,8 @@ unsigned long Population::createPartnerships(EventParams &_eventParams, Person *
 		{
 			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "  + Male " << _initiator->getID() << " (";
 			_initiator->getDmgProfile()->print(_eventParams.traceStreams[EventParams::TraceFileType::Singleperson], "");
-			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " age " << _initiator->getAge(YEAR) << ") forms " << *
-			        (SexualPartnership::TypeEnum.toString(_partnershipType)) << " with female " << chosenPartner->getID() << " (";
+			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " age " << _initiator->getAge(YEAR) << ") forms " << 
+			        (SexualPartnership::TypeStrings.at(_partnershipType)) << " with female " << chosenPartner->getID() << " (";
 			chosenPartner->getDmgProfile()->print(_eventParams.traceStreams[EventParams::TraceFileType::Singleperson], "");
 			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " age " << chosenPartner->getAge(
 			            YEAR) << ", " << chosenPartner->getSexualActivity() << " marbles, " << ((chosenPartner->getRiskLevel() == Person::HIGH)
@@ -2180,9 +2179,9 @@ void Population::processDeath(EventParams &_eventParams, Person *_p, bool calcul
 	std::list<SexualPartnership *> formerPartnerships;
 
 	//we have to take care of what happens to any ongoing partnerships
-	for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::Type::ENDType; ++type)
+	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
 	{
-		_p->getPartnershipsToEnd(_eventParams.currTime, type, formerPartnerships, true);
+		_p->getPartnershipsToEnd(_eventParams.currTime, SexualPartnership::Type(type), formerPartnerships, true);
 	} //for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::Type::ENDType; ++type) {
 
 	dissolveSexualPartnerships(_eventParams, _p, formerPartnerships);
@@ -2595,7 +2594,7 @@ void Population::printPartnerships(EventParams &_eventParams, long _time, std::o
 		secondRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
 		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 
-		for(int i = 0; i < SexualPartnership::Type::ENDType; i++)
+		for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
 		{
 			for(int j = 0; j < 3; j++)
 			{
@@ -2621,12 +2620,12 @@ void Population::printPartnerships(EventParams &_eventParams, long _time, std::o
 
 	//Partnerships
 	unsigned long
-	numInPartnership[SexualPartnership::Type::ENDType][DmgProfile::ENDGender][DmgProfile::ENDRelationshipStatus][DmgProfile::ENDEmployment][Person::ENDRiskLevel];
+		numInPartnership[(int)SexualPartnership::Type::ENDType][DmgProfile::ENDGender][DmgProfile::ENDRelationshipStatus][DmgProfile::ENDEmployment][Person::ENDRiskLevel];
 	unsigned long numInConcurrent[DmgProfile::ENDGender][DmgProfile::ENDEmployment][Person::ENDRiskLevel];
 	unsigned long numInMultiple[DmgProfile::ENDGender][DmgProfile::ENDEmployment][Person::ENDRiskLevel][4];
-	unsigned long doubleNumPartnerships[SexualPartnership::Type::ENDType][3];
+	unsigned long doubleNumPartnerships[(int)SexualPartnership::Type::ENDType][3];
 
-	for(int i = 0; i < SexualPartnership::Type::ENDType; i++)
+	for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
 	{
 		for(int j = 0; j < DmgProfile::ENDGender; j++)
 		{
@@ -2670,12 +2669,12 @@ void Population::printPartnerships(EventParams &_eventParams, long _time, std::o
 
 		while(p_Iter != entities->end((DmgProfile::Gender) gender))
 		{
-			int numPartners[SexualPartnership::Type::ENDType];
-			bool hasType[SexualPartnership::Type::ENDType];
+			int numPartners[(int)SexualPartnership::Type::ENDType];
+			bool hasType[(int)SexualPartnership::Type::ENDType];
 			int totalNumPartners = 0;
 			Person::RiskLevel risk = (*p_Iter)->getRiskLevel();
 
-			for(int i = 0; i < SexualPartnership::Type::ENDType; i++)
+			for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
 			{
 				numPartners[i] = (*p_Iter)->getNumPartners((SexualPartnership::Type)i);
 				hasType[i] = (numPartners[i] != 0);
@@ -2701,7 +2700,7 @@ void Population::printPartnerships(EventParams &_eventParams, long _time, std::o
 				numInMultiple[gender][(*p_Iter)->getDmgProfileVal(DmgProfile::EMPLOYMENT)][(*p_Iter)->getRiskLevel()][3]++;
 			}
 
-			for(int i = 0; i < SexualPartnership::Type::ENDType; i++)
+			for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
 			{
 				if(numPartners[i] != 0)
 				{
@@ -2715,7 +2714,7 @@ void Population::printPartnerships(EventParams &_eventParams, long _time, std::o
 			//e.g. if person has partnerships steady and casual concurrent will equal 8+2=10
 			int concurrent = 0;
 
-			for(int i = 0; i < SexualPartnership::Type::ENDType; i++)
+			for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
 			{
 				concurrent = (concurrent << 1) + (hasType[i] ? 1 : 0);
 			}
@@ -2741,7 +2740,7 @@ void Population::printPartnerships(EventParams &_eventParams, long _time, std::o
 		{
 			for(int m = Person::HIGH; m >= 0; m--)
 			{
-				_outStream << numInPartnership[SexualPartnership::Type::Steady][j][DmgProfile::NON_SINGLE][l][m] << Constants::TAB;
+				_outStream << numInPartnership[(int)SexualPartnership::Type::Steady][j][DmgProfile::NON_SINGLE][l][m] << Constants::TAB;
 			}
 		}
 	}
@@ -2755,7 +2754,7 @@ void Population::printPartnerships(EventParams &_eventParams, long _time, std::o
 			{
 				for(int m = Person::HIGH; m >= 0; m--)
 				{
-					_outStream << numInPartnership[SexualPartnership::Type::Regular][j][k][l][m] << Constants::TAB;
+					_outStream << numInPartnership[(int)SexualPartnership::Type::Regular][j][k][l][m] << Constants::TAB;
 				}
 			}
 		}
@@ -2770,7 +2769,7 @@ void Population::printPartnerships(EventParams &_eventParams, long _time, std::o
 			{
 				for(int m = Person::HIGH; m >= 0; m--)
 				{
-					_outStream << numInPartnership[SexualPartnership::Type::Casual][j][k][l][m] << Constants::TAB;
+					_outStream << numInPartnership[(int)SexualPartnership::Type::Casual][j][k][l][m] << Constants::TAB;
 				}
 			}
 		}
@@ -2785,7 +2784,7 @@ void Population::printPartnerships(EventParams &_eventParams, long _time, std::o
 			{
 				for(int m = Person::HIGH; m >= 0; m--)
 				{
-					_outStream << numInPartnership[SexualPartnership::Type::Csw][j][k][l][m] << Constants::TAB;
+					_outStream << numInPartnership[(int)SexualPartnership::Type::Csw][j][k][l][m] << Constants::TAB;
 				}
 			}
 		}

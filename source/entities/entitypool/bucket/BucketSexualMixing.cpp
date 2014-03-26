@@ -16,7 +16,7 @@ BucketSexualMixing::BucketSexualMixing(DmgProfile::ProfileID _id, const string *
 	maxAge = _maxAge;
 	popID = _popID;
 
-	for(int i = 0; i < SexualPartnership::Type::ENDType; i++)
+	for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
 	{
 		assort[i] = _assort[i];
 	}
@@ -241,7 +241,7 @@ Person *BucketSexualMixing::getRandomPerson(RandomNums &_randomNums, unsigned in
 	//Use assort to determine whether to use random or _risk bin
 	Person::RiskLevel riskToDraw;
 
-	if(_randomNums.chance(assort[_partnershipType]))
+	if(_randomNums.chance(assort[(int)_partnershipType]))
 	{
 		riskToDraw = _risk;
 	}

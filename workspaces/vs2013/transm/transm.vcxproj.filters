@@ -203,6 +203,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\Inputs.h" />
     <ClInclude Include="..\..\..\source\Outputs.h" />
+    <ClInclude Include="..\..\..\source\util\enum_iterator.h">
+      <Filter>util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="util">

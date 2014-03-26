@@ -8,7 +8,7 @@
 InfectionsTracker::InfectionsTracker()
 {
 	//zero out all infection tallies
-	for(int i = 0; i < SexualPartnership::Type::ENDType; ++i)
+	for(int i = 0; i < (int)SexualPartnership::Type::ENDType; ++i)
 	{
 		for(int j = 0; j < DmgProfile::TotalNumBuckets; ++j)
 		{
@@ -128,8 +128,8 @@ unsigned long InfectionsTracker::getNumIncidentInfections(DmgProfile::ProfileID 
 	assert(Util::withinRange(_infectorsProfileID, DmgProfile::MIN, DmgProfile::MAX));
 	assert(Util::withinRange(_infectedsProfileID, DmgProfile::MIN, DmgProfile::MAX));
 	//it seems that while loops are generally faster than for loops?
-	int currPartnershipType = SexualPartnership::TypeEnum.getMin();
-	int endPartnershipType = SexualPartnership::Type::ENDType;
+	auto currPartnershipType = SexualPartnership::Type::First;
+	auto endPartnershipType = SexualPartnership::Type::ENDType;
 	unsigned long infections = 0;
 
 	//loop through each type of partnerships and tally the amount of infections where:
@@ -137,7 +137,8 @@ unsigned long InfectionsTracker::getNumIncidentInfections(DmgProfile::ProfileID 
 	//	the infecteds had DmgProfie::ProfileID = _infectedsProfileID
 	while(currPartnershipType <= endPartnershipType)
 	{
-		infections += incidentInfections[currPartnershipType][_infectorsProfileID][_infectedsProfileID];
+		throw std::runtime_error("how can this stop?");
+		infections += incidentInfections[(int)currPartnershipType][_infectorsProfileID][_infectedsProfileID];
 	}
 
 	return infections;
@@ -149,7 +150,7 @@ unsigned long InfectionsTracker::getNumIncidentInfections(SexualPartnership::Typ
 	assert(_partnershipType != SexualPartnership::Type::ENDType);
 	assert(Util::withinRange(_infectorsProfileID, DmgProfile::MIN, DmgProfile::MAX));
 	assert(Util::withinRange(_infectedsProfileID, DmgProfile::MIN, DmgProfile::MAX));
-	return incidentInfections[_partnershipType][_infectorsProfileID][_infectedsProfileID];
+	return incidentInfections[(int)_partnershipType][_infectorsProfileID][_infectedsProfileID];
 }
 
 //returns the prevalence rate among sexually active pop
@@ -302,14 +303,13 @@ void InfectionsTracker::recordIncidentInfection(long _time, SexualPartnership::T
 	}
 
 	//record infection
-	++(incidentInfections[_partnershipType][_infector->getDmgProfile()->getProfileID()][_infected->getDmgProfile()->getProfileID()]);
+	++(incidentInfections[(int)_partnershipType][_infector->getDmgProfile()->getProfileID()][_infected->getDmgProfile()->getProfileID()]);
 
 	//print out infection for trace
 	if(_print)
 	{
 		_infector->print(_traceOutStream, Constants::TABTAB);
-		_traceOutStream << Constants::TABTAB << "Just Infected (" << *(SexualPartnership::TypeEnum.toString(
-		                    _partnershipType)) << "): ";
+		_traceOutStream << Constants::TABTAB << "Just Infected (" << SexualPartnership::TypeStrings.at(_partnershipType) << "): ";
 		_infected->print(_traceOutStream, Constants::BLANK);
 	}
 
@@ -605,7 +605,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 		thirdRow << Constants::TAB;
 
 		//write out headers for incident infections by relationship type
-		for(int i = 0; i < SexualPartnership::Type::ENDType; i++)
+		for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
 		{
 			if(i == 0)
 			{
@@ -615,7 +615,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 			firstRow << Constants::TAB;
 			secondRow << Constants::TAB;
-			thirdRow << *(SexualPartnership::TypeEnum.toString(i)) << Constants::TAB;
+			thirdRow << SexualPartnership::TypeStrings.at(SexualPartnership::Type(i)) << Constants::TAB;
 		}
 
 		firstRow << Constants::TAB;
@@ -968,7 +968,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	// Print out incident infections by relationship type
 	_outStream << Constants::TAB;
 
-	for(int partnershipType = 0; partnershipType < SexualPartnership::Type::ENDType; partnershipType++)
+	for(int partnershipType = 0; partnershipType < (int)SexualPartnership::Type::ENDType; partnershipType++)
 	{
 		int infectionsByType = 0;
 		//tally all the infections that happened with partnershipType for all possible infector and infected DmgProfiles
@@ -1004,7 +1004,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 			//tally all the infections that happened from curr infectorProfileID -> curr infectedProfileID
 			unsigned long infs = 0;
 
-			for(int partnershipType = 0; partnershipType < SexualPartnership::Type::ENDType; ++partnershipType)
+			for(int partnershipType = 0; partnershipType < (int)SexualPartnership::Type::ENDType; ++partnershipType)
 			{
 				infs += incidentInfections[partnershipType][*infectorProfileID][*infectedProfileID];
 			}

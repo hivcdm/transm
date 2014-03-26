@@ -1,5 +1,6 @@
 #pragma once
 #include "Person.h"
+#include "../Inputs.h"
 #include "../data/EventParams.h"
 #include "../util/ticpp/ticpp.h"
 #include "../util/rand/RandomNums.h"
@@ -20,10 +21,6 @@ public:
 	**/
 	class SubPopParams
 	{
-
-		//given an XML-subtree, will load parse and store parameter tree
-		int loadParamsXML(ticpp::Element *_femaleParams, EventParams &_eventParams);
-
 		//-----------< BEGIN data fields >--------------------//
 		double chanceBecomeCSW;		//chance that a female will become a CSW
 		double proportionHighRisk[DmgProfile::ENDEmployment];  //proportion of female population that is in the "high risk" lists
@@ -32,9 +29,8 @@ public:
 		//-----------< END data fields >--------------------//
 
 	public :
-		int reloadParamsXML(ticpp::Element *_femaleParams, EventParams &_eventParams) throw();
 		SubPopParams();
-		SubPopParams(ticpp::Element *_femaleParams, EventParams &_eventParams);
+		SubPopParams(const PopulationSettings::FemaleSettings &settings, EventParams &_eventParams);
 
 		//-----------< BEGIN getters >--------------------//
 		double getChanceBecomeCSW() const;
@@ -57,14 +53,7 @@ public:
 	Add a set of population parameters to be used by Males of that population
 	@author schung5
 	**/
-	static void addPopParams(unsigned int _populationID, ticpp::Element *_femaleParams, EventParams &_eventParams);
-
-	/**
-	Updates a set of population parameters to be used by Females of that population
-	@param _populationID basically a check to see that you have added parameters in the right order
-	@param _femaleParams the XML node that contains the parameter data
-	**/
-	static void updatePopParams(unsigned int _populationID, ticpp::Element *_femaleParams, EventParams &_eventParams);
+	static void addPopParams(unsigned int _populationID, const PopulationSettings::FemaleSettings &settings, EventParams &_eventParams);
 
 	/**
 	Access a set of population parameters to be used by Males of that population

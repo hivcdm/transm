@@ -3,101 +3,60 @@
 #include "../Person.h"
 #include "boost/lexical_cast.hpp"
 
-SexualBehaviorParams::SexualBehaviorParams(ticpp::Element *_sexualBehaviourParams, EventParams &_eventParams,
-        bool _useHighRiskMultiplier, double _highRiskMultiplier, bool _useHighRiskMultiplierCSW, double _highRiskMultiplierCSW)
+SexualBehaviorParams::SexualBehaviorParams(const PopulationSettings::MaleSettings &settings, SexualPartnership::Type type, EventParams &params)
 {
-	loadParamsXML(_sexualBehaviourParams, _eventParams, _useHighRiskMultiplier, _highRiskMultiplier,
-	                    _useHighRiskMultiplierCSW, _highRiskMultiplierCSW);
+	params.displayOut("SexualBehaviorParams::loadParamsXML(...)\n");
+
+	double multiplier = settings.high_risk_multiplier;
+
+	if(type == SexualPartnership::Type::Csw && settings.enable_high_risk_multiplier && settings.enable_csw_high_risk_multiplier)
+	{
+		multiplier = settings.csw_high_risk_multiplier;
+	}
+
+	acquisitionRatePerMonth[Person::LOW] = settings.partnership_settings.at(type).acquisition_rate_low_risk;
+
+	params.displayOut("Average acquisition rate for relationship type "
+		+ SexualPartnership::TypeStrings.at(type) + " and risk level LOW is " +
+		std::to_string(acquisitionRatePerMonth[Person::LOW].getMean()) + "\n");
+
+	if(settings.enable_high_risk_multiplier)
+	{
+		acquisitionRatePerMonth[Person::HIGH] = settings.partnership_settings.at(type).acquisition_rate_low_risk;
+		acquisitionRatePerMonth[Person::HIGH].mu += log(multiplier);
+	}
+	else
+	{
+		acquisitionRatePerMonth[Person::HIGH] = settings.partnership_settings.at(type).acquisition_rate_high_risk;
+	}
+
+	params.displayOut("Average acquisition rate for relationship type "
+		+ SexualPartnership::TypeStrings.at(type) + " and risk level HIGH is " +
+		std::to_string(acquisitionRatePerMonth[Person::HIGH].getMean()) + "\n");
+
+	for(const auto &bucket_settings : settings.partnership_settings.at(type).available_buckets)
+	{
+		SexualBehaviorParams::AvailableBucket bucket;
+		bucket.dmgProfileSelector.parse(bucket_settings.first);
+		bucket.weight = bucket_settings.second;
+		availableBuckets.push_back(bucket);
+	}
+
+	averageYearsYounger = settings.partnership_settings.at(type).average_years_younger;
+
+	coitalEventsPerMonth[Person::LOW] = settings.partnership_settings.at(type).coital_events_per_month_low_risk;
+	coitalEventsPerMonth[Person::HIGH] = settings.partnership_settings.at(type).coital_events_per_month_high_risk;
+
+	chanceCondomUsePerEvent[Person::LOW] = settings.partnership_settings.at(type).chance_condom_user_per_event_low_risk;
+	chanceCondomUsePerEvent[Person::HIGH] = settings.partnership_settings.at(type).chance_condom_user_per_event_low_risk;
+
+	partnershipDurationMth[Person::LOW] = settings.partnership_settings.at(type).partnership_duration_months_low_risk;
+	partnershipDurationMth[Person::HIGH] = settings.partnership_settings.at(type).partnership_duration_months_high_risk;
 }
 
 SexualBehaviorParams::SexualBehaviorParams()
 {
 }
-
-int SexualBehaviorParams::loadParamsXML(ticpp::Element *_sexualBehaviourParams, EventParams &_eventParams,
-                                        bool _useHighRiskMultiplier, double _highRiskMultiplier, bool _useHighRiskMultiplierCSW, double _highRiskMultiplierCSW)
-{
-	_eventParams.displayOut("SexualBehaviorParams::loadParamsXML(...)\n");
-	/*if (_useHighRiskMultiplier){
-		cout << "Using High Risk multiplier of " << _highRiskMultiplier << endl;
-	}*/
-	//read in behavior twig
-	partnershipType = SexualPartnership::TypeEnum.toEnum(
-	                            _sexualBehaviourParams->FirstChildElement("type")->GetText<string>());
-	double multiplier = _highRiskMultiplier;
-
-	if(partnershipType == SexualPartnership::Type::Csw && _useHighRiskMultiplier && _useHighRiskMultiplierCSW)
-	{
-		multiplier = _highRiskMultiplierCSW;
-	}
-
-	for(int risk = Person::LOW; risk < Person::ENDRiskLevel; risk++)
-	{
-		//save acquisition rate
-		//If high risk, check if using multiplier or reading rates in directly
-		if(risk == Person::LOW || !_useHighRiskMultiplier)
-		{
-			//The user is no longer inputting rates in a logNormal distribution and we are converting from mean and std dev
-			XMLUtil::getLogNormalDistFromXMLNode(_sexualBehaviourParams->FirstChildElement((risk == Person::LOW) ?
-			                                     "acquisitionRateLowRisk" : "acquisitionRateHighRisk"), acquisitionRatePerMonth[risk],
-			                                     _eventParams.useCoefficientVariation, _eventParams.coefficientOfVariation);
-		}
-		else
-		{
-			//If the high risk is to be a multiple of the low risk rates
-			XMLUtil::getLogNormalDistFromXMLNode(_sexualBehaviourParams->FirstChildElement("acquisitionRateLowRisk"),
-			                                     acquisitionRatePerMonth[risk], _eventParams.useCoefficientVariation, _eventParams.coefficientOfVariation);
-			acquisitionRatePerMonth[risk].mu = acquisitionRatePerMonth[risk].mu + log(multiplier);
-		}
-
-		//acquisitionRatePerMonth[risk] = XMLUtil::getExpDistMeanFromXMLNode(_sexualBehaviourParams->FirstChildElement((risk == Person::LOW) ? "acquisitionRatePerMonthLowRisk" : "acquisitionRatePerMonthHighRisk"));
-		_eventParams.displayOut("Average acquisition rate for relationship type ");
-		_eventParams.displayOut((*(SexualPartnership::TypeEnum.toString(partnershipType))).c_str());
-		_eventParams.displayOut(" and risk level ");
-		((risk == Person::LOW) ? _eventParams.displayOut("LOW") : _eventParams.displayOut("HIGH"));
-		_eventParams.displayOut(" is ");
-		_eventParams.displayOut(boost::lexical_cast<std::string>(acquisitionRatePerMonth[risk].getMean()).c_str());
-		_eventParams.displayOut("\n");
-		//save number of partners to acquire per month
-		//averagePartnersAtATime[risk] = XMLUtil::getPoissonDistMeanFromXMLNode(_sexualBehaviourParams->FirstChildElement((risk == Person::LOW) ? "averageNumberToAcquireLowRisk" : "averageNumberToAcquireHighRisk"));
-		//*(_eventParams.displaybox->textctrl) << wxT("Acquisition rate for relationship type ") << wxPartnershipType << wxT(" is ") << averagePartnersAtATime << wxT("\n");
-		//_eventParams.displaybox->textctrl->Update();
-	}//for (int risk = Person::LOW; risk < Person::ENDRiskLevel; risk++){
-
-	//go through selection criteria
-	ticpp::Element *selectionCriteria = _sexualBehaviourParams->FirstChildElement("selectionCriteria");
-	//get the available EntityPool::Buckets that Males can choose from
-	ticpp::Iterator<ticpp::Element> bucketsIter;
-
-	for(bucketsIter = selectionCriteria->FirstChildElement("availableBuckets")->FirstChildElement("bucket");
-	        bucketsIter != bucketsIter.end(); bucketsIter++)
-	{
-		//not very efficient, but we only do this once at the beginning of the sim
-		availableBuckets.resize(availableBuckets.size() + 1);
-		availableBuckets.back().dmgProfileSelector.parse(bucketsIter->FirstChildElement("DmgProfile")->GetText());
-		availableBuckets.back().weight = bucketsIter->FirstChildElement("weightedValue")->GetText<double>();
-	} //for ( bucketsIter = selectionCriteria->FirstChildElement("availableBuckets")->FirstChildElement("bucket");
-
-	//get the average age difference
-	XMLUtil::getDistFromXMLNode(selectionCriteria->FirstChildElement("AverageYearsYounger"), averageYearsYounger);
-
-	//read in # coital events and partnership duration by risk level
-	for(int risk = Person::LOW; risk < Person::ENDRiskLevel; risk++)
-	{
-		//TODO: Break out
-		coitalEventsPerMonth[risk] = XMLUtil::getPoissonDistMeanFromXMLNode(_sexualBehaviourParams->FirstChildElement((
-		                                       risk == Person::LOW) ? "coitalEventsPerMonthLowRisk" : "coitalEventsPerMonthHighRisk"));
-		//save chance of condom use per event
-		XMLUtil::getBetaDistFromXMLNode(_sexualBehaviourParams->FirstChildElement((risk == Person::LOW) ?
-		                                "chanceCondomUsePerEventLowRisk" : "chanceCondomUsePerEventHighRisk"), chanceCondomUsePerEvent[risk]);
-		XMLUtil::getShiftedLogNormalDistFromXMLNode(_sexualBehaviourParams->FirstChildElement((
-		            risk == Person::LOW) ? "partnershipDurationMthLowRisk" : "partnershipDurationMthHighRisk"),
-		        partnershipDurationMth[risk]);
-	}//for (risk = Person::LOW; risk < Person::ENDRiskLevel; risk++){
-
-	return 0;
-}
-
 
 unsigned int SexualBehaviorParams::getNumAvailableBuckets()  const
 {

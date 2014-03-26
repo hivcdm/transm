@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../../Inputs.h"
 #include "./../classifiers/DmgProfile.h"
 #include "./../classifiers/SexualPartnership.h"
 #include "../../util/ticpp/ticpp.h"
@@ -23,8 +24,7 @@ public :
 	@param _sexualMixingParams XML-subtree root node
 	@author schung5
 	**/
-	SexualBehaviorParams(ticpp::Element *_sexualMixingParams, EventParams &_eventParams, bool _useHighRiskMultiplier,
-	                     double _highRiskMultiplier, bool _useHighRiskMultiplierCSW, double _highRiskMultiplierCSW);
+	SexualBehaviorParams(const PopulationSettings::MaleSettings &settings, SexualPartnership::Type type, EventParams &params);
 
 	/**
 	default constructor
@@ -33,13 +33,13 @@ public :
 	SexualBehaviorParams();
 
 	//different SexualPartnership can only involve certain categories of people
-	typedef struct
+	struct AvailableBucket
 	{
 		//specifies an eligible type of person
 		DmgProfile dmgProfileSelector;
 		//will weight the chance that someone with these DmgProfileBucket dmgProfile will be chosen
 		double weight;
-	} AvailableBucket;
+	};
 
 private:
 
@@ -53,7 +53,7 @@ private:
 
 	//selection criteria
 	//particular buckets that are available for this kind of sexual partnership
-	vector<AvailableBucket> availableBuckets;
+	std::vector<AvailableBucket> availableBuckets;
 	/*//defines available ages for this kind of sexual partnership
 	NormalDist maxYearsOlder;
 	NormalDist maxYearsYounger;*/
@@ -68,14 +68,6 @@ private:
 
 	//avg duration if partnerships across all Couples
 	ShiftedLogNormalDist partnershipDurationMth[Person::ENDRiskLevel];
-
-	/**
-	reads in XML tree and stores values
-	@param _sexualMixingParams XML-subtree root node
-	@author schung5
-	**/
-	int loadParamsXML(ticpp::Element *_sexualMixingParams, EventParams &_eventParams, bool _useHighRiskMultiplier,
-	                  double _highRiskMultiplier, bool _useHighRiskMultiplierCSW, double _highRiskMultiplierCSW);
 
 public :
 
