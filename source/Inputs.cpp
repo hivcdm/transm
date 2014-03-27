@@ -144,8 +144,8 @@ LogNormalDist ParseLogNormalDistribution(const ticpp::Element &node, bool use_co
 	LogNormalDist dist;
 	if(type == "LogNormal")
 	{
-		dist.mu = std::stod(distrib.FirstChildElement("mean")->GetText());
-		dist.sigma = std::stod(distrib.FirstChildElement("stdDev")->GetText());
+		dist.mu = std::stod(distrib.FirstChildElement("mu")->GetText());
+		dist.sigma = std::stod(distrib.FirstChildElement("sigma")->GetText());
 	}
 	else if(type == "Normal")
 	{
@@ -325,8 +325,8 @@ void Inputs::LoadSimulationParameters(const ticpp::Element &root_node)
 	for(int i = 0; i < 16; i++)
 	{
 		auto &def_node = *concurrency_node.FirstChildElement("def" + std::to_string(i));
-		concurrency_definitions_[i].allow = def_node.FirstChildElement("minNeeded")->GetText() != "0";
-		concurrency_definitions_[i].minimum_needed = std::stoi(def_node.FirstChildElement("allow")->GetText());
+		concurrency_definitions_[i].allow = std::stoi(def_node.FirstChildElement("allow")->GetText()) != 0;
+		concurrency_definitions_[i].minimum_needed = std::stoi(def_node.FirstChildElement("minNeeded")->GetText());
 	}
 }
 
@@ -385,13 +385,11 @@ void Inputs::ValidateTracingSettings()
 			throw std::runtime_error("not equal");
 		}
 
-		/*
 		auto extension = trace_file_key_value.second.extension.substr(trace_file_key_value.second.extension.length() - 4);
-		if(extension != ".xls")
+		if(extension != ".xls" && extension != ".txt")
 		{
 			throw std::runtime_error("trace file should have extension .xls");
 		}
-		*/
 	}
 }
 
@@ -509,6 +507,7 @@ void Inputs::LoadPopulationSettings(const ticpp::Element &population_node)
 				}
 
 				PopulationSettings::MaleSettings::PartnershipSettings settings;
+				settings.type = matching_type->first;
 
 				settings.acquisition_rate_high_risk = ParseLogNormalDistribution(*partnership_node->FirstChildElement("acquisitionRateHighRisk"), 
 					male_settings.use_coefficient_variation, male_settings.coefficient_of_variation);
@@ -608,7 +607,8 @@ void Inputs::ValidatePopulationSettings()
 
 void Inputs::LoadCosts(const ticpp::Element &costs_node)
 {
-
+	costs_.condom_cost = std::stod(costs_node.FirstChildElement("condomCost")->GetText());
+	costs_.circumcision_cost = std::stod(costs_node.FirstChildElement("circumcisionCost")->GetText());
 }
 
 void Inputs::ValidateCosts()

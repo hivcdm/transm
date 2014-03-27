@@ -6,10 +6,8 @@
 #include "entitypool/EntityPool.h"
 #include "../util/Util.h"
 #include "../util/enum_iterator.h"
-#include "../util/XMLUtil.h"
 #include "../util/rand/RandomNums.h"
 
-//-----------------< Begin population-level parameters for males >-----------------------/
 //each index of the array contains parameters for a different population
 //(we only have 1 population for now so the size of the vector will default to 1
 

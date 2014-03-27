@@ -1,11 +1,11 @@
+#include <cmath>
+#include <string>
+
 #include "SexualPartnership.h"
 #include "../Person.h"
 #include "../Male.h"
 #include "../../data/EventParams.h"
 #include "../../statistics/PopStats.h"
-#include "../../util/XMLUtil.h"
-#include <cmath>
-#include <string>
 
 const std::map<SexualPartnership::Type, std::string> SexualPartnership::TypeStrings = 
 {

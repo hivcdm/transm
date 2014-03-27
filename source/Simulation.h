@@ -75,9 +75,6 @@ private:
 	/** housekeeping parameters that are universal to each event in the simulation */
 	EventParams parameters_;
 
-	/** number of months to delay application of initial prevalence inputs */
-	int prevalenceDelay_;
-
 	bool failedCalibration_;
 
 	bool hasPassedFirstMonthCalibPrev_;

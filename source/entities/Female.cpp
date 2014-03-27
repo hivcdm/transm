@@ -2,10 +2,7 @@
 #include "Male.h"
 #include "../Constants.h"
 #include "../util/Util.h"
-#include "../util/XMLUtil.h"
 
-
-//-----------------< Begin population-level parameters for females >-----------------------/
 //each index of the array contains parameters for a different population
 //(as of 9/8/08, we only have 1 population for now so the size of the vector will default to 1
 Female::SubPopParams::SubPopParams()

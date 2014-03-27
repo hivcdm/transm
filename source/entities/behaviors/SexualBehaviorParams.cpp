@@ -1,7 +1,5 @@
 #include "SexualBehaviorParams.h"
-#include "../../util/XMLUtil.h"
 #include "../Person.h"
-#include "boost/lexical_cast.hpp"
 
 SexualBehaviorParams::SexualBehaviorParams(const PopulationSettings::MaleSettings &settings, SexualPartnership::Type type, EventParams &params)
 {

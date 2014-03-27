@@ -4,7 +4,6 @@
 #include "entities/Person.h"
 #include "entities/behaviors/SexualBehaviorParams.h"
 #include "util/Util.h"
-#include "util/XMLUtil.h"
 
 //-------------< Begin AgeBucketPrevalenceInfo methods >-------------------//
 

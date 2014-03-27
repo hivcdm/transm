@@ -108,7 +108,7 @@ Simulation::Simulation(const Inputs &inputs, MessageCallback message_callback)
 	parameters_.displayOut("\tTime steps = " + std::to_string(duration_) + "\n");
 
 	parameters_.delayPrevalence = inputs_.GetPopulationSettings().prevalence_delay;
-	parameters_.displayOut("\tDelay Prevalence = " + std::to_string(prevalenceDelay_) + "\n");
+	parameters_.displayOut("\tDelay Prevalence = " + std::to_string(parameters_.delayPrevalence) + "\n");
 
 	bool filesLoaded = false;
 
@@ -248,7 +248,7 @@ void Simulation::FirstStep()
 	//initialize incident infections by age
 	population_->initIncidentInfectionsByAge();
 
-	if(prevalenceDelay_ == 0)
+	if(parameters_.delayPrevalence == 0)
 	{
 		population_->applyIncidentPrevalence(parameters_);
 	}
@@ -1014,7 +1014,7 @@ int Simulation::SimulateMonth()
 	}
 
 	//apply incident prevalence
-	if(prevalenceDelay_ != 0 && prevalenceDelay_ == time_)
+	if(parameters_.delayPrevalence != 0 && parameters_.delayPrevalence == time_)
 	{
 		population_->applyIncidentPrevalence(parameters_);
 	}

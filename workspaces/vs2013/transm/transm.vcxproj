@@ -410,7 +410,6 @@
     <ClInclude Include="..\..\..\source\util\ticpp\tinyxml.h" />
     <ClInclude Include="..\..\..\source\util\HighResolutionTimer.h" />
     <ClInclude Include="..\..\..\source\util\Util.h" />
-    <ClInclude Include="..\..\..\source\util\XMLUtil.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Cepac\Cepac.vcxproj">
