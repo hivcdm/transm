@@ -3,7 +3,7 @@
 
 SexualBehaviorParams::SexualBehaviorParams(const PopulationSettings::MaleSettings &settings, SexualPartnership::Type type, EventParams &params)
 {
-	params.displayOut("SexualBehaviorParams::loadParamsXML(...)\n");
+	partnershipType = type;
 
 	double multiplier = settings.high_risk_multiplier;
 

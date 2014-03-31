@@ -68,11 +68,15 @@ bool RandomNums::chance(double _probability)
 
 double RandomNums::rand()
 {
+	static int rand_count = 0;
+	rand_count++;
 	return mtRand() * mtRand_OneOverMaxMult;
 }
 
 uint32_t RandomNums::randInt()
 {
+	static int rand_count = 0;
+	rand_count++;
 	return mtRand();
 }
 

@@ -183,7 +183,10 @@ double ParsePoissonDistribution(const ticpp::Element &node)
 	{
 		throw std::runtime_error("wrong type");
 	}
-	return std::stod(distrib.FirstChildElement("mean")->GetText());
+	//auto mean_string = distrib.FirstChildElement("mean")->GetText();
+	//auto mean = std::stod(mean_string);
+	double mean = std::stoi(distrib.FirstChildElement("mean")->GetText());
+	return mean;
 }
 
 ShiftedLogNormalDist ParseShiftedLogNormalDistribution(const ticpp::Element &node)
@@ -509,10 +512,25 @@ void Inputs::LoadPopulationSettings(const ticpp::Element &population_node)
 				PopulationSettings::MaleSettings::PartnershipSettings settings;
 				settings.type = matching_type->first;
 
-				settings.acquisition_rate_high_risk = ParseLogNormalDistribution(*partnership_node->FirstChildElement("acquisitionRateHighRisk"), 
-					male_settings.use_coefficient_variation, male_settings.coefficient_of_variation);
 				settings.acquisition_rate_low_risk = ParseLogNormalDistribution(*partnership_node->FirstChildElement("acquisitionRateLowRisk"),
 					male_settings.use_coefficient_variation, male_settings.coefficient_of_variation);
+
+				auto multiplier = male_settings.high_risk_multiplier;
+				if(matching_type->first == SexualPartnership::Type::Csw)
+				{
+					multiplier = male_settings.csw_high_risk_multiplier;
+				}
+
+				if(!male_settings.enable_high_risk_multiplier)
+				{
+					settings.acquisition_rate_high_risk = ParseLogNormalDistribution(*partnership_node->FirstChildElement("acquisitionRateHighRisk"),
+						male_settings.use_coefficient_variation, male_settings.coefficient_of_variation);
+				}
+				else
+				{
+					settings.acquisition_rate_high_risk = settings.acquisition_rate_low_risk;
+					settings.acquisition_rate_high_risk.mu += log(multiplier);
+				}
 
 				auto &selection_criteria_node = *partnership_node->FirstChildElement("selectionCriteria");
 				auto &available_buckets_node = *selection_criteria_node.FirstChildElement("availableBuckets");
