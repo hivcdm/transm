@@ -1496,41 +1496,37 @@ void Population::applyARTRollout(EventParams &_eventParams)
 
 	if(newSlots > 0)
 	{
-		for(auto rankingIterator = rankedForTreatment.begin(); rankingIterator != rankedForTreatment.end(); ++rankingIterator)
+		for(auto &current_ranking_bucket : rankedForTreatment)
 		{
-			std::vector<Person *> currentRankingBucket = *rankingIterator;
-
-			while(newSlots > 0 && !currentRankingBucket.empty())
+			while(newSlots > 0 && !current_ranking_bucket.empty())
 			{
-				int randomPersonIndex = _eventParams.randomNums.randInt(0, currentRankingBucket.size() - 1);
-				startTreatment(currentRankingBucket[randomPersonIndex], _eventParams.treatedContext);
+				int randomPersonIndex = _eventParams.randomNums.randInt(0, current_ranking_bucket.size() - 1);
+				startTreatment(current_ranking_bucket[randomPersonIndex], _eventParams.treatedContext);
 
-				if(randomPersonIndex != static_cast<int>(currentRankingBucket.size() - 1))
+				if(randomPersonIndex != static_cast<int>(current_ranking_bucket.size() - 1))
 				{
-					std::swap(currentRankingBucket[randomPersonIndex], currentRankingBucket.back());
+					std::swap(current_ranking_bucket[randomPersonIndex], current_ranking_bucket.back());
 				}
 
-				currentRankingBucket.pop_back();
+				current_ranking_bucket.pop_back();
 				--newSlots;
 			}
 		}
 	}
 
-	for(auto rankingIterator = rankedForTreatment.begin(); rankingIterator != rankedForTreatment.end(); ++rankingIterator)
+	for(auto &current_ranking_bucket : rankedForTreatment)
 	{
-		std::vector<Person *> currentRankingBucket = *rankingIterator;
-
-		for(auto bucketIterator = currentRankingBucket.begin(); bucketIterator != currentRankingBucket.end(); ++bucketIterator)
+		for(auto &person : current_ranking_bucket)
 		{
-			popStats->recordTreatmentAccessEligiblity(*bucketIterator);
+			popStats->recordTreatmentAccessEligiblity(person);
 		}
 	}
 
-	for(auto treatedIterator = rolloutTreatedPool.begin(); treatedIterator != rolloutTreatedPool.end(); ++treatedIterator)
+	for(auto &person : rolloutTreatedPool)
 	{
 		// double counting shouldn't be a problem, they're either in rolloutTreatedPool or rankedForTreatment but not both
-		popStats->recordTreatmentAccessEligiblity(*treatedIterator);
-		popStats->recordTreatmentAccess(*treatedIterator);
+		popStats->recordTreatmentAccessEligiblity(person);
+		popStats->recordTreatmentAccess(person);
 	}
 }
 
