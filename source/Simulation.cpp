@@ -675,16 +675,14 @@ void Simulation::UpdateTimeDependentParameters()
 {
 	bool checkRanks = false;
 
-	for(const auto &template_key_pair : inputs_.GetTemplateKeyMap())
+	for(const auto &type_parameter_pair : inputs_.GetTimeDependentParameters())
 	{
-		auto key = template_key_pair.first;
-		auto parameter_type = template_key_pair.second;
-		auto parameter = inputs_.GetTimeDependentParameters().at(parameter_type);
+		const auto &parameter = type_parameter_pair.second;
 
 		if(parameter.time == parameters_.currTime)
 		{
 			// OIHist
-			switch(parameter_type)
+			switch(type_parameter_pair.first)
 			{
 			case TemplateParameter::AgeSexualDebutYears:
 				population_->popWideParams.setAgeSexualDebut(std::stod(parameter.value));
@@ -706,46 +704,46 @@ void Simulation::UpdateTimeDependentParameters()
 				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI1:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
+				parameters_.rolloutEligibility.oiHistOIs[1] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI2:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
+				parameters_.rolloutEligibility.oiHistOIs[2] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI3:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
+				parameters_.rolloutEligibility.oiHistOIs[3] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI4:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
+				parameters_.rolloutEligibility.oiHistOIs[4] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI5:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
+				parameters_.rolloutEligibility.oiHistOIs[5] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI6:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
+				parameters_.rolloutEligibility.oiHistOIs[6] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI7:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
+				parameters_.rolloutEligibility.oiHistOIs[7] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI8:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
+				parameters_.rolloutEligibility.oiHistOIs[8] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI9:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
+				parameters_.rolloutEligibility.oiHistOIs[9] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI10:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
+				parameters_.rolloutEligibility.oiHistOIs[10] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI11:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
+				parameters_.rolloutEligibility.oiHistOIs[11] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI12:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
+				parameters_.rolloutEligibility.oiHistOIs[12] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI13:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
+				parameters_.rolloutEligibility.oiHistOIs[13] = parameter.value != "0";
 				break;
 			case TemplateParameter::OIHistOI14:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
+				parameters_.rolloutEligibility.oiHistOIs[14] = parameter.value != "0";
 				break; 
 			case TemplateParameter::OIHistNumOIToStart:
 				parameters_.rolloutEligibility.oiHistNumToStart = std::stoi(parameter.value);

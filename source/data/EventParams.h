@@ -237,27 +237,29 @@ public :
 
 	double interpolateMonthlyRolloutProportion()
 	{
-		int monthOf2002 = monthOf1990 + 12 * 12;
+		if(currTime < monthOf1990)
+		{
+			return 0;
+		}
 
-		if(currTime < monthOf2002)
+		int relative_year = 1990 + (currTime - monthOf1990) / 12;
+
+		if(relative_year < targetYearlyRolloutProportions.begin()->first)
 		{
 			return 0;
 		}
 		else
 		{
-			int yearRelativeTo2002 = (currTime - monthOf2002) / 12;
-
-			if(yearRelativeTo2002 < static_cast<int>(targetYearlyRolloutProportions.size() - 1))
+			if(relative_year < (--targetYearlyRolloutProportions.end())->first)
 			{
-				double currentYearTargetProportion = targetYearlyRolloutProportions[yearRelativeTo2002];
-				double nextYearTargetProportion = targetYearlyRolloutProportions[yearRelativeTo2002 + 1];
+				double currentYearTargetProportion = targetYearlyRolloutProportions.at(relative_year);
+				double nextYearTargetProportion = targetYearlyRolloutProportions.at(relative_year + 1);
 				double x = ((currTime - monthOf1990) % 12) / 12.0;
 				return currentYearTargetProportion + (nextYearTargetProportion - currentYearTargetProportion) * x;
 			}
 			else
 			{
-				throw std::runtime_error("");
-				return targetYearlyRolloutProportions[2025];
+				return (--targetYearlyRolloutProportions.end())->second;
 			}
 		}
 	}

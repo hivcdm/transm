@@ -353,6 +353,8 @@ private:
 	void LoadInterventions(const ticpp::Element &interventions_node);
 	void ValidateInterventions();
 
+	void MatchTemplateParameters();
+
 	std::string filename_;
 	std::string run_name_;
 	Version version_;

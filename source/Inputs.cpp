@@ -14,8 +14,9 @@ std::string ExtractPossibleTemplateParameter(TemplateParameter parameter_type,
 	if(value_string.front() == '{' && value_string.back() == '}')
 	{
 		auto separator = value_string.find(',');
-		auto key = value_string.substr(1, separator);
-		result = value_string.substr(separator + 1, value_string.length() - 1);
+		auto key = value_string.substr(1, separator - 1);
+		result = value_string.substr(separator + 1);
+		result = result.substr(0, result.length() - 1);
 		template_key_map[key] = parameter_type;
 	}
 
@@ -254,6 +255,8 @@ Inputs Inputs::FromFile(const std::string &filename)
 	auto &interventions_node = *population_node.FirstChildElement("interventions");
 	inputs.LoadInterventions(interventions_node);
 
+	inputs.MatchTemplateParameters();
+
 	inputs.ValidateSimulationParameters();
 	inputs.ValidateTracingSettings();
 	inputs.ValidateCalibrationSettings();
@@ -298,6 +301,25 @@ void Inputs::operator=(const Inputs &other)
 	interventions_ = other.interventions_;
 	template_key_map_ = other.template_key_map_;
 	time_dependent_parameters_ = other.time_dependent_parameters_;
+}
+
+void Inputs::MatchTemplateParameters()
+{
+	while(!unmatched_parameters_.empty())
+	{
+		auto &current = unmatched_parameters_.back();
+		auto map_iterator = template_key_map_.find(current.key);
+		if(map_iterator == template_key_map_.end())
+		{
+			throw std::runtime_error("unmatched key");
+		}
+		if(time_dependent_parameters_.find(map_iterator->second) != time_dependent_parameters_.end())
+		{
+			throw std::runtime_error("duplicate key");
+		}
+		time_dependent_parameters_[map_iterator->second] = current;
+		unmatched_parameters_.pop_back();
+	}
 }
 
 void Inputs::LoadSimulationParameters(const ticpp::Element &root_node)
@@ -663,6 +685,132 @@ void Inputs::LoadInterventions(const ticpp::Element &interventions_node)
 			rollout_file_node = rollout_file_node->NextSiblingElement(false);
 		}
 
+		auto &eligibility_node = *art_rollout_node.FirstChildElement("rolloutEligibility");
+		auto criteria_node = eligibility_node.FirstChildElement("criteria", false);
+
+		while(criteria_node != nullptr)
+		{
+			auto name = criteria_node->FirstChildElement("name")->GetText();
+			if(name == "OIHist")
+			{
+				auto &criterion = interventions_.rollout_eligibility.oi_history_criteria;
+				criterion.rank = std::stoi(ExtractPossibleTemplateParameter(TemplateParameter::OIHistRank, 
+					criteria_node->FirstChildElement("rank")->GetText(), template_key_map_));
+				criterion.require_oi_history[0] = ExtractPossibleTemplateParameter(TemplateParameter::OIHistOI0,
+					criteria_node->FirstChildElement("OI0")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[1] = ExtractPossibleTemplateParameter(TemplateParameter::OIHistOI1,
+					criteria_node->FirstChildElement("OI1")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[2] = ExtractPossibleTemplateParameter(TemplateParameter::OIHistOI2,
+					criteria_node->FirstChildElement("OI2")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[3] = ExtractPossibleTemplateParameter(TemplateParameter::OIHistOI3,
+					criteria_node->FirstChildElement("OI3")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[4] = ExtractPossibleTemplateParameter(TemplateParameter::OIHistOI4,
+					criteria_node->FirstChildElement("OI4")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[5] = ExtractPossibleTemplateParameter(TemplateParameter::OIHistOI5,
+					criteria_node->FirstChildElement("OI5")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[6] = ExtractPossibleTemplateParameter(TemplateParameter::OIHistOI6,
+					criteria_node->FirstChildElement("OI6")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[7] = ExtractPossibleTemplateParameter(TemplateParameter::OIHistOI7,
+					criteria_node->FirstChildElement("OI7")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[8] = ExtractPossibleTemplateParameter(TemplateParameter::OIHistOI8,
+					criteria_node->FirstChildElement("OI8")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[9] = ExtractPossibleTemplateParameter(TemplateParameter::OIHistOI9,
+					criteria_node->FirstChildElement("OI9")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[10] = ExtractPossibleTemplateParameter(TemplateParameter::OIHistOI10,
+					criteria_node->FirstChildElement("OI10")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[11] = ExtractPossibleTemplateParameter(TemplateParameter::OIHistOI11,
+					criteria_node->FirstChildElement("OI11")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[12] = ExtractPossibleTemplateParameter(TemplateParameter::OIHistOI12,
+					criteria_node->FirstChildElement("OI12")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[13] = ExtractPossibleTemplateParameter(TemplateParameter::OIHistOI13,
+					criteria_node->FirstChildElement("OI13")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[14] = ExtractPossibleTemplateParameter(TemplateParameter::OIHistOI14,
+					criteria_node->FirstChildElement("OI14")->GetText(), template_key_map_) != "0";
+				criterion.required_oi_number = std::stoi(ExtractPossibleTemplateParameter(TemplateParameter::OIHistNumOIToStart,
+					criteria_node->FirstChildElement("numOIToStart")->GetText(), template_key_map_));
+			}
+			else if(name == "CD4")
+			{
+				auto &criterion = interventions_.rollout_eligibility.cd4_criteria;
+				criterion.rank = std::stoi(ExtractPossibleTemplateParameter(TemplateParameter::CD4Rank,
+					criteria_node->FirstChildElement("rank")->GetText(), template_key_map_));
+				criterion.cd4_lower_bound = std::stoi(ExtractPossibleTemplateParameter(TemplateParameter::CD4CD4Lwr,
+					criteria_node->FirstChildElement("CD4Lwr")->GetText(), template_key_map_));
+				criterion.cd4_upper_bound = std::stoi(ExtractPossibleTemplateParameter(TemplateParameter::CD4CD4Upp,
+					criteria_node->FirstChildElement("CD4Upp")->GetText(), template_key_map_));
+			}
+			else if(name == "CD4OIHist")
+			{
+				auto &criterion = interventions_.rollout_eligibility.cd4_oi_history_criteria;
+				criterion.rank = std::stoi(ExtractPossibleTemplateParameter(TemplateParameter::CD4OIHistRank,
+					criteria_node->FirstChildElement("rank")->GetText(), template_key_map_));
+				criterion.cd4_lower_bound = std::stoi(ExtractPossibleTemplateParameter(TemplateParameter::CD4OIHistCD4Lwr,
+					criteria_node->FirstChildElement("CD4Lwr")->GetText(), template_key_map_));
+				criterion.cd4_upper_bound = std::stoi(ExtractPossibleTemplateParameter(TemplateParameter::CD4OIHistCD4Upp,
+					criteria_node->FirstChildElement("CD4Upp")->GetText(), template_key_map_));
+				criterion.require_oi_history[0] = ExtractPossibleTemplateParameter(TemplateParameter::CD4OIHistOI0,
+					criteria_node->FirstChildElement("OI0")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[0] = ExtractPossibleTemplateParameter(TemplateParameter::CD4OIHistOI1,
+					criteria_node->FirstChildElement("OI1")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[0] = ExtractPossibleTemplateParameter(TemplateParameter::CD4OIHistOI2,
+					criteria_node->FirstChildElement("OI2")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[0] = ExtractPossibleTemplateParameter(TemplateParameter::CD4OIHistOI3,
+					criteria_node->FirstChildElement("OI3")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[0] = ExtractPossibleTemplateParameter(TemplateParameter::CD4OIHistOI4,
+					criteria_node->FirstChildElement("OI4")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[0] = ExtractPossibleTemplateParameter(TemplateParameter::CD4OIHistOI5,
+					criteria_node->FirstChildElement("OI5")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[0] = ExtractPossibleTemplateParameter(TemplateParameter::CD4OIHistOI6,
+					criteria_node->FirstChildElement("OI6")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[0] = ExtractPossibleTemplateParameter(TemplateParameter::CD4OIHistOI7,
+					criteria_node->FirstChildElement("OI7")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[0] = ExtractPossibleTemplateParameter(TemplateParameter::CD4OIHistOI8,
+					criteria_node->FirstChildElement("OI8")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[0] = ExtractPossibleTemplateParameter(TemplateParameter::CD4OIHistOI9,
+					criteria_node->FirstChildElement("OI9")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[0] = ExtractPossibleTemplateParameter(TemplateParameter::CD4OIHistOI10,
+					criteria_node->FirstChildElement("OI10")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[0] = ExtractPossibleTemplateParameter(TemplateParameter::CD4OIHistOI11,
+					criteria_node->FirstChildElement("OI11")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[0] = ExtractPossibleTemplateParameter(TemplateParameter::CD4OIHistOI12,
+					criteria_node->FirstChildElement("OI12")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[0] = ExtractPossibleTemplateParameter(TemplateParameter::CD4OIHistOI13,
+					criteria_node->FirstChildElement("OI13")->GetText(), template_key_map_) != "0";
+				criterion.require_oi_history[0] = ExtractPossibleTemplateParameter(TemplateParameter::CD4OIHistOI14,
+					criteria_node->FirstChildElement("OI14")->GetText(), template_key_map_) != "0";
+			}
+			else if(name == "HVL")
+			{
+				auto &criterion = interventions_.rollout_eligibility.hvl_criteria;
+				criterion.rank = std::stoi(ExtractPossibleTemplateParameter(TemplateParameter::HVLRank,
+					criteria_node->FirstChildElement("rank")->GetText(), template_key_map_));
+				criterion.hvl_lower_bound = std::stoi(ExtractPossibleTemplateParameter(TemplateParameter::HVLHVLLwr,
+					criteria_node->FirstChildElement("HVLLwr")->GetText(), template_key_map_));
+				criterion.hvl_upper_bound = std::stoi(ExtractPossibleTemplateParameter(TemplateParameter::HVLHVLUpp,
+					criteria_node->FirstChildElement("HVLUpp")->GetText(), template_key_map_));
+			}
+			else if(name == "CD4HVL")
+			{
+				auto &criterion = interventions_.rollout_eligibility.cd4_hvl_criteria;
+				criterion.rank = std::stoi(ExtractPossibleTemplateParameter(TemplateParameter::CD4HVLRank,
+					criteria_node->FirstChildElement("rank")->GetText(), template_key_map_));
+				criterion.cd4_lower_bound = std::stoi(ExtractPossibleTemplateParameter(TemplateParameter::CD4HVLCD4Lwr,
+					criteria_node->FirstChildElement("CD4Lwr")->GetText(), template_key_map_));
+				criterion.cd4_upper_bound = std::stoi(ExtractPossibleTemplateParameter(TemplateParameter::CD4HVLCD4Upp,
+					criteria_node->FirstChildElement("CD4Upp")->GetText(), template_key_map_));
+				criterion.hvl_lower_bound = std::stoi(ExtractPossibleTemplateParameter(TemplateParameter::CD4HVLHVLLwr,
+					criteria_node->FirstChildElement("HVLLwr")->GetText(), template_key_map_));
+				criterion.hvl_upper_bound = std::stoi(ExtractPossibleTemplateParameter(TemplateParameter::CD4HVLHVLUpp,
+					criteria_node->FirstChildElement("HVLUpp")->GetText(), template_key_map_));
+			}
+			else
+			{
+				throw std::runtime_error("unknown criterion");
+			}
+
+			criteria_node = criteria_node->NextSiblingElement("criteria", false);
+		}
+
 		auto &target_proportions_node = *art_rollout_node.FirstChildElement("targetRolloutProportions");
 		auto target_node = target_proportions_node.FirstChildElement("target");
 
@@ -701,7 +849,7 @@ void Inputs::LoadInterventions(const ticpp::Element &interventions_node)
 	}
 
 	auto &miscellaneous_interventions = *interventions_node.FirstChildElement("miscellaneousInterventions");
-	auto current_intervention = miscellaneous_interventions.FirstChildElement(false);
+	auto current_intervention = miscellaneous_interventions.FirstChildElement("intervention", false);
 
 	while(current_intervention != nullptr)
 	{
@@ -709,7 +857,7 @@ void Inputs::LoadInterventions(const ticpp::Element &interventions_node)
 
 		param.key = current_intervention->GetAttribute("key");
 		param.time = std::stoi(current_intervention->GetAttribute("time"));
-		param.value = std::stod(current_intervention->GetAttribute("value"));
+		param.value = current_intervention->GetAttribute("value");
 		param.target_population.has_value = current_intervention->GetAttribute("targetPopulation") != "";
 
 		if(param.target_population.has_value)
@@ -719,7 +867,7 @@ void Inputs::LoadInterventions(const ticpp::Element &interventions_node)
 
 		unmatched_parameters_.push_back(param);
 		
-		current_intervention = current_intervention->NextSiblingElement(false);
+		current_intervention = current_intervention->NextSiblingElement("intervention", false);
 	}
 }
 
