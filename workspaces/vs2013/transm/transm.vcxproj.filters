@@ -10,21 +10,6 @@
     <ClCompile Include="..\..\..\source\util\rand\RandomNums.cpp">
       <Filter>util\rand</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\util\ticpp\ticpp.cpp">
-      <Filter>util\ticpp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\util\ticpp\tinystr.cpp">
-      <Filter>util\ticpp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\util\ticpp\tinyxml.cpp">
-      <Filter>util\ticpp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\util\ticpp\tinyxmlerror.cpp">
-      <Filter>util\ticpp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\util\ticpp\tinyxmlparser.cpp">
-      <Filter>util\ticpp</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\statistics\CostsTracker.cpp">
       <Filter>statistics</Filter>
     </ClCompile>
@@ -92,7 +77,9 @@
     <ClCompile Include="..\..\..\source\cepacbridge\CepacInputParser.cpp">
       <Filter>cepacbridge</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\Inputs.cpp" />
+    <ClCompile Include="..\..\..\source\util\xml\pugixml.cpp">
+      <Filter>util\xml</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\Constants.h" />
@@ -103,18 +90,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\util\rand\RandomNums.h">
       <Filter>util\rand</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\util\ticpp\ticpp.h">
-      <Filter>util\ticpp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\util\ticpp\ticpprc.h">
-      <Filter>util\ticpp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\util\ticpp\tinystr.h">
-      <Filter>util\ticpp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\util\ticpp\tinyxml.h">
-      <Filter>util\ticpp</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\statistics\CostsTracker.h">
       <Filter>statistics</Filter>
@@ -198,9 +173,20 @@
     <ClInclude Include="..\..\..\source\statistics\PersonBucket.h">
       <Filter>statistics</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\Inputs.h" />
     <ClInclude Include="..\..\..\source\Outputs.h" />
     <ClInclude Include="..\..\..\source\util\enum_iterator.h">
+      <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\util\xml\pugiconfig.hpp">
+      <Filter>util\xml</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\util\xml\pugixml.hpp">
+      <Filter>util\xml</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\util\Nullable.h">
+      <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\util\Serializable.h">
       <Filter>util</Filter>
     </ClInclude>
   </ItemGroup>
@@ -210,9 +196,6 @@
     </Filter>
     <Filter Include="util\rand">
       <UniqueIdentifier>{3cc184c9-9714-4ea9-ba95-7e71ac201754}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="util\ticpp">
-      <UniqueIdentifier>{a35fabb2-4a8a-4645-8886-633d26782f89}</UniqueIdentifier>
     </Filter>
     <Filter Include="statistics">
       <UniqueIdentifier>{7625ecdd-1071-492b-bbb7-54b57e273e60}</UniqueIdentifier>
@@ -240,6 +223,9 @@
     </Filter>
     <Filter Include="cepacbridge">
       <UniqueIdentifier>{00bfc982-b836-43fa-a6f8-7ebd524ecf8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="util\xml">
+      <UniqueIdentifier>{a35fabb2-4a8a-4645-8886-633d26782f89}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

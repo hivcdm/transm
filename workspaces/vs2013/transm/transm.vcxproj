@@ -349,7 +349,6 @@
     <ClCompile Include="..\..\..\source\entities\Male.cpp" />
     <ClCompile Include="..\..\..\source\entities\Person.cpp" />
     <ClCompile Include="..\..\..\source\graphviz\graphVizParse.cpp" />
-    <ClCompile Include="..\..\..\source\Inputs.cpp" />
     <ClCompile Include="..\..\..\source\Population.cpp" />
     <ClCompile Include="..\..\..\source\PopulationParams.cpp" />
     <ClCompile Include="..\..\..\source\Simulation.cpp" />
@@ -362,12 +361,8 @@
     <ClCompile Include="..\..\..\source\statistics\TransmissionSummaryStats.cpp" />
     <ClCompile Include="..\..\..\source\util\HighResolutionTimerWindows.cpp" />
     <ClCompile Include="..\..\..\source\util\rand\RandomNums.cpp" />
-    <ClCompile Include="..\..\..\source\util\ticpp\ticpp.cpp" />
-    <ClCompile Include="..\..\..\source\util\ticpp\tinystr.cpp" />
-    <ClCompile Include="..\..\..\source\util\ticpp\tinyxml.cpp" />
-    <ClCompile Include="..\..\..\source\util\ticpp\tinyxmlerror.cpp" />
-    <ClCompile Include="..\..\..\source\util\ticpp\tinyxmlparser.cpp" />
     <ClCompile Include="..\..\..\source\util\Util.cpp" />
+    <ClCompile Include="..\..\..\source\util\xml\pugixml.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\cepacbridge\CepacInputParser.h" />
@@ -388,7 +383,6 @@
     <ClInclude Include="..\..\..\source\entities\Male.h" />
     <ClInclude Include="..\..\..\source\entities\Person.h" />
     <ClInclude Include="..\..\..\source\graphviz\graphVizParse.h" />
-    <ClInclude Include="..\..\..\source\Inputs.h" />
     <ClInclude Include="..\..\..\source\Outputs.h" />
     <ClInclude Include="..\..\..\source\Population.h" />
     <ClInclude Include="..\..\..\source\PopulationParams.h" />
@@ -403,13 +397,13 @@
     <ClInclude Include="..\..\..\source\statistics\TabularOutput.h" />
     <ClInclude Include="..\..\..\source\statistics\TransmissionSummaryStats.h" />
     <ClInclude Include="..\..\..\source\util\enum_iterator.h" />
+    <ClInclude Include="..\..\..\source\util\Nullable.h" />
     <ClInclude Include="..\..\..\source\util\rand\RandomNums.h" />
-    <ClInclude Include="..\..\..\source\util\ticpp\ticpp.h" />
-    <ClInclude Include="..\..\..\source\util\ticpp\ticpprc.h" />
-    <ClInclude Include="..\..\..\source\util\ticpp\tinystr.h" />
-    <ClInclude Include="..\..\..\source\util\ticpp\tinyxml.h" />
     <ClInclude Include="..\..\..\source\util\HighResolutionTimer.h" />
+    <ClInclude Include="..\..\..\source\util\Serializable.h" />
     <ClInclude Include="..\..\..\source\util\Util.h" />
+    <ClInclude Include="..\..\..\source\util\xml\pugiconfig.hpp" />
+    <ClInclude Include="..\..\..\source\util\xml\pugixml.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Cepac\Cepac.vcxproj">
