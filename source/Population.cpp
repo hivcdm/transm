@@ -1512,6 +1512,20 @@ void Population::startTreatment(Person *person, SimContext *treatedContext)
 	person->setSimContext(treatedContext);
 }
 
+/*
+int numAccessingTreatment = rolloutTreatedPool.size();
+int month = (parameters_.currTime - parameters_.monthOf1990) % 12;
+if(month == 0)
+{
+int numTreated = std::count_if(rolloutTreatedPool.begin(), rolloutTreatedPool.end(), [](Person *p) { return p->isOnArt(); });
+treatmentCorrectionFactor = numAccessingTreatment / static_cast<double>(numTreated);
+}
+double currentRolloutProportion = parameters_.interpolateMonthlyRolloutProportion();
+int targetTreatmentSlots = static_cast<int>(getSize() * currentRolloutProportion);
+int adjustedTreatmentSlots = targetTreatmentSlots * treatmentCorrectionFactor;
+int newSlots = totalSlots - numTreated;
+*/
+
 void Population::applyARTRollout(EventParams &parameters_)
 {
 	int numTreated = rolloutTreatedPool.size();

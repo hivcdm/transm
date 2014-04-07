@@ -386,6 +386,7 @@
     <ClInclude Include="..\..\..\source\Outputs.h" />
     <ClInclude Include="..\..\..\source\Population.h" />
     <ClInclude Include="..\..\..\source\PopulationParams.h" />
+    <ClInclude Include="..\..\..\source\Serializer.h" />
     <ClInclude Include="..\..\..\source\Simulation.h" />
     <ClInclude Include="..\..\..\source\statistics\ArtRolloutTracker.h" />
     <ClInclude Include="..\..\..\source\statistics\BucketCounter.h" />

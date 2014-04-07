@@ -1,6 +1,6 @@
 #include <boost/filesystem.hpp>
 
-#include "Simulation.h"
+#include "Serializer.h"
 #include "cepac/include.h"
 #include "statistics/TransmissionSummaryStats.h"
 #include "util/Util.h"
@@ -86,8 +86,9 @@ int RunSimulation(const std::string &directory = "")
 
 		auto run_name = boost::filesystem::path(xml).stem().string();
 
+		Serializer r;
 		Simulation s(run_name);
-		s.Deserialize(doc.child("simulation"));
+		r.Deserialize(doc.child("simulation"), s);
 
 		auto message_callback = [](const std::string &s) { std::cout << s; };
 		auto outputs = s.Run(message_callback);

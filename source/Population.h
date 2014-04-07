@@ -275,4 +275,6 @@ private:
 	GraphVizGraphElements *graph;
 
 	EventParams &parameters_;
+
+	double treatmentCorrectionFactor;
 };

@@ -189,6 +189,7 @@
     <ClInclude Include="..\..\..\source\util\Serializable.h">
       <Filter>util</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\Serializer.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="util">

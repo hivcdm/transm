@@ -7,7 +7,6 @@
 #include "util/HighResolutionTimer.h"
 #include "util/Nullable.h"
 #include "util/xml/pugixml.hpp"
-#include "util/Serializable.h"
 
 class InfectionsTracker;
 
@@ -113,14 +112,10 @@ enum class TemplateParameter
 	CswChanceCondomUsePerEventLowRisk
 };
 
-class Simulation : public Serializable
+class Simulation
 {
 public:
 	typedef std::function<void(const std::string &)> MessageCallback;
-
-	void Deserialize(const pugi::xml_node &node);
-
-	void Serialize(pugi::xml_node &parent_node);
 
 	Simulation(const std::string &run_name);
 
@@ -145,6 +140,8 @@ public:
 	int GetTime() { return time_; }
 
 private:
+	friend class Serializer;
+
 	struct TreatmentFile
 	{
 		std::string file_name;
@@ -160,7 +157,7 @@ private:
 		Nullable<PopulationTarget> target_population;
 		std::string value;
 		std::function<void(Person *)> population_modifier;
-		std::function<void(Simulation &)> simulation_modifier;
+		std::function<void(const std::string &)> simulation_modifier;
 	};
 
 	typedef std::array<TreatmentFile, Constants::NUMBER_OF_CEPAC_FILES> CepacTreatmentFiles;
