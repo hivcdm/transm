@@ -885,8 +885,7 @@ void Person::rollForBecomeSexWorker(EventParams &_eventParams, bool _isInit, dou
 	}
 	else
 	{
-		currGenderChanceBecomeCSW = (getDmgProfileVal(DmgProfile::GENDER) == DmgProfile::MALE) ? Male::getPopParams(
-		                                populationID)->getChanceBecomeCSW() : Female::getPopParams(populationID)->getChanceBecomeCSW();
+		currGenderChanceBecomeCSW = getChanceBecomeCsw();
 	}
 
 	if(_eventParams.randomNums.chance(currGenderChanceBecomeCSW))

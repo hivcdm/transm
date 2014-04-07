@@ -3,26 +3,35 @@
 #include "../Constants.h"
 #include "../util/Util.h"
 
+void Female::SubPopParams::Deserialize(const pugi::xml_node &entity_node)
+{
+	auto behavior_node = entity_node.child("behavior");
+	chanceBecomeCSW = behavior_node.child("chanceBecomeSexWorker").text().as_double();
+	proportionHighRisk[DmgProfile::NON_CSW] = behavior_node.child("proportionHighRiskNonCSW").text().as_double();
+	proportionHighRisk[DmgProfile::CSW] = behavior_node.child("proportionHighRiskCSW").text().as_double();
+	activityLevel.Deserialize(behavior_node.child("activityLevel"));
+
+	auto transmission_node = entity_node.child("health").child("transmissionCoefficients");
+	std::stringstream ss(transmission_node.child("valsByHVL").text().as_string());
+	for(int i = 0; i < SimContext::HVL_NUM_STRATA; i++)
+	{
+		double coefficient;
+		ss >> coefficient;
+		transmitPerEventCoeffs.push_back(coefficient);
+	}
+	transmitPerEventCoeffs.push_back(transmission_node.child("primary").text().as_double());
+	transmitPerEventCoeffs.push_back(transmission_node.child("lateStage").text().as_double());
+}
+
+void Female::SubPopParams::Serialize(pugi::xml_node &)
+{
+	throw std::runtime_error("not implemented");
+}
+
 //each index of the array contains parameters for a different population
 //(as of 9/8/08, we only have 1 population for now so the size of the vector will default to 1
 Female::SubPopParams::SubPopParams()
 {
-}
-
-Female::SubPopParams::SubPopParams(const PopulationSettings::FemaleSettings &settings, EventParams &_eventParams)
-{
-	try
-	{
-		chanceBecomeCSW = settings.chance_become_sex_worker;
-		proportionHighRisk[DmgProfile::CSW] = settings.proportion_high_risk_csw;
-		proportionHighRisk[DmgProfile::NON_CSW] = settings.proportion_high_risk_non_csw;
-		activityLevel = settings.activity_level;
-		transmitPerEventCoeffs.assign(settings.transmission_coefficients.begin(), settings.transmission_coefficients.end());
-	}
-	catch(ticpp::Exception &_e)
-	{
-		throw std::runtime_error("Female: Exception raised: " + _e.m_details);
-	}
 }
 
 double Female::SubPopParams::getChanceBecomeCSW() const
@@ -44,28 +53,12 @@ double Female::SubPopParams::getTransmitPerEventCoeff(HVLStrata _hvl) const
 	return transmitPerEventCoeffs.at(_hvl);
 }
 
-//-----------------< End population-level parameters for females >-----------------------/
-
-vector<Female::SubPopParams *> Female::populationSpecificParams;
-
-Female::SubPopParams *Female::getPopParams(unsigned int _populationID)
-{
-	assert(_populationID < Female::populationSpecificParams.size());
-	return Female::populationSpecificParams.at(_populationID);
-}
-void Female::addPopParams(unsigned int _populationID, const PopulationSettings::FemaleSettings &settings, EventParams &_eventParams)
-{
-	assert(_populationID == Female::populationSpecificParams.size());
-	Female::SubPopParams *subPopParams = new Female::SubPopParams(settings, _eventParams);
-	Female::populationSpecificParams.push_back(subPopParams);
-}
-
-Female::Female(EventParams &_eventParams, int _ageMths, unsigned int _populationID)
-	: Person(_eventParams, _ageMths, _populationID)
+Female::Female(EventParams &_eventParams, int _ageMths, unsigned int _populationID, const Female::SubPopParams &params)
+	: Person(_eventParams, _ageMths, _populationID),
+	populationSpecificParams(params)
 {
 	dmgProfile.set(DmgProfile::GENDER, DmgProfile::FEMALE);
-	const Female::SubPopParams *femaleSubPopParams = getPopParams(populationID);
-	activityLevel = _eventParams.randomNums.randNorm_NaturalNum(femaleSubPopParams->getActivityLevel());
+	activityLevel = _eventParams.randomNums.randNorm_NaturalNum(populationSpecificParams.getActivityLevel());
 
 	//activity level should not ever be 0
 	if(activityLevel == 0)
@@ -149,13 +142,23 @@ double Female::getMaxPartnerSelectVal(Person::SelectingCriteria /*_PSC*/,
 double Female::getTransmissionCoeff()
 {
 	assert(Util::withinRange(hvl, HVL_ZERO, HVL_LATESTAGE));
-	return Female::populationSpecificParams.at(populationID)->getTransmitPerEventCoeff(hvl);
+	return populationSpecificParams.getTransmitPerEventCoeff(hvl);
+}
+
+double Female::getChanceBecomeCsw() const
+{
+	return populationSpecificParams.getChanceBecomeCSW();
+}
+
+void Female::SetChanceCondomUsePerEvent(Person::RiskLevel /*risk*/, SexualPartnership::Type /*partnershipType*/, BetaDist /*dist*/)
+{
+	throw std::runtime_error("not allowed");
 }
 
 void Female::rerollRiskGroup(EventParams &_eventParams)
 {
 	DmgProfile::Employment cswStatus = (DmgProfile::Employment) getDmgProfileVal(DmgProfile::EMPLOYMENT);
-	double chanceHighRisk = getPopParams(populationID)->getProportionHighRisk(cswStatus);
+	double chanceHighRisk = populationSpecificParams.getProportionHighRisk(cswStatus);
 
 	if(_eventParams.randomNums.chance(chanceHighRisk))
 	{

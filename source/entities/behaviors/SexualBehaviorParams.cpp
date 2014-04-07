@@ -1,55 +1,53 @@
 #include "SexualBehaviorParams.h"
 #include "../Person.h"
 
-SexualBehaviorParams::SexualBehaviorParams(const PopulationSettings::MaleSettings &settings, SexualPartnership::Type type, EventParams &params)
+void SexualBehaviorParams::Deserialize(const pugi::xml_node &node)
 {
-	partnershipType = type;
+	std::string type_string = node.child("type").text().as_string();
+	if(type_string == "CSW") partnershipType = SexualPartnership::Type::Csw;
+	if(type_string == "Casual") partnershipType = SexualPartnership::Type::Casual;
+	if(type_string == "Regular") partnershipType = SexualPartnership::Type::Regular;
+	if(type_string == "Steady") partnershipType = SexualPartnership::Type::Steady;
 
-	double multiplier = settings.high_risk_multiplier;
+	acquisitionRatePerMonth[Person::LOW].Deserialize(node.child("acquisitionRateLowRisk"));
+	acquisitionRatePerMonth[Person::HIGH].Deserialize(node.child("acquisitionRateHighRisk"));
 
-	if(type == SexualPartnership::Type::Csw && settings.enable_high_risk_multiplier && settings.enable_csw_high_risk_multiplier)
-	{
-		multiplier = settings.csw_high_risk_multiplier;
-	}
-
-	acquisitionRatePerMonth[Person::LOW] = settings.partnership_settings.at(type).acquisition_rate_low_risk;
-
-	params.displayOut("Average acquisition rate for relationship type "
-		+ SexualPartnership::TypeStrings.at(type) + " and risk level LOW is " +
-		std::to_string(acquisitionRatePerMonth[Person::LOW].getMean()) + "\n");
-
-	if(settings.enable_high_risk_multiplier)
-	{
-		acquisitionRatePerMonth[Person::HIGH] = settings.partnership_settings.at(type).acquisition_rate_low_risk;
-		acquisitionRatePerMonth[Person::HIGH].mu += log(multiplier);
-	}
-	else
-	{
-		acquisitionRatePerMonth[Person::HIGH] = settings.partnership_settings.at(type).acquisition_rate_high_risk;
-	}
-
-	params.displayOut("Average acquisition rate for relationship type "
-		+ SexualPartnership::TypeStrings.at(type) + " and risk level HIGH is " +
-		std::to_string(acquisitionRatePerMonth[Person::HIGH].getMean()) + "\n");
-
-	for(const auto &bucket_settings : settings.partnership_settings.at(type).available_buckets)
+	for(const auto &bucket_settings : node.select_nodes("selectionCriteria/availableBuckets/bucket"))
 	{
 		SexualBehaviorParams::AvailableBucket bucket;
-		bucket.dmgProfileSelector.parse(bucket_settings.first);
-		bucket.weight = bucket_settings.second;
+		bucket.dmgProfileSelector.parse(bucket_settings.node().child("DmgProfile").text().as_string());
+		bucket.weight = bucket_settings.node().child("weightedValue").text().as_double();
 		availableBuckets.push_back(bucket);
 	}
 
-	averageYearsYounger = settings.partnership_settings.at(type).average_years_younger;
+	averageYearsYounger.Deserialize(node.child("selectionCriteria").child("AverageYearsYounger"));
 
-	coitalEventsPerMonth[Person::LOW] = settings.partnership_settings.at(type).coital_events_per_month_low_risk;
-	coitalEventsPerMonth[Person::HIGH] = settings.partnership_settings.at(type).coital_events_per_month_high_risk;
+	//XXX:this should be a double, but old implementations mistakenly casted it to int
+	//we will continue to do this to maintain reproduciblity for now
+	coitalEventsPerMonth[Person::LOW] = node.select_single_node("coitalEventsPerMonthLowRisk/Distrib/mean").node().text().as_int();
+	coitalEventsPerMonth[Person::HIGH] = node.select_single_node("coitalEventsPerMonthHighRisk/Distrib/mean").node().text().as_int();
 
-	chanceCondomUsePerEvent[Person::LOW] = settings.partnership_settings.at(type).chance_condom_user_per_event_low_risk;
-	chanceCondomUsePerEvent[Person::HIGH] = settings.partnership_settings.at(type).chance_condom_user_per_event_low_risk;
+	chanceCondomUsePerEvent[Person::LOW].Deserialize(node.child("chanceCondomUsePerEventLowRisk"));
+	chanceCondomUsePerEvent[Person::HIGH].Deserialize(node.child("chanceCondomUsePerEventHighRisk"));
 
-	partnershipDurationMth[Person::LOW] = settings.partnership_settings.at(type).partnership_duration_months_low_risk;
-	partnershipDurationMth[Person::HIGH] = settings.partnership_settings.at(type).partnership_duration_months_high_risk;
+	partnershipDurationMth[Person::LOW].Deserialize(node.child("partnershipDurationMthLowRisk"));
+	partnershipDurationMth[Person::HIGH].Deserialize(node.child("partnershipDurationMthHighRisk"));
+}
+
+void SexualBehaviorParams::SetHighRiskMultiplier(double multiplier)
+{
+	acquisitionRatePerMonth[Person::HIGH] = acquisitionRatePerMonth[Person::LOW];
+	acquisitionRatePerMonth[Person::HIGH].mu += log(multiplier);
+}
+
+void SexualBehaviorParams::ApplyCoefficientVariation(double coefficient)
+{
+	throw std::runtime_error("not implemented");
+}
+
+void SexualBehaviorParams::Serialize(pugi::xml_node &)
+{
+	throw std::runtime_error("not implemented");
 }
 
 SexualBehaviorParams::SexualBehaviorParams()

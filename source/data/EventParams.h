@@ -76,7 +76,7 @@ public :
 	public:
 		int minPartnershipsNeeded;
 		bool useDefinition;
-		ConcurrencyDef(int min, bool def)
+		ConcurrencyDef(int min = -1, bool def = false)
 		{
 			minPartnershipsNeeded = min;
 			useDefinition = def;
@@ -173,10 +173,6 @@ public :
 	//If we are using rollout use the cepac files specified in the ART rollout section
 	bool useRollout;
 
-	//Use ceofficient method of vartiation (used for heterogeneity)
-	bool useCoefficientVariation;
-	double coefficientOfVariation;
-
 	//timesToSwitchSimContext[0] should always be 0 by default (?)
 	int timesToSwitchSimContext[Constants::NUMBER_OF_CEPAC_FILES];
 
@@ -229,7 +225,8 @@ public :
 	bool tracePrevalentCases;
 
 	//Concurrency Definitions
-	ConcurrencyDef *concurrencyDef[Constants::NUMBER_CONCURRENCY_DEFS];
+	std::array<ConcurrencyDef, Constants::NUMBER_CONCURRENCY_DEFS> concurrencyDef;
+
 	//prints BatchStats files for each of up to five variables as determined by user input
 	std::fstream BatchStatsStream[ENDBatchStatsVariables];
 
@@ -276,7 +273,7 @@ public :
 	bool genGraphViz;			//will generate GraphViz output files if true
 
 	//closes all the trace files
-	inline void close()
+	~EventParams()
 	{
 		for(int i = 0; i < Constants::NUMBER_OF_TRACE_FILES; i++)
 		{
@@ -321,10 +318,5 @@ public :
 		}
 
 		delete cepacTracer;
-
-		for(int i = 0; i < Constants::NUMBER_CONCURRENCY_DEFS; i++)
-		{
-			delete concurrencyDef[i];
-		}
 	}
 };

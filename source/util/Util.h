@@ -11,6 +11,7 @@ struct Version
 {
 	static Version FromString(const std::string &version_string);
 	static std::string ToString(const Version &version);
+	static int Compare(const Version &v1, const Version &v2, bool ignore_patch = false);
 
 	int major = 0;
 	int minor = 1;

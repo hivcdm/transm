@@ -1,17 +1,18 @@
 #pragma once
 
-#include <list>
-#include "../statistics/StatsRecord.h"
-#include "./classifiers/DmgProfile.h"
-#include "./classifiers/SexualPartnership.h"
-#include "./../Constants.h"
-#include "../util/Util.h"
-#include "./entitypool/bucket/FullVector.h"
 #include <iostream>
-#include <vector>
+#include <list>
 #include <set>
+#include <vector>
+
+#include "classifiers/DmgProfile.h"
+#include "classifiers/SexualPartnership.h"
+#include "entitypool/bucket/FullVector.h"
+#include "../Constants.h"
 #include "../cepac/Patient.h"
 #include "../graphviz/graphVizParse.h"
+#include "../statistics/StatsRecord.h"
+#include "../util/Util.h"
 
 class ArtRolloutTracker;
 class CostsTracker;
@@ -206,9 +207,6 @@ protected:
 	//The indices which point to the person in their assigned FullVector
 	map<FullVector *, vector<unsigned int>> FVindices; //The indices of the the person in their assigned FullVector
 
-
-	//-------------------< End Data Fields >-----------------------//
-
 public:
 
 	//dummy constructor
@@ -258,6 +256,8 @@ public:
 	 * Prevalent cases should call "becomeInfected" before calling this function; incident cases will become infected later
 	 */
 	void initialCEPACpatient(EventParams &_eventParams);
+
+	virtual double getChanceBecomeCsw() const = 0;
 
 	/**
 	 * @return generationOfInfection
@@ -608,7 +608,7 @@ public:
 	//-----------------< END getters, setters, and helper methods >--------------//
 
 
-
+	virtual void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist) = 0;
 
 
 	/**

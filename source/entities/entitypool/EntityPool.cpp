@@ -213,7 +213,8 @@ bool EntityPool::removeEntity(Person *_person)
 	{
 		try
 		{
-			removed = getBucket(personProfID)->erase(_person);
+			auto bucket = getBucket(personProfID);
+			removed = bucket->erase(_person);
 		}
 		catch(std::out_of_range &e)
 		{

@@ -140,7 +140,7 @@ private:
 	//allows for quick look-up of ProfileID given a tuple
 	static std::map<DmgProfile, ProfileID, DmgProfile::less> ProfileToProfileID;
 	//allows for quick look-up of tuple given the dmgProfileID
-	static std::vector <const DmgProfile *> ProfileIDtoProfile;
+	static std::vector<std::unique_ptr<const DmgProfile>> ProfileIDtoProfile;
 	static std::vector <std::string> ProfileIDtoStr;
 
 	//------------< End fields >--------------//

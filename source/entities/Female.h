@@ -1,9 +1,9 @@
 #pragma once
+
 #include "Person.h"
-#include "../Inputs.h"
 #include "../data/EventParams.h"
-#include "../util/ticpp/ticpp.h"
 #include "../util/rand/RandomNums.h"
+#include "../util/Serializable.h"
 
 /***
 All females in the simulation are members of this class, or a class derived from this one
@@ -11,63 +11,40 @@ All females in the simulation are members of this class, or a class derived from
 class Female : public Person
 {
 public:
-
-	//----------------< BEGIN class SubPopParams >--------------------------//
 	/**
 	These are parameters that describe the population of females.
 	Each Population in the Sim will have a separate one of these referenced by the population's ID.
 
 	@author schung5
 	**/
-	class SubPopParams
+	class SubPopParams : public Serializable
 	{
-		//-----------< BEGIN data fields >--------------------//
-		double chanceBecomeCSW;		//chance that a female will become a CSW
-		double proportionHighRisk[DmgProfile::ENDEmployment];  //proportion of female population that is in the "high risk" lists
-		NormalDist activityLevel; //Distribution of activity level (i.e. marbles)
-		vector<double> transmitPerEventCoeffs;	 //chance of infection for women->men, w/o circumcision or condoms
-		//-----------< END data fields >--------------------//
-
 	public :
-		SubPopParams();
-		SubPopParams(const PopulationSettings::FemaleSettings &settings, EventParams &_eventParams);
+		void Deserialize(const pugi::xml_node &node);
 
-		//-----------< BEGIN getters >--------------------//
+		void Serialize(pugi::xml_node &parent_node);
+
+		SubPopParams();
+
 		double getChanceBecomeCSW() const;
 		double getProportionHighRisk(DmgProfile::Employment) const;
 		NormalDist getActivityLevel() const;
 		double getTransmitPerEventCoeff(HVLStrata _hvl) const;
-		//-----------< END getters >--------------------//
+
+	private:
+		double chanceBecomeCSW;		//chance that a female will become a CSW
+		double proportionHighRisk[DmgProfile::ENDEmployment];  //proportion of female population that is in the "high risk" lists
+		NormalDist activityLevel; //Distribution of activity level (i.e. marbles)
+		std::vector<double> transmitPerEventCoeffs;	 //chance of infection for women->men, w/o circumcision or condoms
 	};
-	//----------------< END class SubPopParams >--------------------------//
-
-private:
-
-	//this vector holds Parameters for females different populations it is used to populate fields
-	//	for each instance of Female w/ different values depending on which Population the Female is part of
-	//	Rationale: So females don't really have to know much about the population they are in except for the ID
-	static vector<SubPopParams *> populationSpecificParams;
 
 public:
-	/**
-	Add a set of population parameters to be used by Males of that population
-	@author schung5
-	**/
-	static void addPopParams(unsigned int _populationID, const PopulationSettings::FemaleSettings &settings, EventParams &_eventParams);
-
-	/**
-	Access a set of population parameters to be used by Males of that population
-	@author schung5
-	**/
-	static SubPopParams *getPopParams(unsigned int _populationID);
-
-
 	/**
 	//this constructor creates Females that can be simulated
 	//the parameters match the ones in Person(...)
 	@author schung5
 	**/
-	Female(EventParams &_eventParams, int _ageMths,  unsigned int _populationID);
+	Female(EventParams &_eventParams, int _ageMths, unsigned int _populationID, const Female::SubPopParams &params);
 	~Female(void);
 
 	/** Start: Inherited from Person, comments found there **/
@@ -87,5 +64,10 @@ public:
 	//writes state of person to file
 	void saveState(ostream &_outStream, long currTime);
 
-	/** end: Inherited from Person **/
+	double getChanceBecomeCsw() const;
+
+	void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist);
+
+private:
+	SubPopParams populationSpecificParams;
 };

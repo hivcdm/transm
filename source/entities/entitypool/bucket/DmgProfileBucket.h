@@ -5,6 +5,7 @@
 
 class Person;
 class RandomNums;
+class PopulationTarget;
 
 /***
     This class is a simple container for Entitys and allows us to add, count, get, and remove them
@@ -40,6 +41,8 @@ public:
 	This method will return a label for this DmgProfileBucket
 	**/
 	const string *getLabel();
+
+	void Apply(const PopulationTarget &target, std::function<void(Person*)> modifier);
 
 	//------------< End Implemented Methods >----------------//
 

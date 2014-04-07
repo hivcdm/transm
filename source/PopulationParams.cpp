@@ -91,10 +91,10 @@ void PopulationParams::AgeBucketPrevalenceInfo::copyToSelf(AgeBucketPrevalenceIn
 	}
 }
 
-//-------------< End AgeBucketPrevalenceInfo methods >-------------------//
-
-
-//-------------< Begin PopulationParams methods >-------------------//
+void PopulationParams::Serialize(pugi::xml_node &)
+{
+	throw std::runtime_error("not implemented");
+}
 
 PopulationParams::PopulationParams()
 {
@@ -120,139 +120,109 @@ PopulationParams::~PopulationParams()
 	}
 }
 
-void PopulationParams::init(const Inputs &inputs, unsigned int _populationID, EventParams &_eventParams)
+void PopulationParams::Deserialize(const pugi::xml_node &node)
 {
-	populationID = _populationID;
-	
-	_eventParams.displayOut("Population Parameters\n");
-	std::string temp;
+	auto initial_state_node = node.child("initialState");
+	initSize = initial_state_node.child("size").text().as_int();
 
-	try
+	//get initial age distribution
+	for(auto age_bucket_node : initial_state_node.child("ageDistributionYrs").children("range"))
 	{
-		initSize = inputs.GetPopulationSettings().initial_size;
-		_eventParams.displayOut("\tsize = " + std::to_string(initSize) + "\n");
+		initialAgeBuckets.push_back(
+			new AgeBucketPrevalenceInfo(
+				Util::convertTime(YEAR, MONTH, age_bucket_node.child("minAge").text().as_int()),
+				Util::convertTime(YEAR, MONTH, age_bucket_node.child("maxAge").text().as_int()) + 11,
+				age_bucket_node.child("distribMale").text().as_double(),
+				age_bucket_node.child("distribFemale").text().as_double(),
+				age_bucket_node.child("numInfectedMaleCSW").text().as_int(),
+				age_bucket_node.child("numInfectedFemaleCSW").text().as_int(),
+				age_bucket_node.child("numInfectedMaleLowRisk").text().as_int(),
+				age_bucket_node.child("numInfectedFemaleLowRisk").text().as_int(),
+				age_bucket_node.child("numInfectedMaleHighRisk").text().as_int(),
+				age_bucket_node.child("numInfectedFemaleHighRisk").text().as_int()));
+	}
 
-		//initial proportion married
-		//TODO: Change me based on marriage acquisition rates et al
-		//initproportionMarried  = initialState->FirstChildElement("proportionMarried")->GetText<double>();
-		//initproportionRegular = initialState->FirstChildElement("proportionRegular")->GetText<double>();
-		//get initial age distribution
-		for(const auto &age_bucket : inputs.GetPopulationSettings().age_distributions)
-		{
-			initialAgeBuckets.push_back(
-				new AgeBucketPrevalenceInfo(
-					Util::convertTime(YEAR, MONTH, age_bucket.lower),
-					Util::convertTime(YEAR, MONTH, age_bucket.upper) + 11,
-					age_bucket.male_distribution,
-					age_bucket.female_distribution,
-					age_bucket.num_infected_male_csw,
-					age_bucket.num_infected_female_csw,
-					age_bucket.num_infected_male_low_risk,
-					age_bucket.num_infected_female_low_risk,
-					age_bucket.num_infected_male_high_risk,
-					age_bucket.num_infected_female_high_risk));
-		}
+	initProbCSW[DmgProfile::MALE] = initial_state_node.child("chanceBeingCSWMale").text().as_double();
+	initProbCSW[DmgProfile::FEMALE] = initial_state_node.child("chanceBeingCSWFemale").text().as_double();
+	CSWEndAgeMth[DmgProfile::MALE] = Util::convertTime(YEAR, MONTH, initial_state_node.child("CSWEndAgeMale").text().as_int());
+	CSWEndAgeMth[DmgProfile::FEMALE] = Util::convertTime(YEAR, MONTH, initial_state_node.child("CSWEndAgeFemale").text().as_int());
 
-		initProbCSW[DmgProfile::MALE] = inputs.GetPopulationSettings().initial_chance_csw_male;
-		initProbCSW[DmgProfile::FEMALE] = inputs.GetPopulationSettings().initial_chance_csw_female;
-		CSWEndAgeMth[DmgProfile::MALE] = Util::convertTime(YEAR, MONTH, inputs.GetPopulationSettings().csw_end_age_male);
-		CSWEndAgeMth[DmgProfile::FEMALE] = Util::convertTime(YEAR, MONTH, inputs.GetPopulationSettings().csw_end_age_female);
+	//normalize %population values for each age bucket
+	double totalPopulationproportionages[DmgProfile::ENDGender];
 
-		//normalize %population values for each age bucket
-		double totalPopulationproportionages[DmgProfile::ENDGender];
-
-		//get the total of proportionage values of AgeBucketPrevalencInfo.proportionOfPopulation
-		for(int i = 0; i < DmgProfile::ENDGender; i++)
-		{
-			totalPopulationproportionages[i] = 0.0;
-
-			for(size_t ageBucketNum = 0; ageBucketNum < initialAgeBuckets.size(); ageBucketNum++)
-			{
-				totalPopulationproportionages[i] = totalPopulationproportionages[i] + initialAgeBuckets.at(
-					ageBucketNum)->proportionOfPopulation[i];
-			}
-
-			//normalize each proportionage value so that the sum of them == 1
-			for(size_t ageBucketNum = 0; ageBucketNum < initialAgeBuckets.size(); ageBucketNum++)
-			{
-				initialAgeBuckets.at(ageBucketNum)->proportionOfPopulation[i] = initialAgeBuckets.at(
-					ageBucketNum)->proportionOfPopulation[i] / totalPopulationproportionages[i];
-			}
-		}
+	//get the total of proportionage values of AgeBucketPrevalencInfo.proportionOfPopulation
+	for(int i = 0; i < DmgProfile::ENDGender; i++)
+	{
+		totalPopulationproportionages[i] = 0.0;
 
 		for(size_t ageBucketNum = 0; ageBucketNum < initialAgeBuckets.size(); ageBucketNum++)
 		{
-			initialAgeBuckets.at(ageBucketNum)->print(_eventParams);
+			totalPopulationproportionages[i] = totalPopulationproportionages[i] + initialAgeBuckets.at(
+				ageBucketNum)->proportionOfPopulation[i];
 		}
 
-		//dmgProfile parameters
-		birthRate = inputs.GetPopulationSettings().birth_rate;
-		proportionMale = inputs.GetPopulationSettings().proportion_male;
-		circumcised = inputs.GetPopulationSettings().proportion_circumcised;
-		SAEntAgeMths = Util::convertTime(YEAR, MONTH, inputs.GetPopulationSettings().age_sexual_debut);
-
-		//ASSORTATIVENESS GOES HERE
-		assort[(int)SexualPartnership::Type::Steady] = inputs.GetPopulationSettings().male_settings.partnership_settings.at(SexualPartnership::Type::Steady).assortativeness;
-		assort[(int)SexualPartnership::Type::Regular] = inputs.GetPopulationSettings().male_settings.partnership_settings.at(SexualPartnership::Type::Regular).assortativeness;
-		assort[(int)SexualPartnership::Type::Casual] = inputs.GetPopulationSettings().male_settings.partnership_settings.at(SexualPartnership::Type::Casual).assortativeness;
-		assort[(int)SexualPartnership::Type::Csw] = inputs.GetPopulationSettings().male_settings.partnership_settings.at(SexualPartnership::Type::Csw).assortativeness;
-
-		Male::addPopParams(populationID, inputs.GetPopulationSettings().male_settings, _eventParams);
-		maleParams = Male::getPopParams(populationID);
-
-		Female::addPopParams(populationID, inputs.GetPopulationSettings().female_settings, _eventParams);
-		femaleParams = Female::getPopParams(populationID);
-
-		//Get the initial marriage prevalence based on percent male high risk and rate and duration of steady relationships
-		double pHigh = maleParams->getProportionHighRisk(DmgProfile::NON_CSW);
-		double marriageRateH = maleParams->getSexualBehaviorParams(SexualPartnership::Type::Steady)->getAcquisitionRatePerMonth(
-			Person::HIGH).getMean();
-		double marriageRateL = maleParams->getSexualBehaviorParams(SexualPartnership::Type::Steady)->getAcquisitionRatePerMonth(
-			Person::LOW).getMean();
-		double marriageDurationH = maleParams->getSexualBehaviorParams(
-			SexualPartnership::Type::Steady)->getPartnershipDurationMth(Person::HIGH).getMean();
-		double marriageDurationL = maleParams->getSexualBehaviorParams(
-			SexualPartnership::Type::Steady)->getPartnershipDurationMth(Person::LOW).getMean();
-		initproportionMarried = (1 - pHigh) * (marriageRateL * marriageDurationL) / (1 + marriageRateL *
-			marriageDurationL) + pHigh * (marriageRateH * marriageDurationH) / (1 + marriageRateH * marriageDurationH);
-		//Get the initial regular prevalence based on percent male high risk and rate and duration of regular relationships
-		double regularRateH = maleParams->getSexualBehaviorParams(SexualPartnership::Type::Regular)->getAcquisitionRatePerMonth(
-			Person::HIGH).getMean();
-		double regularRateL = maleParams->getSexualBehaviorParams(SexualPartnership::Type::Regular)->getAcquisitionRatePerMonth(
-			Person::LOW).getMean();
-		double regularDurationH = maleParams->getSexualBehaviorParams(
-			SexualPartnership::Type::Regular)->getPartnershipDurationMth(Person::HIGH).getMean();
-		double regularDurationL = maleParams->getSexualBehaviorParams(
-			SexualPartnership::Type::Regular)->getPartnershipDurationMth(Person::LOW).getMean();
-		initproportionRegular = (1 - pHigh) * (regularRateL * regularDurationL) + pHigh *
-			(regularRateH * regularDurationH);
-		//Costs
-		condomCost = inputs.GetCosts().condom_cost;
-		circumcisionCost = inputs.GetCosts().circumcision_cost;
+		//normalize each proportionage value so that the sum of them == 1
+		for(size_t ageBucketNum = 0; ageBucketNum < initialAgeBuckets.size(); ageBucketNum++)
+		{
+			initialAgeBuckets.at(ageBucketNum)->proportionOfPopulation[i] = initialAgeBuckets.at(
+				ageBucketNum)->proportionOfPopulation[i] / totalPopulationproportionages[i];
+		}
 	}
-	catch(ticpp::Exception &_e)
-	{
-		_eventParams.displayOut("PopulationParams: Exception raised: ");
-		_eventParams.displayOut(_e.m_details.c_str());
-		_eventParams.displayOut("\n");
-		Util::exitWithPrompt(-1);
-	}
+
+	//dmgProfile parameters
+	birthRate = node.child("birthRate").text().as_double();
+	proportionMale = node.child("proportionMale").text().as_double();
+	circumcised = node.child("proportionCircumcised").text().as_double();
+	SAEntAgeMths = Util::convertTime(YEAR, MONTH, node.child("ageSexualDebutYrs").text().as_double());
+
+	//ASSORTATIVENESS GOES HERE
+	assort[(int)SexualPartnership::Type::Steady] = node.child("assortativeness").child("steady").text().as_double();
+	assort[(int)SexualPartnership::Type::Regular] = node.child("assortativeness").child("regular").text().as_double();
+	assort[(int)SexualPartnership::Type::Casual] = node.child("assortativeness").child("casual").text().as_double();
+	assort[(int)SexualPartnership::Type::Csw] = node.child("assortativeness").child("csw").text().as_double();
+
+	defaultMaleParams.Deserialize(node.select_single_node("entityTypes/baseEntities/baseEntity[type='Male']").node());
+	defaultFemaleParams.Deserialize(node.select_single_node("entityTypes/baseEntities/baseEntity[type='Female']").node());
+
+	//Get the initial marriage prevalence based on percent male high risk and rate and duration of steady relationships
+	double pHigh = defaultMaleParams.getProportionHighRisk(DmgProfile::NON_CSW);
+	double marriageRateH = defaultMaleParams.getSexualBehaviorParams(SexualPartnership::Type::Steady).getAcquisitionRatePerMonth(
+		Person::HIGH).getMean();
+	double marriageRateL = defaultMaleParams.getSexualBehaviorParams(SexualPartnership::Type::Steady).getAcquisitionRatePerMonth(
+		Person::LOW).getMean();
+	double marriageDurationH = defaultMaleParams.getSexualBehaviorParams(
+		SexualPartnership::Type::Steady).getPartnershipDurationMth(Person::HIGH).getMean();
+	double marriageDurationL = defaultMaleParams.getSexualBehaviorParams(
+		SexualPartnership::Type::Steady).getPartnershipDurationMth(Person::LOW).getMean();
+	initproportionMarried = (1 - pHigh) * (marriageRateL * marriageDurationL) / (1 + marriageRateL *
+		marriageDurationL) + pHigh * (marriageRateH * marriageDurationH) / (1 + marriageRateH * marriageDurationH);
+	//Get the initial regular prevalence based on percent male high risk and rate and duration of regular relationships
+	double regularRateH = defaultMaleParams.getSexualBehaviorParams(SexualPartnership::Type::Regular).getAcquisitionRatePerMonth(
+		Person::HIGH).getMean();
+	double regularRateL = defaultMaleParams.getSexualBehaviorParams(SexualPartnership::Type::Regular).getAcquisitionRatePerMonth(
+		Person::LOW).getMean();
+	double regularDurationH = defaultMaleParams.getSexualBehaviorParams(
+		SexualPartnership::Type::Regular).getPartnershipDurationMth(Person::HIGH).getMean();
+	double regularDurationL = defaultMaleParams.getSexualBehaviorParams(
+		SexualPartnership::Type::Regular).getPartnershipDurationMth(Person::LOW).getMean();
+	initproportionRegular = (1 - pHigh) * (regularRateL * regularDurationL) + pHigh *
+		(regularRateH * regularDurationH);
+
+	//Costs
+	condomCost = node.child("costs").child("condomCost").text().as_double();
+	circumcisionCost = node.child("costs").child("circumcisionCost").text().as_double();
 
 	//save flags to indicate whether particular partnership types have duration or not
 	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
 	{
 		partnershipsHaveDuration[DmgProfile::MALE][type] = 
-			!(maleParams->getSexualBehaviorParams(SexualPartnership::Type(type))->getPartnershipDurationMth(Person::LOW).isZeroDistrib)
-			&& !(maleParams->getSexualBehaviorParams(SexualPartnership::Type(type))->getPartnershipDurationMth(Person::HIGH).isZeroDistrib);
+			!(defaultMaleParams.getSexualBehaviorParams(SexualPartnership::Type(type)).getPartnershipDurationMth(Person::LOW).isZeroDistrib)
+			&& !(defaultMaleParams.getSexualBehaviorParams(SexualPartnership::Type(type)).getPartnershipDurationMth(Person::HIGH).isZeroDistrib);
 		partnershipsHaveDuration[DmgProfile::FEMALE][type] = false;
 	}
-
-	_eventParams.displayOut("\n");
 }
 
 double PopulationParams::getBirthRate() const
 {
 	return birthRate;
 }
-
-//-------------< End PopulationParams methods >-------------------//

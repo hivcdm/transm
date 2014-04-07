@@ -5,7 +5,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "Inputs.h"
 #include "PopulationParams.h"
 #include "data/AgeRangeSizeContainer.h"
 #include "entities/Female.h"
@@ -15,7 +14,6 @@
 #include "graphviz/graphVizParse.h"
 #include "statistics/PopStats.h"
 #include "util/rand/RandomNums.h"
-#include "util/ticpp/ticpp.h"
 
 enum DebugLevel;
 
@@ -25,14 +23,18 @@ enum DebugLevel;
   The population contains an EntityPool which is further subdivided into Buckets
 */
 
-class Population
+class Population : public Serializable
 {
 public:
 	//This is the main circular buffer containing the BucketAge structures
 	typedef boost::circular_buffer_space_optimized<BucketAge *> BucketAllAges;
 
+	void Deserialize(const pugi::xml_node &node);
+
+	void Serialize(pugi::xml_node &parent_node);
+
 	//creates a new population object given an XML input subtree which contains the parameters
-	Population(EventParams &_eventParams, const Inputs &inputs, long _maxTime);
+	Population(EventParams &parameters);
 	~Population();
 
 	//initialization-related method
@@ -107,7 +109,13 @@ public:
 
 	const AgeRangeSizeContainer &getSizeByAgeRange() const { return currSizeByAgeRange; }
 
-	PopStats *getPopStats() const { return popStats; }
+	const PopStats &getPopStats() const { return popStats; }
+
+	PopStats &getPopStats() { return popStats; }
+
+	void Apply(const PopulationTarget &target, std::function<void(Person *)> modifier);
+
+	void ValidateState();
 
 private:
 	/*
@@ -259,10 +267,12 @@ private:
 	//  use pre-existing normalization and random index chooser functions. */
 	std::vector<double> eligibleBucketWeights[(int)SexualPartnership::Type::ENDType];
 
-	std::vector<std::vector<Person *>> rankedForTreatment;
+	std::array<std::vector<Person *>, 5> rankedForTreatment;
 
-	PopStats *popStats;	//tallies the statistics that the population generates throughout the simulation
+	PopStats popStats;	//tallies the statistics that the population generates throughout the simulation
 
 	/** The graph of all relationships over time, used to generate graphviz output */
 	GraphVizGraphElements *graph;
+
+	EventParams &parameters_;
 };

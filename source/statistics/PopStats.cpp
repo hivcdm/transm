@@ -20,8 +20,7 @@ const std::vector<std::string> PopStats::LifeStatsStr =
 const int NUM_LE_CAT = 12; //number of life expectancy categories
 const char *lifeExpectancyStrs[NUM_LE_CAT] = {"Age(yr)", "raw deaths", "raw pop", "n", "deaths", "death rate", "midpoint survivorship", "total remaining time", "life expectancy", "median LE", "median LE Standard Error", "median LE Confidence Bounds"};
 
-PopStats::PopStats(long maxTime, const std::vector<int> &life_expectancy_record_times,
-	double le_median_ci, const std::vector<int> &part_acq_record_times) 
+PopStats::PopStats() 
 	: calculateShiftedOutcomes(false),
 	  monthOf1990(0),
 	  yearlyTestsByResult(4)
@@ -34,25 +33,6 @@ PopStats::PopStats(long maxTime, const std::vector<int> &life_expectancy_record_
 	timeToRecord[0] = 1;
 	selectedLEStats = nullptr;
 	selectedPartAcqStats = nullptr;
-
-	for(int i = 1; i < NUM_TIMES_TO_RECORD; i++)
-	{
-		timeToRecord[i] = (long((1 / ((double) NUM_TIMES_TO_RECORD - 1)) * maxTime * i + 0.5));
-	}
-
-	//Set up the time to record LE vector using inputs from the .xml file
-	for(int i = 0; i < NUM_TIMES_TO_RECORD_LE; i++)
-	{
-		timeToRecordLE[i] = life_expectancy_record_times[i];
-	}
-
-	medianLECI = le_median_ci;
-
-	//Set up the time to record partAcq vector using inputs from the .xml file
-	for(int i = 0; i < NUM_TIMES_TO_RECORD_PARTACQ; i++)
-	{
-		timeToRecordPartAcq[i] = part_acq_record_times[i];
-	}
 
 	printHeaderPartAcq = true;
 }

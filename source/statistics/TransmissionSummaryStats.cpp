@@ -43,45 +43,45 @@ TransmissionSummaryStats::TransmissionSummary::~TransmissionSummary()
 }
 
 /* addRunStats adds a new summary to the vector from a RunStats object */
-void TransmissionSummaryStats::addPopStats(PopStats *popStats, EventParams *eventParams)
+void TransmissionSummaryStats::addPopStats(PopStats &popStats, EventParams &eventParams)
 {
 	/* Create a new summary object */
 	TransmissionSummary *summary = new TransmissionSummary();
 	/* Copy the population summary stats */
 	//const RunStats::PopulationSummary *popSummary = runStats->getPopulationSummary();
 	//TODO: This doesn't mean anything for now...
-	summary->runSetName = eventParams->simName;
-	summary->runName = eventParams->simName;
+	summary->runSetName = eventParams.simName;
+	summary->runName = eventParams.simName;
 	//summary->runDate = eventParams.
 	//summary->runTime = popSummary->runTime;
 	//summary->numCohorts = popSummary->numCohorts;
 	summary->selectedSummaryStats = new std::vector<PopStats::SingleTimeStats *>();
-	int time = popStats->getNextTimeToRecord(0);
-	std::vector<PopStats::SingleTimeStats *>::iterator statsIterator = popStats->getSelectedSummaryStats()->begin();
+	int time = popStats.getNextTimeToRecord(0);
+	std::vector<PopStats::SingleTimeStats *>::iterator statsIterator = popStats.getSelectedSummaryStats()->begin();
 
-	while(time > 0 && statsIterator != popStats->getSelectedSummaryStats()->end())
+	while(time > 0 && statsIterator != popStats.getSelectedSummaryStats()->end())
 	{
-		while(statsIterator != popStats->getSelectedSummaryStats()->end() && (*statsIterator)->timeOfStats < time)
+		while(statsIterator != popStats.getSelectedSummaryStats()->end() && (*statsIterator)->timeOfStats < time)
 		{
 			statsIterator++;
 		}
 
-		if(statsIterator != popStats->getSelectedSummaryStats()->end())
+		if(statsIterator != popStats.getSelectedSummaryStats()->end())
 		{
 			summary->timeToRecord[summary->selectedSummaryStats->size()] = time;
 			summary->selectedSummaryStats->push_back(*statsIterator);
-			time = popStats->getNextTimeToRecord(time + 1);
+			time = popStats.getNextTimeToRecord(time + 1);
 		}
 	}
 
-	summary->LMsAverage = popStats->lifeStats->getStat(PopStats::TOTAL_LM) / (popStats->lifeStats->getStat(
-	                          PopStats::TOTAL_HIV_POS) + popStats->lifeStats->getStat(PopStats::TOTAL_HIV_NEG));
-	summary->HIVPosLMAverage = popStats->lifeStats->getStat(PopStats::TOTAL_HIV_POS_LM) / popStats->lifeStats->getStat(
+	summary->LMsAverage = popStats.lifeStats->getStat(PopStats::TOTAL_LM) / (popStats.lifeStats->getStat(
+	                          PopStats::TOTAL_HIV_POS) + popStats.lifeStats->getStat(PopStats::TOTAL_HIV_NEG));
+	summary->HIVPosLMAverage = popStats.lifeStats->getStat(PopStats::TOTAL_HIV_POS_LM) / popStats.lifeStats->getStat(
 	                               PopStats::TOTAL_HIV_POS) ;
-	summary->HIVNegLMAverage = popStats->lifeStats->getStat(PopStats::TOTAL_HIV_NEG_LM) / popStats->lifeStats->getStat(
+	summary->HIVNegLMAverage = popStats.lifeStats->getStat(PopStats::TOTAL_HIV_NEG_LM) / popStats.lifeStats->getStat(
 	                               PopStats::TOTAL_HIV_NEG);
-	summary->HIVPosSurvivalAverage = popStats->lifeStats->getStat(PopStats::TOTAL_HIV_POS_POSTINFECT_LM) /
-	                                 popStats->lifeStats->getStat(PopStats::TOTAL_HIV_POS) ;
+	summary->HIVPosSurvivalAverage = popStats.lifeStats->getStat(PopStats::TOTAL_HIV_POS_POSTINFECT_LM) /
+	                                 popStats.lifeStats->getStat(PopStats::TOTAL_HIV_POS) ;
 	//TODO: Fix me!
 	summary->AverageNumberOfPeopleEachPersonInfects = 1;
 	// Add the new summary to the summaries vector

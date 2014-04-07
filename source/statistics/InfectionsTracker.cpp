@@ -154,11 +154,11 @@ unsigned long InfectionsTracker::getNumIncidentInfections(SexualPartnership::Typ
 }
 
 //returns the prevalence rate among sexually active pop
-double InfectionsTracker::getSAPrev(Population *_population)
+double InfectionsTracker::getSAPrev(Population &_population)
 {
 	long totalInfected = 0;
-	long currPopSize = _population->getSize();
-	long currSAPopSize = currPopSize - _population->getNASize();
+	long currPopSize = _population.getSize();
+	long currSAPopSize = currPopSize - _population.getNASize();
 
 	//Currently Infected
 	//total the current infections
@@ -800,7 +800,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	}
 
 	//TODO: this should be done somewhere else, so we're not relying on side effects to record information
-	_population->getPopStats()->recordPrevalenceAndIncidence(_time, currPrevalence, currPrevalenceSA, incidence, currSAPopSize,
+	_population->getPopStats().recordPrevalenceAndIncidence(_time, currPrevalence, currPrevalenceSA, incidence, currSAPopSize,
 	        getCurrTimeStepIncidentInfsTotal(), totalInfectedSA);
 	//Multiply by 100 and round to nearest integer for graphical output
 	int intPrevalence = (int)(100 * currPrevalence + 0.5);

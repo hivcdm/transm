@@ -8,6 +8,116 @@
 #include "../util/enum_iterator.h"
 #include "../util/rand/RandomNums.h"
 
+
+void Male::SubPopParams::Serialize(pugi::xml_node &parent_node)
+{
+	auto behavior_node = parent_node.append_child("behavior");
+	behavior_node.append_child("chanceBecomeSexWorker").text().set(chanceBecomeCSW);
+	behavior_node.append_child("partnerAcqMultWithSteadyHighRisk").text().set(partnerAcqMultWithSteady[Person::HIGH]);
+}
+
+std::string to_string(SexualPartnership::Type type)
+{
+	switch(type)
+	{
+	case SexualPartnership::Type::Steady: return "Steady";
+	case SexualPartnership::Type::Regular: return "Regular";
+	case SexualPartnership::Type::Casual: return "Casual";
+	case SexualPartnership::Type::Csw: return "CSW";
+	}
+	throw std::runtime_error("unknown type");
+}
+
+void Male::SubPopParams::Deserialize(const pugi::xml_node &node)
+{
+	auto behavior_node = node.child("behavior");
+
+	chanceBecomeCSW = behavior_node.child("chanceBecomeSexWorker").text().as_double();
+	partnerAcqMultWithSteady[Person::HIGH] = behavior_node.child("partnerAcqMultWithSteadyHighRisk").text().as_double();
+	partnerAcqMultWithSteady[Person::LOW] = behavior_node.child("partnerAcqMultWithSteadyLowRisk").text().as_double();
+
+	bool use_high_risk_multiplier = behavior_node.child("UseHighRiskMultiplier").text().as_int() != 0;
+	double high_risk_multiplier = behavior_node.child("HighRiskAcqRateMultiplier").text().as_double();
+	bool use_csw_high_risk_multiplier = behavior_node.child("UseCSWHighRiskMultiplier").text().as_int() != 0;
+	double csw_high_risk_multiplier = behavior_node.child("CSWHighRiskAcqRateMultiplier").text().as_double();
+
+	//Coefficient of Variation
+	auto heterogeneity_node = behavior_node.child("heterogeneity");
+	useCoefficientVariation = heterogeneity_node.child("varMethod").text().as_int() == 0;
+	coefficientOfVariation = heterogeneity_node.child("coeffVar").text().as_double();
+
+	//iterate through each Person in partnershipTypes
+	sexualBehaviorParams.clear();
+	for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
+	{
+		SexualBehaviorParams params;
+
+		auto path = "partnershipTypes/partnership[type='" + to_string(partnership_type) + "']";
+		params.Deserialize(behavior_node.select_single_node(path.c_str()).node());
+
+		if(use_high_risk_multiplier)
+		{
+			if(partnership_type == SexualPartnership::Type::Csw && use_csw_high_risk_multiplier)
+			{
+				params.SetHighRiskMultiplier(csw_high_risk_multiplier);
+			}
+			else
+			{
+				params.SetHighRiskMultiplier(high_risk_multiplier);
+			}
+		}
+
+		if(useCoefficientVariation)
+		{
+			params.ApplyCoefficientVariation(coefficientOfVariation);
+		}
+
+		sexualBehaviorParams.push_back(params);
+	}
+
+	activityLevel.Deserialize(behavior_node.child("activityLevel"));
+
+	proportionHighRisk[DmgProfile::CSW] = behavior_node.child("proportionHighRiskCSW").text().as_double();
+	proportionHighRisk[DmgProfile::NON_CSW] = behavior_node.child("proportionHighRiskNonCSW").text().as_double();
+
+	//saves partner acq rate and acts discounting
+	auto discounting_node = behavior_node.child("ageDiscounting");
+	partneringDiscStartAgeYrs = discounting_node.child("startAgeYrs").text().as_int();
+	partneringAcqDiscPerYr = discounting_node.child("acquisitionDiscByYr").text().as_double();
+	partneringActsDiscPerYr = discounting_node.child("coitalActsDiscByYr").text().as_double();
+
+	int numMults = Person::maxYrForDeathStats - partneringDiscStartAgeYrs + 1;
+	double acqMult = 1 - partneringAcqDiscPerYr;
+	double actsMult = 1 - partneringActsDiscPerYr;
+
+	//generate vectors that contain discount multipliers. will cover from [partneringDiscStartAgeYrs,Person::maxYrForDeathStats]
+	partneringAcqDiscMult.clear();
+	partneringActsDiscMult.clear();
+	partneringAcqDiscMult.push_back(acqMult);
+	partneringActsDiscMult.push_back(actsMult);
+
+	for(int i = 1; i < numMults; ++i)
+	{
+		partneringAcqDiscMult.push_back(partneringAcqDiscMult.at(i - 1)*acqMult);
+		partneringActsDiscMult.push_back(partneringActsDiscMult.at(i - 1)*actsMult);
+	}
+
+	auto health_node = node.child("health");
+	circumProtectEff = health_node.child("circumcisionProtectEfficacy").text().as_double();
+	condomProtectEff = health_node.child("condomProtectEfficacy").text().as_double();
+
+	auto transmission_node = health_node.child("transmissionCoefficients");
+	std::stringstream ss(transmission_node.child("valsByHVL").text().as_string());
+	for(int i = 0; i < SimContext::HVL_NUM_STRATA; i++)
+	{
+		double coefficient;
+		ss >> coefficient;
+		transmitPerEventCoeffs.push_back(coefficient);
+	}
+	transmitPerEventCoeffs.push_back(transmission_node.child("primary").text().as_double());
+	transmitPerEventCoeffs.push_back(transmission_node.child("lateStage").text().as_double());
+}
+
 //each index of the array contains parameters for a different population
 //(we only have 1 population for now so the size of the vector will default to 1
 
@@ -15,69 +125,8 @@ Male::SubPopParams::SubPopParams()
 {
 }
 
-Male::SubPopParams::SubPopParams(const PopulationSettings::MaleSettings &settings, EventParams &_eventParams)
-{
-	try
-	{
-		chanceBecomeCSW = settings.chance_become_sex_worker;
-		partnerAcqMultWithSteady[Person::HIGH] = settings.partner_acquisition_multiplier_with_steady_high;
-		partnerAcqMultWithSteady[Person::LOW] = settings.partner_acquisition_multiplier_with_steady_low;
-
-		//Coefficient of Variation
-		_eventParams.useCoefficientVariation = settings.use_coefficient_variation;
-		_eventParams.coefficientOfVariation = settings.coefficient_of_variation;
-
-		//iterate through each Person in partnershipTypes
-		sexualBehaviorParams.clear();
-
-		for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
-		{
-			auto params = new SexualBehaviorParams(settings, partnership_type, _eventParams);
-			sexualBehaviorParams.push_back(params);
-		}
-
-		proportionHighRisk[DmgProfile::CSW] = settings.proportion_high_risk_csw;
-		proportionHighRisk[DmgProfile::NON_CSW] = settings.proportion_high_risk_non_csw;
-
-		activityLevel = settings.activity_level;
-
-		//saves partner acq rate and acts discounting
-		partneringDiscStartAgeYrs = settings.age_discounting_start_age;
-		partneringAcqDiscPerYr = settings.acquisition_rate_discounting_yearly;
-		partneringActsDiscPerYr = settings.coital_acts_discounting_yearly;
-
-		int numMults = Person::maxYrForDeathStats - partneringDiscStartAgeYrs + 1;
-		double acqMult = 1 - partneringAcqDiscPerYr;
-		double actsMult = 1 - partneringActsDiscPerYr;
-
-		//generate vectors that contain discount multipliers. will cover from [partneringDiscStartAgeYrs,Person::maxYrForDeathStats]
-		partneringAcqDiscMult.clear();
-		partneringActsDiscMult.clear();
-		partneringAcqDiscMult.push_back(acqMult);
-		partneringActsDiscMult.push_back(actsMult);
-
-		for(int i = 1; i < numMults; ++i)
-		{
-			partneringAcqDiscMult.push_back(partneringAcqDiscMult.at(i - 1)*acqMult);
-			partneringActsDiscMult.push_back(partneringActsDiscMult.at(i - 1)*actsMult);
-		}
-
-		circumProtectEff = settings.circumcision_protection_efficacy;
-		condomProtectEff = settings.condom_protection_efficacy;
-		transmitPerEventCoeffs.assign(settings.transmission_coefficients.begin(), settings.transmission_coefficients.end());
-	}
-	catch(ticpp::Exception &_e)
-	{
-		throw std::runtime_error("Male: Exception raised: " + _e.m_details);
-	}
-}
-
 Male::SubPopParams::~SubPopParams()
 {
-	for(unsigned int i = 0; i < sexualBehaviorParams.size(); ++i)
-	{
-		delete sexualBehaviorParams.at(i);
-	}
 }
 
 //------------ < Begin getters >-----------------//
@@ -92,7 +141,7 @@ double Male::SubPopParams::getPartnerAcqMultWithSteady(Person::RiskLevel _risk) 
 }
 
 //sexual behavior params for each type as specified by SexualPartnership::Type
-const SexualBehaviorParams *Male::SubPopParams::getSexualBehaviorParams(SexualPartnership::Type _type) const
+const SexualBehaviorParams &Male::SubPopParams::getSexualBehaviorParams(SexualPartnership::Type _type) const
 {
 	return sexualBehaviorParams.at((int)_type);
 }
@@ -141,31 +190,22 @@ double Male::SubPopParams::getTransmitPerEventCoeff(HVLStrata _hvl) const
 
 void Male::SubPopParams::setChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist)
 {
-	sexualBehaviorParams[(int)partnershipType]->setChanceCondomUsePerEvent(risk, dist);
+	sexualBehaviorParams[(int)partnershipType].setChanceCondomUsePerEvent(risk, dist);
 }
 
-//------------ < End getters >-----------------//
-
-//-----------------< End population-level parameters for males >-----------------------/
-
-
-vector<Male::SubPopParams *> Male::populationSpecificParams;
-
-Male::SubPopParams *Male::getPopParams(unsigned int _populationID)
+void Male::SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist)
 {
-	assert(_populationID < Male::populationSpecificParams.size());
-	return Male::populationSpecificParams.at(_populationID);
+	populationSpecificParams.setChanceCondomUsePerEvent(risk, partnershipType, dist);
 }
 
-void Male::addPopParams(unsigned int _populationID, const PopulationSettings::MaleSettings &settings, EventParams &_eventParams)
+double Male::getChanceBecomeCsw() const
 {
-	assert(_populationID == Male::populationSpecificParams.size());
-	Male::SubPopParams *subPopParams = new Male::SubPopParams(settings, _eventParams);
-	Male::populationSpecificParams.push_back(subPopParams);
+	return populationSpecificParams.getChanceBecomeCSW();
 }
 
-Male::Male(EventParams &_eventParams, int _age, bool _circumcised, unsigned int _populationID)
-	: Person(_eventParams, _age, _populationID)
+Male::Male(EventParams &_eventParams, int _age, bool _circumcised, unsigned int _populationID, const Male::SubPopParams &params)
+	: Person(_eventParams, _age, _populationID),
+	populationSpecificParams(params)
 {
 	//Set the graphNode to being male!
 	//TODO: This is inelegantly placed and kind of a hack right now
@@ -185,15 +225,14 @@ Male::Male(EventParams &_eventParams, int _age, bool _circumcised, unsigned int 
 	}
 
 	dmgProfile.set(DmgProfile::GENDER, DmgProfile::MALE);
-	//check that the DmgProfile::RelationshipStatus is actually of a male
-	const Male::SubPopParams *maleSubPopParams = getPopParams(populationID);
+
 	circumcised = _circumcised;
 	//Set this male's risk level assume everyone is low risk on creation. Risk is rerolled when they roll for become sex worker
 	risk = Person::LOW;
 
 	for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
 	{
-		auto &sexualBehaviorParams = *maleSubPopParams->getSexualBehaviorParams(partnership_type);
+		auto &sexualBehaviorParams = populationSpecificParams.getSexualBehaviorParams(partnership_type);
 
 		auto acquisition_rate_dist = sexualBehaviorParams.getAcquisitionRatePerMonth(risk);
 		auto acquisition_rate = _eventParams.randomNums.randLogNormal(acquisition_rate_dist);
@@ -208,7 +247,7 @@ Male::Male(EventParams &_eventParams, int _age, bool _circumcised, unsigned int 
 		averageYearsYounger[(int)partnership_type] = sexualBehaviorParams.getAverageYearsYounger();
 	}
 
-	activityLevel = _eventParams.randomNums.randNorm_NaturalNum(maleSubPopParams->getActivityLevel());
+	activityLevel = _eventParams.randomNums.randNorm_NaturalNum(populationSpecificParams.getActivityLevel());
 
 	//activity level should not ever be 0
 	if(activityLevel == 0)
@@ -236,12 +275,12 @@ double Male::getCondomUseProb(Person *_p, SexualPartnership::Type _partnershipTy
 
 double Male::getCircumProtectEff()
 {
-	return (circumcised ? Male::getPopParams(populationID)->getCircumProtectEff() : 0);
+	return (circumcised ? populationSpecificParams.getCircumProtectEff() : 0);
 }
 
 double Male::getCondomProtectEff()
 {
-	return Male::getPopParams(populationID)->getCondomProtectEff();
+	return populationSpecificParams.getCondomProtectEff();
 }
 
 bool Male::isCircumcised()
@@ -359,7 +398,7 @@ double Male::rollForAgeDifference(SexualPartnership::Type _partnershipType, Rand
 double Male::getTransmissionCoeff()
 {
 	assert(Util::withinRange(hvl, HVL_ZERO, HVL_LATESTAGE));
-	return Male::populationSpecificParams.at(populationID)->getTransmitPerEventCoeff(hvl);
+	return populationSpecificParams.getTransmitPerEventCoeff(hvl);
 }
 
 
@@ -384,8 +423,6 @@ int Male::rollForNumPartners(RandomNums &_randomNums, SexualPartnership::Type _p
 		return 0;
 	}
 
-	//Male parameters for the population that this Male is in
-	const Male::SubPopParams *subPopParams = getPopParams(populationID);
 	//rate of acquiring partner
 	double partnerRate;
 	partnerRate = partnerAcqRates[(int)_partnershipType];
@@ -394,15 +431,15 @@ int Male::rollForNumPartners(RandomNums &_randomNums, SexualPartnership::Type _p
 	if(!partners[(int)SexualPartnership::Type::Steady].empty())
 	{
 		//if we're thinking of getting another partner, then lower chances if we have a steady partner
-		partnerRate *= subPopParams->getPartnerAcqMultWithSteady(getRiskLevel());
+		partnerRate *= populationSpecificParams.getPartnerAcqMultWithSteady(getRiskLevel());
 	}
 
 	//if person is over the age of partnering discounting, then discount acquisition rate
 	int ageYrs = getAge(YEAR);
 
-	if(ageYrs >= subPopParams->getPartneringDiscStartAgeYrs())
+	if(ageYrs >= populationSpecificParams.getPartneringDiscStartAgeYrs())
 	{
-		partnerRate *= subPopParams->getPartneringAcqDiscMult(ageYrs);
+		partnerRate *= populationSpecificParams.getPartneringAcqDiscMult(ageYrs);
 	}
 
 	/** To get the number of partners to draw this month, draw from a Poisson distribution */
@@ -417,13 +454,13 @@ int Male::rollNumEventsPerPartner(Person *_p, RandomNums &_randomNums, SexualPar
 	assert(_p->isAlive());
 
 	double meanCoitalEvents = numActsPerMonth[(int)_partnershipType];
-	const Male::SubPopParams *subPopParams = getPopParams(populationID);
+
 	//if person is over the age of partnering discounting, then discount #acts
 	int ageYrs = getAge(YEAR);
 
-	if(ageYrs >= subPopParams->getPartneringDiscStartAgeYrs())
+	if(ageYrs >= populationSpecificParams.getPartneringDiscStartAgeYrs())
 	{
-		meanCoitalEvents *= subPopParams->getPartneringActsDiscMult(ageYrs);
+		meanCoitalEvents *= populationSpecificParams.getPartneringActsDiscMult(ageYrs);
 	}
 
 	//Poisson distributions range from 0 to infinity: we want to avoid 0 acts per month
@@ -443,15 +480,14 @@ int Male::rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType
 	assert((_p != nullptr));
 	assert(_p->isAlive());
 	assert(_partnershipType < SexualPartnership::Type::ENDType);
-	ShiftedLogNormalDist duration = Male::populationSpecificParams.at(populationID)->getSexualBehaviorParams(
-	                                    _partnershipType)->getPartnershipDurationMth(risk);
+	ShiftedLogNormalDist duration = populationSpecificParams.getSexualBehaviorParams(_partnershipType).getPartnershipDurationMth(risk);
 	return (int)(_randomNums.randShiftedLogNormal(duration) + .5);
 }
 
 void Male::rerollRiskGroup(EventParams &_eventParams)
 {
 	DmgProfile::Employment cswStatus = (DmgProfile::Employment) getDmgProfileVal(DmgProfile::EMPLOYMENT);
-	double chanceHighRisk = getPopParams(populationID)->getProportionHighRisk(cswStatus);
+	double chanceHighRisk = populationSpecificParams.getProportionHighRisk(cswStatus);
 	Person::RiskLevel oldRisk = risk;
 
 	if(_eventParams.randomNums.chance(chanceHighRisk))
@@ -465,18 +501,16 @@ void Male::rerollRiskGroup(EventParams &_eventParams)
 
 	if(oldRisk != risk)
 	{
-		const Male::SubPopParams *maleSubPopParams = getPopParams(populationID);
-
 		for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
 		{
-			const SexualBehaviorParams *sexualBehaviorParams = 
-				maleSubPopParams->getSexualBehaviorParams(partnership_type);
-			auto acquisition_rate = sexualBehaviorParams->getAcquisitionRatePerMonth(risk);
+			const SexualBehaviorParams &sexualBehaviorParams = 
+				populationSpecificParams.getSexualBehaviorParams(partnership_type);
+			auto acquisition_rate = sexualBehaviorParams.getAcquisitionRatePerMonth(risk);
 			partnerAcqRates[(int)partnership_type] = 
 				_eventParams.randomNums.randLogNormal(acquisition_rate);
 			numActsPerMonth[(int)partnership_type] = 
-				sexualBehaviorParams->getCoitalEventsPerMonth(risk);
-			auto chance_condom_use = sexualBehaviorParams->getChanceCondomUsePerEvent(risk);
+				sexualBehaviorParams.getCoitalEventsPerMonth(risk);
+			auto chance_condom_use = sexualBehaviorParams.getChanceCondomUsePerEvent(risk);
 			chanceCondomUsePerEvent[(int)partnership_type] = 
 				_eventParams.randomNums.randBeta(chance_condom_use);
 		}

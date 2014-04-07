@@ -18,8 +18,8 @@ const std::vector<std::vector<std::string>> enumStrs =
 DmgProfile::Demographic DmgProfile::MaxDemographic = DmgProfile::Demographic(DmgProfile::ENDDemographic - 1);
 
 std::vector<BaseEnumCls> DmgProfile::DemographicEnumCls;
-std::vector <const DmgProfile *> DmgProfile::ProfileIDtoProfile;
-std::vector <string> DmgProfile::ProfileIDtoStr;
+std::vector<std::unique_ptr<const DmgProfile>> DmgProfile::ProfileIDtoProfile;
+std::vector<string> DmgProfile::ProfileIDtoStr;
 std::map<DmgProfile, DmgProfile::ProfileID, DmgProfile::less> DmgProfile::ProfileToProfileID;
 
 //declare fields of class DmgProfile
@@ -418,25 +418,6 @@ const string *DmgProfile::toString(ProfileID _profileID)
 	return &DmgProfile::ProfileIDtoStr.at(_profileID);
 }
 
-//--------------------< End Static Methods >-----------------------//
-
-//--------< Start fields and functions to change if enum Demographic values change >-------------------//
-
-
-void DmgProfile::deallocStaticMembers()
-{
-	for(size_t i = 0; i < DmgProfile::ProfileIDtoProfile.size(); ++i)
-	{
-		delete DmgProfile::ProfileIDtoProfile.at(i);
-		DmgProfile::ProfileIDtoProfile.at(i) = nullptr;
-	}
-
-	DmgProfile::ProfileToProfileID.clear();
-	DmgProfile::ProfileIDtoProfile.clear();
-	DmgProfile::ProfileIDtoStr.clear();
-	DmgProfile::DemographicEnumCls.clear();
-}
-
 void DmgProfile::initEnums()
 {
 	DmgProfile::DemographicEnumCls.push_back(EnumCls<SexualActivityStatus>(enumStrs[SEXUAL_ACTIVITY_STATUS]));
@@ -474,7 +455,7 @@ void DmgProfile::initProfileIDMap()
 		//map DemographicProfile -> ProfileID
 		DmgProfile::ProfileToProfileID[currDmgProfile] = currProfileID;
 		//map ProfileID -> DemographicProfile
-		DmgProfile::ProfileIDtoProfile.at(currProfileID) = new DmgProfile(currDmgProfile);
+		DmgProfile::ProfileIDtoProfile.at(currProfileID) = std::make_unique<const DmgProfile>(currDmgProfile);
 		//generate the string representation of current profileID
 		stringstream currEnumStr;
 

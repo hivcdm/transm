@@ -10,7 +10,6 @@
 #include "StatsRecord.h"
 #include "../data/Enum.h"
 #include "../entities/classifiers/SexualPartnership.h"
-#include "../util/ticpp/ticpp.h"
 
 class Person;
 
@@ -160,8 +159,7 @@ public:
 
 	StatsRecord<LifeStats, BaseEnumCls::nullptr_ENUM> *lifeStats;
 
-	PopStats(long maxTime, const std::vector<int> &life_expectancy_record_times, 
-		double le_median_ci, const std::vector<int> &part_acq_record_times);
+	PopStats();
 	~PopStats();
 
 	//processes a person's death

@@ -3,8 +3,7 @@
 
 #include "DmgProfileBucket.h"
 #include "../../Person.h"
-
-class RandomNums;
+#include "../../../Simulation.h"
 
 /**
 * mark a function parameter as unused and avoid
@@ -33,6 +32,22 @@ This method will return a label for this DmgProfileBucket
 const string *DmgProfileBucket::getLabel()
 {
 	return bucketLabel;
+}
+
+void DmgProfileBucket::Apply(const PopulationTarget &target, std::function<void(Person*)> modifier)
+{
+	for(auto &id_person_pair : *simpleEntityIndex)
+	{
+		auto person = id_person_pair.second;
+		if(!((target.age_lower.has_value && target.age_lower.value < person->getAge(MONTH))
+			|| (target.age_upper.has_value && target.age_upper.value > person->getAge(MONTH))
+			|| (target.observed_hiv_status.has_value && target.observed_hiv_status.value != person->getHIVStatus())
+			|| (target.on_treatment.has_value && target.on_treatment.value != person->isOnArt())
+			|| (target.risk_level.has_value && target.risk_level.value != person->getRiskLevel())))
+		{
+			modifier(id_person_pair.second);
+		}
+	}
 }
 
 //------------< End Implemented Methods >----------------//

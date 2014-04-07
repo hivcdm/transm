@@ -22,6 +22,26 @@ std::string Version::ToString(const Version &version)
 	return std::to_string(version.major) + "." + std::to_string(version.minor) + "." + std::to_string(version.patch);
 }
 
+int Version::Compare(const Version &v1, const Version &v2, bool ignore_patch)
+{
+	if(v1.major != v2.major)
+	{
+		return v1.major - v2.major;
+	}
+
+	if(v1.minor != v2.minor)
+	{
+		return v1.minor - v2.minor;
+	}
+
+	if(!ignore_patch && v1.patch != v2.patch)
+	{
+		return v1.patch - v2.patch;
+	}
+
+	return 0;
+}
+
 const Version Util::MODEL_VERSION = Version::FromString("3.4");
 
 double Util::dayToMonthMult = 1.0 / 30;

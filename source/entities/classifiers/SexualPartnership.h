@@ -3,9 +3,8 @@
 #include "./../../util/rand/RandomNums.h"
 #include "./../../data/Enum.h"
 #include "./../../data/EventParams.h"
-#include "./../../util/ticpp/ticpp.h"
+
 class Person;
-//class EventParams;
 class PopStats;
 class InfectionsTracker;
 

@@ -1,11 +1,12 @@
 #pragma once
+
 #include <map>
 
-#include "../Inputs.h"
+#include "Person.h"
 #include "../data/EventParams.h"
 #include "../util/rand/RandomNums.h"
-#include "../util/ticpp/ticpp.h"
-#include "Person.h"
+#include "../util/xml/pugixml.hpp"
+#include "../util/Serializable.h"
 
 class SexualBehaviorParams;
 /**
@@ -21,16 +22,14 @@ public :
 	These are parameters that describe the population of males.
 	Each Population in the Sim will have a separate one of these references by the population's ID.
 	**/
-	class SubPopParams
+	class SubPopParams : public Serializable
 	{
-		int loadParamsXML(ticpp::Element *_maleParams, EventParams &_eventParams) throw();
-
 		//-----------< BEGIN data fields >--------------------//
 		double chanceBecomeCSW;		//chance that a male will become a CSW
 		double partnerAcqMultWithSteady[Person::ENDRiskLevel];  //the rate multiplier for partner acquisition when a male has a Steady partner
 
 		//sexual behavior params for each type as specified by SexualPartnership::Type
-		vector<SexualBehaviorParams *> sexualBehaviorParams;
+		std::vector<SexualBehaviorParams> sexualBehaviorParams;
 		double proportionHighRisk[DmgProfile::ENDEmployment];  //proportion of male population that is in the "high risk" lists based on csw status
 		NormalDist activityLevel; //Distribution of activity level (i.e. marbles)
 
@@ -46,28 +45,31 @@ public :
 		//  we've actually saved these as multipliers so that for a particular age N > partneringDiscStartAgeYrs,
 		//		the acquisition rate will be multiplied by  (1 - partneringAcqDiscPerYr)^(partneringDiscStartAgeYrs - N)
 		//so a particular value when multiplied to an acquisition rate will yield the discounted rate
-		vector<double> partneringAcqDiscMult;
+		std::vector<double> partneringAcqDiscMult;
 		//the principle of these multipliers are the same as for partneringAcqDiscMult, but for #acts
-		vector<double> partneringActsDiscMult;
+		std::vector<double> partneringActsDiscMult;
 
 		//factors that determind foif
 		double circumProtectEff ;	  //transmission protection that circumcision provides (a positive multiplier <= 1)
 		double condomProtectEff;   //transmission protection that condoms provide  (a positive multiplier <= 1)
-		vector<double> transmitPerEventCoeffs;	 //chance of infection for men->woman, w/o circumcision or condoms
+		std::vector<double> transmitPerEventCoeffs;	 //chance of infection for men->woman, w/o circumcision or condoms
 
-		//-----------< END data fields >--------------------//
+		double coefficientOfVariation;
+		bool useCoefficientVariation;
+
 	public:
-		SubPopParams();
-		SubPopParams(const PopulationSettings::MaleSettings &settings, EventParams &_eventParams);
+		void Deserialize(const pugi::xml_node &node);
+		void Serialize(pugi::xml_node &parent_node);
 
+		SubPopParams();
 		~SubPopParams();
-		//-----------< BEGIN getters >--------------------//
+
 		double getChanceBecomeCSW() const;
 		double getPartnerAcqMultWithSteady(Person::RiskLevel _risk) const;
 		double getTransmitPerEventCoeff(HVLStrata _hvl) const;
 
 		//sexual behavior params for each type as specified by SexualPartnership::Type
-		const SexualBehaviorParams *getSexualBehaviorParams(SexualPartnership::Type _type) const;
+		const SexualBehaviorParams &getSexualBehaviorParams(SexualPartnership::Type _type) const;
 
 		double getProportionHighRisk(DmgProfile::Employment _cswStatus) const;
 		NormalDist getActivityLevel() const;
@@ -86,10 +88,7 @@ public :
 	//----------------< END class SubPopParams >--------------------------//
 
 private:
-	//this vector holds Parameters for males different populations it is used to populate fields
-	//	for each instance of Male w/ different values depending on which Population the Male is part of
-	//	Rationale: So males don't really have to know much about the population they are in except for the ID
-	static vector<SubPopParams *> populationSpecificParams;
+	SubPopParams populationSpecificParams;
 
 	//whether they are circumcised
 	bool circumcised;
@@ -109,26 +108,18 @@ private:
 
 public:
 	/**
-	Add a set of population parameters to be used by Males of that population
-	@param _populationID basically a check to see that you have added parameters in the right order
-	@param _maleParams the XML node that contains the parameter data
-	**/
-	static void addPopParams(unsigned int _populationID, const PopulationSettings::MaleSettings &settings, EventParams &_eventParams);
-
-	/**
-	Access a set of population parameters to be used by Males of that population
-	**/
-	static SubPopParams *getPopParams(unsigned int _populationID);
-
-	/**
 	this constructor creates a Male that can be simulated
 	constructor should set the CD4, HVL, and HVLsetpoint from age and gender **/
-	Male(EventParams &_eventParams, int _age, bool _circumcised, unsigned int _populationID);
+	Male(EventParams &_eventParams, int _age, bool _circumcised, unsigned int _populationID, const Male::SubPopParams &params);
 
 	/** Start: Inherited from Person, comments found there **/
 
 	Person *choosePartner(RandomNums &_randomNums, EntityPool *_availableEntities ,
 	                      SexualPartnership::Type _partnershipType, bool _remove);
+
+	void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist);
+
+	double getChanceBecomeCsw() const;
 
 	double getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventParams &_eventParams);
 

@@ -51,7 +51,7 @@ public:
 	}; /* end Summary */
 
 	/* addRunStats adds a new summary to the vector from a RunStats object */
-	void addPopStats(PopStats *popStats, EventParams *eventParams);
+	void addPopStats(PopStats &popStats, EventParams &eventParams);
 	/* finalizeStats calculates the final cost-effectiveness ratios for each run */
 	//void finalizeStats();
 	/* writeSummariesFile appends the summary information to the popstats.out file */

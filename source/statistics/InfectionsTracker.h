@@ -127,7 +127,7 @@ public :
 	                                       DmgProfile::ProfileID _infecteds);
 
 	//returns the prevalence rate among sexually active pop
-	double getSAPrev(Population *_population);
+	double getSAPrev(Population &_population);
 
 	/**
 	 * Records a new exposure regardless of whether an infection happened or not

@@ -3,10 +3,15 @@
 #include "entities/Male.h"
 #include "entities/Female.h"
 #include "statistics/CostsTracker.h"
+#include "util/Serializable.h"
 
-class PopulationParams
+class PopulationParams : public Serializable
 {
 public:
+	void Deserialize(const pugi::xml_node &node);
+
+	void Serialize(pugi::xml_node &parent_node);
+
 	void setAgeSexualDebut(int ageSexualDebutMonths) { SAEntAgeMths = ageSexualDebutMonths; }
 
 	double getBirthRate() const;
@@ -14,11 +19,6 @@ public:
 
 	double getProportionCircumcised() const { return circumcised; }
 	void setProportionCircumcised(double value) { circumcised = value; }
-
-	void setChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist)
-	{
-		maleParams->setChanceCondomUsePerEvent(risk, partnershipType, dist);
-	}
 
 	double getProportionMale() const;
 	void setProportionMale(double proportion_male) { proportionMale = proportion_male; }
@@ -69,8 +69,6 @@ private:
 
 	double assort[(int)SexualPartnership::Type::ENDType]; //assortativeness parameter one for each partnership type
 
-	unsigned int populationID;	//the ID of the population that these parameters correspond to
-
 	//initial stats -- determines the prevalence of a demographic before the simulation starts
 	double initproportionMarried;
 	//determines percentage of people in regular relationships at start
@@ -84,8 +82,9 @@ private:
 	std::vector<AgeBucketPrevalenceInfo *> initialAgeBuckets;
 
 	//holds the population-level parameters for population of males and the population of females
-	Male::SubPopParams *maleParams;
-	Female::SubPopParams *femaleParams;
+	Male::SubPopParams defaultMaleParams;
+	Female::SubPopParams defaultFemaleParams;
+
 	//this is a quick way to check whether a partnership is technically a fling or not
 	// right now, behavior for males is the only one that has been coded
 	bool partnershipsHaveDuration[DmgProfile::ENDGender][(int)SexualPartnership::Type::ENDType];
@@ -96,6 +95,4 @@ private:
 
 	PopulationParams();
 	~PopulationParams();
-
-	void init(const Inputs &inputs, unsigned int _populationID, EventParams &_eventParams);
 };
