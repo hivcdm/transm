@@ -163,7 +163,7 @@ public:
 				}
 			}
 
-			parameters.rolloutEligibility = Get<EventParams::RolloutEligibility>("/simulation/population/interventions/artRolloutIntervention/rolloutEligibility");
+			Get("/simulation/population/interventions/artRolloutIntervention/rolloutEligibility", parameters.rolloutEligibility);
 
 			for(auto target : root_.select_nodes("/simulation/population/interventions/artRolloutIntervention/targetRolloutProportions/target"))
 			{
@@ -386,11 +386,8 @@ private:
 		population.graph = new GraphVizGraphElements();
 	}
 
-	template<>
-	EventParams::RolloutEligibility Get(const std::string &base_path)
+	void Get(const std::string &base_path, EventParams::RolloutEligibility &eligibility)
 	{
-		EventParams::RolloutEligibility eligibility;
-
 		// OIHist
 		std::string path = base_path + "/criteria[name=\"OIHist\"]/";
 		GetTemplate(path + "rank", eligibility.oiHistRank);
@@ -451,8 +448,6 @@ private:
 		GetTemplate<int>(path + "CD4Upp", eligibility.cd4HvlCd4Bounds[1]);
 		GetTemplate<int>(path + "HVLLwr", eligibility.cd4HvlHvlBounds[0]);
 		GetTemplate<int>(path + "HVLUpp", eligibility.cd4HvlHvlBounds[1]);
-
-		return eligibility;
 	}
 
 	template<>
@@ -1050,6 +1045,7 @@ private:
 			for(auto &parameter : match->second)
 			{
 				auto future_value = std::stoi(parameter.value);
+
 				if(parameter.target_population.has_value)
 				{
 					throw std::runtime_error("shouldn't have population specified, this is a simulation parameter");
