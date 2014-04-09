@@ -38,78 +38,174 @@ struct TraceFile
 
 struct PopulationTarget
 {
-	Nullable<int> age_lower;
-	Nullable<int> age_upper;
+	static PopulationTarget FromString(const std::string &s);
+
+	Nullable<Person::RiskLevel> risk_level;
 	Nullable<DmgProfile::Employment> employment;
 	Nullable<DmgProfile::SexualActivityStatus> sexual_activity_status;
 	Nullable<DmgProfile::Gender> gender;
 	Nullable<DmgProfile::RelationshipStatus> relationship_status;
 	Nullable<DmgProfile::SexualOrientation> sexual_orientation;
-	Nullable<Person::RiskLevel> risk_level;
+	Nullable<int> age_lower;
+	Nullable<int> age_upper;
 	Nullable<Person::HIVStatus> observed_hiv_status;
 	Nullable<bool> on_treatment;
 };
 
 enum class TemplateParameter
 {
+	//Population
 	BirthRate,
 	ProportionMale,
 	ProportionCircumcised,
 	AgeSexualDebutYears,
-	OIHistRank,
-	OIHistOI0,
-	OIHistOI1,
-	OIHistOI2,
-	OIHistOI3,
-	OIHistOI4,
-	OIHistOI5,
-	OIHistOI6,
-	OIHistOI7,
-	OIHistOI8,
-	OIHistOI9,
-	OIHistOI10,
-	OIHistOI11,
-	OIHistOI12,
-	OIHistOI13,
-	OIHistOI14,
-	OIHistNumOIToStart,
-	CD4Rank,
-	CD4CD4Upp,
-	CD4CD4Lwr,
-	CD4OIHistRank,
-	CD4OIHistOI0,
-	CD4OIHistOI1,
-	CD4OIHistOI2,
-	CD4OIHistOI3,
-	CD4OIHistOI4,
-	CD4OIHistOI5,
-	CD4OIHistOI6,
-	CD4OIHistOI7,
-	CD4OIHistOI8,
-	CD4OIHistOI9,
-	CD4OIHistOI10,
-	CD4OIHistOI11,
-	CD4OIHistOI12,
-	CD4OIHistOI13,
-	CD4OIHistOI14,
-	CD4OIHistCD4Upp,
-	CD4OIHistCD4Lwr,
-	HVLRank,
-	HVLHVLUpp,
-	HVLHVLLwr,
-	CD4HVLRank,
-	CD4HVLCD4Upp,
-	CD4HVLCD4Lwr,
-	CD4HVLHVLUpp,
-	CD4HVLHVLLwr,
-	SteadyChanceCondomUsePerEventHighRisk,
-	SteadyChanceCondomUsePerEventLowRisk,
-	RegularChanceCondomUsePerEventHighRisk,
-	RegularChanceCondomUsePerEventLowRisk,
-	CasualChanceCondomUsePerEventHighRisk,
-	CasualChanceCondomUsePerEventLowRisk,
-	CswChanceCondomUsePerEventHighRisk,
-	CswChanceCondomUsePerEventLowRisk
+	//Assortativeness
+	AssortativenessSteady,
+	AssortativenessRegular,
+	AssortativenessCasual,
+	AssortativenessCsw,
+	//Male:General
+	MaleChanceBecomeSexWorker,
+	MalePartnerAcqMultWithSteadyHigh,
+	MalePartnerAcqMultWithSteadyLow,
+	//Male:Steady
+	MaleSteadyAcquisitionRateHighMean,
+	MaleSteadyAcquisitionRateHighStdDev,
+	MaleSteadyAcquisitionRateLowMean,
+	MaleSteadyAcquisitionRateLowStdDev,
+	MaleSteadyAverageYearsYounger,
+	MaleSteadyCoitalEventsPerMonthHigh,
+	MaleSteadyCoitalEventsPerMonthLow,
+	MaleSteadyChanceCondomUsePerEventHighMean,
+	MaleSteadyChanceCondomUsePerEventHighStdDev,
+	MaleSteadyChanceCondomUsePerEventLowMean,
+	MaleSteadyChanceCondomUsePerEventLowStdDev,
+	MaleSteadyPartnershipDurationHighMean,
+	MaleSteadyPartnershipDurationHighStdDev,
+	MaleSteadyPartnershipDurationHighShift,
+	MaleSteadyPartnershipDurationLowMean,
+	MaleSteadyPartnershipDurationLowStdDev,
+	MaleSteadyPartnershipDurationLowShift,
+	//Male:Regular
+	MaleRegularAcquisitionRateHighMean,
+	MaleRegularAcquisitionRateHighStdDev,
+	MaleRegularAcquisitionRateLowMean,
+	MaleRegularAcquisitionRateLowStdDev,
+	MaleRegularAverageYearsYounger,
+	MaleRegularCoitalEventsPerMonthHigh,
+	MaleRegularCoitalEventsPerMonthLow,
+	MaleRegularChanceCondomUsePerEventHighMean,
+	MaleRegularChanceCondomUsePerEventHighStdDev,
+	MaleRegularChanceCondomUsePerEventLowMean,
+	MaleRegularChanceCondomUsePerEventLowStdDev,
+	MaleRegularPartnershipDurationHighMean,
+	MaleRegularPartnershipDurationHighStdDev,
+	MaleRegularPartnershipDurationHighShift,
+	MaleRegularPartnershipDurationLowMean,
+	MaleRegularPartnershipDurationLowStdDev,
+	MaleRegularPartnershipDurationLowShift,
+	//Male:Casual
+	MaleCasualAcquisitionRateHighMean,
+	MaleCasualAcquisitionRateHighStdDev,
+	MaleCasualAcquisitionRateLowMean,
+	MaleCasualAcquisitionRateLowStdDev,
+	MaleCasualAverageYearsYounger,
+	MaleCasualCoitalEventsPerMonthHigh,
+	MaleCasualCoitalEventsPerMonthLow,
+	MaleCasualChanceCondomUsePerEventHighMean,
+	MaleCasualChanceCondomUsePerEventHighStdDev,
+	MaleCasualChanceCondomUsePerEventLowMean,
+	MaleCasualChanceCondomUsePerEventLowStdDev,
+	MaleCasualPartnershipDurationHighMean,
+	MaleCasualPartnershipDurationHighStdDev,
+	MaleCasualPartnershipDurationHighShift,
+	MaleCasualPartnershipDurationLowMean,
+	MaleCasualPartnershipDurationLowStdDev,
+	MaleCasualPartnershipDurationLowShift,
+	//Male:Csw
+	MaleCswAcquisitionRateHighMean,
+	MaleCswAcquisitionRateHighStdDev,
+	MaleCswAcquisitionRateLowMean,
+	MaleCswAcquisitionRateLowStdDev,
+	MaleCswAverageYearsYounger,
+	MaleCswCoitalEventsPerMonthHigh,
+	MaleCswCoitalEventsPerMonthLow,
+	MaleCswChanceCondomUsePerEventHighMean,
+	MaleCswChanceCondomUsePerEventHighStdDev,
+	MaleCswChanceCondomUsePerEventLowMean,
+	MaleCswChanceCondomUsePerEventLowStdDev,
+	MaleCswPartnershipDurationHighMean,
+	MaleCswPartnershipDurationHighStdDev,
+	MaleCswPartnershipDurationHighShift,
+	MaleCswPartnershipDurationLowMean,
+	MaleCswPartnershipDurationLowStdDev,
+	MaleCswPartnershipDurationLowShift,
+	//Male:Health
+	MaleTransmissionCoefficientsByHvl,
+	MaleTransmissionCoefficientsPrimary,
+	MaleTransmissionCoefficientsLate,
+	//Female:Behavior
+	FemaleChanceBecomeSexWorker,
+	FemaleProportionHighRiskCsw,
+	FemaleProportionHighRiskNonCsw,
+	//Female:Health
+	FemaleTransmissionCoefficientsByHvl,
+	FemaleTransmissionCoefficientsPrimary,
+	FemaleTransmissionCoefficientsLate,
+	//Costs
+	CondomCost,
+	CircumcisionCost,
+	//ArtRolloutEligibility:OIHist
+	ArtOIHistRank,
+	ArtOIHistOI0,
+	ArtOIHistOI1,
+	ArtOIHistOI2,
+	ArtOIHistOI3,
+	ArtOIHistOI4,
+	ArtOIHistOI5,
+	ArtOIHistOI6,
+	ArtOIHistOI7,
+	ArtOIHistOI8,
+	ArtOIHistOI9,
+	ArtOIHistOI10,
+	ArtOIHistOI11,
+	ArtOIHistOI12,
+	ArtOIHistOI13,
+	ArtOIHistOI14,
+	ArtOIHistNumOIToStart,
+	//ArtRolloutEligibility:CD4
+	ArtCD4Rank,
+	ArtCD4CD4Upp,
+	ArtCD4CD4Lwr,
+	//ArtRolloutEligibility:CD4OIHist
+	ArtCD4OIHistRank,
+	ArtCD4OIHistOI0,
+	ArtCD4OIHistOI1,
+	ArtCD4OIHistOI2,
+	ArtCD4OIHistOI3,
+	ArtCD4OIHistOI4,
+	ArtCD4OIHistOI5,
+	ArtCD4OIHistOI6,
+	ArtCD4OIHistOI7,
+	ArtCD4OIHistOI8,
+	ArtCD4OIHistOI9,
+	ArtCD4OIHistOI10,
+	ArtCD4OIHistOI11,
+	ArtCD4OIHistOI12,
+	ArtCD4OIHistOI13,
+	ArtCD4OIHistOI14,
+	ArtCD4OIHistCD4Upp,
+	ArtCD4OIHistCD4Lwr,
+	//ArtRolloutEligibility:HVL
+	ArtHVLRank,
+	ArtHVLHVLUpp,
+	ArtHVLHVLLwr,
+	//ArtRolloutEligibility:CD4HVL
+	ArtCD4HVLRank,
+	ArtCD4HVLCD4Upp,
+	ArtCD4HVLCD4Lwr,
+	ArtCD4HVLHVLUpp,
+	ArtCD4HVLHVLLwr
 };
 
 class Simulation
@@ -140,7 +236,7 @@ public:
 	int GetTime() { return time_; }
 
 private:
-	friend class Serializer;
+	friend class SimulationBuilder;
 
 	struct TreatmentFile
 	{
@@ -152,12 +248,12 @@ private:
 
 	struct TimeDependentParameter
 	{
-		std::string key;
 		int time;
-		Nullable<PopulationTarget> target_population;
 		std::string value;
+		std::string key;
+		Nullable<PopulationTarget> target_population;
 		std::function<void(Person *)> population_modifier;
-		std::function<void(const std::string &)> simulation_modifier;
+		std::function<void()> simulation_modifier;
 	};
 
 	typedef std::array<TreatmentFile, Constants::NUMBER_OF_CEPAC_FILES> CepacTreatmentFiles;
@@ -221,12 +317,6 @@ private:
 
 	RolloutTreatmentFiles rollout_treatment_files_;
 
-	std::map<int, double> target_rollout_proportions_;
-
-	std::unordered_map<std::string, TemplateParameter> template_key_map_;
-
-	std::vector<TimeDependentParameter> unmatched_parameters_;
-
-	std::unordered_map<TemplateParameter, TimeDependentParameter> time_dependent_parameters_;
+	std::vector<TimeDependentParameter> time_dependent_parameters_;
 };
 

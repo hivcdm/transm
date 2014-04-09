@@ -21,12 +21,12 @@ SummaryStats::~SummaryStats(void)
 } /* end Destructor */
 
 /* addRunStats adds a new summary to the vector from a RunStats object */
-void SummaryStats::addRunStats(RunStats *runStats) {
+void SummaryStats::addRunStats(RunStats &runStats) {
 	/* Create a new summary object */
 	Summary *summary = new Summary();
 
 	/* Copy the population summary stats */
-	const RunStats::PopulationSummary *popSummary = runStats->getPopulationSummary();
+	const RunStats::PopulationSummary *popSummary = runStats.getPopulationSummary();
 	summary->runSetName = popSummary->runSetName;
 	summary->runName = popSummary->runName;
 	summary->runDate = popSummary->runDate;
@@ -42,15 +42,15 @@ void SummaryStats::addRunStats(RunStats *runStats) {
 		summary->numClinicVisitsPer1000 = 1000.0 * popSummary->totalClinicVisits / popSummary->numCohortsHIVPositive;
 
 	/* Copy the HIV screening stats */
-	const RunStats::HIVScreening *hivScreening = runStats->getHIVScreening();
+	const RunStats::HIVScreening *hivScreening = runStats.getHIVScreening();
 	summary->monthsToDetectionIncidentAverage =  hivScreening->monthsAfterInfectionToDetectionAverage;
 	summary->monthsToDetectionPrevalentAverage = hivScreening->monthsToDetectionPrevalentAverage;
 	summary->CD4AtDetectionIncidentAverage = hivScreening->CD4AtDetectionIncidentAverage;
 	summary->CD4AtDetectionPrevalentAverage = hivScreening->CD4AtDetectionPrevalentAverage;
 
 	/* Copy the OI and death stats */
-	const RunStats::OIStats *oiStats = runStats->getOIStats();
-	const RunStats::DeathStats *deathStats = runStats->getDeathStats();
+	const RunStats::OIStats *oiStats = runStats.getOIStats();
+	const RunStats::DeathStats *deathStats = runStats.getDeathStats();
 	for (int i = 0; i < SimContext::OI_NUM; i++) {
 		if (popSummary->numCohortsHIVPositive > 0) {
 			summary->numPrimaryOIsPer1000[i] = 1000.0 * oiStats->numPrimaryOIsOI[i] / popSummary->numCohortsHIVPositive;

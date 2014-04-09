@@ -5,7 +5,7 @@
 
 class Person;
 class RandomNums;
-class PopulationTarget;
+struct PopulationTarget;
 
 /***
     This class is a simple container for Entitys and allows us to add, count, get, and remove them
@@ -42,7 +42,7 @@ public:
 	**/
 	const string *getLabel();
 
-	void Apply(const PopulationTarget &target, std::function<void(Person*)> modifier);
+	virtual void Apply(const PopulationTarget &target, std::function<void(Person*)> modifier);
 
 	//------------< End Implemented Methods >----------------//
 

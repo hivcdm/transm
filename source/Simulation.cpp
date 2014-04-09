@@ -14,6 +14,93 @@
 #include "util/HighResolutionTimer.h"
 #include "util/Util.h"
 
+PopulationTarget PopulationTarget::FromString(const std::string &s)
+{
+	PopulationTarget target;
+
+	std::stringstream ss(s);
+	int i = 0;
+	while(ss)
+	{
+		std::string line;
+		std::getline(ss, line, ':');
+		switch(i++)
+		{
+		case 0:
+			target.risk_level.has_value = line != "*";
+			if(target.risk_level.has_value)
+			{
+				target.risk_level.value = static_cast<Person::RiskLevel>(std::stoi(line));
+			}
+			break;
+		case 1:
+			target.employment.has_value = line != "*";
+			if(target.employment.has_value)
+			{
+				target.employment.value = static_cast<DmgProfile::Employment>(std::stoi(line));
+			}
+			break;
+		case 2:
+			target.sexual_activity_status.has_value = line != "*";
+			if(target.sexual_activity_status.has_value)
+			{
+				target.sexual_activity_status.value = static_cast<DmgProfile::SexualActivityStatus>(std::stoi(line));
+			}
+			break;
+		case 3:
+			target.gender.has_value = line != "*";
+			if(target.gender.has_value)
+			{
+				target.gender.value = static_cast<DmgProfile::Gender>(std::stoi(line));
+			}
+			break;
+		case 4:
+			target.relationship_status.has_value = line != "*";
+			if(target.relationship_status.has_value)
+			{
+				target.relationship_status.value = static_cast<DmgProfile::RelationshipStatus>(std::stoi(line));
+			}
+			break;
+		case 5:
+			target.sexual_orientation.has_value = line != "*";
+			if(target.sexual_orientation.has_value)
+			{
+				target.sexual_orientation.value = static_cast<DmgProfile::SexualOrientation>(std::stoi(line));
+			}
+			break;
+		case 6:
+			target.age_lower.has_value = line != "*";
+			if(target.age_lower.has_value)
+			{
+				target.age_lower.value = std::stoi(line);
+			}
+			break;
+		case 7:
+			target.age_upper.has_value = line != "*";
+			if(target.age_upper.has_value)
+			{
+				target.age_upper.value = std::stoi(line);
+			}
+			break;
+		case 8:
+			target.observed_hiv_status.has_value = line != "*";
+			if(target.observed_hiv_status.has_value)
+			{
+				target.observed_hiv_status.value = static_cast<Person::HIVStatus>(std::stoi(line));
+			}
+			break;
+		case 9:
+			target.on_treatment.has_value = line != "*";
+			if(target.on_treatment.has_value)
+			{
+				target.on_treatment.value = line[0] != 'f' && line[0] != 'n';
+			}
+			break;
+		}
+	}
+	return target;
+}
+
 Simulation::Simulation(const std::string &run_name)
     : failedCalibration_(false),
 	  hasPassedFirstMonthCalibPrev_(false),
@@ -409,20 +496,22 @@ void Simulation::UpdateTimeDependentParameters()
 	bool simulation_changed = false;
 	bool population_changed = false;
 
-	for(const auto &type_parameter_pair : time_dependent_parameters_)
+	for(const auto &parameter : time_dependent_parameters_)
 	{
-		const auto &parameter = type_parameter_pair.second;
-
 		if(parameter.time == parameters_.currTime)
 		{
 			if(parameter.target_population.has_value)
 			{
-				population_.Apply(parameter.target_population.value, parameter.population_modifier);
-				population_changed = true;
+				if(parameter.population_modifier)
+				{
+					population_.Apply(parameter.target_population.value, parameter.population_modifier);
+					population_changed = true;
+				}
 			}
 			else
 			{
-				parameter.simulation_modifier(parameter.value);
+				assert(parameter.simulation_modifier);
+				parameter.simulation_modifier();
 				simulation_changed = true;
 			}
 		}

@@ -3,29 +3,24 @@
 #include "../Constants.h"
 #include "../util/Util.h"
 
-void Female::SubPopParams::Deserialize(const pugi::xml_node &entity_node)
+void Female::SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, double meanEvents)
 {
-	auto behavior_node = entity_node.child("behavior");
-	chanceBecomeCSW = behavior_node.child("chanceBecomeSexWorker").text().as_double();
-	proportionHighRisk[DmgProfile::NON_CSW] = behavior_node.child("proportionHighRiskNonCSW").text().as_double();
-	proportionHighRisk[DmgProfile::CSW] = behavior_node.child("proportionHighRiskCSW").text().as_double();
-	activityLevel.Deserialize(behavior_node.child("activityLevel"));
-
-	auto transmission_node = entity_node.child("health").child("transmissionCoefficients");
-	std::stringstream ss(transmission_node.child("valsByHVL").text().as_string());
-	for(int i = 0; i < SimContext::HVL_NUM_STRATA; i++)
-	{
-		double coefficient;
-		ss >> coefficient;
-		transmitPerEventCoeffs.push_back(coefficient);
-	}
-	transmitPerEventCoeffs.push_back(transmission_node.child("primary").text().as_double());
-	transmitPerEventCoeffs.push_back(transmission_node.child("lateStage").text().as_double());
+	throw std::runtime_error("not implemented for women");
 }
 
-void Female::SubPopParams::Serialize(pugi::xml_node &)
+void Female::SetPartnershipDuration(RiskLevel risk, SexualPartnership::Type partnershipType, ShiftedLogNormalDist dist)
 {
-	throw std::runtime_error("not implemented");
+	throw std::runtime_error("not implemented for women");
+}
+
+void Female::SetAverageYearsYounger(SexualPartnership::Type partnershipType, NormalDist dist)
+{
+	throw std::runtime_error("not implemented for women");
+}
+
+void Female::SetAcquisitionRatePerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, LogNormalDist dist)
+{
+	throw std::runtime_error("not implemented for women");
 }
 
 //each index of the array contains parameters for a different population

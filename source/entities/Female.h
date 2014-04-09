@@ -3,27 +3,20 @@
 #include "Person.h"
 #include "../data/EventParams.h"
 #include "../util/rand/RandomNums.h"
-#include "../util/Serializable.h"
 
-/***
-All females in the simulation are members of this class, or a class derived from this one
-***/
+/// <summary>
+/// All females in the simulation are members of this class, or a class derived from this one
+/// </summary>
 class Female : public Person
 {
 public:
-	/**
-	These are parameters that describe the population of females.
-	Each Population in the Sim will have a separate one of these referenced by the population's ID.
-
-	@author schung5
-	**/
-	class SubPopParams : public Serializable
+	/// <summary>
+	/// These are parameters that describe the population of females.
+	/// Each Population in the Sim will have a separate one of these referenced by the population's ID.
+	/// </summary>
+	class SubPopParams
 	{
 	public :
-		void Deserialize(const pugi::xml_node &node);
-
-		void Serialize(pugi::xml_node &parent_node);
-
 		SubPopParams();
 
 		double getChanceBecomeCSW() const;
@@ -32,10 +25,12 @@ public:
 		double getTransmitPerEventCoeff(HVLStrata _hvl) const;
 
 	private:
+		friend class SimulationBuilder;
+
 		double chanceBecomeCSW;		//chance that a female will become a CSW
 		double proportionHighRisk[DmgProfile::ENDEmployment];  //proportion of female population that is in the "high risk" lists
 		NormalDist activityLevel; //Distribution of activity level (i.e. marbles)
-		std::vector<double> transmitPerEventCoeffs;	 //chance of infection for women->men, w/o circumcision or condoms
+		std::array<double, HVLStrata::ENDHVLStrata> transmitPerEventCoeffs;	 //chance of infection for women->men, w/o circumcision or condoms
 	};
 
 public:
@@ -67,6 +62,10 @@ public:
 	double getChanceBecomeCsw() const;
 
 	void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist);
+	void SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, double meanEvents);
+	void SetPartnershipDuration(RiskLevel risk, SexualPartnership::Type partnershipType, ShiftedLogNormalDist dist);
+	void SetAverageYearsYounger(SexualPartnership::Type partnershipType, NormalDist dist);
+	void SetAcquisitionRatePerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, LogNormalDist dist);
 
 private:
 	SubPopParams populationSpecificParams;

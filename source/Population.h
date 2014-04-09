@@ -23,15 +23,11 @@ enum DebugLevel;
   The population contains an EntityPool which is further subdivided into Buckets
 */
 
-class Population : public Serializable
+class Population
 {
 public:
 	//This is the main circular buffer containing the BucketAge structures
 	typedef boost::circular_buffer_space_optimized<BucketAge *> BucketAllAges;
-
-	void Deserialize(const pugi::xml_node &node);
-
-	void Serialize(pugi::xml_node &parent_node);
 
 	//creates a new population object given an XML input subtree which contains the parameters
 	Population(EventParams &parameters);
@@ -96,7 +92,7 @@ public:
 	void updateFinalPhysicalState(EventParams &_eventParams);
 
 	//gets the age bucket of the person
-	PopulationParams::AgeBucketPrevalenceInfo *getAgeBucket(Person *);
+	PopulationParams::AgeBucketPrevalenceInfo &getAgeBucket(Person *);
 	//gets the index of the age bucket of the person
 	int getAgeBucketIndex(Person *);
 
@@ -118,6 +114,8 @@ public:
 	void ValidateState();
 
 private:
+	friend class SimulationBuilder;
+
 	/*
 	//forms creates partnerships of a particular type for 1 person. Will make sure that each partner is in the correct DmgProfileBucket
 	//if _partnershipType == STEADY, then this will remove the partner from the EntityIndex (as they are now NOT_SINGLE)

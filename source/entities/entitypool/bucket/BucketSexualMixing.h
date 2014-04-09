@@ -83,6 +83,8 @@ public :
 	//TESTED
 	void clear();
 
+	void Apply(const PopulationTarget &target, std::function<void(Person*)> modifier);
+
 	//TESTED
 	Person *drawMember(RandomNums &_randomNums, SexualPartnership::Type _partnershipType, bool _remove);
 

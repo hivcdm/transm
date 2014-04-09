@@ -3,14 +3,12 @@
 #include "entities/Male.h"
 #include "entities/Female.h"
 #include "statistics/CostsTracker.h"
-#include "util/Serializable.h"
 
-class PopulationParams : public Serializable
+class PopulationParams
 {
 public:
-	void Deserialize(const pugi::xml_node &node);
-
-	void Serialize(pugi::xml_node &parent_node);
+	PopulationParams();
+	~PopulationParams();
 
 	void setAgeSexualDebut(int ageSexualDebutMonths) { SAEntAgeMths = ageSexualDebutMonths; }
 
@@ -54,6 +52,8 @@ protected:
 	};	
 
 private:
+	friend class SimulationBuilder;
+
 	//this will be set as the Simulation::eventParams.debugLevel
 	DebugLevel debugLevel;
 
@@ -79,7 +79,7 @@ private:
 	int CSWEndAgeMth[DmgProfile::ENDGender];
 
 	//prevalence parameters stratified by age.
-	std::vector<AgeBucketPrevalenceInfo *> initialAgeBuckets;
+	std::vector<AgeBucketPrevalenceInfo> initialAgeBuckets;
 
 	//holds the population-level parameters for population of males and the population of females
 	Male::SubPopParams defaultMaleParams;
@@ -92,7 +92,4 @@ private:
 	//Costs
 	double condomCost;
 	double circumcisionCost;
-
-	PopulationParams();
-	~PopulationParams();
 };

@@ -3,114 +3,6 @@
 #include "RandomNums.h"
 #include "../Util.h"
 
-
-void NormalDist::Deserialize(const pugi::xml_node &node)
-{
-	auto distrib_node = node.child("Distrib");
-	mean = distrib_node.child("mean").text().as_double();
-	stddev = distrib_node.child("stdDev").text().as_double();
-}
-
-void NormalDist::Serialize(pugi::xml_node &parent_node)
-{
-	throw std::runtime_error("not implemented");
-}
-
-void LogNormalDist::Deserialize(const pugi::xml_node &node)
-{
-	auto distrib_node = node.child("Distrib");
-
-	if(distrib_node.child("mu") != nullptr)
-	{
-		mu = distrib_node.child("mu").text().as_double();
-		sigma = distrib_node.child("sigma").text().as_double();
-	}
-	else
-	{
-		double mean = distrib_node.child("mean").text().as_double();
-
-		if(mean <= 0)
-		{
-			mu = 0;
-			sigma = 0;
-			isZeroDistrib = true;
-			return;
-		}
-
-		double stddev = distrib_node.child("stdDev").text().as_double();
-
-		mu = log(mean) - 0.5 * log(1 + (stddev * stddev) / (mean * mean));
-		sigma = sqrt(log(1 + (stddev * stddev) / (mean * mean)));
-	}
-}
-
-void LogNormalDist::Serialize(pugi::xml_node &parent_node)
-{
-	throw std::runtime_error("not implemented");
-}
-
-
-void ShiftedLogNormalDist::Deserialize(const pugi::xml_node &node)
-{
-	auto distrib_node = node.child("Distrib");
-
-	if(distrib_node.child("mu") != nullptr)
-	{
-		mu = distrib_node.child("mu").text().as_double();
-		sigma = distrib_node.child("sigma").text().as_double();
-		shift = distrib_node.child("shift").text().as_double();
-	}
-	else
-	{
-		double mean = distrib_node.child("mean").text().as_double();
-
-		if(mean <= 0)
-		{
-			mu = 0;
-			sigma = 0;
-			shift = 0;
-			isZeroDistrib = true;
-			return;
-		}
-
-		double stddev = distrib_node.child("stdDev").text().as_double();
-
-		shift = distrib_node.child("shift").text().as_double();
-		mu = log(mean - shift) - 0.5 * log(1 + (stddev * stddev) / ((mean - shift) * (mean - shift)));
-		sigma = sqrt(log(1 + (stddev * stddev) / ((mean - shift) * (mean - shift))));
-	}
-}
-
-void ShiftedLogNormalDist::Serialize(pugi::xml_node &parent_node)
-{
-	throw std::runtime_error("not implemented");
-}
-
-void BetaDist::Deserialize(const pugi::xml_node &node)
-{
-	auto distrib_node = node.child("Distrib");
-
-	if(distrib_node.child("alpha") != nullptr)
-	{
-		alpha = distrib_node.child("alpha").text().as_double();
-		beta = distrib_node.child("beta").text().as_double();
-	}
-	else
-	{
-		double mean = distrib_node.child("mean").text().as_double();
-		double stddev = distrib_node.child("stdDev").text().as_double();
-		double sampleSize = mean * (1 - mean) / (stddev * stddev) - 1;
-
-		alpha = mean * sampleSize;
-		beta = (1 - mean) * sampleSize;
-	}
-}
-
-void BetaDist::Serialize(pugi::xml_node &parent_node)
-{
-	throw std::runtime_error("not implemented");
-}
-
 RandomNums::RandomNums()
 {
 	mtRand.seed(static_cast<uint32_t>(time(nullptr)));
@@ -122,12 +14,6 @@ RandomNums::RandomNums(unsigned int _seed)
 	reset(_seed);
 	mtRand_OneOverMaxMult = 1.0 / mtRand.max();
 }
-
-//-----------< End Constructors >-----------------//
-
-
-//-----------< Begin rand num functions >-----------------//
-
 
 int RandomNums::chooseIndex(const std::vector<double> &_indexProbabilities)
 {

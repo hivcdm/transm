@@ -8,30 +8,23 @@
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/poisson_distribution.hpp>
 #include "../xml/pugixml.hpp"
-#include "../Serializable.h"
 
-struct NormalDist : public Serializable
+struct NormalDist
 {
-	void Deserialize(const pugi::xml_node &node);
-	void Serialize(pugi::xml_node &parent_node);
 	double mean;
 	double stddev;
 };
 
-struct LogNormalDist : public Serializable
+struct LogNormalDist
 {
-	void Deserialize(const pugi::xml_node &node);
-	void Serialize(pugi::xml_node &parent_node);
 	double mu;
 	double sigma;
 	bool isZeroDistrib = false;
 	double getMean() const;
 };
 
-struct ShiftedLogNormalDist : public Serializable
+struct ShiftedLogNormalDist
 {
-	void Deserialize(const pugi::xml_node &node);
-	void Serialize(pugi::xml_node &parent_node);
 	double mu;
 	double sigma;
 	double shift;
@@ -39,10 +32,8 @@ struct ShiftedLogNormalDist : public Serializable
 	double getMean() const;
 };
 
-struct BetaDist : public Serializable
+struct BetaDist
 {
-	void Deserialize(const pugi::xml_node &node);
-	void Serialize(pugi::xml_node &parent_node);
 	double alpha;
 	double beta;
 };

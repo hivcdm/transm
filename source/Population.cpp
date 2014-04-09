@@ -26,19 +26,19 @@ unsigned int Population::idCounter = 0;
 void Population::Apply(const PopulationTarget &target, std::function<void(Person *)> modifier)
 {
 	DmgProfile selector;
-	if(target.employment.has_value)
+	if(target.sexual_activity_status.has_value)
 	{
 		selector.set(DmgProfile::SEXUAL_ACTIVITY_STATUS, target.sexual_activity_status.value);
 	}
-	if(target.employment.has_value)
+	if(target.gender.has_value)
 	{
 		selector.set(DmgProfile::GENDER, target.gender.value);
 	}
-	if(target.employment.has_value)
+	if(target.sexual_orientation.has_value)
 	{
 		selector.set(DmgProfile::SEXUAL_ORIENTATION, target.sexual_orientation.value);
 	}
-	if(target.employment.has_value)
+	if(target.relationship_status.has_value)
 	{
 		selector.set(DmgProfile::RELATIONSHIP_STATUS, target.relationship_status.value);
 	}
@@ -51,18 +51,16 @@ void Population::Apply(const PopulationTarget &target, std::function<void(Person
 	for(auto id : buckets)
 	{
 		auto bucket = entities->getBucket(id);
-		bucket->Apply(target, modifier);
+		if(bucket != nullptr)
+		{
+			bucket->Apply(target, modifier);
+		}
 	}
-}
-
-void Population::Serialize(pugi::xml_node &)
-{
-	throw std::runtime_error("not implemented");
 }
 
 void Population::ValidateState()
 {
-	throw std::runtime_error("not implemented");
+	//throw std::runtime_error("not implemented");
 }
 
 /**
@@ -72,162 +70,6 @@ Population::Population(EventParams &parameters)
     : populationID(Population::idCounter++),
       parameters_(parameters)
 {
-}
-
-void Population::Deserialize(const pugi::xml_node &population_node)
-{
-	if(parameters_.useRollout)
-	{
-		applyRolloutContext(parameters_, 0);
-	}
-
-	//save population parameters
-	popWideParams.Deserialize(population_node);
-
-	//create EntityPool - this will contain all Entities
-	entities = new EntityPool(popWideParams.SAEntAgeMths, populationID, popWideParams.assort);
-	//initialize infection trace generator print detailed info about certain ProfileID's
-	// in this case, all ProfileID's w/ non-nullptr DmgProfileBuckets
-	DmgProfile::ProfileID currProfileID = DmgProfile::MIN;
-
-	while(currProfileID <= DmgProfile::MAX)
-	{
-		//if it is being used in this Population, then append to _profileIDs
-		if((entities->getBucket(currProfileID) != nullptr) &&
-		        (DmgProfile::get(currProfileID, DmgProfile::SEXUAL_ACTIVITY_STATUS) != DmgProfile::NA))
-		{
-			popStats.infectionsTracker.addToDetailedTrace(currProfileID);
-		}
-
-		currProfileID++;
-	} //while(currProfileID <= DmgProfile::MAX) {
-
-	//initialize structures that hold people who can initiate and 'agree' to relationships.
-	initPartnershipBuckets();
-
-	/** Create the people in the population **/
-	long totalNumMales = Util::round<long>(popWideParams.initSize * popWideParams.proportionMale);
-	long totalNumFemales = std::max<long>(popWideParams.initSize - totalNumMales, 0);
-	//the params.xml file should have detailed the prevalent characteristics of each age bucket
-	//  we will go through each age bucket and create the part of the prevalent population that falls within the bucket
-	std::vector<AgeRange> ageRanges;
-
-	for(auto ageBucketParams : popWideParams.initialAgeBuckets)
-	{
-		auto numMalesInCurrentBucket = Util::round<std::size_t>(totalNumMales * ageBucketParams->proportionOfPopulation[DmgProfile::MALE]);
-		auto numFemalesInCurrentBucket = Util::round<std::size_t>(totalNumFemales * ageBucketParams->proportionOfPopulation[DmgProfile::FEMALE]);
-
-		//calc how many people are in the current age range
-		auto currentBucketSize = numMalesInCurrentBucket + numFemalesInCurrentBucket;
-
-		//Number of persons of each gender to be traced in detailed output file
-		auto numToTrace = static_cast<std::size_t>(parameters_.numToTrace);
-
-		for(std::size_t count = 0; count < currentBucketSize; count++)
-		{
-			//Determine whether or not person should be traced in SinglePersonTrace
-			bool tracePerson = (count < numToTrace || (count >= numMalesInCurrentBucket && (count - numMalesInCurrentBucket) < numToTrace));
-
-			//create a person, males first and females second
-			auto gender = (count < numMalesInCurrentBucket) ? DmgProfile::MALE : DmgProfile::FEMALE;
-			auto person = generatePerson(parameters_, gender, ageBucketParams, tracePerson);
-
-			//add the created person to the EntityPool
-			entities->addPersonToAll(person);
-		}//end for (int count
-
-		AgeRange ageRange = {ageBucketParams->minAgeMth, ageBucketParams->maxAgeMth};
-		AgeRangeSizePair ageRangeSize = std::make_pair(ageRange, currentBucketSize);
-
-		//Add a tuple to the currSizeByAgeRange vector along with the initial size of the age range
-		ageRanges.push_back(ageRange);
-		currSizeByAgeRange.push_back(ageRangeSize);
-		currSizeByAgeRangeMale.push_back(std::make_pair(ageRange, numMalesInCurrentBucket));
-		currSizeByAgeRangeFemale.push_back(std::make_pair(ageRange, numFemalesInCurrentBucket));
-	}
-
-	popStats.artTracker.SetAgeRanges(ageRanges);
-
-	if(parameters_.outputTrace[EventParams::TraceFileType::Singleperson])
-	{
-		parameters_.traceStreams[EventParams::TraceFileType::Singleperson] << endl << "Now creating initial partnerships... " << endl;
-	}
-
-	/** create prevalent Regular Partnerships (time = 0) before creating prevalent marriages **/
-	//the demographics that we are pulling the eligibles from
-	DmgProfile selector;
-	selector.set(DmgProfile::SEXUAL_ACTIVITY_STATUS, DmgProfile::SA);
-	selector.set(DmgProfile::GENDER, DmgProfile::MALE);
-	selector.set(DmgProfile::SEXUAL_ORIENTATION, DmgProfile::HETERO);
-	selector.set(DmgProfile::RELATIONSHIP_STATUS, DmgProfile::SINGLE);
-	selector.set(DmgProfile::EMPLOYMENT, DmgProfile::NON_CSW);
-	std::vector<DmgProfile::ProfileID> bucketIDs;
-	//fix code below, i've put placeholders for multiple singles buckets, but right now we only use 1 of each gender
-	//errhode: Is this taken care of with the whole agebucket inside SexualMixingBucket thing?
-	assert(Constants::TODO_LO_PRI);
-	selector.selectProfileIDs(bucketIDs, nullptr);
-	DmgProfileBucket *singleMales = entities->getBucket(bucketIDs.at(0));
-	selector.set(DmgProfile::GENDER, DmgProfile::FEMALE);
-	bucketIDs.clear();
-	selector.selectProfileIDs(bucketIDs, nullptr);
-	DmgProfileBucket *singleFemales = entities->getBucket(bucketIDs.at(0));
-	/** create prevalent formSteadyPartnerships (time = 0) **/
-	//the demographics that we are pulling the eligibles from -- same as for regular;
-	//can just use the previous singleMales and singleFemales buckets
-	//number of couples -- % married of adult population by DmgProfile::SAStatus / 2
-	int numCouples = Util::round<long>(popWideParams.initproportionMarried * (singleMales->size() + singleFemales->size()) * 0.5);
-
-	while(numCouples > 0)
-	{
-		//break if there are no more people to marry...
-		if(!singleFemales->size() || !singleMales->size())
-		{
-			break;
-		}
-
-		//choose a random male from the pool
-		Male *m = (Male *)singleMales->drawMember(parameters_.randomNums, SexualPartnership::Type::Steady, Constants::DONT_REMOVE);
-
-		if(m == nullptr)
-		{
-			break;
-		}
-
-		//try to form partnership, will add Male back to the pool if partnership was formed
-		createPartnerships(parameters_, m, nullptr, SexualPartnership::Type::Steady, true);
-		numCouples--;
-	} //while(numCouples > 0) {
-
-	//number of regular couples -- % married of adult population by DmgProfile::SAStatus / 2
-	//Note that some people may end up in multiple relationships -- this should come out in the wash (?)
-	numCouples = Util::round<int>(popWideParams.initproportionRegular * (singleMales->size() + singleFemales->size()) * 0.5);
-
-	while(numCouples > 0)
-	{
-		//break if there are no more people to pair off...
-		//this shouldn't be a problem unless we start with no men or no women as we are not shifting the pairs to non_single status
-		if(!singleFemales->size() || !singleMales->size())
-		{
-			break;
-		}
-
-		//choose a random male from the pool
-		Male *m = (Male *)singleMales->drawMember(parameters_.randomNums, SexualPartnership::Type::Regular, Constants::DONT_REMOVE);
-
-		if(m == nullptr)
-		{
-			break;
-		}
-
-		//form partnership, will add Male back to the pool if partnership was formed
-		createPartnerships(parameters_, m, nullptr, SexualPartnership::Type::Regular, true);
-		numCouples--;
-	} //while(numCouples > 0) {
-
-	//count the size of the population and store value
-	updateSize();
-
-	graph = new GraphVizGraphElements();
 }
 
 /**
@@ -1176,7 +1018,7 @@ void Population::initIncidentInfectionsByAge()
 
 	for(auto ageBucketParams : popWideParams.initialAgeBuckets)
 	{
-		AgeRange ageRange = {ageBucketParams->minAgeMth, ageBucketParams->maxAgeMth};
+		AgeRange ageRange = {ageBucketParams.minAgeMth, ageBucketParams.maxAgeMth};
 		incidentInfsAgeMale.push_back({ageRange, 0});
 		incidentInfsAgeFemale.push_back({ageRange, 0});
 		totalIncidentInfsAge.push_back({ageRange, 0});
@@ -1202,72 +1044,69 @@ void Population::applyIncidentPrevalence(EventParams &parameters_)
 		//if this is a prevalent person, see if they're infected. Right now, newborns cannot be infected
 		//TODO: Have counter in ageBucketParams for persons infected
 
-		if(_ageBucketParams)
-		{
-			bool isCSW = p->getDmgProfileVal(DmgProfile::EMPLOYMENT) == DmgProfile::CSW;
-			Person::RiskLevel risk = p->getRiskLevel();
-			//apply prevalence if we have not yet reached the quoto of infected people for that bucket
-			bool isPrevalent = false;
+		bool isCSW = p->getDmgProfileVal(DmgProfile::EMPLOYMENT) == DmgProfile::CSW;
+		Person::RiskLevel risk = p->getRiskLevel();
+		//apply prevalence if we have not yet reached the quoto of infected people for that bucket
+		bool isPrevalent = false;
 
-			if(isCSW)
+		if(isCSW)
+		{
+			if(numInfectedByAgeBucketMale.at(ageBucketIndex)[0] < _ageBucketParams.numInfectedCSW[_gender])
 			{
-				if(numInfectedByAgeBucketMale.at(ageBucketIndex)[0] < _ageBucketParams->numInfectedCSW[_gender])
+				isPrevalent = true;
+				numInfectedByAgeBucketMale.at(ageBucketIndex)[0]++;
+			}
+		}
+		else
+		{
+			if(risk == Person::HIGH)
+			{
+				if(numInfectedByAgeBucketMale.at(ageBucketIndex)[1] < _ageBucketParams.numInfectedRisk[_gender][risk])
 				{
 					isPrevalent = true;
-					numInfectedByAgeBucketMale.at(ageBucketIndex)[0]++;
+					numInfectedByAgeBucketMale.at(ageBucketIndex)[1]++;
 				}
 			}
 			else
 			{
-				if(risk == Person::HIGH)
+				if(numInfectedByAgeBucketMale.at(ageBucketIndex)[2] < _ageBucketParams.numInfectedRisk[_gender][risk])
 				{
-					if(numInfectedByAgeBucketMale.at(ageBucketIndex)[1] < _ageBucketParams->numInfectedRisk[_gender][risk])
-					{
-						isPrevalent = true;
-						numInfectedByAgeBucketMale.at(ageBucketIndex)[1]++;
-					}
-				}
-				else
-				{
-					if(numInfectedByAgeBucketMale.at(ageBucketIndex)[2] < _ageBucketParams->numInfectedRisk[_gender][risk])
-					{
-						isPrevalent = true;
-						numInfectedByAgeBucketMale.at(ageBucketIndex)[2]++;
-					}
+					isPrevalent = true;
+					numInfectedByAgeBucketMale.at(ageBucketIndex)[2]++;
 				}
 			}
+		}
 
-			if(isPrevalent)
+		if(isPrevalent)
+		{
+			//Generation of infection for all prevalent cases is 0
+			//toReturn->cepacPatient is initialized HERE for prevalent cases
+			Person::HIVStatus oldStatus = p->hivStatus;
+
+			if(parameters_.tracePrevalentCases)
 			{
-				//Generation of infection for all prevalent cases is 0
-				//toReturn->cepacPatient is initialized HERE for prevalent cases
-				Person::HIVStatus oldStatus = p->hivStatus;
-
-				if(parameters_.tracePrevalentCases)
-				{
-					p->setToBeTraced();
-				}
-
-				p->becomeInfected(Constants::PREVALENT_INFECTION, parameters_);
-
-				if(oldStatus != p->hivStatus)
-				{
-					((BucketSexualMixing *) entities->getBucket(p->getDmgProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
-					        p->hivStatus);
-				}
-
-				//Adds person to the untreated pool if using rollout
-				if(parameters_.useRollout)
-				{
-					rolloutUntreatedPool.push_back(p);
-				}
-
-				if(p->getDmgProfile()->get(p->getDmgProfile()->getProfileID(), DmgProfile::SEXUAL_ACTIVITY_STATUS) != DmgProfile::NA)
-				{
-					((BucketSexualMixing *)entities->getBucket(p->getDmgProfile()->getProfileID()))->increaseInfected(p);
-				}
+				p->setToBeTraced();
 			}
-		} //if(_ageBucketParams) {
+
+			p->becomeInfected(Constants::PREVALENT_INFECTION, parameters_);
+
+			if(oldStatus != p->hivStatus)
+			{
+				((BucketSexualMixing *) entities->getBucket(p->getDmgProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
+					    p->hivStatus);
+			}
+
+			//Adds person to the untreated pool if using rollout
+			if(parameters_.useRollout)
+			{
+				rolloutUntreatedPool.push_back(p);
+			}
+
+			if(p->getDmgProfile()->get(p->getDmgProfile()->getProfileID(), DmgProfile::SEXUAL_ACTIVITY_STATUS) != DmgProfile::NA)
+			{
+				((BucketSexualMixing *)entities->getBucket(p->getDmgProfile()->getProfileID()))->increaseInfected(p);
+			}
+		}
 	}//for()
 
 	//loop through all females and apply prevalence to population
@@ -1276,76 +1115,73 @@ void Population::applyIncidentPrevalence(EventParams &parameters_)
 	{
 		Person *p = *(females_iter);
 		int ageBucketIndex = getAgeBucketIndex(p);
-		PopulationParams::AgeBucketPrevalenceInfo *_ageBucketParams = popWideParams.initialAgeBuckets.at(
+		PopulationParams::AgeBucketPrevalenceInfo &_ageBucketParams = popWideParams.initialAgeBuckets.at(
 		            ageBucketIndex);
 		DmgProfile::Gender _gender = DmgProfile::FEMALE;
 		//if this is a prevalent person, see if they're infected. Right now, newborns cannot be infected
 		//TODO: Have counter in ageBucketParams for persons infected
 
-		if(_ageBucketParams)
-		{
-			bool isCSW = p->getDmgProfileVal(DmgProfile::EMPLOYMENT) == DmgProfile::CSW;
-			Person::RiskLevel risk = p->getRiskLevel();
-			bool isPrevalent = false;
+		bool isCSW = p->getDmgProfileVal(DmgProfile::EMPLOYMENT) == DmgProfile::CSW;
+		Person::RiskLevel risk = p->getRiskLevel();
+		bool isPrevalent = false;
 
-			if(isCSW)
+		if(isCSW)
+		{
+			if(numInfectedByAgeBucketFemale.at(ageBucketIndex)[0] < _ageBucketParams.numInfectedCSW[_gender])
 			{
-				if(numInfectedByAgeBucketFemale.at(ageBucketIndex)[0] < _ageBucketParams->numInfectedCSW[_gender])
+				isPrevalent = true;
+				numInfectedByAgeBucketFemale.at(ageBucketIndex)[0]++;
+			}
+		}
+		else
+		{
+			if(risk == Person::HIGH)
+			{
+				if(numInfectedByAgeBucketFemale.at(ageBucketIndex)[1] < _ageBucketParams.numInfectedRisk[_gender][risk])
 				{
 					isPrevalent = true;
-					numInfectedByAgeBucketFemale.at(ageBucketIndex)[0]++;
+					numInfectedByAgeBucketFemale.at(ageBucketIndex)[1]++;
 				}
 			}
 			else
 			{
-				if(risk == Person::HIGH)
+				if(numInfectedByAgeBucketFemale.at(ageBucketIndex)[2] < _ageBucketParams.numInfectedRisk[_gender][risk])
 				{
-					if(numInfectedByAgeBucketFemale.at(ageBucketIndex)[1] < _ageBucketParams->numInfectedRisk[_gender][risk])
-					{
-						isPrevalent = true;
-						numInfectedByAgeBucketFemale.at(ageBucketIndex)[1]++;
-					}
-				}
-				else
-				{
-					if(numInfectedByAgeBucketFemale.at(ageBucketIndex)[2] < _ageBucketParams->numInfectedRisk[_gender][risk])
-					{
-						isPrevalent = true;
-						numInfectedByAgeBucketFemale.at(ageBucketIndex)[2]++;
-					}
+					isPrevalent = true;
+					numInfectedByAgeBucketFemale.at(ageBucketIndex)[2]++;
 				}
 			}
+		}
 
-			if(isPrevalent)
+		if(isPrevalent)
+		{
+			//Generation of infection for all prevalent cases is 0
+			//toReturn->cepacPatient is initialized HERE for prevalent cases
+			Person::HIVStatus oldStatus = p->hivStatus;
+
+			if(parameters_.tracePrevalentCases)
 			{
-				//Generation of infection for all prevalent cases is 0
-				//toReturn->cepacPatient is initialized HERE for prevalent cases
-				Person::HIVStatus oldStatus = p->hivStatus;
-
-				if(parameters_.tracePrevalentCases)
-				{
-					p->setToBeTraced();
-				}
-
-				p->becomeInfected(Constants::PREVALENT_INFECTION, parameters_);
-
-				if(oldStatus != p->hivStatus)
-				{
-					((BucketSexualMixing *) entities->getBucket(p->getDmgProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
-					        p->hivStatus);
-				}
-
-				if(parameters_.useRollout)
-				{
-					rolloutUntreatedPool.push_back(p);
-				}
-
-				if(p->getDmgProfile()->get(p->getDmgProfile()->getProfileID(), DmgProfile::SEXUAL_ACTIVITY_STATUS) != DmgProfile::NA)
-				{
-					((BucketSexualMixing *)entities->getBucket(p->getDmgProfile()->getProfileID()))->increaseInfected(p);
-				}
+				p->setToBeTraced();
 			}
-		} //if(_ageBucketParams) {
+
+			p->becomeInfected(Constants::PREVALENT_INFECTION, parameters_);
+
+			if(oldStatus != p->hivStatus)
+			{
+				((BucketSexualMixing *) entities->getBucket(p->getDmgProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
+					    p->hivStatus);
+			}
+
+			if(parameters_.useRollout)
+			{
+				rolloutUntreatedPool.push_back(p);
+			}
+
+			if(p->getDmgProfile()->get(p->getDmgProfile()->getProfileID(), DmgProfile::SEXUAL_ACTIVITY_STATUS) != DmgProfile::NA)
+			{
+				((BucketSexualMixing *)entities->getBucket(p->getDmgProfile()->getProfileID()))->increaseInfected(p);
+			}
+		}
 	}//for()
 }
 
@@ -2264,7 +2100,7 @@ long Population::calcPrevalentPopulation(long _time)
 	//initialize prevalent infections by age
 	for(auto ageBucketParams : popWideParams.initialAgeBuckets)
 	{
-		AgeRange range = {ageBucketParams->minAgeMth, ageBucketParams->maxAgeMth};
+		AgeRange range = {ageBucketParams.minAgeMth, ageBucketParams.maxAgeMth};
 		prevalenceByAgeMale.push_back({range, 0});
 		prevalenceByAgeFemale.push_back({range, 0});
 	}
@@ -2349,43 +2185,43 @@ long Population::calcPrevalentPopulation(long _time)
 	return totalInfected;
 }
 
-PopulationParams::AgeBucketPrevalenceInfo *Population::getAgeBucket(Person *p)
+PopulationParams::AgeBucketPrevalenceInfo &Population::getAgeBucket(Person *p)
 {
 	int age = p->getAge(MONTH);
-	PopulationParams::AgeBucketPrevalenceInfo *ageBucketParams = nullptr;
 
 	for(unsigned int ageBucket = 0; ageBucket < popWideParams.initialAgeBuckets.size(); ageBucket++)
 	{
 		//holds the parameters for the current age bucket
-		ageBucketParams = popWideParams.initialAgeBuckets.at(ageBucket);
+		auto &ageBucketParams = popWideParams.initialAgeBuckets.at(ageBucket);
 
-		if(age >= ageBucketParams->minAgeMth && age <= ageBucketParams->maxAgeMth)
+		if(age >= ageBucketParams.minAgeMth && age <= ageBucketParams.maxAgeMth)
 		{
-			break;
+			return ageBucketParams;
 		}
 	}
 
-	return ageBucketParams;
+	throw std::runtime_error("bucket not found");
+	//return popWideParams.initialAgeBuckets.back();
 }
 
 int Population::getAgeBucketIndex(Person *p)
 {
 	int age = p->getAge(MONTH);
-	PopulationParams::AgeBucketPrevalenceInfo *ageBucketParams;
 	unsigned int ageBucket;
 
 	for(ageBucket = 0; ageBucket < popWideParams.initialAgeBuckets.size(); ageBucket++)
 	{
 		//holds the parameters for the current age bucket
-		ageBucketParams = popWideParams.initialAgeBuckets.at(ageBucket);
+		auto &ageBucketParams = popWideParams.initialAgeBuckets.at(ageBucket);
 
-		if(age >= ageBucketParams->minAgeMth && age <= ageBucketParams->maxAgeMth)
+		if(age >= ageBucketParams.minAgeMth && age <= ageBucketParams.maxAgeMth)
 		{
-			break;
+			return ageBucket;
 		}
 	}
 
-	return ageBucket;
+	throw std::runtime_error("bucket not found");
+	//return ageBucket;
 }
 
 long Population::getSize()

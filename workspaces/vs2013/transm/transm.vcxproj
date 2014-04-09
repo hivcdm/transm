@@ -386,7 +386,7 @@
     <ClInclude Include="..\..\..\source\Outputs.h" />
     <ClInclude Include="..\..\..\source\Population.h" />
     <ClInclude Include="..\..\..\source\PopulationParams.h" />
-    <ClInclude Include="..\..\..\source\Serializer.h" />
+    <ClInclude Include="..\..\..\source\SimulationBuilder.h" />
     <ClInclude Include="..\..\..\source\Simulation.h" />
     <ClInclude Include="..\..\..\source\statistics\ArtRolloutTracker.h" />
     <ClInclude Include="..\..\..\source\statistics\BucketCounter.h" />
@@ -401,7 +401,6 @@
     <ClInclude Include="..\..\..\source\util\Nullable.h" />
     <ClInclude Include="..\..\..\source\util\rand\RandomNums.h" />
     <ClInclude Include="..\..\..\source\util\HighResolutionTimer.h" />
-    <ClInclude Include="..\..\..\source\util\Serializable.h" />
     <ClInclude Include="..\..\..\source\util\Util.h" />
     <ClInclude Include="..\..\..\source\util\xml\pugiconfig.hpp" />
     <ClInclude Include="..\..\..\source\util\xml\pugixml.hpp" />

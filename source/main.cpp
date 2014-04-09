@@ -1,6 +1,6 @@
 #include <boost/filesystem.hpp>
 
-#include "Serializer.h"
+#include "SimulationBuilder.h"
 #include "cepac/include.h"
 #include "statistics/TransmissionSummaryStats.h"
 #include "util/Util.h"
@@ -81,20 +81,16 @@ int RunSimulation(const std::string &directory = "")
 		CepacUtil::changeDirectoryToInputs();
 		std::cout << "Running File: " << xml << std::endl;
 
-		pugi::xml_document doc;
-		doc.load_file(xml.c_str());
-
-		auto run_name = boost::filesystem::path(xml).stem().string();
-
-		Serializer r;
-		Simulation s(run_name);
-		r.Deserialize(doc.child("simulation"), s);
+		SimulationBuilder builder;
+		auto name = boost::filesystem::path(xml).stem().string();
+		Simulation simulation(name);
+		builder.Create(xml, simulation);
 
 		auto message_callback = [](const std::string &s) { std::cout << s; };
-		auto outputs = s.Run(message_callback);
+		auto outputs = simulation.Run(message_callback);
 
-		cepacSummaryStats.addRunStats(&s.GetCEPACRunStats());
-		transSummaryStats.addPopStats(s.GetPopStats(), s.GetEventParams());
+		cepacSummaryStats.addRunStats(simulation.GetCEPACRunStats());
+		transSummaryStats.addPopStats(simulation.GetPopStats(), simulation.GetEventParams());
 	}
 
 	//Finalize CEPAC summary stats and print the popstats file

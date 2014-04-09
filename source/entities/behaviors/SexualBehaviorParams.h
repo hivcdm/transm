@@ -5,7 +5,6 @@
 #include "../Person.h"
 #include "../classifiers/DmgProfile.h"
 #include "../classifiers/SexualPartnership.h"
-#include "../../util/Serializable.h"
 
 /// <summary>
 /// This can parse XML that contains info about sexual behavior for a particular
@@ -15,7 +14,7 @@
 /// So far, only males have detailed sexual behavior. There should be 1 XML - 
 /// subtree for every SexualPartnership::Type for each entity type.
 /// </remarks>
-class SexualBehaviorParams : public Serializable
+class SexualBehaviorParams
 {
 
 public :
@@ -36,9 +35,6 @@ public :
 	};
 
 	SexualBehaviorParams();
-
-	void Deserialize(const pugi::xml_node &node);
-	void Serialize(pugi::xml_node &parent_node);
 
 	void SetHighRiskMultiplier(double multiplier);
 	void ApplyCoefficientVariation(double coefficient);
@@ -65,7 +61,16 @@ public :
 
 	void setChanceCondomUsePerEvent(Person::RiskLevel risk, BetaDist dist) { chanceCondomUsePerEvent[risk] = dist; }
 
+	void setCoitalEventsPerMonth(Person::RiskLevel risk, double meanEvents) { coitalEventsPerMonth[risk] = meanEvents; }
+
+	void setPartnershipDuration(Person::RiskLevel risk, ShiftedLogNormalDist dist) { partnershipDurationMth[risk] = dist; }
+
+	void setAverageYearsYounger(NormalDist dist) { averageYearsYounger = dist; }
+
+	void setAcquisitionRatePerMonth(Person::RiskLevel risk, LogNormalDist dist) { acquisitionRatePerMonth[risk] = dist; }
+
 private:
+	friend class SimulationBuilder;
 
 	//the partnership type that these parameters represent
 	SexualPartnership::Type partnershipType;

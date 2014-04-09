@@ -6,25 +6,46 @@
 #include "../data/EventParams.h"
 #include "../util/rand/RandomNums.h"
 #include "../util/xml/pugixml.hpp"
-#include "../util/Serializable.h"
 
 class SexualBehaviorParams;
-/**
-All females in the simulation are members of this class, or a class derived from this one
-**/
+
+/// <summary>
+/// All females in the simulation are members of this class, or a class derived from this one
+/// </summary>
 class Male : public Person
 {
-
 public :
-
-	//----------------< BEGIN class SubPopParams >--------------------------//
-	/**
-	These are parameters that describe the population of males.
-	Each Population in the Sim will have a separate one of these references by the population's ID.
-	**/
-	class SubPopParams : public Serializable
+	/// <summary>
+	/// These are parameters that describe the population of males.
+	/// Each Population in the Sim will have a separate one of these references by the population's ID.
+	/// </summary>
+	class SubPopParams
 	{
-		//-----------< BEGIN data fields >--------------------//
+	public:
+		SubPopParams();
+		~SubPopParams();
+
+		double getChanceBecomeCSW() const;
+		double getPartnerAcqMultWithSteady(Person::RiskLevel _risk) const;
+		double getTransmitPerEventCoeff(HVLStrata _hvl) const;
+
+		//sexual behavior params for each type as specified by SexualPartnership::Type
+		const SexualBehaviorParams &getSexualBehaviorParams(SexualPartnership::Type _type) const;
+		SexualBehaviorParams &getSexualBehaviorParams(SexualPartnership::Type _type);
+
+		double getProportionHighRisk(DmgProfile::Employment _cswStatus) const;
+		NormalDist getActivityLevel() const;
+
+		double getCircumProtectEff() const;
+		double getCondomProtectEff() const;
+
+		int getPartneringDiscStartAgeYrs() const;
+		double getPartneringAcqDiscMult(int _ageYrs) const;
+		double getPartneringActsDiscMult(int _ageYrs) const;
+
+	private:
+		friend class SimulationBuilder;
+
 		double chanceBecomeCSW;		//chance that a male will become a CSW
 		double partnerAcqMultWithSteady[Person::ENDRiskLevel];  //the rate multiplier for partner acquisition when a male has a Steady partner
 
@@ -50,42 +71,13 @@ public :
 		std::vector<double> partneringActsDiscMult;
 
 		//factors that determind foif
-		double circumProtectEff ;	  //transmission protection that circumcision provides (a positive multiplier <= 1)
+		double circumProtectEff;	  //transmission protection that circumcision provides (a positive multiplier <= 1)
 		double condomProtectEff;   //transmission protection that condoms provide  (a positive multiplier <= 1)
-		std::vector<double> transmitPerEventCoeffs;	 //chance of infection for men->woman, w/o circumcision or condoms
+		std::array<double, HVLStrata::ENDHVLStrata> transmitPerEventCoeffs;	 //chance of infection for men->woman, w/o circumcision or condoms
 
 		double coefficientOfVariation;
 		bool useCoefficientVariation;
-
-	public:
-		void Deserialize(const pugi::xml_node &node);
-		void Serialize(pugi::xml_node &parent_node);
-
-		SubPopParams();
-		~SubPopParams();
-
-		double getChanceBecomeCSW() const;
-		double getPartnerAcqMultWithSteady(Person::RiskLevel _risk) const;
-		double getTransmitPerEventCoeff(HVLStrata _hvl) const;
-
-		//sexual behavior params for each type as specified by SexualPartnership::Type
-		const SexualBehaviorParams &getSexualBehaviorParams(SexualPartnership::Type _type) const;
-
-		double getProportionHighRisk(DmgProfile::Employment _cswStatus) const;
-		NormalDist getActivityLevel() const;
-
-		double getCircumProtectEff() const;
-		double getCondomProtectEff() const;
-
-		int getPartneringDiscStartAgeYrs() const;
-		double getPartneringAcqDiscMult(int _ageYrs) const;
-		double getPartneringActsDiscMult(int _ageYrs) const;
-
-		void setChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist);
-
-		//-----------< END getters >--------------------//
 	};
-	//----------------< END class SubPopParams >--------------------------//
 
 private:
 	SubPopParams populationSpecificParams;
@@ -118,6 +110,14 @@ public:
 	                      SexualPartnership::Type _partnershipType, bool _remove);
 
 	void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist);
+
+	void SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, double meanEvents);
+
+	void SetPartnershipDuration(RiskLevel risk, SexualPartnership::Type partnershipType, ShiftedLogNormalDist dist);
+
+	void SetAverageYearsYounger(SexualPartnership::Type partnershipType, NormalDist dist);
+
+	void SetAcquisitionRatePerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, LogNormalDist dist);
 
 	double getChanceBecomeCsw() const;
 

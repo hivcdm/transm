@@ -1,9 +1,42 @@
-#include "BucketSexualMixing.h"
 #include <iostream>
 
+#include "BucketSexualMixing.h"
+#include "../../../Simulation.h"
 #include "../../../util/Util.h"
 #include "../../../util/rand/RandomNums.h"
 
+
+void BucketSexualMixing::Apply(const PopulationTarget &target, std::function<void(Person*)> modifier)
+{
+	for(auto &a : *personsByAge)
+	{
+		for(auto person : *a)
+		{
+			auto age = person->getAge(TimeGranularity::MONTH);
+			if(target.age_lower.has_value && age < target.age_lower.value)
+			{
+				continue;
+			}
+			if(target.age_upper.has_value && age < target.age_upper.value)
+			{
+				continue;
+			}
+			if(target.risk_level.has_value && person->getRiskLevel() != target.risk_level.value)
+			{
+				continue;
+			}
+			if(target.observed_hiv_status.has_value && person->getHIVStatus() != target.observed_hiv_status.value)
+			{
+				continue;
+			}
+			if(target.on_treatment.has_value && person->isOnArt() != target.on_treatment.value)
+			{
+				continue;
+			}
+			modifier(person);
+		}
+	}
+}
 
 BucketSexualMixing::BucketSexualMixing(DmgProfile::ProfileID _id, const string *_bucketLabel, unsigned int _popID,
                                        int _minAge, int _maxAge, TimeGranularity _timeGranularity, const double _assort[]) :

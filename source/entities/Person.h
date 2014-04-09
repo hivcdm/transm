@@ -608,8 +608,15 @@ public:
 	//-----------------< END getters, setters, and helper methods >--------------//
 
 
-	virtual void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist) = 0;
+	virtual void SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist) = 0;
 
+	virtual void SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, double meanEvents) = 0;
+
+	virtual void SetPartnershipDuration(RiskLevel risk, SexualPartnership::Type partnershipType, ShiftedLogNormalDist dist) = 0;
+
+	virtual void SetAverageYearsYounger(SexualPartnership::Type partnershipType, NormalDist dist) = 0;
+
+	virtual void SetAcquisitionRatePerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, LogNormalDist dist) = 0;
 
 	/**
 	//this class has a method that compares two Entities based on the desired key

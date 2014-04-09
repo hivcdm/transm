@@ -50,7 +50,7 @@ public:
 	}; /* end Summary */
 
 	/* addRunStats adds a new summary to the vector from a RunStats object */
-	void addRunStats(RunStats *runStats);
+	void addRunStats(RunStats &runStats);
 	/* finalizeStats calculates the final cost-effectiveness ratios for each run */
 	void finalizeStats();
 	/* writeSummariesFile appends the summary inforation to the popstats.out file */
@@ -61,7 +61,7 @@ private:
 		uses Summary pointers since objects are large and copy is expensive */
 	// TODO: a map from strings to summary vectors would be more efficient, had problems
 	//	using this in VC++
-	list<vector<Summary *> > summaries;
+	std::list<vector<Summary *> > summaries;
 
 	/* summaries file name and file pointer */
 	string summariesFileName;
