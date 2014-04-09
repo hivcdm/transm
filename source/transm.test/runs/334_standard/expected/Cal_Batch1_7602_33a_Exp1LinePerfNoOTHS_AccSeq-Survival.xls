@@ -1,0 +1,5 @@
+Survival Outputs		Time to Infection or Death (initial HIV- population)						Time to Death								Time from Infection to Death						
+			Gender		Risk Group	Non-CSW	Non-CSW		Gender		Risk Group	Non-CSW	Non-CSW	Init HIV Status			Gender		Risk Group	Non-CSW	Non-CSW	
+Overall		Total	Male	Female	CSW	High Risk	Low Risk	Total	Male	Female	CSW	High Risk	Low Risk	HIV+ (Initial)	HIV- (Initial)	Total	Male	Female	CSW	High Risk	Low Risk	
+	Mean	257.748	252.314	261.849	226.125	259.935	254.616	279.058	268.639	287.63	321.692	265.138	314.409	156.2	279.348	116.712	120.88	113.594	124.917	110	119.695	
+	SD	155.12	158.534	152.365	49.0988	177.6	105.86	180.303	181.457	178.893	93.2386	193.065	137.175	47.7343	180.402	88.5981	89.4953	87.7916	76.6371	88.0257	89.1082	

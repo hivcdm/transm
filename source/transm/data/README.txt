@@ -1,0 +1,1 @@
+this folder contains declarations of enums and / or classes that store parameters
