@@ -1,0 +1,17 @@
+Cepac Dynamic Model Licensing Details
+=====================================
+
+All rights reserved.
+
+
+
+
+
+Third party libraries
+---------------------
+
+  *libcepac* /source/cepac
+    proprietary
+
+  *pugixml* /source/util/xml
+    MIT
