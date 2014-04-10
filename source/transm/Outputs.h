@@ -4,6 +4,8 @@
 #include <cassert>
 #include <unordered_map>
 
+#include "util/Nullable.h"
+
 class Variant
 {
 public:
@@ -31,7 +33,7 @@ public:
 	}
 
 	void operator=(int v) { type_ = Type::Integer; integer_value_ = v; }
-	void operator=(double v) { type_ = Type::Integer; integer_value_ = v; }
+	void operator=(double v) { type_ = Type::Integer; float_value_ = v; }
 	void operator=(const std::string &v) { type_ = Type::String; string_value_ = v; }
 
 	bool IsNull() const { return type_ == Type::Null; }
@@ -44,15 +46,15 @@ public:
 	std::string GetString() const { assert(IsString()); return string_value_; }
 
 	template<typename T>
-	Get() const;
+	T Get() const;
 
-	template<int>
+	template<>
 	int Get() const { return GetInteger(); }
 
-	template<double>
+	template<>
 	double Get() const { return GetFloat(); }
 
-	template<std::string>
+	template<>
 	std::string Get() const { return GetString(); }
 
 	std::string ToString() const
@@ -86,86 +88,85 @@ struct Row
 };
 
 template<std::size_t Width>
-class TabularOutput
+class TabularOutput2
 {
-	Row<Width> initial_row;
-	bool has_initial_row;
+	Nullable<Row<Width>> initial_row;
 	std::unordered_map<int, Row<Width>> rows;
 };
 
 struct ArtRolloutStatistics
 {
-	TabularOutput<178> data;
+	TabularOutput2<178> data;
 };
 
 struct CalibrationStatistics
 {
-	TabularOutput<178> data;
+	TabularOutput2<178> data;
 };
 
 struct ClinicalStatistics
 {
-	TabularOutput<178> data;
+	TabularOutput2<178> data;
 };
 
 struct CostEffectivenessStatistics
 {
-	TabularOutput<178> data;
+	TabularOutput2<178> data;
 };
 
 struct Events
 {
-	TabularOutput<178> data;
+	TabularOutput2<178> data;
 };
 
 struct HealthStatistics
 {
-	TabularOutput<178> data;
+	TabularOutput2<178> data;
 };
 
 struct InfectionsStatistics
 {
-	TabularOutput<178> data;
+	TabularOutput2<178> data;
 };
 
 struct LifeExpectancyStatistics
 {
-	TabularOutput<178> data;
+	TabularOutput2<178> data;
 };
 
 struct PartnerAcquisitionStatistics
 {
-	TabularOutput<178> data;
+	TabularOutput2<178> data;
 };
 
 struct PartnershipStatistics
 {
-	TabularOutput<178> data;
+	TabularOutput2<178> data;
 };
 
 struct PopulationStatistics
 {
-	TabularOutput<178> data;
+	TabularOutput2<178> data;
 };
 
 struct ShiftedOutcomes
 {
-	TabularOutput<178> data;
+	TabularOutput2<178> data;
 };
 
 struct SinglePersonTrace
 {
-	TabularOutput<178> data;
+	TabularOutput2<178> data;
 };
 
 struct SurvivalStatistics
 {
-	TabularOutput<178> data;
+	TabularOutput2<178> data;
 };
 
 struct CepacStatistics
 {
-	TabularOutput<178> data;
+	TabularOutput2<178> data;
 };
 
 class Outputs
