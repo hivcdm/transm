@@ -9,7 +9,6 @@
 #define SETUPPOPSTATSDIALOG_H_
 
 #include <wx/wx.h>
-#include "../../Constants.h"
 
 class DisplayBox;
 

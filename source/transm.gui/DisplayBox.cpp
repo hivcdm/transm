@@ -5,26 +5,26 @@
  *      Author: errhode
  */
 
-#include <iostream>
-#include <stdlib.h>
-#include <stdio.h>
-#include <thread>
-#if defined(WIN32)
+#include <cstdlib>
+#include <cstdio>
+#if defined(_WIN32)
 #include <direct.h>
 #else
 #include <dirent.h>
 #endif
-#include "DisplayBox.h"
-#include "../Sim.h"
-#include "trans1.xpm"
+#include <iostream>
+#include <thread>
+#include <cepac/include.h>
+#include <transm/SimulationBuilder.h>
+#include <transm/util/Util.h>
+#include <transm/statistics/TransmissionSummaryStats.h>
 #include <wx/aboutdlg.h>
 #include <wx/utils.h>
 #include <wx/dir.h>
 #include <wx/regex.h>
 
-#include "../cepac/include.h"
-#include "../util/Util.h"
-#include "../statistics/TransmissionSummaryStats.h"
+#include "DisplayBox.h"
+#include "../../build/resources/trans1.xpm"
 
 //The ID codes for the menu options -- these need to be unique!
 int ID_RUN = 1;
@@ -149,26 +149,6 @@ DisplayBox::DisplayBox(const wxString &title)
 	Centre();
 }
 
-void DisplayBox::BackgroundUpdate(Sim &sim)
-{
-	{
-		wxCriticalSectionLocker lock(locker);
-		if(!simRunning)
-		{
-			return;
-		}
-	}
-	bool running = sim.Step();
-	{
-		wxCriticalSectionLocker lock(locker);
-		if(simRunning)
-		{
-			simRunning = running;
-		}
-		updating = false;
-	}
-}
-
 void DisplayBox::OnRun(wxCommandEvent &WXUNUSED(event))
 {
 	if(this->graphicsCheckbox->GetValue())
@@ -229,53 +209,26 @@ void DisplayBox::OnRun(wxCommandEvent &WXUNUSED(event))
 		//Run simulation on selected file
 		*(this->textctrl) << wxT("Running simulation...\n");
 
-		Sim s(filesToRun[i]);
-		s.Initialize();
+		SimulationBuilder builder;
+		auto name = boost::filesystem::path(filesToRun[i]).stem().string();
+		Simulation simulation(name);
+		builder.Create(filesToRun[i], simulation);
 
-		simRunning = true;
+		simulation.Run([this, &simulation](const std::string &s)
+		{ 
+			textctrl->AppendText(s); 
 
-		while(true)
-		{
-			{
-				wxCriticalSectionLocker lock(locker);
-				if(!simRunning)
-				{
-					break;
-				}
-			}
+			wxYield();
+			UpdateWindowUI();
+			Update();
 
-			updating = true;
-			std::thread backgroundThread(&DisplayBox::BackgroundUpdate, this, std::ref(s));
-
-			while(true)
-			{
-				{
-					wxCriticalSectionLocker lock(locker);
-					if(!updating)
-					{
-						break;
-					}
-				}
-				wxYield();
-				UpdateWindowUI();
-				Update();
-
-				currPrev = s.GetPrevalence();
-				currentIncidence = s.GetIncidence();
-				currentRunProgress = (100.0 * s.GetTime()) / s.GetTotalTime() + 0.5;
-			}
-
-			backgroundThread.join();
-
-			while(!s.GetEventParams()->outputMessageQueue.empty())
-			{
-				*(this->textctrl) << s.GetEventParams()->outputMessageQueue.front();
-				s.GetEventParams()->outputMessageQueue.pop_front();
-			}
+			currPrev = simulation.GetPrevalence();
+			currentIncidence = simulation.GetIncidence();
+			currentRunProgress = (100.0 * simulation.GetTime()) / simulation.GetTotalTime() + 0.5;
 
 			textctrl->Refresh();
 			textctrl->Update();
-		}
+		});
 
 		*(this->textctrl) << wxT("Done!\n");
 		this->percentCompleted = (100 * (i + 1)) / totalFiles + 0.5;
@@ -397,8 +350,9 @@ void DisplayBox::OnAbout(wxCommandEvent &WXUNUSED(event))
 {
 	wxAboutDialogInfo info;
 	stringstream Version;
-	Version << "Version " << Util::MODEL_VERSION << " (input sheet version " << Util::INPUT_VERSION << ", CEPAC version " <<
-	        CepacUtil::CEPAC_VERSION_STRING << " (input version " << CepacUtil::CEPAC_INPUT_VERSION << "))";
+	Version << "Version " << Version::ToString(Util::MODEL_VERSION);
+	Version << " (CEPAC version " << CepacUtil::CEPAC_VERSION_STRING;
+	Version << " (input version " << CepacUtil::CEPAC_INPUT_VERSION << "))";
 	wxString wxVersion(Version.str().c_str(), wxConvUTF8);
 	info.SetName(_("CEPAC Population Dynamics"));
 	info.SetVersion(wxVersion);

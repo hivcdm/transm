@@ -11,10 +11,10 @@
 #include <iostream>
 #include <stdlib.h>
 #include <stdio.h>
+#include <transm/util/Util.h>
+
 #include "main.h"
 #include "DisplayBox.h"
-#include "../util/Util.h"
-
 
 using namespace std;
 
@@ -24,7 +24,7 @@ IMPLEMENT_APP(MyApp)
 bool MyApp::OnInit()
 {
 	stringstream DisplayBoxHeader;
-	DisplayBoxHeader << "CEPAC Population Model Version " << Util::MODEL_VERSION;
+	DisplayBoxHeader << "CEPAC Population Model Version " << Version::ToString(Util::MODEL_VERSION);
 	wxString wxDisplayBoxHeader(DisplayBoxHeader.str().c_str(), wxConvUTF8);
 	DisplayBox *sizer = new DisplayBox(wxDisplayBoxHeader);
 	sizer->Show(true);

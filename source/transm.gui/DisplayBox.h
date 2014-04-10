@@ -4,20 +4,21 @@
  *  Created on: Jun 5, 2009
  *      Author: errhode
  */
+#pragma once
 
-#ifndef PLAYGROUND_H_
-#define PLAYGROUND_H_
-#include <wx/wx.h>
-#include <wx/aboutdlg.h>
 #include <iostream>
 #include <stdlib.h>
 #include <stdio.h>
 #include <vector>
-#include "./widgets/statusWidget.h"
-#include "./widgets/verticalStatusWidget.h"
-#include "./dialogs/SetupBatchStatsDialog.h"
-#include "../Constants.h"
-#include "../Sim.h"
+#include <transm/Constants.h>
+#include <wx/wx.h>
+#include <wx/aboutdlg.h>
+
+#include "dialogs/SetupBatchStatsDialog.h"
+#include "widgets/statusWidget.h"
+#include "widgets/verticalStatusWidget.h"
+
+class Simulation;
 
 class DisplayBox : public wxFrame
 {
@@ -71,11 +72,10 @@ public:
 
 	void OnSetupBatchStats(wxCommandEvent &WXUNUSED(event));
 
-	void BackgroundUpdate(Sim &sim);
+	void BackgroundUpdate(Simulation &sim);
+
 private:
 	bool simRunning;
+
 	bool updating;
 };
-
-#endif /* PLAYGROUND_H_ */
-

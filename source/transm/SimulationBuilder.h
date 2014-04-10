@@ -770,8 +770,6 @@ private:
 			}
 		}
 
-		double sampleSize = std::stod(extracted_mean.second) * (1 - std::stod(extracted_mean.second)) / (std::stod(extracted_stddev.second) * std::stod(extracted_stddev.second)) - 1;
-
 		result.mean = std::stod(extracted_mean.second);
 		result.stddev = std::stod(extracted_stddev.second);
 	}
