@@ -122,6 +122,7 @@ unsigned long InfectionsTracker::getNumIncidentInfections()
 	return infections;
 }
 
+/*
 unsigned long InfectionsTracker::getNumIncidentInfections(DmgProfile::ProfileID _infectorsProfileID,
         DmgProfile::ProfileID _infectedsProfileID)
 {
@@ -143,6 +144,7 @@ unsigned long InfectionsTracker::getNumIncidentInfections(DmgProfile::ProfileID 
 
 	return infections;
 }
+*/
 
 unsigned long InfectionsTracker::getNumIncidentInfections(SexualPartnership::Type _partnershipType,
         DmgProfile::ProfileID _infectorsProfileID, DmgProfile::ProfileID _infectedsProfileID)
@@ -432,7 +434,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	long currSAPopSize = currPopSize - _population->getNASize();
 	//total # of age ranges to print out
 	auto currSizeByAgeRange = _population->getSizeByAgeRange();
-	int numAgeRanges = currSizeByAgeRange.size();
+	int numAgeRanges = (int)currSizeByAgeRange.size();
 
 	//write headers for infections sheet
 	if(_time == 0)
@@ -824,8 +826,8 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 	for(int i = 0; i < numAgeRanges; i++)
 	{
-		totalInfectedSAGender[DmgProfile::MALE] += currPrevalentInfectionsAgeMale.at(i).second;
-		totalInfectedSAGender[DmgProfile::FEMALE] += currPrevalentInfectionsAgeFemale.at(i).second;
+		totalInfectedSAGender[DmgProfile::MALE] += (int)currPrevalentInfectionsAgeMale.at(i).second;
+		totalInfectedSAGender[DmgProfile::FEMALE] += (int)currPrevalentInfectionsAgeFemale.at(i).second;
 	}
 
 	//First tally the infected men
@@ -938,8 +940,8 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	for(int i = 0; i < numAgeRanges; i++)
 	{
 		_outStream << currTimeStepIncidentInfsAgeMale.at(i).second + currTimeStepIncidentInfsAgeFemale.at(i).second << Constants::TAB;
-		incidentInfsMale += currTimeStepIncidentInfsAgeMale.at(i).second;
-		incidentInfsFemale += currTimeStepIncidentInfsAgeFemale.at(i).second;
+		incidentInfsMale += (int)currTimeStepIncidentInfsAgeMale.at(i).second;
+		incidentInfsFemale += (int)currTimeStepIncidentInfsAgeFemale.at(i).second;
 	}
 
 	_outStream << incidentInfsMale << Constants::TAB << incidentInfsFemale << Constants::TAB;

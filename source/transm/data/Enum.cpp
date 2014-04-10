@@ -87,7 +87,7 @@ Stores the string representation of enum E
 void BaseEnumCls::init(const std::vector<std::string> _strs)
 {
 	initialized = true;
-	numEnums = _strs.size();
+	numEnums = (unsigned int)_strs.size();
 	min = 0;
 	max = numEnums - 1;
 

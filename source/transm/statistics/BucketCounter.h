@@ -13,7 +13,7 @@
 
 struct QueryField
 {
-	std::size_t value;
+	int value;
 	bool wildcard;
 };
 
@@ -29,7 +29,7 @@ class BucketCounter
 		{
 			for(size_t i = 0; i < indices.size(); i++)
 			{
-				if(!indices[i].wildcard && b.first.GetValue(i) != indices[i].value)
+				if(!indices[i].wildcard && b.first.GetValue((int)i) != indices[i].value)
 				{
 					return false;
 				}
@@ -68,7 +68,7 @@ public:
 		auto predicate = query_equal(BuildQueryIndices(query...));
 		auto bucketIterator = std::find_if(counts_.begin(), counts_.end(), predicate);
 		int sum = 0;
-		int countIndex = std::distance(countNames_.begin(), std::find(countNames_.begin(), countNames_.end(), count));
+		int countIndex = (int)std::distance(countNames_.begin(), std::find(countNames_.begin(), countNames_.end(), count));
 
 		while(bucketIterator != counts_.end())
 		{

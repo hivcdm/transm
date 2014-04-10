@@ -149,18 +149,19 @@ void ArtRolloutTracker::buildHeader()
 		SetHeaderCell(column++, 3, "Males");
 		SetHeaderCell(column++, 3, "Females");
 
-		for(int genderIndex = 0; genderIndex < 2; genderIndex++, column += (ageRanges.size() + 1))
+		for(auto gender : {"Males", "Females"})
 		{
-			SetHeaderCell(column, 1, genderIndex == 0 ? "Males" : "Females");
+			SetHeaderCell(column, 1, gender);
 			SetHeaderCell(column, 2, "Non-Sexually Active Population");
 			SetHeaderCell(column, 3, "All ages");
 			SetHeaderCell(column + 1, 2, "Sexually Active Population");
+			column++;
 
-			for(size_t i = 0; i < ageRanges.size(); ++i)
+			for(size_t i = 0; i < ageRanges.size(); ++i, ++column)
 			{
 				std::stringstream rangeString;
 				rangeString << ageRanges[i].lower << "-" << ageRanges[i].upper;
-				SetHeaderCell(column + 1 + i, 3, rangeString.str());
+				SetHeaderCell(column + 1 + (int)i, 3, rangeString.str());
 			}
 		}
 
@@ -217,9 +218,9 @@ void ArtRolloutTracker::buildRow(int time, Population *_population)
 		{
 			PushElement(counter.GetCount(outcome, std::make_pair("gender", gender), std::make_pair("sexualActivityStatus", DmgProfile::NA)));
 
-			for(size_t ageGroup = 0; ageGroup < ageRanges.size(); ++ageGroup)
+			for(std::size_t ageGroup = 0; ageGroup < ageRanges.size(); ++ageGroup)
 			{
-				PushElement(counter.GetCount(outcome, std::make_pair("gender", gender), std::make_pair("sexualActivityStatus", DmgProfile::SA), std::make_pair("ageGroup", ageGroup)));
+				PushElement(counter.GetCount(outcome, std::make_pair("gender", gender), std::make_pair("sexualActivityStatus", DmgProfile::SA), std::make_pair("ageGroup", (int)ageGroup)));
 			}
 		}
 

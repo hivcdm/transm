@@ -16,7 +16,6 @@ PopulationParams::AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(int _minAgeMt
 		int _numInfectedNonCSWFemalesLowRisk,
 		int _numInfectedNonCSWMalesHighRisk,
 		int _numInfectedNonCSWFemalesHighRisk)
-		: chanceCSW()
 {
 	assert((_minAgeMth >= 0) && (_maxAgeMth > 0) && (_maxAgeMth > _minAgeMth));
 	minAgeMth = _minAgeMth;

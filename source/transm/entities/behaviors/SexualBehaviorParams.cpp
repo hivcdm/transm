@@ -7,7 +7,7 @@ void SexualBehaviorParams::SetHighRiskMultiplier(double multiplier)
 	acquisitionRatePerMonth[Person::HIGH].mu += log(multiplier);
 }
 
-void SexualBehaviorParams::ApplyCoefficientVariation(double coefficient)
+void SexualBehaviorParams::ApplyCoefficientVariation(double /*coefficient*/)
 {
 	throw std::runtime_error("not implemented");
 }
@@ -18,7 +18,7 @@ SexualBehaviorParams::SexualBehaviorParams()
 
 unsigned int SexualBehaviorParams::getNumAvailableBuckets()  const
 {
-	return availableBuckets.size();
+	return (unsigned int)availableBuckets.size();
 }
 
 

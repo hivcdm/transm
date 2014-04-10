@@ -487,7 +487,7 @@ int Person::getGenerationOfInfection()
 
 int Person::getNumPartners(SexualPartnership::Type _type)
 {
-	return partners[(int)_type].size();
+	return (int)partners[(int)_type].size();
 }
 
 int Person::getNumPartners(SexualPartnership::Type _type, bool sameRisk)

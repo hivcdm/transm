@@ -35,7 +35,7 @@ public:
         {
                 if(age >= ageGroups[i].lower && age <= ageGroups[i].upper)
                 {
-                        ageGroup = i;
+                        ageGroup = (int)i;
                 }
         }
 

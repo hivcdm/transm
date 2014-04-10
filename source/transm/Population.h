@@ -32,6 +32,7 @@ public:
 	//creates a new population object given an XML input subtree which contains the parameters
 	Population(EventParams &parameters);
 	~Population();
+	void operator=(const Population &) = delete;
 
 	//initialization-related method
 	//determines which DemographicProfiles have the power to initiate relationships and determines which

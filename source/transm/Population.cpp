@@ -1364,7 +1364,7 @@ int newSlots = totalSlots - numTreated;
 
 void Population::applyARTRollout(EventParams &parameters_)
 {
-	int numTreated = rolloutTreatedPool.size();
+	int numTreated = (int)rolloutTreatedPool.size();
 	double currentRolloutProportion = parameters_.interpolateMonthlyRolloutProportion();
 	int totalSlots = static_cast<int>(getSize() * currentRolloutProportion);
 	int newSlots = totalSlots - numTreated;
@@ -1380,7 +1380,7 @@ void Population::applyARTRollout(EventParams &parameters_)
 		{
 			while(newSlots > 0 && !current_ranking_bucket.empty())
 			{
-				int randomPersonIndex = parameters_.randomNums.randInt(0, current_ranking_bucket.size() - 1);
+				int randomPersonIndex = (int)parameters_.randomNums.randInt(0, (uint32_t)current_ranking_bucket.size() - 1);
 				startTreatment(current_ranking_bucket[randomPersonIndex], parameters_.treatedContext);
 
 				if(randomPersonIndex != static_cast<int>(current_ranking_bucket.size() - 1))
@@ -3036,7 +3036,7 @@ void Population::printPopulation(EventParams &/*parameters_*/, long _time, std::
 	assert(_time >= 0);
 	//total # of age ranges to print out
 	auto &currSizeByAgeRange = getSizeByAgeRange();
-	int numAgeRanges = currSizeByAgeRange.size();
+	int numAgeRanges = (int)currSizeByAgeRange.size();
 
 	//write headers for infections sheet
 	if(_time == 0)

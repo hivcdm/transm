@@ -3,22 +3,22 @@
 #include "../Constants.h"
 #include "../util/Util.h"
 
-void Female::SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, double meanEvents)
+void Female::SetCoitalEventsPerMonth(RiskLevel, SexualPartnership::Type, double)
 {
 	throw std::runtime_error("not implemented for women");
 }
 
-void Female::SetPartnershipDuration(RiskLevel risk, SexualPartnership::Type partnershipType, ShiftedLogNormalDist dist)
+void Female::SetPartnershipDuration(RiskLevel, SexualPartnership::Type, ShiftedLogNormalDist)
 {
 	throw std::runtime_error("not implemented for women");
 }
 
-void Female::SetAverageYearsYounger(SexualPartnership::Type partnershipType, NormalDist dist)
+void Female::SetAverageYearsYounger(SexualPartnership::Type, NormalDist)
 {
 	throw std::runtime_error("not implemented for women");
 }
 
-void Female::SetAcquisitionRatePerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, LogNormalDist dist)
+void Female::SetAcquisitionRatePerMonth(RiskLevel, SexualPartnership::Type, LogNormalDist)
 {
 	throw std::runtime_error("not implemented for women");
 }

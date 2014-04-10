@@ -298,7 +298,7 @@ void DmgProfile::selectProfileIDs(std::vector<ProfileID> &_selected, const std::
 		{
 			if(DmgProfile::ProfileIDtoProfile.at(i)->match(*this))
 			{
-				_selected.push_back(i);
+				_selected.push_back((int)i);
 			}
 
 			i++;

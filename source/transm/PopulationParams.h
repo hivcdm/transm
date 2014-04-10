@@ -32,7 +32,7 @@ protected:
 		int maxAgeMth;			//the max age that this bucket represents
 
 		double proportionOfPopulation[DmgProfile::ENDGender]; //determines size as proportion of the population
-		double chanceCSW[DmgProfile::ENDGender]; //determines chance of being csw on model initialization
+		std::array<double, DmgProfile::ENDGender> chanceCSW; //determines chance of being csw on model initialization
 		int numInfectedCSW[DmgProfile::ENDGender];		//number of males and female csw in this bucket that are infected (at prevalence delay)
 		int numInfectedRisk[DmgProfile::ENDGender][Person::ENDRiskLevel]; //number of male and female non-csw in this bucket that are infected (at prevalence delay)
 

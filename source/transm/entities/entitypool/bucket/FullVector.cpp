@@ -90,7 +90,7 @@ vector<Person *>::iterator FullVector::begin()
 //UNTESTED
 int FullVector::capacity()
 {
-	return vPerson.capacity();
+	return (int)vPerson.capacity();
 }
 
 void FullVector::clear()
@@ -150,14 +150,14 @@ Person *FullVector::front()
 //UNTESTED
 int FullVector::max_size()
 {
-	return vPerson.max_size();
+	return (int)vPerson.max_size();
 }
 
 //TESTED
 void FullVector::push_back(Person *p)
 {
 	vPerson.push_back(p);
-	p->addFVindices(vPerson.size() - 1, this);
+	p->addFVindices((int)vPerson.size() - 1, this);
 }
 
 //TESTED
@@ -181,7 +181,7 @@ void FullVector::reserve(int size)
 //TESTED
 int FullVector::size()
 {
-	return vPerson.size();
+	return (int)vPerson.size();
 }
 
 /* @function remove
@@ -216,7 +216,7 @@ bool FullVector::remove(Person *p)
 				if(p2->getID() != p->getID())
 				{
 					vPerson[*pIndIter] = p2;
-					p2->removeFVindices(vPerson.size(), this);
+					p2->removeFVindices((int)vPerson.size(), this);
 					p2->addFVindices(*pIndIter, this);
 				}
 			}
@@ -270,7 +270,7 @@ Person *FullVector::selectout(int index)
 			p2->addFVindices(index, this);
 		}
 
-		p2->removeFVindices(vPerson.size(), this);
+		p2->removeFVindices((int)vPerson.size(), this);
 		return p;
 	}
 	else

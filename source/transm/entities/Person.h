@@ -638,8 +638,7 @@ public:
 			case ID: return (_KeyValType)_p->id;
 			}
 
-			cerr << "Invalid Sorting key :" << _PSC;
-			Util::exitWithPrompt(-1);
+			throw std::runtime_error("Invalid Sorting key");
 		}
 
 		//functor associated with the < operator. Generally used for template args in in sets and maps
