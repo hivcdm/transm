@@ -268,8 +268,11 @@ double Male::getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartne
 	{
 		return numeric_limits<double>::min();
 	}
+	case SEXUAL_ACTIVITY_LEVEL:
+	    throw std::runtime_error("not implemented");
+	case ENDSelectingCriteria:
+	    throw std::runtime_error("Invalid Sorting key");
 	}
-	throw std::runtime_error("Invalid Sorting key");
 }
 
 
@@ -294,9 +297,10 @@ double Male::getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartne
 	{
 		return numeric_limits<double>::max();
 	}
+	case SEXUAL_ACTIVITY_LEVEL:
+	default:
+	    throw std::runtime_error("Invalid Sorting key");
 	}
-
-	throw std::runtime_error("Invalid Sorting key");
 }
 
 double Male::rollForAgeDifference(SexualPartnership::Type _partnershipType, RandomNums &_randomNums)

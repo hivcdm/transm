@@ -49,7 +49,7 @@ public :
 
 	const AvailableBucket getAvailableBucket(int _bucket) const;
 
-	const double getCoitalEventsPerMonth(Person::RiskLevel risk) const;
+	double getCoitalEventsPerMonth(Person::RiskLevel risk) const;
 
 	const BetaDist getChanceCondomUsePerEvent(Person::RiskLevel risk) const;
 

@@ -48,15 +48,6 @@ public:
 	template<typename T>
 	T Get() const;
 
-	template<>
-	int Get() const { return GetInteger(); }
-
-	template<>
-	double Get() const { return GetFloat(); }
-
-	template<>
-	std::string Get() const { return GetString(); }
-
 	std::string ToString() const
 	{
 		switch(type_)
@@ -75,6 +66,16 @@ private:
 	double float_value_;
 	std::string string_value_;
 };
+
+
+template<>
+int Variant::Get() const { return GetInteger(); }
+
+template<>
+double Variant::Get() const { return GetFloat(); }
+
+template<>
+std::string Variant::Get() const { return GetString(); }
 
 struct Cell
 {

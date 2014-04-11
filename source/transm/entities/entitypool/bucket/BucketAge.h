@@ -180,7 +180,7 @@ private:
 	FullVector FVProbDist_random;
 
 	//Assortativeness parameter... default to 0 (all chosen from FVProbDist_random)
-	double assort[SexualPartnership::Type::ENDType];
+    double assort[(int)SexualPartnership::Type::ENDType];
 
 	bool UpdateNeeded;
 	DmgProfile::ProfileID currentBinID;

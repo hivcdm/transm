@@ -190,18 +190,19 @@ StatsRecord<PointStatIDs,StratifiedStatIDs>::StatsRecord(  EnumCls<PointStatIDs>
 }
 */
 
+/*
 template<typename PointStatIDs, typename StratifiedStatIDs>
 void StatsRecord<PointStatIDs, StratifiedStatIDs>::print(std::ostream &_outStream)
 {
 	//print out single value stats
-	for(PointStatIDs i = PointStatIDs(0); i < statIDEnumCls->getNumEnums(); ++i)
+	for(auto i = static_cast<PointStatIDs>(0); i < statIDEnumCls->getNumEnums(); ++i)
 	{
 		statIDEnumCls->appendEnumStr(_outStream, i);
 		_outStream << "\t" << singleValStats.at(i) << std::endl;
 	}
 
 	//print out array stats
-	for(StratifiedStatIDs i = StratifiedStatIDs(0); i < stratifiedStatIDEnumCls->getNumEnums(); ++i)
+	for(auto i = static_cast<StratifiedStatIDs>(0); i < stratifiedStatIDEnumCls->getNumEnums(); ++i)
 	{
 		stratifiedStatIDEnumCls->appendEnumStr(_outStream, i);
 		_outStream << ":\t(";
@@ -214,6 +215,7 @@ void StatsRecord<PointStatIDs, StratifiedStatIDs>::print(std::ostream &_outStrea
 		_outStream << ")" << std::endl;
 	}
 }
+*/
 
 //------------< Begin Single value stats methods >---------------------//
 

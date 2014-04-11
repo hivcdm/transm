@@ -58,11 +58,6 @@ private :
 	//The BucketAge corresponding to maxAge is replaced by one corresponding to the new minAge
 	BucketAllAges *personsByAge;
 
-	//helps us know which index in the buffer holds the people of minAge
-	//since this is a circular buffer, that changes every year as the very oldest people
-	//   are overwritten by the very youngest people
-	int currIndexOfYoungest;
-
 	//Assortativeness parameter for Mark Lipsitch's assortativeness algorithm
 	double assort[(int)SexualPartnership::Type::ENDType];
 
@@ -76,7 +71,7 @@ public :
 	**/
 	BucketSexualMixing(DmgProfile::ProfileID _id, const string *_bucketLabel, unsigned int _popID, int _minAge, int _maxAge,
 	                   TimeGranularity _timeGranularity, const double _assort[]);
-	~BucketSexualMixing();
+	virtual ~BucketSexualMixing();
 
 	//-------------< Begin inherited from class DmgProfileBucket >---------------------//
 	//clears all elements from this index without deleting members

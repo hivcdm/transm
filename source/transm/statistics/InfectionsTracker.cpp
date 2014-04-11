@@ -10,14 +10,14 @@ InfectionsTracker::InfectionsTracker()
 	//zero out all infection tallies
 	for(int i = 0; i < (int)SexualPartnership::Type::ENDType; ++i)
 	{
-		for(int j = 0; j < DmgProfile::TotalNumBuckets; ++j)
+		for(unsigned int j = 0; j < DmgProfile::TotalNumBuckets; ++j)
 		{
 			for(int g = 0; g < NUMBER_GENERATIONS_TO_TRACE; g++)
 			{
 				currPrevalentInfections[j][g] = 0;
 			}
 
-			for(int k = 0; k < DmgProfile::TotalNumBuckets; ++k)
+			for(unsigned int k = 0; k < DmgProfile::TotalNumBuckets; ++k)
 			{
 				incidentInfections[i][j][k] = 0;
 			}
@@ -164,7 +164,7 @@ double InfectionsTracker::getSAPrev(Population &_population)
 
 	//Currently Infected
 	//total the current infections
-	for(int i = 0; i < DmgProfile::TotalNumBuckets; i++)
+	for(unsigned int i = 0; i < DmgProfile::TotalNumBuckets; i++)
 	{
 		for(int j = 0; j < NUMBER_GENERATIONS_TO_TRACE; j++)
 		{
@@ -740,7 +740,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 	//Currently Infected
 	//total the current infections
-	for(int i = 0; i < DmgProfile::TotalNumBuckets; i++)
+	for(unsigned int i = 0; i < DmgProfile::TotalNumBuckets; i++)
 	{
 		for(int j = 0; j < NUMBER_GENERATIONS_TO_TRACE; j++)
 		{
@@ -906,7 +906,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	{
 		totalInfectedByGeneration[i] = 0;
 
-		for(int j = 0; j < DmgProfile::TotalNumBuckets; j++)
+		for(unsigned int j = 0; j < DmgProfile::TotalNumBuckets; j++)
 		{
 			totalInfectedByGeneration[i] += currPrevalentInfections[j][i];
 		}

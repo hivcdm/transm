@@ -102,13 +102,13 @@ PopulationTarget PopulationTarget::FromString(const std::string &s)
 }
 
 Simulation::Simulation(const std::string &run_name)
-    : failedCalibration_(false),
-	  hasPassedFirstMonthCalibPrev_(false),
-	  monthOfFirstMonthCalibPrev_(0),
-	  name_(run_name),
-	  time_(0),
-	  parameters_(),
-	  population_(parameters_)
+    : name_(run_name),
+      time_(0),
+      parameters_(),
+      population_(parameters_),
+      failedCalibration_(false),
+      hasPassedFirstMonthCalibPrev_(false),
+      monthOfFirstMonthCalibPrev_(0)
 {
 	parameters_.simName = run_name;
 }

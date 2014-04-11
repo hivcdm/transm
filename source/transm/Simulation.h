@@ -289,11 +289,11 @@ private:
 	/** number of months to run this file in a sequence*/
 	int duration_;
 
-	/** pointer to current population */
-	Population population_;
-
 	/** housekeeping parameters that are universal to each event in the simulation */
 	EventParams parameters_;
+
+	/** current population */
+	Population population_;
 
 	bool failedCalibration_;
 

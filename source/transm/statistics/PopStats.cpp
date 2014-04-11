@@ -21,8 +21,8 @@ const int NUM_LE_CAT = 12; //number of life expectancy categories
 const char *lifeExpectancyStrs[NUM_LE_CAT] = {"Age(yr)", "raw deaths", "raw pop", "n", "deaths", "death rate", "midpoint survivorship", "total remaining time", "life expectancy", "median LE", "median LE Standard Error", "median LE Confidence Bounds"};
 
 PopStats::PopStats() 
-	: calculateShiftedOutcomes(false),
-	  monthOf1990(0),
+	: monthOf1990(0),
+	  calculateShiftedOutcomes(false),
 	  yearlyTestsByResult(4)
 {
 	assert(PopStats::LifeStatsStr.size() == PopStats::ENDLifeStats);

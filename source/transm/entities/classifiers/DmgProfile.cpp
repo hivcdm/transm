@@ -1,8 +1,20 @@
-#include "./DmgProfile.h"
-#include "../Person.h"
-#include "./../../util/Util.h"
-#include <typeinfo>
+#include <memory>
 #include <sstream>
+#include <typeinfo>
+
+#include "DmgProfile.h"
+#include "../Person.h"
+#include "../../util/Util.h"
+
+#ifdef __APPLE__
+namespace std {
+template <typename T, typename... Args>
+auto make_unique(Args&&... args) -> std::unique_ptr<T>
+{
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+}
+#endif
 
 //declare strings of Enums
 const std::vector<std::string> demographicStrs = {"SEXUAL_ACTIVITY_STATUS", "GENDER", "SEXUAL_ORIENTATION", "RELATIONSHIP_STATUS", "EMPLOYMENT"};
@@ -379,7 +391,7 @@ const string *DmgProfile::toString() const
 
 //--------------------< Begin Static Methods >-----------------------//
 
-const BaseEnumCls::Enum DmgProfile::get(ProfileID _profileID, Demographic _demographic)
+BaseEnumCls::Enum DmgProfile::get(ProfileID _profileID, Demographic _demographic)
 {
 	assert(Util::withinRange(_profileID, DmgProfile::MIN, DmgProfile::MAX));
 	assert(Util::withinRange(_demographic, DmgProfile::Demographic(0), DmgProfile::MaxDemographic));

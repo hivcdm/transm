@@ -111,7 +111,7 @@ public:
 	DmgProfileBucket(int _id, const string *_bucketLabel, bool _simpleIndex);
 
 	//deletes all entities inside this DmgProfileBucket
-	~DmgProfileBucket(void);
+	virtual ~DmgProfileBucket();
 
 	//-----------------< End Constructors and Destructors >----------------//
 

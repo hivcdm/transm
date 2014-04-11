@@ -757,7 +757,7 @@ void Person::print(ostream &_outStream, string _prefix) const
 	_outStream << endl;
 }
 
-void Person::printCurrentPartners(ostream &_outStream, string _prefix)
+void Person::printCurrentPartners(ostream &_outStream, std::string)
 {
 	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
 	{
@@ -1591,7 +1591,7 @@ vector<unsigned int> Person::getFVindices(FullVector *FV)
 /* @function: getRiskLevel
  * @return: this.risk
  */
-const Person::RiskLevel Person::getRiskLevel() const
+Person::RiskLevel Person::getRiskLevel() const
 {
 	return risk;
 }
@@ -1599,7 +1599,7 @@ const Person::RiskLevel Person::getRiskLevel() const
 /* @function: getHivStatus
  * @return: this.hivStatus
  */
-const Person::HIVStatus Person::getHIVStatus() const
+Person::HIVStatus Person::getHIVStatus() const
 {
 	return hivStatus;
 }
@@ -1786,8 +1786,7 @@ int Person::getCEPACSimContextIndex(EventParams &_eventParams)
 //----------------< Start Methods for to be implemented by Male and Female >-------------------//
 
 
-Person *Person::choosePartner(SexualPartnership::Type /*_partnershipType*/, EntityPool * /*_availableEntities*/,
-                              bool /*_remove*/)
+Person *Person::choosePartner(RandomNums &, EntityPool *, SexualPartnership::Type, bool)
 {
 	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
 	cerr << "Called Person::choosePartner()" << endl;

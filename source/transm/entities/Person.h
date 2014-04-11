@@ -214,10 +214,9 @@ public:
 
 	//this constructor creates an actual person that can be simulated. It is generally called by Male and Female
 	// we pass in _eventParams because becomeInfected() needs it...
-	Person(EventParams &_eventParams, int _age, //bool _infected,
-	       unsigned int _populationID);
+	Person(EventParams &_eventParams, int _age, unsigned int _populationID);
 
-	~Person(void);
+	virtual ~Person();
 
 	//Person's physical state
 	unsigned int age;					//age of Person (in months)
@@ -401,12 +400,12 @@ public:
 	/* @function: getRiskLevel
 	 * @return: this.risk
 	 */
-	const Person::RiskLevel getRiskLevel() const;
+	Person::RiskLevel getRiskLevel() const;
 
 	/* @function: getHIVStatus
 	 * @return: this.hivStatus
 	 */
-	const Person::HIVStatus getHIVStatus() const;
+	Person::HIVStatus getHIVStatus() const;
 
 	/* @function: getSexualActivity
 	 * @return: this.activityLevel
@@ -467,7 +466,8 @@ public:
 	//  @param _availablePools	- a set of pools that this person can choose from
 	//  @param _remove - if true, than we will also remove the person from the EntityPool
 	// returns: a Person from one of the person pools in _availablePools
-	virtual Person *choosePartner(SexualPartnership::Type _partnershipType, EntityPool *_availableEntities, bool _remove);
+	virtual Person *choosePartner(RandomNums &_randomNums, EntityPool *_availableEntities,
+				      SexualPartnership::Type _partnershipType, bool _remove);
 
 	// fling with Person _p
 	// this is used for SexualPartnership::Type where there is no duration associated with the partnership (i.e. CASUAL, CSW)
