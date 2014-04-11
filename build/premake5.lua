@@ -1,11 +1,18 @@
 solution "transm"
     configurations { "Debug", "Release" }
     platforms { "x64", "x32" }
-    location ("workspaces/" .. _ACTION)
-    includedirs { "$(boost_prefix)", "../source" }
-    configuration "x32"
+    location ("./")
+    includedirs { "../source" }
+    configuration "not windows"
+        buildoptions { 
+            "-std=c++11",
+            "-Wno-unknown-pragmas"
+        }
+    configuration "vs*"
+        includedirs { "$(boost_prefix)" }
+    configuration { "vs*", "x32" }
         libdirs { "$(boost_prefix)/lib32-msvc-12.0" }
-    configuration "x64"
+    configuration { "vs*", "x64" }
         libdirs { "$(boost_prefix)/lib64-msvc-12.0" }
     configuration "Debug"
         flags { "Symbols" }
@@ -19,7 +26,12 @@ project "transm.cli"
     targetname "transm"
     includedirs { "../source" }
     files { "../source/transm.cli/main.cpp" }
-    links { "transm" }
+    links { 
+        "cepac",
+        "transm",
+        "boost_filesystem",
+        "boost_system"
+    }
     flags { 
        "Unicode",
        "NoEditAndContinue",
@@ -153,7 +165,7 @@ project "cepac.gui"
 project "cepac"
     kind "StaticLib"
     language "C++"
-    targetdir "../lib/$(IntDir)"
+    targetdir "../lib/"
     files {
        "../source/cepac/*.cpp",
        "../source/cepac/*.h"
@@ -169,13 +181,13 @@ project "transm"
     kind "StaticLib"
     language "C++"
     warnings "Extra"
-    targetdir "../lib/$(IntDir)"
+    targetdir "../lib/"
     files {
        "../source/transm/**.cpp",
        "../source/transm/**.h"
     }
     excludes {
-       "../source/transm/util/HighResolutionTimerPosix.cpp",
+       "../source/transm/util/HighResolutionTimer*.cpp",
        "../source/transm/main.cpp"
     }
     links { "cepac" }
@@ -187,6 +199,10 @@ project "transm"
     }
     configuration "Debug"
         flags { "FatalWarnings" }
+    configuration "windows"
+        files { "../source/transm/util/HighResolutionTimerWindows.cpp" }
+    configuration "not windows"
+        files { "../source/transm/util/HighResolutionTimerPosix.cpp" }
 
 if _ACTION == "clean" then
    os.rmdir("workspaces")

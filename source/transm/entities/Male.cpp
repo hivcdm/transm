@@ -85,12 +85,12 @@ double Male::SubPopParams::getTransmitPerEventCoeff(HVLStrata _hvl) const
 	return transmitPerEventCoeffs.at(_hvl);
 }
 
-void Male::SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist)
+void Male::SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist)
 {
 	populationSpecificParams.getSexualBehaviorParams(partnershipType).setChanceCondomUsePerEvent(risk, dist);
 }
 
-void Male::SetCoitalEventsPerMonth(Person::RiskLevel risk, SexualPartnership::Type partnershipType, double meanEvents)
+void Male::SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, double meanEvents)
 {
 	populationSpecificParams.getSexualBehaviorParams(partnershipType).setCoitalEventsPerMonth(risk, meanEvents);
 }
@@ -168,14 +168,9 @@ Male::Male(EventParams &_eventParams, int _age, bool _circumcised, unsigned int 
 	}
 }
 
-Male::~Male(void)
+Male::~Male()
 {
 }
-
-
-
-//-------------< BEGIN methods that are for Males only >------------------------//
-
 
 double Male::getCondomUseProb(Person *_p, SexualPartnership::Type _partnershipType)
 {
@@ -502,4 +497,7 @@ void Male::saveState(ostream &_outStream, long currTime)
 	_outStream << "]";
 }
 
-//-----------------< End methods which are inherited from Person >-----------------//
+Person *Person::choosePartner(RandomNums &, EntityPool *, SexualPartnership::Type, bool)
+{
+    throw std::runtime_error("??");
+}

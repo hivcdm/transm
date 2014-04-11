@@ -106,7 +106,7 @@ public:
 
 	/** Start: Inherited from Person, comments found there **/
 
-	Person *choosePartner(RandomNums &_randomNums, EntityPool *_availableEntities ,
+	Person *choosePartner(RandomNums &_randomNums, EntityPool *_availableEntities,
 	                      SexualPartnership::Type _partnershipType, bool _remove);
 
 	void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist);
@@ -151,6 +151,5 @@ public:
 	bool isCircumcised();
 	/** End: functions for Males only **/
 
-public:
-	~Male(void);
+	~Male();
 };
