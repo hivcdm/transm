@@ -10,9 +10,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <vector>
-#include <transm/Constants.h>
 #include <wx/wx.h>
 #include <wx/aboutdlg.h>
+
+#include <core/Constants.h>
 
 #include "dialogs/SetupBatchStatsDialog.h"
 #include "widgets/statusWidget.h"
@@ -75,6 +76,8 @@ public:
 	void BackgroundUpdate(Simulation &sim);
 
 private:
+	void Simulate();
+
 	bool simRunning;
 
 	bool updating;

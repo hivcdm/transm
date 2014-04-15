@@ -14,14 +14,17 @@
 #endif
 #include <iostream>
 #include <thread>
-#include <cepac/include.h>
-#include <transm/SimulationBuilder.h>
-#include <transm/util/Util.h>
-#include <transm/statistics/TransmissionSummaryStats.h>
+#include <boost/filesystem.hpp>
 #include <wx/aboutdlg.h>
 #include <wx/utils.h>
 #include <wx/dir.h>
 #include <wx/regex.h>
+
+#include <cepac44a/include.h>
+#include <core/SimulationBuilderXml.h>
+#include <core/SimulationReader.h>
+#include <util/Utility.h>
+#include <statistics/TransmissionSummaryStats.h>
 
 #include "DisplayBox.h"
 #include "../../build/resources/trans1.xpm"
@@ -149,34 +152,8 @@ DisplayBox::DisplayBox(const wxString &title)
 	Centre();
 }
 
-void DisplayBox::OnRun(wxCommandEvent &WXUNUSED(event))
+void DisplayBox::Simulate()
 {
-	if(this->graphicsCheckbox->GetValue())
-	{
-		*(this->summaryText) <<
-		                     wxT("WARNING: GraphViz files will be generated!  If your input file has a starting cohort size greater than 100 or a birth rate greater than 0, no GraphViz files will be generated.\n");
-	}
-	else
-	{
-		*(this->summaryText) << wxT("No graphics will be generated.\n");
-	}
-
-	if(runButton->GetLabel() == "Run")
-	{
-		runButton->SetLabel("Stop");
-	}
-	else
-	{
-		{
-			wxCriticalSectionLocker lock(locker);
-			simRunning = false;
-		}
-
-		runButton->SetLabel("Run");
-
-		return;
-	}
-
 	//Reset the status bars to 0
 	this->percentCompleted = 0;
 	this->totalProgressWidget->Refresh();
@@ -185,38 +162,31 @@ void DisplayBox::OnRun(wxCommandEvent &WXUNUSED(event))
 	this->singleProgressWidget->Refresh();
 	this->singleProgressWidget->Update();
 
-	//Make sure input files have been selected
-	if(this->filesToRun.empty())
-	{
-		*(this->summaryText) << wxT("No files to run -- Open a directory first!\n");
-	}
-
 	//Create the results directory (for CEPAC output) and CEPAC popstats file
 	CepacUtil::createResultsDirectory();
 	SummaryStats *cepacSummaryStats = new SummaryStats("cepacPopstats.out");
 	TransmissionSummaryStats *transSummaryStats = new TransmissionSummaryStats("summaryStats.out");
-	double totalFiles = (double) this->filesToRun.size();
-	int i;
 
-	for(i = 0; i < totalFiles; i++)
+	int i = 0;
+	for(const auto &filename : filesToRun)
 	{
 		//Initialize single progress widget
 		this->currentRunProgress = 0;
 		this->singleProgressWidget->Refresh();
 		this->singleProgressWidget->Update();
-		wxString filename(filesToRun[i].c_str(), wxConvUTF8);
 		*(this->summaryText) << wxT("Running File: ") << filename << wxT("\n");
 		//Run simulation on selected file
 		*(this->textctrl) << wxT("Running simulation...\n");
 
-		SimulationBuilder builder;
-		auto name = boost::filesystem::path(filesToRun[i]).stem().string();
-		Simulation simulation(name);
-		builder.Create(filesToRun[i], simulation);
+		SimulationBuilderXml builder;
+		auto name = boost::filesystem::path(filename).stem().string();
+		SimulationReader reader(builder);
+		reader.ConstructSimulation(filename);
+		auto &simulation = builder.GetResult();
 
 		simulation.Run([this, &simulation](const std::string &s)
-		{ 
-			textctrl->AppendText(s); 
+		{
+			textctrl->AppendText(s);
 
 			wxYield();
 			UpdateWindowUI();
@@ -231,7 +201,7 @@ void DisplayBox::OnRun(wxCommandEvent &WXUNUSED(event))
 		});
 
 		*(this->textctrl) << wxT("Done!\n");
-		this->percentCompleted = (100 * (i + 1)) / totalFiles + 0.5;
+		this->percentCompleted = (100 * (i++ + 1)) / filesToRun.size() + 0.5;
 		this->totalProgressWidget->Refresh();
 		this->totalProgressWidget->Update();
 	}
@@ -255,8 +225,31 @@ void DisplayBox::OnRun(wxCommandEvent &WXUNUSED(event))
 	//Clear files to run once they've been run
 	this->filesToRun.clear();
 	*(this->summaryText) << wxT("All runs completed!  Open another directory to run more...\n");
+}
 
-	runButton->SetLabel("Run");
+void DisplayBox::OnRun(wxCommandEvent &WXUNUSED(event))
+{
+	if(this->graphicsCheckbox->GetValue())
+	{
+		*(this->summaryText) <<
+		                     wxT("WARNING: GraphViz files will be generated!  If your input file has a starting cohort size greater than 100 or a birth rate greater than 0, no GraphViz files will be generated.\n");
+	}
+	else
+	{
+		*(this->summaryText) << wxT("No graphics will be generated.\n");
+	}
+
+	//Make sure input files have been selected
+	if(this->filesToRun.empty())
+	{
+		*(this->summaryText) << wxT("No files to run -- Open a directory first!\n");
+	}
+	else
+	{
+		runButton->Disable();
+		Simulate();
+		runButton->Enable();
+	}
 }
 
 void DisplayBox::OnOpen(wxCommandEvent &WXUNUSED(event))
@@ -338,19 +331,14 @@ void DisplayBox::OnOpen(wxCommandEvent &WXUNUSED(event))
 
 void DisplayBox::OnQuit(wxCommandEvent &WXUNUSED(event))
 {
-	{
-		wxCriticalSectionLocker lock(locker);
-		simRunning = false;
-	}
-
-	Close(true);
+	Destroy();
 }
 
 void DisplayBox::OnAbout(wxCommandEvent &WXUNUSED(event))
 {
 	wxAboutDialogInfo info;
 	stringstream Version;
-	Version << "Version " << Version::ToString(Util::MODEL_VERSION);
+	Version << "Version " << Version::ToString(Utility::MODEL_VERSION);
 	Version << " (CEPAC version " << CepacUtil::CEPAC_VERSION_STRING;
 	Version << " (input version " << CepacUtil::CEPAC_INPUT_VERSION << "))";
 	wxString wxVersion(Version.str().c_str(), wxConvUTF8);

@@ -1,12 +1,4 @@
-/*
- * SetupBatchStatsDialog.h
- *
- *  Created on: Oct 28, 2009
- *      Author: errhode
- */
-
-#ifndef SETUPPOPSTATSDIALOG_H_
-#define SETUPPOPSTATSDIALOG_H_
+#pragma once
 
 #include <wx/wx.h>
 
@@ -25,7 +17,3 @@ public:
 	wxCheckBox *NumNewInfectionsSelect;
 
 };
-
-
-
-#endif /* SETUPPOPSTATSDIALOG_H_ */

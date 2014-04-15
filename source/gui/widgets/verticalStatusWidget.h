@@ -1,17 +1,6 @@
-/*
- * verticalStatusWidget.h
- *
- *  Created on: Jul 21, 2009
- *      Author: errhode
- */
-
-#ifndef VERTICALSTATUSWIDGET_H_
-#define VERTICALSTATUSWIDGET_H_
+#pragma once
 
 #include <wx/wx.h>
-#include <iostream>
-#include <stdlib.h>
-#include <stdio.h>
 
 class verticalStatusWidget : public wxPanel
 {
@@ -39,5 +28,3 @@ public:
 	void OnPaint(wxPaintEvent &event);
 
 };
-
-#endif /* VERTICALSTATUSWIDGET_H_ */
