@@ -1,7 +1,7 @@
 solution "transm"
     configurations { "Debug", "Release" }
     platforms { "x64", "x32" }
-    location ("./")
+    location ("./" .. _ACTION)
     includedirs { "../source" }
     configuration "not windows"
         buildoptions { 
@@ -25,12 +25,10 @@ project "transm.cli"
     language "C++"
     targetname "transm"
     includedirs { "../source" }
-    files { "../source/transm.cli/main.cpp" }
+    files { "../source/main.cpp" }
     links { 
-        "cepac",
-        "transm",
-        "boost_filesystem",
-        "boost_system"
+        "cepac44a",
+        "transm"
     }
     flags { 
        "Unicode",
@@ -38,12 +36,12 @@ project "transm.cli"
        "NoManifest",
        "NoPCH"
     }
-    debugargs { "../source/transm.test/runs/34_standard" }
+    debugargs { "../source/transm.test/runs/all_templates" }
     configuration "Debug"
-	targetdir "../binaries/debug"
+	targetdir "../bin/debug"
     configuration "Release"
         flags { "LinkTimeOptimization" }
-	targetdir "../binaries/release"
+	targetdir "../bin/release"
 
 project "transm.gui"
     kind "WindowedApp"
@@ -56,8 +54,8 @@ project "transm.gui"
     }
     defines { "wxUSE_GUI=1" }
     files {
-       "../source/transm.gui/**.h",
-       "../source/transm.gui/**.cpp"
+       "../source/gui/**.h",
+       "../source/gui/**.cpp"
     }
     links { "transm" }
     flags { 
@@ -69,7 +67,7 @@ project "transm.gui"
     configuration "Debug"
         flags { "FatalWarnings" }
 	defines { "__WXDEBUG__" }
-	targetdir "../binaries/debug"
+	targetdir "../bin/debug"
     configuration { "x64", "vs2013" }
 	libdirs { "$(wx_prefix)/vc120_x64_dll" }
     configuration { "x32", "vs2013" }
@@ -91,7 +89,7 @@ project "transm.gui"
 	flags { "WinMain" }
     configuration "Release"
         flags { "LinkTimeOptimization" }
-	targetdir "../binaries/release"
+	targetdir "../bin/release"
 
 project "transm.test"
     kind "ConsoleApp"
@@ -99,8 +97,8 @@ project "transm.test"
     targetname "transm-test"
     warnings "Extra"
     files {
-       "../source/transm.test/**.h",
-       "../source/transm.test/**.cpp"
+       "../tests/**.h",
+       "../tests/**.cpp"
     }
     links { "transm" }
     flags { 
@@ -111,64 +109,33 @@ project "transm.test"
     }
     configuration "Debug"
         flags { "FatalWarnings" }
-	targetdir "../binaries/debug"
+	targetdir "../bin/debug"
     configuration "Release"
         flags { "LinkTimeOptimization" }
-	targetdir "../binaries/release"
+	targetdir "../bin/release"
 
-project "cepac.cli"
-    kind "ConsoleApp"
-    language "C++"
-    targetname "cepac"
-    files { "../source/cepac.cli/main.cpp" }
-    links { "transm" }
-    debugargs { "../tests/runs/34_standard" }
-    flags { 
-       "Unicode",
-       "NoEditAndContinue",
-       "NoManifest",
-       "NoPCH"
-    }
-    configuration "Debug"
-        flags { "FatalWarnings" }
-	targetdir "../binaries/debug"
-    configuration "Release"
-        flags { "LinkTimeOptimization" }
-	targetdir "../binaries/release"
-
-project "cepac.gui"
-    kind "WindowedApp"
-    language "C++"
-    targetname "cepac-gui"
-    warnings "Extra"
-    files {
-       "../source/cepac.gui/**.h",
-       "../source/cepac.gui/**.cpp"
-    }
-    links {
-       "transm",
-       "wx"
-    }
-    flags { 
-       "Unicode",
-       "NoEditAndContinue",
-       "NoManifest",
-       "NoPCH"
-    }
-    configuration "Debug"
-        flags { "FatalWarnings" }
-	targetdir "../binaries/debug"
-    configuration "Release"
-        flags { "LinkTimeOptimization" }
-	targetdir "../binaries/release"
-
-project "cepac"
+project "cepac44a"
     kind "StaticLib"
     language "C++"
     targetdir "../lib/"
     files {
-       "../source/cepac/*.cpp",
-       "../source/cepac/*.h"
+       "../source/cepac44a/*.cpp",
+       "../source/cepac44a/*.h"
+    }
+    flags { 
+       "Unicode",
+       "NoEditAndContinue",
+       "NoManifest",
+       "NoPCH"
+    }
+
+project "cepac45b"
+    kind "StaticLib"
+    language "C++"
+    targetdir "../lib/"
+    files {
+       "../source/cepac45b/*.cpp",
+       "../source/cepac45b/*.h"
     }
     flags { 
        "Unicode",
@@ -183,14 +150,21 @@ project "transm"
     warnings "Extra"
     targetdir "../lib/"
     files {
-       "../source/transm/**.cpp",
-       "../source/transm/**.h"
+       "../source/core/**.cpp",
+       "../source/core/**.h",
+       "../source/data/**.cpp",
+       "../source/data/**.h",
+       "../source/entities/**.cpp",
+       "../source/entities/**.h",
+       "../source/statistics/**.cpp",
+       "../source/statistics/**.h",
+       "../source/util/**.cpp",
+       "../source/util/**.h"
     }
     excludes {
-       "../source/transm/util/HighResolutionTimer*.cpp",
-       "../source/transm/main.cpp"
+       "../source/util/HighResolutionTimer*.cpp"
     }
-    links { "cepac" }
+    links { "cepac44a" }
     flags { 
        "Unicode",
        "NoEditAndContinue",
@@ -200,11 +174,12 @@ project "transm"
     configuration "Debug"
         flags { "FatalWarnings" }
     configuration "windows"
-        files { "../source/transm/util/HighResolutionTimerWindows.cpp" }
+        files { "../source/util/HighResolutionTimerWindows.cpp" }
     configuration "not windows"
-        files { "../source/transm/util/HighResolutionTimerPosix.cpp" }
+        files { "../source/util/HighResolutionTimerPosix.cpp" }
 
 if _ACTION == "clean" then
-   os.rmdir("workspaces")
-   os.rmdir("../binaries")
+   os.rmdir("vs2013")
+   os.rmdir("../bin")
+   os.rmdir("../lib")
 end
