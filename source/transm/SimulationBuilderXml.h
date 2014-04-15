@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <boost/filesystem.hpp>
 
 #include "SimulationBuilder.h"
 #include "Simulation.h"
@@ -42,16 +41,6 @@ private:
 		return from_string<T>(node.text().as_string());
 	}
 
-	EventParams::RolloutEligibility ReadRolloutEligibility(const pugi::xml_node &eligibility_node);
-
-	PopulationParams ReadPopulationParams(const pugi::xml_node &population_node);
-
-	Female::SubPopParams ReadFemaleSubPopParams(const pugi::xml_node &node);
-
-	Male::SubPopParams ReadMaleSubPopParams(const pugi::xml_node &node);
-
-	SexualBehaviorParams ReadSexualBehaviorParams(const pugi::xml_node &node);
-
 	template<typename T>
 	T GetTemplate(const pugi::xml_node &node, std::function<void(Simulation &, T)> callback)
 	{
@@ -86,7 +75,15 @@ private:
 		return from_string<T>(extracted.second);
 	}
 
-	double GetTargetedTemplatePoissonHack(const pugi::xml_node &node, std::function<void(Simulation &, double, Nullable<PopulationTarget>)> callback);
+	EventParams::RolloutEligibility ReadRolloutEligibility();
+
+	PopulationParams ReadPopulationParams();
+
+	Female::SubPopParams ReadFemaleSubPopParams();
+
+	Male::SubPopParams ReadMaleSubPopParams();
+
+	SexualBehaviorParams ReadSexualBehaviorParams(SexualPartnership::Type type);
 
 	pugi::xml_document document_;
 

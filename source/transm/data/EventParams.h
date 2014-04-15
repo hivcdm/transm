@@ -53,18 +53,16 @@ public :
 	{
 	public:
 		int timeToApply;
-		SimContext *rolloutSimContext;
+		std::unique_ptr<SimContext> rolloutSimContext;
 		//who to apply to 0=All Untreated 1=All Treated 2=Untreated Getting New ART -1=None
 		int popOfInterest;
-		RolloutContext(int t, SimContext *context, int pop)
+		RolloutContext(int t, std::unique_ptr<SimContext> context, int pop) : rolloutSimContext(std::move(context))
 		{
 			timeToApply = t;
-			rolloutSimContext = context;
 			popOfInterest = pop;
 		}
 		~RolloutContext()
 		{
-			delete rolloutSimContext;
 		}
 	};
 

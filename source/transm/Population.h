@@ -17,12 +17,12 @@
 
 enum DebugLevel;
 
-/*
-  This class contains the main simulation logic
-
-  The population contains an EntityPool which is further subdivided into Buckets
-*/
-
+/// <summary>
+/// This class contains the main simulation logic
+/// </summary>
+/// <remarks>
+/// The population contains an EntityPool which is further subdivided into Buckets
+/// </remarks>
 class Population
 {
 public:
@@ -266,7 +266,7 @@ private:
 	/** a container for all the people. This is a compartmentalized container that lets us
 	//  access different types of people based on criteria. It also has an iterator that lets
 	//  us access all the through a java style iterator interface */
-	EntityPool *entities;
+	std::unique_ptr<EntityPool> entities;
 
 	/** fling initiators -- use BucketSexualMixing, not DmgProfileBucket because all persons
 	//participating in partnerships are sexually active by definition */

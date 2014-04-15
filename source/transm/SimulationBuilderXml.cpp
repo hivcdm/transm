@@ -1,3 +1,5 @@
+#include <boost/filesystem.hpp>
+
 #include "SimulationBuilderXml.h"
 #include "util/enum_iterator.h"
 
@@ -13,19 +15,6 @@ std::string to_string(SexualPartnership::Type type)
 	default: throw std::runtime_error("unknown type");
 	}
 }
-}
-
-std::pair<std::string, std::string> SimulationBuilderXml::ExtractParameter(const pugi::xml_node &node)
-{
-	std::string text(node.text().as_string());
-	if(text.front() == '{' && text.back() == '}')
-	{
-		auto comma_index = text.find(',');
-		auto key = text.substr(1, comma_index - 1);
-		auto initial_value = text.substr(comma_index + 1, text.length() - comma_index - 2);
-		return std::make_pair(key, initial_value);
-	}
-	return std::make_pair("", text);
 }
 
 template<>
@@ -64,17 +53,17 @@ std::array<double, 7> SimulationBuilderXml::from_string(const std::string &value
 	return values;
 }
 
-template<>
-SexualPartnership::Type SimulationBuilderXml::from_string(const std::string &type_string)
+std::pair<std::string, std::string> SimulationBuilderXml::ExtractParameter(const pugi::xml_node &node)
 {
-	for(auto type : enum_iterator<SexualPartnership::Type>())
+	std::string text(node.text().as_string());
+	if(text.front() == '{' && text.back() == '}')
 	{
-		if(to_string(type) == type_string)
-		{
-			return type;
-		}
+		auto comma_index = text.find(',');
+		auto key = text.substr(1, comma_index - 1);
+		auto initial_value = text.substr(comma_index + 1, text.length() - comma_index - 2);
+		return std::make_pair(key, initial_value);
 	}
-	return SexualPartnership::Type::ENDType;
+	return std::make_pair("", text);
 }
 
 template<>
@@ -414,8 +403,8 @@ void SimulationBuilderXml::ReadSimulationParameters()
 				assert(file_number < Constants::NUMBER_OF_ROLLOUT_FILES);
 
 				//Set the CEPAC simContext from the specified CEPAC .in file
-				SimContext *contextToAdd = new SimContext(file_name.substr(0, file_name.find(CepacUtil::FILE_EXTENSION_FOR_INPUT)));
-				parameters.rolloutSimContexts.push_back(new EventParams::RolloutContext(time, contextToAdd, target_population));
+				auto contextToAdd = make_unique<SimContext>(file_name.substr(0, file_name.find(CepacUtil::FILE_EXTENSION_FOR_INPUT)));
+				parameters.rolloutSimContexts.push_back(new EventParams::RolloutContext(time, std::move(contextToAdd), target_population));
 				//Don't trace any CEPAC patients -- the output doesn't make any sense and it just gets overly large for no reason
 				//TODO: The reason is because the CEPAC Patient number doesn't get updated until the patient dies: this should be changed!
 				//parameters.cepacSimContext->numPatientsToTrace = 0;
@@ -442,7 +431,7 @@ void SimulationBuilderXml::ReadSimulationParameters()
 			}
 		}
 
-		parameters.rolloutEligibility = ReadRolloutEligibility(interventions_node.child("artRolloutIntervention").child("rolloutEligibility"));
+		parameters.rolloutEligibility = ReadRolloutEligibility();
 
 		for(auto target : interventions_node.select_nodes("artRolloutIntervention/targetRolloutProportions/target"))
 		{
@@ -450,8 +439,8 @@ void SimulationBuilderXml::ReadSimulationParameters()
 			parameters.targetYearlyRolloutProportions[year] = Text<double>(target.node());
 		}
 
-		parameters.cepacTracer = new Tracer(parameters.simName, parameters.rolloutSimContexts[0]->rolloutSimContext, 1);
-		parameters.cepacRunStats = new RunStats(parameters.simName, parameters.rolloutSimContexts[0]->rolloutSimContext);
+		parameters.cepacTracer = new Tracer(parameters.simName, parameters.rolloutSimContexts[0]->rolloutSimContext.get(), 1);
+		parameters.cepacRunStats = new RunStats(parameters.simName, parameters.rolloutSimContexts[0]->rolloutSimContext.get());
 	}
 	else
 	{
@@ -496,7 +485,9 @@ void SimulationBuilderXml::InitializePopulation()
 		(regularRateH * regularDurationH);
 
 	//create EntityPool - this will contain all Entities
-	population.entities = new EntityPool(population_parameters.getAgeSexualDebut(), population.GetId(), population_parameters.GetAssortativeness());
+	auto entities = std::make_unique<EntityPool>(population_parameters.getAgeSexualDebut(), population.GetId(), population_parameters.GetAssortativeness());
+	population.entities.swap(entities);
+
 	//initialize infection trace generator print detailed info about certain ProfileID's
 	// in this case, all ProfileID's w/ non-nullptr DmgProfileBuckets
 	DmgProfile::ProfileID currProfileID = DmgProfile::MIN;
@@ -644,8 +635,9 @@ void SimulationBuilderXml::InitializePopulation()
 	population.updateSize();
 }
 
-EventParams::RolloutEligibility SimulationBuilderXml::ReadRolloutEligibility(const pugi::xml_node &eligibility_node)
+EventParams::RolloutEligibility SimulationBuilderXml::ReadRolloutEligibility()
 {
+	auto eligibility_node = document_.select_single_node("/simulation/population/interventions/artRolloutIntervention/rolloutEligibility").node();
 	EventParams::RolloutEligibility eligibility;
 
     // OIHist
@@ -706,13 +698,15 @@ EventParams::RolloutEligibility SimulationBuilderXml::ReadRolloutEligibility(con
 		return eligibility;
 }
 
-SexualBehaviorParams SimulationBuilderXml::ReadSexualBehaviorParams(const pugi::xml_node &node)
+SexualBehaviorParams SimulationBuilderXml::ReadSexualBehaviorParams(SexualPartnership::Type type)
 {
-	auto type = Text<SexualPartnership::Type>(node.child("type"));
+	auto path = "/simulation/population/entityTypes/baseEntities/baseEntity[type='Male']/behavior/partnershipTypes/partnership[type='" + to_string(type) + "']";
+	auto node = document_.select_single_node(path.c_str()).node();
+
 	SexualBehaviorParams result(type);
 
-	auto path = "selectionCriteria/availableBuckets/bucket";
-	for(const auto &bucket_settings : node.select_nodes(path))
+	auto bucket_path = "selectionCriteria/availableBuckets/bucket";
+	for(const auto &bucket_settings : node.select_nodes(bucket_path))
 	{
 		SexualBehaviorParams::AvailableBucket bucket;
 		bucket.dmgProfileSelector.parse(bucket_settings.node().child("DmgProfile").text().as_string());
@@ -742,14 +736,19 @@ SexualBehaviorParams SimulationBuilderXml::ReadSexualBehaviorParams(const pugi::
 	return result;
 }
 
-Male::SubPopParams SimulationBuilderXml::ReadMaleSubPopParams(const pugi::xml_node &node)
+Male::SubPopParams SimulationBuilderXml::ReadMaleSubPopParams()
 {
+	auto node = document_.select_single_node("/simulation/population/entityTypes/baseEntities/baseEntity[type='Male']").node();
+
 	Male::SubPopParams result;
 
 	auto behavior_node = node.child("behavior");
-	result.setChanceBecomeCsw(Text<double>(behavior_node.child("chanceBecomeSexWorker")));
-	result.setPartnerAcqMultWithSteady(Person::HIGH, Text<double>(behavior_node.child("partnerAcqMultWithSteadyHighRisk")));
-	result.setPartnerAcqMultWithSteady(Person::LOW, Text<double>(behavior_node.child("partnerAcqMultWithSteadyLowRisk")));
+	result.setChanceBecomeCsw(GetTemplate<double>(behavior_node.child("chanceBecomeSexWorker"),
+		std::bind(&Simulation::SetChanceBecomeSexWorker, std::placeholders::_1, DmgProfile::MALE, std::placeholders::_2)));
+	result.setPartnerAcqMultWithSteady(Person::HIGH, GetTemplate<double>(behavior_node.child("partnerAcqMultWithSteadyHighRisk"),
+		std::bind(&Simulation::SetPartnerAcquisitionSteadyMultiplier, std::placeholders::_1, Person::HIGH, std::placeholders::_2)));
+	result.setPartnerAcqMultWithSteady(Person::LOW, GetTemplate<double>(behavior_node.child("partnerAcqMultWithSteadyLowRisk"),
+		std::bind(&Simulation::SetPartnerAcquisitionSteadyMultiplier, std::placeholders::_1, Person::LOW, std::placeholders::_2)));
 
 	bool use_high_risk_multiplier = Text<bool>(behavior_node.child("UseHighRiskMultiplier"));
 	double high_risk_multiplier = Text<double>(behavior_node.child("HighRiskAcqRateMultiplier"));
@@ -762,8 +761,7 @@ Male::SubPopParams SimulationBuilderXml::ReadMaleSubPopParams(const pugi::xml_no
 
 	for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
 	{
-		auto path = "partnershipTypes/partnership[type='" + to_string(partnership_type) + "']";
-		auto params = ReadSexualBehaviorParams(behavior_node.select_single_node(path.c_str()).node());
+		auto params = ReadSexualBehaviorParams(partnership_type);
 
 		if(use_high_risk_multiplier)
 		{
@@ -818,8 +816,10 @@ Male::SubPopParams SimulationBuilderXml::ReadMaleSubPopParams(const pugi::xml_no
 }
 
 
-Female::SubPopParams SimulationBuilderXml::ReadFemaleSubPopParams(const pugi::xml_node &node)
+Female::SubPopParams SimulationBuilderXml::ReadFemaleSubPopParams()
 {
+	auto node = document_.select_single_node("/simulation/population/entityTypes/baseEntities/baseEntity[type='Female']").node();
+
 	Female::SubPopParams result;
 
 	auto behavior_node = node.child("behavior");
@@ -912,9 +912,9 @@ void SimulationBuilderXml::ReadPopulationParameters()
 	population_parameters.setAssortativeness(SexualPartnership::Type::Csw, GetTemplate<double>(population_node.child("assortativeness").child("csw"),
 		std::bind(&Simulation::SetAssortativeness, std::placeholders::_1, SexualPartnership::Type::Csw, std::placeholders::_2)));
 
-	auto defaultMaleParams = ReadMaleSubPopParams(document_.select_single_node("/simulation/population/entityTypes/baseEntities/baseEntity[type='Male']").node());
+	auto defaultMaleParams = ReadMaleSubPopParams();
 	population_parameters.SetMaleParameters(defaultMaleParams);
-	auto defaultFemaleParams = ReadFemaleSubPopParams(document_.select_single_node("/simulation/population/entityTypes/baseEntities/baseEntity[type='Female']").node());
+	auto defaultFemaleParams = ReadFemaleSubPopParams();
 	population_parameters.SetFemaleParameters(defaultFemaleParams);
 
 	//save flags to indicate whether particular partnership types have duration or not

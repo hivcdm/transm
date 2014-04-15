@@ -151,7 +151,7 @@ public:
 
 	Person *choosePartner(RandomNums &_randomNums, EntityPool *_availableEntities,
 	                      SexualPartnership::Type _partnershipType, bool _remove);
-						  */
+
 	void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist);
 
 	void SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, double meanEvents);

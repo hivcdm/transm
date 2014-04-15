@@ -502,8 +502,3 @@ void Male::saveState(ostream &_outStream, long currTime)
 
 	_outStream << "]";
 }
-
-Person *Person::choosePartner(RandomNums &, EntityPool *, SexualPartnership::Type, bool)
-{
-    throw std::runtime_error("??");
-}

@@ -183,6 +183,9 @@ public:
 
 	void SetName(const std::string &name) { name_ = name; parameters_.simName = name; }
 
+	void SetChanceBecomeSexWorker(DmgProfile::Gender gender, double chance) { population_.popWideParams.SetChanceBecomeCsw(gender, chance); }
+	void SetPartnerAcquisitionSteadyMultiplier(Person::RiskLevel risk, double multiplier) { population_.popWideParams.SetPartnerAcquisitionSteadyMultiplier(risk, multiplier); }
+
 private:
 	friend class SimulationBuilder;
 

@@ -112,6 +112,8 @@ public:
 	void setChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { defaultMaleParams.setChanceCondomUsePerEvent(risk, type, dist); }
 	void setPartnershipDuration(Person::RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { defaultMaleParams.setPartnershipDuration(risk, type, dist); }
 
+	void SetPartnerAcquisitionSteadyMultiplier(Person::RiskLevel risk, double multiplier) { defaultMaleParams.setPartnerAcqMultWithSteady(risk, multiplier); }
+
 protected:
 	friend class Population;
 

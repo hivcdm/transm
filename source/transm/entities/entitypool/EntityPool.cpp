@@ -17,7 +17,7 @@ This file contains the implementations for the methods of EntityPool
 bool EntityPool::addEntity(Person *_person)
 {
 	//gets the DmgProfileBucket that this person is supposed to be a part of based on their DmgProfile
-	DmgProfileBucket *bucket = entityBuckets->at(_person->getDmgProfile()->getProfileID());
+	DmgProfileBucket *bucket = entityBuckets.at(_person->getDmgProfile()->getProfileID());
 	assert(bucket != nullptr);
 	//bucket's insert method should take care of the _person->setCurrBucketProfileID(...)
 	return bucket->insert(_person);
@@ -25,7 +25,7 @@ bool EntityPool::addEntity(Person *_person)
 
 DmgProfileBucket *EntityPool::getBucket(DmgProfile::ProfileID _profileID)
 {
-	return entityBuckets->at(_profileID);
+	return entityBuckets.at(_profileID);
 }
 
 void EntityPool::print(ostream &_outStream)
@@ -34,9 +34,9 @@ void EntityPool::print(ostream &_outStream)
 	//iterate through all buckets
 	size_t currBucketIndex = 0;
 
-	while(currBucketIndex < entityBuckets->size())
+	while(currBucketIndex < entityBuckets.size())
 	{
-		bucket = entityBuckets->at(currBucketIndex);
+		bucket = entityBuckets.at(currBucketIndex);
 
 		//if bucket == nullptr, that means we are not using this particular DmgProfile during this simulation
 		if(bucket == nullptr)
@@ -52,7 +52,7 @@ void EntityPool::print(ostream &_outStream)
 		bucket->print(_outStream, Constants::TABTAB);
 		_outStream << endl;
 		currBucketIndex++;
-	} //while(currBucketIndex < entityBuckets->size()) {
+	} //while(currBucketIndex < entityBuckets.size()) {
 }
 
 //print out all the labels of all the Buckets in the EntityPool. separate each by TAB
@@ -63,9 +63,9 @@ void EntityPool::printBucketLabels(ostream &_outStream, bool _printPropInfected)
 	size_t currBucketIndex = 0;
 
 	//iterate through all buckets
-	while(currBucketIndex < entityBuckets->size())
+	while(currBucketIndex < entityBuckets.size())
 	{
-		bucket = entityBuckets->at(currBucketIndex);
+		bucket = entityBuckets.at(currBucketIndex);
 
 		//if bucket == nullptr, that means we are not using this particular DmgProfile during this sim
 		if(bucket == nullptr)
@@ -88,7 +88,7 @@ void EntityPool::printBucketLabels(ostream &_outStream, bool _printPropInfected)
 		}
 
 		currBucketIndex++;
-	} //while(currBucketIndex < entityBuckets->size()) {
+	} //while(currBucketIndex < entityBuckets.size()) {
 }
 
 //list out # people in each DmgProfileBucket
@@ -105,9 +105,9 @@ void EntityPool::printBucketSizes(ostream &_outStream, string, bool _printPropIn
 	size_t currBucketIndex = 0;		//the ProfileID of the current DmgProfileBucket we are looking at
 
 	//iterate through all buckets and append current DmgProfileBucket sizes to a string buffer
-	while(currBucketIndex < entityBuckets->size())
+	while(currBucketIndex < entityBuckets.size())
 	{
-		bucket = entityBuckets->at(currBucketIndex);
+		bucket = entityBuckets.at(currBucketIndex);
 
 		if(bucket == nullptr)
 		{
@@ -155,7 +155,7 @@ void EntityPool::printBucketSizes(ostream &_outStream, string, bool _printPropIn
 		_totalSize += bucketSize;
 		_totalInfected += numInfected;
 		currBucketIndex++;
-	} //while(currBucketIndex < entityBuckets->size()) {
+	} //while(currBucketIndex < entityBuckets.size()) {
 
 	for(list<Person *>::iterator maleIter = allMales.begin(); maleIter != allMales.end(); maleIter++)
 	{
@@ -269,9 +269,9 @@ unsigned long EntityPool::size()
 	size_t currBucketIndex = 0;
 
 	//iterate through all buckets
-	while(currBucketIndex < entityBuckets->size())
+	while(currBucketIndex < entityBuckets.size())
 	{
-		bucket = entityBuckets->at(currBucketIndex);
+		bucket = entityBuckets.at(currBucketIndex);
 
 		//if bucket == nullptr, that means we are not using this particular DmgProfile during this sim
 		if(bucket == nullptr)
@@ -280,9 +280,9 @@ unsigned long EntityPool::size()
 			continue;
 		}
 
-		size += entityBuckets->at(currBucketIndex)->size();
+		size += entityBuckets.at(currBucketIndex)->size();
 		currBucketIndex++;
-	}	//while(currBucketIndex < entityBuckets->size()) {
+	}	//while(currBucketIndex < entityBuckets.size()) {
 
 	return size;
 }
@@ -310,9 +310,9 @@ unsigned long EntityPool::sizeNotSexuallyActive()
 	size_t currBucketIndex = 0;
 
 	//iterate through all buckets
-	while(currBucketIndex < entityBuckets->size())
+	while(currBucketIndex < entityBuckets.size())
 	{
-		bucket = entityBuckets->at(currBucketIndex);
+		bucket = entityBuckets.at(currBucketIndex);
 
 		//if bucket == nullptr, that means we are not using this particular DmgProfile during this sim
 		if(bucket == nullptr)
@@ -324,11 +324,11 @@ unsigned long EntityPool::sizeNotSexuallyActive()
 		//Only add the sizes of non-sexually active buckets
 		if(DmgProfile::get(bucket->getProfileID(), DmgProfile::SEXUAL_ACTIVITY_STATUS) == DmgProfile::NA)
 		{
-			size += entityBuckets->at(currBucketIndex)->size();
+			size += entityBuckets.at(currBucketIndex)->size();
 		}
 
 		currBucketIndex++;
-	}	//while(currBucketIndex < entityBuckets->size()) {
+	}	//while(currBucketIndex < entityBuckets.size()) {
 
 	return size;
 }
@@ -341,9 +341,9 @@ unsigned long EntityPool::sizeNotSexuallyActive(DmgProfile::Gender _gender)
 	size_t currBucketIndex = 0;
 
 	//iterate through all buckets
-	while(currBucketIndex < entityBuckets->size())
+	while(currBucketIndex < entityBuckets.size())
 	{
-		bucket = entityBuckets->at(currBucketIndex);
+		bucket = entityBuckets.at(currBucketIndex);
 
 		//if bucket == nullptr, that means we are not using this particular DmgProfile during this sim
 		if(bucket == nullptr)
@@ -357,12 +357,12 @@ unsigned long EntityPool::sizeNotSexuallyActive(DmgProfile::Gender _gender)
 		{
 			if(DmgProfile::get(bucket->getProfileID(), DmgProfile::GENDER) == static_cast<BaseEnumCls::Enum>(_gender))
 			{
-				size += entityBuckets->at(currBucketIndex)->size();
+				size += entityBuckets.at(currBucketIndex)->size();
 			}
 		}
 
 		currBucketIndex++;
-	}	//while(currBucketIndex < entityBuckets->size()) {
+	}	//while(currBucketIndex < entityBuckets.size()) {
 
 	return size;
 }
@@ -375,9 +375,9 @@ unsigned long EntityPool::sizeSexuallyActive(DmgProfile::Gender _gender, Person:
 	size_t currBucketIndex = 0;
 
 	//iterate through all buckets
-	while(currBucketIndex < entityBuckets->size())
+	while(currBucketIndex < entityBuckets.size())
 	{
-		bucket = entityBuckets->at(currBucketIndex);
+		bucket = entityBuckets.at(currBucketIndex);
 
 		//if bucket == nullptr, that means we are not using this particular DmgProfile during this sim
 		if(bucket == nullptr)
@@ -391,12 +391,12 @@ unsigned long EntityPool::sizeSexuallyActive(DmgProfile::Gender _gender, Person:
 		{
 			if(DmgProfile::get(bucket->getProfileID(), DmgProfile::GENDER) == static_cast<BaseEnumCls::Enum>(_gender))
 			{
-				size += ((BucketSexualMixing *)(entityBuckets->at(currBucketIndex)))->sizeRisk(_risk);
+				size += ((BucketSexualMixing *)(entityBuckets.at(currBucketIndex)))->sizeRisk(_risk);
 			}
 		}
 
 		currBucketIndex++;
-	}	//while(currBucketIndex < entityBuckets->size()) {
+	}	//while(currBucketIndex < entityBuckets.size()) {
 
 	return size;
 }
@@ -408,9 +408,9 @@ unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMo
 	size_t currBucketIndex = 0;
 
 	//iterate through all buckets
-	while(currBucketIndex < entityBuckets->size())
+	while(currBucketIndex < entityBuckets.size())
 	{
-		bucket = entityBuckets->at(currBucketIndex);
+		bucket = entityBuckets.at(currBucketIndex);
 
 		//if bucket == nullptr, that means we are not using this particular DmgProfile during this sim
 		if(bucket == nullptr)
@@ -422,11 +422,11 @@ unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMo
 		//Only add the sizes of sexually active buckets
 		if(DmgProfile::get(bucket->getProfileID(), DmgProfile::SEXUAL_ACTIVITY_STATUS) == DmgProfile::SA)
 		{
-			size += ((BucketSexualMixing *)(entityBuckets->at(currBucketIndex)))->sizeByAge(minAgeMonths, maxAgeMonths);
+			size += ((BucketSexualMixing *)(entityBuckets.at(currBucketIndex)))->sizeByAge(minAgeMonths, maxAgeMonths);
 		}
 
 		currBucketIndex++;
-	}	//while(currBucketIndex < entityBuckets->size()) {
+	}	//while(currBucketIndex < entityBuckets.size()) {
 
 	return size;
 }
@@ -439,9 +439,9 @@ unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMo
 	size_t currBucketIndex = 0;
 
 	//iterate through all buckets
-	while(currBucketIndex < entityBuckets->size())
+	while(currBucketIndex < entityBuckets.size())
 	{
-		bucket = entityBuckets->at(currBucketIndex);
+		bucket = entityBuckets.at(currBucketIndex);
 
 		//if bucket == nullptr, that means we are not using this particular DmgProfile during this sim
 		if(bucket == nullptr)
@@ -455,12 +455,12 @@ unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMo
 		{
 			if(DmgProfile::get(bucket->getProfileID(), DmgProfile::GENDER) == static_cast<BaseEnumCls::Enum>(_gender))
 			{
-				size += ((BucketSexualMixing *)(entityBuckets->at(currBucketIndex)))->sizeByAge(minAgeMonths, maxAgeMonths);
+				size += ((BucketSexualMixing *)(entityBuckets.at(currBucketIndex)))->sizeByAge(minAgeMonths, maxAgeMonths);
 			}
 		}
 
 		currBucketIndex++;
-	}	//while(currBucketIndex < entityBuckets->size()) {
+	}	//while(currBucketIndex < entityBuckets.size()) {
 
 	return size;
 }
@@ -549,7 +549,7 @@ list<Person *>::iterator EntityPool::end(DmgProfile::Gender _gender)
 EntityPool::EntityPool(int _SAEntAgeMths, unsigned int _popID, const std::array<double, (int)SexualPartnership::Type::ENDType> &_assort)
 {
 	//allocate space for Buckets and set to nullptr
-	entityBuckets = new std::vector<DmgProfileBucket *>(DmgProfile::TotalNumBuckets, nullptr);
+	entityBuckets = std::vector<DmgProfileBucket *>(DmgProfile::TotalNumBuckets, nullptr);
 	//this helps us select the buckets we want to use in the sim
 	// initializing to END values will select all buckets
 	DmgProfile selector;
@@ -580,7 +580,7 @@ EntityPool::EntityPool(int _SAEntAgeMths, unsigned int _popID, const std::array<
 		if(DmgProfile::NA == DmgProfile::get(validBucketIDs.at(i), DmgProfile::SEXUAL_ACTIVITY_STATUS))
 		{
 			//make an NA bucket
-			entityBuckets->at(currBucketID) = new DmgProfileBucket(currBucketID, DmgProfile::toString(currBucketID), true);
+			entityBuckets.at(currBucketID) = new DmgProfileBucket(currBucketID, DmgProfile::toString(currBucketID), true);
 		}
 		else
 		{
@@ -594,9 +594,9 @@ EntityPool::EntityPool(int _SAEntAgeMths, unsigned int _popID, const std::array<
 			if(!invalidCombo)
 				//ERINWASHERE
 				//CHANGES WENT HERE!!
-				//entityBuckets->at(currBucketID) = new DmgProfileBucket(currBucketID, DmgProfile::toString(currBucketID), true);
+				//entityBuckets.at(currBucketID) = new DmgProfileBucket(currBucketID, DmgProfile::toString(currBucketID), true);
 			{
-				entityBuckets->at(currBucketID) = new BucketSexualMixing(currBucketID, DmgProfile::toString(currBucketID), _popID,
+				entityBuckets.at(currBucketID) = new BucketSexualMixing(currBucketID, DmgProfile::toString(currBucketID), _popID,
 				        _SAEntAgeMths, 12 * Person::maxYrForDeathStats + 1, MONTH, _assort);
 			}
 		}
@@ -632,30 +632,18 @@ EntityPool::~EntityPool(void)
 	allFemales.clear();
 
 	//iterate through all buckets and delete them
-	for(BaseEnumCls::Enum j = 0; j < entityBuckets->size(); ++j)
+	for(BaseEnumCls::Enum j = 0; j < entityBuckets.size(); ++j)
 	{
-		if(entityBuckets->at(j) != nullptr)
+		if(entityBuckets.at(j) != nullptr)
 		{
-			if(DmgProfile::NA !=
-			        DmgProfile::get(entityBuckets->at(j)->getProfileID(), DmgProfile::SEXUAL_ACTIVITY_STATUS))
+			if(DmgProfile::NA != DmgProfile::get(entityBuckets.at(j)->getProfileID(), DmgProfile::SEXUAL_ACTIVITY_STATUS))
 			{
-				delete(BucketSexualMixing *)entityBuckets->at(j);
+				delete(BucketSexualMixing *)entityBuckets.at(j);
 			}
 			else
 			{
-				delete entityBuckets->at(j);
+				delete entityBuckets.at(j);
 			}
 		}
-	} //for(BaseEnumCls::Enum j = 0; j < entityBuckets->size(); ++j) {
-
-	//delete the vector
-	delete entityBuckets;
+	} //for(BaseEnumCls::Enum j = 0; j < entityBuckets.size(); ++j) {
 }
-
-//---------------< END constructors and destructors >-------------------------//
-
-//-------------< End methods for EntityPool >-------------------//
-
-
-
-

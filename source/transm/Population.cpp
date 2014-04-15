@@ -173,7 +173,6 @@ void Population::initPartnershipBuckets()
 
 Population::~Population()
 {
-	delete entities;
 }
 
 //-----------------< Event-related methods -----------------------------//
@@ -1211,12 +1210,12 @@ void Population::applyRolloutContext(EventParams &parameters_, int time)
 			switch(rolloutContext->popOfInterest)
 			{
 			case 0: //All Untreated
-				parameters_.untreatedContext = rolloutContext->rolloutSimContext;
+				parameters_.untreatedContext = rolloutContext->rolloutSimContext.get();
 				break;
 
 			case 1:  //All Treated
 			{
-				parameters_.treatedContext = rolloutContext->rolloutSimContext;
+				parameters_.treatedContext = rolloutContext->rolloutSimContext.get();
 				//Apply to all current treated patients
 				std::list<Person *>::iterator personIter;
 
@@ -1229,7 +1228,7 @@ void Population::applyRolloutContext(EventParams &parameters_, int time)
 			}
 
 			case 2: //Untreated Getting new art
-				parameters_.treatedContext = rolloutContext->rolloutSimContext;
+				parameters_.treatedContext = rolloutContext->rolloutSimContext.get();
 				break;
 
 			default:
