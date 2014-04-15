@@ -23,7 +23,7 @@ events stratified by age and CD4
 ***/
 unsigned int Population::idCounter = 0;
 
-void Population::Apply(const PopulationTarget &target, std::function<void(Person *)> modifier)
+void Population::Apply(const PopulationTarget &target, RandomNums &rng, std::function<void(Person *)> modifier, double probability)
 {
 	DmgProfile selector;
 	if(target.sexual_activity_status.has_value)
@@ -53,7 +53,7 @@ void Population::Apply(const PopulationTarget &target, std::function<void(Person
 		auto bucket = entities->getBucket(id);
 		if(bucket != nullptr)
 		{
-			bucket->Apply(target, modifier);
+			bucket->Apply(target, rng, modifier, probability);
 		}
 	}
 }
@@ -70,6 +70,17 @@ Population::Population(EventParams &parameters)
     : populationID(Population::idCounter++),
       parameters_(parameters)
 {
+}
+
+void Population::circumcise(RandomNums &rng, double proportion, PopulationTarget target)
+{
+	Apply(target, rng, std::bind(&Person::Circumcise, std::placeholders::_1), proportion);
+}
+
+void Population::circumcise(Person *p)
+{
+	p->Circumcise();
+	popStats.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * p->getCepacDiscountFactor());
 }
 
 /**
@@ -160,10 +171,9 @@ void Population::initPartnershipBuckets()
 	}
 }
 
-Population::~Population(void)
+Population::~Population()
 {
 	delete entities;
-	delete graph;
 }
 
 //-----------------< Event-related methods -----------------------------//
@@ -832,7 +842,7 @@ void Population::updateFinalPhysicalState(EventParams &parameters_)
 				//Set their death in the graph node to be the end of time (i.e. now)
 				p->getPersonNode()->timeDied = parameters_.currTime + 1;
 				//Add this person to the graph
-				graph->persons.push_back(p->getPersonNode());
+				graph.persons.push_back(p->getPersonNode());
 			}
 
 			//Removing entity because the age is about to change and this will fuck up being able to find the person!
@@ -2068,7 +2078,7 @@ void Population::processDeath(EventParams &parameters_, Person *_p, bool calcula
 	{
 		/** If we're using graphViz, update the time of death in the graph node add the persons node to the population graph */
 		_p->getPersonNode()->timeDied = parameters_.currTime;
-		graph->persons.push_back(_p->getPersonNode());
+		graph.persons.push_back(_p->getPersonNode());
 		/** Need to keep person around to print out the black (dead) persons */
 		_p->deletePersonWithoutDeleting();
 	}

@@ -34,6 +34,18 @@ public:
 	~Population();
 	void operator=(const Population &) = delete;
 
+	unsigned int GetId() const { return populationID; }
+
+	void SetParameters(const PopulationParams &parameters) { popWideParams = parameters; }
+
+	void SetCondomCost(double condom_cost) { popWideParams.condomCost = condom_cost; }
+
+	void SetCircumcisionCost(double circumcision_cost) { popWideParams.circumcisionCost = circumcision_cost; }
+
+	void circumcise(RandomNums &rng, double proportion, PopulationTarget target);
+
+	void circumcise(Person *p);
+
 	//initialization-related method
 	//determines which DemographicProfiles have the power to initiate relationships and determines which
 	//relationships they can have
@@ -110,12 +122,14 @@ public:
 
 	PopStats &getPopStats() { return popStats; }
 
-	void Apply(const PopulationTarget &target, std::function<void(Person *)> modifier);
+	void Apply(const PopulationTarget &target, RandomNums &rng, std::function<void(Person *)> modifier, double probability);
 
 	void ValidateState();
 
+	int GetNumberToTrace() const { return parameters_.numToTrace; }
+
 private:
-	friend class SimulationBuilder;
+	friend class SimulationBuilderXml;
 
 	/*
 	//forms creates partnerships of a particular type for 1 person. Will make sure that each partner is in the correct DmgProfileBucket
@@ -271,7 +285,7 @@ private:
 	PopStats popStats;	//tallies the statistics that the population generates throughout the simulation
 
 	/** The graph of all relationships over time, used to generate graphviz output */
-	GraphVizGraphElements *graph;
+	GraphVizGraphElements graph;
 
 	EventParams &parameters_;
 

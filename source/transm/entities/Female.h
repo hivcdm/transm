@@ -22,7 +22,11 @@ public:
 		double getChanceBecomeCSW() const;
 		double getProportionHighRisk(DmgProfile::Employment) const;
 		NormalDist getActivityLevel() const;
+		void setActivityLevel(NormalDist &dist) { activityLevel = dist; }
 		double getTransmitPerEventCoeff(HVLStrata _hvl) const;
+		void setTransmitPerEventCoeff(HVLStrata hvl, double coeff) { transmitPerEventCoeffs[hvl] = coeff; }
+		void setChanceBecomeCsw(double chance) { chanceBecomeCSW = chance; }
+		void setProportionHighRisk(DmgProfile::Employment employment, double proportion) { proportionHighRisk[employment] = proportion; }
 
 	private:
 		friend class SimulationBuilder;
@@ -53,6 +57,8 @@ public:
 
 	double getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
 	double getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
+
+	void Circumcise();
 
 	double getTransmissionCoeff();
 	void rerollRiskGroup(EventParams &_eventParams);

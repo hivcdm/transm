@@ -34,7 +34,7 @@ const string *DmgProfileBucket::getLabel()
 	return bucketLabel;
 }
 
-void DmgProfileBucket::Apply(const PopulationTarget &target, std::function<void(Person*)> modifier)
+void DmgProfileBucket::Apply(const PopulationTarget &target, RandomNums &rng, std::function<void(Person*)> modifier, double probability)
 {
 	for(auto &id_person_pair : *simpleEntityIndex)
 	{
@@ -45,7 +45,10 @@ void DmgProfileBucket::Apply(const PopulationTarget &target, std::function<void(
 			|| (target.on_treatment.has_value && target.on_treatment.value != person->isOnArt())
 			|| (target.risk_level.has_value && target.risk_level.value != person->getRiskLevel())))
 		{
-			modifier(id_person_pair.second);
+			if(rng.chance(probability))
+			{
+				modifier(id_person_pair.second);
+			}
 		}
 	}
 }

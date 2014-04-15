@@ -546,7 +546,7 @@ list<Person *>::iterator EntityPool::end(DmgProfile::Gender _gender)
 
 //creates a New EntityPool
 // @param _SAEntAgeMths age of sexual debut
-EntityPool::EntityPool(int _SAEntAgeMths, unsigned int _popID, const double _assort[])
+EntityPool::EntityPool(int _SAEntAgeMths, unsigned int _popID, const std::array<double, (int)SexualPartnership::Type::ENDType> &_assort)
 {
 	//allocate space for Buckets and set to nullptr
 	entityBuckets = new std::vector<DmgProfileBucket *>(DmgProfile::TotalNumBuckets, nullptr);

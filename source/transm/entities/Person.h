@@ -41,6 +41,8 @@ class Person
 
 public:
 
+	virtual void Circumcise() = 0;
+
 	//a simple linked list of SexualPartnerships
 	//typedef list<SexualPartnership*> PartnerList;
 
@@ -466,9 +468,10 @@ public:
 	//  @param _availablePools	- a set of pools that this person can choose from
 	//  @param _remove - if true, than we will also remove the person from the EntityPool
 	// returns: a Person from one of the person pools in _availablePools
+	/*
 	virtual Person *choosePartner(RandomNums &_randomNums, EntityPool *_availableEntities,
 				      SexualPartnership::Type _partnershipType, bool _remove);
-
+					  */
 	// fling with Person _p
 	// this is used for SexualPartnership::Type where there is no duration associated with the partnership (i.e. CASUAL, CSW)
 	//  will roll dice to see how many encounters there are during this fling...

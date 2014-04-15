@@ -1785,13 +1785,14 @@ int Person::getCEPACSimContextIndex(EventParams &_eventParams)
 
 //----------------< Start Methods for to be implemented by Male and Female >-------------------//
 
-
+/*
 Person *Person::choosePartner(RandomNums &, EntityPool *, SexualPartnership::Type, bool)
 {
 	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
 	cerr << "Called Person::choosePartner()" << endl;
 	return nullptr;
 }
+*/
 
 double Person::getFOI(Person * /*_p*/, SexualPartnership::Type /*_partnershipType*/, EventParams &/*_eventParams*/)
 {

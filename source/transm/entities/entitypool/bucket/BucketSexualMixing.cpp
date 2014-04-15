@@ -39,7 +39,7 @@ void BucketSexualMixing::Apply(const PopulationTarget &target, std::function<voi
 }
 
 BucketSexualMixing::BucketSexualMixing(DmgProfile::ProfileID _id, const string *_bucketLabel, unsigned int _popID,
-                                       int _minAge, int _maxAge, TimeGranularity _timeGranularity, const double _assort[]) :
+	int _minAge, int _maxAge, TimeGranularity _timeGranularity, const std::array<double, (int)SexualPartnership::Type::ENDType> &_assort) :
 	DmgProfileBucket(_id, _bucketLabel, false)
 {
 	assert((_timeGranularity == MONTH) || (_timeGranularity == YEAR));

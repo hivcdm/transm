@@ -59,7 +59,7 @@ private :
 	BucketAllAges *personsByAge;
 
 	//Assortativeness parameter for Mark Lipsitch's assortativeness algorithm
-	double assort[(int)SexualPartnership::Type::ENDType];
+	std::array<double, (int)SexualPartnership::Type::ENDType> assort;
 
 public :
 
@@ -70,7 +70,7 @@ public :
 	@param _timeGranularity people will be bucketed by either MONTH or YEAR of age. This determines performance of selection when the behavior is heterogeneous vs. homogeneous
 	**/
 	BucketSexualMixing(DmgProfile::ProfileID _id, const string *_bucketLabel, unsigned int _popID, int _minAge, int _maxAge,
-	                   TimeGranularity _timeGranularity, const double _assort[]);
+		TimeGranularity _timeGranularity, const std::array<double, (int)SexualPartnership::Type::ENDType> &_assort);
 	virtual ~BucketSexualMixing();
 
 	//-------------< Begin inherited from class DmgProfileBucket >---------------------//

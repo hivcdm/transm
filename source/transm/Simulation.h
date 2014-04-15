@@ -1,5 +1,7 @@
 #pragma once
 
+#include <deque>
+
 #include "Outputs.h"
 #include "Population.h"
 #include "data/EventParams.h"
@@ -39,6 +41,7 @@ struct TraceFile
 struct PopulationTarget
 {
 	static PopulationTarget FromString(const std::string &s);
+	static PopulationTarget Any;
 
 	Nullable<Person::RiskLevel> risk_level;
 	Nullable<DmgProfile::Employment> employment;
@@ -50,170 +53,33 @@ struct PopulationTarget
 	Nullable<int> age_upper;
 	Nullable<Person::HIVStatus> observed_hiv_status;
 	Nullable<bool> on_treatment;
-};
 
-enum class TemplateParameter
-{
-	//Population
-	BirthRate,
-	ProportionMale,
-	ProportionCircumcised,
-	AgeSexualDebutYears,
-	//Assortativeness
-	AssortativenessSteady,
-	AssortativenessRegular,
-	AssortativenessCasual,
-	AssortativenessCsw,
-	//Male:General
-	MaleChanceBecomeSexWorker,
-	MalePartnerAcqMultWithSteadyHigh,
-	MalePartnerAcqMultWithSteadyLow,
-	//Male:Steady
-	MaleSteadyAcquisitionRateHighMean,
-	MaleSteadyAcquisitionRateHighStdDev,
-	MaleSteadyAcquisitionRateLowMean,
-	MaleSteadyAcquisitionRateLowStdDev,
-	MaleSteadyAverageYearsYounger,
-	MaleSteadyCoitalEventsPerMonthHigh,
-	MaleSteadyCoitalEventsPerMonthLow,
-	MaleSteadyChanceCondomUsePerEventHighMean,
-	MaleSteadyChanceCondomUsePerEventHighStdDev,
-	MaleSteadyChanceCondomUsePerEventLowMean,
-	MaleSteadyChanceCondomUsePerEventLowStdDev,
-	MaleSteadyPartnershipDurationHighMean,
-	MaleSteadyPartnershipDurationHighStdDev,
-	MaleSteadyPartnershipDurationHighShift,
-	MaleSteadyPartnershipDurationLowMean,
-	MaleSteadyPartnershipDurationLowStdDev,
-	MaleSteadyPartnershipDurationLowShift,
-	//Male:Regular
-	MaleRegularAcquisitionRateHighMean,
-	MaleRegularAcquisitionRateHighStdDev,
-	MaleRegularAcquisitionRateLowMean,
-	MaleRegularAcquisitionRateLowStdDev,
-	MaleRegularAverageYearsYounger,
-	MaleRegularCoitalEventsPerMonthHigh,
-	MaleRegularCoitalEventsPerMonthLow,
-	MaleRegularChanceCondomUsePerEventHighMean,
-	MaleRegularChanceCondomUsePerEventHighStdDev,
-	MaleRegularChanceCondomUsePerEventLowMean,
-	MaleRegularChanceCondomUsePerEventLowStdDev,
-	MaleRegularPartnershipDurationHighMean,
-	MaleRegularPartnershipDurationHighStdDev,
-	MaleRegularPartnershipDurationHighShift,
-	MaleRegularPartnershipDurationLowMean,
-	MaleRegularPartnershipDurationLowStdDev,
-	MaleRegularPartnershipDurationLowShift,
-	//Male:Casual
-	MaleCasualAcquisitionRateHighMean,
-	MaleCasualAcquisitionRateHighStdDev,
-	MaleCasualAcquisitionRateLowMean,
-	MaleCasualAcquisitionRateLowStdDev,
-	MaleCasualAverageYearsYounger,
-	MaleCasualCoitalEventsPerMonthHigh,
-	MaleCasualCoitalEventsPerMonthLow,
-	MaleCasualChanceCondomUsePerEventHighMean,
-	MaleCasualChanceCondomUsePerEventHighStdDev,
-	MaleCasualChanceCondomUsePerEventLowMean,
-	MaleCasualChanceCondomUsePerEventLowStdDev,
-	MaleCasualPartnershipDurationHighMean,
-	MaleCasualPartnershipDurationHighStdDev,
-	MaleCasualPartnershipDurationHighShift,
-	MaleCasualPartnershipDurationLowMean,
-	MaleCasualPartnershipDurationLowStdDev,
-	MaleCasualPartnershipDurationLowShift,
-	//Male:Csw
-	MaleCswAcquisitionRateHighMean,
-	MaleCswAcquisitionRateHighStdDev,
-	MaleCswAcquisitionRateLowMean,
-	MaleCswAcquisitionRateLowStdDev,
-	MaleCswAverageYearsYounger,
-	MaleCswCoitalEventsPerMonthHigh,
-	MaleCswCoitalEventsPerMonthLow,
-	MaleCswChanceCondomUsePerEventHighMean,
-	MaleCswChanceCondomUsePerEventHighStdDev,
-	MaleCswChanceCondomUsePerEventLowMean,
-	MaleCswChanceCondomUsePerEventLowStdDev,
-	MaleCswPartnershipDurationHighMean,
-	MaleCswPartnershipDurationHighStdDev,
-	MaleCswPartnershipDurationHighShift,
-	MaleCswPartnershipDurationLowMean,
-	MaleCswPartnershipDurationLowStdDev,
-	MaleCswPartnershipDurationLowShift,
-	//Male:Health
-	MaleTransmissionCoefficientsByHvl,
-	MaleTransmissionCoefficientsPrimary,
-	MaleTransmissionCoefficientsLate,
-	//Female:Behavior
-	FemaleChanceBecomeSexWorker,
-	FemaleProportionHighRiskCsw,
-	FemaleProportionHighRiskNonCsw,
-	//Female:Health
-	FemaleTransmissionCoefficientsByHvl,
-	FemaleTransmissionCoefficientsPrimary,
-	FemaleTransmissionCoefficientsLate,
-	//Costs
-	CondomCost,
-	CircumcisionCost,
-	//ArtRolloutEligibility:OIHist
-	ArtOIHistRank,
-	ArtOIHistOI0,
-	ArtOIHistOI1,
-	ArtOIHistOI2,
-	ArtOIHistOI3,
-	ArtOIHistOI4,
-	ArtOIHistOI5,
-	ArtOIHistOI6,
-	ArtOIHistOI7,
-	ArtOIHistOI8,
-	ArtOIHistOI9,
-	ArtOIHistOI10,
-	ArtOIHistOI11,
-	ArtOIHistOI12,
-	ArtOIHistOI13,
-	ArtOIHistOI14,
-	ArtOIHistNumOIToStart,
-	//ArtRolloutEligibility:CD4
-	ArtCD4Rank,
-	ArtCD4CD4Upp,
-	ArtCD4CD4Lwr,
-	//ArtRolloutEligibility:CD4OIHist
-	ArtCD4OIHistRank,
-	ArtCD4OIHistOI0,
-	ArtCD4OIHistOI1,
-	ArtCD4OIHistOI2,
-	ArtCD4OIHistOI3,
-	ArtCD4OIHistOI4,
-	ArtCD4OIHistOI5,
-	ArtCD4OIHistOI6,
-	ArtCD4OIHistOI7,
-	ArtCD4OIHistOI8,
-	ArtCD4OIHistOI9,
-	ArtCD4OIHistOI10,
-	ArtCD4OIHistOI11,
-	ArtCD4OIHistOI12,
-	ArtCD4OIHistOI13,
-	ArtCD4OIHistOI14,
-	ArtCD4OIHistCD4Upp,
-	ArtCD4OIHistCD4Lwr,
-	//ArtRolloutEligibility:HVL
-	ArtHVLRank,
-	ArtHVLHVLUpp,
-	ArtHVLHVLLwr,
-	//ArtRolloutEligibility:CD4HVL
-	ArtCD4HVLRank,
-	ArtCD4HVLCD4Upp,
-	ArtCD4HVLCD4Lwr,
-	ArtCD4HVLHVLUpp,
-	ArtCD4HVLHVLLwr
+	bool operator==(const PopulationTarget &other) const
+	{
+		return risk_level == other.risk_level &&
+			employment == other.employment &&
+			sexual_activity_status == other.sexual_activity_status &&
+			gender == other.gender &&
+			relationship_status == other.relationship_status &&
+			sexual_orientation == other.sexual_orientation &&
+			age_lower == other.age_lower &&
+			age_upper == other.age_upper &&
+			observed_hiv_status == other.observed_hiv_status &&
+			on_treatment == other.on_treatment;
+	}
+
+	bool operator!=(const PopulationTarget &other) const { return !(*this == other); }
 };
 
 class Simulation
 {
 public:
 	typedef std::function<void(const std::string &)> MessageCallback;
+	typedef std::function<void(Simulation &)> SimulationIntervention;
+	typedef std::function<void(EventParams::RolloutEligibility &)> EligibilityIntervention;
+	typedef std::function<void(PopulationParams &)> PopulationIntervention;
 
-	Simulation(const std::string &run_name);
+	Simulation();
 
 	~Simulation();
 
@@ -235,6 +101,88 @@ public:
 
 	int GetTime() { return time_; }
 
+	void RegisterSimulationIntervention(int time, SimulationIntervention callback);
+
+	void SetRolloutEligibilityRank(const std::string &criterion, int rank);
+	void SetRolloutEligibilityOIHist(int oi, bool required) { parameters_.rolloutEligibility.oiHistOIs[oi] = required; }
+	void SetRolloutEligibilityNumToStart(int num) { parameters_.rolloutEligibility.oiHistNumToStart = num; }
+	void SetRolloutEligibilityCD4Lwr(int lower) { parameters_.rolloutEligibility.cd4Bounds[0] = lower; }
+	void SetRolloutEligibilityCD4Upp(int upper) { parameters_.rolloutEligibility.cd4Bounds[1] = upper; }
+	void SetRolloutEligibilityCD4OIHist(int oi, bool required) { parameters_.rolloutEligibility.cd4OiHistOIs[oi] = required; }
+	void SetRolloutEligibilityCD4OIHistCD4Lwr(int lower) { parameters_.rolloutEligibility.cd4OiHistCd4Bounds[0] = lower; }
+	void SetRolloutEligibilityCD4OIHistCD4Upp(int upper) { parameters_.rolloutEligibility.cd4OiHistCd4Bounds[1] = upper; }
+	void SetRolloutEligibilityHVLLwr(int lower) { parameters_.rolloutEligibility.hvlBounds[0] = lower; }
+	void SetRolloutEligibilityHVLUpp(int upper) { parameters_.rolloutEligibility.hvlBounds[1] = upper; }
+	void SetRolloutEligibilityCD4HVLCD4Lwr(int lower) { parameters_.rolloutEligibility.cd4HvlHvlBounds[0] = lower; }
+	void SetRolloutEligibilityCD4HVLCD4Upp(int upper) { parameters_.rolloutEligibility.cd4HvlHvlBounds[1] = upper; }
+	void SetRolloutEligibilityCD4HVLHVLLwr(int lower) { parameters_.rolloutEligibility.cd4HvlCd4Bounds[0] = lower; }
+	void SetRolloutEligibilityCD4HVLHVLUpp(int upper) { parameters_.rolloutEligibility.cd4HvlCd4Bounds[1] = upper; }
+
+	Population &GetPopulation() { return population_; }
+	const Population &GetPopulation() const { return population_; }
+
+	void SetCondomCost(double condom_cost) { population_.SetCondomCost(condom_cost); }
+
+	void SetCircumcisionCost(double circumcision_cost) { population_.SetCircumcisionCost(circumcision_cost); }
+
+	void SetDuration(int duration) { duration_ = duration; }
+
+	void SetFixedSeed(int seed);
+
+	void SetBirthRate(double birth_rate) { population_.popWideParams.setBirthRate(birth_rate); };
+
+	void SetAgeSexualDebut(int age, TimeGranularity granularity = YEAR) { population_.popWideParams.setAgeSexualDebut(age, granularity); }
+
+	void SetProportionMale(double proportion_male) { population_.popWideParams.setProportionMale(proportion_male); }
+
+	void SetProportionCircumcised(double proportion_circumcised, Nullable<PopulationTarget> target)
+	{
+		if(target.has_value)
+		{
+			population_.popWideParams.setProportionCircumcised(proportion_circumcised);
+		}
+		else
+		{
+			population_.circumcise(parameters_.randomNums, proportion_circumcised, target.value);
+		}
+	}
+
+	void SetAssortativeness(SexualPartnership::Type type, double assortativeness)
+	{
+		population_.popWideParams.setAssortativeness(type, assortativeness);
+	}
+
+	void SetTransmissionCoefficients(DmgProfile::Gender gender, const std::array<double, 7> &coefficients)
+	{
+		for(int i = 0; i < 7; i++)
+		{
+			population_.popWideParams.SetTransmissionCoefficient(gender, (Person::HVLStrata)i, coefficients[i]);
+		}
+	}
+
+	void SetTransmissionCoefficient(DmgProfile::Gender gender, Person::HVLStrata stratum, double coefficient)
+	{
+		population_.popWideParams.SetTransmissionCoefficient(gender, stratum, coefficient);
+	}
+
+	void SetChanceBecomeCsw(DmgProfile::Gender gender, double chance)
+	{
+		population_.popWideParams.SetChanceBecomeCsw(gender, chance);
+	}
+
+	void SetProportionHighRisk(DmgProfile::Gender gender, DmgProfile::Employment employment, double proportion)
+	{
+		population_.popWideParams.SetProportionHighRisk(gender, employment, proportion);
+	}
+
+	void SetAverageYearsYounger(SexualPartnership::Type type, NormalDist dist) { population_.popWideParams.setAverageYearsYounger(type, dist); }
+	void SetAcquisitionRatePerMonth(Person::RiskLevel risk, SexualPartnership::Type type, LogNormalDist dist) { population_.popWideParams.setAcquisitionRatePerMonth(risk, type, dist); }
+	void SetCoitalEventsPerMonth(Person::RiskLevel risk, SexualPartnership::Type type, double mean) { population_.popWideParams.setCoitalEventsPerMonth(risk, type, mean); }
+	void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { population_.popWideParams.setChanceCondomUsePerEvent(risk, type, dist); }
+	void SetPartnershipDuration(Person::RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { population_.popWideParams.setPartnershipDuration(risk, type, dist); }
+
+	void SetName(const std::string &name) { name_ = name; parameters_.simName = name; }
+
 private:
 	friend class SimulationBuilder;
 
@@ -244,16 +192,6 @@ private:
 		int file_number;
 		int time;
 		int target_population;
-	};
-
-	struct TimeDependentParameter
-	{
-		int time;
-		std::string value;
-		std::string key;
-		Nullable<PopulationTarget> target_population;
-		std::function<void(Person *)> population_modifier;
-		std::function<void()> simulation_modifier;
 	};
 
 	typedef std::array<TreatmentFile, Constants::NUMBER_OF_CEPAC_FILES> CepacTreatmentFiles;
@@ -281,7 +219,7 @@ private:
 
 	void ValidateState();
 
-	const std::string name_;
+	std::string name_;
 
 	/** current time in the simulation */
 	int time_;
@@ -317,6 +255,6 @@ private:
 
 	RolloutTreatmentFiles rollout_treatment_files_;
 
-	std::vector<TimeDependentParameter> time_dependent_parameters_;
+	std::deque<std::pair<int, std::vector<SimulationIntervention>>> simulation_interventions;
 };
 

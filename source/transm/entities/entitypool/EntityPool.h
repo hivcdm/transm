@@ -127,7 +127,7 @@ public:
 public:
 
 	//creates a 'new EntityPool
-	EntityPool(int _SAEntAgeMths, unsigned int _popID, const double _assort[]);
+	EntityPool(int _SAEntAgeMths, unsigned int _popID, const std::array<double, (int)SexualPartnership::Type::ENDType> &_assort);
 
 	~EntityPool(void);
 };

@@ -12,10 +12,6 @@ void SexualBehaviorParams::ApplyCoefficientVariation(double /*coefficient*/)
 	throw std::runtime_error("not implemented");
 }
 
-SexualBehaviorParams::SexualBehaviorParams()
-{
-}
-
 unsigned int SexualBehaviorParams::getNumAvailableBuckets()  const
 {
 	return (unsigned int)availableBuckets.size();

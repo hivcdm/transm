@@ -69,13 +69,13 @@ private:
 
 
 template<>
-int Variant::Get() const { return GetInteger(); }
+inline int Variant::Get() const { return GetInteger(); }
 
 template<>
-double Variant::Get() const { return GetFloat(); }
+inline double Variant::Get() const { return GetFloat(); }
 
 template<>
-std::string Variant::Get() const { return GetString(); }
+inline std::string Variant::Get() const { return GetString(); }
 
 struct Cell
 {

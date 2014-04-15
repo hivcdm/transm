@@ -1,9 +1,12 @@
 #include <boost/filesystem.hpp>
 
 #include <cepac/include.h>
-#include <transm/SimulationBuilder.h>
+#include <transm/SimulationBuilderXml.h>
+#include <transm/SimulationReader.h>
 #include <transm/statistics/TransmissionSummaryStats.h>
 #include <transm/util/Util.h>
+
+namespace {
 
 struct ArgumentToken
 {
@@ -63,6 +66,31 @@ void PrintVersion()
 	std::cout << "transm version " << Version::ToString(Util::MODEL_VERSION) << std::endl;
 }
 
+void PrintBadOption(const std::string &option)
+{
+	std::cout << "Unknown option: " << option << std::endl;
+	PrintUsage();
+}
+
+void Simulate(const std::string &filename, SummaryStats &cepac_summary, TransmissionSummaryStats &transmission_summary)
+{
+	//Changing back to the input directory because over the course of Sim->run, the directory gets changed to results
+	CepacUtil::changeDirectoryToInputs();
+	std::cout << "Running File: " << filename << std::endl;
+
+	SimulationBuilderXml builder;
+	auto name = boost::filesystem::path(filename).stem().string();
+	SimulationReader reader(builder);
+	reader.ConstructSimulation(filename);
+	auto &simulation = builder.GetResult();
+
+	auto message_callback = [](const std::string &s) { std::cout << s; };
+	auto outputs = simulation.Run(message_callback);
+
+	cepac_summary.addRunStats(simulation.GetCEPACRunStats());
+	transmission_summary.addPopStats(simulation.GetPopStats(), simulation.GetEventParams());
+}
+
 int RunSimulation(const std::string &directory = "")
 {
 	auto workingDirectory = boost::filesystem::current_path();
@@ -74,59 +102,29 @@ int RunSimulation(const std::string &directory = "")
 
 	Util::findInputFiles(directory, workingDirectory.string());
 	CepacUtil::createResultsDirectory();
+
 	SummaryStats cepacSummaryStats("cepacPopstats.out");
 	TransmissionSummaryStats transSummaryStats("summaryStats.out");
 
 	for(auto xml : Util::transmFilesToRun)
 	{
-		//Changing back to the input directory because over the course of Sim->run, the directory gets changed to results
-		CepacUtil::changeDirectoryToInputs();
-		std::cout << "Running File: " << xml << std::endl;
-
-		SimulationBuilder builder;
-		auto name = boost::filesystem::path(xml).stem().string();
-		Simulation simulation(name);
-		builder.Create(xml, simulation);
-
-		auto message_callback = [](const std::string &s) { std::cout << s; };
-		auto outputs = simulation.Run(message_callback);
-
-		cepacSummaryStats.addRunStats(simulation.GetCEPACRunStats());
-		transSummaryStats.addPopStats(simulation.GetPopStats(), simulation.GetEventParams());
+		Simulate(xml, cepacSummaryStats, transSummaryStats);
 	}
 
 	//Finalize CEPAC summary stats and print the popstats file
 	cepacSummaryStats.finalizeStats();
 
-	try
-	{
-		cepacSummaryStats.writeSummariesFile();
-		transSummaryStats.writeSummariesFile();
-	}
-	catch(std::string errorString)
-	{
-		cout << errorString << "\n";
-	}
+	cepacSummaryStats.writeSummariesFile();
+	transSummaryStats.writeSummariesFile();
 
 	return 0;
 }
 
-void PrintBadOption(const std::string &option)
-{
-	std::cout << "Unknown option: " << option << std::endl;
-	PrintUsage();
-}
+} // namespace
 
 int main(int argc, char *argv[])
 {
-	auto tokens = ParseArgumentTokens(argc, argv);
-
-	if(tokens.size() == 0)
-	{
-		PrintUsage();
-	}
-
-	for(const auto &token : tokens)
+	for(const auto &token : ParseArgumentTokens(argc, argv))
 	{
 		if(token.type == ArgumentToken::ArgumentTokenType::option)
 		{
@@ -150,5 +148,5 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	return RunSimulation();
+	PrintUsage();
 }

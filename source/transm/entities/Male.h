@@ -3,11 +3,10 @@
 #include <map>
 
 #include "Person.h"
+#include "behaviors/SexualBehaviorParams.h"
 #include "../data/EventParams.h"
 #include "../util/rand/RandomNums.h"
 #include "../util/xml/pugixml.hpp"
-
-class SexualBehaviorParams;
 
 /// <summary>
 /// All females in the simulation are members of this class, or a class derived from this one
@@ -15,6 +14,8 @@ class SexualBehaviorParams;
 class Male : public Person
 {
 public :
+	void Circumcise();
+
 	/// <summary>
 	/// These are parameters that describe the population of males.
 	/// Each Population in the Sim will have a separate one of these references by the population's ID.
@@ -42,10 +43,52 @@ public :
 		int getPartneringDiscStartAgeYrs() const;
 		double getPartneringAcqDiscMult(int _ageYrs) const;
 		double getPartneringActsDiscMult(int _ageYrs) const;
+		void setAgeDiscounting(int startAgeYrs, double partneringAcqDisc, double partneringActsDisc)
+		{
+			partneringDiscStartAgeYrs = startAgeYrs;
+			partneringAcqDiscPerYr = partneringAcqDisc;
+			partneringActsDiscPerYr = partneringActsDisc;
+			int numMults = Person::maxYrForDeathStats - partneringDiscStartAgeYrs + 1;
+			double acqMult = 1 - partneringAcqDiscPerYr;
+			double actsMult = 1 - partneringActsDiscPerYr;
+
+			//generate vectors that contain discount multipliers. will cover from [partneringDiscStartAgeYrs,Person::maxYrForDeathStats]
+			partneringAcqDiscMult.clear();
+			partneringActsDiscMult.clear();
+			partneringAcqDiscMult.push_back(acqMult);
+			partneringActsDiscMult.push_back(actsMult);
+
+			for(int i = 1; i < numMults; ++i)
+			{
+				partneringAcqDiscMult.push_back(partneringAcqDiscMult.at(i - 1)*acqMult);
+				partneringActsDiscMult.push_back(partneringActsDiscMult.at(i - 1)*actsMult);
+			}
+		}
+
+		void setCircucmsionProtectEfficacy(double efficacy) { circumProtectEff = efficacy; }
+		void setCondomProtectEff(double efficacy) { condomProtectEff = efficacy; }
+
+		void setPartnerAcqMultWithSteady(Person::RiskLevel risk, double multiplier) { partnerAcqMultWithSteady[risk] = multiplier; }
+
+		void setChanceBecomeCsw(double chance) { chanceBecomeCSW = chance; }
+
+		void setCoefficientVariation(bool use, double coefficient) { useCoefficientVariation = use; coefficientOfVariation = coefficient; }
+
+		void addSexualBehaviorParams(SexualBehaviorParams params) { sexualBehaviorParams.push_back(params); }
+
+		void setTransmitPerEventCoeff(HVLStrata hvl, double coeff) { transmitPerEventCoeffs[hvl] = coeff; }
+
+		void setProportionHighRisk(DmgProfile::Employment employment, double proportion) { proportionHighRisk[employment] = proportion; }
+
+		void setAverageYearsYounger(SexualPartnership::Type type, NormalDist dist) { sexualBehaviorParams[(int)type].setAverageYearsYounger(dist); }
+		void setAcquisitionRatePerMonth(Person::RiskLevel risk, SexualPartnership::Type type, LogNormalDist dist) { sexualBehaviorParams[(int)type].setAcquisitionRatePerMonth(risk, dist); }
+		void setCoitalEventsPerMonth(Person::RiskLevel risk, SexualPartnership::Type type, double mean) { sexualBehaviorParams[(int)type].setCoitalEventsPerMonth(risk, mean); }
+		void setChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { sexualBehaviorParams[(int)type].setChanceCondomUsePerEvent(risk, dist); }
+		void setPartnershipDuration(Person::RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { sexualBehaviorParams[(int)type].setPartnershipDuration(risk, dist); }
+
+		void setActivityLevel(NormalDist activity_level) { activityLevel = activity_level; }
 
 	private:
-		friend class SimulationBuilder;
-
 		double chanceBecomeCSW;		//chance that a male will become a CSW
 		double partnerAcqMultWithSteady[Person::ENDRiskLevel];  //the rate multiplier for partner acquisition when a male has a Steady partner
 
@@ -106,9 +149,10 @@ public:
 
 	/** Start: Inherited from Person, comments found there **/
 
+	/*
 	Person *choosePartner(RandomNums &_randomNums, EntityPool *_availableEntities ,
 	                      SexualPartnership::Type _partnershipType, bool _remove);
-
+						  */
 	void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist);
 
 	void SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, double meanEvents);

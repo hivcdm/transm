@@ -14,6 +14,8 @@
 #include "util/HighResolutionTimer.h"
 #include "util/Util.h"
 
+PopulationTarget PopulationTarget::Any;
+
 PopulationTarget PopulationTarget::FromString(const std::string &s)
 {
 	PopulationTarget target;
@@ -101,20 +103,55 @@ PopulationTarget PopulationTarget::FromString(const std::string &s)
 	return target;
 }
 
-Simulation::Simulation(const std::string &run_name)
-    : name_(run_name),
-      time_(0),
+Simulation::Simulation()
+    : time_(0),
       parameters_(),
       population_(parameters_),
       failedCalibration_(false),
       hasPassedFirstMonthCalibPrev_(false),
       monthOfFirstMonthCalibPrev_(0)
 {
-	parameters_.simName = run_name;
 }
 
 Simulation::~Simulation()
 {
+}
+
+void Simulation::SetRolloutEligibilityRank(const std::string &criterion, int rank)
+{
+	if(criterion == "OIHist") parameters_.rolloutEligibility.oiHistRank = rank;
+	else if(criterion == "CD4") parameters_.rolloutEligibility.cd4Rank = rank;
+	else if(criterion == "CD4OIHist") parameters_.rolloutEligibility.cd4OiHistRank = rank;
+	else if(criterion == "HVL") parameters_.rolloutEligibility.hvlRank = rank;
+	else if(criterion == "CD4HVL") parameters_.rolloutEligibility.cd4HvlRank = rank;
+	else throw std::runtime_error("bad criterion name");
+}
+
+void Simulation::RegisterSimulationIntervention(int time, SimulationIntervention intervention)
+{
+	auto time_parameters_iter = simulation_interventions.begin();
+	while(time_parameters_iter != simulation_interventions.end() && time_parameters_iter->first < time)
+	{
+		time_parameters_iter++;
+	}
+	if(time_parameters_iter == simulation_interventions.end() || time_parameters_iter->first > time)
+	{
+		time_parameters_iter = simulation_interventions.emplace(time_parameters_iter, std::make_pair(time, std::vector<SimulationIntervention>()));
+	}
+	time_parameters_iter->second.push_back(intervention);
+}
+
+void Simulation::SetFixedSeed(int seed)
+{
+	fixedSeed_ = seed;
+
+	CepacUtil::setRandomSeedType(seed == -1);
+
+	if(seed > -1)
+	{
+		//Seed is Minnesota Twins retired numbers... yes, I am a dork
+		parameters_.randomNums.reset(seed == 0 ? 36291434 : seed);
+	}
 }
 
 void Simulation::FirstStep()
@@ -461,70 +498,23 @@ void Simulation::SetNonAidsDeathFromCepac(SimContext &cepacSimContext, std::vect
 	}
 }
 
-BetaDist ParseBeta(const std::string &distributionString)
-{
-	auto commaIndex = distributionString.find(',');
-	auto type = distributionString.substr(0, commaIndex);
-	auto secondCommaIndex = distributionString.find(',', commaIndex + 1);
-
-	BetaDist dist;
-
-	if(type == "normal")
-	{
-		auto mean = std::stod(distributionString.substr(commaIndex + 1, secondCommaIndex - commaIndex));
-		auto stdDev = std::stod(distributionString.substr(secondCommaIndex + 1));
-		auto sampleSize = mean * (1 - mean) / (stdDev * stdDev) - 1;
-
-		dist.alpha = mean * sampleSize;
-		dist.beta = (1 - mean) * sampleSize;
-	}
-	else if(type == "beta")
-	{
-		dist.alpha = std::stod(distributionString.substr(commaIndex + 1, secondCommaIndex - commaIndex));
-		dist.beta = std::stod(distributionString.substr(secondCommaIndex + 1));
-	}
-	else
-	{
-		throw std::runtime_error("unknown distribution");
-	}
-
-	return dist;
-}
-
 void Simulation::UpdateTimeDependentParameters()
 {
 	bool simulation_changed = false;
-	bool population_changed = false;
 
-	for(const auto &parameter : time_dependent_parameters_)
+	if(!simulation_interventions.empty() && simulation_interventions.front().first == parameters_.currTime)
 	{
-		if(parameter.time == parameters_.currTime)
+		for(auto &intervention : simulation_interventions.front().second)
 		{
-			if(parameter.target_population.has_value)
-			{
-				if(parameter.population_modifier)
-				{
-					population_.Apply(parameter.target_population.value, parameter.population_modifier);
-					population_changed = true;
-				}
-			}
-			else
-			{
-				assert(parameter.simulation_modifier);
-				parameter.simulation_modifier();
-				simulation_changed = true;
-			}
+			intervention(*this);
+			simulation_changed = true;
 		}
+		simulation_interventions.pop_front();
 	}
 
 	if(simulation_changed)
 	{
 		ValidateState();
-	}
-
-	if(population_changed)
-	{
-		population_.ValidateState();
 	}
 }
 
@@ -543,285 +533,6 @@ void Simulation::ValidateState()
 		}
 	}
 }
-
-/*
-			// OIHist
-			switch(type_parameter_pair.first)
-			{
-			case TemplateParameter::AgeSexualDebutYears:
-				population_.popWideParams.setAgeSexualDebut(std::stod(parameter.value));
-				break;
-			case TemplateParameter::BirthRate:
-				population_.popWideParams.setBirthRate(std::stod(parameter.value));
-				break;
-			case TemplateParameter::ProportionCircumcised:
-				population_.popWideParams.setProportionCircumcised(std::stod(parameter.value));
-				break;
-			case TemplateParameter::ProportionMale:
-				population_.popWideParams.setProportionMale(std::stod(parameter.value));
-				break;
-			case TemplateParameter::OIHistRank:
-				parameters_.rolloutEligibility.oiHistRank = std::stoi(parameter.value);
-				checkRanks = true;
-				break;
-			case TemplateParameter::OIHistOI0:
-				parameters_.rolloutEligibility.oiHistOIs[0] = parameter.value != "0";
-				break;
-			case TemplateParameter::OIHistOI1:
-				parameters_.rolloutEligibility.oiHistOIs[1] = parameter.value != "0";
-				break;
-			case TemplateParameter::OIHistOI2:
-				parameters_.rolloutEligibility.oiHistOIs[2] = parameter.value != "0";
-				break;
-			case TemplateParameter::OIHistOI3:
-				parameters_.rolloutEligibility.oiHistOIs[3] = parameter.value != "0";
-				break;
-			case TemplateParameter::OIHistOI4:
-				parameters_.rolloutEligibility.oiHistOIs[4] = parameter.value != "0";
-				break;
-			case TemplateParameter::OIHistOI5:
-				parameters_.rolloutEligibility.oiHistOIs[5] = parameter.value != "0";
-				break;
-			case TemplateParameter::OIHistOI6:
-				parameters_.rolloutEligibility.oiHistOIs[6] = parameter.value != "0";
-				break;
-			case TemplateParameter::OIHistOI7:
-				parameters_.rolloutEligibility.oiHistOIs[7] = parameter.value != "0";
-				break;
-			case TemplateParameter::OIHistOI8:
-				parameters_.rolloutEligibility.oiHistOIs[8] = parameter.value != "0";
-				break;
-			case TemplateParameter::OIHistOI9:
-				parameters_.rolloutEligibility.oiHistOIs[9] = parameter.value != "0";
-				break;
-			case TemplateParameter::OIHistOI10:
-				parameters_.rolloutEligibility.oiHistOIs[10] = parameter.value != "0";
-				break;
-			case TemplateParameter::OIHistOI11:
-				parameters_.rolloutEligibility.oiHistOIs[11] = parameter.value != "0";
-				break;
-			case TemplateParameter::OIHistOI12:
-				parameters_.rolloutEligibility.oiHistOIs[12] = parameter.value != "0";
-				break;
-			case TemplateParameter::OIHistOI13:
-				parameters_.rolloutEligibility.oiHistOIs[13] = parameter.value != "0";
-				break;
-			case TemplateParameter::OIHistOI14:
-				parameters_.rolloutEligibility.oiHistOIs[14] = parameter.value != "0";
-				break; 
-			case TemplateParameter::OIHistNumOIToStart:
-				parameters_.rolloutEligibility.oiHistNumToStart = std::stoi(parameter.value);
-				break;
-			case TemplateParameter::CD4Rank:
-				parameters_.rolloutEligibility.cd4Rank = std::stoi(parameter.value);
-				checkRanks = true;
-				break;
-			case TemplateParameter::CD4CD4Upp:
-				parameters_.rolloutEligibility.cd4Bounds[1] = std::stoi(parameter.value);
-				break;
-			case TemplateParameter::CD4CD4Lwr:
-				parameters_.rolloutEligibility.cd4Bounds[0] = std::stoi(parameter.value);
-				break;
-			case TemplateParameter::CD4OIHistRank:
-				parameters_.rolloutEligibility.cd4OiHistRank = std::stoi(parameter.value);
-				checkRanks = true;
-				break;
-			case TemplateParameter::CD4OIHistOI0:
-				parameters_.rolloutEligibility.cd4OiHistOIs[0] = parameter.value != "0";
-				break;
-			case TemplateParameter::CD4OIHistOI1:
-				parameters_.rolloutEligibility.cd4OiHistOIs[1] = parameter.value != "0";
-				break;
-			case TemplateParameter::CD4OIHistOI2:
-				parameters_.rolloutEligibility.cd4OiHistOIs[2] = parameter.value != "0";
-				break;
-			case TemplateParameter::CD4OIHistOI3:
-				parameters_.rolloutEligibility.cd4OiHistOIs[3] = parameter.value != "0";
-				break;
-			case TemplateParameter::CD4OIHistOI4:
-				parameters_.rolloutEligibility.cd4OiHistOIs[4] = parameter.value != "0";
-				break;
-			case TemplateParameter::CD4OIHistOI5:
-				parameters_.rolloutEligibility.cd4OiHistOIs[5] = parameter.value != "0";
-				break;
-			case TemplateParameter::CD4OIHistOI6:
-				parameters_.rolloutEligibility.cd4OiHistOIs[6] = parameter.value != "0";
-				break;
-			case TemplateParameter::CD4OIHistOI7:
-				parameters_.rolloutEligibility.cd4OiHistOIs[7] = parameter.value != "0";
-				break;
-			case TemplateParameter::CD4OIHistOI8:
-				parameters_.rolloutEligibility.cd4OiHistOIs[8] = parameter.value != "0";
-				break;
-			case TemplateParameter::CD4OIHistOI9:
-				parameters_.rolloutEligibility.cd4OiHistOIs[9] = parameter.value != "0";
-				break;
-			case TemplateParameter::CD4OIHistOI10:
-				parameters_.rolloutEligibility.cd4OiHistOIs[10] = parameter.value != "0";
-				break;
-			case TemplateParameter::CD4OIHistOI11:
-				parameters_.rolloutEligibility.cd4OiHistOIs[11] = parameter.value != "0";
-				break;
-			case TemplateParameter::CD4OIHistOI12:
-				parameters_.rolloutEligibility.cd4OiHistOIs[12] = parameter.value != "0";
-				break;
-			case TemplateParameter::CD4OIHistOI13:
-				parameters_.rolloutEligibility.cd4OiHistOIs[13] = parameter.value != "0";
-				break;
-			case TemplateParameter::CD4OIHistOI14:
-				parameters_.rolloutEligibility.cd4OiHistOIs[14] = parameter.value != "0";
-				break;
-			case TemplateParameter::CD4OIHistCD4Upp:
-				parameters_.rolloutEligibility.cd4OiHistCd4Bounds[1] = std::stoi(parameter.value);
-				break;
-			case TemplateParameter::CD4OIHistCD4Lwr:
-				parameters_.rolloutEligibility.cd4OiHistCd4Bounds[0] = std::stoi(parameter.value);
-				break;
-			case TemplateParameter::HVLRank:
-				parameters_.rolloutEligibility.hvlRank = std::stoi(parameter.value);
-				checkRanks = true;
-				break;
-			case TemplateParameter::HVLHVLUpp:
-				parameters_.rolloutEligibility.hvlBounds[1] = std::stoi(parameter.value);
-				break;
-			case TemplateParameter::HVLHVLLwr:
-				parameters_.rolloutEligibility.hvlBounds[0] = std::stoi(parameter.value);
-				break;
-			case TemplateParameter::CD4HVLRank:
-				parameters_.rolloutEligibility.cd4HvlRank = std::stoi(parameter.value);
-				checkRanks = true;
-				break;
-			case TemplateParameter::CD4HVLCD4Upp:
-				parameters_.rolloutEligibility.cd4HvlCd4Bounds[1] = std::stoi(parameter.value);
-				break;
-			case TemplateParameter::CD4HVLCD4Lwr:
-				parameters_.rolloutEligibility.cd4HvlCd4Bounds[0] = std::stoi(parameter.value);
-				break;
-			case TemplateParameter::CD4HVLHVLUpp:
-				parameters_.rolloutEligibility.cd4HvlHvlBounds[1] = std::stoi(parameter.value);
-				break;
-			case TemplateParameter::CD4HVLHVLLwr:
-				parameters_.rolloutEligibility.cd4HvlHvlBounds[0] = std::stoi(parameter.value);
-				break;
-			case TemplateParameter::SteadyChanceCondomUsePerEventHighRisk:
-			{
-				auto beta = ParseBeta(parameter.value);
-				auto modifier = [&](Person *p) { p->SetChanceCondomUsePerEvent(Person::HIGH, SexualPartnership::Type::Steady, beta); };
-				if(parameter.target_population.has_value)
-				{
-					population_.Apply(parameter.target_population.value, modifier);
-				}
-				else
-				{
-					population_.Apply(modifier);
-				}
-				break;
-			}
-			case TemplateParameter::SteadyChanceCondomUsePerEventLowRisk:
-			{
-				auto beta = ParseBeta(parameter.value);
-				auto modifier = [&](Person *p) { p->SetChanceCondomUsePerEvent(Person::LOW, SexualPartnership::Type::Steady, beta); };
-				if(parameter.target_population.has_value)
-				{
-					population_.Apply(parameter.target_population.value, modifier);
-				}
-				else
-				{
-					population_.Apply(modifier);
-				}
-				break;
-			}
-			case TemplateParameter::RegularChanceCondomUsePerEventHighRisk:
-			{
-				auto beta = ParseBeta(parameter.value);
-				auto modifier = [&](Person *p) { p->SetChanceCondomUsePerEvent(Person::HIGH, SexualPartnership::Type::Regular, beta); };
-				if(parameter.target_population.has_value)
-				{
-					population_.Apply(parameter.target_population.value, modifier);
-				}
-				else
-				{
-					population_.Apply(modifier);
-				}
-				break;
-			}
-			case TemplateParameter::RegularChanceCondomUsePerEventLowRisk:
-			{
-				auto beta = ParseBeta(parameter.value);
-				auto modifier = [&](Person *p) { p->SetChanceCondomUsePerEvent(Person::LOW, SexualPartnership::Type::Regular, beta); };
-				if(parameter.target_population.has_value)
-				{
-					population_.Apply(parameter.target_population.value, modifier);
-				}
-				else
-				{
-					population_.Apply(modifier);
-				}
-				break;
-			}
-			case TemplateParameter::CasualChanceCondomUsePerEventHighRisk:
-			{
-				auto beta = ParseBeta(parameter.value);
-				auto modifier = [&](Person *p) { p->SetChanceCondomUsePerEvent(Person::HIGH, SexualPartnership::Type::Casual, beta); };
-				if(parameter.target_population.has_value)
-				{
-					population_.Apply(parameter.target_population.value, modifier);
-				}
-				else
-				{
-					population_.Apply(modifier);
-				}
-				break;
-			}
-			case TemplateParameter::CasualChanceCondomUsePerEventLowRisk:
-			{
-				auto beta = ParseBeta(parameter.value);
-				auto modifier = [&](Person *p) { p->SetChanceCondomUsePerEvent(Person::LOW, SexualPartnership::Type::Casual, beta); };
-				if(parameter.target_population.has_value)
-				{
-					population_.Apply(parameter.target_population.value, modifier);
-				}
-				else
-				{
-					population_.Apply(modifier);
-				}
-				break;
-			}
-			case TemplateParameter::CswChanceCondomUsePerEventHighRisk:
-			{
-				auto beta = ParseBeta(parameter.value);
-				auto modifier = [&](Person *p) { p->SetChanceCondomUsePerEvent(Person::HIGH, SexualPartnership::Type::Csw, beta); };
-				if(parameter.target_population.has_value)
-				{
-					population_.Apply(parameter.target_population.value, modifier);
-				}
-				else
-				{
-					population_.Apply(modifier);
-				}
-				break;
-			}
-			case TemplateParameter::CswChanceCondomUsePerEventLowRisk:
-			{
-				auto beta = ParseBeta(parameter.value);
-				auto modifier = [&](Person *p) { p->SetChanceCondomUsePerEvent(Person::LOW, SexualPartnership::Type::Csw, beta); };
-				if(parameter.target_population.has_value)
-				{
-					population_.Apply(parameter.target_population.value, modifier);
-				}
-				else
-				{
-					population_.Apply(modifier);
-				}
-				break;
-			}
-			default:
-				throw std::runtime_error("not implemented");
-			}
-		}
-	}
-}
-*/
 
 /***
 This function executes one timestep of the simulation

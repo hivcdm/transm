@@ -31,7 +31,7 @@ BucketAge::BucketAge()
 	}
 }
 
-BucketAge::BucketAge(DmgProfile::ProfileID BinID, unsigned int popID, const double _assort[])
+BucketAge::BucketAge(DmgProfile::ProfileID BinID, unsigned int popID, const std::array<double, (int)SexualPartnership::Type::ENDType> &_assort)
 {
 	currentBinID = BinID;
 	populationID = popID;

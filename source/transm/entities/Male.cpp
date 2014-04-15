@@ -115,6 +115,11 @@ double Male::getChanceBecomeCsw() const
 	return populationSpecificParams.getChanceBecomeCSW();
 }
 
+void Male::Circumcise()
+{
+	circumcised = true;
+}
+
 Male::Male(EventParams &_eventParams, int _age, bool _circumcised, unsigned int _populationID, const Male::SubPopParams &params)
 	: Person(_eventParams, _age, _populationID),
 	populationSpecificParams(params)
@@ -273,6 +278,7 @@ double Male::getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartne
 	case ENDSelectingCriteria:
 	    throw std::runtime_error("Invalid Sorting key");
 	}
+	throw std::runtime_error("Invalid Sorting key");
 }
 
 

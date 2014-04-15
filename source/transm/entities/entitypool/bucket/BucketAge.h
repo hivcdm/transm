@@ -20,7 +20,7 @@ class BucketAge
 public:
 	//Constructor
 	BucketAge();
-	BucketAge(DmgProfile::ProfileID BinID, unsigned int popID, const double _assort[]);
+	BucketAge(DmgProfile::ProfileID BinID, unsigned int popID, const std::array<double, (int)SexualPartnership::Type::ENDType> &_assort);
 
 	//Destructor
 	~BucketAge();
@@ -180,7 +180,7 @@ private:
 	FullVector FVProbDist_random;
 
 	//Assortativeness parameter... default to 0 (all chosen from FVProbDist_random)
-    double assort[(int)SexualPartnership::Type::ENDType];
+	std::array<double, (int)SexualPartnership::Type::ENDType> assort;
 
 	bool UpdateNeeded;
 	DmgProfile::ProfileID currentBinID;

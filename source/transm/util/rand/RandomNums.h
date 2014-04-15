@@ -17,6 +17,25 @@ struct NormalDist
 
 struct LogNormalDist
 {
+	static LogNormalDist FromNormal(NormalDist dist)
+	{
+		LogNormalDist result;
+
+		if(dist.mean <= 0)
+		{
+			result.mu = 0;
+			result.sigma = 0;
+			result.isZeroDistrib = true;
+		}
+		else
+		{
+			result.mu = log(dist.mean) - 0.5 * log(1 + (dist.stddev * dist.stddev) / (dist.mean * dist.mean));
+			result.sigma = sqrt(log(1 + (dist.stddev * dist.stddev) / (dist.mean * dist.mean)));
+		}
+
+		return result;
+	}
+
 	double mu;
 	double sigma;
 	bool isZeroDistrib = false;
@@ -25,6 +44,27 @@ struct LogNormalDist
 
 struct ShiftedLogNormalDist
 {
+	static ShiftedLogNormalDist FromShiftedNormal(NormalDist dist, double shift)
+	{
+		ShiftedLogNormalDist result;
+
+		if(dist.mean <= 0)
+		{
+			result.mu = 0;
+			result.sigma = 0;
+			result.shift = 0;
+			result.isZeroDistrib = true;
+		}
+		else
+		{
+			result.shift = shift;
+			result.mu = log(dist.mean - shift) - 0.5 * log(1 + (dist.stddev * dist.stddev) / ((dist.mean - shift) * (dist.mean - shift)));
+			result.sigma = sqrt(log(1 + (dist.stddev * dist.stddev) / ((dist.mean - shift) * (dist.mean - shift))));
+		}
+
+		return result;
+	}
+
 	double mu;
 	double sigma;
 	double shift;
@@ -34,6 +74,17 @@ struct ShiftedLogNormalDist
 
 struct BetaDist
 {
+	static BetaDist FromNormal(NormalDist dist)
+	{
+		BetaDist result;
+
+		double sampleSize = dist.mean * (1 - dist.mean) / (dist.stddev * dist.stddev) - 1;
+		result.alpha = dist.mean * sampleSize;
+		result.beta = (1 - dist.mean) * sampleSize;
+
+		return result;
+	}
+
 	double alpha;
 	double beta;
 };

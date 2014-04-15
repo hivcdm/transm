@@ -34,7 +34,9 @@ public :
 		double weight;
 	};
 
-	SexualBehaviorParams();
+	SexualBehaviorParams(SexualPartnership::Type type) : partnershipType(type) { }
+
+	void AddAvailableBucket(const AvailableBucket &bucket) { availableBuckets.push_back(bucket); }
 
 	void SetHighRiskMultiplier(double multiplier);
 	void ApplyCoefficientVariation(double coefficient);

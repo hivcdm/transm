@@ -42,7 +42,7 @@ public:
 	**/
 	const string *getLabel();
 
-	virtual void Apply(const PopulationTarget &target, std::function<void(Person*)> modifier);
+	virtual void Apply(const PopulationTarget &target, RandomNums &rng, std::function<void(Person*)> modifier, double probability);
 
 	//------------< End Implemented Methods >----------------//
 
