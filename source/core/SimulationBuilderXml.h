@@ -42,6 +42,12 @@ private:
 	}
 
 	template<typename T>
+	static T Attr(const pugi::xml_node &node, const std::string &name)
+	{
+		return from_string<T>(node.attribute(name.c_str()).as_string());
+	}
+
+	template<typename T>
 	T GetTemplate(const pugi::xml_node &node, std::function<void(Simulation &, T)> callback)
 	{
 		auto extracted = ExtractParameter(node);

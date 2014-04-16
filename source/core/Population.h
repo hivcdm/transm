@@ -60,6 +60,8 @@ public:
 	 */
 	void initIncidentInfectionsByAge();
 
+	int UpdateTreatmentSlots(double rolloutProportion);
+
 	/*
 	 * Applies the incident prevalence inputs to the current population (this may be delayed based on delay parameter)
 	 */

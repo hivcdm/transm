@@ -140,10 +140,11 @@ public :
 		double thresholdPrevMult;
 	};
 
-	inline EventParams()
+	EventParams()
 	{
 		currTime = 0;
-		genGraphViz = false;
+		enableDynamicTreatmentScaling = false;
+		dynamicFeedbackPeriod = 12;
 		useRollout = false;
 		untreatedContext = nullptr;
 		treatedContext = nullptr;
@@ -230,35 +231,6 @@ public :
 
 	std::map<int, double> targetYearlyRolloutProportions;
 
-	double interpolateMonthlyRolloutProportion()
-	{
-		if(currTime < monthOf1990)
-		{
-			return 0;
-		}
-
-		int relative_year = 1990 + (currTime - monthOf1990) / 12;
-
-		if(relative_year < targetYearlyRolloutProportions.begin()->first)
-		{
-			return 0;
-		}
-		else
-		{
-			if(relative_year < (--targetYearlyRolloutProportions.end())->first)
-			{
-				double currentYearTargetProportion = targetYearlyRolloutProportions.at(relative_year);
-				double nextYearTargetProportion = targetYearlyRolloutProportions.at(relative_year + 1);
-				double x = ((currTime - monthOf1990) % 12) / 12.0;
-				return currentYearTargetProportion + (nextYearTargetProportion - currentYearTargetProportion) * x;
-			}
-			else
-			{
-				return (--targetYearlyRolloutProportions.end())->second;
-			}
-		}
-	}
-
 	inline void displayOut(const std::string &message)
 	{
 		messageCallback(message);
@@ -268,7 +240,8 @@ public :
 	DebugLevel debugLevel;		//determines how much output is printed to the traces
 	RandomNumberGenerator randomNums;		//random number generator that is used throughout the simulation
 
-	bool genGraphViz;			//will generate GraphViz output files if true
+	bool enableDynamicTreatmentScaling;
+	int dynamicFeedbackPeriod;
 
 	//closes all the trace files
 	~EventParams()

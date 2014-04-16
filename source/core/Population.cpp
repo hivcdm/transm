@@ -1349,28 +1349,67 @@ void Population::startTreatment(Person *person, SimContext *treatedContext)
 	person->setSimContext(treatedContext);
 }
 
-/*
-int numAccessingTreatment = rolloutTreatedPool.size();
-int month = (parameters_.currTime - parameters_.monthOf1990) % 12;
-if(month == 0)
+double InterpolateProportion(const std::map<int, double> &yearly_proportions, int month, int monthOf1990)
 {
-int numTreated = std::count_if(rolloutTreatedPool.begin(), rolloutTreatedPool.end(), [](Person *p) { return p->isOnArt(); });
-treatmentCorrectionFactor = numAccessingTreatment / static_cast<double>(numTreated);
+	if(month >= monthOf1990)
+	{
+		int relative_year = 1990 + (month - monthOf1990) / 12;
+
+		if(relative_year >= yearly_proportions.begin()->first)
+		{
+			auto last = *(--yearly_proportions.end());
+			if(relative_year < last.first)
+			{
+				double currentYearTargetProportion = yearly_proportions.at(relative_year);
+				double nextYearTargetProportion = yearly_proportions.at(relative_year + 1);
+				double x = ((month - monthOf1990) % 12) / 12.0;
+				return currentYearTargetProportion + (nextYearTargetProportion - currentYearTargetProportion) * x;
+			}
+			else
+			{
+				return last.second;
+			}
+		}
+	}
+
+	return 0;
 }
-double currentRolloutProportion = parameters_.interpolateMonthlyRolloutProportion();
-int targetTreatmentSlots = static_cast<int>(getSize() * currentRolloutProportion);
-int adjustedTreatmentSlots = targetTreatmentSlots * treatmentCorrectionFactor;
-int newSlots = totalSlots - numTreated;
-*/
+
+int Population::UpdateTreatmentSlots(double rolloutProportion)
+{
+	int numAccessingTreatment = (int)rolloutTreatedPool.size();
+	double targetTreatmentSlots = getSize() * rolloutProportion;
+
+	if(parameters_.enableDynamicTreatmentScaling)
+	{
+		int position = (parameters_.currTime - parameters_.monthOf1990) % parameters_.dynamicFeedbackPeriod;
+
+		if(position == 0)
+		{
+			treatmentCorrectionFactor = 1;
+			auto numTreated = std::count_if(rolloutTreatedPool.begin(), rolloutTreatedPool.end(), [](Person *p) { return p->isOnArt(); });
+
+			if(numTreated > 0)
+			{
+				treatmentCorrectionFactor = numAccessingTreatment / static_cast<double>(numTreated);
+			}
+		}
+
+		return static_cast<int>(targetTreatmentSlots * treatmentCorrectionFactor) - numAccessingTreatment;
+	}
+	else
+	{
+		return static_cast<int>(getSize() * rolloutProportion) - numAccessingTreatment;
+	}
+}
 
 void Population::applyARTRollout(EventParams &parameters_)
 {
-	int numTreated = (int)rolloutTreatedPool.size();
-	double currentRolloutProportion = parameters_.interpolateMonthlyRolloutProportion();
-	int totalSlots = static_cast<int>(getSize() * currentRolloutProportion);
-	int newSlots = totalSlots - numTreated;
+	double rolloutProportion = InterpolateProportion(parameters_.targetYearlyRolloutProportions, 
+		parameters_.currTime, parameters_.monthOf1990);
+	int newSlots = UpdateTreatmentSlots(rolloutProportion);
 
-	if(totalSlots > 0)
+	if(rolloutProportion > 0)
 	{
 		determineRankings(parameters_.rolloutEligibility);
 	}

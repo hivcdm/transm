@@ -281,10 +281,8 @@
           <chanceBecomeSexWorker>0</chanceBecomeSexWorker>
           <partnerAcqMultWithSteadyHighRisk>1</partnerAcqMultWithSteadyHighRisk>
           <partnerAcqMultWithSteadyLowRisk>0.62297004456</partnerAcqMultWithSteadyLowRisk>
-          <UseHighRiskMultiplier>1</UseHighRiskMultiplier>
-          <HighRiskAcqRateMultiplier>6.25619845538</HighRiskAcqRateMultiplier>
-          <UseCSWHighRiskMultiplier>1</UseCSWHighRiskMultiplier>
-          <CSWHighRiskAcqRateMultiplier>89.5470142866</CSWHighRiskAcqRateMultiplier>
+          <HighRiskAcqRateMultiplier enabled="true">6.25619845538</HighRiskAcqRateMultiplier>
+          <CSWHighRiskAcqRateMultiplier enabled="true">89.5470142866</CSWHighRiskAcqRateMultiplier>
           <proportionHighRiskCSW>0.260037092337</proportionHighRiskCSW>
           <proportionHighRiskNonCSW>0.260037092337</proportionHighRiskNonCSW>
           <ageDiscounting>

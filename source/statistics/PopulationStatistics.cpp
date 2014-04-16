@@ -31,7 +31,7 @@ PopulationStatistics::PopulationStatistics()
 	lifeStats = new StatsRecord<PopulationStatistics::LifeStats, BaseEnumCls::nullptr_ENUM>(enumClass);
 	survivalStats = new SurvivalStats();
 	//Set up the timeToRecord vector... by default, record at every 1/4 of the maxTime
-	timeToRecord[0] = 1;
+	timesToRecord.push_back(1);
 	selectedLEStats = nullptr;
 	selectedPartAcqStats = nullptr;
 
@@ -789,11 +789,11 @@ long PopulationStatistics::getNextTimeToRecord(long currTime)
 {
 	int nextTime = std::numeric_limits<int>().max();
 
-	for(int i = 0; i < NUM_TIMES_TO_RECORD; i++)
+	for(auto record_time : timesToRecord)
 	{
-		if(timeToRecord[i] < nextTime && timeToRecord[i] >= currTime)
+		if(record_time < nextTime && record_time >= currTime)
 		{
-			nextTime = timeToRecord[i];
+			nextTime = record_time;
 		}
 	}
 
@@ -802,22 +802,14 @@ long PopulationStatistics::getNextTimeToRecord(long currTime)
 
 bool PopulationStatistics::isTimeToRecord(long currTime)
 {
-	for(int i = 0; i < NUM_TIMES_TO_RECORD; i++)
-	{
-		if(timeToRecord[i] == currTime)
-		{
-			return true;
-		}
-	}
-
-	return false;
+	return std::find(timesToRecord.begin(), timesToRecord.end(), currTime) != timesToRecord.end();
 }
 
 bool PopulationStatistics::isTimeToRecordLE(long currTime)
 {
-	for(int i = 0; i < NUM_TIMES_TO_RECORD_LE; i++)
+	for(auto le_time : timesToRecordLE)
 	{
-		if(timeToRecordLE[i] == (currTime - 1) / 12)
+		if(le_time == currTime)
 		{
 			return true;
 		}
@@ -828,9 +820,9 @@ bool PopulationStatistics::isTimeToRecordLE(long currTime)
 
 bool PopulationStatistics::isTimeToRecordPartAcq(long currTime)
 {
-	for(int i = 0; i < NUM_TIMES_TO_RECORD_PARTACQ; i++)
+	for(auto part_acq_time : timesToRecordPartAcq)
 	{
-		if(timeToRecordPartAcq[i] == currTime)
+		if(part_acq_time == currTime)
 		{
 			return true;
 		}
@@ -841,9 +833,9 @@ bool PopulationStatistics::isTimeToRecordPartAcq(long currTime)
 
 bool PopulationStatistics::isFirstMonthToRecordLE(long currTime)
 {
-	for(int i = 0; i < NUM_TIMES_TO_RECORD_LE; i++)
+	for(auto le_time : timesToRecordLE)
 	{
-		if(timeToRecordLE[i] * 12 == (currTime - 1))
+		if(le_time == currTime)
 		{
 			return true;
 		}
@@ -854,9 +846,9 @@ bool PopulationStatistics::isFirstMonthToRecordLE(long currTime)
 
 bool PopulationStatistics::isTimeToPrintLE(long currTime)
 {
-	for(int i = 0; i < NUM_TIMES_TO_RECORD_LE; i++)
+	for(auto le_time : timesToRecordLE)
 	{
-		if((timeToRecordLE[i] * 12 + 11) == (currTime - 1))
+		if((le_time + 11) == currTime)
 		{
 			return true;
 		}
@@ -875,9 +867,9 @@ void PopulationStatistics::enableShiftedOutcomes(int monthOf1990)
 void PopulationStatistics::recordPrevalenceAndIncidence(long currTime, double _prevalence, double _SAprevalence, double _incidence,
         int saPopSize, int monthlyIncident, int monthlyPrevalent)
 {
-	for(int i = 0; i < NUM_TIMES_TO_RECORD; i++)
+	for(auto record_time : timesToRecord)
 	{
-		if(timeToRecord[i] == currTime)
+		if(record_time == currTime)
 		{
 			SingleTimeStats *statistics = new SingleTimeStats();
 			statistics->timeOfStats = currTime;

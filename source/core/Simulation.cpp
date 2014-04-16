@@ -158,17 +158,6 @@ void Simulation::FirstStep()
 	//No longer creating a CEPAC trace file, but we still need to change over to the results folder before creating any other output files
 	CepacUtil::changeDirectoryToResults();
 
-	//initialize the trace files for population and events and infections and costs
-	for(int i = 0; i < Constants::NUMBER_OF_TRACE_FILES; i++)
-	{
-		if(parameters_.outputTrace[i])
-		{
-			std::string fileName = parameters_.simName;
-			fileName.append("-" + parameters_.traceExtensions[i]);
-			parameters_.traceStreams[i].open(fileName.c_str(), ios::out);
-		}
-	}
-
 	if(parameters_.calibrationInputs.useCalibration)
 	{
 		for(int i = 0; i < Constants::NUMBER_TIME_POINTS_SAVE_STATE; i++)

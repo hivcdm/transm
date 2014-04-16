@@ -186,6 +186,8 @@ public:
 	void SetChanceBecomeSexWorker(DemographicProfile::Gender gender, double chance) { population_.popWideParams.SetChanceBecomeCsw(gender, chance); }
 	void SetPartnerAcquisitionSteadyMultiplier(Person::RiskLevel risk, double multiplier) { population_.popWideParams.SetPartnerAcquisitionSteadyMultiplier(risk, multiplier); }
 
+	void AddLifeExpectancyRecordTime(int time) { population_.popStats.addLifeExpectancyRecordTime(time); }
+
 private:
 	friend class SimulationBuilder;
 

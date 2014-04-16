@@ -112,17 +112,12 @@ public:
 
 	};
 private:
-	//TODO: Have structure for prevalence and incidence at 5 time points (maybe by default these are 1, 0.2*maxTime, 0.4*maxTime, etc?)
-	//These times have to be defined!
-	static const int NUM_TIMES_TO_RECORD = 5;
-	long timeToRecord[NUM_TIMES_TO_RECORD];
+	std::vector<int> timesToRecord;
 
-	static const int NUM_TIMES_TO_RECORD_LE = 5;
-	long timeToRecordLE[NUM_TIMES_TO_RECORD_LE];
+	std::vector<int> timesToRecordLE;
 	double medianLECI;
 
-	static const int NUM_TIMES_TO_RECORD_PARTACQ = 5;
-	long timeToRecordPartAcq[NUM_TIMES_TO_RECORD_PARTACQ];
+	std::vector<int> timesToRecordPartAcq;
 	bool printHeaderPartAcq;
 
 	std::vector<SingleTimeStats *> selectedSummaryStats;
@@ -206,6 +201,8 @@ public:
 	void recordTreatmentAccess(Person *person);
 	void recordTreatmentEligiblity(Person *person);
 	void recordTreatment(Person *person);
+
+	void addLifeExpectancyRecordTime(int time) { timesToRecordLE.push_back(time); }
 
 	std::vector<PopulationStatistics::SingleTimeStats *> *getSelectedSummaryStats();
 };
