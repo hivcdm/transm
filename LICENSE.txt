@@ -1,10 +1,8 @@
 Cepac Dynamic Model Licensing Details
 =====================================
 
-All rights reserved.
-
-
-
+Copyright (C) 2014 Harvard School of Public Health
+All Rights Reserved.
 
 
 Third party libraries

@@ -1,0 +1,88 @@
+{
+	"simulation" : {
+		"update-order" : [
+			"time-dependent-parameters",
+			"parse-cepac-death-rate",
+			"life-expectancy",
+			"max-age",
+			"cepac",
+			"roll-non-aids-death",
+			"sexual-debut",
+			"quit-sex-work",
+			"births",
+			"partnerships",
+			"initial-prevalence"
+		]
+	},
+	"populations" : {
+		"South Africa" : {
+			"initial-size" : 1000,
+			"proportion-male" : 0.5,
+			"prevalence-delay" : 600,
+			"age-groups" : {
+				"1" : {
+					"lower-bound" : 0,
+					"upper-bound" : 16
+				},
+				"2" : {
+					"lower-bound" : 0,
+					"upper-bound" : 16
+				},
+				"3" : {
+					"lower-bound" : 0,
+					"upper-bound" : 16
+				},
+				"4" : {
+					"lower-bound" : 0,
+					"upper-bound" : 16
+				},
+				"5" : {
+					"lower-bound" : 0,
+					"upper-bound" : 16
+				},
+				"6" : {
+					"lower-bound" : 0,
+					"upper-bound" : 16
+				},
+				"7" : {
+					"lower-bound" : 0,
+					"upper-bound" : 16
+				},
+				"8" : {
+					"lower-bound" : 0,
+					"upper-bound" : 16
+				},
+				"9" : {
+					"lower-bound" : 50,
+					"upper-bound" : 100
+				}
+			},
+			"age-distributions" : {
+				"age-group" : 1,
+				"male-proportion" : 0.04,
+				"female-proportion" : 
+			},
+			"behaviors" : {
+				"male" : {
+					"high-risk" : {
+						"chance-condom-use" : 0.1
+					},
+					"low-risk" : {
+						"chance-condom-use" : 0.1
+					}
+				}
+			},
+			"time-dependent-parameters" : [
+				{
+					"time" : 100,
+					"key" : "birthRate",
+					"value" : 0.5
+				}
+			],
+		}
+	},
+	"costs" : {
+		"condom" : 0.5,
+		"circumcision" : 500
+	}
+}
