@@ -3,6 +3,16 @@
 #include "SimulationBuilderXml.h"
 #include "util/enum_iterator.h"
 
+#ifdef __APPLE__
+namespace std {
+template <typename T, typename... Args>
+auto make_unique(Args&&... args) -> std::unique_ptr<T>
+{
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+}
+#endif
+
 namespace {
 std::string to_string(SexualPartnership::Type type)
 {
@@ -574,7 +584,7 @@ void SimulationBuilderXml::ReadSimulationParameters()
 				assert(file_number < Constants::NUMBER_OF_ROLLOUT_FILES);
 
 				//Set the CEPAC simContext from the specified CEPAC .in file
-				auto contextToAdd = make_unique<SimContext>(file_name.substr(0, file_name.find(CepacUtil::FILE_EXTENSION_FOR_INPUT)));
+				auto contextToAdd = std::make_unique<SimContext>(file_name.substr(0, file_name.find(CepacUtil::FILE_EXTENSION_FOR_INPUT)));
 				parameters.rolloutSimContexts.push_back(new EventParams::RolloutContext(time, std::move(contextToAdd), target_population));
 				//Don't trace any CEPAC patients -- the output doesn't make any sense and it just gets overly large for no reason
 				//TODO: The reason is because the CEPAC Patient number doesn't get updated until the patient dies: this should be changed!
@@ -1047,7 +1057,7 @@ void SimulationBuilderXml::ReadPopulationParameters()
 
 	//normalize %population values for each age bucket
 	std::array<double, DemographicProfile::ENDGender> totalPopulationproportionages;
-	totalPopulationproportionages.assign(0);
+	totalPopulationproportionages.fill(0);
 
 	//get the total of proportionage values of AgeBucketPrevalencInfo.proportionOfPopulation
 	for(int i = 0; i < DemographicProfile::ENDGender; i++)

@@ -5,7 +5,7 @@
 #include "../../util/Utility.h"
 #include "../../util/rand/RandomNumberGenerator.h"
 
-void BucketSexualMixing::Apply(const PopulationTarget &target, std::function<void(Person*)> modifier)
+void BucketSexualMixing::Apply(const PopulationTarget &target, RandomNumberGenerator &/*rng*/, std::function<void(Person*)> modifier, double /*proportion*/)
 {
 	for(auto &a : *personsByAge)
 	{

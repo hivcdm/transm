@@ -14,6 +14,11 @@ solution "transm"
         libdirs { "$(boost_prefix)/lib32-msvc-12.0" }
     configuration { "vs*", "x64" }
         libdirs { "$(boost_prefix)/lib64-msvc-12.0" }
+    configuration "not windows"
+        links {
+	    "boost_filesystem",
+	    "boost_system"
+	}
     configuration "Debug"
         flags { "Symbols" }
 	optimize "Off"

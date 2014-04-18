@@ -67,6 +67,7 @@ public:
 		{
 		case DemographicProfile::MALE: defaultMaleParams.setTransmitPerEventCoeff(stratum, coefficient);
 		case DemographicProfile::FEMALE: defaultFemaleParams.setTransmitPerEventCoeff(stratum, coefficient);
+		default: throw std::runtime_error("bad gender");
 		}
 	}
 
@@ -94,6 +95,7 @@ public:
 		{
 		case DemographicProfile::MALE: defaultMaleParams.setChanceBecomeCsw(chance);
 		case DemographicProfile::FEMALE: defaultFemaleParams.setChanceBecomeCsw(chance);
+		default: throw std::runtime_error("bad gender");
 		}
 	}
 
@@ -103,6 +105,7 @@ public:
 		{
 		case DemographicProfile::MALE: defaultMaleParams.setProportionHighRisk(employment, proportion);
 		case DemographicProfile::FEMALE: defaultFemaleParams.setProportionHighRisk(employment, proportion);
+		default: throw std::runtime_error("bad gender");
 		}
 	}
 

@@ -1,69 +1,65 @@
-<simulation>
-  <inputVersion>3.4</inputVersion>
+<simulation version="3.4">
   <debugLevel>0</debugLevel>
-  <timeLimitMth>1200</timeLimitMth>
+  <duration>1200</duration>
   <fixedSeed>0</fixedSeed>
   <monthOf1990>690</monthOf1990>
   <traceFiles>
-    <population enabled="true" toss="true">
+    <population enabled="true" tossIfCalibFail="true">
       <extension>Population.xls</extension>
     </population>
-    <infection enabled="true" toss="true">
+    <infection enabled="true" tossIfCalibFail="true">
       <extension>Infections.xls</extension>
     </infection>
-    <partnership enabled="true" toss="true">
+    <partnership enabled="true" tossIfCalibFail="true">
       <extension>Partnership.xls</extension>
     </partnership>
-    <survival enabled="true" toss="true">
+    <survival enabled="true" tossIfCalibFail="true">
       <extension>Survival.xls</extension>
     </survival>
-    <costEffectiveness enabled="true" toss="true">
+    <costEffectiveness enabled="true" tossIfCalibFail="true">
       <extension>CE.xls</extension>
+      <condomCost>0.5</condomCost>
+      <circumcisionCost>500</circumcisionCost>
     </costEffectiveness>
-    <clinical enabled="true" toss="true">
+    <clinical enabled="true" tossIfCalibFail="true">
       <extension>Clinical.xls</extension>
     </clinical>
-    <events enabled="true" toss="true">
+    <events enabled="true" tossIfCalibFail="true">
       <extension>Events.xls</extension>
     </events>
-    <health enabled="true" toss="true">
+    <health enabled="true" tossIfCalibFail="true">
       <extension>Health.xls</extension>
     </health>
-    <singleperson enabled="true" toss="true">
-      <extension>Singleperson.xls</extension>
+    <singlePerson enabled="true" tossIfCalibFail="true">
+      <extension>SinglePerson.xls</extension>
       <numberToTracePerAgeRange>15</numberToTracePerAgeRange>
       <numberNewbornsToTrace>50</numberNewbornsToTrace>
       <monthTraceNewborns>600</monthTraceNewborns>
       <tracePrevalentCases>0</tracePrevalentCases>
-    </singleperson>
-    <le enabled="true" toss="true">
+    </singlePerson>
+    <lifeExpectancy enabled="true" tossIfCalibFail="true">
       <extension>LE.xls</extension>
-    </le>
-    <partacq enabled="true" toss="true">
+      <medianConfidenceInterval>0.95</medianConfidenceInterval>
+      <time>660</time>
+      <time>780</time>
+      <time>900</time>
+      <time>1020</time>
+      <time>1140</time>
+    </lifeExpectancy>
+    <partnerAcquisition enabled="true" tossIfCalibFail="true">
       <extension>PartAcq.xls</extension>
-    </partacq>
-    <calibStats enabled="true" toss="true">
+      <partnerAcqOutput />
+    </partnerAcquisition>
+    <calibrationStatistics enabled="true" tossIfCalibFail="true">
       <extension>CalibStats.xls</extension>
-    </calibStats>
-    <artRollout enabled="true" toss="true">
+    </calibrationStatistics>
+    <artRollout enabled="true" tossIfCalibFail="true">
       <extension>ARTRollout.xls</extension>
     </artRollout>
-    <shiftedOutcomes enabled="true" toss="true">
+    <shiftedOutcomes enabled="true" tossIfCalibFail="true">
       <extension>ShiftedOutcomes.xls</extension>
     </shiftedOutcomes>
   </traceFiles>
-  <costs>
-    <condomCost>0.5</condomCost>
-    <circumcisionCost>500</circumcisionCost>
-  </costs>
-  <lifeExpectancyOutput medianCI="0.95">
-    <time>660</time>
-    <time>780</time>
-    <time>900</time>
-    <time>1020</time>
-    <time>1140</time>
-  </lifeExpectancyOutput>
-  <partnerAcqOutput />
   <concurrencyDefinition>
     <definition id="0">
       <minNeeded>2</minNeeded>
@@ -131,7 +127,7 @@
     </definition>
   </concurrencyDefinition>
   <calibration enabled="false">
-    <monthOfCalibration>600</monthOfCalibration>
+    <time>600</time>
     <partnershipOutcomes>
       <steadyPrev>
         <popOfInterest>0</popOfInterest>
@@ -169,122 +165,121 @@
       </femaleNumActsLRtoHR>
     </partnershipOutcomes>
   </calibration>
-  <population>
-    <id>South Africa</id>
+  <population id="South Africa">
+    <birthRate>0.00222</birthRate>
+    <proportionMale>0.5</proportionMale>
+    <proportionCircumcised>0.35</proportionCircumcised>
+    <ageSexualDebutYrs>17</ageSexualDebutYrs>
     <initialState>
       <size>1000</size>
       <delay>600</delay>
-      <CSWEndAgeMale>50</CSWEndAgeMale>
-      <CSWEndAgeFemale>70</CSWEndAgeFemale>
-      <chanceBeingCSWMale>0</chanceBeingCSWMale>
-      <chanceBeingCSWFemale>0.0128828191979</chanceBeingCSWFemale>
+      <cswEndAgeMale>50</cswEndAgeMale>
+      <cswEndAgeFemale>70</cswEndAgeFemale>
+      <chanceBeingCswMale>0</chanceBeingCswMale>
+      <chanceBeingCswFemale>0.0128828191979</chanceBeingCswFemale>
       <ageDistributionYrs>
         <range lower="0" upper="16">
           <distribMale>0.429</distribMale>
           <distribFemale>0.407</distribFemale>
-          <numInfectedMaleCSW>0</numInfectedMaleCSW>
+          <numInfectedMaleCsw>0</numInfectedMaleCsw>
           <numInfectedMaleHighRisk>0</numInfectedMaleHighRisk>
           <numInfectedMaleLowRisk>0</numInfectedMaleLowRisk>
-          <numInfectedFemaleCSW>0</numInfectedFemaleCSW>
+          <numInfectedFemaleCsw>0</numInfectedFemaleCsw>
           <numInfectedFemaleHighRisk>0</numInfectedFemaleHighRisk>
           <numInfectedFemaleLowRisk>0</numInfectedFemaleLowRisk>
         </range>
         <range lower="17" upper="19">
           <distribMale>0.062</distribMale>
           <distribFemale>0.059</distribFemale>
-          <numInfectedMaleCSW>0</numInfectedMaleCSW>
+          <numInfectedMaleCsw>0</numInfectedMaleCsw>
           <numInfectedMaleHighRisk>1</numInfectedMaleHighRisk>
           <numInfectedMaleLowRisk>0</numInfectedMaleLowRisk>
-          <numInfectedFemaleCSW>1</numInfectedFemaleCSW>
+          <numInfectedFemaleCsw>1</numInfectedFemaleCsw>
           <numInfectedFemaleHighRisk>1</numInfectedFemaleHighRisk>
           <numInfectedFemaleLowRisk>0</numInfectedFemaleLowRisk>
         </range>
         <range lower="20" upper="24">
           <distribMale>0.091</distribMale>
           <distribFemale>0.089</distribFemale>
-          <numInfectedMaleCSW>0</numInfectedMaleCSW>
+          <numInfectedMaleCsw>0</numInfectedMaleCsw>
           <numInfectedMaleHighRisk>1</numInfectedMaleHighRisk>
           <numInfectedMaleLowRisk>0</numInfectedMaleLowRisk>
-          <numInfectedFemaleCSW>1</numInfectedFemaleCSW>
+          <numInfectedFemaleCsw>1</numInfectedFemaleCsw>
           <numInfectedFemaleHighRisk>1</numInfectedFemaleHighRisk>
           <numInfectedFemaleLowRisk>0</numInfectedFemaleLowRisk>
         </range>
         <range lower="25" upper="29">
           <distribMale>0.082</distribMale>
           <distribFemale>0.082</distribFemale>
-          <numInfectedMaleCSW>0</numInfectedMaleCSW>
+          <numInfectedMaleCsw>0</numInfectedMaleCsw>
           <numInfectedMaleHighRisk>0</numInfectedMaleHighRisk>
           <numInfectedMaleLowRisk>0</numInfectedMaleLowRisk>
-          <numInfectedFemaleCSW>0</numInfectedFemaleCSW>
+          <numInfectedFemaleCsw>0</numInfectedFemaleCsw>
           <numInfectedFemaleHighRisk>0</numInfectedFemaleHighRisk>
           <numInfectedFemaleLowRisk>0</numInfectedFemaleLowRisk>
         </range>
         <range lower="30" upper="34">
           <distribMale>0.073</distribMale>
           <distribFemale>0.074</distribFemale>
-          <numInfectedMaleCSW>0</numInfectedMaleCSW>
+          <numInfectedMaleCsw>0</numInfectedMaleCsw>
           <numInfectedMaleHighRisk>0</numInfectedMaleHighRisk>
           <numInfectedMaleLowRisk>0</numInfectedMaleLowRisk>
-          <numInfectedFemaleCSW>0</numInfectedFemaleCSW>
+          <numInfectedFemaleCsw>0</numInfectedFemaleCsw>
           <numInfectedFemaleHighRisk>0</numInfectedFemaleHighRisk>
           <numInfectedFemaleLowRisk>0</numInfectedFemaleLowRisk>
         </range>
         <range lower="35" upper="39">
           <distribMale>0.061</distribMale>
           <distribFemale>0.063</distribFemale>
-          <numInfectedMaleCSW>0</numInfectedMaleCSW>
+          <numInfectedMaleCsw>0</numInfectedMaleCsw>
           <numInfectedMaleHighRisk>0</numInfectedMaleHighRisk>
           <numInfectedMaleLowRisk>0</numInfectedMaleLowRisk>
-          <numInfectedFemaleCSW>0</numInfectedFemaleCSW>
+          <numInfectedFemaleCsw>0</numInfectedFemaleCsw>
           <numInfectedFemaleHighRisk>0</numInfectedFemaleHighRisk>
           <numInfectedFemaleLowRisk>0</numInfectedFemaleLowRisk>
         </range>
         <range lower="40" upper="44">
           <distribMale>0.05</distribMale>
           <distribFemale>0.052</distribFemale>
-          <numInfectedMaleCSW>0</numInfectedMaleCSW>
+          <numInfectedMaleCsw>0</numInfectedMaleCsw>
           <numInfectedMaleHighRisk>0</numInfectedMaleHighRisk>
           <numInfectedMaleLowRisk>0</numInfectedMaleLowRisk>
-          <numInfectedFemaleCSW>0</numInfectedFemaleCSW>
+          <numInfectedFemaleCsw>0</numInfectedFemaleCsw>
           <numInfectedFemaleHighRisk>0</numInfectedFemaleHighRisk>
           <numInfectedFemaleLowRisk>0</numInfectedFemaleLowRisk>
         </range>
         <range lower="45" upper="49">
           <distribMale>0.04</distribMale>
           <distribFemale>0.042</distribFemale>
-          <numInfectedMaleCSW>0</numInfectedMaleCSW>
+          <numInfectedMaleCsw>0</numInfectedMaleCsw>
           <numInfectedMaleHighRisk>0</numInfectedMaleHighRisk>
           <numInfectedMaleLowRisk>0</numInfectedMaleLowRisk>
-          <numInfectedFemaleCSW>0</numInfectedFemaleCSW>
+          <numInfectedFemaleCsw>0</numInfectedFemaleCsw>
           <numInfectedFemaleHighRisk>0</numInfectedFemaleHighRisk>
           <numInfectedFemaleLowRisk>0</numInfectedFemaleLowRisk>
         </range>
         <range lower="50" upper="100">
           <distribMale>0.112</distribMale>
           <distribFemale>0.132</distribFemale>
-          <numInfectedMaleCSW>0</numInfectedMaleCSW>
+          <numInfectedMaleCsw>0</numInfectedMaleCsw>
           <numInfectedMaleHighRisk>0</numInfectedMaleHighRisk>
           <numInfectedMaleLowRisk>0</numInfectedMaleLowRisk>
-          <numInfectedFemaleCSW>0</numInfectedFemaleCSW>
+          <numInfectedFemaleCsw>0</numInfectedFemaleCsw>
           <numInfectedFemaleHighRisk>0</numInfectedFemaleHighRisk>
           <numInfectedFemaleLowRisk>0</numInfectedFemaleLowRisk>
         </range>
       </ageDistributionYrs>
     </initialState>
-    <birthRate>0.00222</birthRate>
-    <proportionMale>0.5</proportionMale>
-    <proportionCircumcised>0.35</proportionCircumcised>
-    <ageSexualDebutYrs>17</ageSexualDebutYrs>
     <entities>
       <entity type="Male">
         <behavior>
           <chanceBecomeSexWorker>0</chanceBecomeSexWorker>
           <partnerAcqMultWithSteadyHighRisk>1</partnerAcqMultWithSteadyHighRisk>
           <partnerAcqMultWithSteadyLowRisk>0.62297004456</partnerAcqMultWithSteadyLowRisk>
-          <HighRiskAcqRateMultiplier enabled="true">6.25619845538</HighRiskAcqRateMultiplier>
-          <CSWHighRiskAcqRateMultiplier enabled="true">89.5470142866</CSWHighRiskAcqRateMultiplier>
-          <proportionHighRiskCSW>0.260037092337</proportionHighRiskCSW>
-          <proportionHighRiskNonCSW>0.260037092337</proportionHighRiskNonCSW>
+          <highRiskAcqRateMultiplier enabled="true">6.25619845538</highRiskAcqRateMultiplier>
+          <highRiskCswAcqRateMultiplier enabled="true">89.5470142866</highRiskCswAcqRateMultiplier>
+          <proportionHighRiskCsw>1</proportionHighRiskCsw>
+          <proportionHighRiskNonCsw>0.260037092337</proportionHighRiskNonCsw>
           <ageDiscounting>
             <startAgeYrs>50</startAgeYrs>
             <acquisitionDiscByYr>0.10</acquisitionDiscByYr>
@@ -308,16 +303,16 @@
               <selectionCriteria>
                 <availableBuckets>
                   <bucket>
-                    <DmgProfile>SA:FEMALE:HETERO:SINGLE:NON_CSW</DmgProfile>
-                    <weightedValue>1</weightedValue>
+                    <profile>SA:FEMALE:HETERO:SINGLE:NON_CSW</profile>
+                    <weight>1</weight>
                   </bucket>
                 </availableBuckets>
-                <AverageYearsYounger>
+                <averageYearsYounger>
                   <distribution type="normal">
                     <mean>5</mean>
                     <stdDev>2.5</stdDev>
                   </distribution>
-                </AverageYearsYounger>
+                </averageYearsYounger>
               </selectionCriteria>
               <coitalEventsPerMonthHighRisk>
                 <distribution type="poisson">
@@ -373,28 +368,28 @@
               <selectionCriteria>
                 <availableBuckets>
                   <bucket>
-                    <DmgProfile>SA:FEMALE:HETERO:SINGLE:NON_CSW</DmgProfile>
-                    <weightedValue>0.95</weightedValue>
+                    <profile>SA:FEMALE:HETERO:SINGLE:NON_CSW</profile>
+                    <weight>0.95</weight>
                   </bucket>
                   <bucket>
-                    <DmgProfile>SA:FEMALE:HETERO:NON_SINGLE:NON_CSW</DmgProfile>
-                    <weightedValue>0.05</weightedValue>
+                    <profile>SA:FEMALE:HETERO:NON_SINGLE:NON_CSW</profile>
+                    <weight>0.05</weight>
                   </bucket>
                   <bucket>
-                    <DmgProfile>SA:FEMALE:HETERO:SINGLE:CSW</DmgProfile>
-                    <weightedValue>0</weightedValue>
+                    <profile>SA:FEMALE:HETERO:SINGLE:CSW</profile>
+                    <weight>0</weight>
                   </bucket>
                 </availableBuckets>
-                <AverageYearsYounger>
+                <averageYearsYounger>
                   <distribution type="normal">
                     <mean>5</mean>
                     <stdDev>2.5</stdDev>
                   </distribution>
-                </AverageYearsYounger>
+                </averageYearsYounger>
               </selectionCriteria>
               <coitalEventsPerMonthHighRisk>
                 <distribution type="poisson">
-                  <mean>4.25905701581</mean>
+                  <mean>4.0</mean>
                 </distribution>
               </coitalEventsPerMonthHighRisk>
               <chanceCondomUsePerEventHighRisk>
@@ -412,7 +407,7 @@
               </partnershipDurationMthHighRisk>
               <coitalEventsPerMonthLowRisk>
                 <distribution type="poisson">
-                  <mean>4.25905701581</mean>
+                  <mean>4.0</mean>
                 </distribution>
               </coitalEventsPerMonthLowRisk>
               <chanceCondomUsePerEventLowRisk>
@@ -446,24 +441,24 @@
               <selectionCriteria>
                 <availableBuckets>
                   <bucket>
-                    <DmgProfile>SA:FEMALE:HETERO:SINGLE:NON_CSW</DmgProfile>
-                    <weightedValue>0.95</weightedValue>
+                    <profile>SA:FEMALE:HETERO:SINGLE:NON_CSW</profile>
+                    <weight>0.95</weight>
                   </bucket>
                   <bucket>
-                    <DmgProfile>SA:FEMALE:HETERO:NON_SINGLE:NON_CSW</DmgProfile>
-                    <weightedValue>0.05</weightedValue>
+                    <profile>SA:FEMALE:HETERO:NON_SINGLE:NON_CSW</profile>
+                    <weight>0.05</weight>
                   </bucket>
                   <bucket>
-                    <DmgProfile>SA:FEMALE:HETERO:SINGLE:CSW</DmgProfile>
-                    <weightedValue>0</weightedValue>
+                    <profile>SA:FEMALE:HETERO:SINGLE:CSW</profile>
+                    <weight>0</weight>
                   </bucket>
                 </availableBuckets>
-                <AverageYearsYounger>
+                <averageYearsYounger>
                   <distribution type="normal">
                     <mean>5</mean>
                     <stdDev>2.5</stdDev>
                   </distribution>
-                </AverageYearsYounger>
+                </averageYearsYounger>
               </selectionCriteria>
               <coitalEventsPerMonthHighRisk>
                 <distribution type="poisson">
@@ -519,16 +514,16 @@
               <selectionCriteria>
                 <availableBuckets>
                   <bucket>
-                    <DmgProfile>SA:FEMALE:HETERO:SINGLE:CSW</DmgProfile>
-                    <weightedValue>1</weightedValue>
+                    <profile>SA:FEMALE:HETERO:SINGLE:CSW</profile>
+                    <weight>1</weight>
                   </bucket>
                 </availableBuckets>
-                <AverageYearsYounger>
+                <averageYearsYounger>
                   <distribution type="normal">
                     <mean>13</mean>
                     <stdDev>6.5</stdDev>
                   </distribution>
-                </AverageYearsYounger>
+                </averageYearsYounger>
               </selectionCriteria>
               <coitalEventsPerMonthHighRisk>
                 <distribution type="poisson">
@@ -583,8 +578,8 @@
       <entity type="Female">
         <behavior>
           <chanceBecomeSexWorker>0.0128828191979</chanceBecomeSexWorker>
-          <proportionHighRiskCSW>1</proportionHighRiskCSW>
-          <proportionHighRiskNonCSW>0.257155900521</proportionHighRiskNonCSW>
+          <proportionHighRiskCsw>1</proportionHighRiskCsw>
+          <proportionHighRiskNonCsw>0.257155900521</proportionHighRiskNonCsw>
         </behavior>
         <health>
           <transmissionCoefficients>
@@ -622,6 +617,9 @@
       </cepacTreatmentFiles>
     </cepacIntervention>
     <artRolloutIntervention enabled="true">
+      <dynamicTreatmentScaling enabled="true">
+	<feedbackPeriod>12</feedbackPeriod>
+      </dynamicTreatmentScaling>
       <rolloutTreatmentFiles>
         <rolloutFile>
           <time>0</time>
@@ -656,27 +654,27 @@
       </rolloutTreatmentFiles>
       <rolloutEligibility>
         <criteria name="OIHist">
-          <rank><parameter key="$2" initial-value="1" /></rank>
+          <rank><parameter key="$2">1</parameter></rank>
           <OI0>0</OI0>
           <OI1>0</OI1>
           <OI2>0</OI2>
-          <OI3><parameter key="$3" initial-value="1" /></OI3>
-          <OI4><parameter key="$4" initial-value="1" /></OI4>
-          <OI5><parameter key="$5" initial-value="1" /></OI5>
+          <OI3><parameter key="$3">1</parameter></OI3>
+          <OI4><parameter key="$4">1</parameter></OI4>
+          <OI5><parameter key="$5">1</parameter></OI5>
           <OI6>0</OI6>
           <OI7>0</OI7>
           <OI8>0</OI8>
           <OI9>0</OI9>
           <OI10>0</OI10>
-          <OI11><parameter key="$6" initial-value="1" /></OI11>
+          <OI11><parameter key="$6">1</parameter></OI11>
           <OI12>0</OI12>
           <OI13>0</OI13>
           <OI14>0</OI14>
           <numOIToStart>1</numOIToStart>
         </criteria>
         <criteria name="CD4">
-          <rank><parameter key="$1" initial-value="2" /></rank>
-          <CD4Upp><parameter key="$0" initial-value="-1" /></CD4Upp>
+          <rank><parameter key="$1">2</parameter></rank>
+          <CD4Upp><parameter key="$0">-1</parameter></CD4Upp>
           <CD4Lwr>-1</CD4Lwr>
         </criteria>
         <criteria name="CD4OIHist">
