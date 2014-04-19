@@ -1634,7 +1634,6 @@ Person::Person()
 //this constructor is used by the Male and Female classes
 Person::Person(int _age, unsigned int _populationID)
 {
-	assert(_populationID >= 0);
 	id = Person::idCounter++;
 	populationID = _populationID;
 #ifndef TESTING

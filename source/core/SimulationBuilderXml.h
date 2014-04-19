@@ -6,7 +6,7 @@
 #include "Simulation.h"
 #include "../util/CepacInputParser.h"
 #include "../entities/behaviors/SexualBehavior.h"
-#include "util/xml/pugixml.hpp"
+#include "../util/xml/pugixml.hpp"
 
 class SimulationBuilderXml : public SimulationBuilder
 {

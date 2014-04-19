@@ -1,17 +1,17 @@
 #include <iostream>
 #include <set>
 #include <boost/filesystem.hpp>
+#include <include.h>
 
 #include "Simulation.h"
-#include "core/Constants.h"
+#include "Constants.h"
 #include "Population.h"
-#include "../cepac44a/include.h"
 #include "../util/CepacInputParser.h"
-#include "data/EventParams.h"
-#include "entities/classifiers/DemographicProfile.h"
-#include "entities/behaviors/SexualBehavior.h"
-#include "util/HighResolutionTimer.h"
-#include "util/Utility.h"
+#include "../data/EventParams.h"
+#include "../entities/classifiers/DemographicProfile.h"
+#include "../entities/behaviors/SexualBehavior.h"
+#include "../util/HighResolutionTimer.h"
+#include "../util/Utility.h"
 
 PopulationTarget PopulationTarget::Any;
 

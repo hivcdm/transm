@@ -1,15 +1,18 @@
 solution "transm"
     configurations { "Debug", "Release" }
-    platforms { "x64", "x32" }
+    platforms { "x64" }
     location ("./" .. _ACTION)
-    includedirs { "../source" }
     configuration "not windows"
         buildoptions { 
             "-std=c++11",
             "-Wno-unknown-pragmas"
         }
     configuration "vs*"
-        includedirs { "$(boost_prefix)" }
+        libdirs { "$(cepac_prefix)/lib" }
+        includedirs { 
+	   "$(boost_prefix)",
+	   "$(cepac_prefix)/src"
+	}
     configuration { "vs*", "x32" }
         libdirs { "$(boost_prefix)/lib32-msvc-12.0" }
     configuration { "vs*", "x64" }
@@ -29,10 +32,9 @@ project "transm.cli"
     kind "ConsoleApp"
     language "C++"
     targetname "transm"
-    includedirs { "../source" }
     files { "../source/main.cpp" }
     links { 
-        "cepac44a",
+        "cepac",
         "transm"
     }
     flags { 
@@ -41,7 +43,7 @@ project "transm.cli"
        "NoManifest",
        "NoPCH"
     }
-    debugargs { "../source/transm.test/runs/all_templates" }
+    debugargs { "../../runs/34_standard" }
     configuration "Debug"
 	targetdir "../bin/debug"
     configuration "Release"
@@ -119,36 +121,6 @@ project "transm.test"
         flags { "LinkTimeOptimization" }
 	targetdir "../bin/release"
 
-project "cepac44a"
-    kind "StaticLib"
-    language "C++"
-    targetdir "../lib/"
-    files {
-       "../source/cepac44a/*.cpp",
-       "../source/cepac44a/*.h"
-    }
-    flags { 
-       "Unicode",
-       "NoEditAndContinue",
-       "NoManifest",
-       "NoPCH"
-    }
-
-project "cepac45b"
-    kind "StaticLib"
-    language "C++"
-    targetdir "../lib/"
-    files {
-       "../source/cepac45b/*.cpp",
-       "../source/cepac45b/*.h"
-    }
-    flags { 
-       "Unicode",
-       "NoEditAndContinue",
-       "NoManifest",
-       "NoPCH"
-    }
-
 project "transm"
     kind "StaticLib"
     language "C++"
@@ -182,9 +154,3 @@ project "transm"
         files { "../source/util/HighResolutionTimerWindows.cpp" }
     configuration "not windows"
         files { "../source/util/HighResolutionTimerPosix.cpp" }
-
-if _ACTION == "clean" then
-   os.rmdir("vs2013")
-   os.rmdir("../bin")
-   os.rmdir("../lib")
-end

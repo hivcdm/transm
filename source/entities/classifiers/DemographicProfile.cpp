@@ -139,6 +139,7 @@ void DemographicProfile::operator=(const DemographicProfile _a)
 	while(currDemographic < DemographicProfile::ENDDemographic)
 	{
 		set(currDemographic, _a.get(currDemographic));
+        ++currDemographic;
 	}
 }
 

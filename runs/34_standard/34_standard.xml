@@ -617,7 +617,7 @@
       </cepacTreatmentFiles>
     </cepacIntervention>
     <artRolloutIntervention enabled="true">
-      <dynamicTreatmentScaling enabled="true">
+      <dynamicTreatmentScaling enabled="false">
 	<feedbackPeriod>12</feedbackPeriod>
       </dynamicTreatmentScaling>
       <rolloutTreatmentFiles>

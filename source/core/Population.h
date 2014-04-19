@@ -6,13 +6,13 @@
 #include <vector>
 
 #include "PopulationParameters.h"
-#include "data/AgeRangeSizeContainer.h"
-#include "entities/Female.h"
-#include "entities/Male.h"
-#include "entities/Person.h"
-#include "entities/entitypool/EntityPool.h"
-#include "statistics/PopulationStatistics.h"
-#include "util/rand/RandomNumberGenerator.h"
+#include "../data/AgeRangeSizeContainer.h"
+#include "../entities/Female.h"
+#include "../entities/Male.h"
+#include "../entities/Person.h"
+#include "../entities/entitypool/EntityPool.h"
+#include "../statistics/PopulationStatistics.h"
+#include "../util/rand/RandomNumberGenerator.h"
 
 enum DebugLevel;
 

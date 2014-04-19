@@ -1,7 +1,7 @@
 #include <boost/filesystem.hpp>
 
 #include "SimulationBuilderXml.h"
-#include "util/enum_iterator.h"
+#include "../util/enum_iterator.h"
 
 #ifdef __APPLE__
 namespace std {

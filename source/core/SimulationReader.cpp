@@ -2,7 +2,7 @@
 #include "SimulationReader.h"
 #include "SimulationBuilder.h"
 #include "PopulationParameters.h"
-#include "entities/behaviors/SexualBehavior.h"
+#include "../entities/behaviors/SexualBehavior.h"
 
 SimulationReader::SimulationReader(SimulationBuilder &builder) : builder_(builder)
 {

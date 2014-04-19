@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <cepac44a/include.h>
+#include <include.h>
 
 #include "BucketCounter.h"
 #include "TabularOutput.h"

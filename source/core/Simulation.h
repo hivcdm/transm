@@ -4,11 +4,11 @@
 
 #include "Outputs.h"
 #include "Population.h"
-#include "data/EventParams.h"
-#include "statistics/PopulationStatistics.h"
-#include "util/HighResolutionTimer.h"
-#include "util/Nullable.h"
-#include "util/xml/pugixml.hpp"
+#include "../data/EventParams.h"
+#include "../statistics/PopulationStatistics.h"
+#include "../util/HighResolutionTimer.h"
+#include "../util/Nullable.h"
+#include "../util/xml/pugixml.hpp"
 
 class InfectionsTracker;
 

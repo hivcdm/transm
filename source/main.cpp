@@ -1,10 +1,10 @@
 #include <boost/filesystem.hpp>
+#include <include.h>
 
-#include <cepac44a/include.h>
-#include <core/SimulationBuilderXml.h>
-#include <core/SimulationReader.h>
-#include <statistics/TransmissionSummaryStats.h>
-#include <util/Utility.h>
+#include "core/SimulationBuilderXml.h"
+#include "core/SimulationReader.h"
+#include "statistics/TransmissionSummaryStats.h"
+#include "util/Utility.h"
 
 namespace {
 
@@ -87,7 +87,7 @@ void Simulate(const std::string &filename, SummaryStats &cepac_summary, Transmis
 	auto message_callback = [](const std::string &s) { std::cout << s; };
 	auto outputs = simulation.Run(message_callback);
 
-	cepac_summary.addRunStats(simulation.GetCEPACRunStats());
+	cepac_summary.addRunStats(&simulation.GetCEPACRunStats());
 	transmission_summary.addPopulationStatistics(simulation.GetPopulationStatistics(), simulation.GetEventParams());
 }
 

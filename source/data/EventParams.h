@@ -5,7 +5,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <cepac44a/include.h>
+#include <include.h>
 
 #include "../core/Constants.h"
 #include "../util/rand/RandomNumberGenerator.h"
