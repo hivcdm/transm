@@ -64,8 +64,7 @@ public:
 	@param _partnershipType the type of partner this person is looking for
 	@param _remove - will remove this person from the bucket
 	***/
-	virtual Person *drawMember(RandomNumberGenerator &_randomNums, Person *_chooser, SexualPartnership::Type _partnershipType,
-	                           bool _remove);
+	virtual Person *drawMember(RandomNumberGenerator &_randomNums, Person *_chooser, SexualPartnership::Type _partnershipType, bool _remove);
 
 	virtual bool exists(Person *_person);
 

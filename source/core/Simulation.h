@@ -131,7 +131,7 @@ public:
 
 	void SetBirthRate(double birth_rate) { population_.popWideParams.setBirthRate(birth_rate); };
 
-	void SetAgeSexualDebut(int age, TimeGranularity granularity = YEAR) { population_.popWideParams.setAgeSexualDebut(age, granularity); }
+    void SetAgeSexualDebut(int age, TimeGranularity granularity = TimeGranularity::Year) { population_.popWideParams.setAgeSexualDebut(age, granularity); }
 
 	void SetProportionMale(double proportion_male) { population_.popWideParams.setProportionMale(proportion_male); }
 

@@ -219,64 +219,45 @@ void PopulationStatistics::printLMStats(std::ostream &_outStream)
 	long infectedPersons = static_cast<long>(lifeStats->getStat(PopulationStatistics::TOTAL_HIV_POS));
 	long uninfectedPersons = static_cast<long>(lifeStats->getStat(PopulationStatistics::TOTAL_HIV_NEG));
 	long totalPersons = infectedPersons + uninfectedPersons;
-	string invalid("----");
-	_outStream << "Statistics (Only includes negative people who have died)\tValue\tUnits" << endl;
-	_outStream << "Infected Deaths (in time period)\t" << infectedDeaths << endl;
-	_outStream << "Uninfected Deaths (in time period)\t" << uninfectedDeaths << endl;
-	_outStream << "Total Deaths\t" << totalDeaths << endl;
+
+	std::string invalid("----");
+
+	_outStream << "Statistics (Only includes negative people who have died)\tValue\tUnits" << std::endl;
+    _outStream << "Infected Deaths (in time period)\t" << infectedDeaths << std::endl;
+    _outStream << "Uninfected Deaths (in time period)\t" << uninfectedDeaths << std::endl;
+    _outStream << "Total Deaths\t" << totalDeaths << std::endl;
 
 	if(uninfectedDeaths > 0)
 	{
-		assert(Constants::TODO_DEF);
-		//		double infectivity = infectionStats->getStat( PopulationStatistics::TOTAL_EXPOSED_BUT_NOT_INFECTED) / (infectionStats->getStat( PopulationStatistics::TOTAL_EXPOSED_BUT_NOT_INFECTED) + infectedDeaths);
-		//	_outStream << "Crude infectivity\t" << infectivity << endl;
-		_outStream << "HIV- LM\t" << lifeStats->getStat(PopulationStatistics::TOTAL_HIV_NEG_LM) / uninfectedPersons  << "\tMths" <<
-		           endl;
+		_outStream << "HIV- LM\t" << lifeStats->getStat(PopulationStatistics::TOTAL_HIV_NEG_LM) / uninfectedPersons  << "\tMths" << std::endl;
 	}
 
 	if(infectedDeaths > 0)
 	{
 		//TODO: Double check if this makes any sense at all
-		_outStream << "HIV+ LM\t" << lifeStats->getStat(PopulationStatistics::TOTAL_HIV_POS_LM) / infectedPersons << "\tMths" << endl;
+        _outStream << "HIV+ LM\t" << lifeStats->getStat(PopulationStatistics::TOTAL_HIV_POS_LM) / infectedPersons << "\tMths" << std::endl;
 		_outStream << "HIV+ Survival\t" <<   lifeStats->getStat(PopulationStatistics::TOTAL_HIV_POS_POSTINFECT_LM) / infectedPersons
-		           << "\tMths" << endl;
+            << "\tMths" << std::endl;
 		//TODO: Whoa, is this wrong! Calculate R0 correctly and don't round to an integer!
 		_outStream << "Avg # people that someone infects\t" <<   double(infectionsTracker.getNumIncidentInfections() +
-		           0.0) / (infectedPersons + 0.0) << endl;
+            0.0) / (infectedPersons + 0.0) << std::endl;
 	}
 
 	if(totalDeaths > 0)
 	{
 		_outStream << "Population Avg. LM\t" << lifeStats->getStat(PopulationStatistics::TOTAL_LM) / totalPersons <<  "\tMths" <<
-		           endl;
+            std::endl;
 	}
-
-	/*std::cout << "This run:" << std::endl << "Time:\t";
-	for (int i = 0; i < NUM_TIMES_TO_RECORD; i++){
-		std::cout << selectedSummaryStats.at(i)->timeOfStats << "\t";
-	}
-	std::cout << std::endl << "Prev:\t";
-	for (int i = 0; i < NUM_TIMES_TO_RECORD; i++){
-		std::cout << selectedSummaryStats.at(i)->prevalence << "\t";
-	}
-	std::cout << std::endl << "SAprv:\t";
-	for (int i = 0; i < NUM_TIMES_TO_RECORD; i++){
-		std::cout << selectedSummaryStats.at(i)->SAprevalence << "\t";
-	}
-	std::cout << std::endl << "Incid:\t";
-	for (int i = 0; i < NUM_TIMES_TO_RECORD; i++){
-		std::cout << selectedSummaryStats.at(i)->incidence << "\t";
-	}
-	std::cout << std::endl;*/
 }
 
 void PopulationStatistics::printSurvivalStats(std::ostream &_outStream)
 {
-	ostringstream firstRow;
-	ostringstream secondRow;
-	ostringstream thirdRow;
-	ostringstream fourthRow;
-	ostringstream fifthRow;
+    std::ostringstream firstRow;
+    std::ostringstream secondRow;
+    std::ostringstream thirdRow;
+    std::ostringstream fourthRow;
+    std::ostringstream fifthRow;
+
 	firstRow <<  "Survival Outputs" << Constants::TAB << Constants::TAB;
 	secondRow << Constants::TAB << Constants::TAB;
 	thirdRow << "Overall" << Constants::TAB << Constants::TAB;
@@ -544,11 +525,11 @@ void PopulationStatistics::printSurvivalStats(std::ostream &_outStream)
 	}
 
 	//write out string buffers to trace file
-	_outStream << firstRow.str() << endl;
-	_outStream << secondRow.str() << endl;
-	_outStream << thirdRow.str() << endl;
-	_outStream << fourthRow.str() << endl;
-	_outStream << fifthRow.str() << endl;
+    _outStream << firstRow.str() << std::endl;
+    _outStream << secondRow.str() << std::endl;
+    _outStream << thirdRow.str() << std::endl;
+    _outStream << fourthRow.str() << std::endl;
+    _outStream << fifthRow.str() << std::endl;
 }
 void PopulationStatistics::printLEStats(std::ostream &_outStream, long currTime)
 {

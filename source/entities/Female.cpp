@@ -3,6 +3,26 @@
 #include "../core/Constants.h"
 #include "../util/Utility.h"
 
+int Female::rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums, Person *_p)
+{
+    throw std::runtime_error("not implemented for women");
+}
+
+int Female::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType)
+{
+    throw std::runtime_error("not implemented for women");
+}
+
+int Female::rollNumEventsPerPartner(Person *, RandomNumberGenerator &, SexualPartnership::Type)
+{
+    throw std::runtime_error("not implemented for women");
+}
+
+bool Female::possibleMatch(SexualPartnership::Type /*_partnershipType*/, Person * /*_p*/)
+{
+    throw std::runtime_error("not implemented for women");
+}
+
 void Female::SetCoitalEventsPerMonth(RiskLevel, SexualPartnership::Type, double)
 {
 	throw std::runtime_error("not implemented for women");
@@ -26,6 +46,11 @@ void Female::SetAcquisitionRatePerMonth(RiskLevel, SexualPartnership::Type, LogN
 void Female::Circumcise()
 {
 	throw std::runtime_error("not implemented for women");
+}
+
+double Female::rollForAgeDifference(SexualPartnership::Type /*_partnershipType*/, RandomNumberGenerator &/*_randomNums*/)
+{
+    throw std::runtime_error("not implemented for women");
 }
 
 //each index of the array contains parameters for a different population

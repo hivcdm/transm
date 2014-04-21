@@ -125,7 +125,7 @@ Male::Male(EventParams &_eventParams, int _age, bool _circumcised, unsigned int 
 	populationSpecificParams(params)
 {
 	//If age is out of range, set it at the closest boundary.
-	if(!Utility::withinRange<int>(_age, 0, Utility::convertTime(YEAR, MONTH, Person::maxYrForDeathStats)))
+    if(!Utility::withinRange<int>(_age, 0, Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Person::maxYrForDeathStats)))
 	{
 		if(_age < 0)
 		{
@@ -133,7 +133,7 @@ Male::Male(EventParams &_eventParams, int _age, bool _circumcised, unsigned int 
 		}
 		else
 		{
-			_age = Utility::convertTime(YEAR, MONTH, Person::maxYrForDeathStats);
+            _age = Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Person::maxYrForDeathStats);
 		}
 	}
 
@@ -249,9 +249,9 @@ double Male::getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartne
 	{
 	case Person::AGE:
 	{
-		if(getAge(MONTH) - (12 * averageYearsYounger[(int)_partnershipType].mean + 6) > 0)
+        if(getAge(TimeGranularity::Month) - (12 * averageYearsYounger[(int)_partnershipType].mean + 6) > 0)
 		{
-			return getAge(MONTH) - (12 * averageYearsYounger[(int)_partnershipType].mean + 6);
+            return getAge(TimeGranularity::Month) - (12 * averageYearsYounger[(int)_partnershipType].mean + 6);
 			break;
 		}
 		else
@@ -279,9 +279,9 @@ double Male::getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartne
 	{
 	case Person::AGE:
 	{
-		if(getAge(MONTH) - (12 * averageYearsYounger[(int)_partnershipType].mean - 6) > 0)
+        if(getAge(TimeGranularity::Month) - (12 * averageYearsYounger[(int)_partnershipType].mean - 6) > 0)
 		{
-			return getAge(MONTH) - (12 * averageYearsYounger[(int)_partnershipType].mean - 6);
+            return getAge(TimeGranularity::Month) - (12 * averageYearsYounger[(int)_partnershipType].mean - 6);
 			break;
 		}
 		else
@@ -321,7 +321,7 @@ bool Male::possibleMatch(SexualPartnership::Type _partnershipType, Person *_p)
 	assert(false);  // check if we are using years instead of Month
 	int minAge = static_cast<int>(getMinPartnerSelectVal(Person::AGE, _partnershipType));
 	int maxAge = static_cast<int>(getMaxPartnerSelectVal(Person::AGE, _partnershipType));
-	return Utility::withinRange(_p->getAge(MONTH), minAge, maxAge);
+    return Utility::withinRange(_p->getAge(TimeGranularity::Month), minAge, maxAge);
 }
 
 int Male::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType)
@@ -346,7 +346,7 @@ int Male::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnersh
 	}
 
 	//if person is over the age of partnering discounting, then discount acquisition rate
-	int ageYrs = getAge(YEAR);
+    int ageYrs = getAge(TimeGranularity::Year);
 
 	if(ageYrs >= populationSpecificParams.getPartneringDiscStartAgeYrs())
 	{
@@ -367,7 +367,7 @@ int Male::rollNumEventsPerPartner(Person *_p, RandomNumberGenerator &_randomNums
 	double meanCoitalEvents = numActsPerMonth[(int)_partnershipType];
 
 	//if person is over the age of partnering discounting, then discount #acts
-	int ageYrs = getAge(YEAR);
+    int ageYrs = getAge(TimeGranularity::Year);
 
 	if(ageYrs >= populationSpecificParams.getPartneringDiscStartAgeYrs())
 	{

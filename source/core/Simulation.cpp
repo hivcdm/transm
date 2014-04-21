@@ -168,13 +168,10 @@ void Simulation::FirstStep()
 		}
 	}
 
-	BatchStatsVariables batchstat;
-
-	for(batchstat = BatchStatsVariables(0); batchstat < ENDBatchStatsVariables;
-		batchstat = BatchStatsVariables(batchstat + 1))
+	for(auto batchstat : enum_iterator<BatchStatsVariables>())
 	{
-		parameters_.BatchStatsStream[batchstat].open(("batchstats-" + Constants::BatchStatFileName[batchstat] + ".out").c_str(),
-			ios::out | ios::app);
+        auto filename = "batchstats-" + Constants::BatchStatFileName.at(batchstat) + ".out";
+		parameters_.BatchStatsStream[batchstat].open(filename, ios::out | ios::app);
 	}
 
 	//output seed used for this run
@@ -208,11 +205,11 @@ void Simulation::FirstStep()
 	population_.calcPrevalentPopulation(0);
 
 	//Print out run name for first column of BatchStats files (if streams are open)
-	for(int i = 0; i < ENDBatchStatsVariables; i++)
+    for(auto batchstat : enum_iterator<BatchStatsVariables>())
 	{
-		if(parameters_.BatchStatsStream[i].is_open())
+		if(parameters_.BatchStatsStream[batchstat].is_open())
 		{
-			parameters_.BatchStatsStream[i] << parameters_.simName << Constants::TAB;
+			parameters_.BatchStatsStream[batchstat] << parameters_.simName << Constants::TAB;
 		}
 	}
 
@@ -246,7 +243,7 @@ void Simulation::FirstStep()
 		population_.popStats.costsTracker.PrintCosts(parameters_.currTime, parameters_.traceStreams[EventParams::TraceFileType::CostEffectiveness]);
 	}
 
-	if(parameters_.debugLevel == DEBUG1)
+	if(parameters_.debugLevel == DebugLevel::One)
 	{
 		population_.printMethodResults(parameters_, "--", "initialization", 0, "--", Constants::SHOW_INFECTED);
 	}
@@ -549,7 +546,7 @@ int Simulation::SimulateMonth()
 	}
 
 	//output the current timestep of the simulation
-	if(parameters_.debugLevel > DEBUG1 && parameters_.outputTrace[EventParams::TraceFileType::Events])
+    if(parameters_.debugLevel > DebugLevel::One && parameters_.outputTrace[EventParams::TraceFileType::Events])
 	{
 		parameters_.traceStreams[EventParams::TraceFileType::Events] << "T:" << time_ << " : Start of Timestep" << std::endl;
 	}

@@ -29,7 +29,7 @@ public:
         Person::RiskLevel riskLevel = person.getRiskLevel();
 		values_.push_back(riskLevel);
         int ageGroup = -1;
-        int age = person.getAge(MONTH);
+        int age = person.getAge(TimeGranularity::Month);
 
         for(size_t i = 0; i < ageGroups.size(); ++i)
         {

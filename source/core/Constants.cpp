@@ -7,11 +7,17 @@ std::string const Constants::TAB = "\t";
 std::string const Constants::TABTAB = "\t\t";
 std::string const Constants::SPACE = " ";
 std::string const Constants::UNDERSCORE = "_";
-std::string const Constants::BatchStatFileName[ENDBatchStatsVariables] = {"prevalence", "SAprevalence", "incidence", "populationSize", "numberInfected", "newInfections"};
-const bool Constants::SHOULD_NOT_BE_CALLING_ME = false;
-const bool Constants::TODO = false;
-const bool Constants::TODO_DEF = true;
-const bool Constants::TODO_LO_PRI = true;
+
+const std::map<BatchStatsVariables, std::string> Constants::BatchStatFileName = 
+{
+    {BatchStatsVariables::PREVALENCE, "prevalence"},
+    {BatchStatsVariables::PREVALENCESA, "SAprevalence"},
+    {BatchStatsVariables::INCIDENCE, "incidence"},
+    {BatchStatsVariables::POPULATION, "populationSize"},
+    {BatchStatsVariables::CURRENTLYINFECTED, "numberInfected"},
+    {BatchStatsVariables::NEWINFECTIONS, "newInfections"}
+};
+
 const int Constants::PREVALENT_INFECTION = 0;
 //const bool Constants::INCIDENT_INFECTION = false;
 const bool Constants::REMOVE = true;

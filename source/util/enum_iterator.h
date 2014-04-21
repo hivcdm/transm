@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iterator>
 
 template<class enum_type>

@@ -136,8 +136,9 @@ void Population::initPartnershipBuckets()
 			//contains profile ID's that were selected from
 			currProfileSelector.set(partneringParams.getAvailableBucket(j).dmgProfileSelector);
 			currProfileSelector.selectProfileIDs(selectedIDs, nullptr);
+
+            //TODO:eventually, we should change this.
 			assert(selectedIDs.size() == 1);	//we don't want any wild cards in the DemographicProfile string.
-			assert(Constants::TODO_DEF);		//eventually, we should change this.
 
 			//check to see whether we have a repeat Bucket.
 			for(size_t i = 0; i < potentialPartnerBuckets[(int)type].size(); ++i)
@@ -201,7 +202,7 @@ void Population::births(EventParams &parameters_)
 
 		p = generatePerson(parameters_, gender, nullptr, toTrace);
 
-		if(parameters_.debugLevel > DEBUG1 && parameters_.outputTrace[EventParams::TraceFileType::Events])
+        if(parameters_.debugLevel > DebugLevel::One && parameters_.outputTrace[EventParams::TraceFileType::Events])
 		{
 			p->print(parameters_.traceStreams[EventParams::TraceFileType::Events], Constants::TABTAB);
 		}
@@ -211,7 +212,7 @@ void Population::births(EventParams &parameters_)
 		entities->addPersonToAll(p);
 	}
 
-	if(parameters_.debugLevel > DEBUG0)
+    if(parameters_.debugLevel > DebugLevel::Zero)
 	{
 		printMethodResults(parameters_, "Births", "People Born", numBorn, "total born", Constants::SHOW_INFECTED);
 	}
@@ -241,9 +242,9 @@ void Population::updateAgeBucketsLE()
 			assert(p != nullptr);
 			//calculate life expectancy
 			assert((popStats.selectedLEStats != nullptr));
-			assert(p->getAge(YEAR) >= 0);
-			assert(p->getAge(YEAR) < Person::maxYrForDeathStats);
-			popStats.selectedLEStats->popByAge[p->getAge(YEAR)]++;
+            assert(p->getAge(TimeGranularity::Year) >= 0);
+            assert(p->getAge(TimeGranularity::Year) < Person::maxYrForDeathStats);
+            popStats.selectedLEStats->popByAge[p->getAge(TimeGranularity::Year)]++;
 			p_Iter++;
 		}//while (p_Iter != entities->end(gender))
 	}//	for (DemographicProfile::Gender gend = DemographicProfile::MALE; gend < DemographicProfile::ENDGender; gend++){
@@ -394,7 +395,7 @@ void Population::updatePhysicalState(EventParams &parameters_, bool calculateLE,
 
 			//if this person wasn't sexually active but is now old enough to
 			if((p->getDemographicProfileVal(DemographicProfile::SEXUAL_ACTIVITY_STATUS) != DemographicProfile::SA)
-			        && (p->getAge(MONTH) >= popWideParams.SAEntAgeMths))
+                && (p->getAge(TimeGranularity::Month) >= popWideParams.SAEntAgeMths))
 			{
 				// set them as SA and potentially CSWs
 				if(parameters_.outputTrace[EventParams::TraceFileType::Singleperson] && p->trace())
@@ -423,7 +424,7 @@ void Population::updatePhysicalState(EventParams &parameters_, bool calculateLE,
 					}
 				}
 
-				if(p->getAge(MONTH) < popWideParams.CSWEndAgeMth[p->getDemographicProfileVal(DemographicProfile::GENDER)])
+                if(p->getAge(TimeGranularity::Month) < popWideParams.CSWEndAgeMth[p->getDemographicProfileVal(DemographicProfile::GENDER)])
 				{
 					p->rollForBecomeSexWorker(parameters_, false);
 				}
@@ -437,7 +438,7 @@ void Population::updatePhysicalState(EventParams &parameters_, bool calculateLE,
 
 			//Check for age to stop becoming CSW
 			if(p->getDemographicProfileVal(DemographicProfile::EMPLOYMENT) == DemographicProfile::CSW
-			        && p->getAge(MONTH) >= popWideParams.CSWEndAgeMth[p->getDemographicProfileVal(DemographicProfile::GENDER)])
+                && p->getAge(TimeGranularity::Month) >= popWideParams.CSWEndAgeMth[p->getDemographicProfileVal(DemographicProfile::GENDER)])
 			{
 				p->quitSexWork(parameters_);
 				entities->refreshBucketDemographicProfile(p, &p_Iter);
@@ -462,7 +463,7 @@ void Population::updatePhysicalState(EventParams &parameters_, bool calculateLE,
 		}//while (p_Iter != entities->end(gender))
 	}//	for (DemographicProfile::Gender gend = DemographicProfile::MALE; gend < DemographicProfile::ENDGender; gend++){
 
-	if(parameters_.debugLevel > DEBUG0)
+    if(parameters_.debugLevel > DebugLevel::Zero)
 	{
 		printMethodResults(parameters_, "UpdatePhysicalState", "People Died", totalDied, "total died", Constants::SHOW_INFECTED);
 	}
@@ -603,7 +604,7 @@ void Population::updatePartnerships(EventParams &parameters_)
 						SexualPartnership::Type(type),
 					                                        wasInfected,
 					                                        wasUninfected,
-					                                        (parameters_.debugLevel > DEBUG1),
+                                                            (parameters_.debugLevel > DebugLevel::One),
 					                                        parameters_.traceStreams[EventParams::TraceFileType::Events]);
 				}
 
@@ -621,7 +622,7 @@ void Population::updatePartnerships(EventParams &parameters_)
 	//print out results to traces
 	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
 	{
-		if(parameters_.debugLevel > DEBUG0)
+        if(parameters_.debugLevel > DebugLevel::Zero)
 		{
 			//print out how many partnerships were attempted
 			std::ostringstream attemptedLabel;
@@ -862,7 +863,7 @@ void Population::dissolveSexualPartnerships(EventParams &parameters_, Person *_i
 		Person *partner = (*partnerIter)->getOtherPartner(_initiator);
 
 		//print the couple that is getting divorced
-		if(parameters_.debugLevel > DEBUG1 && parameters_.outputTrace[EventParams::TraceFileType::Events])
+        if(parameters_.debugLevel > DebugLevel::One && parameters_.outputTrace[EventParams::TraceFileType::Events])
 		{
 			(*partnerIter)->printPartners(parameters_.traceStreams[EventParams::TraceFileType::Events],
 			                              "This couple is splitting up: " + Constants::TABTAB);
@@ -1955,7 +1956,7 @@ unsigned long Population::createPartnerships(EventParams &parameters_, Person *_
 			//if we tried to draw someone we are already seeing, then redraw until we pick someone new
 			if(_initiator->isPartneredWith(partner))
 			{
-				if(parameters_.debugLevel > DEBUG1)
+                if(parameters_.debugLevel > DebugLevel::One)
 				{
 					_initiator->print(cerr, "");
 					cerr << _initiator->getID() << " Attempted repeat partnership with " << partner->getID() << ", " <<
@@ -2026,11 +2027,11 @@ unsigned long Population::createPartnerships(EventParams &parameters_, Person *_
 		{
 			parameters_.traceStreams[EventParams::TraceFileType::Singleperson] << "  + Male " << _initiator->getID() << " (";
 			_initiator->getDemographicProfile()->print(parameters_.traceStreams[EventParams::TraceFileType::Singleperson], "");
-			parameters_.traceStreams[EventParams::TraceFileType::Singleperson] << " age " << _initiator->getAge(YEAR) << ") forms " << 
+            parameters_.traceStreams[EventParams::TraceFileType::Singleperson] << " age " << _initiator->getAge(TimeGranularity::Year) << ") forms " <<
 			        (SexualPartnership::TypeStrings.at(_partnershipType)) << " with female " << chosenPartner->getID() << " (";
 			chosenPartner->getDemographicProfile()->print(parameters_.traceStreams[EventParams::TraceFileType::Singleperson], "");
 			parameters_.traceStreams[EventParams::TraceFileType::Singleperson] << " age " << chosenPartner->getAge(
-			            YEAR) << ", " << chosenPartner->getSexualActivity() << " marbles, " << ((chosenPartner->getRiskLevel() == Person::HIGH)
+                TimeGranularity::Year) << ", " << chosenPartner->getSexualActivity() << " marbles, " << ((chosenPartner->getRiskLevel() == Person::HIGH)
 			                    ? "HIGH" : "LOW") << " risk)";
 		}
 
@@ -2072,13 +2073,13 @@ void Population::processDeath(EventParams &parameters_, Person *_p, bool calcula
 	if(calculateLE)
 	{
 		assert((popStats.selectedLEStats != nullptr));
-		assert(_p->getAge(YEAR) >= 0);
-		assert(_p->getAge(YEAR) <= Person::maxYrForDeathStats);
-		popStats.selectedLEStats->deathsByAge[_p->getAge(YEAR)]++;
+        assert(_p->getAge(TimeGranularity::Year) >= 0);
+        assert(_p->getAge(TimeGranularity::Year) <= Person::maxYrForDeathStats);
+        popStats.selectedLEStats->deathsByAge[_p->getAge(TimeGranularity::Year)]++;
 	}
 
 	//print out this info to the trace
-	if(parameters_.debugLevel > DEBUG1 && parameters_.outputTrace[EventParams::TraceFileType::Events])
+    if(parameters_.debugLevel > DebugLevel::One && parameters_.outputTrace[EventParams::TraceFileType::Events])
 	{
 		_p->print(parameters_.traceStreams[EventParams::TraceFileType::Events], "Someone died: " + Constants::TAB);
 	}
@@ -2207,7 +2208,7 @@ long Population::calcPrevalentPopulation(long _time)
 
 PopulationParameters::AgeBucketPrevalenceInfo &Population::getAgeBucket(Person *p)
 {
-	int age = p->getAge(MONTH);
+    int age = p->getAge(TimeGranularity::Month);
 
 	for(unsigned int ageBucket = 0; ageBucket < popWideParams.initialAgeBuckets.size(); ageBucket++)
 	{
@@ -2226,7 +2227,7 @@ PopulationParameters::AgeBucketPrevalenceInfo &Population::getAgeBucket(Person *
 
 int Population::getAgeBucketIndex(Person *p)
 {
-	int age = p->getAge(MONTH);
+    int age = p->getAge(TimeGranularity::Month);
 	unsigned int ageBucket;
 
 	for(ageBucket = 0; ageBucket < popWideParams.initialAgeBuckets.size(); ageBucket++)
@@ -2279,10 +2280,10 @@ void Population::printMethodResults(EventParams &parameters_, std::string _metho
 	unsigned long totalSexuallyActive = 0;
 	_showInfections = false;
 
-	if(parameters_.debugLevel > DEBUG0 && parameters_.outputTrace[EventParams::TraceFileType::Events])
+    if(parameters_.debugLevel > DebugLevel::Zero && parameters_.outputTrace[EventParams::TraceFileType::Events])
 	{
 		//if we are at time 0, then print out headers
-		if((parameters_.currTime == 0) && (parameters_.debugLevel == DEBUG1))
+        if((parameters_.currTime == 0) && (parameters_.debugLevel == DebugLevel::One))
 		{
 			//print out headers for DEBUG level 1 in the BucketDemographicProfile size trace
 			parameters_.traceStreams[EventParams::TraceFileType::Events] << "Time\t" << "EventLabel\tNumAffected\t";
@@ -2299,10 +2300,10 @@ void Population::printMethodResults(EventParams &parameters_, std::string _metho
 		//print out the sizes of the buckets to a string stream
 		std::ostringstream bucketTotalsStr;
 		entities->printBucketSizes(bucketTotalsStr, Constants::TAB, _showInfections, totalInfected, totalPopSize,
-		                                 totalSexuallyActive, totalInSteady, totalInRegular, (parameters_.debugLevel > DEBUG1));
+            totalSexuallyActive, totalInSteady, totalInRegular, (parameters_.debugLevel > DebugLevel::One));
 
 		//if debug level > 1, then print trace format in verbose form and include labels
-		if(parameters_.debugLevel > DEBUG1)
+        if(parameters_.debugLevel > DebugLevel::One)
 		{
 			parameters_.traceStreams[EventParams::TraceFileType::Events] << "T: " << parameters_.currTime << " -- " << _methodName << ": " <<
 			        endl;
@@ -2322,24 +2323,24 @@ void Population::printMethodResults(EventParams &parameters_, std::string _metho
 			parameters_.traceStreams[EventParams::TraceFileType::Events] << totalInSteady << Constants::TAB;
 			parameters_.traceStreams[EventParams::TraceFileType::Events] << totalInRegular << Constants::TAB;
 			parameters_.traceStreams[EventParams::TraceFileType::Events] << Constants::TAB;
-		}//if( _d > DEBUG1) {
+		}//if( _d > One) {
 
 		parameters_.traceStreams[EventParams::TraceFileType::Events] << bucketTotalsStr.str();
 
-		if(parameters_.debugLevel > DEBUG1)
+        if(parameters_.debugLevel > DebugLevel::One)
 		{
 			parameters_.traceStreams[EventParams::TraceFileType::Events] << endl;
 		}
 
 		//print out all people in the population
-		if(parameters_.debugLevel > DEBUG2)
+        if(parameters_.debugLevel > DebugLevel::Two)
 		{
 			parameters_.traceStreams[EventParams::TraceFileType::Events] << endl;
 			entities->print(parameters_.traceStreams[EventParams::TraceFileType::Events]);
 		}
 
 		parameters_.traceStreams[EventParams::TraceFileType::Events] << endl;
-	} //if( parameters_.debugLevel > DEBUG0)
+	} //if( parameters_.debugLevel > Zero)
 }
 
 void Population::printPartnerships(EventParams &parameters_, long _time, std::ostream &_outStream)

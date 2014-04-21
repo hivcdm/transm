@@ -11,7 +11,7 @@ void BucketSexualMixing::Apply(const PopulationTarget &target, RandomNumberGener
 	{
 		for(auto person : *a)
 		{
-			auto age = person->getAge(TimeGranularity::MONTH);
+			auto age = person->getAge(TimeGranularity::Month);
 			if(target.age_lower.has_value && age < target.age_lower.value)
 			{
 				continue;
@@ -41,7 +41,7 @@ BucketSexualMixing::BucketSexualMixing(DemographicProfile::ProfileID _id, const 
 	int _minAge, int _maxAge, TimeGranularity _timeGranularity, const std::array<double, (int)SexualPartnership::Type::ENDType> &_assort) :
 	BucketDemographicProfile(_id, _bucketLabel, false)
 {
-	assert((_timeGranularity == MONTH) || (_timeGranularity == YEAR));
+    assert((_timeGranularity == TimeGranularity::Month) || (_timeGranularity == TimeGranularity::Year));
 	assert((_minAge >= 0) && (_maxAge >= _minAge));
 	timeGranularity = _timeGranularity;
 	minAge = _minAge;
@@ -99,7 +99,7 @@ unsigned int BucketSexualMixing::getCorrectBufferIndex(Person *_p)
 
 	if(!Utility::withinRange<unsigned int>(pAge, minAge, maxAge))
 	{
-		cout << "Age is " << _p->getAge(MONTH) << " but minAge is " << minAge << " and max age is " << maxAge <<
+        cout << "Age is " << _p->getAge(TimeGranularity::Month) << " but minAge is " << minAge << " and max age is " << maxAge <<
 		     endl;
 	}
 
@@ -162,8 +162,8 @@ Person *BucketSexualMixing::drawMember(RandomNumberGenerator &_randomNums, Perso
 		double ageYoungerYears = _chooser->rollForAgeDifference(_partnershipType, _randomNums);
 		int ageYoungerMonths = (int)(12 * ageYoungerYears + 0.5);
 		//AgeYoungerMonths can be negative so we need to make sure the range stays between both the min and the max age
-		minDesired = min(_chooser->getAge(MONTH) - (ageYoungerMonths + 6), (int)(maxAge));
-		maxDesired = max(_chooser->getAge(MONTH) - (ageYoungerMonths - 6), (int)(minAge));
+        minDesired = min(_chooser->getAge(TimeGranularity::Month) - (ageYoungerMonths + 6), (int)(maxAge));
+        maxDesired = max(_chooser->getAge(TimeGranularity::Month) - (ageYoungerMonths - 6), (int)(minAge));
 		assert(minDesired <= maxDesired);
 	}
 
@@ -395,7 +395,7 @@ bool BucketSexualMixing::insert(Person *_person)
 	else
 	{
 		cerr << "Trying to insert person with invalid age (" << _person->getAge(timeGranularity) << " " << ((
-		            timeGranularity == MONTH) ? "months" : "years") << ")" << endl;
+            timeGranularity == TimeGranularity::Month) ? "months" : "years") << ")" << endl;
 		cerr << "Valid ages are between " << minAge << " and " <<  maxAge << " inclusive" << endl;
 		cerr << "If age is valid, person may have an invalid DemographicProfile";
 		_person->print(cerr, "");

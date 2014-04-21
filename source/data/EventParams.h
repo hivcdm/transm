@@ -7,12 +7,9 @@
 #include <vector>
 #include <include.h>
 
+#include "../util/enum_iterator.h"
 #include "../core/Constants.h"
 #include "../util/rand/RandomNumberGenerator.h"
-
-//these are found in Constants.h
-enum DebugLevel;
-enum TimeGranularity;
 
 /**
 this data structure contains some important simulation level parameters or variables
@@ -227,7 +224,7 @@ public :
 	std::array<ConcurrencyDef, Constants::NUMBER_CONCURRENCY_DEFS> concurrencyDef;
 
 	//prints BatchStats files for each of up to five variables as determined by user input
-	std::fstream BatchStatsStream[ENDBatchStatsVariables];
+    std::map<BatchStatsVariables, std::fstream> BatchStatsStream;
 
 	std::map<int, double> targetYearlyRolloutProportions;
 
@@ -260,8 +257,7 @@ public :
 		}
 
 		//For batchStats and summaryStats, print a new line character (all stats are on one line in these files)
-		for(BatchStatsVariables batchstat = BatchStatsVariables(0); batchstat < ENDBatchStatsVariables;
-		        batchstat = BatchStatsVariables(batchstat + 1))
+        for(auto batchstat : enum_iterator<BatchStatsVariables>())
 		{
 			if(BatchStatsStream[batchstat].is_open())
 			{

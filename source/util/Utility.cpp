@@ -8,9 +8,9 @@ std::string to_string(TimeGranularity granularity)
 {
 	switch(granularity)
 	{
-	case TimeGranularity::DAY: return "day";
-	case TimeGranularity::MONTH: return "month";
-	case TimeGranularity::YEAR: return "year";
+	case TimeGranularity::Day: return "day";
+	case TimeGranularity::Month: return "month";
+	case TimeGranularity::Year: return "year";
 	default: throw std::runtime_error("bad granularity");
 	}
 }
@@ -115,39 +115,39 @@ unsigned int Utility::convertTime(TimeGranularity _from, TimeGranularity _to, do
 	assert(_val >= 0);
 	unsigned int converted_value = 0;
 
-	if(_from == DAY && _to == DAY)
+    if(_from == TimeGranularity::Day && _to == TimeGranularity::Day)
 	{
 		converted_value = (int)_val;
 	}
-	else if(_from == DAY && _to == MONTH)
+    else if(_from == TimeGranularity::Day && _to == TimeGranularity::Month)
 	{
 		converted_value = (int)floor(_val * Utility::dayToMonthMult);
 	}
-	else if(_from == DAY && _to == YEAR)
+    else if(_from == TimeGranularity::Day && _to == TimeGranularity::Year)
 	{
 		converted_value = (int)floor(_val * Utility::dayToYearMult);
 	}
-	else if(_from == MONTH && _to == DAY)
+    else if(_from == TimeGranularity::Month && _to == TimeGranularity::Day)
 	{
 		converted_value = (int)_val * 30;
 	}
-	else if(_from == MONTH && _to == MONTH)
+    else if(_from == TimeGranularity::Month && _to == TimeGranularity::Month)
 	{
 		converted_value = (int)_val;
 	}
-	else if(_from == MONTH && _to == YEAR)
+    else if(_from == TimeGranularity::Month && _to == TimeGranularity::Year)
 	{
 		converted_value = (int)floor(_val * Utility::monthToYearMult);
 	}
-	else if(_from == YEAR && _to == DAY)
+    else if(_from == TimeGranularity::Year && _to == TimeGranularity::Day)
 	{
 		converted_value = (int)_val * 365;
 	}
-	else if(_from == YEAR && _to == MONTH)
+    else if(_from == TimeGranularity::Year && _to == TimeGranularity::Month)
 	{
 		converted_value = (int)_val * 12;
 	}
-	else if(_from == YEAR && _to == YEAR)
+    else if(_from == TimeGranularity::Year && _to == TimeGranularity::Year)
 	{
 		converted_value = (int)_val;
 	}

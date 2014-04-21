@@ -36,7 +36,7 @@ public:
 	PopulationParameters();
 	~PopulationParameters();
 
-	void setAgeSexualDebut(int ageSexualDebut, TimeGranularity granularity = YEAR) { SAEntAgeMths = Utility::convertTime(granularity, MONTH, ageSexualDebut); }
+    void setAgeSexualDebut(int ageSexualDebut, TimeGranularity granularity = TimeGranularity::Year) { SAEntAgeMths = Utility::convertTime(granularity, TimeGranularity::Month, ageSexualDebut); }
 
 	double getBirthRate() const;
 	void setBirthRate(double birth_rate) { birthRate = birth_rate; }

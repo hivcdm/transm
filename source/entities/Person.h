@@ -21,8 +21,6 @@ class FullVector;
 class InfectionsTracker;
 class RandomNumberGenerator;
 
-enum TimeGranularity;
-
 /// <summary>
 /// All individuals in the simulation are of this class, or something derived from this
 /// </summary>
@@ -329,10 +327,10 @@ public:
 	/** this calculates the FOI towards Person _p (this uses the Transmission coefficient) per event
 	// @param _p - partner
 	// @param _parteringType - whether this is a fling or steadyCouple */
-	virtual double getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventParams &_eventParams);
+	virtual double getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventParams &_eventParams) = 0;
 
 	/** get the transmission coefficient of the person... based on HVL */
-	virtual double getTransmissionCoeff();
+	virtual double getTransmissionCoeff() = 0;
 
 	//returns true if person is currently alive
 	bool isAlive() const;
@@ -465,7 +463,7 @@ public:
 	/*
 	rerolls risk group based on if they are csw or not.  Called after rolling for becoming sex worker
 	*/
-	virtual void rerollRiskGroup(EventParams &_eventParams);
+	virtual void rerollRiskGroup(EventParams &_eventParams) = 0;
 
 	/*
 	*Sets a new SimContext for the person
@@ -527,11 +525,11 @@ public:
 	//we are not allowed to have virtual templated functions... so we are forced to set return as double
 	//  @param _partnershipType - type of partnership this person is seeking
 	//	@param _partnerGender - gender of prospective partner
-	virtual double getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
-	virtual double getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
+	virtual double getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const = 0;
+	virtual double getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const = 0;
 
 	//Returns the age difference (in years) to center around
-	virtual double rollForAgeDifference(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums);
+	virtual double rollForAgeDifference(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums) = 0;
 
 	/*
 	checks to see whether the duration limit of any SexualPartnerships have elapsed and will add them to a list to be removed
@@ -553,7 +551,7 @@ public:
 
 	//returns whether this person could partner with Person _p
 	//  split this by gender because there might be behaviour differences between them
-	virtual bool possibleMatch(SexualPartnership::Type _partnershipType, Person *_p);
+	virtual bool possibleMatch(SexualPartnership::Type _partnershipType, Person *_p) = 0;
 
 	//removes indications that this person is a particular sexual partnership
 	//  this is called when that partnership separates
@@ -561,16 +559,15 @@ public:
 	void removePartnership(SexualPartnership *_partnership);
 
 	//for a New partnership, roll how this person wants to be in this relationship
-	virtual int rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums,
-	        Person *_p);
+	virtual int rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums, Person *_p) = 0;
 
 	/*
 	for a particular month, choose how many partners of _partnershipType this Person will have
 	*/
-	virtual int rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType);
+	virtual int rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType) = 0;
 
 	//for a particular partner, choose how many events this male will have
-	virtual int rollNumEventsPerPartner(Person *_p, RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType);
+	virtual int rollNumEventsPerPartner(Person *_p, RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType) = 0;
 
 	/*
 	sexual activity with person _p. This can happen within context of class SexualPartnership or just between to Persons

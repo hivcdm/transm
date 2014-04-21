@@ -232,7 +232,7 @@ void Person::becomeInfected(int _generationOfInfection, EventParams &_eventParam
 	}
 
 	stats.setStat(Person::STAT_TIME_OF_INFECTION_MTH, _eventParams.currTime);
-	stats.setStat(Person::STAT_AGE_AT_INFECTION_MTH, getAge(MONTH));
+    stats.setStat(Person::STAT_AGE_AT_INFECTION_MTH, getAge(TimeGranularity::Month));
 	stats.setStat(Person::STAT_GENERATION_OF_INFECTION, _generationOfInfection);
 
 	//if a CEPAC person exists (i.e. they were created earlier and thus this is an incident case), set them to infected
@@ -370,7 +370,7 @@ void Person::initialCEPACpatient(EventParams &_eventParams)
 		}
 
 		cepacPatient = new Patient(simContextToUse, _eventParams.cepacRunStats, _eventParams.cepacTracer,
-		                                 true, getAge(MONTH), cepacGender, setAsIncidentCase, _eventParams.currTime);
+            true, getAge(TimeGranularity::Month), cepacGender, setAsIncidentCase, _eventParams.currTime);
 
 		//}
 		//Only update hvl and cd4 if the patient is infected
@@ -576,15 +576,13 @@ Person *Person::fling(Person *_p, SexualPartnership::Type _partnershipType, Even
 
 int Person::getAge(TimeGranularity _granularity) const
 {
-	assert(_granularity < ENDTimeGranularity);
-
-	if(_granularity == MONTH)
+    if(_granularity == TimeGranularity::Month)
 	{
 		return age;
 	}
 	else
 	{
-		return Utility::convertTime(MONTH, _granularity, age);
+        return Utility::convertTime(TimeGranularity::Month, _granularity, age);
 	}
 }
 
@@ -744,7 +742,7 @@ void Person::print(ostream &_outStream, string _prefix) const
 	_outStream << "(";
 	getDemographicProfile()->print(_outStream, "");
 	_outStream << ")";
-	_outStream <<  Constants::TAB << "Age(mos.): " << getAge(MONTH);
+    _outStream << Constants::TAB << "Age(mos.): " << getAge(TimeGranularity::Month);
 	_outStream <<  Constants::TAB << "CD4: " << cd4;
 	_outStream << Constants::TAB << "HVL: " << hvl;
 	_outStream << Constants::TAB << "Risk: " << ((risk == Person::HIGH) ? "HIGH" : "LOW");
@@ -922,19 +920,13 @@ void Person::quitSexWork(EventParams &_eventParams)
 	dmgProfile.set(DemographicProfile::EMPLOYMENT, DemographicProfile::NON_CSW);
 }
 
-void Person::rerollRiskGroup(EventParams &/*_eventParams*/)
-{
-	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
-	cerr << "Person::rerollRiskGroup()" << endl;
-}
-
 //determine whether this person died
 bool Person::rollForDeath(RandomNumberGenerator &_randomNums)
 {
 	assert(death == false);
 
 	//if person is too old, then they automatically die
-	if(getAge(MONTH) >= (12 * Person::maxYrForDeathStats))
+    if(getAge(TimeGranularity::Month) >= (12 * Person::maxYrForDeathStats))
 	{
 		death = true;
 		deathStatus = DTH_OTHER;
@@ -983,12 +975,12 @@ bool Person::rollForDeath(RandomNumberGenerator &_randomNums)
 
 		//if this person is past Person::maxYrForDeathStats, they should not be alive
 		//get the correct probability of death for this person's gender and age
-		if(getAge(YEAR) >= static_cast<int>(Person::probDeathNatCauses[getDemographicProfileVal(DemographicProfile::GENDER)].size()))
+        if(getAge(TimeGranularity::Year) >= static_cast<int>(Person::probDeathNatCauses[getDemographicProfileVal(DemographicProfile::GENDER)].size()))
 		{
-			cout << "The age is " << getAge(YEAR) << endl;
+            cout << "The age is " << getAge(TimeGranularity::Year) << endl;
 		}
 
-		double deathRate = Person::probDeathNatCauses[getDemographicProfileVal(DemographicProfile::GENDER)].at(getAge(YEAR));
+        double deathRate = Person::probDeathNatCauses[getDemographicProfileVal(DemographicProfile::GENDER)].at(getAge(TimeGranularity::Year));
 		death = _randomNums.chance(deathRate);
 
 		if(death)
@@ -1000,8 +992,8 @@ bool Person::rollForDeath(RandomNumberGenerator &_randomNums)
 	//if they died, collect statistics
 	if(death)
 	{
-		stats.setStat(STAT_TOTAL_LM, getAge(MONTH));
-		stats.setStat(STAT_HIV_NEG_LM, getAge(MONTH) - (isInfected() ? stats.getStat(STAT_TIME_OF_INFECTION_MTH) : 0));
+        stats.setStat(STAT_TOTAL_LM, getAge(TimeGranularity::Month));
+        stats.setStat(STAT_HIV_NEG_LM, getAge(TimeGranularity::Month) - (isInfected() ? stats.getStat(STAT_TIME_OF_INFECTION_MTH) : 0));
 		stats.setStat(STAT_HIV_POS_POSTINFECT_LM, stats.getStat(STAT_TOTAL_LM) - stats.getStat(STAT_AGE_AT_INFECTION_MTH));
 	}
 
@@ -1638,7 +1630,7 @@ Person::Person(int _age, unsigned int _populationID)
 	populationID = _populationID;
 #ifndef TESTING
 
-	if(!Utility::withinRange<int>(_age, 0, Utility::convertTime(YEAR, MONTH, Person::maxYrForDeathStats)))
+    if(!Utility::withinRange<int>(_age, 0, Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Person::maxYrForDeathStats)))
 	{
 		if(_age < 0)
 		{
@@ -1647,7 +1639,7 @@ Person::Person(int _age, unsigned int _populationID)
 		else
 		{
 			//cout << "SOMEONE WAS TOO OLD (" << _age << ")!  MAKING THEM " << Utility::convertTime(YEAR, MONTH, Person::maxYrForDeathStats) << "!" << endl;
-			_age = Utility::convertTime(YEAR, MONTH, Person::maxYrForDeathStats);
+            _age = Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Person::maxYrForDeathStats);
 		}
 	}
 
@@ -1758,94 +1750,3 @@ int Person::getCEPACSimContextIndex(EventParams &_eventParams)
 
 	return returnValue;
 }
-
-//----------------< End Methods for Person >-------------------//
-
-
-
-
-
-//----------------< Start Methods for to be implemented by Male and Female >-------------------//
-
-/*
-Person *Person::choosePartner(RandomNumberGenerator &, EntityPool *, SexualPartnership::Type, bool)
-{
-	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
-	cerr << "Called Person::choosePartner()" << endl;
-	return nullptr;
-}
-*/
-
-double Person::getFOI(Person * /*_p*/, SexualPartnership::Type /*_partnershipType*/, EventParams &/*_eventParams*/)
-{
-	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
-	cerr << "Called Person::getFOI()" << endl;
-	return 0.0;
-}
-
-double Person::getMinPartnerSelectVal(Person::SelectingCriteria /*_PSC*/,
-                                      SexualPartnership::Type /*_partnershipType*/) const
-{
-	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
-	cerr << "Person::getMinPartnerSelectVal()" << endl;
-	return 0.0;
-}
-
-
-
-double Person::getMaxPartnerSelectVal(Person::SelectingCriteria /*_PSC*/,
-                                      SexualPartnership::Type /*_partnershipType*/) const
-{
-	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
-	cerr << "Person::getMaxPartnerSelectVal()" << endl;
-	return 0.0;
-}
-
-double Person::rollForAgeDifference(SexualPartnership::Type /*_partnershipType*/, RandomNumberGenerator &/*_randomNums*/)
-{
-	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
-	cerr << "Person::rollForAgeDifference()" << endl;
-	return 0.0;
-}
-
-double Person::getTransmissionCoeff()
-{
-	cerr << "Called Person::getTransmissionCoeff()" << endl;
-	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
-	return 0.0;
-}
-
-bool Person::possibleMatch(SexualPartnership::Type /*_partnershipType*/, Person * /*_p*/)
-{
-	cerr << "Called Person::possibleMatch()" << endl;
-	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
-	return false;
-}
-
-int Person::rollForNewPartnershipDuration(SexualPartnership::Type /*_partnershipType*/, RandomNumberGenerator &/*_randomNums*/,
-        Person * /*_p*/)
-{
-	cerr << "Called Person::rollForNewPartnershipDuration()" << endl;
-	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
-	return false;
-}
-
-int Person::rollForNumPartners(RandomNumberGenerator &/*_randomNums*/, SexualPartnership::Type /*_partnershipType*/)
-{
-	cerr << "Called Person::rollForNumPartners()" << endl;
-	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
-	return false;
-}
-
-int Person::rollNumEventsPerPartner(Person * /*_p*/, RandomNumberGenerator &/*_randomNums*/,
-                                    SexualPartnership::Type /*_partnershipType*/)
-{
-	cerr << "Called Person::rollNumEventsPerPartner()" << endl;
-	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
-	return false;
-}
-
-
-//----------------< Start Methods for to be implemented by Male and Female >-------------------//
-
-

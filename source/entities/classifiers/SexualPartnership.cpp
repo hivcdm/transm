@@ -15,12 +15,6 @@ const std::map<SexualPartnership::Type, std::string> SexualPartnership::TypeStri
 	{SexualPartnership::Type::Csw, "CSW"}
 };
 
-SexualPartnership::SexualPartnership()
-{
-	cerr << "Called: SexualPartnership::SexualPartnership()" << endl;
-	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
-}
-
 SexualPartnership::SexualPartnership(Person *_person1, Person *_person2, EventParams &_eventParams,
                                      SexualPartnership::Type _partnershipType)
 {

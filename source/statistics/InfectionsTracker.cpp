@@ -321,7 +321,7 @@ void InfectionsTracker::recordIncidentInfection(long _time, SexualPartnership::T
 	currTimeStepIncidentInfsRiskGenderEmployment[_infected->getRiskLevel()][_infected->getDemographicProfileVal(
 	            DemographicProfile::GENDER)][_infected->getDemographicProfileVal(DemographicProfile::EMPLOYMENT)]++;
 	totalIncidentInfections[_infector->getHVL()]++;
-	int infectedAge = _infected->getAge(MONTH);
+	int infectedAge = _infected->getAge(TimeGranularity::Month);
 	double infectorCD4 = _infector->cd4;
 	DemographicProfile::Gender infectedGender = (DemographicProfile::Gender) _infected->getDemographicProfileVal(DemographicProfile::GENDER);
 	Person::RiskLevel infectedRisk = _infected->getRiskLevel();
@@ -715,9 +715,9 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	_outStream << getCurrTimeStepIncidentInfsTotal() << Constants::TAB;
 
 	//Print to BatchStats file if NEWINFECTIONS stream is open
-	if(_eventParams.BatchStatsStream[NEWINFECTIONS].is_open())
+    if(_eventParams.BatchStatsStream[BatchStatsVariables::NEWINFECTIONS].is_open())
 	{
-		_eventParams.BatchStatsStream[NEWINFECTIONS] << getCurrTimeStepIncidentInfsTotal() << Constants::TAB;
+        _eventParams.BatchStatsStream[BatchStatsVariables::NEWINFECTIONS] << getCurrTimeStepIncidentInfsTotal() << Constants::TAB;
 	}
 
 	double monthlyIncidence = 1.0 * (getCurrTimeStepIncidentInfsTotal()) / (double)currPopSize;
@@ -730,9 +730,9 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	double incidence = calculateAnnualIncidence();
 
 	//Print to BatchStats file if INCIDENCE stream is open
-	if(_eventParams.BatchStatsStream[INCIDENCE].is_open())
+    if(_eventParams.BatchStatsStream[BatchStatsVariables::INCIDENCE].is_open())
 	{
-		_eventParams.BatchStatsStream[INCIDENCE] << incidence << Constants::TAB;
+        _eventParams.BatchStatsStream[BatchStatsVariables::INCIDENCE] << incidence << Constants::TAB;
 	}
 
 	//Total Infected in History
@@ -751,18 +751,18 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	_outStream << totalInfected << Constants::TAB;
 
 	//Print to BatchStats file if CURRENTLYINFECTED stream is open
-	if(_eventParams.BatchStatsStream[CURRENTLYINFECTED].is_open())
+	if(_eventParams.BatchStatsStream[BatchStatsVariables::CURRENTLYINFECTED].is_open())
 	{
-		_eventParams.BatchStatsStream[CURRENTLYINFECTED] << totalInfected << Constants::TAB;
+        _eventParams.BatchStatsStream[BatchStatsVariables::CURRENTLYINFECTED] << totalInfected << Constants::TAB;
 	}
 
 	//Total Population Size
 	_outStream << currPopSize << Constants::TAB;
 
 	//Print to BatchStats file if POPULATION stream is open
-	if(_eventParams.BatchStatsStream[POPULATION].is_open())
+    if(_eventParams.BatchStatsStream[BatchStatsVariables::POPULATION].is_open())
 	{
-		_eventParams.BatchStatsStream[POPULATION] << currPopSize << Constants::TAB;
+        _eventParams.BatchStatsStream[BatchStatsVariables::POPULATION] << currPopSize << Constants::TAB;
 	}
 
 	//current prevalence
@@ -770,9 +770,9 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	_outStream << currPrevalence << Constants::TAB;
 
 	//Print to BatchStats file if PREVALENCE stream is open
-	if(_eventParams.BatchStatsStream[PREVALENCE].is_open())
+    if(_eventParams.BatchStatsStream[BatchStatsVariables::PREVALENCE].is_open())
 	{
-		_eventParams.BatchStatsStream[PREVALENCE] << currPrevalence << Constants::TAB;
+        _eventParams.BatchStatsStream[BatchStatsVariables::PREVALENCE] << currPrevalence << Constants::TAB;
 	}
 
 	//current pop and prevalence of sexually active population
@@ -796,9 +796,9 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	_outStream << currPrevalenceSA << Constants::TAB;
 
 	//Print up a batchstats file!
-	if(_eventParams.BatchStatsStream[PREVALENCESA].is_open())
+    if(_eventParams.BatchStatsStream[BatchStatsVariables::PREVALENCESA].is_open())
 	{
-		_eventParams.BatchStatsStream[PREVALENCESA] << currPrevalenceSA << Constants::TAB;
+        _eventParams.BatchStatsStream[BatchStatsVariables::PREVALENCESA] << currPrevalenceSA << Constants::TAB;
 	}
 
 	//TODO: this should be done somewhere else, so we're not relying on side effects to record information

@@ -10,6 +10,7 @@ CepacInputParser::CepacInputParser(const std::string &filename)
 	inputStream_.open(filename.c_str(), std::ios::in);
 }
 
+//TODO:we need to check the correctness of this method
 std::array<std::vector<double>, 2> CepacInputParser::parseNonAidsDeathProbabilities()
 {
 	std::array<std::vector<double>, 2> probabilities;
@@ -47,9 +48,7 @@ std::array<std::vector<double>, 2> CepacInputParser::parseNonAidsDeathProbabilit
 		}
 	}
 
-	//we should really reset the pointer to the beginning of the file
-	//also we need to check the correctness of this method
-	assert(Constants::TODO_LO_PRI);
+	//TODO:we should really reset the pointer to the beginning of the file
 
 	return probabilities;
 }

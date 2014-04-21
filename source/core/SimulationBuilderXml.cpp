@@ -750,9 +750,8 @@ void SimulationBuilderXml::InitializePopulation()
 	selector.set(DemographicProfile::RELATIONSHIP_STATUS, DemographicProfile::SINGLE);
 	selector.set(DemographicProfile::EMPLOYMENT, DemographicProfile::NON_CSW);
 	std::vector<DemographicProfile::ProfileID> bucketIDs;
-	//fix code below, i've put placeholders for multiple singles buckets, but right now we only use 1 of each gender
+	//TODO:fix code below, i've put placeholders for multiple singles buckets, but right now we only use 1 of each gender
 	//errhode: Is this taken care of with the whole agebucket inside SexualMixingBucket thing?
-	assert(Constants::TODO_LO_PRI);
 	selector.selectProfileIDs(bucketIDs, nullptr);
 	BucketDemographicProfile *singleMales = population.entities->getBucket(bucketIDs.at(0));
 	selector.set(DemographicProfile::GENDER, DemographicProfile::FEMALE);
@@ -1038,8 +1037,8 @@ void SimulationBuilderXml::ReadPopulationParameters()
 	for(auto age_bucket_node : initial_state_node.child("ageDistributionYrs").children("range"))
 	{
 		population_parameters.GetInitialAgeBuckets().emplace_back(
-			Utility::convertTime(YEAR, MONTH, Attr<int>(age_bucket_node, "lower")),
-			Utility::convertTime(YEAR, MONTH, Attr<int>(age_bucket_node, "upper")) + 11,
+            Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Attr<int>(age_bucket_node, "lower")),
+            Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Attr<int>(age_bucket_node, "upper")) + 11,
 			Text<double>(age_bucket_node.child("distribMale")),
 			Text<double>(age_bucket_node.child("distribFemale")),
 			Text<int>(age_bucket_node.child("numInfectedMaleCsw")),
@@ -1052,8 +1051,8 @@ void SimulationBuilderXml::ReadPopulationParameters()
 
 	population_parameters.SetInitialCswProportion(DemographicProfile::MALE, Text<double>(initial_state_node.child("chanceBeingCswMale")));
 	population_parameters.SetInitialCswProportion(DemographicProfile::FEMALE, Text<double>(initial_state_node.child("chanceBeingCswFemale")));
-	population_parameters.SetCswEndAge(DemographicProfile::MALE, Utility::convertTime(YEAR, MONTH, Text<int>(initial_state_node.child("cswEndAgeMale"))));
-	population_parameters.SetCswEndAge(DemographicProfile::FEMALE, Utility::convertTime(YEAR, MONTH, Text<int>(initial_state_node.child("cswEndAgeFemale"))));
+    population_parameters.SetCswEndAge(DemographicProfile::MALE, Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Text<int>(initial_state_node.child("cswEndAgeMale"))));
+    population_parameters.SetCswEndAge(DemographicProfile::FEMALE, Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Text<int>(initial_state_node.child("cswEndAgeFemale"))));
 
 	//normalize %population values for each age bucket
 	std::array<double, DemographicProfile::ENDGender> totalPopulationproportionages;
@@ -1081,7 +1080,7 @@ void SimulationBuilderXml::ReadPopulationParameters()
 	population_parameters.setProportionCircumcised(GetTargetedTemplate<double>(population_node.child("proportionCircumcised"),
 		std::bind(&Simulation::SetProportionCircumcised, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)));
 	population_parameters.setAgeSexualDebut(GetTemplate<int>(population_node.child("ageSexualDebutYrs"),
-		std::bind(&Simulation::SetAgeSexualDebut, std::placeholders::_1, std::placeholders::_2, YEAR)), YEAR);
+        std::bind(&Simulation::SetAgeSexualDebut, std::placeholders::_1, std::placeholders::_2, TimeGranularity::Year)), TimeGranularity::Year);
 
 	auto defaultMaleParams = ReadMaleSubPopParams();
 	population_parameters.SetMaleParameters(defaultMaleParams);

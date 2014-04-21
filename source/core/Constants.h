@@ -1,34 +1,35 @@
 #pragma once
 
 #include <string>
+#include <map>
 
 /// <summary>
 /// used to set amount of debug output
 /// </summary>
-enum DebugLevel
+enum class DebugLevel
 {
 	/// <summary>
 	/// no debug output printed
 	/// </summary>
-	DEBUG0,
+	Zero,
 	/// <summary>
 	/// for each timestep, print the sizes of the different demographic buckets within the Population
 	/// </summary>
-	DEBUG1,
+	One,
 	/// <summary>
-	/// for each timestep, print out DEBUG1 output plus all the individual entities that have been affected by each event
+	/// for each timestep, print out One output plus all the individual entities that have been affected by each event
 	/// </summary>
-	DEBUG2,
+	Two,
 	/// <summary>
 	/// unused for now
 	/// </summary>
-	DEBUG3
+	Three
 };
 
 /// <summary>
 /// used to set popstats output variables
 /// </summary>
-enum BatchStatsVariables
+enum class BatchStatsVariables
 {
 	PREVALENCE,
 	PREVALENCESA,
@@ -36,35 +37,23 @@ enum BatchStatsVariables
 	POPULATION,
 	CURRENTLYINFECTED,
 	NEWINFECTIONS,
-	ENDBatchStatsVariables,
+	Last,
+    First = PREVALENCE
 };
 
 /// <summary>
 /// used to set the timestep length
 /// </summary>
-enum TimeGranularity
+enum class TimeGranularity
 {
-	DAY,
-	MONTH,
-	YEAR,
-	ENDTimeGranularity
+	Day,
+	Month,
+	Year
 };
 
 class Constants
 {
 public:
-	//we use this in asserts where virtual methods are incorrectly called...
-	//   we should be calling the method implemented by the children
-	//   if we run into this, then check why the parent method is being called...
-	static const bool SHOULD_NOT_BE_CALLING_ME;
-
-	//this will be used in conjunction w/ asserts to find any loose ends that we did not tie up.
-	//set to false to trigger asserts
-	static const bool TODO;
-	//definitely need to to do, but we use this when we just need to get some part to run for the time being.
-	static const bool TODO_DEF;
-	static const bool TODO_LO_PRI;
-
 	static const std::string ASTERISK;
 	static const std::string BLANK;
 	static const std::string COLON;
@@ -73,7 +62,7 @@ public:
 	static const std::string TABTAB;
 	static const std::string SPACE;
 
-	static const std::string BatchStatFileName[ENDBatchStatsVariables];
+	static const std::map<BatchStatsVariables, std::string> BatchStatFileName;
 
 	//Used to keep track of the number of CEPAC .in files (i.e. SimContext) there are
 	static const int NUMBER_OF_CEPAC_FILES = 5;

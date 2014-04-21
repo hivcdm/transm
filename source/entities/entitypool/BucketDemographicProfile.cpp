@@ -26,6 +26,11 @@ BucketDemographicProfile::PersonSet *BucketDemographicProfile::getEntityIndex()
 	return simpleEntityIndex;
 }
 
+Person *BucketDemographicProfile::drawMember(RandomNumberGenerator &_randomNums, Person *_chooser, SexualPartnership::Type _partnershipType, bool _remove)
+{
+    throw std::runtime_error("not imlemented");
+}
+
 /**
 This method will return a label for this BucketDemographicProfile
 **/
@@ -39,8 +44,8 @@ void BucketDemographicProfile::Apply(const PopulationTarget &target, RandomNumbe
 	for(auto &id_person_pair : *simpleEntityIndex)
 	{
 		auto person = id_person_pair.second;
-		if(!((target.age_lower.has_value && target.age_lower.value < person->getAge(MONTH))
-			|| (target.age_upper.has_value && target.age_upper.value > person->getAge(MONTH))
+        if(!((target.age_lower.has_value && target.age_lower.value < person->getAge(TimeGranularity::Month))
+            || (target.age_upper.has_value && target.age_upper.value > person->getAge(TimeGranularity::Month))
 			|| (target.observed_hiv_status.has_value && target.observed_hiv_status.value != person->getHIVStatus())
 			|| (target.on_treatment.has_value && target.on_treatment.value != person->isOnArt())
 			|| (target.risk_level.has_value && target.risk_level.value != person->getRiskLevel())))
@@ -74,23 +79,6 @@ Person *BucketDemographicProfile::drawMember(RandomNumberGenerator &_randomNums,
 	}
 
 	return removed;
-}
-
-Person *BucketDemographicProfile::drawMember(RandomNumberGenerator &_randomNums, Person *UNUSED(_chooser),
-                                     SexualPartnership::Type _partnershipType, bool _remove)
-{
-	//we have to implement the more complicated drawing process
-	//This is done in BucketSexualMixing
-	assert(Constants::SHOULD_NOT_BE_CALLING_ME);
-	cerr << "BucketDemographicProfile::drawMember(RandomNumberGenerator& _randomNums, Person *_chooser,SexualPartnership::Type _partnershipType, bool _remove) was called: only persons in a BucketSexualMixing should be drawing partners!"
-	     << endl;
-	/*
-		Person* removed = ______________;
-		if(_remove && removed) {
-			removed->setCurrBucketProfileID(DemographicProfile::END);
-		}
-	*/
-	return drawMember(_randomNums, _partnershipType, _remove);
 }
 
 bool BucketDemographicProfile::erase(Person *_person)

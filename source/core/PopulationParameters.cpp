@@ -69,7 +69,7 @@ void PopulationParameters::AgeBucketPrevalenceInfo::print(EventParams &_eventPar
 PopulationParameters::PopulationParameters()
 {
 	//set default values of fields
-	debugLevel = DEBUG1;
+    debugLevel = DebugLevel::One;
 	initSize = 10000;
 	birthRate = 0.0038;
 	SAEntAgeMths = 180;

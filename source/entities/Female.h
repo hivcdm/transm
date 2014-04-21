@@ -58,6 +58,16 @@ public:
 	double getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
 	double getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
 
+    double rollForAgeDifference(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums);
+
+    bool possibleMatch(SexualPartnership::Type _partnershipType, Person *_p);
+
+    int rollNumEventsPerPartner(Person *_p, RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType);
+
+    int rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums, Person *_p);
+
+    int rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType);
+
 	void Circumcise();
 
 	double getTransmissionCoeff();

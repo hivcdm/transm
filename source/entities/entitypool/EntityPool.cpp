@@ -580,20 +580,14 @@ EntityPool::EntityPool(int _SAEntAgeMths, unsigned int _popID, const std::array<
 		}
 		else
 		{
-			//make an SA bucket -- we leave this here for compiling purposes
-			// should insert the full-vector structure
-			assert(Constants::TODO_DEF);
 			//CSW can't be in STEADY relationships
 			bool invalidCombo = (DemographicProfile::CSW == DemographicProfile::get(validBucketIDs.at(i), DemographicProfile::EMPLOYMENT)) &&
 			                    (DemographicProfile::NON_SINGLE == DemographicProfile::get(validBucketIDs.at(i), DemographicProfile::RELATIONSHIP_STATUS)) ;
 
 			if(!invalidCombo)
-				//ERINWASHERE
-				//CHANGES WENT HERE!!
-				//entityBuckets.at(currBucketID) = new BucketDemographicProfile(currBucketID, DemographicProfile::toString(currBucketID), true);
 			{
 				entityBuckets.at(currBucketID) = new BucketSexualMixing(currBucketID, DemographicProfile::toString(currBucketID), _popID,
-				        _SAEntAgeMths, 12 * Person::maxYrForDeathStats + 1, MONTH, _assort);
+                    _SAEntAgeMths, 12 * Person::maxYrForDeathStats + 1, TimeGranularity::Month, _assort);
 			}
 		}
 	}	//for(unsigned int i = 0; validBucketIDs.size(); ++i) {
