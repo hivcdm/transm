@@ -403,16 +403,6 @@ bool BucketSexualMixing::insert(Person *_person)
 	}
 }
 
-/*BucketSexualMixing::JIterator BucketSexualMixing::iterator() {
-	#if defined(__APPLE__)
-	return typename BucketSexualMixing::JIterator( new BucketDemographicProfile::JavaStyleIterator(this) );
-	#endif
-#if defined(WIN32)
-	return BucketSexualMixing::JIterator( new BucketDemographicProfile::JavaStyleIterator(this) );
-#endif
-}*/
-
-
 void BucketSexualMixing::print(ostream &_outStream, std::string _prefix)
 {
 	//The iterator of the BucketAges in the circular buffer
@@ -420,11 +410,6 @@ void BucketSexualMixing::print(ostream &_outStream, std::string _prefix)
 
 	for(bucketIter = begin(); bucketIter != end(); bucketIter++)
 	{
-		//The iterator of all (unique) persons in the BucketAge
-		//for (personIter = (*bucketIter)->begin(); personIter != (*bucketIter)->end(); personIter++){
-		//(*personIter)->print(_outStream,_prefix);
-		//}
-		//A print function was written for BucketAge... lets use it
 		(*bucketIter)->print(_outStream, _prefix);
 	}
 }
@@ -679,81 +664,3 @@ list<Person *> BucketSexualMixing::ageOneTimeStep()
 
 	return toReturn;
 }
-
-//--------< End additional methods based on this structure >--------//
-
-//---------------< Begin methods for BucketSexualMixing::JavaStyleIterator >--------------------//
-/*
-BucketSexualMixing::JavaStyleIterator::JavaStyleIterator(BucketSexualMixing *_bucket){
-	currBuffIndex = 0;
-	entityCircularBuff = _bucket->entitiesByAge;
-	currNumIndexJIterator = entityCircularBuff->at(currBuffIndex)->iterator();
-}
-
-//returns true if the element that was last returned by next() has been removed using remove()
-bool BucketSexualMixing::JavaStyleIterator::alreadyRemoved() {
-	return currNumIndexJIterator->alreadyRemoved();
-}
-
-//returns the spot right after last member of this pool
-bool BucketSexualMixing::JavaStyleIterator::hasNext() {
-	//if current grid index contains entities, then return true
-	if( currNumIndexJIterator->hasNext() )
-		return true;
-	else {
-		//else, find next grid index with people in it
-		while ((currBuffIndex + 1) < entityCircularBuff->size())		{
-			//we are relinquishing the auto_ptr control...
-			currNumIndexJIterator.reset(nullptr);
-			currBuffIndex = currBuffIndex+1;
-
-			//if this has any elements, then iterate through
-			if(entityCircularBuff->at(currBuffIndex)->size()) {
-				currNumIndexJIterator = entityCircularBuff->at(currBuffIndex)->iterator();
-				return true;
-			}
-		} // end while
-	} // end else
-
-	return false;
-}
-
-//this will be used to get the next in line
-Person* BucketSexualMixing::JavaStyleIterator::next() {
-	if(hasNext()) {
-		return currNumIndexJIterator->next();
-	} else
-		return nullptr;
-}
-
-//removes from the collection the last element returned by the iterator
-bool BucketSexualMixing::JavaStyleIterator::remove() {
-	bool removed = currNumIndexJIterator->remove();
-
-	if(removed) {
-		//we need to change this
-		assert(Constants::TODO_DEF);
-		Person * p = currNumIndexJIterator->get();
-		p->setCurrBucketProfileID( DemographicProfile::END);
-	}
-
-
-	return removed;
-}
-
-//lets us reuse an iterator, resets to beginning of current collection
-void BucketSexualMixing::JavaStyleIterator::reset() {
-	currNumIndexJIterator.reset(0);
-	currBuffIndex = 0;
-	currNumIndexJIterator = entityCircularBuff->at(currBuffIndex)->iterator();
-}
-
-BucketSexualMixing::JavaStyleIterator::~JavaStyleIterator() {
-	//cout << "BucketSexualMixing::JavaStyleIterator::~JavaStyleIterator()" << endl;
-	currNumIndexJIterator.reset(nullptr);
-
-	entityCircularBuff = nullptr;
-
-}*/
-
-//---------------< End methods for BucketSexualMixing::JavaStyleIterator >--------------------//

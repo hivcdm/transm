@@ -94,10 +94,4 @@ public:
 
 	static const bool SHOW_INFECTED;
 	static const bool NO_SHOW_INFECTED;
-
-	//these are used to indicate whether JIterators need to be deleted or not
-	//used to distinguish between the internal iterator held by a class
-	//  or a newly allocated and initialized iterator
-	static const bool NEED_TO_DELETE;
-	static const bool DO_NOT_DELETE;
 };

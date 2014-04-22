@@ -143,7 +143,7 @@ public:
 		}
 		else
 		{
-			population_.circumcise(parameters_.randomNums, proportion_circumcised, target.value);
+			population_.Circumcise(parameters_.randomNums, proportion_circumcised, target.value);
 		}
 	}
 
@@ -186,7 +186,7 @@ public:
 	void SetChanceBecomeSexWorker(DemographicProfile::Gender gender, double chance) { population_.popWideParams.SetChanceBecomeCsw(gender, chance); }
 	void SetPartnerAcquisitionSteadyMultiplier(Person::RiskLevel risk, double multiplier) { population_.popWideParams.SetPartnerAcquisitionSteadyMultiplier(risk, multiplier); }
 
-	void AddLifeExpectancyRecordTime(int time) { population_.popStats.addLifeExpectancyRecordTime(time); }
+	void AddLifeExpectancyRecordTime(int time) { population_.populationStatistics.addLifeExpectancyRecordTime(time); }
 
 private:
 	friend class SimulationBuilder;
@@ -218,7 +218,7 @@ private:
 	void SetNonAidsDeathFromCepac(SimContext &context, std::vector<double> &male, std::vector<double> &female);
 
 	/** perform one timestep of simulation */
-	int SimulateMonth();
+    std::size_t SimulateMonth();
 
 	void UpdateTimeDependentParameters();
 

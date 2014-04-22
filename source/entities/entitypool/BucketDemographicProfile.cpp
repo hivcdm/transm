@@ -26,7 +26,7 @@ BucketDemographicProfile::PersonSet *BucketDemographicProfile::getEntityIndex()
 	return simpleEntityIndex;
 }
 
-Person *BucketDemographicProfile::drawMember(RandomNumberGenerator &_randomNums, Person *_chooser, SexualPartnership::Type _partnershipType, bool _remove)
+Person *BucketDemographicProfile::drawMember(RandomNumberGenerator &, Person *, SexualPartnership::Type, bool)
 {
     throw std::runtime_error("not imlemented");
 }
@@ -130,11 +130,6 @@ bool BucketDemographicProfile::insert(Person *_person)
 	_person->setCurrBucketProfileID(getProfileID());
 	return true;
 }
-
-/*BucketDemographicProfile::JIterator BucketDemographicProfile::iterator() {
-	assert(simpleEntityIndex != nullptr);
-	return JIterator( new JavaStyleIterator(this) );
-}*/
 
 void BucketDemographicProfile::print(std::ostream &_outStream, std::string _prefix)
 {

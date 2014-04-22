@@ -679,18 +679,18 @@ void SimulationBuilderXml::InitializePopulation()
 		if((population.entities->getBucket(currProfileID) != nullptr) &&
 			(DemographicProfile::get(currProfileID, DemographicProfile::SEXUAL_ACTIVITY_STATUS) != DemographicProfile::NA))
 		{
-			population.getPopulationStatistics().infectionsTracker.addToDetailedTrace(currProfileID);
+			population.GetPopulationStatistics().infectionsTracker.addToDetailedTrace(currProfileID);
 		}
 
 		currProfileID++;
 	}
 
 	//initialize structures that hold people who can initiate and 'agree' to relationships.
-	population.initPartnershipBuckets();
+	population.InitPartnershipBuckets();
 
 	if(population.parameters_.useRollout)
 	{
-		population.applyRolloutContext(population.parameters_, 0);
+		population.ApplyRolloutContext(population.parameters_, 0);
 	}
 
 	// Create the people in the population 
@@ -718,7 +718,7 @@ void SimulationBuilderXml::InitializePopulation()
 
 			//create a person, males first and females second
 			auto gender = (count < numMalesInCurrentBucket) ? DemographicProfile::MALE : DemographicProfile::FEMALE;
-			auto person = population.generatePerson(simulation_.GetEventParams(), gender, &ageBucketParams, tracePerson);
+			auto person = population.GeneratePerson(simulation_.GetEventParams(), gender, &ageBucketParams, tracePerson);
 
 			//add the created person to the EntityPool
 			population.entities->addPersonToAll(person);
@@ -734,7 +734,7 @@ void SimulationBuilderXml::InitializePopulation()
 		population.currSizeByAgeRangeFemale.push_back(std::make_pair(ageRange, numFemalesInCurrentBucket));
 	}
 
-	population.popStats.artTracker.SetAgeRanges(ageRanges);
+    population.populationStatistics.artTracker.SetAgeRanges(ageRanges);
 
 	if(population.parameters_.outputTrace[EventParams::TraceFileType::Singleperson])
 	{
@@ -781,7 +781,7 @@ void SimulationBuilderXml::InitializePopulation()
 		}
 
 		//try to form partnership, will add Male back to the pool if partnership was formed
-		population.createPartnerships(population.parameters_, m, nullptr, SexualPartnership::Type::Steady, true);
+		population.CreatePartnerships(population.parameters_, m, nullptr, SexualPartnership::Type::Steady, true);
 		numCouples--;
 	} //while(numCouples > 0) {
 
@@ -807,12 +807,12 @@ void SimulationBuilderXml::InitializePopulation()
 		}
 
 		//form partnership, will add Male back to the pool if partnership was formed
-		population.createPartnerships(population.parameters_, m, nullptr, SexualPartnership::Type::Regular, true);
+		population.CreatePartnerships(population.parameters_, m, nullptr, SexualPartnership::Type::Regular, true);
 		numCouples--;
 	} //while(numCouples > 0) {
 
 	//count the size of the population and store value
-	population.updateSize();
+	population.UpdateSize();
 }
 
 EventParams::RolloutEligibility SimulationBuilderXml::ReadRolloutEligibility()

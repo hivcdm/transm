@@ -3,12 +3,12 @@
 #include "../core/Constants.h"
 #include "../util/Utility.h"
 
-int Female::rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums, Person *_p)
+int Female::rollForNewPartnershipDuration(SexualPartnership::Type, RandomNumberGenerator &, Person *)
 {
     throw std::runtime_error("not implemented for women");
 }
 
-int Female::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType)
+int Female::rollForNumPartners(RandomNumberGenerator &, SexualPartnership::Type)
 {
     throw std::runtime_error("not implemented for women");
 }

@@ -119,7 +119,7 @@ public:
     /// <summary>
     /// counts the total size of the population and updates internal state
     /// </summary>
-	long UpdateSize();
+	std::size_t UpdateSize();
 
     /// <summary>
     /// resets the monthly statistics
@@ -144,27 +144,27 @@ public:
     /// <summary>
     /// returns internal count of how big the current population is
     /// </summary>
-	long GetSize();
+    std::size_t GetSize();
 
     /// <summary>
     /// returns internal count of how big the current population is
     /// </summary>
-	long GetNASize();
+    std::size_t GetNASize();
 
     /// <summary>
     /// returns internal count of how big the current population is
     /// </summary>
-	long GetSize(DemographicProfile::Gender gender);
+    std::size_t GetSize(DemographicProfile::Gender gender);
 
     /// <summary>
     /// returns internal count of how big the current population is
     /// </summary>
-	long GetSASize(DemographicProfile::Gender _gender, Person::RiskLevel _risk);
+    std::size_t GetSASize(DemographicProfile::Gender _gender, Person::RiskLevel _risk);
 
     /// <summary>
     /// returns internal count of how big the current population is
     /// </summary>
-	long GetCSWSize(DemographicProfile::Gender _gender, Person::RiskLevel _risk);
+    std::size_t GetCSWSize(DemographicProfile::Gender _gender, Person::RiskLevel _risk);
 
     /// <summary>
     ///
@@ -174,12 +174,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-	const PopulationStatistics &GetPopulationStatistics() const { return popStats; }
+	const PopulationStatistics &GetPopulationStatistics() const { return populationStatistics; }
 
     /// <summary>
     ///
     /// </summary>
-	PopulationStatistics &GetPopulationStatistics() { return popStats; }
+    PopulationStatistics &GetPopulationStatistics() { return populationStatistics; }
 
     /// <summary>
     ///
@@ -213,13 +213,13 @@ private:
 	/// @param _forceNumPartnersOne if true will force _initiator to create just one partnership of type _partnership type (useful for initial regular partnerships
 	/// @return number of partnerships formed
     /// </remarks>
-	unsigned long createPartnerships(EventParams &_eventParams, Person *_initiator, std::list<Person *>::iterator *_p_Iter,
+	unsigned long CreatePartnerships(EventParams &_eventParams, Person *_initiator, std::list<Person *>::iterator *_p_Iter,
 	                                 SexualPartnership::Type _partnershipType, bool _forceNumPartnersOne = false);
 
     /// <summary>
 	/// dissolves a list of particular sexual partnerships. Removes the pointer to the SexualPartnership from each member and then deletes it
     /// </summary>
-	void dissolveSexualPartnerships(EventParams &_eventParams, Person *_initiator,
+	void DissolveSexualPartnerships(EventParams &_eventParams, Person *_initiator,
 	                                std::list<SexualPartnership *> &_partnershipsToEnd);
 
     /// <summary>
@@ -227,24 +227,24 @@ private:
     /// @param _ageBucketParams	parameters that determine a prevalent person's characteristics. If this is nullptr, then this method will create a newborn
     /// @return a newly formed person
     /// </summary>
-	Person *generatePerson(EventParams &_eventParams, DemographicProfile::Gender _gender,
+	Person *GeneratePerson(EventParams &_eventParams, DemographicProfile::Gender _gender,
 	                       PopulationParameters::AgeBucketPrevalenceInfo *_ageBucketParams, bool toTrace);
 
     /// <summary>
 	/// processes the death of 1 person, updates statistics, removes that person from any relationships
 	/// @param _deceased pointer to deceased person
     /// </summary>
-	void processDeath(EventParams &_eventParams, Person *_p, bool calculateLE);
+	void ProcessDeath(EventParams &_eventParams, Person *_p, bool calculateLE);
 
     /// <summary>
     /// 
     /// </summary>
-	void determineRankings(const EventParams::RolloutEligibility &criteria);
+	void DetermineRankings(const EventParams::RolloutEligibility &criteria);
 
     /// <summary>
 	/// calculates the number of HIV cases for each sexually active BucketDemographicProfile and stores it in _infectionsTracker
     /// </summary>
-	long calcPrevalentPopulation(long _time);
+	long CalcPrevalentPopulation(long _time);
 
     /// <summary>
 	/// this is called at the end of each method that affects the population members
@@ -254,48 +254,48 @@ private:
     /// @param _totalAffectedLabel a label that identifies the meaning behind the value _totalAffected
     /// @param _showInfected if true, will indicate how many people are currently infected in each BucketDemographicProfile
     /// </summary>
-	void printMethodResults(EventParams &_eventParams, string _methodName, string _eventLabel, long _totalAffected,
+	void PrintMethodResults(EventParams &_eventParams, string _methodName, string _eventLabel, long _totalAffected,
 	                        string _totalAffectedLabel, bool _showInfections);
 
     /// <summary>
 	/// this saves the state of the population and writes to file
     /// </summary>
-	void saveState(std::ostream &_outStream, long currTime);
+	void SaveState(std::ostream &_outStream, long currTime);
 
     /// <summary>
 	/// this is called at the end of each month to print the statistics about each population to the Population.out file
 	/// @param _time the current time in the simulation
 	/// @param _outStream the stream to print
     /// </summary>
-	void printPopulation(EventParams &_eventParams, long _time, std::ostream &_outStream);
+	void PrintPopulation(EventParams &_eventParams, long _time, std::ostream &_outStream);
 
     /// <summary>
     /// this is called at end of each month to print statistics about the behavior of the population to the Behavior.out file
     /// </summary>
-	void printPartnerships(EventParams &_eventParams, long _time, std::ostream &_outStream);
+	void PrintPartnerships(EventParams &_eventParams, long _time, std::ostream &_outStream);
 
     /// <summary>
 	/// this is called at end of each month to print statistics about the clinical status of the population to the Clinical.out file
     /// </summary>
-	void printClinical(EventParams &_eventParams, long _time, std::ostream &_outStream);
+	void PrintClinical(EventParams &_eventParams, long _time, std::ostream &_outStream);
 
     /// <summary>
     /// </summary>
-	void printARTRolloutOutcomes(EventParams &_eventParams, std::ostream &_outStream);
+	void PrintARTRolloutOutcomes(EventParams &_eventParams, std::ostream &_outStream);
 
     /// <summary>
 	/// this is called at specified time points to record the partner frequency
     /// </summary>
-	void recordPartAcqFreq();
+	void RecordPartAcqFreq();
 
     /// <summary>
     /// </summary>
-	void recordShiftedOutcomes(EventParams &_eventParams, std::ostream &_outStream);
+	void RecordShiftedOutcomes(EventParams &_eventParams, std::ostream &_outStream);
 
     /// <summary>
-	/// this is used to assign each New population a unique id
+    /// this is used to assign each New population a unique id
     /// </summary>
-	static unsigned int idCounter;
+    static unsigned int idCounter;
 
     /// <summary>
 	/// this number is used to access the Population stratified parameters for Male and Female
@@ -303,59 +303,59 @@ private:
 	unsigned int populationID;
 
     /// <summary>
-	/// string name of population
+	/// name of population
     /// </summary>
-	string populationLabel;
+	std::string populationLabel;
 
     /// <summary>
 	/// current size of the population
     /// </summary>
-	long currSize;
+	std::size_t currSize;
 
     /// <summary>
 	/// Size of non-sexually active
     /// </summary>
-	long currNASize;
+    std::size_t currNASize;
 
     /// <summary>
 	/// Size of CSW's
     /// </summary>
-	long currCSWSize;
+    std::size_t currCSWSize;
 
     /// <summary>
 	/// Size by Risk
     /// </summary>
-	long currSizeRisk[Person::ENDRiskLevel];
+    std::size_t currSizeRisk[Person::ENDRiskLevel];
 
     /// <summary>
 	/// Size of CSW's by Risk
     /// </summary>
-	long currSizeRiskCSW[Person::ENDRiskLevel];
+    std::size_t currSizeRiskCSW[Person::ENDRiskLevel];
 
     /// <summary>
 	/// Size of CSW's by Risk and gender
     /// </summary>
-	long currSizeGenderRiskCSW[DemographicProfile::ENDGender][Person::ENDRiskLevel];
+    std::size_t currSizeGenderRiskCSW[DemographicProfile::ENDGender][Person::ENDRiskLevel];
 
     /// <summary>
 	/// Size by gender
     /// </summary>
-	long currSizeGender[DemographicProfile::ENDGender];
+    std::size_t currSizeGender[DemographicProfile::ENDGender];
 
     /// <summary>
 	/// non-sexually active by gender
     /// </summary>
-	long currNASizeByGender[DemographicProfile::ENDGender];
+    std::size_t currNASizeByGender[DemographicProfile::ENDGender];
 
     /// <summary>
 	/// sexually active by risk and gender
     /// </summary>
-	long currSASizeGenderRisk[DemographicProfile::ENDGender][Person::ENDRiskLevel];
+    std::size_t currSASizeGenderRisk[DemographicProfile::ENDGender][Person::ENDRiskLevel];
 
     /// <summary>
 	/// Num Died this month by Death Cause
     /// </summary>
-	long currDeathCauses[Person::ENDDeathStatus];
+    std::size_t currDeathCauses[Person::ENDDeathStatus];
 
     /// <summary>
 	/// Size by age range: tuple is size, minAge, maxAge
@@ -410,13 +410,13 @@ private:
 	/// not BucketDemographicProfile because all persons participating in partnerships are sexually
 	/// active by definition
     /// </summary>
-	std::vector<BucketSexualMixing *> potentialPartnerBuckets[(int)SexualPartnership::Type::ENDType];
+	std::map<SexualPartnership::Type, std::vector<BucketSexualMixing *>> potentialPartnerBuckets;
 
 	/// <summary>
     /// stores weights of each eligible bucket. we keep this as a separate vector so we can
 	/// use pre-existing normalization and random index chooser functions.
     /// </summary>
-	std::vector<double> eligibleBucketWeights[(int)SexualPartnership::Type::ENDType];
+	std::map<SexualPartnership::Type, std::vector<double>> eligibleBucketWeights;
 
     /// <summary>
     /// </summary>

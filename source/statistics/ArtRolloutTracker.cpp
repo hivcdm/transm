@@ -202,7 +202,7 @@ void ArtRolloutTracker::buildRow(int time, Population *_population)
 		PushElement(time);
 	}
 
-	PushElement(static_cast<int>(_population->getSize()));
+	PushElement(static_cast<int>(_population->GetSize()));
 	PushElement(numTestsOffered);
 	PushElement(numTestsAccepted);
 	PushElement(numTestsReturnedFor);

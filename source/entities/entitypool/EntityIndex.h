@@ -91,18 +91,6 @@ private:
 	CPPIterator find(Person *_person);
 public:
 
-	/**
-
-	The interface matches that of the Java 1.5.0 Iterator interface, with the addition of a reset() method
-		public:
-		JIterator(EntityIndex)
-		~JIterator()
-		T next();
-		bool hasNext();
-		void reset();
-		void remove();
-	***/
-
 	class JavaStyleIterator
 	{
 		EntityIndex<_PSC, _KeyValType> *index; //pool that this iterator will run through
@@ -144,8 +132,6 @@ public:
 	typename EntityIndex<_PSC, _KeyValType>::JIterator iterator();
 
 };
-
-//-----------< Begin Methods for EntityIndex<_PSC,_KeyValType>::JavaStyleIterator >--------------//
 
 template <Person::SelectingCriteria _PSC, class _KeyValType>
 EntityIndex<_PSC, _KeyValType>::JavaStyleIterator::JavaStyleIterator(EntityIndex<_PSC, _KeyValType> *_index)

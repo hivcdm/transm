@@ -219,50 +219,5 @@ private :
 	//Returns AgeBucket of youngest persons
 	//TESTED
 	BucketAge *getYoungest();
-
-	/**
-
-	The interface matches that of the Java 1.5.0 Iterator interface, with the addition of a reset() method
-		public:
-		JIterator(AgeIndex)
-		~JIterator()
-		T next();
-		bool hasNext();
-		void reset();
-		void remove();
-	***/
-
-	/*protected:
-		class JavaStyleIterator : BucketDemographicProfile::JavaStyleIterator{
-
-		public:
-
-			EntityAgeBuffer *entityCircularBuff;
-			unsigned int currBuffIndex;
-			SexualActivityIndex::JIterator currNumIndexJIterator;
-
-			JavaStyleIterator();
-			JavaStyleIterator(BucketSexualMixing *_bucket);
-
-			//returns true if the element that was last returned by next() has been removed using remove()
-			bool alreadyRemoved();
-
-			//returns the spot right after last member of this pool
-			bool hasNext();
-
-			//this will be used to get the next in line
-			Person* next();
-
-			//removes from the collection the last element returned by the iterator
-			bool remove();
-
-			//lets us reuse an iterator, resets to beginning of current collection
-			void reset();
-
-			~JavaStyleIterator();
-		};
-
-		JIterator iterator();
-	*/
 };
 

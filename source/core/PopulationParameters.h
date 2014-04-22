@@ -7,30 +7,45 @@
 class PopulationParameters
 {
 public:
-	//this data structure contains prevalence parameters differ in value by age buckets
+    /// <summary>
+	/// this data structure contains prevalence parameters differ in value by age buckets
+    /// </summary>
 	class AgeBucketPrevalenceInfo
 	{
 	public:
-		int minAgeMth;			//the min age that this bucket represents
-		int maxAgeMth;			//the max age that this bucket represents
+		AgeBucketPrevalenceInfo();
 
-		double proportionOfPopulation[DemographicProfile::ENDGender]; //determines size as proportion of the population
-		//std::array<double, DemographicProfile::ENDGender> chanceCSW; //determines chance of being csw on model initialization
-		int numInfectedCSW[DemographicProfile::ENDGender];		//number of males and female csw in this bucket that are infected (at prevalence delay)
-		int numInfectedRisk[DemographicProfile::ENDGender][Person::ENDRiskLevel]; //number of male and female non-csw in this bucket that are infected (at prevalence delay)
+		AgeBucketPrevalenceInfo(int _minAgeMth, int _maxAgeMth, double _proportionOfPopulationMale,
+			double _proportionOfPopulationFemale, int _numInfectedCSWMale, int _numInfectedCSWFemale,
+			int _numInfectedNonCSWMalesLowRisk, int _numInfectedNonCSWFemalesLowRisk,
+			int _numInfectedNonCSWMalesHighRisk, int _numInfectedNonCSWFemalesHighRisk);
 
-		inline AgeBucketPrevalenceInfo();
-
-		AgeBucketPrevalenceInfo(int _minAgeMth, int _maxAgeMth,
-			double _proportionOfPopulationMale,
-			double _proportionOfPopulationFemale,
-			int _numInfectedCSWMale,
-			int _numInfectedCSWFemale,
-			int _numInfectedNonCSWMalesLowRisk,
-			int _numInfectedNonCSWFemalesLowRisk,
-			int _numInfectedNonCSWMalesHighRisk,
-			int _numInfectedNonCSWFemalesHighRisk);
 		void print(EventParams &_eventParams);
+
+        /// <summary>
+        /// the min age that this bucket represents
+        /// </summary>
+        int minAgeMth;
+
+        /// <summary>
+        /// the max age that this bucket represents
+        /// </summary>
+        int maxAgeMth;
+
+        /// <summary>
+        /// determines size as proportion of the population
+        /// </summary>
+        double proportionOfPopulation[DemographicProfile::ENDGender];
+
+        /// <summary>
+        /// number of males and female csw in this bucket that are infected (at prevalence delay)
+        /// </summary>
+        int numInfectedCSW[DemographicProfile::ENDGender];
+
+        /// <summary>
+        /// number of male and female non-csw in this bucket that are infected (at prevalence delay)
+        /// </summary>
+        int numInfectedRisk[DemographicProfile::ENDGender][Person::ENDRiskLevel];
 	};
 
 	PopulationParameters();
@@ -123,38 +138,68 @@ protected:
 private:
 	friend class SimulationBuilder;
 
-	//this will be set as the Simulation::eventParams.debugLevel
+    /// <summary>
+	/// this will be set as the Simulation::eventParams.debugLevel
+    /// </summary>
 	DebugLevel debugLevel;
 
-	//int maxTime;			//make timesteps to this simulation (in months)
 	long initSize;
-	//string cepacInputFile;
-	//Per month per person based on WHI data
+
+    /// <summary>
+	/// Per month per person based on WHI data
+    /// </summary>
 	double birthRate;
-	int SAEntAgeMths;		//age in months
+
+    /// <summary>
+    /// age in months
+    /// </summary>
+	int SAEntAgeMths;
 	double proportionMale;
 	double circumcised;
-	//double hivInfected;
 
-	double assort[(int)SexualPartnership::Type::ENDType]; //assortativeness parameter one for each partnership type
+    /// <summary>
+    /// assortativeness parameter one for each partnership type
+    /// </summary>
+	double assort[(int)SexualPartnership::Type::ENDType];
 
-	//initial proportion of pop as CSW
+    /// <summary>
+    /// initial proportion of pop as CSW
+    /// </summary>
 	double initProbCSW[DemographicProfile::ENDGender];
-	//max age of csw in months
+
+    /// <summary>
+    /// max age of csw in months
+    /// </summary>
 	int CSWEndAgeMth[DemographicProfile::ENDGender];
 
-	//prevalence parameters stratified by age.
+    /// <summary>
+    /// prevalence parameters stratified by age.
+    /// </summary>
 	std::vector<AgeBucketPrevalenceInfo> initialAgeBuckets;
 
-	//holds the population-level parameters for population of males and the population of females
+    /// <summary>
+    /// holds the population-level parameters for population of males
+    /// </summary>
 	Male::SubPopParams defaultMaleParams;
+
+    /// <summary>
+    /// holds the population-level parameters for population of females
+    /// </summary>
 	Female::SubPopParams defaultFemaleParams;
 
-	//this is a quick way to check whether a partnership is technically a fling or not
-	// right now, behavior for males is the only one that has been coded
+    /// <summary>
+	/// this is a quick way to check whether a partnership is technically a fling or not
+	/// right now, behavior for males is the only one that has been coded
+    /// </summary>
 	bool partnershipsHaveDuration[DemographicProfile::ENDGender][(int)SexualPartnership::Type::ENDType];
 
-	//Costs
+    /// <summary>
+    /// cost per condom in dollars
+    /// </summary>
 	double condomCost;
+
+    /// <summary>
+    /// cost per circumcision in dollars
+    /// </summary>
 	double circumcisionCost;
 };

@@ -188,21 +188,21 @@ void Simulation::FirstStep()
 
 	if(parameters_.monthOf1990 > 0 && parameters_.outputTrace[EventParams::TraceFileType::ShiftedOutcomes])
 	{
-		population_.popStats.enableShiftedOutcomes(parameters_.monthOf1990);
+		population_.populationStatistics.enableShiftedOutcomes(parameters_.monthOf1990);
 	}
 
 	//initialize/reset monthly stats
-	population_.resetMonthlyStats();
+	population_.ResetMonthlyStats();
 	//initialize incident infections by age
-	population_.initIncidentInfectionsByAge();
+	population_.InitIncidentInfectionsByAge();
 
 	if(parameters_.delayPrevalence == 0)
 	{
-		population_.applyIncidentPrevalence(parameters_);
+		population_.ApplyIncidentPrevalence(parameters_);
 	}
 
 	//print out prevalent infection stats & headers for rest of infection stats
-	population_.calcPrevalentPopulation(0);
+	population_.CalcPrevalentPopulation(0);
 
 	//Print out run name for first column of BatchStats files (if streams are open)
     for(auto batchstat : enum_iterator<BatchStatsVariables>())
@@ -215,37 +215,37 @@ void Simulation::FirstStep()
 
 	if(parameters_.outputTrace[EventParams::TraceFileType::Infection])
 	{
-		population_.popStats.infectionsTracker.printInfections(parameters_, time_, parameters_.traceStreams[EventParams::TraceFileType::Infection], &population_);
+        population_.populationStatistics.infectionsTracker.printInfections(parameters_, time_, parameters_.traceStreams[EventParams::TraceFileType::Infection], &population_);
 	}
 
 	if(parameters_.outputTrace[EventParams::TraceFileType::Partnership])
 	{
-		population_.printPartnerships(parameters_, time_, parameters_.traceStreams[EventParams::TraceFileType::Partnership]);
+		population_.PrintPartnerships(parameters_, time_, parameters_.traceStreams[EventParams::TraceFileType::Partnership]);
 	}
 
 	if(parameters_.outputTrace[EventParams::TraceFileType::Clinical])
 	{
-		population_.printClinical(parameters_, time_, parameters_.traceStreams[EventParams::TraceFileType::Clinical]);
+		population_.PrintClinical(parameters_, time_, parameters_.traceStreams[EventParams::TraceFileType::Clinical]);
 	}
 
 	if(parameters_.outputTrace[EventParams::TraceFileType::Population])
 	{
-		population_.printPopulation(parameters_, time_, parameters_.traceStreams[EventParams::TraceFileType::Population]);
+		population_.PrintPopulation(parameters_, time_, parameters_.traceStreams[EventParams::TraceFileType::Population]);
 	}
 
 	if(parameters_.outputTrace[EventParams::TraceFileType::ArtRollout])
 	{
-		population_.printARTRolloutOutcomes(parameters_, parameters_.traceStreams[EventParams::TraceFileType::ArtRollout]);
+		population_.PrintARTRolloutOutcomes(parameters_, parameters_.traceStreams[EventParams::TraceFileType::ArtRollout]);
 	}
 
 	if(parameters_.outputTrace[EventParams::TraceFileType::CostEffectiveness])
 	{
-		population_.popStats.costsTracker.PrintCosts(parameters_.currTime, parameters_.traceStreams[EventParams::TraceFileType::CostEffectiveness]);
+        population_.populationStatistics.costsTracker.PrintCosts(parameters_.currTime, parameters_.traceStreams[EventParams::TraceFileType::CostEffectiveness]);
 	}
 
 	if(parameters_.debugLevel == DebugLevel::One)
 	{
-		population_.printMethodResults(parameters_, "--", "initialization", 0, "--", Constants::SHOW_INFECTED);
+		population_.PrintMethodResults(parameters_, "--", "initialization", 0, "--", Constants::SHOW_INFECTED);
 	}
 }
 
@@ -257,54 +257,54 @@ void Simulation::Step()
 
 	if(parameters_.useRollout)
 	{
-		population_.applyRolloutContext(parameters_, time_);
+		population_.ApplyRolloutContext(parameters_, time_);
 	}
 
-	long totalSize = SimulateMonth();
+    std::size_t totalSize = SimulateMonth();
 
 	//print out new infection stats
-	population_.calcPrevalentPopulation(time_);
+	population_.CalcPrevalentPopulation(time_);
 
 	if(parameters_.outputTrace[EventParams::TraceFileType::Infection])
 	{
-		prevalence_ = population_.popStats.infectionsTracker.printInfections(parameters_, time_, parameters_.traceStreams[EventParams::TraceFileType::Infection], &population_);
+        prevalence_ = population_.populationStatistics.infectionsTracker.printInfections(parameters_, time_, parameters_.traceStreams[EventParams::TraceFileType::Infection], &population_);
 	}
 
 	if(parameters_.outputTrace[EventParams::TraceFileType::Population])
 	{
-		population_.printPopulation(parameters_, time_, parameters_.traceStreams[EventParams::TraceFileType::Population]);
+		population_.PrintPopulation(parameters_, time_, parameters_.traceStreams[EventParams::TraceFileType::Population]);
 	}
 
 	if(parameters_.outputTrace[EventParams::TraceFileType::Partnership])
 	{
-		population_.printPartnerships(parameters_, time_, parameters_.traceStreams[EventParams::TraceFileType::Partnership]);
+		population_.PrintPartnerships(parameters_, time_, parameters_.traceStreams[EventParams::TraceFileType::Partnership]);
 	}
 
 	if(parameters_.outputTrace[EventParams::TraceFileType::Clinical])
 	{
-		population_.printClinical(parameters_, time_, parameters_.traceStreams[EventParams::TraceFileType::Clinical]);
+		population_.PrintClinical(parameters_, time_, parameters_.traceStreams[EventParams::TraceFileType::Clinical]);
 	}
 
 	//For now, this must come after infectionsTracker.printInfections as it is what calculate prevalence
 	if(parameters_.outputTrace[EventParams::TraceFileType::ShiftedOutcomes])
 	{
-		population_.recordShiftedOutcomes(parameters_, parameters_.traceStreams[EventParams::TraceFileType::ShiftedOutcomes]);
+		population_.RecordShiftedOutcomes(parameters_, parameters_.traceStreams[EventParams::TraceFileType::ShiftedOutcomes]);
 	}
 
 	if(parameters_.outputTrace[EventParams::TraceFileType::ArtRollout])
 	{
-		population_.printARTRolloutOutcomes(parameters_, parameters_.traceStreams[EventParams::TraceFileType::ArtRollout]);
+		population_.PrintARTRolloutOutcomes(parameters_, parameters_.traceStreams[EventParams::TraceFileType::ArtRollout]);
 	}
 
 	if(parameters_.outputTrace[EventParams::TraceFileType::CostEffectiveness])
 	{
-		population_.popStats.costsTracker.PrintCosts(parameters_.currTime, parameters_.traceStreams[EventParams::TraceFileType::CostEffectiveness]);
+        population_.populationStatistics.costsTracker.PrintCosts(parameters_.currTime, parameters_.traceStreams[EventParams::TraceFileType::CostEffectiveness]);
 	}
 
 	if(parameters_.calibrationInputs.useCalibration && parameters_.calibrationInputs.monthOfCalibration == time_)
 	{
 		//If this run doesn't pass the partnership calibration stop the run and discard specified trace files
-		if(!population_.passesPartnershipCalibration(parameters_))
+		if(!population_.PassesPartnershipCalibration(parameters_))
 		{
 			return;
 		}
@@ -314,7 +314,7 @@ void Simulation::Step()
 	{
 		if(!hasPassedFirstMonthCalibPrev_)
 		{
-			double SAPrev = population_.popStats.infectionsTracker.getSAPrev(population_);
+            double SAPrev = population_.populationStatistics.infectionsTracker.getSAPrev(population_);
 
 			if(SAPrev != -1 && SAPrev >= parameters_.calibrationInputs.thresholdPrevMult * parameters_.calibrationInputs.calendarPrevs[0])
 			{
@@ -327,12 +327,12 @@ void Simulation::Step()
 		{
 			if(hasPassedFirstMonthCalibPrev_ && parameters_.currTime == monthOfFirstMonthCalibPrev_ + parameters_.calibrationInputs.saveStateTimePoints[i])
 			{
-				population_.saveState(parameters_.popStateStream[i], parameters_.currTime);
+				population_.SaveState(parameters_.popStateStream[i], parameters_.currTime);
 			}
 		}
 	}
 
-	population_.resetMonthlyStats();
+	population_.ResetMonthlyStats();
 
 	double end = timer_.GetTime();
 	std::ostringstream elapsedStringStream;
@@ -355,7 +355,7 @@ void Simulation::LastStep()
 	//print survival statistics
 	if(parameters_.outputTrace[EventParams::TraceFileType::Survival])
 	{
-		population_.popStats.printSurvivalStats(parameters_.traceStreams[EventParams::TraceFileType::Survival]);
+        population_.populationStatistics.printSurvivalStats(parameters_.traceStreams[EventParams::TraceFileType::Survival]);
 	}
 
 	//Run every infected person left through CEPAC until they die
@@ -366,13 +366,13 @@ void Simulation::LastStep()
 	else
 	{
 		parameters_.displayOut("Running all remaining persons through CEPAC until they die...\n");
-		population_.updateFinalPhysicalState(parameters_);
+		population_.UpdateFinalPhysicalState(parameters_);
 		parameters_.displayOut("Done!\n");
 	}
 
 	if(parameters_.outputTrace[EventParams::TraceFileType::Infection])
 	{
-		population_.popStats.printLMStats(parameters_.traceStreams[EventParams::TraceFileType::Infection]);
+        population_.populationStatistics.printLMStats(parameters_.traceStreams[EventParams::TraceFileType::Infection]);
 	}
 
 	//finalize and print CEPAC output, but only if at least one patient went through CEPAC
@@ -523,7 +523,7 @@ void Simulation::ValidateState()
 This function executes one timestep of the simulation
 The ordering of events within this function determines the ordering of events in each timestep
 ****/
-int Simulation::SimulateMonth()
+std::size_t Simulation::SimulateMonth()
 {
 	parameters_.currTime = time_;
 
@@ -561,73 +561,73 @@ int Simulation::SimulateMonth()
 	bool firstMonthToRecord = false;
 	bool lastMonthToRecord = false;
 
-	if(population_.popStats.isTimeToRecordLE(time_))
+    if(population_.populationStatistics.isTimeToRecordLE(time_))
 	{
 		recordLE = true;
 	}
 
-	if(population_.popStats.isTimeToRecordPartAcq(time_))
+    if(population_.populationStatistics.isTimeToRecordPartAcq(time_))
 	{
 		recordPartAcq = true;
 	}
 
-	if(population_.popStats.isFirstMonthToRecordLE(time_))
+    if(population_.populationStatistics.isFirstMonthToRecordLE(time_))
 	{
 		firstMonthToRecord = true;
 	}
 
-	if(population_.popStats.isTimeToPrintLE(time_))
+    if(population_.populationStatistics.isTimeToPrintLE(time_))
 	{
 		lastMonthToRecord = true;
 	}
 
-	population_.updatePhysicalState(parameters_, recordLE, firstMonthToRecord);
+	population_.UpdatePhysicalState(parameters_, recordLE, firstMonthToRecord);
 
 	if(parameters_.useRollout)
 	{
-		population_.applyARTRollout(parameters_);
+		population_.ApplyARTRollout(parameters_);
 	}
 
-	population_.births(parameters_);
+	population_.Births(parameters_);
 
 	if(lastMonthToRecord)
 	{
-		population_.updateAgeBucketsLE();
+		population_.UpdateAgeBucketsLE();
 
 		if(parameters_.outputTrace[EventParams::TraceFileType::LifeExpectancy])
 		{
-			population_.popStats.printLEStats(parameters_.traceStreams[EventParams::TraceFileType::LifeExpectancy], time_);
+            population_.populationStatistics.printLEStats(parameters_.traceStreams[EventParams::TraceFileType::LifeExpectancy], time_);
 		}
 
-		delete population_.popStats.selectedLEStats;
-		population_.popStats.selectedLEStats = nullptr;
+        delete population_.populationStatistics.selectedLEStats;
+        population_.populationStatistics.selectedLEStats = nullptr;
 	}
 
 	//steadyCouple, flings, and dissolveSexualPartnerships
-	population_.updatePartnerships(parameters_);
+	population_.UpdatePartnerships(parameters_);
 
 	if(recordPartAcq)
 	{
-		population_.popStats.selectedPartAcqStats = new PopulationStatistics::SinglePartAcqStats();
-		population_.recordPartAcqFreq();
+        population_.populationStatistics.selectedPartAcqStats = new PopulationStatistics::SinglePartAcqStats();
+		population_.RecordPartAcqFreq();
 
 		if(parameters_.outputTrace[EventParams::TraceFileType::PartnershipAcquisition])
 		{
-			population_.popStats.printPartAcqStats(parameters_.traceStreams[EventParams::TraceFileType::PartnershipAcquisition], time_);
+            population_.populationStatistics.printPartAcqStats(parameters_.traceStreams[EventParams::TraceFileType::PartnershipAcquisition], time_);
 		}
 
-		delete population_.popStats.selectedPartAcqStats;
-		population_.popStats.selectedPartAcqStats = nullptr;
+        delete population_.populationStatistics.selectedPartAcqStats;
+        population_.populationStatistics.selectedPartAcqStats = nullptr;
 	}
 
 	//apply incident prevalence
 	if(parameters_.delayPrevalence != 0 && parameters_.delayPrevalence == time_)
 	{
-		population_.applyIncidentPrevalence(parameters_);
+		population_.ApplyIncidentPrevalence(parameters_);
 	}
 
 	//Will confirm that population_.currSize is correct and update size of age ranges
-	return population_.updateSize();
+	return population_.UpdateSize();
 }
 
 RunStats &Simulation::GetCEPACRunStats()
@@ -637,7 +637,7 @@ RunStats &Simulation::GetCEPACRunStats()
 
 PopulationStatistics &Simulation::GetPopulationStatistics()
 {
-	return population_.popStats;
+    return population_.populationStatistics;
 }
 
 EventParams &Simulation::GetEventParams()

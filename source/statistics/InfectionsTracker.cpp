@@ -159,8 +159,8 @@ unsigned long InfectionsTracker::getNumIncidentInfections(SexualPartnership::Typ
 double InfectionsTracker::getSAPrev(Population &_population)
 {
 	long totalInfected = 0;
-	long currPopSize = _population.getSize();
-	long currSAPopSize = currPopSize - _population.getNASize();
+    std::size_t currPopSize = _population.GetSize();
+    std::size_t currSAPopSize = currPopSize - _population.GetNASize();
 
 	//Currently Infected
 	//total the current infections
@@ -180,9 +180,9 @@ double InfectionsTracker::getSAPrev(Population &_population)
 	vector<DemographicProfile::ProfileID> NAProfileIDs;
 	NAProfile.selectProfileIDs(NAProfileIDs, nullptr);
 
-	for(size_t i = 0; i < NAProfileIDs.size(); i++)
+    for(std::size_t i = 0; i < NAProfileIDs.size(); i++)
 	{
-		for(size_t j = 0; j < NUMBER_GENERATIONS_TO_TRACE; j++)
+        for(std::size_t j = 0; j < NUMBER_GENERATIONS_TO_TRACE; j++)
 		{
 			totalInfectedSA -= currPrevalentInfections[NAProfileIDs[i]][j];
 		}
@@ -430,10 +430,10 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	//total # infections this month
 	int totalInfected = 0;
 	//current population size
-	long currPopSize = _population->getSize();
-	long currSAPopSize = currPopSize - _population->getNASize();
+    std::size_t currPopSize = _population->GetSize();
+    std::size_t currSAPopSize = currPopSize - _population->GetNASize();
 	//total # of age ranges to print out
-	auto currSizeByAgeRange = _population->getSizeByAgeRange();
+	auto currSizeByAgeRange = _population->GetSizeByAgeRange();
 	int numAgeRanges = (int)currSizeByAgeRange.size();
 
 	//write headers for infections sheet
@@ -802,7 +802,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	}
 
 	//TODO: this should be done somewhere else, so we're not relying on side effects to record information
-	_population->getPopulationStatistics().recordPrevalenceAndIncidence(_time, currPrevalence, currPrevalenceSA, incidence, currSAPopSize,
+	_population->GetPopulationStatistics().recordPrevalenceAndIncidence(_time, currPrevalence, currPrevalenceSA, incidence, static_cast<int>(currSAPopSize),
 	        getCurrTimeStepIncidentInfsTotal(), totalInfectedSA);
 	//Multiply by 100 and round to nearest integer for graphical output
 	int intPrevalence = (int)(100 * currPrevalence + 0.5);

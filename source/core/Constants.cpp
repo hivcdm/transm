@@ -28,5 +28,3 @@ const bool Constants::EXCLUDE_NULL_BINS = true;
 const bool Constants::INCLUDE_NULL_BINS = false;
 const bool Constants::SHOW_INFECTED = true;
 const bool Constants::NO_SHOW_INFECTED = false;
-const bool Constants::NEED_TO_DELETE = true;
-const bool Constants::DO_NOT_DELETE = false;
