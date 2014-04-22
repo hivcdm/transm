@@ -13,8 +13,7 @@
 #include <wx/wx.h>
 #include <wx/aboutdlg.h>
 
-#include <core/Constants.h>
-
+#include "../core/Constants.h"
 #include "dialogs/SetupBatchStatsDialog.h"
 #include "widgets/statusWidget.h"
 #include "widgets/verticalStatusWidget.h"
@@ -32,7 +31,6 @@ public:
 	wxMenu *help;
 	wxTextCtrl *textctrl;
 	wxTextCtrl *summaryText;
-	wxCheckBox *graphicsCheckbox;
 	verticalStatusWidget *prevalenceWidget;
 	verticalStatusWidget *incidenceWidget;
 	StatusWidget *totalProgressWidget;
@@ -56,7 +54,7 @@ public:
 	std::string currentDirectory;
 
 	//Determines which variables should be tracked in popstats files
-	bool BatchStatsTrack[ENDBatchStatsVariables];
+	bool BatchStatsTrack[(int)BatchStatsVariables::Last];
 
 	//The functions for each of the menu commands
 	void OnRun(wxCommandEvent &event);

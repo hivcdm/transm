@@ -108,7 +108,9 @@ Simulation::Simulation()
       population_(parameters_),
       failedCalibration_(false),
       hasPassedFirstMonthCalibPrev_(false),
-      monthOfFirstMonthCalibPrev_(0)
+      monthOfFirstMonthCalibPrev_(0),
+      prevalence_(0),
+      incidence_(0)
 {
 }
 
@@ -267,7 +269,7 @@ void Simulation::Step()
 
     if(parameters_.trace_files[EventParams::TraceFile::Type::Infection].enabled)
 	{
-        prevalence_ = population_.populationStatistics.infectionsTracker.printInfections(parameters_, time_, parameters_.trace_files[EventParams::TraceFile::Type::Infection].file, &population_);
+        population_.populationStatistics.infectionsTracker.printInfections(parameters_, time_, parameters_.trace_files[EventParams::TraceFile::Type::Infection].file, &population_);
 	}
 
     if(parameters_.trace_files[EventParams::TraceFile::Type::Population].enabled)
@@ -348,6 +350,9 @@ void Simulation::Step()
 	parameters_.displayOut(". size = ");
 	parameters_.displayOut(boost::lexical_cast<std::string>(totalSize).c_str());
 	parameters_.displayOut("\n");
+
+    prevalence_ = population_.GetPopulationStatistics().infectionsTracker.getSAPrev(population_);
+    incidence_ = population_.GetPopulationStatistics().infectionsTracker.getCurrTimeStepIncidentInfsTotal() / (double)population_.GetSize();
 }
 
 void Simulation::LastStep()

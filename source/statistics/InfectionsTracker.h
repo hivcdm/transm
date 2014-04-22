@@ -71,9 +71,6 @@ private:
 	double currTimeStepCD4InfectionSumSq;
 	unsigned int currTimeStepNumInfected;
 
-	/** Returns total number of incident infections that have occurred during current timestep */
-	unsigned long getCurrTimeStepIncidentInfsTotal();
-
 	/** Total Infections in History*/
 	AgeRangeSizeContainer totalIncidentInfsAge;
 	unsigned long totalIncidentInfsGender[DemographicProfile::ENDGender];
@@ -173,10 +170,6 @@ public :
 	**/
 	int printInfections(EventParams &_eventParams, long _time, std::ostream &_outStream, Population *_population);
 
-	/*
-	//prints the headers that label each column of the infections trace file
-	void printIncidenceHeaders(std::ostream &_outStream);
-	*/
-	//-----------------< Begin functions to print out infections >-----------------------//
-
+    /** Returns total number of incident infections that have occurred during current timestep */
+    unsigned long getCurrTimeStepIncidentInfsTotal();
 };

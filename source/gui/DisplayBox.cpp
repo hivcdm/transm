@@ -20,13 +20,13 @@
 #include <wx/dir.h>
 #include <wx/regex.h>
 
-#include <cepac44a/include.h>
-#include <core/SimulationBuilderXml.h>
-#include <core/SimulationReader.h>
-#include <util/Utility.h>
-#include <statistics/TransmissionSummaryStats.h>
+#include <include.h>
 
 #include "DisplayBox.h"
+#include "../core/SimulationBuilderXml.h"
+#include "../core/SimulationReader.h"
+#include "../util/Utility.h"
+#include "../statistics/TransmissionSummaryStats.h"
 #include "../../build/resources/trans1.xpm"
 
 //The ID codes for the menu options -- these need to be unique!
@@ -34,7 +34,6 @@ int ID_RUN = 1;
 int ID_ABOUT = 2;
 int ID_PROTECT = 3;
 int ID_OPEN = 4;
-int ID_ABOUTGRAPHVIZ = 5;
 int ID_CHECKBOX = 6;
 int ID_BATCHSTATS = 7;
 int ID_FIXEDSEED = 8;
@@ -50,7 +49,6 @@ DisplayBox::DisplayBox(const wxString &title)
 	file->Append(ID_OPEN, wxT("&Open"));
 	file->Append(wxID_EXIT, wxT("&Quit"));
 	help = new wxMenu;
-	help->Append(ID_ABOUTGRAPHVIZ, wxT("&Generating GraphViz"));
 	help->Append(ID_PROTECT, wxT("&Protect"));
 	help->Append(ID_ABOUT, wxT("&About..."));
 	menubar->Append(file, wxT("&File"));
@@ -63,7 +61,7 @@ DisplayBox::DisplayBox(const wxString &title)
 	this->currentRunProgress = 0;
 
 	//Initialize the batchstats booleans in the setup dialog
-	for(int i = 0; i < ENDBatchStatsVariables; i++)
+    for(int i = 0; i < (int)BatchStatsVariables::Last; i++)
 	{
 		this->BatchStatsTrack[i] = false;
 	}
@@ -78,8 +76,6 @@ DisplayBox::DisplayBox(const wxString &title)
 	wxPanel *prevalencePanel = new wxPanel(singleRunPanel, wxID_ANY);
 	wxPanel *summaryStatusPanel = new wxPanel(mainPanel, wxID_ANY);
 	wxPanel *singleStatusPanel = new wxPanel(singleRunPanel, wxID_ANY);
-	//The panel containing the checkbox for turning on graphics (and any future options?)
-	wxPanel *checkboxPanel = new wxPanel(mainPanel, wxID_ANY);
 	//The panel containing buttons to set up popstats and to run the simulation
 	wxPanel *buttonsPanel = new wxPanel(mainPanel, wxID_ANY);
 	//The two text boxes for displaying output to the use
@@ -88,10 +84,6 @@ DisplayBox::DisplayBox(const wxString &title)
 	summaryText = new wxTextCtrl(mainPanel, -1,
 	                             wxT("CEPAC Transmission Model\n Go to File->Open to select your folder of inputs\n"), wxPoint(-1, -1), wxSize(),
 	                             wxTE_MULTILINE);
-	//Graphics checkbox: value is false (don't generate) by default
-	this->graphicsCheckbox = new wxCheckBox(checkboxPanel, ID_CHECKBOX,
-	                                        wxT("Generate GraphViz files: See \"Help - Generating GraphViz\" for more information"), wxPoint(0, 0));
-	this->graphicsCheckbox->SetValue(false);
 	//Add two buttons to buttonsPanel
 	wxBoxSizer *hButtonBox = new wxBoxSizer(wxHORIZONTAL);
 	hButtonBox->Add(new wxButton(buttonsPanel, ID_BATCHSTATS, wxT("Set up BatchStats Output")), 1, wxALIGN_LEFT | wxALL, 5);
@@ -130,7 +122,6 @@ DisplayBox::DisplayBox(const wxString &title)
 	sizer1->Add(summaryText, 1, wxEXPAND | wxALL, 5);
 	sizer1->Add(summaryStatusPanel, 0, wxEXPAND | wxALL, 5);
 	sizer1->Add(singleRunPanel, 3, wxEXPAND | wxALL, 0);
-	sizer1->Add(checkboxPanel, 0, wxEXPAND | wxALL, 5);
 	sizer1->Add(buttonsPanel, 0, wxEXPAND | wxALL, 5);
 	mainPanel->SetSizer(sizer1);
 	Connect(ID_RUN, wxEVT_COMMAND_BUTTON_CLICKED,
@@ -141,8 +132,6 @@ DisplayBox::DisplayBox(const wxString &title)
 	        wxCommandEventHandler(DisplayBox::OnSetupBatchStats));
 	Connect(ID_OPEN, wxEVT_COMMAND_MENU_SELECTED,
 	        wxCommandEventHandler(DisplayBox::OnOpen));
-	Connect(ID_ABOUTGRAPHVIZ, wxEVT_COMMAND_MENU_SELECTED,
-	        wxCommandEventHandler(DisplayBox::OnAboutGraphViz));
 	Connect(wxID_EXIT, wxEVT_COMMAND_MENU_SELECTED,
 	        wxCommandEventHandler(DisplayBox::OnQuit));
 	Connect(ID_PROTECT, wxEVT_COMMAND_MENU_SELECTED,
@@ -192,9 +181,14 @@ void DisplayBox::Simulate()
 			UpdateWindowUI();
 			Update();
 
-			currPrev = simulation.GetPrevalence();
-			currentIncidence = simulation.GetIncidence();
+			currPrev = 100 * simulation.GetPrevalence();
+			currentIncidence = 1000 * simulation.GetIncidence();
 			currentRunProgress = (100.0 * simulation.GetTime()) / simulation.GetTotalTime() + 0.5;
+
+            prevalenceWidget->Refresh();
+            prevalenceWidget->Update();
+            incidenceWidget->Refresh();
+            incidenceWidget->Update();
 
 			textctrl->Refresh();
 			textctrl->Update();
@@ -229,16 +223,6 @@ void DisplayBox::Simulate()
 
 void DisplayBox::OnRun(wxCommandEvent &WXUNUSED(event))
 {
-	if(this->graphicsCheckbox->GetValue())
-	{
-		*(this->summaryText) <<
-		                     wxT("WARNING: GraphViz files will be generated!  If your input file has a starting cohort size greater than 100 or a birth rate greater than 0, no GraphViz files will be generated.\n");
-	}
-	else
-	{
-		*(this->summaryText) << wxT("No graphics will be generated.\n");
-	}
-
 	//Make sure input files have been selected
 	if(this->filesToRun.empty())
 	{
@@ -383,61 +367,61 @@ void DisplayBox::OnSetupBatchStats(wxCommandEvent &WXUNUSED(event))
 	if(setupBatchStats->prevalenceSelect->GetValue())
 	{
 		*(this->summaryText) << wxT("Prevalence, ");
-		this->BatchStatsTrack[PREVALENCE] = true;
+        this->BatchStatsTrack[(int)BatchStatsVariables::PREVALENCE] = true;
 	}
 	else
 	{
-		this->BatchStatsTrack[PREVALENCE] = false;
+        this->BatchStatsTrack[(int)BatchStatsVariables::PREVALENCE] = false;
 	}
 
 	if(setupBatchStats->prevalenceSASelect->GetValue())
 	{
 		*(this->summaryText) << wxT("SA Prevalence, ");
-		this->BatchStatsTrack[PREVALENCESA] = true;
+        this->BatchStatsTrack[(int)BatchStatsVariables::PREVALENCESA] = true;
 	}
 	else
 	{
-		this->BatchStatsTrack[PREVALENCESA] = false;
+        this->BatchStatsTrack[(int)BatchStatsVariables::PREVALENCESA] = false;
 	}
 
 	if(setupBatchStats->incidenceSelect->GetValue())
 	{
 		*(this->summaryText) << wxT("Incidence, ");
-		this->BatchStatsTrack[INCIDENCE] = true;
+        this->BatchStatsTrack[(int)BatchStatsVariables::INCIDENCE] = true;
 	}
 	else
 	{
-		this->BatchStatsTrack[INCIDENCE] = false;
+        this->BatchStatsTrack[(int)BatchStatsVariables::INCIDENCE] = false;
 	}
 
 	if(setupBatchStats->PopulationSizeSelect->GetValue())
 	{
 		*(this->summaryText) << wxT("Population Size, ");
-		this->BatchStatsTrack[POPULATION] = true;
+        this->BatchStatsTrack[(int)BatchStatsVariables::POPULATION] = true;
 	}
 	else
 	{
-		this->BatchStatsTrack[POPULATION] = false;
+        this->BatchStatsTrack[(int)BatchStatsVariables::POPULATION] = false;
 	}
 
 	if(setupBatchStats->NumInfectedSelect->GetValue())
 	{
 		*(this->summaryText) << wxT("Number Currently Infected, ");
-		this->BatchStatsTrack[CURRENTLYINFECTED] = true;
+		this->BatchStatsTrack[(int)BatchStatsVariables::CURRENTLYINFECTED] = true;
 	}
 	else
 	{
-		this->BatchStatsTrack[CURRENTLYINFECTED] = false;
+        this->BatchStatsTrack[(int)BatchStatsVariables::CURRENTLYINFECTED] = false;
 	}
 
 	if(setupBatchStats->NumNewInfectionsSelect->GetValue())
 	{
 		*(this->summaryText) << wxT("Number of New Infections");
-		this->BatchStatsTrack[NEWINFECTIONS] = true;
+        this->BatchStatsTrack[(int)BatchStatsVariables::NEWINFECTIONS] = true;
 	}
 	else
 	{
-		this->BatchStatsTrack[NEWINFECTIONS] = false;
+        this->BatchStatsTrack[(int)BatchStatsVariables::NEWINFECTIONS] = false;
 	}
 
 	*(this->summaryText) << wxT("\n");

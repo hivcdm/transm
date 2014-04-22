@@ -74,11 +74,9 @@ project "transm.gui"
 	targetdir "../bin/debug"
 	links "cepacd"
     configuration { "x64", "vs2013" }
-	libdirs { "$(wx_prefix)/vc120_x64_dll" }
+	libdirs { "$(wx_prefix)/vc120_x64_lib" }
     configuration { "x32", "vs2013" }
-	libdirs { "$(wx_prefix)/vc120_dll" }
-    configuration { "x32", "vs2010" }
-	libdirs { "$(wx_prefix)/vc100_dll" }
+	libdirs { "$(wx_prefix)/vc120_lib" }
     configuration "windows"
         defines { 
 	   "WINVER=0x0610",

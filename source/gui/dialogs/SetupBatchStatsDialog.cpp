@@ -34,12 +34,12 @@ SetupBatchStatsDialog::SetupBatchStatsDialog(const wxString &title, DisplayBox *
 	this->PopulationSizeSelect = new wxCheckBox(checkboxPanel, ID_POPSIZESELECT, wxT("Total population size"));
 	this->NumInfectedSelect = new wxCheckBox(checkboxPanel, ID_NUMINFECTSELECT, wxT("Number Infected"));
 	this->NumNewInfectionsSelect = new wxCheckBox(checkboxPanel, ID_NEWINFECTSELECT, wxT("Number of new infections"));
-	this->prevalenceSelect->SetValue(dbox->BatchStatsTrack[PREVALENCE]);
-	this->prevalenceSASelect->SetValue(dbox->BatchStatsTrack[PREVALENCESA]);
-	this->incidenceSelect->SetValue(dbox->BatchStatsTrack[INCIDENCE]);
-	this->PopulationSizeSelect->SetValue(dbox->BatchStatsTrack[POPULATION]);
-	this->NumInfectedSelect->SetValue(dbox->BatchStatsTrack[CURRENTLYINFECTED]);
-	this->NumNewInfectionsSelect->SetValue(dbox->BatchStatsTrack[NEWINFECTIONS]);
+    this->prevalenceSelect->SetValue(dbox->BatchStatsTrack[(int)BatchStatsVariables::PREVALENCE]);
+    this->prevalenceSASelect->SetValue(dbox->BatchStatsTrack[(int)BatchStatsVariables::PREVALENCESA]);
+    this->incidenceSelect->SetValue(dbox->BatchStatsTrack[(int)BatchStatsVariables::INCIDENCE]);
+    this->PopulationSizeSelect->SetValue(dbox->BatchStatsTrack[(int)BatchStatsVariables::POPULATION]);
+    this->NumInfectedSelect->SetValue(dbox->BatchStatsTrack[(int)BatchStatsVariables::CURRENTLYINFECTED]);
+    this->NumNewInfectionsSelect->SetValue(dbox->BatchStatsTrack[(int)BatchStatsVariables::NEWINFECTIONS]);
 	checkboxSizer->Add(this->prevalenceSelect, 0, wxALIGN_LEFT | wxALL, 2);
 	checkboxSizer->Add(this->prevalenceSASelect, 0, wxALIGN_LEFT | wxALL, 2);
 	checkboxSizer->Add(this->incidenceSelect, 0, wxALIGN_LEFT | wxALL, 2);
