@@ -200,9 +200,10 @@ void Person::addPartnership(SexualPartnership *_partnership)
 
 void Person::becomeInfected(int _generationOfInfection, EventParams &_eventParams)
 {
-	hvl =
-	    HVL_PRIMARY;	//hvl needs to be set even for people who are about to go through CEPAC so that isInfected() correctly returns true
-	cd4 = -1;			//CD4 doesn't affect much in the transmission model yet... will be updated with CEPAC
+    //hvl needs to be set even for people who are about to go through CEPAC so that isInfected() correctly returns true
+	hvl = HVL_PRIMARY;
+    //CD4 doesn't affect much in the transmission model yet... will be updated with CEPAC
+	cd4 = -1;
 	ageInfected = age;
 	generationOfInfection = _generationOfInfection;
 
@@ -229,6 +230,11 @@ void Person::becomeInfected(int _generationOfInfection, EventParams &_eventParam
 		}
 
         _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "!" << std::endl;
+
+        if(_generationOfInfection == 0)
+        {
+            print(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].file, "Demographic info for person:");
+        }
 	}
 
 	stats.setStat(Person::STAT_TIME_OF_INFECTION_MTH, _eventParams.currTime);
@@ -750,22 +756,24 @@ void Person::print(ostream &_outStream, string _prefix) const
 	_outStream << std::endl;
 }
 
-void Person::printCurrentPartners(ostream &_outStream, std::string)
+void Person::printCurrentPartners(ostream &_outStream, std::string prefix)
 {
+    _outStream << prefix << std::endl;
 	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
 	{
-		list<SexualPartnership *>::iterator iter = partners[(int)type].begin();
-		list<SexualPartnership *>::iterator iterEnd = partners[(int)type].end();
+		std::list<SexualPartnership *>::iterator iter = partners[(int)type].begin();
+		std::list<SexualPartnership *>::iterator iterEnd = partners[(int)type].end();
 
 		if(iter != iterEnd)
 		{
 			_outStream << (SexualPartnership::TypeStrings.at(SexualPartnership::Type(type))) << Constants::COLON << std::endl;
 		}
 
+        int i = 0;
 		while(iter != iterEnd)
 		{
 			Person *partner = (*iter)->getOtherPartner(this);
-			partner->print(_outStream, "\t\t");
+			partner->print(_outStream, "Partner " + std::to_string(i++));
 			iter++;
 		}
 	}
@@ -820,34 +828,8 @@ void Person::saveState(ostream &_outStream, long currTime)
 	_outStream << "initAge:" << initAge << "," << std::endl; //initial age
 	_outStream << "dead:" << death << "," << std::endl; //death
 	_outStream << "hvl:" << hvl; //hvl in transmission includes primary and late stage
-	//patient data
-	//	if (wentThroughCEPAC){
-	//		_outStream << "," << std::endl;
-	//		cepacPatient->saveState(_outStream);
-	//}
-	/*
-	//save the full vector indices of person
-	_outStream << "fvInd:[";
-	bool firstFV=true;
-	for (map<FullVector*, vector<unsigned int> >::iterator it=FVindices.begin(); it != FVindices.end(); it++){ //loop over all Full Vectors
-	if (!firstFV)
-	_outStream << ",";
-	firstFV=false;
-	//full vector id and indices of person in fv
-	_outStream << "{" << "fvID:" << (*it).first->getID() << ",ind:[";
-	bool firstIndex=true;
-	vector <unsigned int> * indicesPtr=&(*it).second;
-	for (vector <unsigned int>::iterator indIter=indicesPtr->begin(); indIter != indicesPtr->end(); indIter++){
-	if (!firstIndex)
-	_outStream << ",";
-	firstIndex=false;
-	_outStream << *indIter;
-	}
-	_outStream << "]}";
-	}
-	_outStream << "]";
-	*/
 }
+
 bool Person::isInfected()
 {
 	return (hvl > UNINFECTED);
@@ -1114,6 +1096,55 @@ T Scale(const T &t, double factor)
 	return r;
 }
 
+Person::HVLStrata HvlFromCepacHvl(SimContext::HVL_STRATA stratum)
+{
+    switch(stratum)
+    {
+    case SimContext::HVL_VLO: return Person::HVL_ZERO;
+    case SimContext::HVL__LO: return Person::HVL_ONE;
+    case SimContext::HVL_MLO: return Person::HVL_TWO;
+    case SimContext::HVL_MED: return Person::HVL_THREE;
+    case SimContext::HVL_MHI: return Person::HVL_FOUR;
+    case SimContext::HVL__HI: return Person::HVL_FIVE;
+    case SimContext::HVL_VHI: return Person::HVL_SIX;
+    default: throw std::runtime_error("invalid hvl");
+    }
+}
+
+std::string to_string(Person::HVLStrata stratum)
+{
+    switch(stratum)
+    {
+    case Person::UNINFECTED: return "uninfected";
+    case Person::HVL_ZERO: return "0-20";
+    case Person::HVL_ONE: return "21-500";
+    case Person::HVL_TWO: return "501-3000";
+    case Person::HVL_THREE: return "3001-10000";
+    case Person::HVL_FOUR: return "10001-30000";
+    case Person::HVL_FIVE: return "30001-100000";
+    case Person::HVL_SIX: return "100000+";
+    case Person::HVL_PRIMARY: return "primary";
+    case Person::HVL_LATESTAGE: return "late-stage";
+    default: throw std::runtime_error("invalid hvl");
+    }
+}
+
+std::string to_string(Person::HIVStatus status)
+{
+    switch(status)
+    {
+    case Person::NEGATIVE: return "negative";
+    case Person::OBSERVED_ACUTE: return "acute (observed)";
+    case Person::OBSERVED_CHRONIC: return "chronic (observed)";
+    case Person::OBSERVED_LATESTAGE: return "late-stage (observed)";
+    case Person::UNOBSERVED_ACUTE: return "acute (unobserved)";
+    case Person::UNOBSERVED_CHRONIC: return "chronic (unobserved)";
+    case Person::UNOBSERVED_LATESTAGE: return "late-stage (unobserved)";
+    default: throw std::runtime_error("invalid hiv status");
+    }
+}
+
+
 double Person::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTracker, CostsTracker *costsTracker)
 {
 	//if this person has died, then don't update.
@@ -1140,8 +1171,26 @@ double Person::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 	const auto costsBefore = *_eventParams.cepacRunStats->getOverallCosts();
 	const auto hivScreeningBefore = *_eventParams.cepacRunStats->getHIVScreening();
 
+    auto treatmentBefore = isOnArt();
+
 	//run this person's patient info one month forward in CEPAC
 	cepacPatient->simulateMonth();
+
+    auto treatmentAfter = isOnArt();
+
+    if(treatmentBefore != treatmentAfter && _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
+    {
+        if(treatmentAfter)
+        {
+            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !!# "
+                << getID() << " started treatment." << std::endl;
+        }
+        else
+        {
+            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !!# "
+                << getID() << " stoppped treatment." << std::endl;
+        }
+    }
 
 	const auto costsAfter = *_eventParams.cepacRunStats->getOverallCosts();
 	const auto hivScreeningAfter = *_eventParams.cepacRunStats->getHIVScreening();
@@ -1190,44 +1239,19 @@ double Person::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 	//update HVL and CD4 for this Person if they are infected
 	if(isInfected())
 	{
+        auto cd4Before = cd4;
 		cd4 = cepacPatient->getDiseaseState()->currTrueCD4;
-		//update HVL state
-		SimContext::HVL_STRATA hvlStrata = cepacPatient->getDiseaseState()->currTrueHVLStrata;
 
-		if(hvlStrata == SimContext::HVL_VLO)
-		{
-			hvl = HVL_ZERO;    //0-20
-		}
-		else if(hvlStrata == SimContext::HVL__LO)
-		{
-			hvl = HVL_ONE;    //21-500
-		}
-		else if(hvlStrata == SimContext::HVL_MLO)
-		{
-			hvl = HVL_TWO;    //501-3000
-		}
-		else if(hvlStrata == SimContext::HVL_MED)
-		{
-			hvl = HVL_THREE;    //3001-10000
-		}
-		else if(hvlStrata == SimContext::HVL_MHI)
-		{
-			hvl = HVL_FOUR;    //10001-30000
-		}
-		else if(hvlStrata == SimContext::HVL__HI)
-		{
-			hvl = HVL_FIVE;    //30001-100000
-		}
-		else if(hvlStrata == SimContext::HVL_VHI)
-		{
-			hvl = HVL_SIX;    //100000+
-		}
-		else
-		{
-			cerr << "Invalid CEPAC API infection state: " << *(SimContext::HVL_STRATA_STRS[hvlStrata]);
-			Utility::exitWithPrompt(-1);
-		}
+        if(cd4Before != cd4 && _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
+        {
+            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !!# "
+                << getID() << " CD4 changed from " << cd4Before << " to " << cd4 << std::endl;
+        }
 
+        auto hvlBefore = hvl;
+        auto hivStatusBefore = hivStatus;
+
+        hvl = HvlFromCepacHvl(cepacPatient->getDiseaseState()->currTrueHVLStrata);
 		currentTrueHvl = hvl;
 
 		if(cepacPatient->getDiseaseState()->infectedHIVState == SimContext::HIV_INF_ACUTE_SYN)
@@ -1270,6 +1294,18 @@ double Person::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 				hivStatus = UNOBSERVED_CHRONIC;
 			}
 		}
+
+        if(hvl != hvlBefore && _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
+        {
+            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !!# "
+                << getID() << " HVL changed from " << to_string(hvlBefore) << " to " << to_string(hvl) << std::endl;
+        }
+
+        if(hivStatus != hivStatusBefore && _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
+        {
+            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !!# "
+                << getID() << " HIV status changed from " << to_string(hivStatusBefore) << " to " << to_string(hivStatus) << std::endl;
+        }
 
 		//Update OI History
 		for(int i = 0; i < Constants::NUMBER_OF_OIS; i++)

@@ -1084,6 +1084,11 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 
 			p->becomeInfected(Constants::PREVALENT_INFECTION, parameters_);
 
+            if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled)
+            {
+                p->printCurrentPartners(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].file, "Current partners for newly infected prevalent case:");
+            }
+
 			if(oldStatus != p->hivStatus)
 			{
 				((BucketSexualMixing *) entities->getBucket(p->getDemographicProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
@@ -2019,12 +2024,12 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Person *_
 		{
 			parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "  + Male " << _initiator->getID() << " (";
 			_initiator->getDemographicProfile()->print(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].file, "");
-            parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " age " << _initiator->getAge(TimeGranularity::Year) << ") forms " <<
+            parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " age " << _initiator->getAge(TimeGranularity::Month) << ", " 
+                << chosenPartner->getSexualActivity() << " marbles, " << ((chosenPartner->getRiskLevel() == Person::HIGH) ? "HIGH" : "LOW") << " risk) forms " <<
 			        (SexualPartnership::TypeStrings.at(_partnershipType)) << " with female " << chosenPartner->getID() << " (";
 			chosenPartner->getDemographicProfile()->print(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].file, "");
-			parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " age " << chosenPartner->getAge(
-                TimeGranularity::Year) << ", " << chosenPartner->getSexualActivity() << " marbles, " << ((chosenPartner->getRiskLevel() == Person::HIGH)
-			                    ? "HIGH" : "LOW") << " risk)";
+			parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " age " << chosenPartner->getAge(TimeGranularity::Month) 
+                << ", " << chosenPartner->getSexualActivity() << " marbles, " << ((chosenPartner->getRiskLevel() == Person::HIGH) ? "HIGH" : "LOW") << " risk)";
 		}
 
 		//the pointer to this partnership will be stored within initiator.

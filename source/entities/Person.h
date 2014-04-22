@@ -321,7 +321,7 @@ public:
 	 */
 	HVLStrata getHVL() const
 	{
-		return hvl;
+        return hvl;
 	}
 
 	/** this calculates the FOI towards Person _p (this uses the Transmission coefficient) per event
@@ -411,7 +411,7 @@ public:
 	 * @effects: none
 	 * @return: copy of this.FVindices
 	 */
-	vector<unsigned int> getFVindices(FullVector *FV);
+	std::vector<unsigned int> getFVindices(FullVector *FV);
 
 	//----------------< End FullVector related methods >-------------------------//
 

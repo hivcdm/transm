@@ -194,6 +194,7 @@ void Female::rerollRiskGroup(EventParams &_eventParams)
 		risk = LOW;
 	}
 
+    /*
 	if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
 	{
         _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " % Female " << getID() << " rerolls as ";
@@ -209,6 +210,7 @@ void Female::rerollRiskGroup(EventParams &_eventParams)
 
         _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " risk" << std::endl;
 	}
+    */
 }
 
 void Female::saveState(ostream &_outStream, long currTime)
