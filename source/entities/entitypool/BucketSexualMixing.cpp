@@ -390,7 +390,7 @@ bool BucketSexualMixing::insert(Person *_person)
 	}
 }
 
-void BucketSexualMixing::print(ostream &_outStream, std::string _prefix)
+void BucketSexualMixing::print(ostream &_outStream, const std::string &_prefix)
 {
 	//The iterator of the BucketAges in the circular buffer
 	BucketAllAges::iterator bucketIter;

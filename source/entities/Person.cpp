@@ -740,7 +740,7 @@ bool Person::hasPartnership(SexualPartnership::Type partnershipType)
 
 	return false;
 }
-void Person::print(ostream &_outStream, string _prefix) const
+void Person::print(ostream &_outStream, const std::string &_prefix) const
 {
 	_outStream << _prefix << std::endl;
 	_outStream << ((getDemographicProfileVal(DemographicProfile::GENDER) == DemographicProfile::MALE) ? "Male" : "Female") << Constants::TAB;
@@ -756,7 +756,7 @@ void Person::print(ostream &_outStream, string _prefix) const
 	_outStream << std::endl;
 }
 
-void Person::printCurrentPartners(ostream &_outStream, std::string prefix)
+void Person::printCurrentPartners(ostream &_outStream, const std::string &prefix)
 {
     _outStream << prefix << std::endl;
 	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)

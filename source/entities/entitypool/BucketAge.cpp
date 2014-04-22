@@ -143,7 +143,7 @@ unsigned long BucketAge::getNumInfected(Person::RiskLevel _risk)
 }
 
 //prints every person in this index to _outStream
-void BucketAge::print(ostream &_outStream, std::string _prefix)
+void BucketAge::print(ostream &_outStream, const std::string &_prefix)
 {
 	vector<Person *>::iterator PersonIter = begin();
 
@@ -490,7 +490,7 @@ void BucketAge::changeHIVStatus(Person *_p, Person::HIVStatus _orig, Person::HIV
 }
 
 //Pseudo-TESTED... should use print function later on
-void BucketAge::printAll(ostream &_outStream, string _prefix)
+void BucketAge::printAll(std::ostream &_outStream, const std::string &_prefix)
 {
 	_outStream << _prefix << std::endl;
 	_outStream << "Infected:	";

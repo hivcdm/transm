@@ -256,8 +256,8 @@ private:
     /// @param _totalAffectedLabel a label that identifies the meaning behind the value _totalAffected
     /// @param _showInfected if true, will indicate how many people are currently infected in each BucketDemographicProfile
     /// </summary>
-	void PrintMethodResults(EventParams &_eventParams, string _methodName, string _eventLabel, long _totalAffected,
-	                        string _totalAffectedLabel, bool _showInfections);
+    void PrintMethodResults(EventParams &_eventParams, const std::string &_methodName, const std::string &_eventLabel, long _totalAffected,
+        const std::string &_totalAffectedLabel, bool _showInfections);
 
     /// <summary>
 	/// this saves the state of the population and writes to file

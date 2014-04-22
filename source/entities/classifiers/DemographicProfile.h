@@ -211,7 +211,7 @@ public:
 	//appends _prefix and string representation to output stream
 	@author schung5
 	**/
-	void print(std::ostream &_outStream, std::string _prefix) const;
+    void print(std::ostream &_outStream, const std::string &_prefix) const;
 
 	//Saves the state of the dmgProfile to file
 	void saveState(std::ostream &_outStream);

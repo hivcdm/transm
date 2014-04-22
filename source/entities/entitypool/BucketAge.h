@@ -42,7 +42,7 @@ public:
 	unsigned long getNumInfected(Person::RiskLevel _risk);
 
 	//prints every person in this index to _outStream
-	void print(ostream &_outStream, std::string _prefix);
+    void print(ostream &_outStream, const std::string &_prefix);
 
 	//-------------< End Methods taken from EntityIndex >--------------//
 
@@ -156,7 +156,7 @@ public:
 	 */
 	void changeHIVStatus(Person *_p, Person::HIVStatus _orig, Person::HIVStatus _new);
 
-	void printAll(ostream &_outStream, string _prefix);
+    void printAll(ostream &_outStream, const std::string &_prefix);
 
 
 	//------------------< End Getters and Setters >--------------------//

@@ -75,7 +75,7 @@ public :
 	unsigned int size();
 
 	//prints every person in this index to _outStream
-	void print(ostream &_outStream, std::string _prefix);
+    void print(ostream &_outStream, const std::string &_prefix);
 
 	//----------------< Begin iterator methods >------------------------//
 	typename multimap<_KeyValType, Person *>::iterator begin();
@@ -499,7 +499,7 @@ unsigned int EntityIndex<_PSC, _KeyValType>::size()
 }
 
 template <Person::SelectingCriteria _PSC, class _KeyValType>
-void EntityIndex<_PSC, _KeyValType>::print(ostream &_outStream, std::string _prefix)
+void EntityIndex<_PSC, _KeyValType>::print(std::ostream &_outStream, const std::string &_prefix)
 {
 	//iterates through all elements
 	//EntityIndex<_PSC, _KeyValType>::

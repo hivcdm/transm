@@ -88,7 +88,7 @@ void EntityPool::printBucketLabels(ostream &_outStream, bool _printPropInfected)
 }
 
 //list out # people in each BucketDemographicProfile
-void EntityPool::printBucketSizes(ostream &_outStream, string, bool _printPropInfected,
+void EntityPool::printBucketSizes(std::ostream &_outStream, const std::string &, bool _printPropInfected,
                                   unsigned long &_totalInfected, unsigned long &_totalSize, unsigned long &_totalSexuallyActive,
                                   unsigned long &_totalInSteady, unsigned long &_totalInRegular, bool _includeLabels)
 {
@@ -98,7 +98,7 @@ void EntityPool::printBucketSizes(ostream &_outStream, string, bool _printPropIn
 	_totalInRegular = 0;
 	_totalSexuallyActive = 0;
 	BucketDemographicProfile *bucket = nullptr;	//pointer to current BucketDemographicProfile we are looking at
-	size_t currBucketIndex = 0;		//the ProfileID of the current BucketDemographicProfile we are looking at
+	std::size_t currBucketIndex = 0;		//the ProfileID of the current BucketDemographicProfile we are looking at
 
 	//iterate through all buckets and append current BucketDemographicProfile sizes to a string buffer
 	while(currBucketIndex < entityBuckets.size())

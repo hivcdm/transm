@@ -2303,8 +2303,8 @@ std::size_t Population::GetCSWSize(DemographicProfile::Gender _gender, Person::R
 	return currSizeGenderRiskCSW[_gender][_risk];
 }
 
-void Population::PrintMethodResults(EventParams &parameters_, std::string _methodName, std::string _eventLabel,
-                                    long _totalAffected, std::string _totalAffectedLabel, bool _showInfections)
+void Population::PrintMethodResults(EventParams &parameters_, const std::string &_methodName, const std::string &_eventLabel,
+    long _totalAffected, const std::string &_totalAffectedLabel, bool _showInfections)
 {
 	unsigned long totalInfected = 0;
 	unsigned long totalPopSize = 0;

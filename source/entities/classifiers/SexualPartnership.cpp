@@ -119,7 +119,7 @@ Person *SexualPartnership::monthlySexualActivity(EventParams &_eventParams, Infe
 	return partners[0]->sexualActivity(partners[1], eventsThisMonth, type, _eventParams, infTrack);
 }
 
-void SexualPartnership::printPartners(ostream &_outStream, string _prefix)
+void SexualPartnership::printPartners(std::ostream &_outStream, const std::string &_prefix)
 {
 	_outStream << _prefix << "Sexual Relationship(" << TypeStrings.at(type) << ")" << std::endl;
 	partners[0]->print(_outStream, Constants::TAB);
@@ -127,7 +127,7 @@ void SexualPartnership::printPartners(ostream &_outStream, string _prefix)
 	partners[1]->print(_outStream, Constants::TAB);
 }
 
-void SexualPartnership::saveState(ostream &_outStream, int personID, long currTime)
+void SexualPartnership::saveState(std::ostream &_outStream, int personID, long currTime)
 {
 	//Saves the type of partnership, the id of partner, and months left in partnership
 	auto partnerID = static_cast<int>(partners[0]->getID()) == personID ? partners[1]->getID() : partners[0]->getID();

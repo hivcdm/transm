@@ -129,7 +129,7 @@ public :
 	/**
 	@author schung5
 	**/
-	void printPartners(ostream &_outStream, string _prefix);
+    void printPartners(ostream &_outStream, const std::string &_prefix);
 
 	/**
 	* Saves state of this partnership to file

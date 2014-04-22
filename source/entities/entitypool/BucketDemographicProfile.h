@@ -117,7 +117,7 @@ public:
 	/// lists all members of a specified entitypool on a different line
 	/// _prefix - will append this string to the front of each member and then print
     /// </summary>
-    virtual void print(std::ostream &_outStream, std::string _prefix);
+    virtual void print(std::ostream &_outStream, const std::string &_prefix);
 
     /// <summary>
 	/// @effects: Ages everyone in the bucket one timestep

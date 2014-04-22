@@ -258,12 +258,12 @@ void DemographicProfile::parse(string _tupleStr)
 }
 
 
-void DemographicProfile::print(ostream &_outStream, string _prefix) const
+void DemographicProfile::print(std::ostream &_outStream, const std::string &_prefix) const
 {
 	_outStream << _prefix << DemographicProfile::ProfileIDtoStr[getProfileID()];
 }
 
-void DemographicProfile::saveState(ostream &_outStream)
+void DemographicProfile::saveState(std::ostream &_outStream)
 {
 	_outStream << "dmg:";
 	_outStream << "[";

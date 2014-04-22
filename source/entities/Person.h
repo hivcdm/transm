@@ -603,12 +603,12 @@ public:
 	const Person::StatsRecord *getStats();
 
 	//prints out person's id information
-	void print(ostream &_outStream, string _prefix) const;
+    void print(std::ostream &_outStream, const std::string &_prefix) const;
 
-	void printCurrentPartners(ostream &_outStream, string _prefix);
+    void printCurrentPartners(std::ostream &_outStream, const std::string &_prefix);
 
 	//Writes the state of the patient to file.  This state can be reloaded on a different run.
-	virtual void saveState(ostream &_outStream, long currTime);
+	virtual void saveState(std::ostream &_outStream, long currTime);
 
 	//Unformed partnership tallies getters and setters -- the total should never be reset, only the "latest" (i.e. current time step)
 	int getTotalUnformedPartnerships(SexualPartnership::Type type);

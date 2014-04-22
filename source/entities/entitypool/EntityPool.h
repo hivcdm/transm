@@ -59,7 +59,7 @@ public:
 	/// @param _totalSize this will be set to total # of people in the population
 	/// @param _includeLabls if == true, then will additionally print BucketDemographicProfile labels on the same line as the size
 	/// </remarks>
-	void printBucketSizes(std::ostream &_outStream, std::string _prefix, bool _printPropInfected, unsigned long &_totalInfected,
+    void printBucketSizes(std::ostream &_outStream, const std::string &_prefix, bool _printPropInfected, unsigned long &_totalInfected,
 	                      unsigned long &_totalSize, unsigned long &_totalSexuallyActive, unsigned long &_totalInSteady,
 	                      unsigned long &_totalInRegular, bool _includeLabels);
 

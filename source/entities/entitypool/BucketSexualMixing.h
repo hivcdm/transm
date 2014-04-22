@@ -117,7 +117,7 @@ public :
 	bool insert(Person *_person);
 
 	//TESTED
-	void print(ostream &_outStream, std::string _prefix);
+    void print(ostream &_outStream, const std::string &_prefix);
 
 	//returns the # of entities in this index
 	//TESTED
