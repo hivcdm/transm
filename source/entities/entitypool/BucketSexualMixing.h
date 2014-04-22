@@ -78,7 +78,7 @@ public :
 	//TESTED
 	void clear();
 
-    void Apply(const PopulationTarget &target, RandomNumberGenerator &rng, std::function<void(Person*)> modifier, double proportion);
+    void Find(const PopulationTarget &target, std::vector<Person *> &result);
 
 	//TESTED
 	Person *drawMember(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType, bool _remove);

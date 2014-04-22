@@ -5,36 +5,23 @@
 #include "../../util/Utility.h"
 #include "../../util/rand/RandomNumberGenerator.h"
 
-void BucketSexualMixing::Apply(const PopulationTarget &target, RandomNumberGenerator &/*rng*/, std::function<void(Person*)> modifier, double /*proportion*/)
+
+void BucketSexualMixing::Find(const PopulationTarget &target, std::vector<Person *> &result)
 {
-	for(auto &a : *personsByAge)
-	{
-		for(auto person : *a)
-		{
-			auto age = person->getAge(TimeGranularity::Month);
-			if(target.age_lower.has_value && age < target.age_lower.value)
-			{
-				continue;
-			}
-			if(target.age_upper.has_value && age < target.age_upper.value)
-			{
-				continue;
-			}
-			if(target.risk_level.has_value && person->getRiskLevel() != target.risk_level.value)
-			{
-				continue;
-			}
-			if(target.observed_hiv_status.has_value && person->getHIVStatus() != target.observed_hiv_status.value)
-			{
-				continue;
-			}
-			if(target.on_treatment.has_value && person->isOnArt() != target.on_treatment.value)
-			{
-				continue;
-			}
-			modifier(person);
-		}
-	}
+    for(auto age_bucket : *personsByAge)
+    {
+        for(auto person : *age_bucket)
+        {
+            if(!((target.age_lower.has_value && target.age_lower.value < person->getAge(TimeGranularity::Month))
+                || (target.age_upper.has_value && target.age_upper.value > person->getAge(TimeGranularity::Month))
+                || (target.observed_hiv_status.has_value && target.observed_hiv_status.value != person->getHIVStatus())
+                || (target.on_treatment.has_value && target.on_treatment.value != person->isOnArt())
+                || (target.risk_level.has_value && target.risk_level.value != person->getRiskLevel())))
+            {
+                result.push_back(person);
+            }
+        }
+    }
 }
 
 BucketSexualMixing::BucketSexualMixing(DemographicProfile::ProfileID _id, const string *_bucketLabel, unsigned int _popID,

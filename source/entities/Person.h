@@ -40,6 +40,8 @@ public:
 
 	virtual void Circumcise() = 0;
 
+    virtual bool IsCircumcised() const = 0;
+
 	/// <summary>
 	/// every Person's CD4 count falls in a CD4 strata - used in CEPAC
 	/// </summary>

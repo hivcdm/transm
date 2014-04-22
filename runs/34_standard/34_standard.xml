@@ -168,7 +168,7 @@
   <population id="South Africa">
     <birthRate>0.00222</birthRate>
     <proportionMale>0.5</proportionMale>
-    <proportionCircumcised>0.35</proportionCircumcised>
+    <proportionCircumcised><parameter key="$circumcision">0.35</parameter></proportionCircumcised>
     <ageSexualDebutYrs>17</ageSexualDebutYrs>
     <initialState>
       <size>1000</size>

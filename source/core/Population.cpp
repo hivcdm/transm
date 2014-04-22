@@ -23,39 +23,48 @@ events stratified by age and CD4
 ***/
 unsigned int Population::idCounter = 0;
 
-void Population::Apply(const PopulationTarget &target, RandomNumberGenerator &rng, std::function<void(Person *)> modifier, double probability)
+void Population::Find(const PopulationTarget &target, std::vector<Person *> &result)
 {
-	DemographicProfile selector;
-	if(target.sexual_activity_status.has_value)
-	{
-		selector.set(DemographicProfile::SEXUAL_ACTIVITY_STATUS, target.sexual_activity_status.value);
-	}
-	if(target.gender.has_value)
-	{
-		selector.set(DemographicProfile::GENDER, target.gender.value);
-	}
-	if(target.sexual_orientation.has_value)
-	{
-		selector.set(DemographicProfile::SEXUAL_ORIENTATION, target.sexual_orientation.value);
-	}
-	if(target.relationship_status.has_value)
-	{
-		selector.set(DemographicProfile::RELATIONSHIP_STATUS, target.relationship_status.value);
-	}
-	if(target.employment.has_value)
-	{
-		selector.set(DemographicProfile::EMPLOYMENT, target.employment.value);
-	}
-	std::vector<DemographicProfile::ProfileID> buckets;
-	selector.selectProfileIDs(buckets, nullptr);
-	for(auto id : buckets)
-	{
-		auto bucket = entities->getBucket(id);
-		if(bucket != nullptr)
-		{
-			bucket->Apply(target, rng, modifier, probability);
-		}
-	}
+    DemographicProfile selector;
+    if(target.sexual_activity_status.has_value)
+    {
+        selector.set(DemographicProfile::SEXUAL_ACTIVITY_STATUS, target.sexual_activity_status.value);
+    }
+    if(target.gender.has_value)
+    {
+        selector.set(DemographicProfile::GENDER, target.gender.value);
+    }
+    if(target.sexual_orientation.has_value)
+    {
+        selector.set(DemographicProfile::SEXUAL_ORIENTATION, target.sexual_orientation.value);
+    }
+    if(target.relationship_status.has_value)
+    {
+        selector.set(DemographicProfile::RELATIONSHIP_STATUS, target.relationship_status.value);
+    }
+    if(target.employment.has_value)
+    {
+        selector.set(DemographicProfile::EMPLOYMENT, target.employment.value);
+    }
+
+    std::vector<DemographicProfile::ProfileID> buckets;
+    selector.selectProfileIDs(buckets, nullptr);
+
+    for(auto id : buckets)
+    {
+        auto bucket = entities->getBucket(id);
+        if(bucket != nullptr)
+        {
+            bucket->Find(target, result);
+        }
+    }
+}
+
+void Population::Apply(const PopulationTarget &target, std::function<void(Person *)> modifier)
+{
+    std::vector<Person *> matches;
+    Find(target, matches);
+    std::for_each(matches.begin(), matches.end(), modifier);
 }
 
 void Population::ValidateState()
@@ -74,7 +83,34 @@ Population::Population(EventParams &parameters)
 
 void Population::Circumcise(RandomNumberGenerator &rng, double proportion, PopulationTarget target)
 {
-	Apply(target, rng, std::bind(&Person::Circumcise, std::placeholders::_1), proportion);
+    std::vector<Person *> matches;
+    Find(target, matches);
+    auto target_modified = matches.size() * proportion;
+
+    int num_modified = 0;
+    auto person_iter = matches.begin();
+    while(person_iter != matches.end())
+    {
+        auto person = *person_iter;
+        if(person->IsCircumcised())
+        {
+            person_iter = matches.erase(person_iter);
+            num_modified++;
+        }
+        else
+        {
+            person_iter++;
+        }
+    }
+
+    while(num_modified < target_modified && !matches.empty())
+    {
+        auto random_index = rng.randInt(static_cast<uint32_t>(matches.size()) - 1);
+        Circumcise(matches[random_index]);
+        std::swap(matches[random_index], matches.back());
+        matches.pop_back();
+        num_modified++;
+    }
 }
 
 void Population::Circumcise(Person *p)

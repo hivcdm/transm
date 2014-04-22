@@ -39,7 +39,7 @@ const string *BucketDemographicProfile::getLabel()
 	return bucketLabel;
 }
 
-void BucketDemographicProfile::Apply(const PopulationTarget &target, RandomNumberGenerator &rng, std::function<void(Person*)> modifier, double probability)
+void BucketDemographicProfile::Find(const PopulationTarget &target, std::vector<Person *> &result)
 {
 	for(auto &id_person_pair : *simpleEntityIndex)
 	{
@@ -50,17 +50,11 @@ void BucketDemographicProfile::Apply(const PopulationTarget &target, RandomNumbe
 			|| (target.on_treatment.has_value && target.on_treatment.value != person->isOnArt())
 			|| (target.risk_level.has_value && target.risk_level.value != person->getRiskLevel())))
 		{
-			if(rng.chance(probability))
-			{
-				modifier(id_person_pair.second);
-			}
+            result.push_back(person);
 		}
 	}
 }
 
-//------------< End Implemented Methods >----------------//
-
-//------------------< Begin BucketDemographicProfile Virtual methods >------------------//
 void BucketDemographicProfile::clear()
 {
 	assert(simpleEntityIndex != nullptr);
@@ -170,7 +164,7 @@ BucketDemographicProfile::BucketDemographicProfile()
 }
 
 //this creates a simple BucketDemographicProfile with an index that is sorted by age
-BucketDemographicProfile::BucketDemographicProfile(int _id, const string *_bucketLabel, bool _simpleIndex)
+BucketDemographicProfile::BucketDemographicProfile(int _id, const std::string *_bucketLabel, bool _simpleIndex)
 {
 	dmgProfileID = _id;
 	bucketLabel = _bucketLabel;
@@ -178,62 +172,7 @@ BucketDemographicProfile::BucketDemographicProfile(int _id, const string *_bucke
 	simpleEntityIndex = _simpleIndex ? new PersonSet() : nullptr;
 }
 
-BucketDemographicProfile::~BucketDemographicProfile(void)
+BucketDemographicProfile::~BucketDemographicProfile()
 {
 	delete simpleEntityIndex;
 }
-//-----------------< End Constructors and Destructors >----------------//
-
-
-//-----------< Begin Methods for BucketDemographicProfile::JavaStyleIterator >--------------//
-/*
-BucketDemographicProfile::JavaStyleIterator::JavaStyleIterator() {
-}
-
-BucketDemographicProfile::JavaStyleIterator::JavaStyleIterator(BucketDemographicProfile* _bucket) {
-	pIter = _bucket->simpleEntityIndex->iterator();
-
-	//initialize this iterator to iterate from first element
-	reset();
-}
-
-
-bool BucketDemographicProfile::JavaStyleIterator::alreadyRemoved() {
-	return pIter->alreadyRemoved();
-}
-
-
-bool BucketDemographicProfile::JavaStyleIterator::hasNext() {
-	return pIter->hasNext();
-}
-
-
-Person * BucketDemographicProfile::JavaStyleIterator::next(){
-	return pIter->next();
-}
-
-
-bool BucketDemographicProfile::JavaStyleIterator::remove() {
-	//save a pointer to this person
-	Person *p = pIter->get();
-
-	//try to remove them from the BucketDemographicProfile
-	bool removed = pIter->remove();
-
-	//set this person as not being part of any Bucket
-	if(removed && p) {
-		p->setCurrBucketProfileID(DemographicProfile::END);
-	}
-
-	return removed;
-}
-
-
-void BucketDemographicProfile::JavaStyleIterator::reset() {
-	pIter->reset();
-}
-
-
-BucketDemographicProfile::JavaStyleIterator::~JavaStyleIterator() {
-}
-*/

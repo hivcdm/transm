@@ -56,7 +56,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-	virtual void Apply(const PopulationTarget &target, RandomNumberGenerator &rng, std::function<void(Person*)> modifier, double probability);
+    virtual void Find(const PopulationTarget &target, std::vector<Person *> &result);
 
     /// <summary>
 	/// empties this BucketDemographicProfile
@@ -124,6 +124,10 @@ public:
 	/// @returns: List of persons too old for timestep (should be placed into other bucket)
     /// </summary>
 	virtual std::list<Person *> ageOneTimeStep();
+
+    std::multimap<unsigned long, Person *>::iterator begin() { return simpleEntityIndex->begin(); }
+
+    std::multimap<unsigned long, Person *>::iterator end() { return simpleEntityIndex->end(); }
 
 private:
     friend class JavaStyleIterator;

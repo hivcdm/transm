@@ -15,6 +15,7 @@ class Male : public Person
 {
 public :
 	void Circumcise();
+    bool IsCircumcised() const { return circumcised; }
 
 	/// <summary>
 	/// These are parameters that describe the population of males.

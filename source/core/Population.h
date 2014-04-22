@@ -184,7 +184,9 @@ public:
     /// <summary>
     ///
     /// </summary>
-	void Apply(const PopulationTarget &target, RandomNumberGenerator &rng, std::function<void(Person *)> modifier, double probability);
+	void Apply(const PopulationTarget &target, std::function<void(Person *)> modifier);
+
+    void Find(const PopulationTarget &target, std::vector<Person *> &result);
 
     /// <summary>
     ///

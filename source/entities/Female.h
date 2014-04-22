@@ -46,6 +46,8 @@ public:
 	Female(EventParams &_eventParams, int _ageMths, unsigned int _populationID, const Female::SubPopParams &params);
 	~Female(void);
 
+    bool IsCircumcised() const { return false; }
+
 	/** Start: Inherited from Person, comments found there **/
 
 	/**
