@@ -609,14 +609,14 @@ void PopulationStatistics::printLEStats(std::ostream &_outStream, long currTime)
 	medianDensity = survivalFunction[medianLELowerIndex] * proportionalDeathRate[medianLELowerIndex];
 	medianSE = 1 / (2 * medianDensity * sqrt(lifeTablePop[0]));
 	medianCIBound = medianSE * sqrt(2.0) * boost::math::erf_inv(medianLECI);
-	_outStream << "LIFE EXPECTANCY FOR TIME " << currTime << endl;
+	_outStream << "LIFE EXPECTANCY FOR TIME " << currTime << std::endl;
 
 	for(int i = 0; i < NUM_LE_CAT; i++)
 	{
 		_outStream << lifeExpectancyStrs[i] << "\t";
 	}
 
-	_outStream << endl;
+	_outStream << std::endl;
 
 	for(int i = 0; i < Person::maxYrForDeathStats; i++)
 	{
@@ -629,7 +629,7 @@ void PopulationStatistics::printLEStats(std::ostream &_outStream, long currTime)
 			_outStream << medianLE << "\t" << medianSE << "\t" << medianCIBound;
 		}
 
-		_outStream << endl;
+		_outStream << std::endl;
 	}
 }
 
@@ -719,7 +719,7 @@ void PopulationStatistics::printPartAcqStats(std::ostream &_outStream, long curr
 
 	if(printHeaderPartAcq)
 	{
-		_outStream << Constants::TAB << "Frequency of Number of Partners In History" << endl;
+		_outStream << Constants::TAB << "Frequency of Number of Partners In History" << std::endl;
 		_outStream << "Time";
 
 		for(int i = 0; i < PopulationStatistics::SinglePartAcqStats::NUM_PARTNER_BINS; i++)
@@ -727,7 +727,7 @@ void PopulationStatistics::printPartAcqStats(std::ostream &_outStream, long curr
 			_outStream << Constants::TAB << i;
 		}
 
-		_outStream << "+" << endl;
+		_outStream << "+" << std::endl;
 		printHeaderPartAcq = false;
 	}
 
@@ -738,7 +738,7 @@ void PopulationStatistics::printPartAcqStats(std::ostream &_outStream, long curr
 		_outStream << Constants::TAB << selectedPartAcqStats->partnerFreq[i];
 	}
 
-	_outStream << endl;
+	_outStream << std::endl;
 }
 void PopulationStatistics::recordIncidentInfection(EventParams &_eventParams, long _time, SexualPartnership::Type _partnershipType,
                                        const  Person *_infector, const Person *_infected, bool _print, ostream &_traceOutStream)

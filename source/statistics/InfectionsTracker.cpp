@@ -689,9 +689,9 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 		thirdRow << "Mean" << Constants::TAB << "SD" << Constants::TAB << "Mean" << Constants::TAB << "SD" << Constants::TAB <<
 		         "Mean" << Constants::TAB << "SD" << Constants::TAB << "Mean" << Constants::TAB << "SD" << Constants::TAB;
 		//write out string buffers to trace file
-		_outStream << firstRow.str() << endl;
-		_outStream << secondRow.str() << endl;
-		_outStream << thirdRow.str() << endl;
+		_outStream << firstRow.str() << std::endl;
+		_outStream << secondRow.str() << std::endl;
+		_outStream << thirdRow.str() << std::endl;
 	} //if( _time == 0) {
 
 	//if no incident infections happened during this time, then make sure that we have 0 in the currTime incident infections and exposures
@@ -1136,6 +1136,6 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 		}
 	}
 
-	_outStream << endl;
+	_outStream << std::endl;
 	return intPrevalence;
 }

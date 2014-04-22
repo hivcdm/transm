@@ -321,7 +321,7 @@ void FullVector::print()
 		cout << (*iter)->getID() << " : ";
 	}
 
-	cout << endl;
+	cout << std::endl;
 }
 
 int FullVector::getID()

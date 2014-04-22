@@ -17,14 +17,3 @@ const std::map<BatchStatsVariables, std::string> Constants::BatchStatFileName =
     {BatchStatsVariables::CURRENTLYINFECTED, "numberInfected"},
     {BatchStatsVariables::NEWINFECTIONS, "newInfections"}
 };
-
-const int Constants::PREVALENT_INFECTION = 0;
-//const bool Constants::INCIDENT_INFECTION = false;
-const bool Constants::REMOVE = true;
-const bool Constants::DONT_REMOVE = false;
-const bool Constants::CONSENT_IS_REQUIRED = true;
-const bool Constants::CONSENT_NOT_REQUIRED = false;
-const bool Constants::EXCLUDE_NULL_BINS = true;
-const bool Constants::INCLUDE_NULL_BINS = false;
-const bool Constants::SHOW_INFECTED = true;
-const bool Constants::NO_SHOW_INFECTED = false;

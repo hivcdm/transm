@@ -126,26 +126,26 @@ double Female::getFOI(Person *_p, SexualPartnership::Type _partnershipType, Even
 
 	double FOI = getTransmissionCoeff() * (1 - condomEff) * (1 - circEff);
 
-	if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && (trace() || _p->trace()))
+    if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (trace() || _p->trace()))
 	{
-		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " !Transmission coefficient from " << getID() << " to " <<
+        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !Transmission coefficient from " << getID() << " to " <<
 		        _p->getID() << " is " << getTransmissionCoeff();
-		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << ";" << endl << " !A condom was ";
+        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << ";" << std::endl << " !A condom was ";
 
 		if(!condomUsedLastFOICalculation)
 		{
-			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "NOT ";
+            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "NOT ";
 		}
 
-		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "used (efficacy " << m->getCondomProtectEff();
+        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "used (efficacy " << m->getCondomProtectEff();
 
 		if(m->isCircumcised())
 		{
-			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << ");" << endl << " !" << m->getID() <<
+            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << ");" << std::endl << " !" << m->getID() <<
 			        " is circumcised (efficacy " << circEff;
 		}
 
-		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << ");" << endl << " !Total FOI = " << FOI << endl;
+        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << ");" << std::endl << " !Total FOI = " << FOI << std::endl;
 	}
 
 	return FOI;
@@ -194,25 +194,25 @@ void Female::rerollRiskGroup(EventParams &_eventParams)
 		risk = LOW;
 	}
 
-	if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && trace())
+	if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
 	{
-		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " % Female " << getID() << " rerolls as ";
+        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " % Female " << getID() << " rerolls as ";
 
 		if(risk == HIGH)
 		{
-			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "High";
+            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "High";
 		}
 		else
 		{
-			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "Low";
+            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "Low";
 		}
 
-		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " risk" << endl;
+        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " risk" << std::endl;
 	}
 }
 
 void Female::saveState(ostream &_outStream, long currTime)
 {
-	_outStream << "gend:f," << endl;
+	_outStream << "gend:f," << std::endl;
 	Person::saveState(_outStream, currTime);
 }

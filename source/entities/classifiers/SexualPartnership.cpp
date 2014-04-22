@@ -44,9 +44,9 @@ SexualPartnership::SexualPartnership(Person *_person1, Person *_person2, EventPa
 		}
 	}
 
-	if((_person1->trace() || _person2->trace()) && _eventParams.outputTrace[EventParams::TraceFileType::Singleperson])
+    if((_person1->trace() || _person2->trace()) && _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled)
 	{
-		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " of duration " << maxDuration << endl;
+        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " of duration " << maxDuration << std::endl;
 	}
 
 	//set time for partnership to dissolve
@@ -121,9 +121,9 @@ Person *SexualPartnership::monthlySexualActivity(EventParams &_eventParams, Infe
 
 void SexualPartnership::printPartners(ostream &_outStream, string _prefix)
 {
-	_outStream << _prefix << "Sexual Relationship(" << TypeStrings.at(type) << ")" << endl;
+	_outStream << _prefix << "Sexual Relationship(" << TypeStrings.at(type) << ")" << std::endl;
 	partners[0]->print(_outStream, Constants::TAB);
-	_outStream << endl;
+	_outStream << std::endl;
 	partners[1]->print(_outStream, Constants::TAB);
 }
 

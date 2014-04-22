@@ -64,34 +64,16 @@ public:
 
 	static const std::map<BatchStatsVariables, std::string> BatchStatFileName;
 
-	//Used to keep track of the number of CEPAC .in files (i.e. SimContext) there are
+    /// <summary>
+	/// Used to keep track of the number of CEPAC .in files (i.e. SimContext) there are
+    /// </summary>
 	static const int NUMBER_OF_CEPAC_FILES = 5;
 	static const int NUMBER_OF_ROLLOUT_FILES = 13;
 	static const int NUMBER_OF_OIS = 15;
-
-	//Used to keep track of how many trace files there are
-	static const int NUMBER_OF_TRACE_FILES = 14;
-
-	//used to index the upper or lower bound cd4StrataRanges + hv1StrataRanges
-	static const int LOWER = 0;
-	static const int UPPER = 1;
 
 	static const int NUMBER_CONCURRENCY_DEFS = 16;
 	static const int NUMBER_CALIBRATION_PREVS = 13;
 	static const int NUMBER_TIME_POINTS_SAVE_STATE = 2;
 
-	static const int PREVALENT_INFECTION;
-	//static const bool INCIDENT_INFECTION;
-
-	static const bool REMOVE;
-	static const bool DONT_REMOVE;
-
-	static const bool CONSENT_IS_REQUIRED;
-	static const bool CONSENT_NOT_REQUIRED;
-
-	static const bool EXCLUDE_NULL_BINS;
-	static const bool INCLUDE_NULL_BINS;
-
-	static const bool SHOW_INFECTED;
-	static const bool NO_SHOW_INFECTED;
+	static const int PREVALENT_INFECTION = 0;
 };

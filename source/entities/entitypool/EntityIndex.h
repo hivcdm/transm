@@ -275,7 +275,7 @@ Person *EntityIndex<_PSC, _KeyValType>::drawMember(RandomNumberGenerator &_rando
         SexualPartnership::Type _partnershipType, bool _remove)
 {
 	int numPotentials = 0; //how many potential people in this range
-	cout << "EntityIndex drawMember being called for person " << _chooser->getID() << endl;
+	cout << "EntityIndex drawMember being called for person " << _chooser->getID() << std::endl;
 	//these determine the bounds of which keys we will consider
 	_KeyValType minDesired = std::numeric_limits<_KeyValType>::min();
 	_KeyValType maxDesired = std::numeric_limits<_KeyValType>::max();
@@ -517,7 +517,7 @@ void EntityIndex<_PSC, _KeyValType>::print(ostream &_outStream, std::string _pre
 			_outStream << "-------------------------------------------------" << Constants::TAB;
 		}
 
-		_outStream << endl;
+		_outStream << std::endl;
 		iter++;
 	}
 }

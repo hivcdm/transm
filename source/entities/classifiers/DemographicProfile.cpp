@@ -235,7 +235,7 @@ void DemographicProfile::parse(string _tupleStr)
 	//make sure we have correct amount of tokens
 	if(tokens.size() != DemographicProfile::ENDDemographic)
 	{
-		cerr << "Tuple String " << _tupleStr << " is not valid" << endl;
+		cerr << "Tuple String " << _tupleStr << " is not valid" << std::endl;
 		Utility::exitWithPrompt(-1);
 	}
 
@@ -251,7 +251,7 @@ void DemographicProfile::parse(string _tupleStr)
 		//get the enum value from _tupleStr's tokens
 		BaseEnumCls::Enum e = currCategoryCls->fromString(tokens.at(currDemographic));
 		//if we get currCategoryCls->fromString(tokens.at(currDemographic)) to throw an exception, then we can use a better error msg
-		//cerr << "Tuple String " << _tupleStr << " is not valid. (" << _tupleStr.at(currDemographic) << ")" << endl;
+		//cerr << "Tuple String " << _tupleStr << " is not valid. (" << _tupleStr.at(currDemographic) << ")" << std::endl;
 		set(currDemographic, e);
 		currDemographic = DemographicProfile::Demographic(currDemographic + 1);
 	} //while(currDemographic < DemographicProfile::ENDDemographic) {
@@ -278,7 +278,7 @@ void DemographicProfile::saveState(ostream &_outStream)
 		}
 	}
 
-	_outStream << "]," << endl;
+	_outStream << "]," << std::endl;
 }
 void DemographicProfile::selectProfileIDs(std::vector<ProfileID> &_selected, const std::vector<ProfileID> *_available) const
 {

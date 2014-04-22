@@ -224,19 +224,19 @@ double Male::getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventP
 
 	double FOI = getTransmissionCoeff() *	(1 - condomEff);
 
-	if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && (trace() || _p->trace()))
+    if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (trace() || _p->trace()))
 	{
-		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " !Transmission coefficient from " << getID() << " to " <<
+        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !Transmission coefficient from " << getID() << " to " <<
 		        _p->getID() << " is " << getTransmissionCoeff();
-		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << ";" << endl << " !A condom was ";
+        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << ";" << std::endl << " !A condom was ";
 
 		if(!condomUsedLastFOICalculation)
 		{
-			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "NOT ";
+            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "NOT ";
 		}
 
-		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "used (efficacy " << getCondomProtectEff();
-		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << ");" << endl << " !Total FOI = " << FOI << endl;
+        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "used (efficacy " << getCondomProtectEff();
+        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << ");" << std::endl << " !Total FOI = " << FOI << std::endl;
 	}
 
 	return FOI;
@@ -427,28 +427,28 @@ void Male::rerollRiskGroup(EventParams &_eventParams)
 		}
 	}
 
-	if(_eventParams.outputTrace[EventParams::TraceFileType::Singleperson] && trace())
+    if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
 	{
-		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " % Male " << getID() << " rerolls as ";
+        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " % Male " << getID() << " rerolls as ";
 
 		if(risk == HIGH)
 		{
-			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "High";
+            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "High";
 		}
 		else
 		{
-			_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << "Low";
+            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "Low";
 		}
 
-		_eventParams.traceStreams[EventParams::TraceFileType::Singleperson] << " risk" << endl;
+        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " risk" << std::endl;
 	}
 }
 
 void Male::saveState(ostream &_outStream, long currTime)
 {
-	_outStream << "gend:m," << endl;
+	_outStream << "gend:m," << std::endl;
 	Person::saveState(_outStream, currTime);
-	_outStream << "," << endl << "circ:" << circumcised << "," << endl;
+	_outStream << "," << std::endl << "circ:" << circumcised << "," << std::endl;
 	//partner acquisition rates
 	bool firstInSequence = true;
 	_outStream << "partAcqR:[";
@@ -464,7 +464,7 @@ void Male::saveState(ostream &_outStream, long currTime)
 		_outStream << partnerAcqRates[(int)partnership_type];
 	}
 
-	_outStream << "]," << endl;
+	_outStream << "]," << std::endl;
 	//Acts per month
 	firstInSequence = true;
 	_outStream << "actsPerMth:[";
@@ -480,7 +480,7 @@ void Male::saveState(ostream &_outStream, long currTime)
 		_outStream << numActsPerMonth[(int)partnership_type];
 	}
 
-	_outStream << "]," << endl;
+	_outStream << "]," << std::endl;
 	//Acts per month
 	firstInSequence = true;
 	_outStream << "probCndm:[";

@@ -11,37 +11,69 @@
 #include "../core/Constants.h"
 #include "../util/rand/RandomNumberGenerator.h"
 
-/**
-this data structure contains some important simulation level parameters or variables
-that are associated with each Population-level event
+template<typename T>
+struct Bounds
+{
+    T lower;
+    T upper;
 
-@author schung5, errhode
- */
+    /// <summary>
+    /// Returns true if value is within these bounds (inclusive)
+    /// </summary>
+    bool Contains(T value)
+    {
+        return value >= lower && value <= upper;
+    }
+};
+
+/// <summary>
+/// this data structure contains some important simulation level parameters or variables
+/// that are associated with each Population-level event
+/// <summary>
+/// <authors>
+/// schung5, errhode
+/// </authors>
 class EventParams
 {
-
-private :
-
 public :
-	enum TraceFileType
-	{
-		Population,
-		Infection,
-		Partnership,
-		Survival,
-		CostEffectiveness,
-		Clinical,
-		Events,
-		Health,
-		Singleperson,
-		LifeExpectancy,
-		PartnershipAcquisition,
-		CalibrationStatistics,
-		ArtRollout,
-		ShiftedOutcomes,
-		Last,
-		First = Population
-	};
+    struct TraceFile
+    {
+        enum class Type
+        {
+            Population,
+            Infection,
+            Partnership,
+            Survival,
+            CostEffectiveness,
+            Clinical,
+            Events,
+            Health,
+            SinglePerson,
+            LifeExpectancy,
+            PartnerAcquisition,
+            CalibrationStatistics,
+            ArtRollout,
+            ShiftedOutcomes,
+            Last,
+            First = Population
+        } type;
+        bool enabled;
+        std::string extension;
+        bool toss;
+        std::fstream file;
+
+        template<typename T>
+        std::ostream &operator<<(const T &to_add)
+        {
+            return file << to_add;
+        }
+
+        typedef std::ostream& (*ostream_manipulator)(std::ostream&);
+        std::ostream& operator<<(ostream_manipulator pf)
+        {
+            return file << pf;
+        }
+    };
 
 	/**
 	this structure gives information about the rollout file to use and when to apply it if ART Rollout intervention is turned on
@@ -89,18 +121,18 @@ public :
 		int oiHistNumToStart;
 
 		int cd4Rank;
-		int cd4Bounds[2];
+		Bounds<int> cd4Bounds;
 
 		int cd4OiHistRank;
-		int cd4OiHistCd4Bounds[2];
+        Bounds<int> cd4OiHistCd4Bounds;
 		bool cd4OiHistOIs[Constants::NUMBER_OF_OIS];
 
 		int hvlRank;
-		int hvlBounds[2];
+        Bounds<int> hvlBounds;
 
 		int cd4HvlRank;
-		int cd4HvlCd4Bounds[2];
-		int cd4HvlHvlBounds[2];
+        Bounds<int> cd4HvlCd4Bounds;
+        Bounds<int> cd4HvlHvlBounds;
 	};
 
 	/**
@@ -115,21 +147,18 @@ public :
 		//outcomes used for the cutoff
 		//The partnership prevalence is for a year duration
 		int steadyPrevPopulation;
-		double steadyPrevBounds[2];
+		Bounds<double> steadyPrevBounds;
 		int casualPrevPopulation;
-		double casualPrevBounds[2];
+        Bounds<double> casualPrevBounds;
 		int CSWPrevPopulation;
-		double CSWPrevBounds[2];
+        Bounds<double> CSWPrevBounds;
 		int propInConcurrentPopulation;
-		double propInConcurrentBounds[2];
+        Bounds<double> propInConcurrentBounds;
 		int numActsPopulation;
-		double numActsBounds[2];
+        Bounds<double> numActsBounds;
 		double femaleCasualPrevRatio;
 		double femalePropInConcurrentRatio;
 		double femaleNumActsLRtoHRRatio;
-
-		//which files to toss
-		bool tossFiles[Constants::NUMBER_OF_TRACE_FILES];
 
 		//The calendar prevalence values
 		double calendarPrevs[Constants::NUMBER_CALIBRATION_PREVS];
@@ -147,20 +176,24 @@ public :
 		treatedContext = nullptr;
 	}
 
-	//current internal clock for a particular Population
-	long currTime;
+    /// <summary>
+	/// current internal clock for a particular Population
+    /// </summary>
+	int currTime;
 
-	//Sim name -- primarily used for generating names of GraphViz files and CEPAC output files; will be name of input sheet minus .xml
+    /// <summary>
+	/// Sim name -- primarily used for generating names of GraphViz files and CEPAC output files; will be name of input sheet minus .xml
+    /// </summary>
 	std::string simName;
 
 	int monthOf1990;
 
 	//--------- CEPAC related objects -------------//
 	//CEPAC related simContext (input)
-	vector<SimContext *> cepacSimContexts;
+	std::vector<SimContext *> cepacSimContexts;
 
 	//CEPAC input files for Rollout
-	vector<RolloutContext *> rolloutSimContexts;
+    std::vector<RolloutContext *> rolloutSimContexts;
 	RolloutEligibility rolloutEligibility;
 	//Cepac files for storing current population groups (only if using rollout)
 	SimContext *untreatedContext;
@@ -202,11 +235,7 @@ public :
 	//prevalence delay time
 	int delayPrevalence;
 
-	//used to keep track of which trace files to output and their names
-	bool outputTrace[Constants::NUMBER_OF_TRACE_FILES];
-	string traceExtensions[Constants::NUMBER_OF_TRACE_FILES];
-
-	std::fstream traceStreams[Constants::NUMBER_OF_TRACE_FILES];
+    std::map<TraceFile::Type, TraceFile> trace_files;
 
 	//Saves state of population to file
 	std::fstream popStateStream[Constants::NUMBER_TIME_POINTS_SAVE_STATE];
@@ -243,14 +272,6 @@ public :
 	//closes all the trace files
 	~EventParams()
 	{
-		for(int i = 0; i < Constants::NUMBER_OF_TRACE_FILES; i++)
-		{
-			if(outputTrace[i])
-			{
-				traceStreams[i].close();
-			}
-		}
-
 		for(int i = 0; i < Constants::NUMBER_TIME_POINTS_SAVE_STATE; i++)
 		{
 			popStateStream[i].close();
@@ -267,7 +288,6 @@ public :
 			BatchStatsStream[batchstat].close();
 		}
 
-		//cepacTracer->closeTraceFile();
 		delete cepacRunStats;
 
 		while(cepacSimContexts.size() > 0)

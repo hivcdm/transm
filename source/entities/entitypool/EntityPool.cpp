@@ -43,10 +43,10 @@ void EntityPool::print(ostream &_outStream)
 
 		_outStream << *(bucket->getLabel()) << Constants::COLON << Constants::TAB << Constants::TAB << "Gender" <<
 		           Constants::TAB << "ID" << Constants::TAB << "Profile" << Constants::TAB << "Age" << Constants::TAB << "cd4" <<
-		           Constants::TAB << "hvl" << endl;
+		           Constants::TAB << "hvl" << std::endl;
 		//print out all members
 		bucket->print(_outStream, Constants::TABTAB);
-		_outStream << endl;
+		_outStream << std::endl;
 		currBucketIndex++;
 	} //while(currBucketIndex < entityBuckets.size()) {
 }
@@ -217,7 +217,7 @@ bool EntityPool::removeEntity(Person *_person)
 			std::cerr << "Trying to remove person from DMG Profile Bucket resulted in an out of range exception: " << e.what() <<
 			          "\n";
 			std::cerr << "If this person is of maximum age, they were probably already removed and you can disregard this message."
-			          << endl;
+			          << std::endl;
 			_person->print(cerr, "Person attempted to remove: ");
 		}
 		catch(std::exception &e)

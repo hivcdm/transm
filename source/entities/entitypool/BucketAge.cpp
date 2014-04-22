@@ -191,7 +191,7 @@ Person *BucketAge::drawMember(RandomNumberGenerator &_randomNums, Person::RiskLe
 	}
 	else
 	{
-		cerr << "Error: attempting to draw a member from invalid risk level: " << _riskLevel << endl;
+		cerr << "Error: attempting to draw a member from invalid risk level: " << _riskLevel << std::endl;
 		return nullptr;
 	}
 
@@ -213,7 +213,7 @@ Person *BucketAge::drawMember(RandomNumberGenerator &_randomNums, Person::RiskLe
 	}
 	else
 	{
-		cerr << "Error: requesting person from empty set: " << DemographicProfile::toString(currentBinID) << endl;
+		cerr << "Error: requesting person from empty set: " << DemographicProfile::toString(currentBinID) << std::endl;
 		return nullptr;
 	}
 }
@@ -282,7 +282,7 @@ bool BucketAge::insert(Person *_person)
 {
 	if(exists(_person))
 	{
-		cerr << "Adding person to a bucket they are already in!" << endl;
+		cerr << "Adding person to a bucket they are already in!" << std::endl;
 		return false;
 	}
 
@@ -492,7 +492,7 @@ void BucketAge::changeHIVStatus(Person *_p, Person::HIVStatus _orig, Person::HIV
 //Pseudo-TESTED... should use print function later on
 void BucketAge::printAll(ostream &_outStream, string _prefix)
 {
-	_outStream << _prefix << endl;
+	_outStream << _prefix << std::endl;
 	_outStream << "Infected:	";
 
 	for(int i = 0; i < NUMBER_GENERATIONS_TO_TRACE; i++)

@@ -12,32 +12,6 @@
 
 class InfectionsTracker;
 
-struct TraceFile
-{
-	enum class Type
-	{
-		Population,
-		Infection,
-		Partnership,
-		Survival,
-		CostEffectiveness,
-		Clinical,
-		Events,
-		Health,
-		SinglePerson,
-		LifeExpectancy,
-		PartnerAcquisition,
-		CalibrationStatistics,
-		ArtRollout,
-		ShiftedOutcomes,
-		Last,
-		First = Population
-	} type;
-	bool enabled;
-	std::string extension;
-	bool toss;
-};
-
 struct PopulationTarget
 {
 	static PopulationTarget FromString(const std::string &s);
@@ -106,17 +80,17 @@ public:
 	void SetRolloutEligibilityRank(const std::string &criterion, int rank);
 	void SetRolloutEligibilityOIHist(int oi, bool required) { parameters_.rolloutEligibility.oiHistOIs[oi] = required; }
 	void SetRolloutEligibilityNumToStart(int num) { parameters_.rolloutEligibility.oiHistNumToStart = num; }
-	void SetRolloutEligibilityCD4Lwr(int lower) { parameters_.rolloutEligibility.cd4Bounds[0] = lower; }
-	void SetRolloutEligibilityCD4Upp(int upper) { parameters_.rolloutEligibility.cd4Bounds[1] = upper; }
+	void SetRolloutEligibilityCD4Lwr(int lower) { parameters_.rolloutEligibility.cd4Bounds.lower = lower; }
+	void SetRolloutEligibilityCD4Upp(int upper) { parameters_.rolloutEligibility.cd4Bounds.upper = upper; }
 	void SetRolloutEligibilityCD4OIHist(int oi, bool required) { parameters_.rolloutEligibility.cd4OiHistOIs[oi] = required; }
-	void SetRolloutEligibilityCD4OIHistCD4Lwr(int lower) { parameters_.rolloutEligibility.cd4OiHistCd4Bounds[0] = lower; }
-	void SetRolloutEligibilityCD4OIHistCD4Upp(int upper) { parameters_.rolloutEligibility.cd4OiHistCd4Bounds[1] = upper; }
-	void SetRolloutEligibilityHVLLwr(int lower) { parameters_.rolloutEligibility.hvlBounds[0] = lower; }
-	void SetRolloutEligibilityHVLUpp(int upper) { parameters_.rolloutEligibility.hvlBounds[1] = upper; }
-	void SetRolloutEligibilityCD4HVLCD4Lwr(int lower) { parameters_.rolloutEligibility.cd4HvlHvlBounds[0] = lower; }
-	void SetRolloutEligibilityCD4HVLCD4Upp(int upper) { parameters_.rolloutEligibility.cd4HvlHvlBounds[1] = upper; }
-	void SetRolloutEligibilityCD4HVLHVLLwr(int lower) { parameters_.rolloutEligibility.cd4HvlCd4Bounds[0] = lower; }
-	void SetRolloutEligibilityCD4HVLHVLUpp(int upper) { parameters_.rolloutEligibility.cd4HvlCd4Bounds[1] = upper; }
+	void SetRolloutEligibilityCD4OIHistCD4Lwr(int lower) { parameters_.rolloutEligibility.cd4OiHistCd4Bounds.lower = lower; }
+    void SetRolloutEligibilityCD4OIHistCD4Upp(int upper) { parameters_.rolloutEligibility.cd4OiHistCd4Bounds.upper = upper; }
+    void SetRolloutEligibilityHVLLwr(int lower) { parameters_.rolloutEligibility.hvlBounds.lower = lower; }
+    void SetRolloutEligibilityHVLUpp(int upper) { parameters_.rolloutEligibility.hvlBounds.upper = upper; }
+    void SetRolloutEligibilityCD4HVLCD4Lwr(int lower) { parameters_.rolloutEligibility.cd4HvlHvlBounds.lower = lower; }
+    void SetRolloutEligibilityCD4HVLCD4Upp(int upper) { parameters_.rolloutEligibility.cd4HvlHvlBounds.upper = upper; }
+    void SetRolloutEligibilityCD4HVLHVLLwr(int lower) { parameters_.rolloutEligibility.cd4HvlCd4Bounds.lower = lower; }
+    void SetRolloutEligibilityCD4HVLHVLUpp(int upper) { parameters_.rolloutEligibility.cd4HvlCd4Bounds.upper = upper; }
 
 	Population &GetPopulation() { return population_; }
 	const Population &GetPopulation() const { return population_; }

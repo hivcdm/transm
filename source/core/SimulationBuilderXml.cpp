@@ -485,21 +485,33 @@ void SimulationBuilderXml::ReadSimulationParameters()
 		definition.useDefinition = Text<bool>(definition_node.child("allow"));
 	}
 
-	static const auto trace_files = {"population", "infection", "partnership", "survival",
-		"costEffectiveness", "clinical", "events", "health", "singlePerson", "lifeExpectancy", "partnerAcquisition",
-		"calibrationStatistics", "artRollout", "shiftedOutcomes"};
+    static const std::map<EventParams::TraceFile::Type, std::string> trace_files =
+    {
+        {EventParams::TraceFile::Type::Population, "population"},
+        {EventParams::TraceFile::Type::Infection, "infection"},
+        {EventParams::TraceFile::Type::Partnership, "partnership"},
+        {EventParams::TraceFile::Type::Survival, "survival"},
+        {EventParams::TraceFile::Type::CostEffectiveness, "costEffectiveness"},
+        {EventParams::TraceFile::Type::Clinical, "clinical"},
+        {EventParams::TraceFile::Type::Events, "events"},
+        {EventParams::TraceFile::Type::Health, "health"},
+        {EventParams::TraceFile::Type::SinglePerson, "singlePerson"},
+        {EventParams::TraceFile::Type::LifeExpectancy, "lifeExpectancy"},
+        {EventParams::TraceFile::Type::PartnerAcquisition, "partnerAcquisition"},
+        {EventParams::TraceFile::Type::CalibrationStatistics, "calibrationStatistics"},
+        {EventParams::TraceFile::Type::ArtRollout, "artRollout"},
+        {EventParams::TraceFile::Type::ShiftedOutcomes, "shiftedOutcomes"}
+    };
 
 	auto trace_files_node = simulation_node.child("traceFiles");
-	std::size_t trace_file_index = 0;
 	for(auto trace_file : trace_files)
 	{
-		auto trace_file_node = trace_files_node.child(trace_file);
-		parameters.outputTrace[trace_file_index] = Attr<bool>(trace_file_node, "enabled");
-		parameters.traceExtensions[trace_file_index] = Text<std::string>(trace_file_node.child("extension"));
-		std::string fileName = "results/" + parameters.simName + "-" + parameters.traceExtensions[trace_file_index];
-		parameters.traceStreams[trace_file_index].open(fileName, ios::out);
-		parameters.calibrationInputs.tossFiles[trace_file_index] = Attr<bool>(trace_file_node, "tossIfCalibFail");
-		trace_file_index++;
+		auto trace_file_node = trace_files_node.child(trace_file.second.c_str());
+		parameters.trace_files[trace_file.first].enabled = Attr<bool>(trace_file_node, "enabled");
+        parameters.trace_files[trace_file.first].extension = Text<std::string>(trace_file_node.child("extension"));
+        std::string fileName = "results/" + parameters.simName + "-" + parameters.trace_files[trace_file.first].extension;
+        parameters.trace_files[trace_file.first].file.open(fileName, ios::out);
+        parameters.trace_files[trace_file.first].toss = Attr<bool>(trace_file_node, "tossIfCalibFail");
 	}
 
 	pugi::xml_node costs_node = document_.select_single_node("/simulation/traceFiles/costEffectiveness").node();
@@ -528,20 +540,20 @@ void SimulationBuilderXml::ReadSimulationParameters()
 		auto &calib = parameters.calibrationInputs;
 		calib.monthOfCalibration = Text<int>(calibration_node.child("monthOfCalibration"));
 		calib.steadyPrevPopulation = Text<int>(calibration_node.child("monthOfCalibration"));
-		calib.steadyPrevBounds[Constants::LOWER] = Text<double>(calibration_node.child("monthOfCalibration"));
-		calib.steadyPrevBounds[Constants::UPPER] = Text<double>(calibration_node.child("monthOfCalibration"));
+		calib.steadyPrevBounds.lower = Text<double>(calibration_node.child("monthOfCalibration"));
+		calib.steadyPrevBounds.upper = Text<double>(calibration_node.child("monthOfCalibration"));
 		calib.casualPrevPopulation = Text<int>(calibration_node.child("monthOfCalibration"));
-		calib.casualPrevBounds[Constants::LOWER] = Text<double>(calibration_node.child("monthOfCalibration"));
-		calib.casualPrevBounds[Constants::UPPER] = Text<double>(calibration_node.child("monthOfCalibration"));
+		calib.casualPrevBounds.lower = Text<double>(calibration_node.child("monthOfCalibration"));
+		calib.casualPrevBounds.upper = Text<double>(calibration_node.child("monthOfCalibration"));
 		calib.CSWPrevPopulation = Text<int>(calibration_node.child("monthOfCalibration"));
-		calib.CSWPrevBounds[Constants::LOWER] = Text<double>(calibration_node.child("monthOfCalibration"));
-		calib.CSWPrevBounds[Constants::UPPER] = Text<double>(calibration_node.child("monthOfCalibration"));
+		calib.CSWPrevBounds.lower = Text<double>(calibration_node.child("monthOfCalibration"));
+		calib.CSWPrevBounds.upper = Text<double>(calibration_node.child("monthOfCalibration"));
 		calib.propInConcurrentPopulation = Text<int>(calibration_node.child("monthOfCalibration"));
-		calib.propInConcurrentBounds[Constants::LOWER] = Text<double>(calibration_node.child("monthOfCalibration"));
-		calib.propInConcurrentBounds[Constants::UPPER] = Text<double>(calibration_node.child("monthOfCalibration"));
+		calib.propInConcurrentBounds.lower = Text<double>(calibration_node.child("monthOfCalibration"));
+		calib.propInConcurrentBounds.upper = Text<double>(calibration_node.child("monthOfCalibration"));
 		calib.numActsPopulation = Text<int>(calibration_node.child("monthOfCalibration"));
-		calib.numActsBounds[Constants::LOWER] = Text<double>(calibration_node.child("monthOfCalibration"));
-		calib.numActsBounds[Constants::UPPER] = Text<double>(calibration_node.child("monthOfCalibration"));
+		calib.numActsBounds.lower = Text<double>(calibration_node.child("monthOfCalibration"));
+		calib.numActsBounds.upper = Text<double>(calibration_node.child("monthOfCalibration"));
 		calib.femaleCasualPrevRatio = Text<double>(calibration_node.child("monthOfCalibration"));
 		calib.femalePropInConcurrentRatio = Text<double>(calibration_node.child("monthOfCalibration"));
 		calib.femaleNumActsLRtoHRRatio = Text<double>(calibration_node.child("monthOfCalibration"));
@@ -736,9 +748,9 @@ void SimulationBuilderXml::InitializePopulation()
 
     population.populationStatistics.artTracker.SetAgeRanges(ageRanges);
 
-	if(population.parameters_.outputTrace[EventParams::TraceFileType::Singleperson])
+	if(population.parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled)
 	{
-		population.parameters_.traceStreams[EventParams::TraceFileType::Singleperson] << endl << "Now creating initial partnerships... " << endl;
+		population.parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << std::endl << "Now creating initial partnerships... " << std::endl;
 	}
 
 	// create prevalent Regular Partnerships (time = 0) before creating prevalent marriages
@@ -773,7 +785,7 @@ void SimulationBuilderXml::InitializePopulation()
 		}
 
 		//choose a random male from the pool
-		Male *m = (Male *)singleMales->drawMember(population.parameters_.randomNums, SexualPartnership::Type::Steady, Constants::DONT_REMOVE);
+		Male *m = (Male *)singleMales->drawMember(population.parameters_.randomNums, SexualPartnership::Type::Steady, false);
 
 		if(m == nullptr)
 		{
@@ -799,7 +811,7 @@ void SimulationBuilderXml::InitializePopulation()
 		}
 
 		//choose a random male from the pool
-		Male *m = (Male *)singleMales->drawMember(population.parameters_.randomNums, SexualPartnership::Type::Regular, Constants::DONT_REMOVE);
+		Male *m = (Male *)singleMales->drawMember(population.parameters_.randomNums, SexualPartnership::Type::Regular, false);
 
 		if(m == nullptr)
 		{
@@ -831,40 +843,40 @@ EventParams::RolloutEligibility SimulationBuilderXml::ReadRolloutEligibility()
 	auto cd4_node = eligibility_node.select_single_node("criteria[@name='CD4']").node();
 	eligibility.cd4Rank = GetTemplate<int>(cd4_node.child("rank"),
 		std::bind(&Simulation::SetRolloutEligibilityRank, std::placeholders::_1, "CD4", std::placeholders::_2));
-	eligibility.cd4Bounds[0] = GetTemplate<int>(cd4_node.child("CD4Lwr"),
+	eligibility.cd4Bounds.lower = GetTemplate<int>(cd4_node.child("CD4Lwr"),
 		std::bind(&Simulation::SetRolloutEligibilityCD4Lwr, std::placeholders::_1, std::placeholders::_2));
-	eligibility.cd4Bounds[1] = GetTemplate<int>(cd4_node.child("CD4Upp"),
+	eligibility.cd4Bounds.upper = GetTemplate<int>(cd4_node.child("CD4Upp"),
 		std::bind(&Simulation::SetRolloutEligibilityCD4Upp, std::placeholders::_1, std::placeholders::_2));
 
     // CD4OIHist
 	auto cd4_oi_hist_node = eligibility_node.select_single_node("criteria[@name='CD4OIHist']").node();
 	eligibility.cd4OiHistRank = GetTemplate<int>(cd4_oi_hist_node.child("rank"),
 		std::bind(&Simulation::SetRolloutEligibilityRank, std::placeholders::_1, "CD4OIHist", std::placeholders::_2));
-	eligibility.cd4OiHistCd4Bounds[0] = GetTemplate<int>(cd4_oi_hist_node.child("CD4Lwr"),
+	eligibility.cd4OiHistCd4Bounds.lower = GetTemplate<int>(cd4_oi_hist_node.child("CD4Lwr"),
 		std::bind(&Simulation::SetRolloutEligibilityCD4OIHistCD4Lwr, std::placeholders::_1, std::placeholders::_2));
-	eligibility.cd4OiHistCd4Bounds[1] = GetTemplate<int>(cd4_oi_hist_node.child("CD4Upp"),
+	eligibility.cd4OiHistCd4Bounds.upper = GetTemplate<int>(cd4_oi_hist_node.child("CD4Upp"),
 		std::bind(&Simulation::SetRolloutEligibilityCD4OIHistCD4Upp, std::placeholders::_1, std::placeholders::_2));
 
     // HVL
 	auto hvl_node = eligibility_node.select_single_node("criteria[@name='HVL']").node();
 	eligibility.hvlRank = GetTemplate<int>(hvl_node.child("rank"),
 		std::bind(&Simulation::SetRolloutEligibilityRank, std::placeholders::_1, "HVL", std::placeholders::_2));
-	eligibility.hvlBounds[0] = GetTemplate<int>(hvl_node.child("HVLLwr"),
+	eligibility.hvlBounds.lower = GetTemplate<int>(hvl_node.child("HVLLwr"),
 		std::bind(&Simulation::SetRolloutEligibilityHVLLwr, std::placeholders::_1, std::placeholders::_2));
-	eligibility.hvlBounds[1] = GetTemplate<int>(hvl_node.child("HVLUpp"),
+	eligibility.hvlBounds.upper = GetTemplate<int>(hvl_node.child("HVLUpp"),
 		std::bind(&Simulation::SetRolloutEligibilityHVLUpp, std::placeholders::_1, std::placeholders::_2));
 
     // CD4HVL
 	auto cd4_hvl_node = eligibility_node.select_single_node("criteria[@name='CD4HVL']").node();
 	eligibility.cd4HvlRank = GetTemplate<int>(cd4_hvl_node.child("rank"),
 		std::bind(&Simulation::SetRolloutEligibilityRank, std::placeholders::_1, "CD4HVL", std::placeholders::_2));
-	eligibility.cd4HvlCd4Bounds[0] = GetTemplate<int>(cd4_hvl_node.child("CD4Lwr"),
+	eligibility.cd4HvlCd4Bounds.lower = GetTemplate<int>(cd4_hvl_node.child("CD4Lwr"),
 		std::bind(&Simulation::SetRolloutEligibilityCD4HVLCD4Lwr, std::placeholders::_1, std::placeholders::_2));
-	eligibility.cd4HvlCd4Bounds[1] = GetTemplate<int>(cd4_hvl_node.child("CD4Upp"),
+	eligibility.cd4HvlCd4Bounds.upper = GetTemplate<int>(cd4_hvl_node.child("CD4Upp"),
 		std::bind(&Simulation::SetRolloutEligibilityCD4HVLCD4Upp, std::placeholders::_1, std::placeholders::_2));
-	eligibility.cd4HvlHvlBounds[0] = GetTemplate<int>(cd4_hvl_node.child("HVLLwr"),
+	eligibility.cd4HvlHvlBounds.lower = GetTemplate<int>(cd4_hvl_node.child("HVLLwr"),
 		std::bind(&Simulation::SetRolloutEligibilityCD4HVLHVLLwr, std::placeholders::_1, std::placeholders::_2));
-	eligibility.cd4HvlHvlBounds[1] = GetTemplate<int>(cd4_hvl_node.child("HVLUpp"),
+	eligibility.cd4HvlHvlBounds.upper = GetTemplate<int>(cd4_hvl_node.child("HVLUpp"),
 		std::bind(&Simulation::SetRolloutEligibilityCD4HVLHVLUpp, std::placeholders::_1, std::placeholders::_2));
 
 	for(int i = 0; i < 15; i++)

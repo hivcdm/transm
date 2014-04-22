@@ -107,7 +107,7 @@ unsigned int BucketSexualMixing::getCorrectBufferIndex(Person *_p)
 
 	/*//if this person's DemographicProfile doesn't match DemographicProfile, return -1
 	if (getProfileID() != _p->getDemographicProfile()->getProfileID()){
-		cout << "WRONG PROFILE" << endl;
+		cout << "WRONG PROFILE" << std::endl;
 		return (unsigned int)personsByAge->size();
 	}*/
 
@@ -395,8 +395,8 @@ bool BucketSexualMixing::insert(Person *_person)
 	else
 	{
 		cerr << "Trying to insert person with invalid age (" << _person->getAge(timeGranularity) << " " << ((
-            timeGranularity == TimeGranularity::Month) ? "months" : "years") << ")" << endl;
-		cerr << "Valid ages are between " << minAge << " and " <<  maxAge << " inclusive" << endl;
+            timeGranularity == TimeGranularity::Month) ? "months" : "years") << ")" << std::endl;
+		cerr << "Valid ages are between " << minAge << " and " <<  maxAge << " inclusive" << std::endl;
 		cerr << "If age is valid, person may have an invalid DemographicProfile";
 		_person->print(cerr, "");
 		return false;
@@ -637,7 +637,7 @@ list<Person *> BucketSexualMixing::ageOneTimeStep()
 		}
 		catch(std::exception &e)
 		{
-			cout << e.what() << endl;
+			cout << e.what() << std::endl;
 			personIterator = oldestPersons->end();
 		}
 	}
