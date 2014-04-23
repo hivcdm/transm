@@ -637,6 +637,46 @@ void SimulationBuilderXml::ReadSimulationParameters()
 	}
 	else
 	{
+        for(auto treatment_file_node : interventions_node.select_nodes("cepacIntervention/cepacTreatmentFiles/treatmentFile"))
+        {
+            int time = treatment_file_node.node().child("time").text().as_int();
+
+            if(time > -1)
+            {
+                std::string file_name = treatment_file_node.node().child("fileName").text().as_string();
+                int file_number = treatment_file_node.node().child("fileNumber").text().as_int();
+
+                parameters.timesToSwitchSimContext[file_number] = time;
+
+                //Make sure the number of CEPAC input files from the .xml file is not greater than the number expected by the code!
+                assert(file_number < Constants::NUMBER_OF_CEPAC_FILES);
+
+                //Set the CEPAC simContext from the specified CEPAC .in file
+                auto contextToAdd = new SimContext(file_name.substr(0, file_name.find(CepacUtil::FILE_EXTENSION_FOR_INPUT)));
+                contextToAdd->numPatientsToTrace = 0;
+                parameters.cepacSimContexts.push_back(contextToAdd);
+
+                //Read in the inputs
+                try
+                {
+                    contextToAdd->readInputs();
+                }
+                catch(std::string errorString)
+                {
+                    throw std::runtime_error("error loading rollout file, " + file_name + ": " + errorString);
+                }
+
+                //From the first file only, get the death tables for non-AIDS death
+                if(file_number == 0)
+                {
+                    CepacInputParser cepacInput(file_name);
+                    auto probabilities = cepacInput.parseNonAidsDeathProbabilities();
+                    Person::probDeathNatCauses[DemographicProfile::MALE] = probabilities[0];
+                    Person::probDeathNatCauses[DemographicProfile::FEMALE] = probabilities[1];
+                }
+            }
+        }
+
 		parameters.cepacTracer = new Tracer(parameters.simName, parameters.cepacSimContexts[0], 1);
 		parameters.cepacRunStats = new RunStats(parameters.simName, parameters.cepacSimContexts[0]);
 	}

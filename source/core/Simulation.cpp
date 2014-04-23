@@ -510,18 +510,21 @@ void Simulation::UpdateTimeDependentParameters()
 
 void Simulation::ValidateState()
 {
-	for(int i = 1; i <= 5; i++)
-	{
-		int matching = int(parameters_.rolloutEligibility.oiHistRank == i)
-			+ int(parameters_.rolloutEligibility.cd4Rank == i)
-			+ int(parameters_.rolloutEligibility.cd4OiHistRank == i)
-			+ int(parameters_.rolloutEligibility.hvlRank == i)
-			+ int(parameters_.rolloutEligibility.cd4HvlRank == i);
-		if(matching != 1)
-		{
-			throw std::runtime_error("need a single elegibility criterion for each rank 1..5: " + std::to_string(matching));
-		}
-	}
+    if(parameters_.useRollout)
+    {
+        for(int i = 1; i <= 5; i++)
+        {
+            int matching = int(parameters_.rolloutEligibility.oiHistRank == i)
+                + int(parameters_.rolloutEligibility.cd4Rank == i)
+                + int(parameters_.rolloutEligibility.cd4OiHistRank == i)
+                + int(parameters_.rolloutEligibility.hvlRank == i)
+                + int(parameters_.rolloutEligibility.cd4HvlRank == i);
+            if(matching != 1)
+            {
+                throw std::runtime_error("need a single elegibility criterion for each rank 1..5: " + std::to_string(matching));
+            }
+        }
+    }
 }
 
 /***
@@ -537,15 +540,15 @@ std::size_t Simulation::SimulateMonth()
 	//change non AIDS death if it is time to switch cepac files
 	if(parameters_.itIsTimeToSwitchSimContext() && !parameters_.useRollout)
 	{
-		int simIndex = 0;
+        int simIndex = 0;
 
-		for(int i = 0; i < Constants::NUMBER_OF_CEPAC_FILES; i++)
-		{
-			if(parameters_.currTime > parameters_.timesToSwitchSimContext[i])
-			{
-				simIndex = i;
-			}
-		}
+        for(std::size_t i = 0; i < parameters_.cepacSimContexts.size(); i++)
+        {
+            if(parameters_.currTime > parameters_.timesToSwitchSimContext[i])
+            {
+                simIndex = static_cast<int>(i);
+            }
+        }
 
 		SetNonAidsDeathFromCepac(*parameters_.cepacSimContexts[simIndex], Person::probDeathNatCauses[DemographicProfile::MALE], Person::probDeathNatCauses[DemographicProfile::FEMALE]);
 	}
