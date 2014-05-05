@@ -139,11 +139,6 @@ public:
 		population_.popWideParams.SetTransmissionCoefficient(gender, stratum, coefficient);
 	}
 
-	void SetChanceBecomeCsw(DemographicProfile::Gender gender, double chance)
-	{
-		population_.popWideParams.SetChanceBecomeCsw(gender, chance);
-	}
-
 	void SetProportionHighRisk(DemographicProfile::Gender gender, DemographicProfile::Employment employment, double proportion)
 	{
 		population_.popWideParams.SetProportionHighRisk(gender, employment, proportion);

@@ -995,8 +995,8 @@ Male::SubPopParams SimulationBuilderXml::ReadMaleSubPopParams()
 	Male::SubPopParams result;
 
 	auto behavior_node = node.child("behavior");
-	result.setChanceBecomeCsw(GetTemplate<double>(behavior_node.child("chanceBecomeSexWorker"),
-		std::bind(&Simulation::SetChanceBecomeSexWorker, std::placeholders::_1, DemographicProfile::MALE, std::placeholders::_2)));
+    result.setChanceBecomeCsw(GetTemplate<double>(behavior_node.child("chanceBecomeSexWorker"),
+        [](Simulation &s, double c) { s.SetChanceBecomeSexWorker(DemographicProfile::MALE, c); }));
 	result.setPartnerAcqMultWithSteady(Person::HIGH, GetTemplate<double>(behavior_node.child("partnerAcqMultWithSteadyHighRisk"),
 		std::bind(&Simulation::SetPartnerAcquisitionSteadyMultiplier, std::placeholders::_1, Person::HIGH, std::placeholders::_2)));
 	result.setPartnerAcqMultWithSteady(Person::LOW, GetTemplate<double>(behavior_node.child("partnerAcqMultWithSteadyLowRisk"),
@@ -1069,7 +1069,7 @@ Female::SubPopParams SimulationBuilderXml::ReadFemaleSubPopParams()
 
 	auto behavior_node = node.child("behavior");
 	result.setChanceBecomeCsw(GetTemplate<double>(behavior_node.child("chanceBecomeSexWorker"),
-		[](Simulation &s, double c) { s.SetChanceBecomeCsw(DemographicProfile::FEMALE, c); }));
+		[](Simulation &s, double c) { s.SetChanceBecomeSexWorker(DemographicProfile::FEMALE, c); }));
 	result.setProportionHighRisk(DemographicProfile::NON_CSW, GetTemplate<double>(behavior_node.child("proportionHighRiskNonCsw"),
 		[](Simulation &s, double c) { s.SetProportionHighRisk(DemographicProfile::FEMALE, DemographicProfile::NON_CSW, c); }));
 	result.setProportionHighRisk(DemographicProfile::CSW, GetTemplate<double>(behavior_node.child("proportionHighRiskCsw"),
