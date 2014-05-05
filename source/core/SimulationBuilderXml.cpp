@@ -108,11 +108,16 @@ NormalDist SimulationBuilderXml::GetTargetedTemplate(const pugi::xml_node &node,
 		{
 			auto stddev_iterator = stddev_params->second.begin();
 
-			if(stddev_iterator == stddev_params->second.end()
-				|| stddev_iterator->time != mean_param.time)
-			{
-				throw std::runtime_error("must change mean and standard deviation at the same time");
-			}
+            while(stddev_iterator != stddev_params->second.end()
+                && stddev_iterator->time != mean_param.time)
+            {
+                stddev_iterator++;
+            }
+
+            if(stddev_iterator == stddev_params->second.end())
+            {
+                throw std::runtime_error("must change mean and standard deviation at the same time");
+            }
 
 			NormalDist future_value;
 			future_value.mean = std::stod(mean_param.value);
@@ -152,10 +157,15 @@ LogNormalDist SimulationBuilderXml::GetTargetedTemplate(const pugi::xml_node &no
 		{
 			auto stddev_iterator = stddev_params->second.begin();
 
-			if(stddev_iterator == stddev_params->second.end()
-				|| stddev_iterator->time != mean_param.time)
+            while(stddev_iterator != stddev_params->second.end() 
+                && stddev_iterator->time != mean_param.time)
+            {
+                stddev_iterator++;
+            }
+
+			if(stddev_iterator == stddev_params->second.end())
 			{
-				throw std::runtime_error("must change mean, standard deviation, and shift at the same time");
+				throw std::runtime_error("must change mean and standard deviation at the same time");
 			}
 
 			NormalDist dist;
@@ -203,13 +213,23 @@ ShiftedLogNormalDist SimulationBuilderXml::GetTargetedTemplate(const pugi::xml_n
 			auto stddev_iterator = stddev_params->second.begin();
 			auto shift_iterator = shift_params->second.begin();
 
-			if(stddev_iterator == stddev_params->second.end() 
-				|| shift_iterator == shift_params->second.end()
-				|| stddev_iterator->time != mean_param.time
-				|| shift_iterator->time != mean_param.time)
-			{
-				throw std::runtime_error("must change mean, standard deviation, and shift at the same time");
-			}
+            while(stddev_iterator != stddev_params->second.end()
+                && stddev_iterator->time != mean_param.time)
+            {
+                stddev_iterator++;
+            }
+
+            while(shift_iterator != shift_params->second.end()
+                && shift_iterator->time != mean_param.time)
+            {
+                shift_iterator++;
+            }
+
+            if(stddev_iterator == stddev_params->second.end()
+                || shift_iterator == shift_params->second.end())
+            {
+                throw std::runtime_error("must change mean, shift, and standard deviation at the same time");
+            }
 
 			NormalDist dist;
 			dist.mean = std::stod(mean_param.value);
@@ -253,11 +273,16 @@ BetaDist SimulationBuilderXml::GetTargetedTemplate(const pugi::xml_node &node, s
 		{
 			auto stddev_iterator = stddev_params->second.begin();
 
-			if(stddev_iterator == stddev_params->second.end()
-				|| stddev_iterator->time != mean_param.time)
-			{
-				throw std::runtime_error("must change mean and standard deviation at the same time");
-			}
+            while(stddev_iterator != stddev_params->second.end()
+                && stddev_iterator->time != mean_param.time)
+            {
+                stddev_iterator++;
+            }
+
+            if(stddev_iterator == stddev_params->second.end())
+            {
+                throw std::runtime_error("must change mean and standard deviation at the same time");
+            }
 
 			NormalDist future_dist;
 			future_dist.mean = std::stod(mean_param.value);
