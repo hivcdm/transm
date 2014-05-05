@@ -514,14 +514,6 @@ void SimulationBuilderXml::ReadSimulationParameters()
         parameters.trace_files[trace_file.first].toss = Attr<bool>(trace_file_node, "tossIfCalibFail");
 	}
 
-	pugi::xml_node costs_node = document_.select_single_node("/simulation/traceFiles/costEffectiveness").node();
-
-	//Costs
-	simulation_.SetCondomCost(GetTemplate<double>(costs_node.child("condomCost"), 
-		std::bind(&Simulation::SetCondomCost, std::placeholders::_1, std::placeholders::_2)));
-	simulation_.SetCircumcisionCost(GetTemplate<double>(costs_node.child("circumcisionCost"),
-		std::bind(&Simulation::SetCondomCost, std::placeholders::_1, std::placeholders::_2)));
-
 	parameters.numToTrace = Text<int>(simulation_node.child("traceFiles").child("singlePerson").child("numberToTracePerAgeRange"));
 	parameters.numNewbornsToTrace = Text<int>(simulation_node.child("traceFiles").child("singlePerson").child("numberNewbornsToTrace"));
 	parameters.monthTraceNewborns = Text<int>(simulation_node.child("traceFiles").child("singlePerson").child("monthTraceNewborns"));
@@ -1147,4 +1139,12 @@ void SimulationBuilderXml::ReadPopulationParameters()
 		population_parameters.SetPartnershipHasDuration(DemographicProfile::MALE, type, has_duration);
 		population_parameters.SetPartnershipHasDuration(DemographicProfile::FEMALE, type, false);
 	}
+
+    pugi::xml_node costs_node = document_.select_single_node("/simulation/traceFiles/costEffectiveness").node();
+
+    //Costs
+    population_parameters.SetCondomCost(GetTemplate<double>(costs_node.child("condomCost"),
+        std::bind(&Simulation::SetCondomCost, std::placeholders::_1, std::placeholders::_2)));
+    population_parameters.SetCircumcisionCost(GetTemplate<double>(costs_node.child("circumcisionCost"),
+        std::bind(&Simulation::SetCondomCost, std::placeholders::_1, std::placeholders::_2)));
 }

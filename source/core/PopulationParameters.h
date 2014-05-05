@@ -132,6 +132,9 @@ public:
 
 	void SetPartnerAcquisitionSteadyMultiplier(Person::RiskLevel risk, double multiplier) { defaultMaleParams.setPartnerAcqMultWithSteady(risk, multiplier); }
 
+    void SetCondomCost(double condom_cost) { condomCost = condom_cost; }
+    void SetCircumcisionCost(double circumcision_cost) { circumcisionCost = circumcision_cost; }
+
 protected:
 	friend class Population;
 
