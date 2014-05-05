@@ -53,6 +53,11 @@ private:
 		auto extracted = ExtractParameter(node);
 		if(extracted.first != "")
 		{
+            if(extracted.first[0] != '$')
+            {
+                throw std::runtime_error("all intervention keys should be of the form '$<<key>>'");
+            }
+
 			if(parameters_.find(extracted.first) != parameters_.end())
 			{
 				for(auto &parameter : parameters_[extracted.first])
@@ -60,6 +65,11 @@ private:
 					simulation_.RegisterSimulationIntervention(parameter.time, std::bind(callback, std::placeholders::_1, from_string<T>(parameter.value)));
 				}
 			}
+            else
+            {
+                throw std::runtime_error("no matching interventions found for key " 
+                    + extracted.first);
+            }
 		}
 		return from_string<T>(extracted.second);
 	}

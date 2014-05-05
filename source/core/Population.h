@@ -49,6 +49,8 @@ public:
 
 	void Circumcise(Person *p);
 
+    void SetAssortativeness(SexualPartnership::Type type, double assortativeness);
+
     /// <summary>
 	/// determines which DemographicProfiles have the power to initiate relationships and determines which
 	/// relationships they can have

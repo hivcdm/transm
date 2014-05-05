@@ -123,7 +123,7 @@ public:
 
 	void SetAssortativeness(SexualPartnership::Type type, double assortativeness)
 	{
-		population_.popWideParams.setAssortativeness(type, assortativeness);
+		population_.SetAssortativeness(type, assortativeness);
 	}
 
 	void SetTransmissionCoefficients(DemographicProfile::Gender gender, const std::array<double, 7> &coefficients)

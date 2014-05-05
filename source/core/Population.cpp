@@ -23,6 +23,23 @@ events stratified by age and CD4
 ***/
 unsigned int Population::idCounter = 0;
 
+void Population::SetAssortativeness(SexualPartnership::Type type, double assortativeness)
+{
+    DemographicProfile selector;
+    selector.set(DemographicProfile::SEXUAL_ACTIVITY_STATUS, DemographicProfile::SA);
+    std::vector<DemographicProfile::ProfileID> buckets;
+    selector.selectProfileIDs(buckets, nullptr);
+
+    for(auto id : buckets)
+    {
+        auto bucket = entities->getBucket(id);
+        if(bucket != nullptr)
+        {
+            ((BucketSexualMixing*)bucket)->SetAssortativeness(type, assortativeness);
+        }
+    }
+}
+
 void Population::Find(const PopulationTarget &target, std::vector<Person *> &result)
 {
     DemographicProfile selector;

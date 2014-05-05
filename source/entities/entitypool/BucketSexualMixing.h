@@ -51,6 +51,8 @@ public:
 	//This is the main circular buffer containing the BucketAge structures
 	typedef boost::circular_buffer_space_optimized<BucketAge *> BucketAllAges;
 
+    void SetAssortativeness(SexualPartnership::Type type, double assortativeness) { assort[(int)type] = assortativeness; }
+
 private :
 	//this contains a circular buffer composed of BucketAges
 	//each BucketAge contains the people are that are of the same ageMth
