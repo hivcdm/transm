@@ -9,6 +9,7 @@ solution "transm"
             "-std=c++11",
             "-Wno-unknown-pragmas"
         }
+	includedirs { "../../cepac/src" }
     configuration "vs*"
         includedirs { "$(boost_prefix)" }
     configuration { "vs*", "x32" }

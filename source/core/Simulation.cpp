@@ -109,8 +109,8 @@ Simulation::Simulation()
       failedCalibration_(false),
       hasPassedFirstMonthCalibPrev_(false),
       monthOfFirstMonthCalibPrev_(0),
-      prevalence_(0),
-      incidence_(0)
+      incidence_(0),
+      prevalence_(0)
 {
 }
 
