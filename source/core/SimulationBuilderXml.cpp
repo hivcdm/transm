@@ -30,14 +30,16 @@ std::string to_string(SexualPartnership::Type type)
 template<>
 bool SimulationBuilderXml::from_string(const std::string &value_string)
 {
-	try
-	{
-		return std::stoi(value_string) != 0;
-	}
-	catch(std::invalid_argument)
-	{
-		return value_string == "true" || value_string == "True";
-	}
+    if(value_string == "0" || value_string == "false")
+    {
+        return false;
+    }
+    else if(value_string == "1" || value_string == "true")
+    {
+        return true;
+    }
+
+    throw std::runtime_error("boolean value should be one of: 0, 1, true, false. found " + value_string);
 }
 
 template<>
@@ -150,7 +152,7 @@ LogNormalDist SimulationBuilderXml::GetTargetedTemplate(const pugi::xml_node &no
 		if(mean_params == parameters_.end()
 			|| stddev_params == parameters_.end())
 		{
-			throw std::runtime_error("must set mean, stanard deviation, and shift at the same time");
+			throw std::runtime_error("must set mean and standard deviation at the same time");
 		}
 
 		for(auto &mean_param : mean_params->second)
@@ -205,7 +207,7 @@ ShiftedLogNormalDist SimulationBuilderXml::GetTargetedTemplate(const pugi::xml_n
 			|| stddev_params == parameters_.end()
 			|| shift_params == parameters_.end())
 		{
-			throw std::runtime_error("must set mean, stanard deviation, and shift at the same time");
+			throw std::runtime_error("must set mean, standard deviation, and shift at the same time");
 		}
 
 		for(auto &mean_param : mean_params->second)
@@ -266,7 +268,7 @@ BetaDist SimulationBuilderXml::GetTargetedTemplate(const pugi::xml_node &node, s
 		if(mean_params == parameters_.end()
 			|| stddev_params == parameters_.end())
 		{
-			throw std::runtime_error("must set mean and stanard deviation at the same time");
+			throw std::runtime_error("must set mean and standard deviation at the same time");
 		}
 
 		for(auto &mean_param : mean_params->second)
@@ -480,7 +482,7 @@ void SimulationBuilderXml::LoadTemplateParameters()
 			}
 			else
 			{
-				throw std::runtime_error("unknown attribute");
+				throw std::runtime_error("unknown target type: " + name);
 			}
 		}
 

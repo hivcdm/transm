@@ -198,20 +198,20 @@ void Population::InitPartnershipBuckets()
 			{
                 if(potentialPartnerBuckets[partnership_type].at(i)->getProfileID() == selectedIDs.at(0))
 				{
-                    cerr << "For available buckets for partnership type '" << SexualPartnership::TypeStrings.at(SexualPartnership::Type(partnership_type));
-					cerr << "', " << *DemographicProfile::toString(selectedIDs.at(0)) <<
-					     " is listed multiple times either via repeat or wildcard overlaps";
-					Utility::exitWithPrompt(-1);
-				} //if(potentialPartnerBuckets[type].at(i)->getProfileID() == selectedIDs.at(0)) {
-			} //for(int i = 0; i < potentialPartnerBuckets[type].size(); ++i) {
+                    throw std::runtime_error("For available buckets for partnership type '"
+                        + SexualPartnership::TypeStrings.at(SexualPartnership::Type(partnership_type))
+                        + "', " + *DemographicProfile::toString(selectedIDs.at(0))
+                        + " is listed multiple times either via repeat or wildcard overlaps");
+				}
+			}
 
 			BucketSexualMixing *bucket = (BucketSexualMixing *)entities->getBucket(selectedIDs.at(0));
 
 			if(bucket == nullptr)
 			{
-				cerr << "This Demographic Profile " << *DemographicProfile::toString(selectedIDs.at(0)) <<
-				     " has not been instantiated and so cannot be used" << std::endl;
-				Utility::exitWithPrompt(-1);
+                throw std::runtime_error("This Demographic Profile " 
+                    + *DemographicProfile::toString(selectedIDs.at(0))
+                    + " has not been instantiated and so cannot be used");
 			}
 			else
 			{

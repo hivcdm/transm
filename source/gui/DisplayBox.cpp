@@ -173,26 +173,26 @@ void DisplayBox::Simulate()
 		reader.ConstructSimulation(filename);
 		auto &simulation = builder.GetResult();
 
-		simulation.Run([this, &simulation](const std::string &s)
-		{
-			textctrl->AppendText(s);
+        simulation.Run([this, &simulation](const std::string &s)
+        {
+            textctrl->AppendText(s);
 
-			wxYield();
-			UpdateWindowUI();
-			Update();
+            wxYield();
+            UpdateWindowUI();
+            Update();
 
-			currPrev = 100 * simulation.GetPrevalence();
-			currentIncidence = 1000 * simulation.GetIncidence();
-			currentRunProgress = (100.0 * simulation.GetTime()) / simulation.GetTotalTime() + 0.5;
+            currPrev = 100 * simulation.GetPrevalence();
+            currentIncidence = 1000 * simulation.GetIncidence();
+            currentRunProgress = (100.0 * simulation.GetTime()) / simulation.GetTotalTime() + 0.5;
 
             prevalenceWidget->Refresh();
             prevalenceWidget->Update();
             incidenceWidget->Refresh();
             incidenceWidget->Update();
 
-			textctrl->Refresh();
-			textctrl->Update();
-		});
+            textctrl->Refresh();
+            textctrl->Update();
+        });
 
 		*(this->textctrl) << wxT("Done!\n");
 		this->percentCompleted = (100 * (i++ + 1)) / filesToRun.size() + 0.5;
@@ -231,7 +231,23 @@ void DisplayBox::OnRun(wxCommandEvent &WXUNUSED(event))
 	else
 	{
 		runButton->Disable();
-		Simulate();
+        try
+        {
+            Simulate();
+        }
+        catch(std::runtime_error e)
+        {
+            auto error_message = std::string("Error: ") + e.what();
+            textctrl->AppendText(error_message + "\n");
+            textctrl->AppendText("Aborting simulation\n");
+
+            wxYield();
+            UpdateWindowUI();
+            Update();
+
+            textctrl->Refresh();
+            textctrl->Update();
+        }
 		runButton->Enable();
 	}
 }

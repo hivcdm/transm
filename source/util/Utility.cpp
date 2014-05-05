@@ -65,46 +65,39 @@ std::vector<std::string> Utility::transmFilesToRun;
 
 void Utility::findInputFiles(const std::string &inputDirectory, const std::string &workingDirectory)
 {
-	auto directoryPath = boost::filesystem::canonical(inputDirectory, workingDirectory);
+    std::string directoryPath = inputDirectory;
+
+    if(boost::filesystem::path(directoryPath).is_relative())
+    {
+        try
+        {
+            directoryPath = boost::filesystem::canonical(inputDirectory, workingDirectory).string();
+        }
+        catch(...)
+        {
+            auto combined = (boost::filesystem::path(workingDirectory) / inputDirectory).string();
+            throw std::runtime_error("directory not found: " + combined);
+        }
+    }
+
 	boost::filesystem::directory_iterator end_iter;
 
-	if(boost::filesystem::exists(directoryPath) && boost::filesystem::is_directory(directoryPath))
+    if(!boost::filesystem::exists(directoryPath))
+    {
+        throw std::runtime_error("directory not found: " + directoryPath);
+    }
+     
+    if(!boost::filesystem::is_directory(directoryPath))
+    {
+        throw std::runtime_error("given path is not a directory: " + directoryPath);
+    }
+
+	for(boost::filesystem::directory_iterator dir_iter(directoryPath); dir_iter != end_iter; ++dir_iter)
 	{
-		for(boost::filesystem::directory_iterator dir_iter(directoryPath); dir_iter != end_iter; ++dir_iter)
+		if(boost::filesystem::is_regular_file(dir_iter->status()) 
+            && dir_iter->path().extension() == ".xml")
 		{
-			if(boost::filesystem::is_regular_file(dir_iter->status()) && dir_iter->path().extension() == ".xml")
-			{
-                auto stem = dir_iter->path().stem().string();
-                auto suffixPosition = stem.rfind("_seq");
-                bool valid = false;
-                
-                if(suffixPosition != std::string::npos)
-                {
-                    size_t sequenceIndexDigits = stem[suffixPosition + 4] == '0' ? 1 : 2;
-                    if(sequenceIndexDigits > 0 && sequenceIndexDigits <= 2)
-                    {
-                        std::string sequenceIndexString(stem.begin() + suffixPosition + 6 - sequenceIndexDigits, stem.end());
-                        try
-                        {
-                            auto sequenceIndex = std::stoi(sequenceIndexString);
-                            valid = sequenceIndex == 1;
-                        }
-                        catch (std::exception)
-                        {
-                            
-                        }
-                    }
-                }
-                else
-                {
-                    valid = true;
-                }
-                
-                if(valid)
-                {
-                    transmFilesToRun.push_back(dir_iter->path().string());
-                }
-			}
+            transmFilesToRun.push_back(dir_iter->path().string());
 		}
 	}
 }
@@ -157,15 +150,6 @@ unsigned int Utility::convertTime(TimeGranularity _from, TimeGranularity _to, do
 	}
 
 	return converted_value;
-}
-
-
-void Utility::exitWithPrompt(int _exitCode)
-{
-	std::cerr << std::endl << std::endl << "Press any key to continue";
-	std::string x;
-	std::getline(std::cin, x);
-	exit(_exitCode);
 }
 
 bool Utility::isNormDistZero(const NormalDist _normDist)

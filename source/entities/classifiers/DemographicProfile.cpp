@@ -235,8 +235,7 @@ void DemographicProfile::parse(string _tupleStr)
 	//make sure we have correct amount of tokens
 	if(tokens.size() != DemographicProfile::ENDDemographic)
 	{
-		cerr << "Tuple String " << _tupleStr << " is not valid" << std::endl;
-		Utility::exitWithPrompt(-1);
+		throw std::runtime_error("Tuple String " + _tupleStr + " is not valid");
 	}
 
 	//encode each part of the string into an enum value

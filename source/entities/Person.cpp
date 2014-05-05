@@ -279,8 +279,7 @@ void Person::becomeInfected(int _generationOfInfection, EventParams &_eventParam
 		}
 		else
 		{
-			cerr << "Invalid CEPAC API infection state: " << *(SimContext::HVL_STRATA_STRS[hvlStrata]);
-			Utility::exitWithPrompt(-1);
+            throw std::runtime_error("Invalid CEPAC API infection state: " + *(SimContext::HVL_STRATA_STRS[hvlStrata]));
 		}
 
 		currentTrueHvl = hvl;
@@ -417,8 +416,7 @@ void Person::initialCEPACpatient(EventParams &_eventParams)
 			}
 			else
 			{
-				cerr << "Invalid CEPAC API infection state: " << *(SimContext::HVL_STRATA_STRS[hvlStrata]);
-				Utility::exitWithPrompt(-1);
+                throw std::runtime_error("Invalid CEPAC API infection state: " + *(SimContext::HVL_STRATA_STRS[hvlStrata]));
 			}
 
 			currentTrueHvl = hvl;

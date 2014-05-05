@@ -42,11 +42,6 @@ public:
 	template <class T>
 	static T fromString(std::string _s);
 
-	/**
-	Prints a prompt and exits after user hits return
-	***/
-	static void exitWithPrompt(int _exitCode);
-
 	//returns true if _elem is a member of _set
 	template <class T>
 	static bool memberOf(std::set<T> _set, T _elem);

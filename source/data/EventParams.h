@@ -174,6 +174,8 @@ public :
 		useRollout = false;
 		untreatedContext = nullptr;
 		treatedContext = nullptr;
+        cepacRunStats = nullptr;
+        cepacTracer = nullptr;
 	}
 
     /// <summary>
