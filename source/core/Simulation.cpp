@@ -13,11 +13,54 @@
 #include "../util/HighResolutionTimer.h"
 #include "../util/Utility.h"
 
-PopulationTarget PopulationTarget::Any;
+TargetGroup::PopulationTarget TargetGroup::PopulationTarget::Any;
 
-PopulationTarget PopulationTarget::FromString(const std::string &s)
+void TargetGroup::Update(int current_time, const std::unordered_set<Person *> &newly_added)
 {
-	PopulationTarget target;
+    std::unordered_set<Person *> matches;
+
+    for(auto person : newly_added)
+    {
+        if(!((target_.value.employment.has_value && target_.value.employment.value != person->getDemographicProfileVal(DemographicProfile::EMPLOYMENT))
+            || (target_.value.gender.has_value && target_.value.gender.value != person->getDemographicProfileVal(DemographicProfile::GENDER))
+            || (target_.value.relationship_status.has_value && target_.value.relationship_status.value != person->getDemographicProfileVal(DemographicProfile::RELATIONSHIP_STATUS))
+            || (target_.value.sexual_activity_status.has_value && target_.value.sexual_activity_status.value != person->getDemographicProfileVal(DemographicProfile::SEXUAL_ACTIVITY_STATUS))
+            || (target_.value.sexual_orientation.has_value && target_.value.sexual_orientation.value != person->getDemographicProfileVal(DemographicProfile::SEXUAL_ORIENTATION))
+            || (target_.value.age_lower.has_value && target_.value.age_lower.value < person->getAge(TimeGranularity::Month))
+            || (target_.value.age_upper.has_value && target_.value.age_upper.value > person->getAge(TimeGranularity::Month))
+            || (target_.value.observed_hiv_status.has_value && target_.value.observed_hiv_status.value != person->getHIVStatus())
+            || (target_.value.on_treatment.has_value && target_.value.on_treatment.value != person->isOnArt())
+            || (target_.value.risk_level.has_value && target_.value.risk_level.value != person->getRiskLevel())))
+        {
+            matches.insert(person);
+        }
+    }
+
+    std::vector<int> partition_allocations(partitions_.size(), 0);
+    int added = 0;
+
+    for(int i = 0; i < static_cast<int>(partitions_.size()); i++)
+    {
+        int partition_allocation = static_cast<int>(partitions_[i].GetProportion() * matches.size());
+
+        if(i == static_cast<int>(partitions_.size()))
+        {
+            partition_allocation = matches.size() - added;
+        }
+
+        auto match_iter = matches.begin();
+
+        for(int j = 0; j < partition_allocation; j++)
+        {
+            partitions_[i].Add(*match_iter++);
+            added++;
+        }
+    }
+}
+
+TargetGroup::PopulationTarget TargetGroup::PopulationTarget::FromString(const std::string &s)
+{
+    TargetGroup::PopulationTarget target;
 
 	std::stringstream ss(s);
 	int i = 0;
@@ -116,30 +159,6 @@ Simulation::Simulation()
 
 Simulation::~Simulation()
 {
-}
-
-void Simulation::SetRolloutEligibilityRank(const std::string &criterion, int rank)
-{
-	if(criterion == "OIHist") parameters_.rolloutEligibility.oiHistRank = rank;
-	else if(criterion == "CD4") parameters_.rolloutEligibility.cd4Rank = rank;
-	else if(criterion == "CD4OIHist") parameters_.rolloutEligibility.cd4OiHistRank = rank;
-	else if(criterion == "HVL") parameters_.rolloutEligibility.hvlRank = rank;
-	else if(criterion == "CD4HVL") parameters_.rolloutEligibility.cd4HvlRank = rank;
-	else throw std::runtime_error("bad criterion name");
-}
-
-void Simulation::RegisterSimulationIntervention(int time, SimulationIntervention intervention)
-{
-	auto time_parameters_iter = simulation_interventions.begin();
-	while(time_parameters_iter != simulation_interventions.end() && time_parameters_iter->first < time)
-	{
-		time_parameters_iter++;
-	}
-	if(time_parameters_iter == simulation_interventions.end() || time_parameters_iter->first > time)
-	{
-		time_parameters_iter = simulation_interventions.emplace(time_parameters_iter, std::make_pair(time, std::vector<SimulationIntervention>()));
-	}
-	time_parameters_iter->second.push_back(intervention);
 }
 
 void Simulation::SetFixedSeed(int seed)
@@ -488,42 +507,11 @@ void Simulation::SetNonAidsDeathFromCepac(SimContext &cepacSimContext, std::vect
 	}
 }
 
-void Simulation::UpdateTimeDependentParameters()
+void Simulation::UpdateGroups(const std::unordered_set<Person *> &new_people)
 {
-	bool simulation_changed = false;
-
-	if(!simulation_interventions.empty() && simulation_interventions.front().first == parameters_.currTime)
-	{
-		for(auto &intervention : simulation_interventions.front().second)
-		{
-			intervention(*this);
-			simulation_changed = true;
-		}
-		simulation_interventions.pop_front();
-	}
-
-	if(simulation_changed)
-	{
-		ValidateState();
-	}
-}
-
-void Simulation::ValidateState()
-{
-    if(parameters_.useRollout)
+    for(auto &group : groups_)
     {
-        for(int i = 1; i <= 5; i++)
-        {
-            int matching = int(parameters_.rolloutEligibility.oiHistRank == i)
-                + int(parameters_.rolloutEligibility.cd4Rank == i)
-                + int(parameters_.rolloutEligibility.cd4OiHistRank == i)
-                + int(parameters_.rolloutEligibility.hvlRank == i)
-                + int(parameters_.rolloutEligibility.cd4HvlRank == i);
-            if(matching != 1)
-            {
-                throw std::runtime_error("need a single elegibility criterion for each rank 1..5: " + std::to_string(matching));
-            }
-        }
+        group.Update(parameters_.currTime, new_people);
     }
 }
 
@@ -534,8 +522,6 @@ The ordering of events within this function determines the ordering of events in
 std::size_t Simulation::SimulateMonth()
 {
 	parameters_.currTime = time_;
-
-	UpdateTimeDependentParameters();
 
 	//change non AIDS death if it is time to switch cepac files
 	if(parameters_.itIsTimeToSwitchSimContext() && !parameters_.useRollout)
@@ -590,6 +576,8 @@ std::size_t Simulation::SimulateMonth()
 	}
 
 	population_.UpdatePhysicalState(parameters_, recordLE, firstMonthToRecord);
+
+    UpdateGroups(population_.GetNewPeopleThisMonth());
 
 	if(parameters_.useRollout)
 	{

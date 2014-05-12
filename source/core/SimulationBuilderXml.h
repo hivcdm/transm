@@ -29,9 +29,9 @@ public:
 
 	void InitializePopulation();
 
-private:
-	static std::pair<std::string, std::string> ExtractParameter(const pugi::xml_node &node);
+    std::vector<TargetGroup> ReadGroups();
 
+private:
 	template<typename T>
 	static T from_string(const std::string &value_string);
 
@@ -47,55 +47,16 @@ private:
 		return from_string<T>(node.attribute(name.c_str()).as_string());
 	}
 
-	template<typename T>
-	T GetTemplate(const pugi::xml_node &node, std::function<void(Simulation &, T)> callback)
-	{
-		auto extracted = ExtractParameter(node);
-		if(extracted.first != "")
-		{
-            if(extracted.first[0] != '$')
-            {
-                throw std::runtime_error("all intervention keys should be of the form '$<<key>>'");
-            }
-
-			if(parameters_.find(extracted.first) != parameters_.end())
-			{
-				for(auto &parameter : parameters_[extracted.first])
-				{
-					simulation_.RegisterSimulationIntervention(parameter.time, std::bind(callback, std::placeholders::_1, from_string<T>(parameter.value)));
-				}
-			}
-            else
-            {
-                throw std::runtime_error("no matching interventions found for key " 
-                    + extracted.first);
-            }
-		}
-		return from_string<T>(extracted.second);
-	}
-
-	template<typename T>
-	T GetTargetedTemplate(const pugi::xml_node &node, std::function<void(Simulation &, T, Nullable<PopulationTarget>)> callback)
-	{
-		auto extracted = ExtractParameter(node);
-		if(extracted.first != "")
-		{
-			if(parameters_.find(extracted.first) != parameters_.end())
-			{
-				for(auto &parameter : parameters_[extracted.first])
-				{
-					simulation_.RegisterSimulationIntervention(parameter.time, std::bind(callback, std::placeholders::_1, from_string<T>(parameter.value), parameter.target));
-				}
-			}
-		}
-		return from_string<T>(extracted.second);
-	}
-
 	EventParams::RolloutEligibility ReadRolloutEligibility();
 
 	Female::SubPopParams ReadFemaleSubPopParams();
 
 	Male::SubPopParams ReadMaleSubPopParams();
+
+    typedef std::tuple<std::vector<SimulationIntervention>,
+        std::vector<PopulationIntervention>, std::vector<IndividualIntervention >> InterventionsTuple;
+
+    InterventionsTuple ParseInterventions(pugi::xml_node interventions_node);
 
 	SexualBehavior ReadSexualBehavior(SexualPartnership::Type type);
 
@@ -107,7 +68,7 @@ private:
 	{
 		int time;
 		std::string value;
-		Nullable<PopulationTarget> target;
+		Nullable<TargetGroup::PopulationTarget> target;
 	};
 
 	std::unordered_map<std::string, std::vector<Parameter>> parameters_;

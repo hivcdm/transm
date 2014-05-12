@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "PopulationParameters.h"
@@ -13,6 +14,7 @@
 #include "../entities/entitypool/EntityPool.h"
 #include "../statistics/PopulationStatistics.h"
 #include "../util/rand/RandomNumberGenerator.h"
+#include "../util/Nullable.h"
 
 /// <summary>
 /// This class contains the main simulation logic
@@ -45,11 +47,7 @@ public:
 
 	void SetCircumcisionCost(double circumcision_cost) { popWideParams.circumcisionCost = circumcision_cost; }
 
-	void Circumcise(RandomNumberGenerator &rng, double proportion, PopulationTarget target);
-
 	void Circumcise(Person *p);
-
-    void SetAssortativeness(SexualPartnership::Type type, double assortativeness);
 
     /// <summary>
 	/// determines which DemographicProfiles have the power to initiate relationships and determines which
@@ -183,17 +181,7 @@ public:
     /// </summary>
     PopulationStatistics &GetPopulationStatistics() { return populationStatistics; }
 
-    /// <summary>
-    ///
-    /// </summary>
-	void Apply(const PopulationTarget &target, std::function<void(Person *)> modifier);
-
-    void Find(const PopulationTarget &target, std::vector<Person *> &result);
-
-    /// <summary>
-    ///
-    /// </summary>
-	void ValidateState();
+    const std::unordered_set<Person *> &GetNewPeopleThisMonth() const { return new_people_this_month_; }
 
     /// <summary>
     ///
@@ -438,4 +426,6 @@ private:
     /// <summary>
     /// </summary>
 	double treatmentCorrectionFactor_;
+
+    std::unordered_set<Person *> new_people_this_month_;
 };

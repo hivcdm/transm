@@ -40,6 +40,10 @@ public:
 
 	virtual void Circumcise() = 0;
 
+    void SetAgeSexualDebut(int age, TimeGranularity granularity);
+
+    int GetAgeSexualDebut() const { return ageSexualDebut; }
+
     virtual bool IsCircumcised() const = 0;
 
 	/// <summary>
@@ -227,6 +231,8 @@ protected:
 
 	//The indices which point to the person in their assigned FullVector
 	map<FullVector *, vector<unsigned int>> FVindices; //The indices of the the person in their assigned FullVector
+
+    int ageSexualDebut;
 
 public:
 

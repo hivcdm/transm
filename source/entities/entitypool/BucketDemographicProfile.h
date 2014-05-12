@@ -5,7 +5,6 @@
 
 class Person;
 class RandomNumberGenerator;
-struct PopulationTarget;
 
 /// <summary>
 /// This class is a simple container for Entitys and allows us to add, count, get, and remove them
@@ -52,11 +51,6 @@ public:
 	/// This method will return a label for this BucketDemographicProfile
     /// </summary>
     const std::string *getLabel();
-
-    /// <summary>
-    ///
-    /// </summary>
-    virtual void Find(const PopulationTarget &target, std::vector<Person *> &result);
 
     /// <summary>
 	/// empties this BucketDemographicProfile

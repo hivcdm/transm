@@ -34,25 +34,9 @@ Person *BucketDemographicProfile::drawMember(RandomNumberGenerator &, Person *, 
 /**
 This method will return a label for this BucketDemographicProfile
 **/
-const string *BucketDemographicProfile::getLabel()
+const std::string *BucketDemographicProfile::getLabel()
 {
 	return bucketLabel;
-}
-
-void BucketDemographicProfile::Find(const PopulationTarget &target, std::vector<Person *> &result)
-{
-	for(auto &id_person_pair : *simpleEntityIndex)
-	{
-		auto person = id_person_pair.second;
-        if(!((target.age_lower.has_value && target.age_lower.value < person->getAge(TimeGranularity::Month))
-            || (target.age_upper.has_value && target.age_upper.value > person->getAge(TimeGranularity::Month))
-			|| (target.observed_hiv_status.has_value && target.observed_hiv_status.value != person->getHIVStatus())
-			|| (target.on_treatment.has_value && target.on_treatment.value != person->isOnArt())
-			|| (target.risk_level.has_value && target.risk_level.value != person->getRiskLevel())))
-		{
-            result.push_back(person);
-		}
-	}
 }
 
 void BucketDemographicProfile::clear()

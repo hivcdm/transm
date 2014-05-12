@@ -1,6 +1,6 @@
 #pragma once
 
-#include <deque>
+#include <unordered_set>
 
 #include "Outputs.h"
 #include "Population.h"
@@ -12,46 +12,104 @@
 
 class InfectionsTracker;
 
-struct PopulationTarget
+class SimulationIntervention
 {
-	static PopulationTarget FromString(const std::string &s);
-	static PopulationTarget Any;
+public:
+    SimulationIntervention(const std::string &catgory, const std::string &subcategory);
+    void Apply(Simulation &s);
+};
 
-	Nullable<Person::RiskLevel> risk_level;
-	Nullable<DemographicProfile::Employment> employment;
-	Nullable<DemographicProfile::SexualActivityStatus> sexual_activity_status;
-	Nullable<DemographicProfile::Gender> gender;
-	Nullable<DemographicProfile::RelationshipStatus> relationship_status;
-	Nullable<DemographicProfile::SexualOrientation> sexual_orientation;
-	Nullable<int> age_lower;
-	Nullable<int> age_upper;
-	Nullable<Person::HIVStatus> observed_hiv_status;
-	Nullable<bool> on_treatment;
+class PopulationIntervention
+{
+public:
+    PopulationIntervention(const std::string &catgory, const std::string &subcategory);
+    void Apply(Population &p);
+};
 
-	bool operator==(const PopulationTarget &other) const
-	{
-		return risk_level == other.risk_level &&
-			employment == other.employment &&
-			sexual_activity_status == other.sexual_activity_status &&
-			gender == other.gender &&
-			relationship_status == other.relationship_status &&
-			sexual_orientation == other.sexual_orientation &&
-			age_lower == other.age_lower &&
-			age_upper == other.age_upper &&
-			observed_hiv_status == other.observed_hiv_status &&
-			on_treatment == other.on_treatment;
-	}
+class IndividualIntervention
+{
+public:
+    IndividualIntervention(const std::string &catgory, const std::string &subcategory);
+    void Apply(Person *p);
+};
 
-	bool operator!=(const PopulationTarget &other) const { return !(*this == other); }
+class TargetGroup
+{
+public:
+    struct PopulationTarget
+    {
+        static PopulationTarget FromString(const std::string &s);
+        static PopulationTarget Any;
+
+        Nullable<Person::RiskLevel> risk_level;
+        Nullable<DemographicProfile::Employment> employment;
+        Nullable<DemographicProfile::SexualActivityStatus> sexual_activity_status;
+        Nullable<DemographicProfile::Gender> gender;
+        Nullable<DemographicProfile::RelationshipStatus> relationship_status;
+        Nullable<DemographicProfile::SexualOrientation> sexual_orientation;
+        Nullable<int> age_lower;
+        Nullable<int> age_upper;
+        Nullable<Person::HIVStatus> observed_hiv_status;
+        Nullable<bool> on_treatment;
+
+        bool operator==(const PopulationTarget &other) const
+        {
+            return risk_level == other.risk_level &&
+                employment == other.employment &&
+                sexual_activity_status == other.sexual_activity_status &&
+                gender == other.gender &&
+                relationship_status == other.relationship_status &&
+                sexual_orientation == other.sexual_orientation &&
+                age_lower == other.age_lower &&
+                age_upper == other.age_upper &&
+                observed_hiv_status == other.observed_hiv_status &&
+                on_treatment == other.on_treatment;
+        }
+
+        bool operator!=(const PopulationTarget &other) const { return !(*this == other); }
+    };
+
+    TargetGroup(int start, int end, bool open, bool permanent, Nullable<PopulationTarget> target);
+
+    void Update(int simulation_time, const std::unordered_set<Person *> &new_people);
+
+    void AddPartition(const std::string &label, bool trace, double proportion, 
+        std::vector<SimulationIntervention> simulation_interventions, 
+        std::vector<PopulationIntervention> population_interventions,
+        std::vector<IndividualIntervention> individual_interventions);
+
+private:
+    struct
+    {
+        int start;
+        int end;
+    } enrollment_period_;
+
+    bool open_;
+    bool permanent_effect_;
+
+    class Partition
+    {
+    public:
+        double GetProportion() const { return proportion_; }
+        void Add(Person *p) { members_.insert(p); }
+    private:
+        std::unordered_set<Person *> members_;
+        bool trace_;
+        double proportion_;
+        std::vector<std::function<void(Simulation &)>> simulation_interventions_;
+        std::vector<std::function<void(Population &)>> population_interventions_;
+    };
+
+    std::vector<Partition> partitions_;
+
+    Nullable<PopulationTarget> target_;
 };
 
 class Simulation
 {
 public:
 	typedef std::function<void(const std::string &)> MessageCallback;
-	typedef std::function<void(Simulation &)> SimulationIntervention;
-	typedef std::function<void(EventParams::RolloutEligibility &)> EligibilityIntervention;
-	typedef std::function<void(PopulationParameters &)> PopulationIntervention;
 
 	Simulation();
 
@@ -75,85 +133,16 @@ public:
 
 	int GetTime() { return time_; }
 
-	void RegisterSimulationIntervention(int time, SimulationIntervention callback);
-
-	void SetRolloutEligibilityRank(const std::string &criterion, int rank);
-	void SetRolloutEligibilityOIHist(int oi, bool required) { parameters_.rolloutEligibility.oiHistOIs[oi] = required; }
-	void SetRolloutEligibilityNumToStart(int num) { parameters_.rolloutEligibility.oiHistNumToStart = num; }
-	void SetRolloutEligibilityCD4Lwr(int lower) { parameters_.rolloutEligibility.cd4Bounds.lower = lower; }
-	void SetRolloutEligibilityCD4Upp(int upper) { parameters_.rolloutEligibility.cd4Bounds.upper = upper; }
-	void SetRolloutEligibilityCD4OIHist(int oi, bool required) { parameters_.rolloutEligibility.cd4OiHistOIs[oi] = required; }
-	void SetRolloutEligibilityCD4OIHistCD4Lwr(int lower) { parameters_.rolloutEligibility.cd4OiHistCd4Bounds.lower = lower; }
-    void SetRolloutEligibilityCD4OIHistCD4Upp(int upper) { parameters_.rolloutEligibility.cd4OiHistCd4Bounds.upper = upper; }
-    void SetRolloutEligibilityHVLLwr(int lower) { parameters_.rolloutEligibility.hvlBounds.lower = lower; }
-    void SetRolloutEligibilityHVLUpp(int upper) { parameters_.rolloutEligibility.hvlBounds.upper = upper; }
-    void SetRolloutEligibilityCD4HVLCD4Lwr(int lower) { parameters_.rolloutEligibility.cd4HvlHvlBounds.lower = lower; }
-    void SetRolloutEligibilityCD4HVLCD4Upp(int upper) { parameters_.rolloutEligibility.cd4HvlHvlBounds.upper = upper; }
-    void SetRolloutEligibilityCD4HVLHVLLwr(int lower) { parameters_.rolloutEligibility.cd4HvlCd4Bounds.lower = lower; }
-    void SetRolloutEligibilityCD4HVLHVLUpp(int upper) { parameters_.rolloutEligibility.cd4HvlCd4Bounds.upper = upper; }
+	void RegisterTargetGroup(const std::string &group_label, TargetGroup &group);
 
 	Population &GetPopulation() { return population_; }
-	const Population &GetPopulation() const { return population_; }
-
-	void SetCondomCost(double condom_cost) { population_.SetCondomCost(condom_cost); }
-
-	void SetCircumcisionCost(double circumcision_cost) { population_.SetCircumcisionCost(circumcision_cost); }
+    const Population &GetPopulation() const { return population_; }
 
 	void SetDuration(int duration) { duration_ = duration; }
 
 	void SetFixedSeed(int seed);
 
-	void SetBirthRate(double birth_rate) { population_.popWideParams.setBirthRate(birth_rate); };
-
-    void SetAgeSexualDebut(int age, TimeGranularity granularity = TimeGranularity::Year) { population_.popWideParams.setAgeSexualDebut(age, granularity); }
-
-	void SetProportionMale(double proportion_male) { population_.popWideParams.setProportionMale(proportion_male); }
-
-	void SetProportionCircumcised(double proportion_circumcised, Nullable<PopulationTarget> target)
-	{
-		if(!target.has_value)
-		{
-			population_.popWideParams.setProportionCircumcised(proportion_circumcised);
-		}
-		else
-		{
-			population_.Circumcise(parameters_.randomNums, proportion_circumcised, target.value);
-		}
-	}
-
-	void SetAssortativeness(SexualPartnership::Type type, double assortativeness)
-	{
-		population_.SetAssortativeness(type, assortativeness);
-	}
-
-	void SetTransmissionCoefficients(DemographicProfile::Gender gender, const std::array<double, 7> &coefficients)
-	{
-		for(int i = 0; i < 7; i++)
-		{
-			population_.popWideParams.SetTransmissionCoefficient(gender, (Person::HVLStrata)i, coefficients[i]);
-		}
-	}
-
-	void SetTransmissionCoefficient(DemographicProfile::Gender gender, Person::HVLStrata stratum, double coefficient)
-	{
-		population_.popWideParams.SetTransmissionCoefficient(gender, stratum, coefficient);
-	}
-
-	void SetProportionHighRisk(DemographicProfile::Gender gender, DemographicProfile::Employment employment, double proportion)
-	{
-		population_.popWideParams.SetProportionHighRisk(gender, employment, proportion);
-	}
-
-	void SetAverageYearsYounger(SexualPartnership::Type type, NormalDist dist) { population_.popWideParams.setAverageYearsYounger(type, dist); }
-	void SetAcquisitionRatePerMonth(Person::RiskLevel risk, SexualPartnership::Type type, LogNormalDist dist) { population_.popWideParams.setAcquisitionRatePerMonth(risk, type, dist); }
-	void SetCoitalEventsPerMonth(Person::RiskLevel risk, SexualPartnership::Type type, double mean) { population_.popWideParams.setCoitalEventsPerMonth(risk, type, mean); }
-	void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { population_.popWideParams.setChanceCondomUsePerEvent(risk, type, dist); }
-	void SetPartnershipDuration(Person::RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { population_.popWideParams.setPartnershipDuration(risk, type, dist); }
-
 	void SetName(const std::string &name) { name_ = name; parameters_.simName = name; }
-
-	void SetChanceBecomeSexWorker(DemographicProfile::Gender gender, double chance) { population_.popWideParams.SetChanceBecomeCsw(gender, chance); }
-	void SetPartnerAcquisitionSteadyMultiplier(Person::RiskLevel risk, double multiplier) { population_.popWideParams.SetPartnerAcquisitionSteadyMultiplier(risk, multiplier); }
 
 	void AddLifeExpectancyRecordTime(int time) { population_.populationStatistics.addLifeExpectancyRecordTime(time); }
 
@@ -189,9 +178,7 @@ private:
 	/** perform one timestep of simulation */
     std::size_t SimulateMonth();
 
-	void UpdateTimeDependentParameters();
-
-	void ValidateState();
+    void UpdateGroups(const std::unordered_set<Person *> &new_people);
 
 	std::string name_;
 
@@ -229,6 +216,6 @@ private:
 
 	RolloutTreatmentFiles rollout_treatment_files_;
 
-	std::deque<std::pair<int, std::vector<SimulationIntervention>>> simulation_interventions;
+    std::vector<TargetGroup> groups_;
 };
 

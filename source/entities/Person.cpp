@@ -43,6 +43,11 @@ void Person::ageOneTimeUnit()
 	age++;
 }
 
+void Person::SetAgeSexualDebut(int age_sexual_debut, TimeGranularity granularity)
+{
+    ageSexualDebut = Utility::convertTime(granularity, TimeGranularity::Month, age_sexual_debut);
+}
+
 Person::CD4Strata Person::getCd4Stratum() const
 {
 	switch(cepacPatient->getDiseaseState()->currTrueCD4Strata)

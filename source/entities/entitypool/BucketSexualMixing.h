@@ -80,8 +80,6 @@ public :
 	//TESTED
 	void clear();
 
-    void Find(const PopulationTarget &target, std::vector<Person *> &result);
-
 	//TESTED
 	Person *drawMember(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType, bool _remove);
 

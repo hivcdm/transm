@@ -5,25 +5,6 @@
 #include "../../util/Utility.h"
 #include "../../util/rand/RandomNumberGenerator.h"
 
-
-void BucketSexualMixing::Find(const PopulationTarget &target, std::vector<Person *> &result)
-{
-    for(auto age_bucket : *personsByAge)
-    {
-        for(auto person : *age_bucket)
-        {
-            if(!((target.age_lower.has_value && target.age_lower.value < person->getAge(TimeGranularity::Month))
-                || (target.age_upper.has_value && target.age_upper.value > person->getAge(TimeGranularity::Month))
-                || (target.observed_hiv_status.has_value && target.observed_hiv_status.value != person->getHIVStatus())
-                || (target.on_treatment.has_value && target.on_treatment.value != person->isOnArt())
-                || (target.risk_level.has_value && target.risk_level.value != person->getRiskLevel())))
-            {
-                result.push_back(person);
-            }
-        }
-    }
-}
-
 BucketSexualMixing::BucketSexualMixing(DemographicProfile::ProfileID _id, const string *_bucketLabel, unsigned int _popID,
 	int _minAge, int _maxAge, TimeGranularity _timeGranularity, const std::array<double, (int)SexualPartnership::Type::ENDType> &_assort) :
 	BucketDemographicProfile(_id, _bucketLabel, false)

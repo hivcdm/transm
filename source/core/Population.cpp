@@ -23,72 +23,6 @@ events stratified by age and CD4
 ***/
 unsigned int Population::idCounter = 0;
 
-void Population::SetAssortativeness(SexualPartnership::Type type, double assortativeness)
-{
-    DemographicProfile selector;
-    selector.set(DemographicProfile::SEXUAL_ACTIVITY_STATUS, DemographicProfile::SA);
-    std::vector<DemographicProfile::ProfileID> buckets;
-    selector.selectProfileIDs(buckets, nullptr);
-
-    for(auto id : buckets)
-    {
-        auto bucket = entities->getBucket(id);
-        if(bucket != nullptr)
-        {
-            ((BucketSexualMixing*)bucket)->SetAssortativeness(type, assortativeness);
-        }
-    }
-}
-
-void Population::Find(const PopulationTarget &target, std::vector<Person *> &result)
-{
-    DemographicProfile selector;
-    if(target.sexual_activity_status.has_value)
-    {
-        selector.set(DemographicProfile::SEXUAL_ACTIVITY_STATUS, target.sexual_activity_status.value);
-    }
-    if(target.gender.has_value)
-    {
-        selector.set(DemographicProfile::GENDER, target.gender.value);
-    }
-    if(target.sexual_orientation.has_value)
-    {
-        selector.set(DemographicProfile::SEXUAL_ORIENTATION, target.sexual_orientation.value);
-    }
-    if(target.relationship_status.has_value)
-    {
-        selector.set(DemographicProfile::RELATIONSHIP_STATUS, target.relationship_status.value);
-    }
-    if(target.employment.has_value)
-    {
-        selector.set(DemographicProfile::EMPLOYMENT, target.employment.value);
-    }
-
-    std::vector<DemographicProfile::ProfileID> buckets;
-    selector.selectProfileIDs(buckets, nullptr);
-
-    for(auto id : buckets)
-    {
-        auto bucket = entities->getBucket(id);
-        if(bucket != nullptr)
-        {
-            bucket->Find(target, result);
-        }
-    }
-}
-
-void Population::Apply(const PopulationTarget &target, std::function<void(Person *)> modifier)
-{
-    std::vector<Person *> matches;
-    Find(target, matches);
-    std::for_each(matches.begin(), matches.end(), modifier);
-}
-
-void Population::ValidateState()
-{
-	//throw std::runtime_error("not implemented");
-}
-
 /**
 Creates an initial population of folks
 **/
@@ -96,38 +30,6 @@ Population::Population(EventParams &parameters)
     : populationID(Population::idCounter++),
       parameters_(parameters)
 {
-}
-
-void Population::Circumcise(RandomNumberGenerator &rng, double proportion, PopulationTarget target)
-{
-    std::vector<Person *> matches;
-    Find(target, matches);
-    auto target_modified = matches.size() * proportion;
-
-    int num_modified = 0;
-    auto person_iter = matches.begin();
-    while(person_iter != matches.end())
-    {
-        auto person = *person_iter;
-        if(person->IsCircumcised())
-        {
-            person_iter = matches.erase(person_iter);
-            num_modified++;
-        }
-        else
-        {
-            person_iter++;
-        }
-    }
-
-    while(num_modified < target_modified && !matches.empty())
-    {
-        auto random_index = rng.randInt(static_cast<uint32_t>(matches.size()) - 1);
-        Circumcise(matches[random_index]);
-        std::swap(matches[random_index], matches.back());
-        matches.pop_back();
-        num_modified++;
-    }
 }
 
 void Population::Circumcise(Person *p)
@@ -234,6 +136,8 @@ Population::~Population()
 
 void Population::Births(EventParams &parameters_)
 {
+    new_people_this_month_.clear();
+
 	//number of people to be born this month
 	unsigned long numBorn = Utility::round<unsigned long>(currSize * popWideParams.birthRate);
 	unsigned long numMales = static_cast<unsigned long>(popWideParams.proportionMale * numBorn);
@@ -448,7 +352,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 
 			//if this person wasn't sexually active but is now old enough to
 			if((p->getDemographicProfileVal(DemographicProfile::SEXUAL_ACTIVITY_STATUS) != DemographicProfile::SA)
-                && (p->getAge(TimeGranularity::Month) >= popWideParams.SAEntAgeMths))
+                && (p->getAge(TimeGranularity::Month) >= p->GetAgeSexualDebut()))
 			{
 				// set them as SA and potentially CSWs
 				if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && p->trace())
@@ -1001,6 +905,8 @@ Person *Population::GeneratePerson(EventParams &parameters_, DemographicProfile:
 		toReturn = new Female(parameters_, ageMth, populationID, popWideParams.defaultFemaleParams);
 	}
 
+    toReturn->SetAgeSexualDebut(popWideParams.SAEntAgeMths, TimeGranularity::Month);
+
 	//If it was a boy and he was circumcised, add the costs
 	if(toReturn->getDemographicProfileVal(DemographicProfile::GENDER) == DemographicProfile::MALE)
 	{
@@ -1052,6 +958,8 @@ Person *Population::GeneratePerson(EventParams &parameters_, DemographicProfile:
 			toReturn->print(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].file, "Tracing the following patient: ");
 		}
 	}
+
+    new_people_this_month_.insert(toReturn);
 
 	return toReturn;
 }
