@@ -58,6 +58,56 @@ void TargetGroup::Update(int current_time, const std::unordered_set<Person *> &n
     }
 }
 
+SimulationIntervention::SimulationIntervention(const std::string &catgory, const std::string &subcategory)
+{
+
+}
+
+void SimulationIntervention::Apply(Simulation &s)
+{
+
+}
+
+PopulationIntervention::PopulationIntervention(const std::string &catgory, const std::string &subcategory)
+{
+
+}
+
+void PopulationIntervention::Apply(Population &p)
+{
+
+}
+
+IndividualIntervention::IndividualIntervention(const std::string &catgory, const std::string &subcategory)
+{
+
+}
+
+void IndividualIntervention::Apply(Person *p)
+{
+
+}
+
+TargetGroup::TargetGroup(int, int, bool, bool, Nullable<PopulationTarget>)
+{
+
+}
+
+void TargetGroup::AddPartition(const std::string &label, bool trace, double proportion,
+    std::vector<SimulationIntervention> simulation_interventions,
+    std::vector<PopulationIntervention> population_interventions,
+    std::vector<IndividualIntervention> individual_interventions)
+{
+    Partition p;
+    p.label_ = label;
+    p.trace_ = trace;
+    p.proportion_ = proportion;
+    p.simulation_interventions_ = simulation_interventions;
+    p.population_interventions_ = population_interventions;
+    p.individual_interventions_ = individual_interventions;
+    partitions_.push_back(p);
+}
+
 TargetGroup::PopulationTarget TargetGroup::PopulationTarget::FromString(const std::string &s)
 {
     TargetGroup::PopulationTarget target;

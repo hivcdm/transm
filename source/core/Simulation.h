@@ -94,11 +94,14 @@ private:
         double GetProportion() const { return proportion_; }
         void Add(Person *p) { members_.insert(p); }
     private:
+        friend class TargetGroup;
         std::unordered_set<Person *> members_;
+        std::string label_;
         bool trace_;
         double proportion_;
-        std::vector<std::function<void(Simulation &)>> simulation_interventions_;
-        std::vector<std::function<void(Population &)>> population_interventions_;
+        std::vector<SimulationIntervention> simulation_interventions_;
+        std::vector<PopulationIntervention> population_interventions_;
+        std::vector<IndividualIntervention> individual_interventions_;
     };
 
     std::vector<Partition> partitions_;

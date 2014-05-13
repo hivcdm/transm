@@ -60,6 +60,11 @@ private:
 
 	SexualBehavior ReadSexualBehavior(SexualPartnership::Type type);
 
+    NormalDist GetNormalDist(const pugi::xml_node node);
+    LogNormalDist GetLogNormalDist(const pugi::xml_node node);
+    BetaDist GetBetaDist(const pugi::xml_node node);
+    ShiftedLogNormalDist GetShiftedLogNormalDist(const pugi::xml_node node);
+
 	pugi::xml_document document_;
 
 	Simulation simulation_;

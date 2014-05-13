@@ -72,6 +72,33 @@ std::array<double, 7> SimulationBuilderXml::from_string(const std::string &value
 	return values;
 }
 
+NormalDist SimulationBuilderXml::GetNormalDist(const pugi::xml_node node)
+{
+    NormalDist dist;
+    auto dist_node = node.child("distribution");
+    dist.mean = Text<double>(dist_node.child("mean"));
+    dist.stddev = Text<double>(dist_node.child("stdDev"));
+    return dist;
+}
+
+LogNormalDist SimulationBuilderXml::GetLogNormalDist(const pugi::xml_node node)
+{
+    LogNormalDist dist;
+    return dist;
+}
+
+BetaDist SimulationBuilderXml::GetBetaDist(const pugi::xml_node node)
+{
+    BetaDist dist;
+    return dist;
+}
+
+ShiftedLogNormalDist SimulationBuilderXml::GetShiftedLogNormalDist(const pugi::xml_node node)
+{
+    ShiftedLogNormalDist dist;
+    return dist;
+}
+
 void SimulationBuilderXml::Reset()
 {
 	parameters_.clear();
@@ -719,18 +746,18 @@ SexualBehavior SimulationBuilderXml::ReadSexualBehavior(SexualPartnership::Type 
 		result.AddAvailableBucket(bucket);
 	}
 
-	result.setAverageYearsYounger(Text<NormalDist>(node.child("selectionCriteria").child("averageYearsYounger")));
+	result.setAverageYearsYounger(GetNormalDist(node.child("selectionCriteria").child("averageYearsYounger")));
 
 	for(auto risk : {Person::LOW, Person::HIGH})
 	{
 		std::string suffix = risk == Person::LOW ? "LowRisk" : "HighRisk";
 
-		result.setAcquisitionRatePerMonth(risk, Text<LogNormalDist>(node.child(("acquisitionRate" + suffix).c_str())));
+		result.setAcquisitionRatePerMonth(risk, GetLogNormalDist(node.child(("acquisitionRate" + suffix).c_str())));
 		//XXX:this should be a double, but old implementations mistakenly casted it to int
 		//we will continue to do this to maintain reproduciblity for now
 		result.setCoitalEventsPerMonth(risk, Text<int>(node.child(("coitalEventsPerMonth" + suffix).c_str()).child("distribution").child("mean")));
-		result.setChanceCondomUsePerEvent(risk, Text<BetaDist>(node.child(("chanceCondomUsePerEvent" + suffix).c_str())));
-		result.setPartnershipDuration(risk, Text<ShiftedLogNormalDist>(node.child(("partnershipDurationMth" + suffix).c_str())));
+		result.setChanceCondomUsePerEvent(risk, GetBetaDist(node.child(("chanceCondomUsePerEvent" + suffix).c_str())));
+		result.setPartnershipDuration(risk, GetShiftedLogNormalDist(node.child(("partnershipDurationMth" + suffix).c_str())));
 	}
 
 	return result;
