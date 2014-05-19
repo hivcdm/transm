@@ -182,6 +182,7 @@ public:
     PopulationStatistics &GetPopulationStatistics() { return populationStatistics; }
 
     const std::unordered_set<Person *> &GetNewPeopleThisMonth() const { return new_people_this_month_; }
+    const std::unordered_set<Person *> &GetDeadPeopleThisMonth() const { return dead_people_this_month_; }
 
     /// <summary>
     ///
@@ -428,4 +429,5 @@ private:
 	double treatmentCorrectionFactor_;
 
     std::unordered_set<Person *> new_people_this_month_;
+    std::unordered_set<Person *> dead_people_this_month_;
 };

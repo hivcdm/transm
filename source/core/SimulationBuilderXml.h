@@ -29,7 +29,7 @@ public:
 
 	void InitializePopulation();
 
-    std::vector<TargetGroup> ReadGroups();
+    std::unordered_map<std::string, TargetGroup> ReadGroups();
 
 private:
 	template<typename T>
@@ -53,10 +53,7 @@ private:
 
 	Male::SubPopParams ReadMaleSubPopParams();
 
-    typedef std::tuple<std::vector<SimulationIntervention>,
-        std::vector<PopulationIntervention>, std::vector<IndividualIntervention >> InterventionsTuple;
-
-    InterventionsTuple ParseInterventions(pugi::xml_node interventions_node);
+    std::vector<Intervention> ParseInterventions(pugi::xml_node interventions_node);
 
 	SexualBehavior ReadSexualBehavior(SexualPartnership::Type type);
 

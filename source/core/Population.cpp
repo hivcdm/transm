@@ -212,6 +212,8 @@ update age (and SAStatus b/c SAStatus depends on age), health,
 **/
 void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE, bool newLEPeriod)
 {
+    dead_people_this_month_.clear();
+
 	int totalDied = 0;		//keeps track of deaths this timestep
 	//holds a pointer to the current bucket we are looking at
 	BucketDemographicProfile *currBucket = nullptr;
@@ -2026,6 +2028,8 @@ void Population::ProcessDeath(EventParams &parameters_, Person *_p, bool calcula
 {
 	assert((_p != nullptr));
 	assert((!_p->isAlive()));
+
+    dead_people_this_month_.insert(_p);
 
 	//Calculate life expectancy info
 	if(calculateLE)

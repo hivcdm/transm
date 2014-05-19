@@ -83,20 +83,21 @@ NormalDist SimulationBuilderXml::GetNormalDist(const pugi::xml_node node)
 
 LogNormalDist SimulationBuilderXml::GetLogNormalDist(const pugi::xml_node node)
 {
-    LogNormalDist dist;
-    return dist;
+    auto dist = GetNormalDist(node);
+    return LogNormalDist::FromNormal(dist);
 }
 
 BetaDist SimulationBuilderXml::GetBetaDist(const pugi::xml_node node)
 {
-    BetaDist dist;
-    return dist;
+    auto dist = GetNormalDist(node);
+    return BetaDist::FromNormal(dist);
 }
 
 ShiftedLogNormalDist SimulationBuilderXml::GetShiftedLogNormalDist(const pugi::xml_node node)
 {
-    ShiftedLogNormalDist dist;
-    return dist;
+    auto dist = GetNormalDist(node);
+    auto shift = Text<double>(node.child("distribution").child("shift"));
+    return ShiftedLogNormalDist::FromShiftedNormal(dist, shift);
 }
 
 void SimulationBuilderXml::Reset()
@@ -495,6 +496,11 @@ void SimulationBuilderXml::ReadSimulationParameters()
 		parameters.cepacTracer = new Tracer(parameters.simName, parameters.cepacSimContexts[0], 1);
 		parameters.cepacRunStats = new RunStats(parameters.simName, parameters.cepacSimContexts[0]);
 	}
+
+    for(auto group : ReadGroups())
+    {
+        simulation_.RegisterTargetGroup(group.first, group.second);
+    }
 }
 
 Simulation &SimulationBuilderXml::GetResult()
@@ -984,56 +990,27 @@ std::pair<int, int> ParseRange(const std::string &range_string, bool require_bot
     return {lower_bound, upper_bound};
 }
 
-SimulationBuilderXml::InterventionsTuple SimulationBuilderXml::ParseInterventions(pugi::xml_node interventions_node)
+std::vector<Intervention> SimulationBuilderXml::ParseInterventions(pugi::xml_node interventions_node)
 {
-    std::vector<SimulationIntervention> simulation_interventions;
-    std::vector<PopulationIntervention> population_interventions;
-    std::vector<IndividualIntervention> individual_interventions;
+    std::vector<Intervention> interventions;
 
     for(auto intervention_node : interventions_node.children("intervention"))
     {
-        auto category = Attr<std::string>(intervention_node, "category");
-        auto subcategory = Attr<std::string>(intervention_node, "subcategory");
+        auto parameter = Attr<std::string>(intervention_node, "parameter");
+        auto time = Attr<int>(intervention_node, "time");
+        auto value = Attr<std::string>(intervention_node, "value");
 
-        if(category == "simulation")
-        {
-            simulation_interventions.push_back(SimulationIntervention(category, subcategory));
-        }
-        else if(category == "population")
-        {
-            population_interventions.push_back(PopulationIntervention(category, subcategory));
-        }
-        else if(category == "art-rollout-eligibility")
-        {
-            simulation_interventions.push_back(SimulationIntervention(category, subcategory));
-        }
-        else if(category == "male-behavior")
-        {
-            individual_interventions.push_back(IndividualIntervention(category, subcategory));
-        }
-        else if(category == "male-health")
-        {
-            individual_interventions.push_back(IndividualIntervention(category, subcategory));
-        }
-        else if(category == "female-behavior")
-        {
-            individual_interventions.push_back(IndividualIntervention(category, subcategory));
-        }
-        else if(category == "female-health")
-        {
-            individual_interventions.push_back(IndividualIntervention(category, subcategory));
-        }
+        interventions.emplace_back(parameter, time, value);
     }
 
-    return std::make_tuple(simulation_interventions, population_interventions, 
-        individual_interventions);
+    return interventions;
 }
 
-std::vector<TargetGroup> SimulationBuilderXml::ReadGroups()
+std::unordered_map<std::string, TargetGroup> SimulationBuilderXml::ReadGroups()
 {
     pugi::xml_node groups_node = 
         document_.select_single_node("/simulation/interventions/groups").node();
-    std::vector<TargetGroup> groups;
+    std::unordered_map<std::string, TargetGroup> groups;
 
     for(auto group_node : groups_node.children("target-group"))
     {
@@ -1042,7 +1019,7 @@ std::vector<TargetGroup> SimulationBuilderXml::ReadGroups()
         auto enrollment_period = ParseRange(enrollment_period_string);
         bool permanent = Text<bool>(group_node.child("permanent-effect"));
         bool open = Text<bool>(group_node.child("open"));
-        auto target = ParseGroupEligibility(group_node.child("eligiblity-criteria"));
+        auto target = ParseGroupEligibility(group_node.child("eligibility-criteria"));
 
         TargetGroup group(enrollment_period.first, enrollment_period.second, 
             open, permanent, target);
@@ -1054,11 +1031,11 @@ std::vector<TargetGroup> SimulationBuilderXml::ReadGroups()
             auto trace = Text<bool>(partition_node.child("trace"));
             auto interventions = ParseInterventions(partition_node.child("interventions"));
 
-            group.AddPartition(label, trace, proportion, std::get<0>(interventions),
-                std::get<1>(interventions), std::get<2>(interventions));
+            group.AddPartition(label, trace, proportion, interventions);
         }
 
-        groups.push_back(group);
+        auto group_label = Attr<std::string>(group_node, "label");
+        groups.emplace(std::make_pair(group_label, group));
     }
 
     return groups;

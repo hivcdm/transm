@@ -12,25 +12,28 @@
 
 class InfectionsTracker;
 
-class SimulationIntervention
+class Intervention
 {
 public:
-    SimulationIntervention(const std::string &catgory, const std::string &subcategory);
+    Intervention(const std::string &parameter, int time, const std::string &value);
     void Apply(Simulation &s);
-};
-
-class PopulationIntervention
-{
-public:
-    PopulationIntervention(const std::string &catgory, const std::string &subcategory);
     void Apply(Population &p);
-};
-
-class IndividualIntervention
-{
-public:
-    IndividualIntervention(const std::string &catgory, const std::string &subcategory);
     void Apply(Person *p);
+    enum class TargetType
+    {
+        Simulation,
+        Population,
+        Individual
+    };
+    TargetType GetType() const { return type_; }
+    int GetTime() const { return time_; }
+
+private:
+    TargetType type_;
+    int time_;
+    std::function<void(Simulation &)> simulation_intervention;
+    std::function<void(Population &)> population_intervention;
+    std::function<void(Person *)> individual_intervention;
 };
 
 class TargetGroup
@@ -71,12 +74,10 @@ public:
 
     TargetGroup(int start, int end, bool open, bool permanent, Nullable<PopulationTarget> target);
 
-    void Update(int simulation_time, const std::unordered_set<Person *> &new_people);
+    void Update(int simulation_time, RandomNumberGenerator &rng, const std::unordered_set<Person *> &new_people, const std::unordered_set<Person *> &dead_people);
 
     void AddPartition(const std::string &label, bool trace, double proportion, 
-        std::vector<SimulationIntervention> simulation_interventions, 
-        std::vector<PopulationIntervention> population_interventions,
-        std::vector<IndividualIntervention> individual_interventions);
+        std::vector<Intervention> simulation_interventions);
 
 private:
     struct
@@ -93,15 +94,15 @@ private:
     public:
         double GetProportion() const { return proportion_; }
         void Add(Person *p) { members_.insert(p); }
+        void Remove(Person *p) { if(members_.find(p) != members_.end()) members_.erase(p); }
+        void Update(int current_time);
     private:
         friend class TargetGroup;
         std::unordered_set<Person *> members_;
         std::string label_;
         bool trace_;
         double proportion_;
-        std::vector<SimulationIntervention> simulation_interventions_;
-        std::vector<PopulationIntervention> population_interventions_;
-        std::vector<IndividualIntervention> individual_interventions_;
+        std::vector<Intervention> interventions_;
     };
 
     std::vector<Partition> partitions_;
@@ -136,7 +137,7 @@ public:
 
 	int GetTime() { return time_; }
 
-	void RegisterTargetGroup(const std::string &group_label, TargetGroup &group);
+	void RegisterTargetGroup(const std::string &group_label, const TargetGroup &group);
 
 	Population &GetPopulation() { return population_; }
     const Population &GetPopulation() const { return population_; }
@@ -151,6 +152,7 @@ public:
 
 private:
 	friend class SimulationBuilder;
+    friend class Intervention;
 
 	struct TreatmentFile
 	{
@@ -181,7 +183,7 @@ private:
 	/** perform one timestep of simulation */
     std::size_t SimulateMonth();
 
-    void UpdateGroups(const std::unordered_set<Person *> &new_people);
+    void UpdateGroups(const std::unordered_set<Person *> &new_people, const std::unordered_set<Person *> &dead_people);
 
 	std::string name_;
 
