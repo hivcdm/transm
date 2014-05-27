@@ -203,6 +203,7 @@ public:
 	void recordTreatment(Person *person);
 
 	void addLifeExpectancyRecordTime(int time) { timesToRecordLE.push_back(time); }
+    void setMedianLECI(double ci) { medianLECI = ci; }
 
 	std::vector<PopulationStatistics::SingleTimeStats *> *getSelectedSummaryStats();
 };

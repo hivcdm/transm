@@ -428,6 +428,11 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 	}
 }
 
+void Population::RegisterIntervention(const Intervention &intervention)
+{
+    interventions_.push_back(intervention);
+}
+
 /*  who initiates flings? it seems that males do for now
 
 This method is mostly designed for speed as this takes up the bulk of processing

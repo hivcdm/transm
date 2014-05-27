@@ -343,6 +343,7 @@ void SimulationBuilderXml::ReadSimulationParameters()
 	parameters.monthTraceNewborns = Text<int>(simulation_node.child("traceFiles").child("singlePerson").child("monthTraceNewborns"));
 	parameters.tracePrevalentCases = Text<bool>(simulation_node.child("traceFiles").child("singlePerson").child("tracePrevalentCases"));
 
+    simulation_.SetLifeExpectancyConfidenceInterval(Text<double>(simulation_node.child("traceFiles").child("lifeExpectancy").child("medianConfidenceInterval")));
 	for(auto time_node : simulation_node.child("traceFiles").child("lifeExpectancy").children("time"))
 	{
 		simulation_.AddLifeExpectancyRecordTime(Text<int>(time_node));
@@ -496,6 +497,11 @@ void SimulationBuilderXml::ReadSimulationParameters()
 		parameters.cepacTracer = new Tracer(parameters.simName, parameters.cepacSimContexts[0], 1);
 		parameters.cepacRunStats = new RunStats(parameters.simName, parameters.cepacSimContexts[0]);
 	}
+
+    for(auto simulation_intervention : ParseInterventions(simulation_node.child("interventions").child("globalInterventions")))
+    {
+        simulation_.RegisterIntervention(simulation_intervention);
+    }
 
     for(auto group : ReadGroups())
     {
@@ -994,13 +1000,19 @@ std::vector<Intervention> SimulationBuilderXml::ParseInterventions(pugi::xml_nod
 {
     std::vector<Intervention> interventions;
 
-    for(auto intervention_node : interventions_node.children("intervention"))
+    for(auto intervention_node : interventions_node.children())
     {
-        auto parameter = Attr<std::string>(intervention_node, "parameter");
-        auto time = Attr<int>(intervention_node, "time");
-        auto value = Attr<std::string>(intervention_node, "value");
+        std::string node_name = intervention_node.name();
+        std::string value = intervention_node.text().as_string();
 
-        interventions.emplace_back(parameter, time, value);
+        std::unordered_map<std::string, std::string> parameters;
+        for(auto parameter_node : intervention_node.attributes())
+        {
+            parameters[parameter_node.name()] = parameter_node.as_string();
+        }
+        parameters["time"] = 4;
+
+        interventions.emplace_back(node_name, value, parameters);
     }
 
     return interventions;

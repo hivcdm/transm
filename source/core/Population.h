@@ -6,6 +6,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "Intervention.h"
 #include "PopulationParameters.h"
 #include "../data/AgeRangeSizeContainer.h"
 #include "../entities/Female.h"
@@ -189,7 +190,10 @@ public:
     /// </summary>
 	int GetNumberToTrace() const { return parameters_.numToTrace; }
 
+    void RegisterIntervention(const Intervention &intervention);
+
 private:
+    friend class Intervention;
 	friend class SimulationBuilderXml;
     friend class Simulation;
 
@@ -430,4 +434,6 @@ private:
 
     std::unordered_set<Person *> new_people_this_month_;
     std::unordered_set<Person *> dead_people_this_month_;
+
+    std::vector<Intervention> interventions_;
 };
