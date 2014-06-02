@@ -19,14 +19,14 @@ public:
 	public :
 		SubPopParams();
 
-		double getChanceBecomeCSW() const;
-		double getProportionHighRisk(DemographicProfile::Employment) const;
-		NormalDist getActivityLevel() const;
-		void setActivityLevel(NormalDist &dist) { activityLevel = dist; }
-		double getTransmitPerEventCoeff(HVLStrata _hvl) const;
-		void setTransmitPerEventCoeff(HVLStrata hvl, double coeff) { transmitPerEventCoeffs[hvl] = coeff; }
-		void setChanceBecomeCsw(double chance) { chanceBecomeCSW = chance; }
-		void setProportionHighRisk(DemographicProfile::Employment employment, double proportion) { proportionHighRisk[employment] = proportion; }
+		double GetChanceBecomeCSW() const;
+		double GetProportionHighRisk(DemographicProfile::Employment) const;
+		NormalDist GetActivityLevel() const;
+		void SetActivityLevel(NormalDist &dist) { activityLevel = dist; }
+		double GetTransmitPerEventCoeff(HVLStrata _hvl) const;
+		void SetTransmitPerEventCoeff(HVLStrata hvl, double coeff) { transmitPerEventCoeffs[hvl] = coeff; }
+		void SetChanceBecomeCsw(double chance) { chanceBecomeCSW = chance; }
+		void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) { proportionHighRisk[employment] = proportion; }
 
 	private:
 		friend class SimulationBuilder;
@@ -47,6 +47,12 @@ public:
 	~Female(void);
 
     bool IsCircumcised() const { return false; }
+
+    void SetChanceBecomeSexWorker(double chance) { populationSpecificParams.SetChanceBecomeCsw(chance); }
+
+    void SetTransmissionCoefficient(HVLStrata stratum, double coefficient) { populationSpecificParams.SetTransmitPerEventCoeff(stratum, coefficient); }
+
+    void SetAssortativeness(SexualPartnership::Type /*partnership_type*/, double /*assortativeness*/) { throw std::runtime_error("not implemented for women"); }
 
 	/** Start: Inherited from Person, comments found there **/
 

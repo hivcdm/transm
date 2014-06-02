@@ -11,26 +11,29 @@ class Person;
 class Intervention
 {
 public:
-    Intervention(const std::string &parameter, const std::string &value, const std::unordered_map<std::string, std::string> &parameters);
+    Intervention(const std::string &parameter, const std::string &value, const std::unordered_map<std::string, std::string> &parameters, bool individual);
 
-    void Apply(Simulation &s);
-    void Apply(Population &p);
-    void Apply(Person *p);
+    bool AffectsSimulation() const { return (bool)simulation_intervention_; }
+    void Apply(Simulation &simulation);
 
-    enum class TargetType
-    {
-        Simulation,
-        Population,
-        Individual
-    };
+    bool AffectsPopulation() const { return (bool)population_intervention_; }
+    void Apply(Population &population);
 
-    TargetType GetType() const { return type_; }
-    int GetTime() const { return time_; }
+    bool AffectsPopulationIndividual() const { return (bool)population_individual_intervention_; }
+    void Apply(Population &population, Person *person);
+
+    bool AffectsIndividual() const { return (bool)individual_intervention_; }
+    void Apply(Person *person);
+
+    bool IsActive(int current_time) const;
+    bool IsFirstMonth(int current_time) const;
+    bool IsCompleted(int current_time) const;
 
 private:
-    TargetType type_;
     int time_;
-    std::function<void(Simulation &)> simulation_intervention;
-    std::function<void(Population &)> population_intervention;
-    std::function<void(Person *)> individual_intervention;
+    int duration_;
+    std::function<void(Simulation &)> simulation_intervention_;
+    std::function<void(Population &)> population_intervention_;
+    std::function<void(Population &, Person *)> population_individual_intervention_;
+    std::function<void(Person *)> individual_intervention_;
 };

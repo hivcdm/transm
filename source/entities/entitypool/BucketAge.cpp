@@ -25,13 +25,14 @@ BucketAge::BucketAge()
 		}
 	}
 
-	for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
+	for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
 	{
-		assort[i] = 0;
+		assort[partnership_type] = 0;
 	}
 }
 
-BucketAge::BucketAge(DemographicProfile::ProfileID BinID, unsigned int popID, const std::array<double, (int)SexualPartnership::Type::ENDType> &_assort)
+BucketAge::BucketAge(DemographicProfile::ProfileID BinID, unsigned int popID, const std::map<SexualPartnership::Type, double> &_assort)
+: assort(_assort)
 {
 	currentBinID = BinID;
 	populationID = popID;
@@ -48,11 +49,6 @@ BucketAge::BucketAge(DemographicProfile::ProfileID BinID, unsigned int popID, co
 		{
 			numRiskHIVStatus[i][j] = 0;
 		}
-	}
-
-	for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
-	{
-		assort[i] = _assort[i];
 	}
 
 	//Initialize the infected FVs

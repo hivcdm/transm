@@ -498,14 +498,15 @@ void SimulationBuilderXml::ReadSimulationParameters()
 		parameters.cepacRunStats = new RunStats(parameters.simName, parameters.cepacSimContexts[0]);
 	}
 
-    for(auto simulation_intervention : ParseInterventions(simulation_node.child("interventions").child("globalInterventions")))
+    auto population_interventions_node = simulation_node.child("interventions").child("populationInterventions");
+    for(auto intervention : ParseInterventions(population_interventions_node))
     {
-        simulation_.RegisterIntervention(simulation_intervention);
+        simulation_.RegisterIntervention(intervention);
     }
 
     for(auto group : ReadGroups())
     {
-        simulation_.RegisterTargetGroup(group.first, group.second);
+        simulation_.RegisterTargetGroup(group.second);
     }
 }
 
@@ -544,8 +545,16 @@ void SimulationBuilderXml::InitializePopulation()
 	auto proportion_regular = (1 - pHigh) * (regularRateL * regularDurationL) + pHigh *
 		(regularRateH * regularDurationH);
 
+    std::map<SexualPartnership::Type, double> assort;
+
+    for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
+    {
+        auto assortativeness = population_parameters.GetMaleParameters().getSexualBehavior(partnership_type).getAssortativeness();
+        assort[partnership_type] = assortativeness;
+    }
+
 	//create EntityPool - this will contain all Entities
-	auto entities = std::make_unique<EntityPool>(population_parameters.getAgeSexualDebut(), population.GetId(), population_parameters.GetAssortativeness());
+	auto entities = std::make_unique<EntityPool>(population_parameters.getAgeSexualDebut(), population.GetId(), assort);
 	population.entities.swap(entities);
 
 	//initialize infection trace generator print detailed info about certain ProfileID's
@@ -747,7 +756,7 @@ SexualBehavior SimulationBuilderXml::ReadSexualBehavior(SexualPartnership::Type 
 
 	SexualBehavior result(type);
 
-	population_parameters.setAssortativeness(type, Text<double>(node.child("assortativeness")));
+    result.setAssortativeness(Text<double>(node.child("assortativeness")));
 
 	auto bucket_path = "selectionCriteria/availableBuckets/bucket";
 	for(const auto &bucket_settings : node.select_nodes(bucket_path))
@@ -782,16 +791,16 @@ Male::SubPopParams SimulationBuilderXml::ReadMaleSubPopParams()
 	Male::SubPopParams result;
 
 	auto behavior_node = node.child("behavior");
-    result.setChanceBecomeCsw(Text<double>(behavior_node.child("chanceBecomeSexWorker")));
-	result.setPartnerAcqMultWithSteady(Person::HIGH, Text<double>(behavior_node.child("partnerAcqMultWithSteadyHighRisk")));
-	result.setPartnerAcqMultWithSteady(Person::LOW, Text<double>(behavior_node.child("partnerAcqMultWithSteadyLowRisk")));
+    result.SetChanceBecomeCsw(Text<double>(behavior_node.child("chanceBecomeSexWorker")));
+	result.SetPartnerAcqMultWithSteady(Person::HIGH, Text<double>(behavior_node.child("partnerAcqMultWithSteadyHighRisk")));
+	result.SetPartnerAcqMultWithSteady(Person::LOW, Text<double>(behavior_node.child("partnerAcqMultWithSteadyLowRisk")));
 
 	bool use_high_risk_multiplier = Attr<bool>(behavior_node.child("highRiskAcqRateMultiplier"), "enabled");
 	double high_risk_multiplier = Text<double>(behavior_node.child("highRiskAcqRateMultiplier"));
 	bool use_csw_high_risk_multiplier = Attr<bool>(behavior_node.child("highRiskCswAcqRateMultiplier"), "enabled");
 	double csw_high_risk_multiplier = Text<double>(behavior_node.child("highRiskCswAcqRateMultiplier"));
 
-	result.setCoefficientVariation(false, 0);
+	result.SetCoefficientVariation(false, 0);
 
 	for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
 	{
@@ -809,16 +818,16 @@ Male::SubPopParams SimulationBuilderXml::ReadMaleSubPopParams()
 			}
 		}
 
-		result.addSexualBehavior(params);
+		result.AddSexualBehavior(params);
 	}
 
 	NormalDist activityLevel;
 	activityLevel.mean = 1;
 	activityLevel.stddev = 0;
-	result.setActivityLevel(activityLevel);
+	result.SetActivityLevel(activityLevel);
 
-	result.setProportionHighRisk(DemographicProfile::CSW, Text<double>(behavior_node.child("proportionHighRiskCsw")));
-    result.setProportionHighRisk(DemographicProfile::NON_CSW, Text<double>(behavior_node.child("proportionHighRiskNonCsw")));
+	result.SetProportionHighRisk(DemographicProfile::CSW, Text<double>(behavior_node.child("proportionHighRiskCsw")));
+    result.SetProportionHighRisk(DemographicProfile::NON_CSW, Text<double>(behavior_node.child("proportionHighRiskNonCsw")));
 
 	auto discountingStartAgeYrs = Text<int>(behavior_node.child("ageDiscounting").child("startAgeYrs"));
 	auto acquisitionDiscByYr = Text<double>(behavior_node.child("ageDiscounting").child("acquisitionDiscByYr"));
@@ -826,17 +835,17 @@ Male::SubPopParams SimulationBuilderXml::ReadMaleSubPopParams()
 	result.setAgeDiscounting(discountingStartAgeYrs, acquisitionDiscByYr, coitalActsDiscByYr);
 
 	auto health_node = node.child("health");
-	result.setCircucmsionProtectEfficacy(Text<double>(health_node.child("circumcisionProtectEfficacy")));
-	result.setCondomProtectEff(Text<double>(health_node.child("condomProtectEfficacy")));
+	result.SetCircucmsionProtectEfficacy(Text<double>(health_node.child("circumcisionProtectEfficacy")));
+	result.SetCondomProtectEff(Text<double>(health_node.child("condomProtectEfficacy")));
 
 	auto transmission_node = node.child("health").child("transmissionCoefficients");
 	auto transmission_coefficients = Text<std::array<double, 7>>(transmission_node.child("valsByHVL"));
 	for(int i = 0; i < 7; i++)
 	{
-		result.setTransmitPerEventCoeff(Person::HVLStrata(i), transmission_coefficients[i]);
+		result.SetTransmitPerEventCoeff(Person::HVLStrata(i), transmission_coefficients[i]);
 	}
-	result.setTransmitPerEventCoeff(Person::HVL_PRIMARY, Text<double>(transmission_node.child("primary")));
-	result.setTransmitPerEventCoeff(Person::HVL_LATESTAGE, Text<double>(transmission_node.child("lateStage")));
+	result.SetTransmitPerEventCoeff(Person::HVL_PRIMARY, Text<double>(transmission_node.child("primary")));
+	result.SetTransmitPerEventCoeff(Person::HVL_LATESTAGE, Text<double>(transmission_node.child("lateStage")));
 
 	return result;
 }
@@ -849,23 +858,23 @@ Female::SubPopParams SimulationBuilderXml::ReadFemaleSubPopParams()
 	Female::SubPopParams result;
 
 	auto behavior_node = node.child("behavior");
-	result.setChanceBecomeCsw(Text<double>(behavior_node.child("chanceBecomeSexWorker")));
-	result.setProportionHighRisk(DemographicProfile::NON_CSW, Text<double>(behavior_node.child("proportionHighRiskNonCsw")));
-	result.setProportionHighRisk(DemographicProfile::CSW, Text<double>(behavior_node.child("proportionHighRiskCsw")));
+	result.SetChanceBecomeCsw(Text<double>(behavior_node.child("chanceBecomeSexWorker")));
+	result.SetProportionHighRisk(DemographicProfile::NON_CSW, Text<double>(behavior_node.child("proportionHighRiskNonCsw")));
+	result.SetProportionHighRisk(DemographicProfile::CSW, Text<double>(behavior_node.child("proportionHighRiskCsw")));
 
 	NormalDist activityLevel;
 	activityLevel.mean = 1;
 	activityLevel.stddev = 0;
-	result.setActivityLevel(activityLevel);
+	result.SetActivityLevel(activityLevel);
 
 	auto transmission_node = node.child("health").child("transmissionCoefficients");
 	auto transmission_coefficients = Text<std::array<double, 7>>(transmission_node.child("valsByHVL"));
 	for(int i = 0; i < 7; i++)
 	{
-		result.setTransmitPerEventCoeff(Person::HVLStrata(i), transmission_coefficients[i]);
+		result.SetTransmitPerEventCoeff(Person::HVLStrata(i), transmission_coefficients[i]);
 	}
-	result.setTransmitPerEventCoeff(Person::HVL_PRIMARY, Text<double>(transmission_node.child("primary")));
-	result.setTransmitPerEventCoeff(Person::HVL_LATESTAGE, Text<double>(transmission_node.child("lateStage")));
+	result.SetTransmitPerEventCoeff(Person::HVL_PRIMARY, Text<double>(transmission_node.child("primary")));
+	result.SetTransmitPerEventCoeff(Person::HVL_LATESTAGE, Text<double>(transmission_node.child("lateStage")));
 
 	return result;
 }
@@ -920,7 +929,7 @@ void SimulationBuilderXml::ReadPopulationParameters()
 	population_parameters.setBirthRate(Text<double>(population_node.child("birthRate")));
 	population_parameters.setProportionMale(Text<double>(population_node.child("proportionMale")));
 	population_parameters.setProportionCircumcised(Text<double>(population_node.child("proportionCircumcised")));
-	population_parameters.setAgeSexualDebut(Text<int>(population_node.child("ageSexualDebutYrs")), TimeGranularity::Year);
+	population_parameters.setAgeSexualDebut(Text<int>(population_node.child("ageOfMajority")), TimeGranularity::Year);
 
 	auto defaultMaleParams = ReadMaleSubPopParams();
 	population_parameters.SetMaleParameters(defaultMaleParams);
@@ -1010,9 +1019,8 @@ std::vector<Intervention> SimulationBuilderXml::ParseInterventions(pugi::xml_nod
         {
             parameters[parameter_node.name()] = parameter_node.as_string();
         }
-        parameters["time"] = 4;
 
-        interventions.emplace_back(node_name, value, parameters);
+        interventions.emplace_back(node_name, value, parameters, false);
     }
 
     return interventions;

@@ -16,21 +16,73 @@
 
 TargetGroup::PopulationTarget TargetGroup::PopulationTarget::Any;
 
-void TargetGroup::Partition::Update(int current_time)
+void TargetGroup::Partition::Update(Population &p, int current_time)
 {
     for(auto intervention : interventions_)
     {
-        if(intervention.GetTime() == current_time)
+        if(intervention.IsActive(current_time))
         {
             for(auto person : members_)
             {
-                intervention.Apply(person);
+                intervention.Apply(p, person);
             }
         }
     }
 }
 
-void TargetGroup::Update(int current_time, RandomNumberGenerator &rng, const std::unordered_set<Person *> &newly_added, const std::unordered_set<Person *> &dead_people)
+void Intervention::Apply(Simulation &simulation)
+{
+    if(simulation_intervention_)
+    {
+        simulation_intervention_(simulation);
+    }
+}
+
+void Intervention::Apply(Population &population)
+{
+    if(population_intervention_)
+    {
+        population_intervention_(population);
+    }
+}
+
+void Intervention::Apply(Population &population, Person *person)
+{
+    if(population_individual_intervention_)
+    {
+        population_individual_intervention_(population, person);
+    }
+}
+
+void Intervention::Apply(Person *person)
+{
+    if(individual_intervention_)
+    {
+        individual_intervention_(person);
+    }
+}
+
+bool Intervention::IsActive(int current_time) const
+{
+    if(duration_ == -1)
+    {
+        return current_time >= time_;
+    }
+
+    return current_time >= time_ && current_time <= time_ + duration_;
+}
+
+bool Intervention::IsFirstMonth(int current_time) const
+{
+    return current_time == time_;
+}
+
+bool Intervention::IsCompleted(int current_time) const
+{
+    return current_time > time_ + duration_;
+}
+
+void TargetGroup::Update(Population &p, int current_time, RandomNumberGenerator &rng, const std::unordered_set<Person *> &newly_added, const std::unordered_set<Person *> &dead_people)
 {
     if(enrollment_period_.start > current_time)
     {
@@ -50,15 +102,15 @@ void TargetGroup::Update(int current_time, RandomNumberGenerator &rng, const std
         auto match = [&](Person *person)
         {
             return (!((target_.value.employment.has_value
-                && target_.value.employment.value != person->getDemographicProfileVal(DemographicProfile::EMPLOYMENT))
+                && target_.value.employment.value != (DemographicProfile::Employment)person->getDemographicProfileVal(DemographicProfile::EMPLOYMENT))
                 || (target_.value.gender.has_value
-                && target_.value.gender.value != person->getDemographicProfileVal(DemographicProfile::GENDER))
+                && target_.value.gender.value != (DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::GENDER))
                 || (target_.value.relationship_status.has_value
-                && target_.value.relationship_status.value != person->getDemographicProfileVal(DemographicProfile::RELATIONSHIP_STATUS))
+                && target_.value.relationship_status.value != (DemographicProfile::RelationshipStatus)person->getDemographicProfileVal(DemographicProfile::RELATIONSHIP_STATUS))
                 || (target_.value.sexual_activity_status.has_value
-                && target_.value.sexual_activity_status.value != person->getDemographicProfileVal(DemographicProfile::SEXUAL_ACTIVITY_STATUS))
+                && target_.value.sexual_activity_status.value != (DemographicProfile::SexualActivityStatus)person->getDemographicProfileVal(DemographicProfile::SEXUAL_ACTIVITY_STATUS))
                 || (target_.value.sexual_orientation.has_value
-                && target_.value.sexual_orientation.value != person->getDemographicProfileVal(DemographicProfile::SEXUAL_ORIENTATION))
+                && target_.value.sexual_orientation.value != (DemographicProfile::SexualOrientation)person->getDemographicProfileVal(DemographicProfile::SEXUAL_ORIENTATION))
                 || (target_.value.age_lower.has_value
                 && target_.value.age_lower.value < person->getAge(TimeGranularity::Month))
                 || (target_.value.age_upper.has_value
@@ -71,7 +123,7 @@ void TargetGroup::Update(int current_time, RandomNumberGenerator &rng, const std
                 && target_.value.risk_level.value != person->getRiskLevel())));
         };
 
-        int num_matches = std::count_if(newly_added.begin(), newly_added.end(), match);
+        int num_matches = (int)std::count_if(newly_added.begin(), newly_added.end(), match);
 
         std::vector<std::pair<int, int>> partition_allocations;
         int num_allocated = 0;
@@ -106,7 +158,7 @@ void TargetGroup::Update(int current_time, RandomNumberGenerator &rng, const std
 
     for(auto &partition : partitions_)
     {
-        partition.Update(current_time);
+        partition.Update(p, current_time);
     }
 }
 
@@ -122,129 +174,393 @@ std::vector<std::string> split_string(const std::string &string, char delim)
     return split;
 }
 
-Intervention::Intervention(const std::string &parameter, const std::string &value, const std::unordered_map<std::string, std::string> &parameters)
+enum class KnownIntervention
 {
-    if(parameters.find("time") == parameters.end())
+    Circumcise,
+    BirthRate,
+    ProportionMale,
+    ProportionCircumcised,
+    ChanceBecomeSexWorker,
+    AgeSexualDebut,
+    TransmissionCoefficient,
+    ProportionHighRisk,
+    AverageYearsYounger,
+    PartnerAcquisitionRate,
+    CoitalEventsPerMonth,
+    ChanceCondomUse,
+    PartnershipDuration,
+    RolloutEligibility
+};
+
+const std::map<KnownIntervention, std::string> KnownInterventionStrings = 
+{
+    {KnownIntervention::Circumcise, "circumcise"},
+    {KnownIntervention::BirthRate, "birthRate"},
+    {KnownIntervention::ProportionMale, "proportionMale"},
+    {KnownIntervention::ProportionCircumcised, "proportionCircumcised"},
+    {KnownIntervention::ChanceBecomeSexWorker, "chanceBecomeSexWorker"},
+    {KnownIntervention::AgeSexualDebut, "ageSexualDebut"},
+    {KnownIntervention::TransmissionCoefficient, "transmissionCoefficient"},
+    {KnownIntervention::ProportionHighRisk, "proportionHighRisk"},
+    {KnownIntervention::AverageYearsYounger, "averageYearsYounger"},
+    {KnownIntervention::PartnerAcquisitionRate, "partnerAcquisitionRate"},
+    {KnownIntervention::CoitalEventsPerMonth, "coitalEventsPerMonth"},
+    {KnownIntervention::ChanceCondomUse, "chanceCondomUse"},
+    {KnownIntervention::PartnershipDuration, "partnershipDuration"},
+    {KnownIntervention::RolloutEligibility, "rolloutEligibility"}
+};
+
+template<typename T>
+T from_string(const std::string &string);
+
+template<>
+KnownIntervention from_string(const std::string &intervention)
+{
+    for(auto pair : KnownInterventionStrings)
+    {
+        if(pair.second == intervention)
+        {
+            return pair.first;
+        }
+    }
+
+    throw std::runtime_error("unknown intervention: " + intervention);
+}
+
+template<>
+Person::RiskLevel from_string(const std::string &risk)
+{
+    if(risk == "high") return Person::RiskLevel::HIGH;
+    if(risk == "low") return Person::RiskLevel::LOW;
+
+    throw std::runtime_error("unknown risk level: " + risk);
+}
+
+template<>
+DemographicProfile::Gender from_string(const std::string &gender)
+{
+    if(gender == "male") return DemographicProfile::Gender::MALE;
+    if(gender == "female") return DemographicProfile::Gender::FEMALE;
+
+    throw std::runtime_error("unknown gender: " + gender);
+}
+
+template<>
+DemographicProfile::Employment from_string(const std::string &employment)
+{
+    if(employment == "csw") return DemographicProfile::Employment::CSW;
+    if(employment == "non-csw") return DemographicProfile::Employment::NON_CSW;
+
+    throw std::runtime_error("unknown employment: " + employment);
+}
+
+template<>
+Person::HVLStrata from_string(const std::string &hvl_string)
+{
+    if(hvl_string == "-1" || hvl_string == "uninfected") return Person::HVLStrata::UNINFECTED;
+    if(hvl_string == "0") return Person::HVLStrata::HVL_ZERO;
+    if(hvl_string == "1") return Person::HVLStrata::HVL_ONE;
+    if(hvl_string == "2") return Person::HVLStrata::HVL_TWO;
+    if(hvl_string == "3") return Person::HVLStrata::HVL_THREE;
+    if(hvl_string == "4") return Person::HVLStrata::HVL_FOUR;
+    if(hvl_string == "5") return Person::HVLStrata::HVL_FIVE;
+    if(hvl_string == "6") return Person::HVLStrata::HVL_SIX;
+    if(hvl_string == "7" || hvl_string == "primary") return Person::HVLStrata::HVL_PRIMARY;
+    if(hvl_string == "8" || hvl_string == "late-stage") return Person::HVLStrata::HVL_LATESTAGE;
+
+    throw std::runtime_error("unknown hvl stratum: " + hvl_string);
+}
+
+template<>
+SexualPartnership::Type from_string(const std::string &type_string)
+{
+    if(type_string == "steady") return SexualPartnership::Type::Steady;
+    if(type_string == "regular") return SexualPartnership::Type::Regular;
+    if(type_string == "casual") return SexualPartnership::Type::Casual;
+    if(type_string == "csw") return SexualPartnership::Type::Csw;
+
+    throw std::runtime_error("unknown partnership type: " + type_string);
+}
+
+template<>
+NormalDist from_string(const std::string &type_string)
+{
+    NormalDist dist;
+
+    auto comma_index = type_string.find(',');
+
+    dist.mean = std::stod(type_string.substr(0, comma_index));
+    dist.stddev = std::stod(type_string.substr(comma_index + 1));
+
+    return dist;
+}
+
+template<>
+BetaDist from_string(const std::string &type_string)
+{
+    return BetaDist::FromNormal(from_string<NormalDist>(type_string));
+}
+
+template<>
+LogNormalDist from_string(const std::string &type_string)
+{
+    return LogNormalDist::FromNormal(from_string<NormalDist>(type_string));
+}
+
+template<>
+ShiftedLogNormalDist from_string(const std::string &type_string)
+{
+    std::size_t last_comma_index = 0;
+
+    for(std::size_t i = 0; i < type_string.size(); i++)
+    {
+        if(type_string[i] == ',')
+        {
+            last_comma_index = i;
+        }
+    }
+
+    auto shift = std::stod(type_string.substr(last_comma_index + 1));
+    auto dist = from_string<NormalDist>(type_string.substr(0, last_comma_index));
+
+    return ShiftedLogNormalDist::FromShiftedNormal(dist, shift);
+}
+
+Intervention::Intervention(const std::string &parameter, const std::string &value, 
+    const std::unordered_map<std::string, std::string> &parameters, bool individual)
+    : duration_(-1)
+{
+    try
+    {
+        time_ = std::stoi(parameters.at("time"));
+    }
+    catch(std::out_of_range)
     {
         throw std::runtime_error("must have a defined time for this intervention");
     }
 
-    if(parameter == "birthRate")
-    {
-        population_intervention = [=](Population &p) { p.popWideParams.setBirthRate(std::stod(value)); };
-    }
-    else if(parameter == "proportionMale")
-    {
-        population_intervention = [=](Population &p) { p.popWideParams.setProportionMale(std::stod(value)); };
-    }
-    else if(parameter == "proportionCircumcised")
-    {
-        population_intervention = [=](Population &p) { p.popWideParams.setProportionMale(std::stod(value)); };
-    }
-    else if(parameter == "chanceBecomeSexWorker")
-    {
-        population_intervention = [=](Population &p) { p.popWideParams.setProportionMale(std::stod(value)); };
-    }
-    else if(parameter == "ageSexualDebut")
-    {
-        population_intervention = [=](Population &p) { p.popWideParams.setProportionMale(std::stod(value)); };
-    }
-    else if(parameter == "transmissionCoefficient")
-    {
-        population_intervention = [=](Population &p) { p.popWideParams.setProportionMale(std::stod(value)); };
-    }
-    else if(parameter == "proportionHighRisk")
-    {
-        population_intervention = [=](Population &p) { p.popWideParams.setProportionMale(std::stod(value)); };
-    }
-    else if(parameter == "assortativeness")
-    {
-        population_intervention = [=](Population &p) { p.popWideParams.setProportionMale(std::stod(value)); };
-    }
-    else if(parameter == "averageYearsYounger")
-    {
-        population_intervention = [=](Population &p) { p.popWideParams.setProportionMale(std::stod(value)); };
-    }
-    else if(parameter == "partnerAcquisitionRate")
-    {
-        population_intervention = [=](Population &p) { p.popWideParams.setProportionMale(std::stod(value)); };
-    }
-    else if(parameter == "coitalEventsPerMonth")
-    {
-        population_intervention = [=](Population &p) { p.popWideParams.setProportionMale(std::stod(value)); };
-    }
-    else if(parameter == "chanceCondomUse")
-    {
-        population_intervention = [=](Population &p) { p.popWideParams.setProportionMale(std::stod(value)); };
-    }
-    else if(parameter == "partnershipDuration")
-    {
-        population_intervention = [=](Population &p) { p.popWideParams.setProportionMale(std::stod(value)); };
-    }
-    else if(parameter == "rolloutEligibility")
-    {
-        int new_value = std::stoi(value);
-        std::string criterion = parameters.at("criterion");
-        std::string parameter_name = parameters.at("parameter");
+    auto intervention_type = from_string<KnownIntervention>(parameter);
 
-        if(criterion == "oi-hist")
+    if(individual)
+    {
+        switch(intervention_type)
         {
-            if(parameter_name == "rank")
+            case KnownIntervention::Circumcise:
             {
-                simulation_intervention = [=](Simulation &s) { s.parameters_.rolloutEligibility.oiHistRank = new_value; };
+                population_individual_intervention_ = [=](Population &population, Person *person) { population.Circumcise(person); };
+                break;
             }
-            else if(parameter_name.substr(0, 2) == "oi")
+            case KnownIntervention::ChanceBecomeSexWorker:
             {
-                int oi_number = std::stoi(parameter_name.substr(2));
-                simulation_intervention = [=](Simulation &s) { s.parameters_.rolloutEligibility.oiHistOIs[oi_number] = new_value; };
+                auto chance = std::stod(value);
+                individual_intervention_ = [=](Person *person) { person->SetChanceBecomeSexWorker(chance); };
+                break;
             }
-        }
-        else if(criterion == "cd4")
-        {
-            if(parameter_name == "rank")
+            case KnownIntervention::AgeSexualDebut:
             {
-                simulation_intervention = [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4Rank = new_value; };
+                auto age_in_years = std::stoi(value);
+                individual_intervention_ = [=](Person *person) { person->SetAgeSexualDebut(age_in_years, TimeGranularity::Year); };
+                break;
             }
-            else if(parameter_name == "lower")
+            case KnownIntervention::TransmissionCoefficient:
             {
-                simulation_intervention = [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4Bounds.lower = new_value; };
+                auto hvl_stratum = from_string<Person::HVLStrata>(parameters.at("hvl"));
+                auto coefficient = std::stod(value);
+                individual_intervention_ = [=](Person *person) { person->SetTransmissionCoefficient(hvl_stratum, coefficient); };
+                break;
             }
-            else if(parameter_name == "upper")
+            case KnownIntervention::AverageYearsYounger:
             {
-                simulation_intervention = [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4Bounds.upper = new_value; };
+                auto partnership_type = from_string<SexualPartnership::Type>(parameters.at("type"));
+                auto dist = from_string<NormalDist>(value);
+                individual_intervention_ = [=](Person *person) { person->SetAverageYearsYounger(partnership_type, dist); };
+                break;
+            }
+            case KnownIntervention::PartnerAcquisitionRate:
+            {
+                auto risk = from_string<Person::RiskLevel>(parameters.at("risk"));
+                auto partnership_type = from_string<SexualPartnership::Type>(parameters.at("type"));
+                auto dist = from_string<LogNormalDist>(value);
+                individual_intervention_ = [=](Person *person) { person->SetAcquisitionRatePerMonth(risk, partnership_type, dist); };
+                break;
+            }
+            case KnownIntervention::CoitalEventsPerMonth:
+            {
+                auto risk = from_string<Person::RiskLevel>(parameters.at("risk"));
+                auto partnership_type = from_string<SexualPartnership::Type>(parameters.at("type"));
+                auto dist = std::stod(value);
+                individual_intervention_ = [=](Person *person) { person->SetCoitalEventsPerMonth(risk, partnership_type, dist); };
+                break;
+            }
+            case KnownIntervention::ChanceCondomUse:
+            {
+                auto risk = from_string<Person::RiskLevel>(parameters.at("risk"));
+                auto partnership_type = from_string<SexualPartnership::Type>(parameters.at("type"));
+                auto dist = from_string<BetaDist>(value);
+                individual_intervention_ = [=](Person *person) { person->SetChanceCondomUsePerEvent(risk, partnership_type, dist); };
+                break;
+            }
+            case KnownIntervention::PartnershipDuration:
+            {
+                auto risk = from_string<Person::RiskLevel>(parameters.at("risk"));
+                auto partnership_type = from_string<SexualPartnership::Type>(parameters.at("type"));
+                auto dist = from_string<ShiftedLogNormalDist>(value);
+                individual_intervention_ = [=](Person *person) { person->SetPartnershipDuration(risk, partnership_type, dist); };
+                break;
+            }
+            default:
+            {
+                std::string message = "Intervention cannot be applied to a specific sub-population: ";
+                message.append(KnownInterventionStrings.at(intervention_type));
+                throw std::runtime_error(message);
             }
         }
     }
-}
-
-void Intervention::Apply(Simulation &s)
-{
-    if(!simulation_intervention)
+    else
     {
-        throw std::runtime_error("intervention not set");
+        switch(intervention_type)
+        {
+        case KnownIntervention::BirthRate:
+        {
+            population_intervention_ = [=](Population &p) { p.popWideParams.setBirthRate(std::stod(value)); };
+            break;
+        }
+        case KnownIntervention::ProportionMale:
+        {
+            population_intervention_ = [=](Population &p) { p.popWideParams.setProportionMale(std::stod(value)); };
+            break;
+        }
+        case KnownIntervention::ProportionCircumcised:
+        {
+            population_intervention_ = [=](Population &p) { p.popWideParams.setProportionCircumcised(std::stod(value)); };
+            break;
+        }
+        case KnownIntervention::ChanceBecomeSexWorker:
+        {
+            auto gender = from_string<DemographicProfile::Gender>(parameters.at("gender"));
+            auto chance = std::stod(value);
+            population_intervention_ = [=](Population &p) { p.popWideParams.SetChanceBecomeCsw(gender, chance); };
+            individual_intervention_ = [=](Person *person) { person->SetChanceBecomeSexWorker(chance); };
+            break;
+        }
+        case KnownIntervention::AgeSexualDebut:
+        {
+            auto age_in_years = std::stoi(value);
+            population_intervention_ = [=](Population &p) { p.popWideParams.setAgeSexualDebut(age_in_years, TimeGranularity::Year); };
+            individual_intervention_ = [=](Person *person) { person->SetAgeSexualDebut(age_in_years, TimeGranularity::Year); };
+            break;
+        }
+        case KnownIntervention::TransmissionCoefficient:
+        {
+            auto gender = from_string<DemographicProfile::Gender>(parameters.at("gender"));
+            auto hvl_stratum = from_string<Person::HVLStrata>(parameters.at("hvl"));
+            auto coefficient = std::stod(value);
+            population_intervention_ = [=](Population &p) { p.popWideParams.SetTransmissionCoefficient(gender, hvl_stratum, coefficient); };
+            individual_intervention_ = [=](Person *person) 
+            { 
+                if(person->getDemographicProfileVal(DemographicProfile::GENDER) == gender)
+                {
+                    person->SetTransmissionCoefficient(hvl_stratum, coefficient);
+                }
+            };
+            break;
+        }
+        case KnownIntervention::ProportionHighRisk:
+        {
+            auto gender = from_string<DemographicProfile::Gender>(parameters.at("gender"));
+            auto employment = from_string<DemographicProfile::Employment>(parameters.at("employment"));
+            auto proportion = std::stod(value);
+            population_intervention_ = [=](Population &p) { p.popWideParams.SetProportionHighRisk(gender, employment, proportion); };
+            break;
+        }
+        case KnownIntervention::AverageYearsYounger:
+        {
+            auto partnership_type = from_string<SexualPartnership::Type>(parameters.at("type"));
+            auto dist = from_string<NormalDist>(value);
+            population_intervention_ = [=](Population &p) { p.popWideParams.SetAverageYearsYounger(partnership_type, dist); };
+            individual_intervention_ = [=](Person *person) { person->SetAverageYearsYounger(partnership_type, dist); };
+            break;
+        }
+        case KnownIntervention::PartnerAcquisitionRate:
+        {
+            auto risk = from_string<Person::RiskLevel>(parameters.at("risk"));
+            auto partnership_type = from_string<SexualPartnership::Type>(parameters.at("type"));
+            auto dist = from_string<LogNormalDist>(value);
+            population_intervention_ = [=](Population &p) { p.popWideParams.SetAcquisitionRatePerMonth(risk, partnership_type, dist); };
+            individual_intervention_ = [=](Person *person) { person->SetAcquisitionRatePerMonth(risk, partnership_type, dist); };
+            break;
+        }
+        case KnownIntervention::CoitalEventsPerMonth:
+        {
+            auto risk = from_string<Person::RiskLevel>(parameters.at("risk"));
+            auto partnership_type = from_string<SexualPartnership::Type>(parameters.at("type"));
+            auto dist = std::stod(value);
+            population_intervention_ = [=](Population &p) { p.popWideParams.SetCoitalEventsPerMonth(risk, partnership_type, dist); };
+            individual_intervention_ = [=](Person *person) { person->SetCoitalEventsPerMonth(risk, partnership_type, dist); };
+            break;
+        }
+        case KnownIntervention::ChanceCondomUse:
+        {
+            auto risk = from_string<Person::RiskLevel>(parameters.at("risk"));
+            auto partnership_type = from_string<SexualPartnership::Type>(parameters.at("type"));
+            auto dist = from_string<BetaDist>(value);
+            population_intervention_ = [=](Population &p) { p.popWideParams.SetChanceCondomUsePerEvent(risk, partnership_type, dist); };
+            individual_intervention_ = [=](Person *person) { person->SetChanceCondomUsePerEvent(risk, partnership_type, dist); };
+            break;
+        }
+        case KnownIntervention::PartnershipDuration:
+        {
+            auto risk = from_string<Person::RiskLevel>(parameters.at("risk"));
+            auto partnership_type = from_string<SexualPartnership::Type>(parameters.at("type"));
+            auto dist = from_string<ShiftedLogNormalDist>(value);
+            population_intervention_ = [=](Population &p) { p.popWideParams.SetPartnershipDuration(risk, partnership_type, dist); };
+            individual_intervention_ = [=](Person *person) { person->SetPartnershipDuration(risk, partnership_type, dist); };
+            break;
+        }
+        case KnownIntervention::RolloutEligibility:
+        {
+            int new_value = std::stoi(value);
+            std::string criterion = parameters.at("criterion");
+            std::string parameter_name = parameters.at("parameter");
+
+            if(criterion == "oi-hist")
+            {
+                if(parameter_name == "rank")
+                {
+                    simulation_intervention_ = [=](Simulation &s) { s.parameters_.rolloutEligibility.oiHistRank = new_value; };
+                }
+                else if(parameter_name.substr(0, 2) == "oi")
+                {
+                    int oi_number = std::stoi(parameter_name.substr(2));
+                    simulation_intervention_ = [=](Simulation &s) { s.parameters_.rolloutEligibility.oiHistOIs[oi_number] = new_value != 0; };
+                }
+            }
+            else if(criterion == "cd4")
+            {
+                if(parameter_name == "rank")
+                {
+                    simulation_intervention_ = [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4Rank = new_value; };
+                }
+                else if(parameter_name == "lower")
+                {
+                    simulation_intervention_ = [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4Bounds.lower = new_value; };
+                }
+                else if(parameter_name == "upper")
+                {
+                    simulation_intervention_ = [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4Bounds.upper = new_value; };
+                }
+            }
+
+            break;
+        }
+        default:
+        {
+            std::string message = "Intervention cannot be applied to population: ";
+            message.append(KnownInterventionStrings.at(intervention_type));
+            throw std::runtime_error(message);
+        }
+        }
     }
-
-    simulation_intervention(s);
-}
-
-void Intervention::Apply(Population &p)
-{
-    if(!population_intervention)
-    {
-        throw std::runtime_error("intervention not set");
-    }
-
-    population_intervention(p);
-}
-
-void Intervention::Apply(Person *p)
-{
-    if(!individual_intervention)
-    {
-        throw std::runtime_error("intervention not set");
-    }
-
-    individual_intervention(p);
 }
 
 TargetGroup::TargetGroup(int start, int end, bool open, bool permanent, Nullable<PopulationTarget> target)
@@ -489,23 +805,40 @@ void Simulation::FirstStep()
 
 void Simulation::Step()
 {
-	time_++;
+    time_++;
 
-	double begin = timer_.GetTime();
+    double begin = timer_.GetTime();
+
+    std::remove_if(interventions_.begin(), interventions_.end(), [=](const Intervention &i) { return i.IsCompleted(time_); });
 
     for(auto &intervention : interventions_)
     {
-        if(intervention.GetTime() == time_)
+        if(intervention.IsActive(time_))
         {
-            intervention.Apply(*this);
-        }
-    }
+            if(intervention.AffectsSimulation())
+            {
+                intervention.Apply(*this);
+            }
 
-    for(auto &intervention : population_.interventions_)
-    {
-        if(intervention.GetTime() == time_)
-        {
-            intervention.Apply(population_);
+            if(intervention.AffectsPopulation())
+            {
+                intervention.Apply(population_);
+            }
+
+            if(intervention.AffectsIndividual())
+            {
+                if(intervention.IsFirstMonth(time_))
+                {
+                    population_.entities->forEach([&](Person *p) { intervention.Apply(p); });
+                }
+                else
+                {
+                    for(auto person : population_.new_people_this_month_)
+                    {
+                        intervention.Apply(person);
+                    }
+                }
+            }
         }
     }
 
@@ -744,11 +1077,11 @@ void Simulation::UpdateInterventions(const std::unordered_set<Person *> &new_peo
 {
     for(auto &group : groups_)
     {
-        group.Update(time_, parameters_.randomNums, new_people, dead_people);
+        group.Update(population_, time_, parameters_.randomNums, new_people, dead_people);
     }
 }
 
-void Simulation::RegisterTargetGroup(const std::string &label, const TargetGroup &group)
+void Simulation::RegisterTargetGroup(const TargetGroup &group)
 {
     groups_.push_back(group);
 }

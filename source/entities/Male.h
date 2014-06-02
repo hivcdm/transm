@@ -66,28 +66,28 @@ public :
 			}
 		}
 
-		void setCircucmsionProtectEfficacy(double efficacy) { circumProtectEff = efficacy; }
-		void setCondomProtectEff(double efficacy) { condomProtectEff = efficacy; }
+		void SetCircucmsionProtectEfficacy(double efficacy) { circumProtectEff = efficacy; }
+		void SetCondomProtectEff(double efficacy) { condomProtectEff = efficacy; }
 
-		void setPartnerAcqMultWithSteady(Person::RiskLevel risk, double multiplier) { partnerAcqMultWithSteady[risk] = multiplier; }
+		void SetPartnerAcqMultWithSteady(Person::RiskLevel risk, double multiplier) { partnerAcqMultWithSteady[risk] = multiplier; }
 
-		void setChanceBecomeCsw(double chance) { chanceBecomeCSW = chance; }
+		void SetChanceBecomeCsw(double chance) { chanceBecomeCSW = chance; }
 
-		void setCoefficientVariation(bool use, double coefficient) { useCoefficientVariation = use; coefficientOfVariation = coefficient; }
+		void SetCoefficientVariation(bool use, double coefficient) { useCoefficientVariation = use; coefficientOfVariation = coefficient; }
 
-		void addSexualBehavior(SexualBehavior params) { sexualBehaviorParams.push_back(params); }
+		void AddSexualBehavior(SexualBehavior params) { sexualBehaviorParams.push_back(params); }
 
-		void setTransmitPerEventCoeff(HVLStrata hvl, double coeff) { transmitPerEventCoeffs[hvl] = coeff; }
+		void SetTransmitPerEventCoeff(HVLStrata hvl, double coeff) { transmitPerEventCoeffs[hvl] = coeff; }
 
-		void setProportionHighRisk(DemographicProfile::Employment employment, double proportion) { proportionHighRisk[employment] = proportion; }
+		void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) { proportionHighRisk[employment] = proportion; }
 
-		void setAverageYearsYounger(SexualPartnership::Type type, NormalDist dist) { sexualBehaviorParams[(int)type].setAverageYearsYounger(dist); }
-		void setAcquisitionRatePerMonth(Person::RiskLevel risk, SexualPartnership::Type type, LogNormalDist dist) { sexualBehaviorParams[(int)type].setAcquisitionRatePerMonth(risk, dist); }
-		void setCoitalEventsPerMonth(Person::RiskLevel risk, SexualPartnership::Type type, double mean) { sexualBehaviorParams[(int)type].setCoitalEventsPerMonth(risk, mean); }
-		void setChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { sexualBehaviorParams[(int)type].setChanceCondomUsePerEvent(risk, dist); }
-		void setPartnershipDuration(Person::RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { sexualBehaviorParams[(int)type].setPartnershipDuration(risk, dist); }
+		void SetAverageYearsYounger(SexualPartnership::Type type, NormalDist dist) { sexualBehaviorParams[(int)type].setAverageYearsYounger(dist); }
+		void SetAcquisitionRatePerMonth(Person::RiskLevel risk, SexualPartnership::Type type, LogNormalDist dist) { sexualBehaviorParams[(int)type].setAcquisitionRatePerMonth(risk, dist); }
+		void SetCoitalEventsPerMonth(Person::RiskLevel risk, SexualPartnership::Type type, double mean) { sexualBehaviorParams[(int)type].setCoitalEventsPerMonth(risk, mean); }
+		void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { sexualBehaviorParams[(int)type].setChanceCondomUsePerEvent(risk, dist); }
+		void SetPartnershipDuration(Person::RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { sexualBehaviorParams[(int)type].setPartnershipDuration(risk, dist); }
 
-		void setActivityLevel(NormalDist activity_level) { activityLevel = activity_level; }
+		void SetActivityLevel(NormalDist activity_level) { activityLevel = activity_level; }
 
 	private:
 		double chanceBecomeCSW;		//chance that a male will become a CSW
@@ -162,6 +162,12 @@ public:
 	void SetAverageYearsYounger(SexualPartnership::Type partnershipType, NormalDist dist);
 
 	void SetAcquisitionRatePerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, LogNormalDist dist);
+
+    void SetChanceBecomeSexWorker(double chance) { populationSpecificParams.SetChanceBecomeCsw(chance); }
+
+    void SetTransmissionCoefficient(HVLStrata stratum, double coefficient) { populationSpecificParams.SetTransmitPerEventCoeff(stratum, coefficient); }
+
+    void SetAssortativeness(SexualPartnership::Type partnership_type, double assortativeness) { populationSpecificParams.getSexualBehavior(partnership_type).setAssortativeness(assortativeness); }
 
 	double getChanceBecomeCsw() const;
 

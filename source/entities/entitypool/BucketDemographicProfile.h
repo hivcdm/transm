@@ -119,6 +119,8 @@ public:
     /// </summary>
 	virtual std::list<Person *> ageOneTimeStep();
 
+    virtual void forEach(std::function<void(Person *)> callback);
+
     std::multimap<unsigned long, Person *>::iterator begin() { return simpleEntityIndex->begin(); }
 
     std::multimap<unsigned long, Person *>::iterator end() { return simpleEntityIndex->end(); }

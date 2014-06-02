@@ -5,9 +5,21 @@
 #include "../../util/Utility.h"
 #include "../../util/rand/RandomNumberGenerator.h"
 
+void BucketSexualMixing::forEach(std::function<void(Person *)> callback)
+{
+    for(auto bucket_age : *this)
+    {
+        for(auto person : *bucket_age)
+        {
+            callback(person);
+        }
+    }
+}
+
 BucketSexualMixing::BucketSexualMixing(DemographicProfile::ProfileID _id, const string *_bucketLabel, unsigned int _popID,
-	int _minAge, int _maxAge, TimeGranularity _timeGranularity, const std::array<double, (int)SexualPartnership::Type::ENDType> &_assort) :
-	BucketDemographicProfile(_id, _bucketLabel, false)
+    int _minAge, int _maxAge, TimeGranularity _timeGranularity, const std::map<SexualPartnership::Type, double> &_assort) :
+	BucketDemographicProfile(_id, _bucketLabel, false),
+    assort(_assort)
 {
     assert((_timeGranularity == TimeGranularity::Month) || (_timeGranularity == TimeGranularity::Year));
 	assert((_minAge >= 0) && (_maxAge >= _minAge));
@@ -15,11 +27,6 @@ BucketSexualMixing::BucketSexualMixing(DemographicProfile::ProfileID _id, const 
 	minAge = _minAge;
 	maxAge = _maxAge;
 	popID = _popID;
-
-	for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
-	{
-		assort[i] = _assort[i];
-	}
 
 	//ERINWASHERE
 	//set capacity of circular buffer
@@ -241,7 +248,7 @@ Person *BucketSexualMixing::getRandomPerson(RandomNumberGenerator &_randomNums, 
 	//Use assort to determine whether to use random or _risk bin
 	Person::RiskLevel riskToDraw;
 
-	if(_randomNums.chance(assort[(int)_partnershipType]))
+	if(_randomNums.chance(assort[_partnershipType]))
 	{
 		riskToDraw = _risk;
 	}

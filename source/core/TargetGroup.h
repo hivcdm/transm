@@ -46,7 +46,7 @@ public:
 
     TargetGroup(int start, int end, bool open, bool permanent, Nullable<PopulationTarget> target);
 
-    void Update(int simulation_time, RandomNumberGenerator &rng, const std::unordered_set<Person *> &new_people, const std::unordered_set<Person *> &dead_people);
+    void Update(Population &p, int simulation_time, RandomNumberGenerator &rng, const std::unordered_set<Person *> &new_people, const std::unordered_set<Person *> &dead_people);
 
     void AddPartition(const std::string &label, bool trace, double proportion,
         std::vector<Intervention> simulation_interventions);
@@ -67,7 +67,7 @@ private:
         double GetProportion() const { return proportion_; }
         void Add(Person *p) { members_.insert(p); }
         void Remove(Person *p) { if(members_.find(p) != members_.end()) members_.erase(p); }
-        void Update(int current_time);
+        void Update(Population &p, int current_time);
     private:
         friend class TargetGroup;
         std::unordered_set<Person *> members_;

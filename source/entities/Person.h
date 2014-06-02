@@ -171,6 +171,10 @@ public:
 	//there is option to print patient traces to a text file. this keeps track of how many we've done so far
 	static int numTracesSoFar;
 
+    virtual void SetTransmissionCoefficient(HVLStrata stratum, double coefficient) = 0;
+
+    virtual void SetAssortativeness(SexualPartnership::Type partnership_type, double assortativeness) = 0;
+
 protected:
 	unsigned int populationID;			//keeps track of which population this Person belongs to
 	unsigned long id;					//person's unique id number
@@ -636,6 +640,8 @@ public:
 	virtual void SetAverageYearsYounger(SexualPartnership::Type partnershipType, NormalDist dist) = 0;
 
 	virtual void SetAcquisitionRatePerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, LogNormalDist dist) = 0;
+
+    virtual void SetChanceBecomeSexWorker(double chance) = 0;
 
 	/// <summary>
 	/// this class has a method that compares two Entities based on the desired key

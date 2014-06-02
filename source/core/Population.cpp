@@ -904,7 +904,7 @@ Person *Population::GeneratePerson(EventParams &parameters_, DemographicProfile:
 	//create the person
 	if(_gender == DemographicProfile::MALE)
 	{
-		toReturn = new Male(parameters_, ageMth, parameters_.randomNums.chance(popWideParams.circumcised),
+		toReturn = new Male(parameters_, ageMth, parameters_.randomNums.chance(popWideParams.proportionCircumcised),
 		                    populationID, popWideParams.defaultMaleParams);
 	}
 	else

@@ -12,6 +12,14 @@
 **/
 #define UNUSED(param)
 
+void BucketDemographicProfile::forEach(std::function<void(Person *)> callback)
+{
+    for(auto person : *this)
+    {
+        callback(person.second);
+    }
+}
+
 //------------< Begin Implemented Methods >----------------//
 //returns the BucketDemographicProfile's ID number
 DemographicProfile::ProfileID BucketDemographicProfile::getProfileID()

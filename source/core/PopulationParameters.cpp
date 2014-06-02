@@ -74,7 +74,7 @@ PopulationParameters::PopulationParameters()
 	birthRate = 0.0038;
 	SAEntAgeMths = 180;
 	proportionMale = 0.51;
-	circumcised = 0.20;
+	proportionCircumcised = 0.20;
 }
 
 PopulationParameters::~PopulationParameters()

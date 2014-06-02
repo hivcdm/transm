@@ -41,7 +41,7 @@ public:
 
 	int GetTime() { return time_; }
 
-	void RegisterTargetGroup(const std::string &group_label, const TargetGroup &group);
+	void RegisterTargetGroup(const TargetGroup &group);
 
 	Population &GetPopulation() { return population_; }
     const Population &GetPopulation() const { return population_; }

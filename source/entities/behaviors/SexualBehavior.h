@@ -71,8 +71,14 @@ public :
 
 	void setAcquisitionRatePerMonth(Person::RiskLevel risk, LogNormalDist dist) { acquisitionRatePerMonth[risk] = dist; }
 
+    double getAssortativeness() const { return assortativeness; }
+
+    void setAssortativeness(double assortativeness) { this->assortativeness = assortativeness; }
+
 private:
 	friend class SimulationBuilder;
+
+    double assortativeness;
 
 	//the partnership type that these parameters represent
 	SexualPartnership::Type partnershipType;

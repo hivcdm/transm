@@ -23,9 +23,11 @@ public:
 	/// <summary>
 	/// Creates a new EntityPool
 	/// </summary>
-	EntityPool(int _SAEntAgeMths, unsigned int _popID, const std::array<double, (int)SexualPartnership::Type::ENDType> &_assort);
+	EntityPool(int _SAEntAgeMths, unsigned int _popID, const std::map<SexualPartnership::Type, double> &_assort);
 
 	~EntityPool();
+
+    void forEach(std::function<void(Person *)> callback);
 
 	/// <summary>
 	/// adds an person to the correct bucket in the pool based on their current DemographicProfile

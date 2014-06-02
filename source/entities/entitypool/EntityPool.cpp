@@ -10,6 +10,19 @@ This file contains the implementations for the methods of EntityPool
 #include "../Person.h"
 #include "BucketSexualMixing.h"
 
+void EntityPool::forEach(std::function<void(Person *)> callback)
+{
+    for(auto bucket : entityBuckets)
+    {
+        if(bucket == nullptr)
+        {
+            continue;
+        }
+
+        bucket->forEach(callback);
+    }
+}
+
 bool EntityPool::addEntity(Person *_person)
 {
 	//gets the BucketDemographicProfile that this person is supposed to be a part of based on their DemographicProfile
@@ -542,7 +555,7 @@ list<Person *>::iterator EntityPool::end(DemographicProfile::Gender _gender)
 
 //creates a New EntityPool
 // @param _SAEntAgeMths age of sexual debut
-EntityPool::EntityPool(int _SAEntAgeMths, unsigned int _popID, const std::array<double, (int)SexualPartnership::Type::ENDType> &_assort)
+EntityPool::EntityPool(int _SAEntAgeMths, unsigned int _popID, const std::map<SexualPartnership::Type, double> &_assort)
 {
 	//allocate space for Buckets and set to nullptr
 	entityBuckets = std::vector<BucketDemographicProfile *>(DemographicProfile::TotalNumBuckets, nullptr);

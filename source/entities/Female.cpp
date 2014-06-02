@@ -59,21 +59,21 @@ Female::SubPopParams::SubPopParams()
 {
 }
 
-double Female::SubPopParams::getChanceBecomeCSW() const
+double Female::SubPopParams::GetChanceBecomeCSW() const
 {
 	return chanceBecomeCSW;
 }
 
-double Female::SubPopParams::getProportionHighRisk(DemographicProfile::Employment _cswStatus) const
+double Female::SubPopParams::GetProportionHighRisk(DemographicProfile::Employment _cswStatus) const
 {
 	return proportionHighRisk[_cswStatus];
 }
-NormalDist Female::SubPopParams::getActivityLevel() const
+NormalDist Female::SubPopParams::GetActivityLevel() const
 {
 	return activityLevel;
 }
 
-double Female::SubPopParams::getTransmitPerEventCoeff(HVLStrata _hvl) const
+double Female::SubPopParams::GetTransmitPerEventCoeff(HVLStrata _hvl) const
 {
 	return transmitPerEventCoeffs.at(_hvl);
 }
@@ -83,7 +83,7 @@ Female::Female(EventParams &_eventParams, int _ageMths, unsigned int _population
 	populationSpecificParams(params)
 {
 	dmgProfile.set(DemographicProfile::GENDER, DemographicProfile::FEMALE);
-	activityLevel = _eventParams.randomNums.randNorm_NaturalNum(populationSpecificParams.getActivityLevel());
+	activityLevel = _eventParams.randomNums.randNorm_NaturalNum(populationSpecificParams.GetActivityLevel());
 
 	//activity level should not ever be 0
 	if(activityLevel == 0)
@@ -167,12 +167,12 @@ double Female::getMaxPartnerSelectVal(Person::SelectingCriteria /*_PSC*/,
 double Female::getTransmissionCoeff()
 {
 	assert(Utility::withinRange(hvl, HVL_ZERO, HVL_LATESTAGE));
-	return populationSpecificParams.getTransmitPerEventCoeff(hvl);
+	return populationSpecificParams.GetTransmitPerEventCoeff(hvl);
 }
 
 double Female::getChanceBecomeCsw() const
 {
-	return populationSpecificParams.getChanceBecomeCSW();
+	return populationSpecificParams.GetChanceBecomeCSW();
 }
 
 void Female::SetChanceCondomUsePerEvent(Person::RiskLevel /*risk*/, SexualPartnership::Type /*partnershipType*/, BetaDist /*dist*/)
@@ -183,7 +183,7 @@ void Female::SetChanceCondomUsePerEvent(Person::RiskLevel /*risk*/, SexualPartne
 void Female::rerollRiskGroup(EventParams &_eventParams)
 {
 	DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) getDemographicProfileVal(DemographicProfile::EMPLOYMENT);
-	double chanceHighRisk = populationSpecificParams.getProportionHighRisk(cswStatus);
+	double chanceHighRisk = populationSpecificParams.GetProportionHighRisk(cswStatus);
 
 	if(_eventParams.randomNums.chance(chanceHighRisk))
 	{

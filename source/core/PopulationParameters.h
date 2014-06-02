@@ -56,18 +56,13 @@ public:
 	double getBirthRate() const;
 	void setBirthRate(double birth_rate) { birthRate = birth_rate; }
 
-	double getProportionCircumcised() const { return circumcised; }
-	void setProportionCircumcised(double value) { circumcised = value; }
+	double getProportionCircumcised() const { return proportionCircumcised; }
+	void setProportionCircumcised(double value) { proportionCircumcised = value; }
 
 	double getProportionMale() const;
 	void setProportionMale(double proportion_male) { proportionMale = proportion_male; }
 
 	int getAgeSexualDebut() const { return SAEntAgeMths; }
-
-	void setAssortativeness(SexualPartnership::Type type, double assortativeness)
-	{
-		assort[(int)type] = assortativeness;
-	}
 
 	void SetPartnershipHasDuration(DemographicProfile::Gender gender, SexualPartnership::Type type, bool has_duration) { partnershipsHaveDuration[gender][(int)type] = has_duration; }
 
@@ -81,22 +76,17 @@ public:
 		switch(gender)
 		{
 		case DemographicProfile::MALE: 
-            defaultMaleParams.setTransmitPerEventCoeff(stratum, coefficient);
+            defaultMaleParams.SetTransmitPerEventCoeff(stratum, coefficient);
             break;
 		case DemographicProfile::FEMALE: 
-            defaultFemaleParams.setTransmitPerEventCoeff(stratum, coefficient);
+            defaultFemaleParams.SetTransmitPerEventCoeff(stratum, coefficient);
             break;
 		default: 
             throw std::runtime_error("bad gender");
 		}
 	}
 
-	std::array<double, (int)SexualPartnership::Type::ENDType> GetAssortativeness() const 
-	{ 
-		std::array<double, (int)SexualPartnership::Type::ENDType> copy;
-		std::copy(assort, assort + (int)SexualPartnership::Type::ENDType, copy.begin());
-		return copy;
-	}
+    void SetAssortativeness(SexualPartnership::Type partnership_type, double assortativeness) { defaultMaleParams.getSexualBehavior(partnership_type).setAssortativeness(assortativeness); }
 
 	int GetInitialSize() const { return initSize; }
 	void SetInitialSize(int size) { initSize = size; }
@@ -114,10 +104,10 @@ public:
 		switch(gender)
 		{
         case DemographicProfile::MALE: 
-            defaultMaleParams.setChanceBecomeCsw(chance);
+            defaultMaleParams.SetChanceBecomeCsw(chance);
             break;
         case DemographicProfile::FEMALE:
-            defaultFemaleParams.setChanceBecomeCsw(chance);
+            defaultFemaleParams.SetChanceBecomeCsw(chance);
             break;
 		default: 
            throw std::runtime_error("bad gender");
@@ -129,23 +119,23 @@ public:
 		switch(gender)
 		{
 		case DemographicProfile::MALE:
-            defaultMaleParams.setProportionHighRisk(employment, proportion);
+            defaultMaleParams.SetProportionHighRisk(employment, proportion);
             break;
 		case DemographicProfile::FEMALE: 
-           defaultFemaleParams.setProportionHighRisk(employment, proportion);
+           defaultFemaleParams.SetProportionHighRisk(employment, proportion);
            break;
 		default:
             throw std::runtime_error("bad gender");
 		}
 	}
 
-	void setAverageYearsYounger(SexualPartnership::Type type, NormalDist dist) { defaultMaleParams.setAverageYearsYounger(type, dist); }
-	void setAcquisitionRatePerMonth(Person::RiskLevel risk, SexualPartnership::Type type, LogNormalDist dist) { defaultMaleParams.setAcquisitionRatePerMonth(risk, type, dist); }
-	void setCoitalEventsPerMonth(Person::RiskLevel risk, SexualPartnership::Type type, double mean) { defaultMaleParams.setCoitalEventsPerMonth(risk, type, mean); }
-	void setChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { defaultMaleParams.setChanceCondomUsePerEvent(risk, type, dist); }
-	void setPartnershipDuration(Person::RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { defaultMaleParams.setPartnershipDuration(risk, type, dist); }
+	void SetAverageYearsYounger(SexualPartnership::Type type, NormalDist dist) { defaultMaleParams.SetAverageYearsYounger(type, dist); }
+	void SetAcquisitionRatePerMonth(Person::RiskLevel risk, SexualPartnership::Type type, LogNormalDist dist) { defaultMaleParams.SetAcquisitionRatePerMonth(risk, type, dist); }
+	void SetCoitalEventsPerMonth(Person::RiskLevel risk, SexualPartnership::Type type, double mean) { defaultMaleParams.SetCoitalEventsPerMonth(risk, type, mean); }
+	void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { defaultMaleParams.SetChanceCondomUsePerEvent(risk, type, dist); }
+	void SetPartnershipDuration(Person::RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { defaultMaleParams.SetPartnershipDuration(risk, type, dist); }
 
-	void SetPartnerAcquisitionSteadyMultiplier(Person::RiskLevel risk, double multiplier) { defaultMaleParams.setPartnerAcqMultWithSteady(risk, multiplier); }
+	void SetPartnerAcquisitionSteadyMultiplier(Person::RiskLevel risk, double multiplier) { defaultMaleParams.SetPartnerAcqMultWithSteady(risk, multiplier); }
 
     void SetCondomCost(double condom_cost) { condomCost = condom_cost; }
     void SetCircumcisionCost(double circumcision_cost) { circumcisionCost = circumcision_cost; }
@@ -173,12 +163,7 @@ private:
     /// </summary>
 	int SAEntAgeMths;
 	double proportionMale;
-	double circumcised;
-
-    /// <summary>
-    /// assortativeness parameter one for each partnership type
-    /// </summary>
-	double assort[(int)SexualPartnership::Type::ENDType];
+	double proportionCircumcised;
 
     /// <summary>
     /// initial proportion of pop as CSW

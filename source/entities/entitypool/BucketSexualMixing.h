@@ -51,7 +51,7 @@ public:
 	//This is the main circular buffer containing the BucketAge structures
 	typedef boost::circular_buffer_space_optimized<BucketAge *> BucketAllAges;
 
-    void SetAssortativeness(SexualPartnership::Type type, double assortativeness) { assort[(int)type] = assortativeness; }
+    void SetAssortativeness(SexualPartnership::Type type, double assortativeness) { assort[type] = assortativeness; }
 
 private :
 	//this contains a circular buffer composed of BucketAges
@@ -61,7 +61,7 @@ private :
 	BucketAllAges *personsByAge;
 
 	//Assortativeness parameter for Mark Lipsitch's assortativeness algorithm
-	std::array<double, (int)SexualPartnership::Type::ENDType> assort;
+    std::map<SexualPartnership::Type, double> assort;
 
 public :
 
@@ -72,7 +72,7 @@ public :
 	@param _timeGranularity people will be bucketed by either MONTH or YEAR of age. This determines performance of selection when the behavior is heterogeneous vs. homogeneous
 	**/
 	BucketSexualMixing(DemographicProfile::ProfileID _id, const string *_bucketLabel, unsigned int _popID, int _minAge, int _maxAge,
-		TimeGranularity _timeGranularity, const std::array<double, (int)SexualPartnership::Type::ENDType> &_assort);
+        TimeGranularity _timeGranularity, const std::map<SexualPartnership::Type, double> &_assort);
 	virtual ~BucketSexualMixing();
 
 	//-------------< Begin inherited from class BucketDemographicProfile >---------------------//
@@ -122,6 +122,8 @@ public :
 	//returns the # of entities in this index
 	//TESTED
 	unsigned long size();
+
+    void forEach(std::function<void(Person *)> callback);
 
 	//-------------< End inherited from class BucketDemographicProfile >---------------------//
 	//-------------< Begin iterator methods >------------------//
