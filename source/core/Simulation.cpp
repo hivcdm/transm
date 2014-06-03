@@ -742,8 +742,6 @@ void Simulation::Step()
 
     double begin = timer_.GetTime();
 
-    std::remove_if(interventions_.begin(), interventions_.end(), [=](const Intervention &i) { return i.IsCompleted(time_); });
-
     for(auto &intervention : interventions_)
     {
         if(intervention.IsActive(time_))
@@ -774,6 +772,9 @@ void Simulation::Step()
             }
         }
     }
+
+    auto new_end = std::remove_if(interventions_.begin(), interventions_.end(), [=](const Intervention &i) { return i.IsCompleted(time_); });
+    interventions_.erase(new_end, interventions_.end());
 
 	if(parameters_.useRollout)
 	{
