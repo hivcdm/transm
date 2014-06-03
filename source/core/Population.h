@@ -50,6 +50,8 @@ public:
 
 	void Circumcise(Person *p);
 
+    std::unordered_set<Person *> Find(std::function<bool(Person *)> predicate);
+
     /// <summary>
 	/// determines which DemographicProfiles have the power to initiate relationships and determines which
 	/// relationships they can have

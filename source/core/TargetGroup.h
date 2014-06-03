@@ -13,7 +13,6 @@ class TargetGroup
 public:
     struct PopulationTarget
     {
-        static PopulationTarget FromString(const std::string &s);
         static PopulationTarget Any;
 
         Nullable<Person::RiskLevel> risk_level;
@@ -26,6 +25,7 @@ public:
         Nullable<int> age_upper;
         Nullable<Person::HIVStatus> observed_hiv_status;
         Nullable<bool> on_treatment;
+        Nullable<bool> circumcised;
 
         bool operator==(const PopulationTarget &other) const
         {
@@ -38,7 +38,8 @@ public:
                 age_lower == other.age_lower &&
                 age_upper == other.age_upper &&
                 observed_hiv_status == other.observed_hiv_status &&
-                on_treatment == other.on_treatment;
+                on_treatment == other.on_treatment &&
+                circumcised == other.circumcised;
         }
 
         bool operator!=(const PopulationTarget &other) const { return !(*this == other); }

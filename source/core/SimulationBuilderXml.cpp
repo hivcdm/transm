@@ -499,7 +499,7 @@ void SimulationBuilderXml::ReadSimulationParameters()
 	}
 
     auto population_interventions_node = simulation_node.child("interventions").child("populationInterventions");
-    for(auto intervention : ParseInterventions(population_interventions_node))
+    for(auto intervention : ParseInterventions(population_interventions_node, false))
     {
         simulation_.RegisterIntervention(intervention);
     }
@@ -978,6 +978,28 @@ Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node cri
                 throw std::runtime_error("invalid gender");
             }
         }
+        else if(std::string(criterion_node.name()) == "circumcised")
+        {
+            target.value.circumcised.has_value = true;
+            std::string circumcised_string = criterion_node.text().as_string();
+
+            if(circumcised_string == "true")
+            {
+                target.value.circumcised.value = true;
+            }
+            else if(circumcised_string == "false")
+            {
+                target.value.circumcised.value = false;
+            }
+            else
+            {
+                throw std::runtime_error("invalid circumcision value: " + circumcised_string);
+            }
+        }
+        else
+        {
+            throw std::runtime_error("invalid group eligibility criterion: " + std::string(criteria_node.name()));
+        }
     }
 
     return target;
@@ -1005,7 +1027,7 @@ std::pair<int, int> ParseRange(const std::string &range_string, bool require_bot
     return {lower_bound, upper_bound};
 }
 
-std::vector<Intervention> SimulationBuilderXml::ParseInterventions(pugi::xml_node interventions_node)
+std::vector<Intervention> SimulationBuilderXml::ParseInterventions(pugi::xml_node interventions_node, bool individual)
 {
     std::vector<Intervention> interventions;
 
@@ -1020,7 +1042,7 @@ std::vector<Intervention> SimulationBuilderXml::ParseInterventions(pugi::xml_nod
             parameters[parameter_node.name()] = parameter_node.as_string();
         }
 
-        interventions.emplace_back(node_name, value, parameters, false);
+        interventions.emplace_back(node_name, value, parameters, individual);
     }
 
     return interventions;
@@ -1032,13 +1054,13 @@ std::unordered_map<std::string, TargetGroup> SimulationBuilderXml::ReadGroups()
         document_.select_single_node("/simulation/interventions/groups").node();
     std::unordered_map<std::string, TargetGroup> groups;
 
-    for(auto group_node : groups_node.children("target-group"))
+    for(auto group_node : groups_node.children("group"))
     {
         auto enrollment_period_string = 
             Text<std::string>(group_node.child("enrollment-period"));
         auto enrollment_period = ParseRange(enrollment_period_string);
         bool permanent = Text<bool>(group_node.child("permanent-effect"));
-        bool open = Text<bool>(group_node.child("open"));
+        bool open = Text<bool>(group_node.child("open-enrollment"));
         auto target = ParseGroupEligibility(group_node.child("eligibility-criteria"));
 
         TargetGroup group(enrollment_period.first, enrollment_period.second, 
@@ -1049,7 +1071,7 @@ std::unordered_map<std::string, TargetGroup> SimulationBuilderXml::ReadGroups()
             std::string label = Attr<std::string>(partition_node, "label");
             auto proportion = Text<double>(partition_node.child("proportion"));
             auto trace = Text<bool>(partition_node.child("trace"));
-            auto interventions = ParseInterventions(partition_node.child("interventions"));
+            auto interventions = ParseInterventions(partition_node.child("interventions"), true);
 
             group.AddPartition(label, trace, proportion, interventions);
         }

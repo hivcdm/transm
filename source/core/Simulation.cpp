@@ -97,62 +97,82 @@ void TargetGroup::Update(Population &p, int current_time, RandomNumberGenerator 
         }
     }
 
+    auto match = [&](Person *person)
+    {
+        return (!((target_.value.employment.has_value
+            && target_.value.employment.value != (DemographicProfile::Employment)person->getDemographicProfileVal(DemographicProfile::EMPLOYMENT))
+            || (target_.value.gender.has_value
+            && target_.value.gender.value != (DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::GENDER))
+            || (target_.value.relationship_status.has_value
+            && target_.value.relationship_status.value != (DemographicProfile::RelationshipStatus)person->getDemographicProfileVal(DemographicProfile::RELATIONSHIP_STATUS))
+            || (target_.value.sexual_activity_status.has_value
+            && target_.value.sexual_activity_status.value != (DemographicProfile::SexualActivityStatus)person->getDemographicProfileVal(DemographicProfile::SEXUAL_ACTIVITY_STATUS))
+            || (target_.value.sexual_orientation.has_value
+            && target_.value.sexual_orientation.value != (DemographicProfile::SexualOrientation)person->getDemographicProfileVal(DemographicProfile::SEXUAL_ORIENTATION))
+            || (target_.value.age_lower.has_value
+            && target_.value.age_lower.value < person->getAge(TimeGranularity::Month))
+            || (target_.value.age_upper.has_value
+            && target_.value.age_upper.value > person->getAge(TimeGranularity::Month))
+            || (target_.value.observed_hiv_status.has_value
+            && target_.value.observed_hiv_status.value != person->getHIVStatus())
+            || (target_.value.on_treatment.has_value
+            && target_.value.on_treatment.value != person->isOnArt())
+            || (target_.value.circumcised.has_value
+            && target_.value.circumcised.value != person->IsCircumcised())
+            || (target_.value.risk_level.has_value
+            && target_.value.risk_level.value != person->getRiskLevel())));
+    };
+
+    auto matches_ptr = &newly_added;
+    std::unordered_set<Person *> people;
+
+    if(enrollment_period_.start == current_time)
+    {
+        people = p.Find(match);
+        matches_ptr = &people;
+    }
+
+    auto &matches = *matches_ptr;
+
     if(open_ || enrollment_period_.start == current_time)
     {
-        auto match = [&](Person *person)
+        int num_matches = (int)std::count_if(matches.begin(), matches.end(), match);
+
+        if(partitions_.size() == 1 && partitions_.front().GetProportion() == 1)
         {
-            return (!((target_.value.employment.has_value
-                && target_.value.employment.value != (DemographicProfile::Employment)person->getDemographicProfileVal(DemographicProfile::EMPLOYMENT))
-                || (target_.value.gender.has_value
-                && target_.value.gender.value != (DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::GENDER))
-                || (target_.value.relationship_status.has_value
-                && target_.value.relationship_status.value != (DemographicProfile::RelationshipStatus)person->getDemographicProfileVal(DemographicProfile::RELATIONSHIP_STATUS))
-                || (target_.value.sexual_activity_status.has_value
-                && target_.value.sexual_activity_status.value != (DemographicProfile::SexualActivityStatus)person->getDemographicProfileVal(DemographicProfile::SEXUAL_ACTIVITY_STATUS))
-                || (target_.value.sexual_orientation.has_value
-                && target_.value.sexual_orientation.value != (DemographicProfile::SexualOrientation)person->getDemographicProfileVal(DemographicProfile::SEXUAL_ORIENTATION))
-                || (target_.value.age_lower.has_value
-                && target_.value.age_lower.value < person->getAge(TimeGranularity::Month))
-                || (target_.value.age_upper.has_value
-                && target_.value.age_upper.value > person->getAge(TimeGranularity::Month))
-                || (target_.value.observed_hiv_status.has_value
-                && target_.value.observed_hiv_status.value != person->getHIVStatus())
-                || (target_.value.on_treatment.has_value
-                && target_.value.on_treatment.value != person->isOnArt())
-                || (target_.value.risk_level.has_value
-                && target_.value.risk_level.value != person->getRiskLevel())));
-        };
-
-        int num_matches = (int)std::count_if(newly_added.begin(), newly_added.end(), match);
-
-        std::vector<std::pair<int, int>> partition_allocations;
-        int num_allocated = 0;
-
-        for(int i = 0; i < (int)partitions_.size() - 1; i++)
-        {
-            int partition_allocation = static_cast<int>(partitions_[i].GetProportion() * num_matches);
-            if(partition_allocation == 0)
-            {
-                continue;
-            }
-            partition_allocations.push_back(std::make_pair(i, partition_allocation));
-            num_allocated += partition_allocation;
+            std::for_each(matches.begin(), matches.end(), [&](Person *p) { partitions_.front().Add(p); });
         }
-
-        partition_allocations.push_back(std::make_pair((int)partitions_.size() - 1, num_matches - num_allocated));
-
-        auto person_iter = std::find_if(newly_added.begin(), newly_added.end(), match);
-        while(!partition_allocations.empty())
+        else
         {
-            int allocations_index = rng.randInt(0, (uint32_t)partition_allocations.size() - 1);
-            int partition_index = partition_allocations[allocations_index].first;
-            partitions_[partition_index].Add(*person_iter);
-            if(--partition_allocations[allocations_index].second == 0)
+            std::vector<std::pair<int, int>> partition_allocations;
+            int num_allocated = 0;
+
+            for(int i = 0; i < (int)partitions_.size() - 1; i++)
             {
-                partition_allocations.erase(partition_allocations.begin() + allocations_index);
+                int partition_allocation = static_cast<int>(partitions_[i].GetProportion() * num_matches);
+                if(partition_allocation == 0)
+                {
+                    continue;
+                }
+                partition_allocations.push_back(std::make_pair(i, partition_allocation));
+                num_allocated += partition_allocation;
             }
-            person_iter++;
-            person_iter = std::find_if(person_iter, newly_added.end(), match);
+
+            partition_allocations.push_back(std::make_pair((int)partitions_.size() - 1, num_matches - num_allocated));
+
+            auto person_iter = std::find_if(matches.begin(), matches.end(), match);
+            while(!partition_allocations.empty())
+            {
+                int allocations_index = rng.randInt(0, (uint32_t)partition_allocations.size() - 1);
+                int partition_index = partition_allocations[allocations_index].first;
+                partitions_[partition_index].Add(*person_iter);
+                if(--partition_allocations[allocations_index].second == 0)
+                {
+                    partition_allocations.erase(partition_allocations.begin() + allocations_index);
+                }
+                person_iter++;
+                person_iter = std::find_if(person_iter, matches.end(), match);
+            }
         }
     }
 
@@ -336,7 +356,7 @@ Intervention::Intervention(const std::string &parameter, const std::string &valu
     }
     catch(std::out_of_range)
     {
-        throw std::runtime_error("must have a defined time for this intervention");
+        time_ = -1;
     }
 
     auto intervention_type = from_string<KnownIntervention>(parameter);
@@ -581,93 +601,6 @@ void TargetGroup::AddPartition(const std::string &label, bool trace, double prop
     p.proportion_ = proportion;
     p.interventions_ = interventions;
     partitions_.push_back(p);
-}
-
-TargetGroup::PopulationTarget TargetGroup::PopulationTarget::FromString(const std::string &s)
-{
-    TargetGroup::PopulationTarget target;
-
-	std::stringstream ss(s);
-	int i = 0;
-	while(ss)
-	{
-		std::string line;
-		std::getline(ss, line, ':');
-		switch(i++)
-		{
-		case 0:
-			target.risk_level.has_value = line != "*";
-			if(target.risk_level.has_value)
-			{
-				target.risk_level.value = static_cast<Person::RiskLevel>(std::stoi(line));
-			}
-			break;
-		case 1:
-			target.employment.has_value = line != "*";
-			if(target.employment.has_value)
-			{
-				target.employment.value = static_cast<DemographicProfile::Employment>(std::stoi(line));
-			}
-			break;
-		case 2:
-			target.sexual_activity_status.has_value = line != "*";
-			if(target.sexual_activity_status.has_value)
-			{
-				target.sexual_activity_status.value = static_cast<DemographicProfile::SexualActivityStatus>(std::stoi(line));
-			}
-			break;
-		case 3:
-			target.gender.has_value = line != "*";
-			if(target.gender.has_value)
-			{
-				target.gender.value = static_cast<DemographicProfile::Gender>(std::stoi(line));
-			}
-			break;
-		case 4:
-			target.relationship_status.has_value = line != "*";
-			if(target.relationship_status.has_value)
-			{
-				target.relationship_status.value = static_cast<DemographicProfile::RelationshipStatus>(std::stoi(line));
-			}
-			break;
-		case 5:
-			target.sexual_orientation.has_value = line != "*";
-			if(target.sexual_orientation.has_value)
-			{
-				target.sexual_orientation.value = static_cast<DemographicProfile::SexualOrientation>(std::stoi(line));
-			}
-			break;
-		case 6:
-			target.age_lower.has_value = line != "*";
-			if(target.age_lower.has_value)
-			{
-				target.age_lower.value = std::stoi(line);
-			}
-			break;
-		case 7:
-			target.age_upper.has_value = line != "*";
-			if(target.age_upper.has_value)
-			{
-				target.age_upper.value = std::stoi(line);
-			}
-			break;
-		case 8:
-			target.observed_hiv_status.has_value = line != "*";
-			if(target.observed_hiv_status.has_value)
-			{
-				target.observed_hiv_status.value = static_cast<Person::HIVStatus>(std::stoi(line));
-			}
-			break;
-		case 9:
-			target.on_treatment.has_value = line != "*";
-			if(target.on_treatment.has_value)
-			{
-				target.on_treatment.value = line[0] != 'f' && line[0] != 'n';
-			}
-			break;
-		}
-	}
-	return target;
 }
 
 void Simulation::RegisterIntervention(const Intervention &intervention)

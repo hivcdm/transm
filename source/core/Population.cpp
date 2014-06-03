@@ -34,8 +34,11 @@ Population::Population(EventParams &parameters)
 
 void Population::Circumcise(Person *p)
 {
-	p->Circumcise();
-	populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * p->getCepacDiscountFactor());
+    if(!p->IsCircumcised())
+    {
+        p->Circumcise();
+        populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * p->getCepacDiscountFactor());
+    }
 }
 
 /**
@@ -426,6 +429,13 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 	{
 		PrintMethodResults(parameters_, "UpdatePhysicalState", "People Died", totalDied, "total died", true);
 	}
+}
+
+std::unordered_set<Person *> Population::Find(std::function<bool(Person *)> predicate)
+{
+    std::unordered_set<Person *> matches;
+    entities->forEach([=, &matches](Person *p) { if(predicate(p)) matches.insert(p); });
+    return matches;
 }
 
 void Population::RegisterIntervention(const Intervention &intervention)
