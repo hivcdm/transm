@@ -23,7 +23,7 @@ public:
 	/// <summary>
 	/// Creates a new EntityPool
 	/// </summary>
-	EntityPool(int _SAEntAgeMths, unsigned int _popID, const std::map<SexualPartnership::Type, double> &_assort);
+	EntityPool(int ageOfMajority, unsigned int _popID, const std::map<SexualPartnership::Type, double> &_assort);
 
 	~EntityPool();
 

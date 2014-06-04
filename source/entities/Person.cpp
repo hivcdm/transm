@@ -43,11 +43,6 @@ void Person::ageOneTimeUnit()
 	age++;
 }
 
-void Person::SetAgeSexualDebut(int age_sexual_debut, TimeGranularity granularity)
-{
-    ageSexualDebut = Utility::convertTime(granularity, TimeGranularity::Month, age_sexual_debut);
-}
-
 Person::CD4Strata Person::getCd4Stratum() const
 {
 	switch(cepacPatient->getDiseaseState()->currTrueCD4Strata)
@@ -1649,6 +1644,7 @@ Person::Person()
 	ageInfected = -1;
 	wentThroughCEPAC = false;
 	cepacPatient = nullptr;
+    sexualActivityDelay = 0;
 
 	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
 	{
@@ -1663,7 +1659,7 @@ Person::Person()
 }
 
 //this constructor is used by the Male and Female classes
-Person::Person(int _age, unsigned int _populationID)
+Person::Person(int _age, unsigned int _populationID) : sexualActivityDelay(0)
 {
 	id = Person::idCounter++;
 	populationID = _populationID;

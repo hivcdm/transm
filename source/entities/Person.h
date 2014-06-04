@@ -40,11 +40,13 @@ public:
 
 	virtual void Circumcise() = 0;
 
-    void SetAgeSexualDebut(int age, TimeGranularity granularity);
+    void SetSexualActivityDelay(int delay) { sexualActivityDelay = delay; }
 
-    int GetAgeSexualDebut() const { return ageSexualDebut; }
+    int GetSexualActivityDelay() const { return sexualActivityDelay; }
 
     virtual bool IsCircumcised() const = 0;
+
+    virtual void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) = 0;
 
 	/// <summary>
 	/// every Person's CD4 count falls in a CD4 strata - used in CEPAC
@@ -236,7 +238,7 @@ protected:
 	//The indices which point to the person in their assigned FullVector
 	map<FullVector *, vector<unsigned int>> FVindices; //The indices of the the person in their assigned FullVector
 
-    int ageSexualDebut;
+    int sexualActivityDelay;
 
 public:
 

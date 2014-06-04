@@ -52,6 +52,10 @@ void Intervention::Apply(Population &population, Person *person)
     {
         population_individual_intervention_(population, person);
     }
+    else if(individual_intervention_)
+    {
+        individual_intervention_(person);
+    }
 }
 
 void Intervention::Apply(Person *person)
@@ -201,7 +205,7 @@ enum class KnownIntervention
     ProportionMale,
     ProportionCircumcised,
     ChanceBecomeSexWorker,
-    AgeSexualDebut,
+    DelaySexualActivity,
     TransmissionCoefficient,
     ProportionHighRisk,
     AverageYearsYounger,
@@ -219,7 +223,7 @@ const std::map<KnownIntervention, std::string> KnownInterventionStrings =
     {KnownIntervention::ProportionMale, "proportionMale"},
     {KnownIntervention::ProportionCircumcised, "proportionCircumcised"},
     {KnownIntervention::ChanceBecomeSexWorker, "chanceBecomeSexWorker"},
-    {KnownIntervention::AgeSexualDebut, "ageSexualDebut"},
+    {KnownIntervention::DelaySexualActivity, "delaySexualActivity"},
     {KnownIntervention::TransmissionCoefficient, "transmissionCoefficient"},
     {KnownIntervention::ProportionHighRisk, "proportionHighRisk"},
     {KnownIntervention::AverageYearsYounger, "averageYearsYounger"},
@@ -376,10 +380,10 @@ Intervention::Intervention(const std::string &parameter, const std::string &valu
                 individual_intervention_ = [=](Person *person) { person->SetChanceBecomeSexWorker(chance); };
                 break;
             }
-            case KnownIntervention::AgeSexualDebut:
+            case KnownIntervention::DelaySexualActivity:
             {
-                auto age_in_years = std::stoi(value);
-                individual_intervention_ = [=](Person *person) { person->SetAgeSexualDebut(age_in_years, TimeGranularity::Year); };
+                auto months = std::stoi(value);
+                individual_intervention_ = [=](Person *person) { person->SetSexualActivityDelay(months); };
                 break;
             }
             case KnownIntervention::TransmissionCoefficient:
@@ -460,14 +464,20 @@ Intervention::Intervention(const std::string &parameter, const std::string &valu
             auto gender = from_string<DemographicProfile::Gender>(parameters.at("gender"));
             auto chance = std::stod(value);
             population_intervention_ = [=](Population &p) { p.popWideParams.SetChanceBecomeCsw(gender, chance); };
-            individual_intervention_ = [=](Person *person) { person->SetChanceBecomeSexWorker(chance); };
+            individual_intervention_ = [=](Person *person) 
+            { 
+                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::GENDER) == gender)
+                {
+                    person->SetChanceBecomeSexWorker(chance);
+                }
+            };
             break;
         }
-        case KnownIntervention::AgeSexualDebut:
+        case KnownIntervention::DelaySexualActivity:
         {
-            auto age_in_years = std::stoi(value);
-            population_intervention_ = [=](Population &p) { p.popWideParams.setAgeSexualDebut(age_in_years, TimeGranularity::Year); };
-            individual_intervention_ = [=](Person *person) { person->SetAgeSexualDebut(age_in_years, TimeGranularity::Year); };
+            auto months = std::stoi(value);
+            population_intervention_ = [=](Population &p) { p.popWideParams.SetSexualActivityDelay(months); };
+            individual_intervention_ = [=](Person *person) { person->SetSexualActivityDelay(months); };
             break;
         }
         case KnownIntervention::TransmissionCoefficient:
@@ -478,7 +488,7 @@ Intervention::Intervention(const std::string &parameter, const std::string &valu
             population_intervention_ = [=](Population &p) { p.popWideParams.SetTransmissionCoefficient(gender, hvl_stratum, coefficient); };
             individual_intervention_ = [=](Person *person) 
             { 
-                if(person->getDemographicProfileVal(DemographicProfile::GENDER) == gender)
+                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::GENDER) == gender)
                 {
                     person->SetTransmissionCoefficient(hvl_stratum, coefficient);
                 }
@@ -491,6 +501,13 @@ Intervention::Intervention(const std::string &parameter, const std::string &valu
             auto employment = from_string<DemographicProfile::Employment>(parameters.at("employment"));
             auto proportion = std::stod(value);
             population_intervention_ = [=](Population &p) { p.popWideParams.SetProportionHighRisk(gender, employment, proportion); };
+            individual_intervention_ = [=](Person *person) 
+            { 
+                if(gender == (DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::GENDER))
+                {
+                    person->SetProportionHighRisk(employment, proportion);
+                }
+            };
             break;
         }
         case KnownIntervention::AverageYearsYounger:
@@ -543,34 +560,119 @@ Intervention::Intervention(const std::string &parameter, const std::string &valu
             std::string criterion = parameters.at("criterion");
             std::string parameter_name = parameters.at("parameter");
 
-            if(criterion == "oi-hist")
+            if(criterion == "OIHist")
             {
                 if(parameter_name == "rank")
                 {
                     simulation_intervention_ = [=](Simulation &s) { s.parameters_.rolloutEligibility.oiHistRank = new_value; };
                 }
-                else if(parameter_name.substr(0, 2) == "oi")
+                else if(parameter_name.substr(0, 2) == "OI")
                 {
                     int oi_number = std::stoi(parameter_name.substr(2));
                     simulation_intervention_ = [=](Simulation &s) { s.parameters_.rolloutEligibility.oiHistOIs[oi_number] = new_value != 0; };
                 }
+                else if(parameter_name == "numOIToStart")
+                {
+                    simulation_intervention_ = [=](Simulation &s) { s.parameters_.rolloutEligibility.oiHistNumToStart = new_value; };
+                }
+                else
+                {
+                    throw std::runtime_error("invalid parameter: " + parameter_name);
+                }
             }
-            else if(criterion == "cd4")
+            else if(criterion == "CD4")
             {
                 if(parameter_name == "rank")
                 {
                     simulation_intervention_ = [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4Rank = new_value; };
                 }
-                else if(parameter_name == "lower")
+                else if(parameter_name == "CD4Lwr")
                 {
                     simulation_intervention_ = [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4Bounds.lower = new_value; };
                 }
-                else if(parameter_name == "upper")
+                else if(parameter_name == "CD4Upp")
                 {
                     simulation_intervention_ = [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4Bounds.upper = new_value; };
                 }
+                else
+                {
+                    throw std::runtime_error("invalid parameter: " + parameter_name);
+                }
             }
-
+            else if(criterion == "CD4OIHist")
+            {
+                if(parameter_name == "rank")
+                {
+                    simulation_intervention_ = [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4OiHistRank = new_value; };
+                }
+                else if(parameter_name == "CD4Lwr")
+                {
+                    simulation_intervention_ = [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4OiHistCd4Bounds.lower = new_value; };
+                }
+                else if(parameter_name == "CD4Upp")
+                {
+                    simulation_intervention_ = [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4OiHistCd4Bounds.upper = new_value; };
+                }
+                else if(parameter_name.substr(0, 2) == "OI")
+                {
+                    int oi_number = std::stoi(parameter_name.substr(2));
+                    simulation_intervention_ = [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4OiHistOIs[oi_number] = new_value != 0; };
+                }
+                else
+                {
+                    throw std::runtime_error("invalid parameter: " + parameter_name);
+                }
+            }
+            else if(criterion == "HVL")
+            {
+                if(parameter_name == "rank")
+                {
+                    simulation_intervention_ = [=](Simulation &s) { s.parameters_.rolloutEligibility.hvlRank = new_value; };
+                }
+                else if(parameter_name == "HVLLwr")
+                {
+                    simulation_intervention_ = [=](Simulation &s) { s.parameters_.rolloutEligibility.hvlBounds.lower = new_value; };
+                }
+                else if(parameter_name == "HVLUpp")
+                {
+                    simulation_intervention_ = [=](Simulation &s) { s.parameters_.rolloutEligibility.hvlBounds.upper = new_value; };
+                }
+                else
+                {
+                    throw std::runtime_error("invalid parameter: " + parameter_name);
+                }
+            }
+            else if(criterion == "CD4HVL")
+            {
+                if(parameter_name == "rank")
+                {
+                    simulation_intervention_ = [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4HvlRank = new_value; };
+                }
+                else if(parameter_name == "CD4Lwr")
+                {
+                    simulation_intervention_ = [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4HvlCd4Bounds.lower = new_value; };
+                }
+                else if(parameter_name == "CD4Upp")
+                {
+                    simulation_intervention_ = [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4HvlCd4Bounds.upper = new_value; };
+                }
+                else if(parameter_name == "HVLLwr")
+                {
+                    simulation_intervention_ = [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4HvlHvlBounds.lower = new_value; };
+                }
+                else if(parameter_name == "HVLUpp")
+                {
+                    simulation_intervention_ = [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4HvlHvlBounds.upper = new_value; };
+                }
+                else
+                {
+                    throw std::runtime_error("invalid parameter: " + parameter_name);
+                }
+            }
+            else
+            {
+                throw std::runtime_error("invalid rollout eligibility criterion for intervention: " + criterion);
+            }
             break;
         }
         default:

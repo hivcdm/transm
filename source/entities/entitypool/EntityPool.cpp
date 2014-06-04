@@ -555,7 +555,7 @@ list<Person *>::iterator EntityPool::end(DemographicProfile::Gender _gender)
 
 //creates a New EntityPool
 // @param _SAEntAgeMths age of sexual debut
-EntityPool::EntityPool(int _SAEntAgeMths, unsigned int _popID, const std::map<SexualPartnership::Type, double> &_assort)
+EntityPool::EntityPool(int ageOfMajority, unsigned int _popID, const std::map<SexualPartnership::Type, double> &_assort)
 {
 	//allocate space for Buckets and set to nullptr
 	entityBuckets = std::vector<BucketDemographicProfile *>(DemographicProfile::TotalNumBuckets, nullptr);
@@ -600,7 +600,7 @@ EntityPool::EntityPool(int _SAEntAgeMths, unsigned int _popID, const std::map<Se
 			if(!invalidCombo)
 			{
 				entityBuckets.at(currBucketID) = new BucketSexualMixing(currBucketID, DemographicProfile::toString(currBucketID), _popID,
-                    _SAEntAgeMths, 12 * Person::maxYrForDeathStats + 1, TimeGranularity::Month, _assort);
+                    ageOfMajority, 12 * Person::maxYrForDeathStats + 1, TimeGranularity::Month, _assort);
 			}
 		}
 	}	//for(unsigned int i = 0; validBucketIDs.size(); ++i) {

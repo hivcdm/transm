@@ -72,9 +72,10 @@ PopulationParameters::PopulationParameters()
     debugLevel = DebugLevel::One;
 	initSize = 10000;
 	birthRate = 0.0038;
-	SAEntAgeMths = 180;
+	ageOfMajority = 180;
 	proportionMale = 0.51;
 	proportionCircumcised = 0.20;
+    sexualActivityDelay = 0;
 }
 
 PopulationParameters::~PopulationParameters()

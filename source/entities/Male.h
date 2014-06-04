@@ -17,6 +17,8 @@ public :
 	void Circumcise();
     bool IsCircumcised() const { return circumcised; }
 
+    void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) { populationSpecificParams.SetProportionHighRisk(employment, proportion); }
+
 	/// <summary>
 	/// These are parameters that describe the population of males.
 	/// Each Population in the Sim will have a separate one of these references by the population's ID.

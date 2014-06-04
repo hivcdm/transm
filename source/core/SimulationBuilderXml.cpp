@@ -554,7 +554,7 @@ void SimulationBuilderXml::InitializePopulation()
     }
 
 	//create EntityPool - this will contain all Entities
-	auto entities = std::make_unique<EntityPool>(population_parameters.getAgeSexualDebut(), population.GetId(), assort);
+	auto entities = std::make_unique<EntityPool>(population_parameters.getAgeOfMajority(), population.GetId(), assort);
 	population.entities.swap(entities);
 
 	//initialize infection trace generator print detailed info about certain ProfileID's
@@ -929,7 +929,7 @@ void SimulationBuilderXml::ReadPopulationParameters()
 	population_parameters.setBirthRate(Text<double>(population_node.child("birthRate")));
 	population_parameters.setProportionMale(Text<double>(population_node.child("proportionMale")));
 	population_parameters.setProportionCircumcised(Text<double>(population_node.child("proportionCircumcised")));
-	population_parameters.setAgeSexualDebut(Text<int>(population_node.child("ageOfMajority")), TimeGranularity::Year);
+	population_parameters.setAgeOfMajority(Text<int>(population_node.child("ageOfMajority")), TimeGranularity::Year);
 
 	auto defaultMaleParams = ReadMaleSubPopParams();
 	population_parameters.SetMaleParameters(defaultMaleParams);

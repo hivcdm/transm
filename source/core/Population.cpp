@@ -357,7 +357,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 
 			//if this person wasn't sexually active but is now old enough to
 			if((p->getDemographicProfileVal(DemographicProfile::SEXUAL_ACTIVITY_STATUS) != DemographicProfile::SA)
-                && (p->getAge(TimeGranularity::Month) >= p->GetAgeSexualDebut()))
+                && (p->getAge(TimeGranularity::Month) >= popWideParams.ageOfMajority))
 			{
 				// set them as SA and potentially CSWs
 				if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && p->trace())
@@ -516,6 +516,12 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 		initiator->resetCondomUsage();
 		//(The non-initiators (i.e. women) will never have their condom count reset... I don't think we care?)
 		assert(initiator != nullptr);
+
+        if(initiator->getAge(TimeGranularity::Month) < popWideParams.ageOfMajority + initiator->GetSexualActivityDelay())
+        {
+            continue;
+        }
+
 		//Get available partnership types
 		vector<SexualPartnership::Type> partnershipTypes =
 		    profilesToPartnershipTypes[initiator->getCurrBucketProfileID()];
@@ -922,7 +928,7 @@ Person *Population::GeneratePerson(EventParams &parameters_, DemographicProfile:
 		toReturn = new Female(parameters_, ageMth, populationID, popWideParams.defaultFemaleParams);
 	}
 
-    toReturn->SetAgeSexualDebut(popWideParams.SAEntAgeMths, TimeGranularity::Month);
+    toReturn->SetSexualActivityDelay(popWideParams.sexualActivityDelay);
 
 	//If it was a boy and he was circumcised, add the costs
 	if(toReturn->getDemographicProfileVal(DemographicProfile::GENDER) == DemographicProfile::MALE)
@@ -943,7 +949,7 @@ Person *Population::GeneratePerson(EventParams &parameters_, DemographicProfile:
 
 	//if person is of sexually active age, roll and see if they are a CSW
 	//DO NOT SET THEM AS SEXUALLY ACTIVE UNTIL AFTER DETERMINING IF THEY ARE A PREVALENT CASE BECAUSE THE CEPAC PERSON IS CREATED HERE!
-	if(ageMth >= popWideParams.SAEntAgeMths)
+	if(ageMth >= popWideParams.ageOfMajority)
 	{
 		//see if they will be a CSW
 		if(ageMth < popWideParams.CSWEndAgeMth[_gender])
@@ -1973,7 +1979,7 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Person *_
 					parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "   x Repeat partnership not formed!" << std::endl;
 				}
 			}
-			else if(partner != _initiator)
+			else if(partner != _initiator && popWideParams.ageOfMajority + partner->GetSexualActivityDelay() <= partner->getAge(TimeGranularity::Month))
 			{
 				foundPartner = true;
 				chosenPartner = partner;

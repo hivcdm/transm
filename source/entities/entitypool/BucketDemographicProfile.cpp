@@ -36,7 +36,7 @@ BucketDemographicProfile::PersonSet *BucketDemographicProfile::getEntityIndex()
 
 Person *BucketDemographicProfile::drawMember(RandomNumberGenerator &, Person *, SexualPartnership::Type, bool)
 {
-    throw std::runtime_error("not imlemented");
+    throw std::runtime_error("not implemented");
 }
 
 /**

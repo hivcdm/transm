@@ -51,8 +51,6 @@ public:
 	PopulationParameters();
 	~PopulationParameters();
 
-    void setAgeSexualDebut(int ageSexualDebut, TimeGranularity granularity = TimeGranularity::Year) { SAEntAgeMths = Utility::convertTime(granularity, TimeGranularity::Month, ageSexualDebut); }
-
 	double getBirthRate() const;
 	void setBirthRate(double birth_rate) { birthRate = birth_rate; }
 
@@ -62,7 +60,8 @@ public:
 	double getProportionMale() const;
 	void setProportionMale(double proportion_male) { proportionMale = proportion_male; }
 
-	int getAgeSexualDebut() const { return SAEntAgeMths; }
+	int getAgeOfMajority() const { return ageOfMajority; }
+    void setAgeOfMajority(int ageOfMajority, TimeGranularity granularity = TimeGranularity::Year) { this->ageOfMajority = Utility::convertTime(granularity, TimeGranularity::Month, ageOfMajority); }
 
 	void SetPartnershipHasDuration(DemographicProfile::Gender gender, SexualPartnership::Type type, bool has_duration) { partnershipsHaveDuration[gender][(int)type] = has_duration; }
 
@@ -85,6 +84,9 @@ public:
             throw std::runtime_error("bad gender");
 		}
 	}
+
+    void SetSexualActivityDelay(int delay) { sexualActivityDelay = delay; }
+    int GetSexualActivityDelay() const { return sexualActivityDelay; }
 
     void SetAssortativeness(SexualPartnership::Type partnership_type, double assortativeness) { defaultMaleParams.getSexualBehavior(partnership_type).setAssortativeness(assortativeness); }
 
@@ -161,7 +163,10 @@ private:
     /// <summary>
     /// age in months
     /// </summary>
-	int SAEntAgeMths;
+	int ageOfMajority;
+
+    int sexualActivityDelay;
+
 	double proportionMale;
 	double proportionCircumcised;
 
