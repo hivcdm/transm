@@ -66,7 +66,14 @@ private:
     {
     public:
         double GetProportion() const { return proportion_; }
-        void Add(Person *p) { members_.insert(p); }
+        void Add(Population &pop, Person *p) 
+        { 
+            members_.insert(p); 
+            for(auto &intervention : interventions_)
+            {
+                intervention.Apply(pop, p);
+            }
+        }
         void Remove(Person *p) { if(members_.find(p) != members_.end()) members_.erase(p); }
         void Update(Population &p, int current_time);
     private:

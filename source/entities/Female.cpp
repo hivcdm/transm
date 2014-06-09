@@ -38,7 +38,7 @@ void Female::SetAverageYearsYounger(SexualPartnership::Type, NormalDist)
 	throw std::runtime_error("not implemented for women");
 }
 
-void Female::SetAcquisitionRatePerMonth(RiskLevel, SexualPartnership::Type, LogNormalDist)
+void Female::SetAcquisitionRatePerMonth(RiskLevel, SexualPartnership::Type, LogNormalDist, RandomNumberGenerator &)
 {
 	throw std::runtime_error("not implemented for women");
 }
@@ -175,7 +175,7 @@ double Female::getChanceBecomeCsw() const
 	return populationSpecificParams.GetChanceBecomeCSW();
 }
 
-void Female::SetChanceCondomUsePerEvent(Person::RiskLevel /*risk*/, SexualPartnership::Type /*partnershipType*/, BetaDist /*dist*/)
+void Female::SetChanceCondomUsePerEvent(Person::RiskLevel /*risk*/, SexualPartnership::Type /*partnershipType*/, BetaDist /*dist*/, RandomNumberGenerator &/*rng*/)
 {
 	throw std::runtime_error("not allowed");
 }

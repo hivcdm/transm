@@ -1033,16 +1033,7 @@ std::vector<Intervention> SimulationBuilderXml::ParseInterventions(pugi::xml_nod
 
     for(auto intervention_node : interventions_node.children())
     {
-        std::string node_name = intervention_node.name();
-        std::string value = intervention_node.text().as_string();
-
-        std::unordered_map<std::string, std::string> parameters;
-        for(auto parameter_node : intervention_node.attributes())
-        {
-            parameters[parameter_node.name()] = parameter_node.as_string();
-        }
-
-        interventions.emplace_back(node_name, value, parameters, individual);
+        interventions.push_back(ReadIntervention(intervention_node, individual));
     }
 
     return interventions;
@@ -1081,4 +1072,538 @@ std::unordered_map<std::string, TargetGroup> SimulationBuilderXml::ReadGroups()
     }
 
     return groups;
+}
+
+std::vector<std::string> split_string(const std::string &string, char delim)
+{
+    std::vector<std::string> split;
+    std::stringstream ss(string);
+    std::string part;
+    while(std::getline(ss, part, delim))
+    {
+        split.push_back(part);
+    }
+    return split;
+}
+
+enum class KnownIntervention
+{
+    Circumcise,
+    BirthRate,
+    ProportionMale,
+    ProportionCircumcised,
+    ChanceBecomeSexWorker,
+    DelaySexualActivity,
+    TransmissionCoefficient,
+    ProportionHighRisk,
+    AverageYearsYounger,
+    PartnerAcquisitionRate,
+    CoitalEventsPerMonth,
+    ChanceCondomUse,
+    PartnershipDuration,
+    RolloutEligibility
+};
+
+const std::map<KnownIntervention, std::string> KnownInterventionStrings =
+{
+    {KnownIntervention::Circumcise, "circumcise"},
+    {KnownIntervention::BirthRate, "birthRate"},
+    {KnownIntervention::ProportionMale, "proportionMale"},
+    {KnownIntervention::ProportionCircumcised, "proportionCircumcised"},
+    {KnownIntervention::ChanceBecomeSexWorker, "chanceBecomeSexWorker"},
+    {KnownIntervention::DelaySexualActivity, "delaySexualActivity"},
+    {KnownIntervention::TransmissionCoefficient, "transmissionCoefficient"},
+    {KnownIntervention::ProportionHighRisk, "proportionHighRisk"},
+    {KnownIntervention::AverageYearsYounger, "averageYearsYounger"},
+    {KnownIntervention::PartnerAcquisitionRate, "partnerAcquisitionRate"},
+    {KnownIntervention::CoitalEventsPerMonth, "coitalEventsPerMonth"},
+    {KnownIntervention::ChanceCondomUse, "chanceCondomUse"},
+    {KnownIntervention::PartnershipDuration, "partnershipDuration"},
+    {KnownIntervention::RolloutEligibility, "rolloutEligibility"}
+};
+
+template<>
+KnownIntervention SimulationBuilderXml::from_string(const std::string &intervention)
+{
+    for(auto pair : KnownInterventionStrings)
+    {
+        if(pair.second == intervention)
+        {
+            return pair.first;
+        }
+    }
+
+    throw std::runtime_error("unknown intervention: " + intervention);
+}
+
+template<>
+Person::RiskLevel SimulationBuilderXml::from_string(const std::string &risk)
+{
+    if(risk == "high") return Person::RiskLevel::HIGH;
+    if(risk == "low") return Person::RiskLevel::LOW;
+
+    throw std::runtime_error("unknown risk level: " + risk);
+}
+
+template<>
+DemographicProfile::Gender SimulationBuilderXml::from_string(const std::string &gender)
+{
+    if(gender == "male") return DemographicProfile::Gender::MALE;
+    if(gender == "female") return DemographicProfile::Gender::FEMALE;
+
+    throw std::runtime_error("unknown gender: " + gender);
+}
+
+template<>
+DemographicProfile::Employment SimulationBuilderXml::from_string(const std::string &employment)
+{
+    if(employment == "csw") return DemographicProfile::Employment::CSW;
+    if(employment == "non-csw") return DemographicProfile::Employment::NON_CSW;
+
+    throw std::runtime_error("unknown employment: " + employment);
+}
+
+template<>
+Person::HVLStrata SimulationBuilderXml::from_string(const std::string &hvl_string)
+{
+    if(hvl_string == "-1" || hvl_string == "uninfected") return Person::HVLStrata::UNINFECTED;
+    if(hvl_string == "0") return Person::HVLStrata::HVL_ZERO;
+    if(hvl_string == "1") return Person::HVLStrata::HVL_ONE;
+    if(hvl_string == "2") return Person::HVLStrata::HVL_TWO;
+    if(hvl_string == "3") return Person::HVLStrata::HVL_THREE;
+    if(hvl_string == "4") return Person::HVLStrata::HVL_FOUR;
+    if(hvl_string == "5") return Person::HVLStrata::HVL_FIVE;
+    if(hvl_string == "6") return Person::HVLStrata::HVL_SIX;
+    if(hvl_string == "7" || hvl_string == "primary") return Person::HVLStrata::HVL_PRIMARY;
+    if(hvl_string == "8" || hvl_string == "late-stage") return Person::HVLStrata::HVL_LATESTAGE;
+
+    throw std::runtime_error("unknown hvl stratum: " + hvl_string);
+}
+
+template<>
+SexualPartnership::Type SimulationBuilderXml::from_string(const std::string &type_string)
+{
+    if(type_string == "steady") return SexualPartnership::Type::Steady;
+    if(type_string == "regular") return SexualPartnership::Type::Regular;
+    if(type_string == "casual") return SexualPartnership::Type::Casual;
+    if(type_string == "csw") return SexualPartnership::Type::Csw;
+
+    throw std::runtime_error("unknown partnership type: " + type_string);
+}
+
+Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool individual)
+{
+    int time = node.attribute("time") != nullptr ? Attr<int>(node, "time") : -1;
+    int duration = node.attribute("duration") != nullptr ? Attr<int>(node, "duration") : -1;
+
+    Intervention intervention(time, duration);
+
+    auto intervention_type = from_string<KnownIntervention>(node.name());
+
+    if(individual)
+    {
+        switch(intervention_type)
+        {
+        case KnownIntervention::Circumcise:
+        {
+            intervention.SetPopulationIndividualCallback(
+                [=](Population &population, Person *person) { 
+                    population.Circumcise(person); });
+            break;
+        }
+        case KnownIntervention::ChanceBecomeSexWorker:
+        {
+            auto chance = Text<double>(node);
+            intervention.SetIndividualCallback(
+                [=](Person *person) { 
+                    person->SetChanceBecomeSexWorker(chance); });
+            break;
+        }
+        case KnownIntervention::DelaySexualActivity:
+        {
+            auto months = Text<int>(node);
+            intervention.SetIndividualCallback(
+                [=](Person *person) { 
+                    person->SetSexualActivityDelay(months); });
+            break;
+        }
+        case KnownIntervention::TransmissionCoefficient:
+        {
+            auto hvl_stratum = Attr<Person::HVLStrata>(node, "hvl");
+            auto coefficient = Text<double>(node);
+            intervention.SetIndividualCallback(
+                [=](Person *person) { 
+                    person->SetTransmissionCoefficient(hvl_stratum, coefficient); });
+            break;
+        }
+        case KnownIntervention::AverageYearsYounger:
+        {
+            auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
+            auto dist = GetNormalDist(node);
+            intervention.SetIndividualCallback(
+                [=](Person *person) { 
+                    person->SetAverageYearsYounger(partnership_type, dist); });
+            break;
+        }
+        case KnownIntervention::PartnerAcquisitionRate:
+        {
+            auto risk = Attr<Person::RiskLevel>(node, "risk");
+            auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
+            auto dist = GetLogNormalDist(node);
+            intervention.SetIndividualCallback(
+                [=](Person *person) { 
+                    person->SetAcquisitionRatePerMonth(risk, partnership_type, dist, simulation_.GetEventParams().randomNums); });
+            break;
+        }
+        case KnownIntervention::CoitalEventsPerMonth:
+        {
+            auto risk = Attr<Person::RiskLevel>(node, "risk");
+            auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
+            auto dist = Text<double>(node.child("distribution").child("mean"));
+            intervention.SetIndividualCallback(
+                [=](Person *person) { 
+                    person->SetCoitalEventsPerMonth(risk, partnership_type, dist); });
+            break;
+        }
+        case KnownIntervention::ChanceCondomUse:
+        {
+            auto risk = Attr<Person::RiskLevel>(node, "risk");
+            auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
+            auto dist = GetBetaDist(node);
+            intervention.SetIndividualCallback(
+                [=](Person *person) {
+                    person->SetChanceCondomUsePerEvent(risk, partnership_type, dist, simulation_.GetEventParams().randomNums); });
+            break;
+        }
+        case KnownIntervention::PartnershipDuration:
+        {
+            auto risk = Attr<Person::RiskLevel>(node, "risk");
+            auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
+            auto dist = GetShiftedLogNormalDist(node);
+            intervention.SetIndividualCallback(
+                [=](Person *person) { 
+                    person->SetPartnershipDuration(risk, partnership_type, dist); });
+            break;
+        }
+        default:
+        {
+            std::string message = "Intervention cannot be applied to a specific sub-population: ";
+            message.append(KnownInterventionStrings.at(intervention_type));
+            throw std::runtime_error(message);
+        }
+        }
+    }
+    else
+    {
+        switch(intervention_type)
+        {
+        case KnownIntervention::BirthRate:
+        {
+            auto value = Text<double>(node);
+            intervention.SetPopulationCallback(
+                [=](Population &p) { 
+                    p.popWideParams.setBirthRate(value); });
+            break;
+        }
+        case KnownIntervention::ProportionMale:
+        {
+            auto value = Text<double>(node);
+            intervention.SetPopulationCallback(
+                [=](Population &p) { 
+                    p.popWideParams.setProportionMale(value); });
+            break;
+        }
+        case KnownIntervention::ProportionCircumcised:
+        {
+            auto value = Text<double>(node);
+            intervention.SetPopulationCallback(
+                [=](Population &p) {
+                    p.popWideParams.setProportionCircumcised(value); });
+            break;
+        }
+        case KnownIntervention::ChanceBecomeSexWorker:
+        {
+            auto gender = Attr<DemographicProfile::Gender>(node, "gender");
+            auto chance = Text<double>(node);
+            intervention.SetPopulationCallback(
+                [=](Population &p) { p.popWideParams.SetChanceBecomeCsw(gender, chance); });
+            intervention.SetIndividualCallback([=](Person *person)
+            {
+                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::GENDER) == gender)
+                {
+                    person->SetChanceBecomeSexWorker(chance);
+                }
+            });
+            break;
+        }
+        case KnownIntervention::DelaySexualActivity:
+        {
+            auto months = Text<int>(node);
+            intervention.SetPopulationCallback(
+                [=](Population &p) { p.popWideParams.SetSexualActivityDelay(months); });
+            intervention.SetIndividualCallback(
+                [=](Person *person) { person->SetSexualActivityDelay(months); });
+            break;
+        }
+        case KnownIntervention::TransmissionCoefficient:
+        {
+            auto gender = Attr<DemographicProfile::Gender>(node, "gender");
+            auto hvl_stratum = Attr<Person::HVLStrata>(node, "hvl");
+            auto coefficient = Text<double>(node);
+            intervention.SetPopulationCallback(
+                [=](Population &p) { p.popWideParams.SetTransmissionCoefficient(gender, hvl_stratum, coefficient); });
+            intervention.SetIndividualCallback([=](Person *person)
+            {
+                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::GENDER) == gender)
+                {
+                    person->SetTransmissionCoefficient(hvl_stratum, coefficient);
+                }
+            });
+            break;
+        }
+        case KnownIntervention::ProportionHighRisk:
+        {
+            auto gender = Attr<DemographicProfile::Gender>(node, "gender");
+            auto employment = Attr<DemographicProfile::Employment>(node, "employment");
+            auto proportion = Text<double>(node);
+            intervention.SetPopulationCallback(
+                [=](Population &p) { p.popWideParams.SetProportionHighRisk(gender, employment, proportion); });
+            intervention.SetIndividualCallback([=](Person *person)
+            {
+                if(gender == (DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::GENDER))
+                {
+                    person->SetProportionHighRisk(employment, proportion);
+                }
+            });
+            break;
+        }
+        case KnownIntervention::AverageYearsYounger:
+        {
+            auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
+            auto dist = GetNormalDist(node);
+            intervention.SetPopulationCallback(
+                [=](Population &p) { p.popWideParams.SetAverageYearsYounger(partnership_type, dist); });
+            intervention.SetIndividualCallback([=](Person *person) 
+            { 
+                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::GENDER) == DemographicProfile::MALE)
+                {
+                    person->SetAverageYearsYounger(partnership_type, dist);
+                }
+            });
+            break;
+        }
+        case KnownIntervention::PartnerAcquisitionRate:
+        {
+            auto risk = Attr<Person::RiskLevel>(node, "risk");
+            auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
+            auto dist = GetLogNormalDist(node);
+            intervention.SetPopulationCallback(
+                [=](Population &p) { p.popWideParams.SetAcquisitionRatePerMonth(risk, partnership_type, dist); });
+            intervention.SetIndividualCallback([=](Person *person)
+            {
+                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::GENDER) == DemographicProfile::MALE)
+                {
+                    person->SetAcquisitionRatePerMonth(risk, partnership_type, dist, simulation_.GetEventParams().randomNums);
+                }
+            });
+            break;
+        }
+        case KnownIntervention::CoitalEventsPerMonth:
+        {
+            auto risk = Attr<Person::RiskLevel>(node, "risk");
+            auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
+            auto dist = Text<double>(node.child("distribution").child("mean"));
+            intervention.SetPopulationCallback(
+                [=](Population &p) { p.popWideParams.SetCoitalEventsPerMonth(risk, partnership_type, dist); });
+            intervention.SetIndividualCallback([=](Person *person)
+            {
+                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::GENDER) == DemographicProfile::MALE)
+                {
+                    person->SetCoitalEventsPerMonth(risk, partnership_type, dist);
+                }
+            });
+            break;
+        }
+        case KnownIntervention::ChanceCondomUse:
+        {
+            auto risk = Attr<Person::RiskLevel>(node, "risk");
+            auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
+            auto dist = GetBetaDist(node);
+            intervention.SetPopulationCallback(
+                [=](Population &p) { p.popWideParams.SetChanceCondomUsePerEvent(risk, partnership_type, dist); });
+            intervention.SetIndividualCallback([=](Person *person)
+            {
+                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::GENDER) == DemographicProfile::MALE)
+                {
+                    person->SetChanceCondomUsePerEvent(risk, partnership_type, dist, simulation_.GetEventParams().randomNums);
+                }
+            });
+            break;
+        }
+        case KnownIntervention::PartnershipDuration:
+        {
+            auto risk = Attr<Person::RiskLevel>(node, "risk");
+            auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
+            auto dist = GetShiftedLogNormalDist(node);
+            intervention.SetPopulationCallback(
+                [=](Population &p) { p.popWideParams.SetPartnershipDuration(risk, partnership_type, dist); });
+            intervention.SetIndividualCallback([=](Person *person) 
+            { 
+                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::GENDER) == DemographicProfile::MALE)
+                {
+                    person->SetPartnershipDuration(risk, partnership_type, dist);
+                }
+            });
+            break;
+        }
+        case KnownIntervention::RolloutEligibility:
+        {
+            int new_value = Text<int>(node);
+            std::string criterion = Attr<std::string>(node, "criterion");
+            std::string parameter_name = Attr<std::string>(node, "parameter");
+
+            if(criterion == "OIHist")
+            {
+                if(parameter_name == "rank")
+                {
+                    intervention.SetSimulationCallback(
+                        [=](Simulation &s) { s.parameters_.rolloutEligibility.oiHistRank = new_value; });
+                }
+                else if(parameter_name.substr(0, 2) == "OI")
+                {
+                    int oi_number = std::stoi(parameter_name.substr(2));
+                    intervention.SetSimulationCallback(
+                        [=](Simulation &s) { s.parameters_.rolloutEligibility.oiHistOIs[oi_number] = new_value != 0; });
+                }
+                else if(parameter_name == "numOIToStart")
+                {
+                    intervention.SetSimulationCallback(
+                        [=](Simulation &s) { s.parameters_.rolloutEligibility.oiHistNumToStart = new_value; });
+                }
+                else
+                {
+                    throw std::runtime_error("invalid parameter: " + parameter_name);
+                }
+            }
+            else if(criterion == "CD4")
+            {
+                if(parameter_name == "rank")
+                {
+                    intervention.SetSimulationCallback(
+                        [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4Rank = new_value; });
+                }
+                else if(parameter_name == "CD4Lwr")
+                {
+                    intervention.SetSimulationCallback(
+                        [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4Bounds.lower = new_value; });
+                }
+                else if(parameter_name == "CD4Upp")
+                {
+                    intervention.SetSimulationCallback(
+                        [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4Bounds.upper = new_value; });
+                }
+                else
+                {
+                    throw std::runtime_error("invalid parameter: " + parameter_name);
+                }
+            }
+            else if(criterion == "CD4OIHist")
+            {
+                if(parameter_name == "rank")
+                {
+                    intervention.SetSimulationCallback(
+                        [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4OiHistRank = new_value; });
+                }
+                else if(parameter_name == "CD4Lwr")
+                {
+                    intervention.SetSimulationCallback(
+                        [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4OiHistCd4Bounds.lower = new_value; });
+                }
+                else if(parameter_name == "CD4Upp")
+                {
+                    intervention.SetSimulationCallback(
+                        [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4OiHistCd4Bounds.upper = new_value; });
+                }
+                else if(parameter_name.substr(0, 2) == "OI")
+                {
+                    int oi_number = std::stoi(parameter_name.substr(2));
+                    intervention.SetSimulationCallback(
+                        [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4OiHistOIs[oi_number] = new_value != 0; });
+                }
+                else
+                {
+                    throw std::runtime_error("invalid parameter: " + parameter_name);
+                }
+            }
+            else if(criterion == "HVL")
+            {
+                if(parameter_name == "rank")
+                {
+                    intervention.SetSimulationCallback(
+                        [=](Simulation &s) { s.parameters_.rolloutEligibility.hvlRank = new_value; });
+                }
+                else if(parameter_name == "HVLLwr")
+                {
+                    intervention.SetSimulationCallback(
+                        [=](Simulation &s) { s.parameters_.rolloutEligibility.hvlBounds.lower = new_value; });
+                }
+                else if(parameter_name == "HVLUpp")
+                {
+                    intervention.SetSimulationCallback(
+                        [=](Simulation &s) { s.parameters_.rolloutEligibility.hvlBounds.upper = new_value; });
+                }
+                else
+                {
+                    throw std::runtime_error("invalid parameter: " + parameter_name);
+                }
+            }
+            else if(criterion == "CD4HVL")
+            {
+                if(parameter_name == "rank")
+                {
+                    intervention.SetSimulationCallback(
+                        [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4HvlRank = new_value; });
+                }
+                else if(parameter_name == "CD4Lwr")
+                {
+                    intervention.SetSimulationCallback(
+                        [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4HvlCd4Bounds.lower = new_value; });
+                }
+                else if(parameter_name == "CD4Upp")
+                {
+                    intervention.SetSimulationCallback(
+                        [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4HvlCd4Bounds.upper = new_value; });
+                }
+                else if(parameter_name == "HVLLwr")
+                {
+                    intervention.SetSimulationCallback(
+                        [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4HvlHvlBounds.lower = new_value; });
+                }
+                else if(parameter_name == "HVLUpp")
+                {
+                    intervention.SetSimulationCallback(
+                        [=](Simulation &s) { 
+                            s.parameters_.rolloutEligibility.cd4HvlHvlBounds.upper = new_value; });
+                }
+                else
+                {
+                    throw std::runtime_error("invalid parameter: " + parameter_name);
+                }
+            }
+            else
+            {
+                throw std::runtime_error("invalid rollout eligibility criterion for intervention: " + criterion);
+            }
+            break;
+        }
+        default:
+        {
+            std::string message = "Intervention cannot be applied to population: ";
+            message.append(KnownInterventionStrings.at(intervention_type));
+            throw std::runtime_error(message);
+        }
+        }
+    }
+
+    return intervention;
 }

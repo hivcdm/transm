@@ -57,6 +57,8 @@ private:
 
 	SexualBehavior ReadSexualBehavior(SexualPartnership::Type type);
 
+    Intervention ReadIntervention(pugi::xml_node &node, bool individual);
+
     NormalDist GetNormalDist(const pugi::xml_node node);
     LogNormalDist GetLogNormalDist(const pugi::xml_node node);
     BetaDist GetBetaDist(const pugi::xml_node node);

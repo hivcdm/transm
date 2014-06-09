@@ -11,17 +11,21 @@ class Person;
 class Intervention
 {
 public:
-    Intervention(const std::string &parameter, const std::string &value, const std::unordered_map<std::string, std::string> &parameters, bool individual);
+    Intervention(int time, int duration = -1);
 
+    void SetSimulationCallback(std::function<void(Simulation &)> callback) { simulation_intervention_ = callback; }
     bool AffectsSimulation() const { return (bool)simulation_intervention_; }
     void Apply(Simulation &simulation);
 
+    void SetPopulationCallback(std::function<void(Population &)> callback) { population_intervention_ = callback; }
     bool AffectsPopulation() const { return (bool)population_intervention_; }
     void Apply(Population &population);
 
+    void SetPopulationIndividualCallback(std::function<void(Population &, Person *)> callback) { population_individual_intervention_ = callback; }
     bool AffectsPopulationIndividual() const { return (bool)population_individual_intervention_; }
     void Apply(Population &population, Person *person);
 
+    void SetIndividualCallback(std::function<void(Person *)> callback) { individual_intervention_ = callback; }
     bool AffectsIndividual() const { return (bool)individual_intervention_; }
     void Apply(Person *person);
 

@@ -59,7 +59,7 @@ public:
     void RegisterIntervention(const Intervention &intervention);
 
 private:
-	friend class SimulationBuilder;
+	friend class SimulationBuilderXml;
     friend class Intervention;
 
 	struct TreatmentFile
