@@ -1047,6 +1047,7 @@ std::unordered_map<std::string, TargetGroup> SimulationBuilderXml::ReadGroups()
 
     for(auto group_node : groups_node.children("group"))
     {
+        auto label = Attr<std::string>(group_node, "label");
         auto enrollment_period_string = 
             Text<std::string>(group_node.child("enrollment-period"));
         auto enrollment_period = ParseRange(enrollment_period_string);
@@ -1054,7 +1055,7 @@ std::unordered_map<std::string, TargetGroup> SimulationBuilderXml::ReadGroups()
         bool open = Text<bool>(group_node.child("open-enrollment"));
         auto target = ParseGroupEligibility(group_node.child("eligibility-criteria"));
 
-        TargetGroup group(enrollment_period.first, enrollment_period.second, 
+        TargetGroup group(label, enrollment_period.first, enrollment_period.second, 
             open, permanent, target);
 
         for(auto partition_node : group_node.child("partitions").children("partition"))

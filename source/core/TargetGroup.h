@@ -45,12 +45,76 @@ public:
         bool operator!=(const PopulationTarget &other) const { return !(*this == other); }
     };
 
-    TargetGroup(int start, int end, bool open, bool permanent, Nullable<PopulationTarget> target);
+    struct PartitionSummary
+    {
+        int population_size;
+        int incident_cases;
+        int prevalent_cases;
+    };
 
-    void Update(Population &p, int simulation_time, RandomNumberGenerator &rng, const std::unordered_set<Person *> &new_people, const std::unordered_set<Person *> &dead_people);
+    TargetGroup(const std::string &label, int start, int end, bool open, bool permanent, Nullable<PopulationTarget> target);
+
+    void Update(Population &p, int simulation_time, RandomNumberGenerator &rng, 
+        const std::unordered_set<Person *> &new_people, const std::unordered_set<Person *> &dead_people);
 
     void AddPartition(const std::string &label, bool trace, double proportion,
         std::vector<Intervention> simulation_interventions);
+
+    std::vector<std::string> GetPartitionNames() const
+    {
+        std::vector<std::string> names;
+        for(auto &partition : partitions_)
+        {
+            names.push_back(partition.GetLabel());
+        }
+        return names;
+    }
+
+    PartitionSummary GetPartitionSummary(const std::string &partition_name,
+        bool include_non_sexually_active = false) const
+    {
+        for(auto &partition : partitions_)
+        {
+            if(partition.GetLabel() == partition_name)
+            {
+                PartitionSummary summary;
+
+                if(include_non_sexually_active)
+                {
+                    summary.population_size = (int)partition.members_.size();
+                    summary.incident_cases = (int)std::count_if(partition.members_.begin(), partition.members_.end(), [](Person *p) 
+                    { 
+                        return p->ageInfected == p->age - 1;
+                    });
+                    summary.prevalent_cases = (int)std::count_if(partition.members_.begin(), partition.members_.end(), [](Person *p) 
+                    { 
+                        return p->ageInfected > -1 && p->ageInfected != p->age - 1;
+                    });
+                }
+                else
+                {
+                    summary.population_size = (int)std::count_if(partition.members_.begin(), partition.members_.end(), [](Person *p) 
+                    { 
+                        return p->getDemographicProfileVal(DemographicProfile::SEXUAL_ACTIVITY_STATUS) == DemographicProfile::SA; 
+                    });
+                    summary.incident_cases = (int)std::count_if(partition.members_.begin(), partition.members_.end(), [](Person *p)
+                    {
+                        return p->getDemographicProfileVal(DemographicProfile::SEXUAL_ACTIVITY_STATUS) == DemographicProfile::SA && p->ageInfected == p->age - 1;
+                    });
+                    summary.prevalent_cases = (int)std::count_if(partition.members_.begin(), partition.members_.end(), [](Person *p)
+                    {
+                        return p->getDemographicProfileVal(DemographicProfile::SEXUAL_ACTIVITY_STATUS) == DemographicProfile::SA && p->ageInfected > -1 && p->ageInfected != p->age - 1;
+                    });
+                }
+
+                return summary;
+            }
+        }
+
+        throw std::runtime_error("partition not found");
+    }
+
+    std::string GetLabel() const { return label_; }
 
 private:
     struct
@@ -61,6 +125,7 @@ private:
 
     bool open_;
     bool permanent_effect_;
+    std::string label_;
 
     class Partition
     {
@@ -76,6 +141,7 @@ private:
         }
         void Remove(Person *p) { if(members_.find(p) != members_.end()) members_.erase(p); }
         void Update(Population &p, int current_time);
+        std::string GetLabel() const { return label_; }
     private:
         friend class TargetGroup;
         std::unordered_set<Person *> members_;

@@ -67,6 +67,12 @@ void Utility::findInputFiles(const std::string &inputDirectory, const std::strin
 {
     std::string directoryPath = inputDirectory;
 
+    if(boost::filesystem::path(inputDirectory).has_extension() && boost::filesystem::path(inputDirectory).extension() == ".xml" && boost::filesystem::exists(inputDirectory))
+    {
+        transmFilesToRun.push_back(inputDirectory);
+        return;
+    }
+
     if(boost::filesystem::path(directoryPath).is_relative())
     {
         try

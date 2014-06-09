@@ -182,11 +182,12 @@ Intervention::Intervention(int time, int duration) : time_(time), duration_(dura
 {
 }
 
-TargetGroup::TargetGroup(int start, int end, bool open, bool permanent, Nullable<PopulationTarget> target)
-: enrollment_period_({start, end}),
-open_(open),
-permanent_effect_(permanent),
-target_(target)
+TargetGroup::TargetGroup(const std::string &label, int start, int end, bool open, bool permanent, Nullable<PopulationTarget> target)
+    : label_(label), 
+    enrollment_period_({start, end}),
+    open_(open),
+    permanent_effect_(permanent),
+    target_(target)
 {
 
 }
@@ -534,6 +535,8 @@ void Simulation::LastStep()
 			remove(fileName.c_str());
 		}
 	}
+
+    outputs_.intervention_outcomes.Write(parameters_.simName + "-InterventionOutcomes.xls");
 }
 
 /*
@@ -613,11 +616,14 @@ void Simulation::UpdateInterventions(const std::unordered_set<Person *> &new_peo
     {
         group.Update(population_, time_, parameters_.randomNums, new_people, dead_people);
     }
+
+    outputs_.intervention_outcomes.Update(time_);
 }
 
 void Simulation::RegisterTargetGroup(const TargetGroup &group)
 {
     groups_.push_back(group);
+    outputs_.intervention_outcomes.RegisterGroup(groups_.back());
 }
 
 /***
