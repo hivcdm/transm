@@ -55,10 +55,21 @@ public:
     TargetGroup(const std::string &label, int start, int end, bool open, bool permanent, Nullable<PopulationTarget> target);
 
     void Update(Population &p, int simulation_time, RandomNumberGenerator &rng, 
-        const std::unordered_set<Person *> &new_people, const std::unordered_set<Person *> &dead_people);
+        const std::unordered_set<Person *> &dead_people);
 
     void AddPartition(const std::string &label, bool trace, double proportion,
         std::vector<Intervention> simulation_interventions);
+
+    void AssignToPartition(Population &pop, Person *p, int partition) 
+    { 
+        if(!InGroup(p))
+        {
+            member_partitions_[p] = partition;
+            partitions_[partition].ApplyInterventions(pop, p);
+        }
+    }
+
+    bool InGroup(Person *p) const { return member_partitions_.find(p) != member_partitions_.end(); }
 
     std::vector<std::string> GetPartitionNames() const
     {
@@ -73,6 +84,30 @@ public:
     PartitionSummary GetPartitionSummary(const std::string &partition_name,
         bool include_non_sexually_active = false) const
     {
+        int partition_index = 0;
+
+        for(auto &partition : partitions_)
+        {
+            if(partition.GetLabel() == partition_name)
+            {
+                break;
+            }
+
+            partition_index++;
+        }
+
+        if(partition_index == partitions_.size())
+        {
+            throw std::runtime_error("partition not found");
+        }
+
+        auto in_partition = [=](const std::pair<Person *, int> &p) { return p.second == partition_index; };
+        auto is_sexually_active = [&](const std::pair<Person *, int> &p) { return in_partition(p) && p.first->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SA; };
+        auto is_prevalent = [&](const std::pair<Person *, int> &p) { return in_partition(p) && p.first->ageInfected > -1 && p.first->ageInfected + 1 != (int)p.first->age; };
+        auto is_incident = [&](const std::pair<Person *, int> &p) { return in_partition(p) && p.first->ageInfected + 1 == (int)p.first->age; };
+        auto is_prevalent_sa = [&](const std::pair<Person *, int> &p) { return in_partition(p) && is_sexually_active(p) && is_prevalent(p); };
+        auto is_incident_sa = [&](const std::pair<Person *, int> &p) { return in_partition(p) && is_sexually_active(p) && is_incident(p); };
+
         for(auto &partition : partitions_)
         {
             if(partition.GetLabel() == partition_name)
@@ -81,30 +116,15 @@ public:
 
                 if(include_non_sexually_active)
                 {
-                    summary.population_size = (int)partition.members_.size();
-                    summary.incident_cases = (int)std::count_if(partition.members_.begin(), partition.members_.end(), [](Person *p) 
-                    { 
-                        return p->ageInfected == p->age - 1;
-                    });
-                    summary.prevalent_cases = (int)std::count_if(partition.members_.begin(), partition.members_.end(), [](Person *p) 
-                    { 
-                        return p->ageInfected > -1 && p->ageInfected != p->age - 1;
-                    });
+                    summary.population_size = (int)std::count_if(member_partitions_.begin(), member_partitions_.end(), in_partition);
+                    summary.incident_cases = (int)std::count_if(member_partitions_.begin(), member_partitions_.end(), is_incident);
+                    summary.prevalent_cases = (int)std::count_if(member_partitions_.begin(), member_partitions_.end(), is_prevalent);
                 }
                 else
                 {
-                    summary.population_size = (int)std::count_if(partition.members_.begin(), partition.members_.end(), [](Person *p) 
-                    { 
-                        return p->getDemographicProfileVal(DemographicProfile::SEXUAL_ACTIVITY_STATUS) == DemographicProfile::SA; 
-                    });
-                    summary.incident_cases = (int)std::count_if(partition.members_.begin(), partition.members_.end(), [](Person *p)
-                    {
-                        return p->getDemographicProfileVal(DemographicProfile::SEXUAL_ACTIVITY_STATUS) == DemographicProfile::SA && p->ageInfected == p->age - 1;
-                    });
-                    summary.prevalent_cases = (int)std::count_if(partition.members_.begin(), partition.members_.end(), [](Person *p)
-                    {
-                        return p->getDemographicProfileVal(DemographicProfile::SEXUAL_ACTIVITY_STATUS) == DemographicProfile::SA && p->ageInfected > -1 && p->ageInfected != p->age - 1;
-                    });
+                    summary.population_size = (int)std::count_if(member_partitions_.begin(), member_partitions_.end(), is_sexually_active);
+                    summary.incident_cases = (int)std::count_if(member_partitions_.begin(), member_partitions_.end(), is_incident_sa);
+                    summary.prevalent_cases = (int)std::count_if(member_partitions_.begin(), member_partitions_.end(), is_prevalent_sa);
                 }
 
                 return summary;
@@ -115,6 +135,8 @@ public:
     }
 
     std::string GetLabel() const { return label_; }
+
+    void Remove(Person *p) { if(member_partitions_.find(p) != member_partitions_.end()) member_partitions_.erase(p); }
 
 private:
     struct
@@ -131,20 +153,19 @@ private:
     {
     public:
         double GetProportion() const { return proportion_; }
-        void Add(Population &pop, Person *p) 
+
+        void ApplyInterventions(Population &pop, Person *p) 
         { 
-            members_.insert(p); 
             for(auto &intervention : interventions_)
             {
                 intervention.Apply(pop, p);
             }
         }
-        void Remove(Person *p) { if(members_.find(p) != members_.end()) members_.erase(p); }
+
         void Update(Population &p, int current_time);
         std::string GetLabel() const { return label_; }
     private:
         friend class TargetGroup;
-        std::unordered_set<Person *> members_;
         std::string label_;
         bool trace_;
         double proportion_;
@@ -152,6 +173,8 @@ private:
     };
 
     std::vector<Partition> partitions_;
+
+    std::unordered_map<Person *, int> member_partitions_;
 
     Nullable<PopulationTarget> target_;
 };

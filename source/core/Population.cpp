@@ -139,8 +139,6 @@ Population::~Population()
 
 void Population::Births(EventParams &parameters_)
 {
-    new_people_this_month_.clear();
-
 	//number of people to be born this month
 	unsigned long numBorn = Utility::round<unsigned long>(currSize * popWideParams.birthRate);
 	unsigned long numMales = static_cast<unsigned long>(popWideParams.proportionMale * numBorn);
@@ -981,8 +979,6 @@ Person *Population::GeneratePerson(EventParams &parameters_, DemographicProfile:
 			toReturn->print(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].file, "Tracing the following patient: ");
 		}
 	}
-
-    new_people_this_month_.insert(toReturn);
 
 	return toReturn;
 }

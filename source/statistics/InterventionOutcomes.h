@@ -35,6 +35,11 @@ public:
         }
 
         rows_.push_back(current_row);
+
+        if(current_month + 1 != (int)rows_.size())
+        {
+            throw std::runtime_error("missed month");
+        }
     }
 
     void Write(const std::string &filename) const

@@ -91,7 +91,7 @@ private:
 	/** perform one timestep of simulation */
     std::size_t SimulateMonth();
 
-    void UpdateInterventions(const std::unordered_set<Person *> &new_people, const std::unordered_set<Person *> &dead_people);
+    void UpdateInterventions(const std::unordered_set<Person *> &dead_people);
 
 	std::string name_;
 

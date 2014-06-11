@@ -960,16 +960,18 @@ Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node cri
     {
         target.has_value = true;
 
-        if(std::string(criterion_node.name()) == "gender")
+        std::string name = criterion_node.name();
+        std::string value = criterion_node.text().as_string();
+
+        if(name == "gender")
         {
             target.value.gender.has_value = true;
-            std::string gender_string = criterion_node.text().as_string();
 
-            if(gender_string == "male")
+            if(value == "male")
             {
                 target.value.gender.value = DemographicProfile::MALE;
             }
-            else if(gender_string == "female")
+            else if(value == "female")
             {
                 target.value.gender.value = DemographicProfile::FEMALE;
             }
@@ -978,27 +980,80 @@ Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node cri
                 throw std::runtime_error("invalid gender");
             }
         }
-        else if(std::string(criterion_node.name()) == "circumcised")
+        else if(name == "circumcised")
         {
             target.value.circumcised.has_value = true;
-            std::string circumcised_string = criterion_node.text().as_string();
 
-            if(circumcised_string == "true")
+            if(value == "true")
             {
                 target.value.circumcised.value = true;
             }
-            else if(circumcised_string == "false")
+            else if(value == "false")
             {
                 target.value.circumcised.value = false;
             }
             else
             {
-                throw std::runtime_error("invalid circumcision value: " + circumcised_string);
+                throw std::runtime_error("invalid circumcision value: " + value);
             }
+        }
+        else if(name == "hiv-status")
+        {
+            target.value.observed_hiv_status.has_value = true;
+
+            if(value == "negative")
+            {
+                target.value.observed_hiv_status.value = Person::NEGATIVE;
+            }
+            else if(value == "observed-acute")
+            {
+                target.value.observed_hiv_status.value = Person::OBSERVED_ACUTE;
+            }
+            else if(value == "unobserved-acute")
+            {
+                target.value.observed_hiv_status.value = Person::UNOBSERVED_ACUTE;
+            }
+            else if(value == "observed-chronic")
+            {
+                target.value.observed_hiv_status.value = Person::OBSERVED_CHRONIC;
+            }
+            else if(value == "unobserved-chronic")
+            {
+                target.value.observed_hiv_status.value = Person::UNOBSERVED_CHRONIC;
+            }
+            else if(value == "observed-latestage")
+            {
+                target.value.observed_hiv_status.value = Person::OBSERVED_LATESTAGE;
+            }
+            else if(value == "unobserved-latestage")
+            {
+                target.value.observed_hiv_status.value = Person::UNOBSERVED_LATESTAGE;
+            }
+            else
+            {
+                throw std::runtime_error("invalid hiv-status value: " + value);
+            }
+        }
+        else if(name == "age")
+        {
+            target.value.age_lower.has_value = true;
+            target.value.age_upper.has_value = true;
+
+            if(value.find('-') != std::string::npos)
+            {
+                target.value.age_lower.value = std::stoi(value.substr(0, value.find('-')));
+                target.value.age_upper.value = std::stoi(value.substr(value.find('-') + 1));
+            }
+            else
+            {
+                target.value.age_lower.value = std::stoi(value);
+                target.value.age_upper.value = std::stoi(value);
+            }
+
         }
         else
         {
-            throw std::runtime_error("invalid group eligibility criterion: " + std::string(criteria_node.name()));
+            throw std::runtime_error("invalid group eligibility criterion: " + name);
         }
     }
 

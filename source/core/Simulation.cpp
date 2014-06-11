@@ -73,8 +73,7 @@ bool Intervention::IsCompleted(int current_time) const
 }
 
 void TargetGroup::Update(Population &population, int current_time, 
-    RandomNumberGenerator &rng, const std::unordered_set<Person *> &newly_added, 
-    const std::unordered_set<Person *> &dead_people)
+    RandomNumberGenerator &rng, const std::unordered_set<Person *> &dead_people)
 {
     if(enrollment_period_.start > current_time)
     {
@@ -83,56 +82,103 @@ void TargetGroup::Update(Population &population, int current_time,
 
     for(auto person : dead_people)
     {
-        for(auto &partition : partitions_)
-        {
-            partition.Remove(person);
-        }
+        Remove(person);
     }
 
     auto match = [&](Person *person)
     {
-        return (!((target_.value.employment.has_value
-            && target_.value.employment.value != (DemographicProfile::Employment)person->getDemographicProfileVal(DemographicProfile::EMPLOYMENT))
-            || (target_.value.gender.has_value
-            && target_.value.gender.value != (DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::GENDER))
-            || (target_.value.relationship_status.has_value
-            && target_.value.relationship_status.value != (DemographicProfile::RelationshipStatus)person->getDemographicProfileVal(DemographicProfile::RELATIONSHIP_STATUS))
-            || (target_.value.sexual_activity_status.has_value
-            && target_.value.sexual_activity_status.value != (DemographicProfile::SexualActivityStatus)person->getDemographicProfileVal(DemographicProfile::SEXUAL_ACTIVITY_STATUS))
-            || (target_.value.sexual_orientation.has_value
-            && target_.value.sexual_orientation.value != (DemographicProfile::SexualOrientation)person->getDemographicProfileVal(DemographicProfile::SEXUAL_ORIENTATION))
-            || (target_.value.age_lower.has_value
-            && target_.value.age_lower.value < person->getAge(TimeGranularity::Month))
-            || (target_.value.age_upper.has_value
-            && target_.value.age_upper.value > person->getAge(TimeGranularity::Month))
-            || (target_.value.observed_hiv_status.has_value
-            && target_.value.observed_hiv_status.value != person->getHIVStatus())
-            || (target_.value.on_treatment.has_value
-            && target_.value.on_treatment.value != person->isOnArt())
-            || (target_.value.circumcised.has_value
-            && target_.value.circumcised.value != person->IsCircumcised())
-            || (target_.value.risk_level.has_value
-            && target_.value.risk_level.value != person->getRiskLevel())));
+        if(target_.has_value)
+        {
+            if(target_.value.employment.has_value
+                && target_.value.employment.value != person->getDemographicProfileVal<DemographicProfile::Employment>())
+            {
+                return false;
+            }
+
+            if(target_.value.gender.has_value
+                && target_.value.gender.value != (DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::GENDER))
+            {
+                return false;
+            }
+
+            if(target_.value.relationship_status.has_value
+                && target_.value.relationship_status.value != (DemographicProfile::RelationshipStatus)person->getDemographicProfileVal(DemographicProfile::RELATIONSHIP_STATUS))
+            {
+                return false;
+            }
+
+            if(target_.value.sexual_activity_status.has_value
+                && target_.value.sexual_activity_status.value != (DemographicProfile::SexualActivityStatus)person->getDemographicProfileVal(DemographicProfile::SEXUAL_ACTIVITY_STATUS))
+            {
+                return false;
+            }
+
+            if(target_.value.sexual_orientation.has_value
+                && target_.value.sexual_orientation.value != (DemographicProfile::SexualOrientation)person->getDemographicProfileVal(DemographicProfile::SEXUAL_ORIENTATION))
+            {
+                return false;
+            }
+
+            if(target_.value.age_lower.has_value
+                && target_.value.age_lower.value > person->getAge(TimeGranularity::Month))
+            {
+                return false;
+            }
+
+            if(target_.value.age_upper.has_value
+                && target_.value.age_upper.value < person->getAge(TimeGranularity::Month))
+            {
+                return false;
+            }
+
+            if(target_.value.observed_hiv_status.has_value
+                && target_.value.observed_hiv_status.value != person->getHIVStatus())
+            {
+                return false;
+            }
+
+            if(target_.value.on_treatment.has_value
+                && target_.value.on_treatment.value != person->isOnArt())
+            {
+                return false;
+            }
+
+            if(target_.value.circumcised.has_value
+                && target_.value.circumcised.value != person->IsCircumcised())
+            {
+                return false;
+            }
+
+            if(target_.value.risk_level.has_value
+                && target_.value.risk_level.value != person->getRiskLevel())
+            {
+                return false;
+            }
+        }
+
+        return true; 
     };
 
-    auto matches_ptr = &newly_added;
-    std::unordered_set<Person *> people;
-
-    if(enrollment_period_.start == current_time)
+    if((open_ && enrollment_period_.end >= current_time) || enrollment_period_.start == current_time)
     {
-        people = population.Find(match);
-        matches_ptr = &people;
-    }
+        std::unordered_set<Person *> people;
 
-    auto &matches = *matches_ptr;
+        for(auto person : population.Find(match))
+        {
+            if(!InGroup(person))
+            {
+                people.insert(person);
+            }
+        }
 
-    if(open_ || enrollment_period_.start == current_time)
-    {
-        int num_matches = (int)std::count_if(matches.begin(), matches.end(), match);
+        if(people.empty())
+        {
+            return;
+        }
 
         if(partitions_.size() == 1 && partitions_.front().GetProportion() == 1)
         {
-            std::for_each(matches.begin(), matches.end(), [&](Person *p) { partitions_.front().Add(population, p); });
+            std::for_each(people.begin(), people.end(), [&](Person *p) { AssignToPartition(population, p, 0); });
         }
         else
         {
@@ -144,35 +190,66 @@ void TargetGroup::Update(Population &population, int current_time,
             for(int i = 0; i < (int)partitions_.size(); i++)
             {
                 sum_proportion += partitions_[i].GetProportion();
-                int partition_allocation = static_cast<int>(partitions_[i].GetProportion() * num_matches);
-                if(partition_allocation == 0)
+                int partition_allocation = static_cast<int>(partitions_[i].GetProportion() * people.size());
+
+                if(partition_allocation != 0)
                 {
-                    continue;
+                    partition_allocations.push_back(std::make_pair(i, partition_allocation));
+                    num_allocated += partition_allocation;
                 }
-                partition_allocations.push_back(std::make_pair(i, partition_allocation));
-                num_allocated += partition_allocation;
             }
 
-            if(sum_proportion < 0.9999)
+            if(num_allocated < people.size())
             {
-                partition_allocations.push_back(std::make_pair((int)partitions_.size(), num_matches - num_allocated));
+                while(num_allocated < people.size())
+                {
+                    double rand = rng.rand();
+                    int random_allocation_index;
+
+                    for(random_allocation_index = 0; random_allocation_index < (int)partitions_.size(); random_allocation_index++)
+                    {
+                        rand -= partitions_[random_allocation_index].GetProportion();
+
+                        if(rand < 0)
+                        {
+                            break;
+                        }
+                    }
+
+                    auto partition_allocations_iter = std::find_if(partition_allocations.begin(), partition_allocations.end(), 
+                        [=](const std::pair<int, int> &p) { return p.first == random_allocation_index; });
+
+                    if(partition_allocations_iter == partition_allocations.end())
+                    {
+                        partition_allocations.push_back(std::make_pair(random_allocation_index, 1));
+                    }
+                    else
+                    {
+                        partition_allocations_iter->second++;
+                    }
+
+                    num_allocated++;
+                }
             }
 
-            auto person_iter = std::find_if(matches.begin(), matches.end(), match);
+            auto person_iter = people.begin();
+
             while(!partition_allocations.empty())
             {
-                int allocations_index = rng.randInt(0, (uint32_t)partition_allocations.size() - 1);
+                int allocations_index = (int)(rng.rand() * partition_allocations.size());
                 int partition_index = partition_allocations[allocations_index].first;
+
                 if(partition_index < partitions_.size())
                 {
-                    partitions_[partition_index].Add(population, *person_iter);
+                    AssignToPartition(population, *person_iter, partition_index);
                 }
+
                 if(--partition_allocations[allocations_index].second == 0)
                 {
                     partition_allocations.erase(partition_allocations.begin() + allocations_index);
                 }
+
                 person_iter++;
-                person_iter = std::find_if(person_iter, matches.end(), match);
             }
         }
     }
@@ -275,8 +352,7 @@ void Simulation::FirstStep()
 		population_.populationStatistics.enableShiftedOutcomes(parameters_.monthOf1990);
 	}
 
-    UpdateInterventions(population_.GetNewPeopleThisMonth(), population_.GetDeadPeopleThisMonth());
-    population_.new_people_this_month_.clear();
+    UpdateInterventions(population_.GetDeadPeopleThisMonth());
 
 	//initialize/reset monthly stats
 	population_.ResetMonthlyStats();
@@ -358,17 +434,7 @@ void Simulation::Step()
 
             if(intervention.AffectsIndividual())
             {
-                if(intervention.IsFirstMonth(time_))
-                {
-                    population_.entities->forEach([&](Person *p) { intervention.Apply(p); });
-                }
-                else
-                {
-                    for(auto person : population_.new_people_this_month_)
-                    {
-                        intervention.Apply(person);
-                    }
-                }
+                population_.entities->forEach([&](Person *p) { intervention.Apply(p); });
             }
         }
     }
@@ -610,11 +676,11 @@ void Simulation::SetNonAidsDeathFromCepac(SimContext &cepacSimContext, std::vect
 	}
 }
 
-void Simulation::UpdateInterventions(const std::unordered_set<Person *> &new_people, const std::unordered_set<Person *> &dead_people)
+void Simulation::UpdateInterventions(const std::unordered_set<Person *> &dead_people)
 {
     for(auto &group : groups_)
     {
-        group.Update(population_, time_, parameters_.randomNums, new_people, dead_people);
+        group.Update(population_, time_, parameters_.randomNums, dead_people);
     }
 
     outputs_.intervention_outcomes.Update(time_);
@@ -688,7 +754,7 @@ std::size_t Simulation::SimulateMonth()
 
 	population_.UpdatePhysicalState(parameters_, recordLE, firstMonthToRecord);
 
-    UpdateInterventions(population_.GetNewPeopleThisMonth(), population_.GetDeadPeopleThisMonth());
+    UpdateInterventions(population_.GetDeadPeopleThisMonth());
 
 	if(parameters_.useRollout)
 	{
