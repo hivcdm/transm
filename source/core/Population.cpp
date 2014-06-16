@@ -570,6 +570,21 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 				//initiator only gets infected once...
 				Person *wasInfected = (*newlyInfectedIter == initiator) ? infectedMe : initiator;
 
+                if(individual_summaries_.find(wasUninfected) != individual_summaries_.end())
+                {
+                    throw std::runtime_error("person already being recorded");
+                }
+
+                individual_summaries_[wasUninfected] = PersonSummary();
+                individual_summaries_[wasUninfected].person_id = (int)wasUninfected->getID();
+                individual_summaries_[wasUninfected].generation_number = wasUninfected->getGenerationOfInfection();
+                individual_summaries_[wasUninfected].infected_by = wasInfected->getID();
+                individual_summaries_[wasUninfected].infection_number = (int)individual_summaries_.size();
+                individual_summaries_[wasUninfected].profile = *wasUninfected->getDemographicProfile();
+                individual_summaries_[wasUninfected].time_infected = parameters_.currTime;
+                individual_summaries_[wasUninfected].time_of_death = -1;
+                individual_summaries_[wasUninfected].age_at_infection = wasUninfected->getAge(TimeGranularity::Month);
+
 				//Adds person to the untreated pool if using rollout
 				if(parameters_.useRollout)
 				{
@@ -663,6 +678,72 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 			}
 		}
 	}
+}
+
+void Population::SaveIndividualSummaries(std::ostream &stream) const
+{
+    std::vector<PersonSummary> ordered_(individual_summaries_.size());
+
+    std::map<int, int> infection_numbers;
+
+    for(auto summary : individual_summaries_)
+    {
+        ordered_[summary.second.infection_number - 1] = summary.second;
+        infection_numbers[summary.second.person_id] = summary.second.infection_number - 1;
+    }
+
+    stream << "{" << std::endl;
+    stream << "\"nodes\" : [" << std::endl;
+
+    for(auto summary : ordered_)
+    {
+        stream << "{\"id\"" << ":" << summary.person_id;
+        stream << ",\"gender\"" << ":";
+        stream << (summary.profile.get(DemographicProfile::GENDER) == 0 ? "\"male\"" : "\"female\"");
+        stream << ",\"employment\"" << ":";
+        stream << (summary.profile.get(DemographicProfile::EMPLOYMENT) == 0 ? "\"non-csw\"" : "\"csw\"");
+        stream << ",\"sexual_activity_status\"" << ":";
+        stream << (summary.profile.get(DemographicProfile::SEXUAL_ACTIVITY_STATUS) == 0 ? "\"sexually active\"" : "\"not active\"");
+        stream << ",\"sexual_orientation\"" << ":";
+        stream << (summary.profile.get(DemographicProfile::SEXUAL_ORIENTATION) == 0 ? "\"hetero\"" : "\"homo\"");
+        stream << ",\"relationship_status\"" << ":";
+        stream << (summary.profile.get(DemographicProfile::RELATIONSHIP_STATUS) == 0 ? "\"non-single\"" : "\"single\"");
+        stream << ",\"risk_group\"" << ":" << (summary.risk_group == Person::HIGH ? "\"high\"" : "\"low\"");
+        stream << ",\"age_at_infection\"" << ":" << summary.age_at_infection;
+        stream << ",\"generation_number\"" << ":" << summary.generation_number;
+        stream << ",\"infection_number\"" << ":" << summary.infection_number;
+        stream << ",\"time_infected\"" << ":" << summary.time_infected;
+        stream << ",\"infected_by\"" << ":" << summary.infected_by;
+        stream << ",\"group\":1";
+        stream << "}";
+        if(summary.person_id != ordered_.back().person_id)
+        {
+            stream << ",";
+        }
+        stream << std::endl;
+    }
+
+    stream << "]," << std::endl;
+    stream << "\"links\" : [" << std::endl;
+
+    for(auto summary : ordered_)
+    {
+        if(summary.infected_by == -1)
+        {
+            continue;
+        }
+
+        stream << "{\"source\":" << infection_numbers[summary.infected_by] << ",\"target\":" << summary.infection_number - 1 << " \"value\":1}";
+        if(summary.person_id != ordered_.back().person_id)
+        {
+            stream << ",";
+        }
+        stream << std::endl;
+
+    }
+
+    stream << "]" << std::endl;
+    stream << "}" << std::endl;
 }
 
 /**
@@ -1063,6 +1144,15 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 			}
 
 			p->becomeInfected(Constants::PREVALENT_INFECTION, parameters_);
+            individual_summaries_[p] = PersonSummary();
+            individual_summaries_[p].person_id = (int)p->getID();
+            individual_summaries_[p].generation_number = 0;
+            individual_summaries_[p].infected_by = -1;
+            individual_summaries_[p].infection_number = (int)individual_summaries_.size();
+            individual_summaries_[p].profile = *p->getDemographicProfile();
+            individual_summaries_[p].time_infected = parameters_.currTime;
+            individual_summaries_[p].time_of_death = -1;
+            individual_summaries_[p].age_at_infection = p->getAge(TimeGranularity::Month);
 
             if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled)
             {
@@ -1144,6 +1234,15 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 			}
 
 			p->becomeInfected(Constants::PREVALENT_INFECTION, parameters_);
+            individual_summaries_[p] = PersonSummary();
+            individual_summaries_[p].person_id = (int)p->getID();
+            individual_summaries_[p].generation_number = 0;
+            individual_summaries_[p].infected_by = -1;
+            individual_summaries_[p].infection_number = (int)individual_summaries_.size();
+            individual_summaries_[p].profile = *p->getDemographicProfile();
+            individual_summaries_[p].time_infected = parameters_.currTime;
+            individual_summaries_[p].time_of_death = -1;
+            individual_summaries_[p].age_at_infection = p->getAge(TimeGranularity::Month);
 
 			if(oldStatus != p->hivStatus)
 			{

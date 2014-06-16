@@ -603,6 +603,9 @@ void Simulation::LastStep()
 	}
 
     outputs_.intervention_outcomes.Write(parameters_.simName + "-InterventionOutcomes.xls");
+
+    std::fstream summary_stream(parameters_.simName + "-IndividualSummaries.json", std::ios::out);
+    population_.SaveIndividualSummaries(summary_stream);
 }
 
 /*

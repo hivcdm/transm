@@ -568,6 +568,7 @@ void Person::becomeSexuallyActive(EventParams &_eventParams)
 	}
 }
 
+/*
 Person *Person::fling(Person *_p, SexualPartnership::Type _partnershipType, EventParams &_eventParams,
                       InfectionsTracker *infTrack)
 {
@@ -577,6 +578,7 @@ Person *Person::fling(Person *_p, SexualPartnership::Type _partnershipType, Even
 	int numActs = rollNumEventsPerPartner(_p, _eventParams.randomNums, _partnershipType);
 	return sexualActivity(_p, numActs, _partnershipType, _eventParams, infTrack);
 }
+*/
 
 int Person::getAge(TimeGranularity _granularity) const
 {

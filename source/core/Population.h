@@ -436,4 +436,23 @@ private:
     std::unordered_set<Person *> dead_people_this_month_;
 
     std::vector<Intervention> interventions_;
+
+    struct PersonSummary
+    {
+        int person_id;
+        int time_infected;
+        int infection_number;
+        int generation_number;
+        int infected_by;
+        int age_at_infection;
+        int time_of_death;
+        DemographicProfile profile;
+        Person::RiskLevel risk_group;
+    };
+
+    std::unordered_map<Person *, PersonSummary> individual_summaries_;
+
+    static const int NumIndividualSummaries = 1000;
+
+    void SaveIndividualSummaries(std::ostream &stream) const;
 };
