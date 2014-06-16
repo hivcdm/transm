@@ -1157,7 +1157,9 @@ enum class KnownIntervention
     CoitalEventsPerMonth,
     ChanceCondomUse,
     PartnershipDuration,
-    RolloutEligibility
+    RolloutEligibility,
+    PartnershipRejectionChance,
+    OverrideChanceCondomUse
 };
 
 const std::map<KnownIntervention, std::string> KnownInterventionStrings =
@@ -1175,7 +1177,9 @@ const std::map<KnownIntervention, std::string> KnownInterventionStrings =
     {KnownIntervention::CoitalEventsPerMonth, "coitalEventsPerMonth"},
     {KnownIntervention::ChanceCondomUse, "chanceCondomUse"},
     {KnownIntervention::PartnershipDuration, "partnershipDuration"},
-    {KnownIntervention::RolloutEligibility, "rolloutEligibility"}
+    {KnownIntervention::RolloutEligibility, "rolloutEligibility"},
+    {KnownIntervention::PartnershipRejectionChance, "partnershipRejectionChance"},
+    {KnownIntervention::OverrideChanceCondomUse, "overrideChanceCondomUse"}
 };
 
 template<>
@@ -1339,6 +1343,24 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
             intervention.SetIndividualCallback(
                 [=](Person *person) { 
                     person->SetPartnershipDuration(risk, partnership_type, dist); });
+            break;
+        }
+        case KnownIntervention::PartnershipRejectionChance:
+        {
+            auto risk = Attr<Person::RiskLevel>(node, "risk");
+            auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
+            auto chance = Text<double>(node);
+            intervention.SetIndividualCallback(
+                [=](Person *person) {
+                person->SetPartnershipRejectionChance(risk, partnership_type, chance); });
+            break;
+        }
+        case KnownIntervention::OverrideChanceCondomUse:
+        {
+            auto chance = Text<double>(node);
+            intervention.SetIndividualCallback(
+                [=](Person *person) {
+                person->SetOverrideChanceCondomUse(chance); });
             break;
         }
         default:

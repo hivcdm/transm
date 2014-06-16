@@ -211,13 +211,18 @@ double Male::getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventP
 {
 	//note: in the case of male->female transmission, circumcision makes no difference
 	//transmission coeff				1-	(condoms are used and succeed)
-	assert(Utility::validProbability(getCondomUseProb(_p, _partnershipType)));
 	assert(Utility::validProbability(getCondomProtectEff()));
 	assert((_p != nullptr));
 	assert(_p->isAlive());
 	assert(_partnershipType < SexualPartnership::Type::ENDType);
 	//Determine if a condom was used and record
-	condomUsedLastFOICalculation = _eventParams.randomNums.chance(getCondomUseProb(_p, _partnershipType));
+    double chanceCondomUse = getCondomUseProb(_p, _partnershipType);
+    if(_p->HasOverrideChanceCondomUse())
+    {
+        chanceCondomUse = _p->GetOverrideChanceCondomUse();
+    }
+    assert(Utility::validProbability(chanceCondomUse));
+	condomUsedLastFOICalculation = _eventParams.randomNums.chance(chanceCondomUse);
 	//Determine the condom efficacy --> 0 if no condom was used
 	double condomEff = 0;
 

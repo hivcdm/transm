@@ -141,6 +141,12 @@ public:
 		ENDRiskLevel
 	};
 
+    virtual void SetPartnershipRejectionChance(RiskLevel risk, SexualPartnership::Type partnershipType, double chance) = 0;
+    virtual double GetPartnershipRejectionChance(RiskLevel risk, SexualPartnership::Type partnershipType) const = 0;
+    virtual void SetOverrideChanceCondomUse(double chance) = 0;
+    virtual double GetOverrideChanceCondomUse() const = 0;
+    bool HasOverrideChanceCondomUse() const { return GetOverrideChanceCondomUse() != -1; }
+
 	// we have made these stats referenceable by enum so that we can more easily create customizeable outputs or reports...
 	// we can perhaps have easier look-up of stat descriptions if we choose to write some up
 	enum Stats

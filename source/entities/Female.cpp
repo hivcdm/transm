@@ -80,7 +80,8 @@ double Female::SubPopParams::GetTransmitPerEventCoeff(HVLStrata _hvl) const
 
 Female::Female(EventParams &_eventParams, int _ageMths, unsigned int _populationID, const Female::SubPopParams &params)
 	: Person(_ageMths, _populationID),
-	populationSpecificParams(params)
+	populationSpecificParams(params),
+    overrideChanceCondomUse_(-1)
 {
 	dmgProfile.set(DemographicProfile::GENDER, DemographicProfile::FEMALE);
 	activityLevel = _eventParams.randomNums.randNorm_NaturalNum(populationSpecificParams.GetActivityLevel());
@@ -92,6 +93,14 @@ Female::Female(EventParams &_eventParams, int _ageMths, unsigned int _population
 	}
 
 	risk = Person::LOW;
+
+    for(auto risk : {LOW, HIGH})
+    {
+        for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
+        {
+            partnershipRejectionChance_[risk][partnership_type] = 0;
+        }
+    }
 }
 
 Female::~Female(void)

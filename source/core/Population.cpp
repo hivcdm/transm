@@ -1977,9 +1977,13 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Person *_
 			}
 			else if(partner != _initiator && popWideParams.ageOfMajority + partner->GetSexualActivityDelay() <= partner->getAge(TimeGranularity::Month))
 			{
-				foundPartner = true;
-				chosenPartner = partner;
-				break;
+                auto rejectionChance = partner->GetPartnershipRejectionChance(_initiator->getRiskLevel(), _partnershipType);
+                if(rejectionChance == 0 || !parameters_.randomNums.chance(rejectionChance))
+                {
+                    foundPartner = true;
+                    chosenPartner = partner;
+                    break;
+                }
 			}
 		}
 

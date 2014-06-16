@@ -92,7 +92,13 @@ public:
 	void SetPartnershipDuration(RiskLevel risk, SexualPartnership::Type partnershipType, ShiftedLogNormalDist dist);
 	void SetAverageYearsYounger(SexualPartnership::Type partnershipType, NormalDist dist);
     void SetAcquisitionRatePerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, LogNormalDist dist, RandomNumberGenerator &rng);
+    void SetPartnershipRejectionChance(RiskLevel risk, SexualPartnership::Type partnershipType, double chance) { partnershipRejectionChance_[risk][partnershipType] = chance; }
+    double GetPartnershipRejectionChance(RiskLevel risk, SexualPartnership::Type partnershipType) const { return partnershipRejectionChance_.at(risk).at(partnershipType); };
+    void SetOverrideChanceCondomUse(double chance) { overrideChanceCondomUse_ = chance; }
+    double GetOverrideChanceCondomUse() const { return overrideChanceCondomUse_; }
 
 private:
 	SubPopParams populationSpecificParams;
+    double overrideChanceCondomUse_;
+    std::map<RiskLevel, std::map<SexualPartnership::Type, double>> partnershipRejectionChance_;
 };
