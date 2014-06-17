@@ -473,10 +473,10 @@ void Person::initialCEPACpatient(EventParams &_eventParams)
 	}
 }
 
-int Person::getGenerationOfInfection()
+int Person::getGenerationOfInfection(bool cap_at_5) const
 {
 	//TODO: Make this a constant!
-	if(generationOfInfection > 5)
+	if(cap_at_5 && generationOfInfection > 5)
 	{
 		return 5;
 	}
@@ -608,7 +608,7 @@ BaseEnumCls::Enum Person::getDemographicProfileVal(DemographicProfile::Demograph
 	return dmgProfile.get(_demographic);
 }
 
-unsigned long Person::getID()
+unsigned long Person::getID() const
 {
 	return id;
 }
@@ -1070,7 +1070,7 @@ Person *Person::sexualActivity(Person *_p, int _numActs, SexualPartnership::Type
 
 		//if they get infected, then change status of uninfected to infected and count infection
 		//The generation of infected for the newly infected will be 1+ the infected persons generation
-		uninfected->becomeInfected(infected->getGenerationOfInfection() + 1, _eventParams);
+		uninfected->becomeInfected(infected->getGenerationOfInfection(false) + 1, _eventParams);
 		return uninfected;
 	}
 	else
@@ -1637,9 +1637,10 @@ int Person::getSexualActivity()
 
 /**** Start constructors, destructors, initializers *****/
 
+/*
 Person::Person()
 {
-	/*healthAfterInfection = nullptr;*/
+	//healthAfterInfection = nullptr;
 	risk = LOW;
 	traceMe = false;
 	generationOfInfection = -1;
@@ -1659,6 +1660,7 @@ Person::Person()
 	monthOfLatestConcurrent = 0;
 	CEPACcosts = 0;
 }
+*/
 
 //this constructor is used by the Male and Female classes
 Person::Person(int _age, unsigned int _populationID) : sexualActivityDelay(0)

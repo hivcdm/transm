@@ -301,7 +301,7 @@ public:
 	 * @return generationOfInfection
 	 */
 
-	int getGenerationOfInfection();
+	int getGenerationOfInfection(bool cap_at_5 = true) const;
 
 	/**
 	*	returns the number of partners by partnership type
@@ -627,7 +627,7 @@ public:
 	int getAge(TimeGranularity _granularity) const;
 
 	//returns the unique id number of this person
-	unsigned long getID();
+	unsigned long getID() const;
 
 	unsigned int getPopulationID();
 

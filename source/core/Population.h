@@ -290,6 +290,8 @@ private:
     /// </summary>
 	void RecordShiftedOutcomes(EventParams &_eventParams, std::ostream &_outStream);
 
+    void RecordInfection(const Person *infectee, const Person *infector, int time);
+
     /// <summary>
     /// this is used to assign each New population a unique id
     /// </summary>
@@ -439,7 +441,7 @@ private:
 
     struct PersonSummary
     {
-        int person_id;
+        unsigned long person_id;
         int time_infected;
         int infection_number;
         int generation_number;
@@ -450,7 +452,7 @@ private:
         Person::RiskLevel risk_group;
     };
 
-    std::unordered_map<Person *, PersonSummary> individual_summaries_;
+    std::unordered_map<unsigned long, PersonSummary> individual_summaries_;
 
     static const int NumIndividualSummaries = 1000;
 

@@ -312,6 +312,10 @@ void Simulation::SetFixedSeed(int seed)
 		//Seed is Minnesota Twins retired numbers... yes, I am a dork
 		parameters_.randomNums.reset(seed == 0 ? 36291434 : seed);
 	}
+    else
+    {
+        parameters_.randomNums.reset((unsigned int)time(0));
+    }
 }
 
 void Simulation::FirstStep()

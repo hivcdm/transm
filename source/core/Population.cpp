@@ -570,20 +570,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 				//initiator only gets infected once...
 				Person *wasInfected = (*newlyInfectedIter == initiator) ? infectedMe : initiator;
 
-                if(individual_summaries_.find(wasUninfected) != individual_summaries_.end())
-                {
-                    throw std::runtime_error("person already being recorded");
-                }
-
-                individual_summaries_[wasUninfected] = PersonSummary();
-                individual_summaries_[wasUninfected].person_id = (int)wasUninfected->getID();
-                individual_summaries_[wasUninfected].generation_number = wasUninfected->getGenerationOfInfection();
-                individual_summaries_[wasUninfected].infected_by = wasInfected->getID();
-                individual_summaries_[wasUninfected].infection_number = (int)individual_summaries_.size();
-                individual_summaries_[wasUninfected].profile = *wasUninfected->getDemographicProfile();
-                individual_summaries_[wasUninfected].time_infected = parameters_.currTime;
-                individual_summaries_[wasUninfected].time_of_death = -1;
-                individual_summaries_[wasUninfected].age_at_infection = wasUninfected->getAge(TimeGranularity::Month);
+                RecordInfection(wasUninfected, wasInfected, parameters_.currTime);
 
 				//Adds person to the untreated pool if using rollout
 				if(parameters_.useRollout)
@@ -688,8 +675,8 @@ void Population::SaveIndividualSummaries(std::ostream &stream) const
 
     for(auto summary : individual_summaries_)
     {
-        ordered_[summary.second.infection_number - 1] = summary.second;
-        infection_numbers[summary.second.person_id] = summary.second.infection_number - 1;
+        ordered_[summary.second.infection_number] = summary.second;
+        infection_numbers[summary.second.person_id] = summary.second.infection_number;
     }
 
     stream << "{" << std::endl;
@@ -733,7 +720,7 @@ void Population::SaveIndividualSummaries(std::ostream &stream) const
             continue;
         }
 
-        stream << "{\"source\":" << infection_numbers[summary.infected_by] << ",\"target\":" << summary.infection_number - 1 << " \"value\":1}";
+        stream << "{\"source\":" << infection_numbers[summary.infected_by] << ",\"target\":" << summary.infection_number << ",\"value\":1}";
         if(summary.person_id != ordered_.back().person_id)
         {
             stream << ",";
@@ -1144,15 +1131,7 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 			}
 
 			p->becomeInfected(Constants::PREVALENT_INFECTION, parameters_);
-            individual_summaries_[p] = PersonSummary();
-            individual_summaries_[p].person_id = (int)p->getID();
-            individual_summaries_[p].generation_number = 0;
-            individual_summaries_[p].infected_by = -1;
-            individual_summaries_[p].infection_number = (int)individual_summaries_.size();
-            individual_summaries_[p].profile = *p->getDemographicProfile();
-            individual_summaries_[p].time_infected = parameters_.currTime;
-            individual_summaries_[p].time_of_death = -1;
-            individual_summaries_[p].age_at_infection = p->getAge(TimeGranularity::Month);
+            RecordInfection(p, nullptr, parameters_.currTime);
 
             if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled)
             {
@@ -1234,15 +1213,7 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 			}
 
 			p->becomeInfected(Constants::PREVALENT_INFECTION, parameters_);
-            individual_summaries_[p] = PersonSummary();
-            individual_summaries_[p].person_id = (int)p->getID();
-            individual_summaries_[p].generation_number = 0;
-            individual_summaries_[p].infected_by = -1;
-            individual_summaries_[p].infection_number = (int)individual_summaries_.size();
-            individual_summaries_[p].profile = *p->getDemographicProfile();
-            individual_summaries_[p].time_infected = parameters_.currTime;
-            individual_summaries_[p].time_of_death = -1;
-            individual_summaries_[p].age_at_infection = p->getAge(TimeGranularity::Month);
+            RecordInfection(p, nullptr, parameters_.currTime);
 
 			if(oldStatus != p->hivStatus)
 			{
@@ -1261,6 +1232,33 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 			}
 		}
 	}//for()
+}
+
+void Population::RecordInfection(const Person *infectee, const Person *infector, int time)
+{
+    if(individual_summaries_.size() >= 1000)
+    {
+        return;
+    }
+
+    PersonSummary summary;
+
+    summary.person_id = (int)infectee->getID();
+    summary.generation_number = infectee->getGenerationOfInfection(false);
+    summary.infected_by = infector == nullptr ? -1 : infector->getID();
+    summary.infection_number = (int)individual_summaries_.size();
+    summary.profile = *infectee->getDemographicProfile();
+    summary.time_infected = time;
+    summary.time_of_death = -1;
+    summary.age_at_infection = infectee->getAge(TimeGranularity::Month);
+    summary.risk_group = infectee->getRiskLevel();
+
+    if(individual_summaries_.find(infectee->getID()) != individual_summaries_.end())
+    {
+        throw std::runtime_error("already being recorded");
+    }
+
+    individual_summaries_[infectee->getID()] = summary;
 }
 
 /**
