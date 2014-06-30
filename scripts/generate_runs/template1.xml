@@ -1,6 +1,6 @@
-<simulation version="3.4">
+<simulation version="3.5">
   <debugLevel>0</debugLevel>
-  <duration>1200</duration>
+  <duration>600</duration>
   <fixedSeed>0</fixedSeed>
   <monthOf1990>690</monthOf1990>
   <traceFiles>
@@ -10,34 +10,34 @@
     <infection enabled="true" tossIfCalibFail="true">
       <extension>Infections.xls</extension>
     </infection>
-    <partnership enabled="true" tossIfCalibFail="true">
+    <partnership enabled="false" tossIfCalibFail="true">
       <extension>Partnership.xls</extension>
     </partnership>
-    <survival enabled="true" tossIfCalibFail="true">
+    <survival enabled="false" tossIfCalibFail="true">
       <extension>Survival.xls</extension>
     </survival>
-    <costEffectiveness enabled="true" tossIfCalibFail="true">
+    <costEffectiveness enabled="false" tossIfCalibFail="true">
       <extension>CE.xls</extension>
       <condomCost>0.5</condomCost>
       <circumcisionCost>500</circumcisionCost>
     </costEffectiveness>
-    <clinical enabled="true" tossIfCalibFail="true">
+    <clinical enabled="false" tossIfCalibFail="true">
       <extension>Clinical.xls</extension>
     </clinical>
-    <events enabled="true" tossIfCalibFail="true">
+    <events enabled="false" tossIfCalibFail="true">
       <extension>Events.xls</extension>
     </events>
-    <health enabled="true" tossIfCalibFail="true">
+    <health enabled="false" tossIfCalibFail="true">
       <extension>Health.xls</extension>
     </health>
-    <singlePerson enabled="true" tossIfCalibFail="true">
+    <singlePerson enabled="false" tossIfCalibFail="true">
       <extension>SinglePerson.xls</extension>
       <numberToTracePerAgeRange>15</numberToTracePerAgeRange>
       <numberNewbornsToTrace>50</numberNewbornsToTrace>
       <monthTraceNewborns>600</monthTraceNewborns>
       <tracePrevalentCases>0</tracePrevalentCases>
     </singlePerson>
-    <lifeExpectancy enabled="true" tossIfCalibFail="true">
+    <lifeExpectancy enabled="false" tossIfCalibFail="true">
       <extension>LE.xls</extension>
       <medianConfidenceInterval>0.95</medianConfidenceInterval>
       <time>660</time>
@@ -46,17 +46,17 @@
       <time>1020</time>
       <time>1140</time>
     </lifeExpectancy>
-    <partnerAcquisition enabled="true" tossIfCalibFail="true">
+    <partnerAcquisition enabled="false" tossIfCalibFail="true">
       <extension>PartAcq.xls</extension>
       <partnerAcqOutput />
     </partnerAcquisition>
-    <calibrationStatistics enabled="true" tossIfCalibFail="true">
+    <calibrationStatistics enabled="false" tossIfCalibFail="true">
       <extension>CalibStats.xls</extension>
     </calibrationStatistics>
     <artRollout enabled="true" tossIfCalibFail="true">
       <extension>ARTRollout.xls</extension>
     </artRollout>
-    <shiftedOutcomes enabled="true" tossIfCalibFail="true">
+    <shiftedOutcomes enabled="false" tossIfCalibFail="true">
       <extension>ShiftedOutcomes.xls</extension>
     </shiftedOutcomes>
   </traceFiles>
@@ -169,10 +169,10 @@
     <birthRate>0.00222</birthRate>
     <proportionMale>0.5</proportionMale>
     <proportionCircumcised>0.35</proportionCircumcised>
-    <ageSexualDebutYrs>17</ageSexualDebutYrs>
+    <ageOfMajority>17</ageOfMajority>
     <initialState>
       <size>1000</size>
-      <delay>600</delay>
+      <delay>100</delay>
       <cswEndAgeMale>50</cswEndAgeMale>
       <cswEndAgeFemale>70</cswEndAgeFemale>
       <chanceBeingCswMale>0</chanceBeingCswMale>
@@ -352,7 +352,7 @@
               </partnershipDurationMthLowRisk>
             </partnership>
             <partnership type="Regular">
-	      <assortativeness>{Assort}</assortativeness>
+	      <assortativeness>0.746241347133</assortativeness>
               <acquisitionRateHighRisk>
                 <distribution type="normal">
                   <mean>{AqRateRegHR}</mean>
@@ -361,7 +361,7 @@
               </acquisitionRateHighRisk>
               <acquisitionRateLowRisk>
                 <distribution type="normal">
-                  <mean>{AqRateRegLR}</mean>
+                  <mean>{AqRateStdyLR}</mean>
                   <stdDev>0</stdDev>
                 </distribution>
               </acquisitionRateLowRisk>
@@ -592,151 +592,15 @@
     </entities>
   </population>
   <interventions>
-    <cepacIntervention enabled="false">
+    <cepacIntervention enabled="true">
       <cepacTreatmentFiles>
         <treatmentFile>
 	  <time>0</time>
-          <fileName>SA Transmission cepac_inputs_10.09.13_NOART.in</fileName>
+          <fileName>cepac.in</fileName>
           <fileNumber>0</fileNumber>
-        </treatmentFile>
-        <treatmentFile>
-	  <time>810</time>
-          <fileName>2002_PerfTesting.in</fileName>
-          <fileNumber>1</fileNumber>
-        </treatmentFile>
-        <treatmentFile>
-	  <time>846</time>
-          <fileName>2004_PerfTesting.in</fileName>
-          <fileNumber>2</fileNumber>
-        </treatmentFile>
-        <treatmentFile>
-	  <time>882</time>
-          <fileName>2010_PerfTesting.in</fileName>
-          <fileNumber>3</fileNumber>
         </treatmentFile>
       </cepacTreatmentFiles>
     </cepacIntervention>
-    <artRolloutIntervention enabled="true">
-      <dynamicTreatmentScaling enabled="true">
-	<feedbackPeriod>12</feedbackPeriod>
-      </dynamicTreatmentScaling>
-      <rolloutTreatmentFiles>
-        <rolloutFile>
-          <time>0</time>
-          <fileName>SA Transmission cepac_inputs_10.09.13_NOART.in</fileName>
-          <fileNumber>0</fileNumber>
-          <popToApply>0</popToApply>
-        </rolloutFile>
-        <rolloutFile>
-          <time>834</time>
-          <fileName>2002_PerfTesting_a6.in</fileName>
-          <fileNumber>1</fileNumber>
-          <popToApply>2</popToApply>
-        </rolloutFile>
-        <rolloutFile>
-          <time>858</time>
-          <fileName>2004_PerfTesting_a6.in</fileName>
-          <fileNumber>2</fileNumber>
-          <popToApply>2</popToApply>
-        </rolloutFile>
-        <rolloutFile>
-          <time>930</time>
-          <fileName>2010_PerfTesting_a6.in</fileName>
-          <fileNumber>3</fileNumber>
-          <popToApply>2</popToApply>
-        </rolloutFile>
-        <rolloutFile>
-          <time>966</time>
-          <fileName>2013_PerfTesting_a6.in</fileName>
-          <fileNumber>4</fileNumber>
-          <popToApply>2</popToApply>
-        </rolloutFile>
-      </rolloutTreatmentFiles>
-      <rolloutEligibility>
-        <criteria name="OIHist">
-          <rank><parameter key="$2">1</parameter></rank>
-          <OI0>0</OI0>
-          <OI1>0</OI1>
-          <OI2>0</OI2>
-          <OI3><parameter key="$3">1</parameter></OI3>
-          <OI4><parameter key="$4">1</parameter></OI4>
-          <OI5><parameter key="$5">1</parameter></OI5>
-          <OI6>0</OI6>
-          <OI7>0</OI7>
-          <OI8>0</OI8>
-          <OI9>0</OI9>
-          <OI10>0</OI10>
-          <OI11><parameter key="$6">1</parameter></OI11>
-          <OI12>0</OI12>
-          <OI13>0</OI13>
-          <OI14>0</OI14>
-          <numOIToStart>1</numOIToStart>
-        </criteria>
-        <criteria name="CD4">
-          <rank><parameter key="$1">2</parameter></rank>
-          <CD4Upp><parameter key="$0">-1</parameter></CD4Upp>
-          <CD4Lwr>-1</CD4Lwr>
-        </criteria>
-        <criteria name="CD4OIHist">
-          <rank>3</rank>
-          <CD4Upp>-1</CD4Upp>
-          <CD4Lwr>-1</CD4Lwr>
-          <OI0>0</OI0>
-          <OI1>0</OI1>
-          <OI2>0</OI2>
-          <OI3>0</OI3>
-          <OI4>0</OI4>
-          <OI5>0</OI5>
-          <OI6>0</OI6>
-          <OI7>0</OI7>
-          <OI8>0</OI8>
-          <OI9>0</OI9>
-          <OI10>0</OI10>
-          <OI11>0</OI11>
-          <OI12>0</OI12>
-          <OI13>0</OI13>
-          <OI14>0</OI14>
-        </criteria>
-        <criteria name="HVL">
-          <rank>4</rank>
-          <HVLUpp>-1</HVLUpp>
-          <HVLLwr>-1</HVLLwr>
-        </criteria>
-        <criteria name="CD4HVL">
-          <rank>5</rank>
-          <CD4Upp>-1</CD4Upp>
-          <CD4Lwr>-1</CD4Lwr>
-          <HVLUpp>-1</HVLUpp>
-          <HVLLwr>-1</HVLLwr>
-        </criteria>
-      </rolloutEligibility>
-      <targetRolloutProportions>
-	<target year="2002">0.000375</target>
-	<target year="2003">0.000634146</target>
-	<target year="2004">0.00135789</target>
-	<target year="2005">0.004863953</target>
-	<target year="2006">0.007482811</target>
-	<target year="2007">0.010290381</target>
-	<target year="2008">0.015908126</target>
-	<target year="2009">0.020496962</target>
-	<target year="2010">0.02848084</target>
-	<target year="2011">0.033973253</target>
-	<target year="2012">0.040891274</target>
-	<target year="2013">0.081782548</target>
-	<target year="2014">0.163565095</target>
-	<target year="2015">0.32713019</target>
-	<target year="2016">0.65426038</target>
-	<target year="2017">0.99</target>
-      </targetRolloutProportions>
-    </artRolloutIntervention>
-    <generalInterventions>
-      <intervention time="834" key="$0" value="200" />
-      <intervention time="834" key="$1" value="2" />
-      <intervention time="834" key="$2" value="1" />
-      <intervention time="834" key="$3" value="0" />
-      <intervention time="834" key="$4" value="0" />
-      <intervention time="834" key="$5" value="0" />
-      <intervention time="834" key="$6" value="0" />
-    </generalInterventions>
+    <artRolloutIntervention enabled="false" />
   </interventions>
 </simulation>
