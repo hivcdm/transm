@@ -323,7 +323,7 @@ void Simulation::FirstStep()
 {
     run_time_predictor_.SetTotalMonths(duration_);
     start_time_ = timer_.GetTime();
-    population_size_.push_back(population_.GetSize());
+    population_size_.push_back((int)population_.GetSize());
 
 	//No longer creating a CEPAC trace file, but we still need to change over to the results folder before creating any other output files
 	CepacUtil::changeDirectoryToResults();
@@ -529,9 +529,9 @@ void Simulation::Step()
 
 	population_.ResetMonthlyStats();
 
-    population_size_.push_back(totalSize);
+    population_size_.push_back((int)totalSize);
     run_time_predictor_.Update(population_size_);
-    int seconds_remaining = run_time_predictor_.GetEstimatedTimeRemaining(timer_.GetTime() - start_time_);
+    int seconds_remaining = (int)run_time_predictor_.GetEstimatedTimeRemaining(timer_.GetTime() - start_time_);
     int hours_remaining = seconds_remaining / 3600;
     seconds_remaining -= hours_remaining * 3600;
     int minutes_remaining = seconds_remaining / 60;

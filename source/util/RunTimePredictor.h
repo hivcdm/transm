@@ -1,5 +1,11 @@
 #pragma once
 
+#pragma warning( push )
+#pragma warning( disable : 4127 )
+#pragma warning( disable : 4267 )
+#pragma warning( disable : 4100 )
+#pragma warning( disable : 4244 )
+
 #include <boost/numeric/ublas/blas.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/lu.hpp>
@@ -17,6 +23,8 @@ public:
         estimated_final_pop_size_(0)
     {
     }
+
+    RunTimePredictor &operator=(const RunTimePredictor &) = delete;
 
     void SetTotalMonths(int months)
     {
@@ -154,3 +162,5 @@ private:
     double estimated_percent_complete_;
     int estimated_final_pop_size_;
 };
+
+#pragma warning( pop )
