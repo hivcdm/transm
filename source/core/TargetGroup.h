@@ -82,7 +82,7 @@ public:
     }
 
     PartitionSummary GetPartitionSummary(const std::string &partition_name,
-        bool include_non_sexually_active = false) const
+        bool include_non_sexually_active = true) const
     {
         int partition_index = 0;
 

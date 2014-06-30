@@ -11,6 +11,7 @@
 #include "../util/HighResolutionTimer.h"
 #include "../util/Nullable.h"
 #include "../util/xml/pugixml.hpp"
+#include "../util/RunTimePredictor.h"
 
 class InfectionsTracker;
 
@@ -132,5 +133,11 @@ private:
     std::vector<TargetGroup> groups_;
 
     std::vector<Intervention> interventions_;
+
+    std::vector<int> population_size_;
+
+    RunTimePredictor run_time_predictor_;
+
+    double start_time_;
 };
 

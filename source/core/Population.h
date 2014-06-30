@@ -439,6 +439,7 @@ private:
 
     std::vector<Intervention> interventions_;
 
+    public:
     struct PersonSummary
     {
         unsigned long person_id;
@@ -452,6 +453,7 @@ private:
         Person::RiskLevel risk_group;
     };
 
+    private:
     std::unordered_map<unsigned long, PersonSummary> individual_summaries_;
 
     static const int NumIndividualSummaries = 1000;

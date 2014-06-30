@@ -667,6 +667,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 	}
 }
 
+/*
 void Population::SaveIndividualSummaries(std::ostream &stream) const
 {
     std::vector<PersonSummary> ordered_(individual_summaries_.size());
@@ -731,6 +732,65 @@ void Population::SaveIndividualSummaries(std::ostream &stream) const
 
     stream << "]" << std::endl;
     stream << "}" << std::endl;
+}
+*/
+
+void WritePerson(std::ostream &stream, const std::map<int, std::vector<int>> &infected, int person_id, const std::unordered_map<unsigned long, Population::PersonSummary> &summaries)
+{
+    if(person_id == -1)
+    {
+        stream << "{\"id\"" << ":" << "initial prevalent case";
+    }
+    else
+    {
+        auto &summary = summaries.at(person_id);
+
+        stream << "{\"id\"" << ":" << summary.person_id;
+        stream << ",\"gender\"" << ":";
+        stream << (summary.profile.get(DemographicProfile::GENDER) == 0 ? "\"male\"" : "\"female\"");
+        stream << ",\"employment\"" << ":";
+        stream << (summary.profile.get(DemographicProfile::EMPLOYMENT) == 0 ? "\"non-csw\"" : "\"csw\"");
+        stream << ",\"sexual_activity_status\"" << ":";
+        stream << (summary.profile.get(DemographicProfile::SEXUAL_ACTIVITY_STATUS) == 0 ? "\"sexually active\"" : "\"not active\"");
+        stream << ",\"sexual_orientation\"" << ":";
+        stream << (summary.profile.get(DemographicProfile::SEXUAL_ORIENTATION) == 0 ? "\"hetero\"" : "\"homo\"");
+        stream << ",\"relationship_status\"" << ":";
+        stream << (summary.profile.get(DemographicProfile::RELATIONSHIP_STATUS) == 0 ? "\"non-single\"" : "\"single\"");
+        stream << ",\"risk_group\"" << ":" << (summary.risk_group == Person::HIGH ? "\"high\"" : "\"low\"");
+        stream << ",\"age_at_infection\"" << ":" << summary.age_at_infection;
+        stream << ",\"generation_number\"" << ":" << summary.generation_number;
+        stream << ",\"infection_number\"" << ":" << summary.infection_number;
+        stream << ",\"time_infected\"" << ":" << summary.time_infected;
+    }
+
+    if(infected.find(person_id) != infected.end())
+    {
+        stream << ",\"infected\"" << ":[" << std::endl;
+        for(auto id : infected.at(person_id))
+        {
+            WritePerson(stream, infected, id, summaries);
+            if(id != infected.at(person_id).back())
+            {
+                stream << ",";
+            }
+            stream << std::endl;
+        }
+        stream << "]" << std::endl;
+    }
+
+    stream << "}";
+}
+
+void Population::SaveIndividualSummaries(std::ostream &stream) const
+{
+    std::map<int, std::vector<int>> infected;
+
+    for(auto summary : individual_summaries_)
+    {
+        infected[summary.second.infected_by].push_back((int)summary.second.person_id);
+    }
+
+    WritePerson(stream, infected, -1, individual_summaries_);
 }
 
 /**

@@ -293,7 +293,8 @@ Simulation::Simulation()
       hasPassedFirstMonthCalibPrev_(false),
       monthOfFirstMonthCalibPrev_(0),
       incidence_(0),
-      prevalence_(0)
+      prevalence_(0),
+      run_time_predictor_(2)
 {
 }
 
@@ -320,6 +321,10 @@ void Simulation::SetFixedSeed(int seed)
 
 void Simulation::FirstStep()
 {
+    run_time_predictor_.SetTotalMonths(duration_);
+    start_time_ = timer_.GetTime();
+    population_size_.push_back(population_.GetSize());
+
 	//No longer creating a CEPAC trace file, but we still need to change over to the results folder before creating any other output files
 	CepacUtil::changeDirectoryToResults();
 
@@ -419,8 +424,6 @@ void Simulation::FirstStep()
 void Simulation::Step()
 {
     time_++;
-
-    double begin = timer_.GetTime();
 
     for(auto &intervention : interventions_)
     {
@@ -526,20 +529,14 @@ void Simulation::Step()
 
 	population_.ResetMonthlyStats();
 
-	double end = timer_.GetTime();
-	std::ostringstream elapsedStringStream;
-	elapsedStringStream.precision(3);
-	elapsedStringStream << std::fixed << (end - begin);
-	std::string elapsedString = elapsedStringStream.str();
-
-	parameters_.displayOut("Timestep(");
-	std::string timeString = boost::lexical_cast<std::string>(time_);
-	parameters_.displayOut(timeString.c_str());
-	parameters_.displayOut("): compute time elapsed = ");
-	parameters_.displayOut(elapsedString.c_str());
-	parameters_.displayOut(". size = ");
-	parameters_.displayOut(boost::lexical_cast<std::string>(totalSize).c_str());
-	parameters_.displayOut("\n");
+    population_size_.push_back(totalSize);
+    run_time_predictor_.Update(population_size_);
+    int seconds_remaining = run_time_predictor_.GetEstimatedTimeRemaining(timer_.GetTime() - start_time_);
+    int hours_remaining = seconds_remaining / 3600;
+    seconds_remaining -= hours_remaining * 3600;
+    int minutes_remaining = seconds_remaining / 60;
+    seconds_remaining -= minutes_remaining * 60;
+    std::cout << "\r" << run_time_predictor_.MakeProgressBar(100) << " " << time_ << " " << hours_remaining << ":" << minutes_remaining << ":" << seconds_remaining << "                                ";
 
     prevalence_ = population_.GetPopulationStatistics().infectionsTracker.getSAPrev(population_);
     incidence_ = population_.GetPopulationStatistics().infectionsTracker.getCurrTimeStepIncidentInfsTotal() / (double)population_.GetSize();
