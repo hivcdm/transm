@@ -1,10 +1,5 @@
-Debug/
-Test/
-Release/
 results/
 x64/
-Debug*/
-Release*/
 *.sdf
 *.suo
 *.opensdf
@@ -15,3 +10,8 @@ Release*/
 *~
 .DS_Store
 runs/*
+bin/
+build/vs*/
+build/gmake/
+build/xcode*/
+scripts/generate_runs/*/
