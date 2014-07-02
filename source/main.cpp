@@ -6,6 +6,11 @@
 #include "statistics/TransmissionSummaryStats.h"
 #include "util/Utility.h"
 
+// unreachable code in main()'s top-level for-loop for some reason
+#if defined(_MSC_VER) && _MSC_VER >= 1800
+#pragma warning ( disable : 4702 )
+#endif
+
 namespace {
 
 struct ArgumentToken
@@ -151,4 +156,5 @@ int main(int argc, char *argv[])
 	}
 
 	PrintUsage();
+    return 0;
 }
