@@ -1,6 +1,6 @@
 <simulation version="3.5">
   <debugLevel>0</debugLevel>
-  <duration>600</duration>
+  <duration>1200</duration>
   <fixedSeed>0</fixedSeed>
   <monthOf1990>690</monthOf1990>
   <traceFiles>
@@ -361,7 +361,7 @@
               </acquisitionRateHighRisk>
               <acquisitionRateLowRisk>
                 <distribution type="normal">
-                  <mean>{AqRateStdyLR}</mean>
+                  <mean>{AqRateRegLR}</mean>
                   <stdDev>0</stdDev>
                 </distribution>
               </acquisitionRateLowRisk>

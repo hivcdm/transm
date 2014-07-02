@@ -43,14 +43,17 @@ def try_make_directory(directory):
         return False
     return True
 
-def write_xml_files(parameter_sets, template, output_directory):
+def write_xml_files(parameter_sets, template, output_directory, suffix=None):
     for run in parameter_sets:
-        xml_filename = os.path.join(output_directory, run + '.xml')
+        if suffix:
+            xml_filename = os.path.join(output_directory, run  + '_' + suffix + '.xml')
+        else:
+            xml_filename = os.path.join(output_directory, run + '.xml')
         parameters = {k : v for k, v in zip(header, parameter_sets[run])}
         with open(xml_filename, 'w') as xml_file:
             xml_file.write(template.format(**parameters))
 
-def write_xml_batches(parameter_sets, template, base_output_directory, batch_size):
+def write_xml_batches(parameter_sets, template, base_output_directory, batch_size, suffix=None):
     keys = parameter_sets.keys()
     for i in range(0, len(parameter_sets), batch_size):
         subset_keys = list(keys)[i:i+batch_size]
@@ -58,7 +61,7 @@ def write_xml_batches(parameter_sets, template, base_output_directory, batch_siz
         batch_directory = os.join(base_output_directory, 'batch' + str(i // batch_size))
         if not try_make_directory(batch_directory):
             return
-        write_xml_files(batch_parameter_sets, template, batch_directory)
+        write_xml_files(batch_parameter_sets, template, batch_directory, suffix)
 
 def generate_runs(parameters_filename, template_filename, weight_cutoff, run_set_name, batch_size=0):
     rows = read_parameters(parameters_filename)
@@ -73,9 +76,9 @@ def generate_runs(parameters_filename, template_filename, weight_cutoff, run_set
         return
 
     if batch_size == 0:
-        write_xml_files(parameter_sets, template, base_output_directory)
+        write_xml_files(parameter_sets, template, base_output_directory, run_set_name)
     else:
-        write_xml_batches(parameter_sets, template, base_output_directory, batch_size)
+        write_xml_batches(parameter_sets, template, base_output_directory, batch_size, run_set_name)
 
     print('done.')
     print('XMLs can be found in the folder {}.'.format(base_output_directory))
