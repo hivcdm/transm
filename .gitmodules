@@ -1,0 +1,15 @@
+[submodule "third-party/wxWidgets"]
+	path = third-party/wxWidgets
+	url = https://github.com/wxWidgets/wxWidgets.git
+	branch = master
+[submodule "third-party/cepac"]
+	path = third-party/cepac
+	url = https://github.com/tfussell/cepac.git
+	branch = master
+[submodule "third-party/boost"]
+	path = third-party/boost
+	url = https://github.com/boostorg/boost.git
+	branch = master
+[submodule "third-party/pugixml"]
+	path = third-party/pugixml
+	url = https://github.com/zeux/pugixml

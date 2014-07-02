@@ -1,132 +1,82 @@
 solution "transm"
-    configurations { "Debug", "Release" }
+    configurations { "debug", "release" }
     platforms { "x64" }
     location ("./" .. _ACTION)
-    libdirs { "$(cepac_prefix)/lib" }
-    includedirs { "$(cepac_prefix)/src" }
+    libdirs { 
+       "../third-party/cepac/lib",
+       "../third-party/boost/stage/lib"
+    }
+    includedirs { 
+       "../third-party/cepac/src",
+       "../third-party/boost"
+    }
+    configuration "debug"
+        flags { "Symbols" }
+	optimize "Off"
+    configuration "release"
+        optimize "Full"
     configuration "not windows"
-        buildoptions { 
+        buildoptions {
             "-std=c++11",
             "-Wno-unknown-pragmas"
         }
-	includedirs { "../../cepac/src" }
-    configuration "vs*"
-        includedirs { "$(boost_prefix)" }
-    configuration { "vs*", "x32" }
-        libdirs { "$(boost_prefix)/lib32-msvc-12.0" }
-    configuration { "vs*", "x64" }
-        libdirs { "$(boost_prefix)/lib64-msvc-12.0" }
-    configuration "not windows"
-        links {
-	    "boost_filesystem",
-	    "boost_system"
-	}
-    configuration "Debug"
-        flags { "Symbols" }
-	optimize "Off"
-    configuration "Release"
-        optimize "Full"
 
 project "transm.cli"
     kind "ConsoleApp"
     language "C++"
     targetname "transm"
-    files { "../source/main.cpp" }
-    links { "transm" }
+    warnings "Extra"
+    targetdir "../bin"
     flags { 
        "Unicode",
        "NoEditAndContinue",
        "NoManifest",
        "NoPCH"
     }
-    debugargs { "../../runs/34_standard" }
-    configuration "Debug"
-	targetdir "../bin/debug"
-	links { "cepacd" }
-    configuration "Release"
+    files {
+       "../source/main.cpp",
+       "../source/core/**.cpp",
+       "../source/core/**.h",
+       "../source/data/**.cpp",
+       "../source/data/**.h",
+       "../source/entities/**.cpp",
+       "../source/entities/**.h",
+       "../source/statistics/**.cpp",
+       "../source/statistics/**.h",
+       "../source/util/**.cpp",
+       "../source/util/**.h"
+    }
+    excludes {
+       "../source/util/HighResolutionTimer*.cpp"
+    }
+    configuration "debug"
+        flags { "FatalWarnings" }
+	links { "../third-party/cepac/lib/cepacd" }
+    configuration "release"
         flags { "LinkTimeOptimization" }
-	targetdir "../bin/release"
-	links { "cepac" }
+	links { "../third-party/cepac/lib/cepac" }
+    configuration "windows"
+        files { "../source/util/HighResolutionTimerWindows.cpp" }
+    configuration "not windows"
+        files { "../source/util/HighResolutionTimerPosix.cpp" }
+    configuration "vs*"
+        defines { "_SCL_SECURE_NO_WARNINGS" }
+    targetsuffix ("-v" .. os.outputof("cat ../VERSION"))
 
 project "transm.gui"
     kind "WindowedApp"
     language "C++"
-    targetname "transm-gui"
+    targetname "transm"
     warnings "Extra"
+    targetdir "../bin"
     includedirs {
-       "$(wx_prefix)/include/msvc",
-       "$(wx_prefix)/include"
+       "../third-party/wxWidgets/include/msvc",
+       "../third-party/wxWidgets/include"
     }
     defines { "wxUSE_GUI=1" }
     files {
        "../source/gui/**.h",
-       "../source/gui/**.cpp"
-    }
-    links { "transm" }
-    flags { 
-       "Unicode",
-       "NoEditAndContinue",
-       "NoManifest",
-       "NoPCH"
-    }
-    configuration "Debug"
-        flags { "FatalWarnings" }
-	defines { "__WXDEBUG__" }
-	targetdir "../bin/debug"
-	links "cepacd"
-    configuration { "x64", "vs2013" }
-	libdirs { "$(wx_prefix)/vc120_x64_lib" }
-    configuration { "x32", "vs2013" }
-	libdirs { "$(wx_prefix)/vc120_lib" }
-    configuration "windows"
-        defines { 
-	   "WINVER=0x0610",
-	   "__WXMSW__",
-	   "_WINDOWS",
-	   "WIN32"
-	}
-    configuration "vs*"
-        defines { 
-	   "wxMSVC_VERSION_AUTO",
-	   "_CRT_SECURE_NO_WARNINGS"
-	}
-	flags { "WinMain" }
-    configuration "Release"
-        flags { "LinkTimeOptimization" }
-	targetdir "../bin/release"
-	links "cepac"
-
-project "transm.test"
-    kind "ConsoleApp"
-    language "C++"
-    targetname "transm-test"
-    warnings "Extra"
-    files {
-       "../tests/**.h",
-       "../tests/**.cpp"
-    }
-    links { "transm" }
-    flags { 
-       "Unicode",
-       "NoEditAndContinue",
-       "NoManifest",
-       "NoPCH"
-    }
-    configuration "Debug"
-        flags { "FatalWarnings" }
-	targetdir "../bin/debug"
-	links "cepacd"
-    configuration "Release"
-        flags { "LinkTimeOptimization" }
-	targetdir "../bin/release"
-	links "cepac"
-
-project "transm"
-    kind "StaticLib"
-    language "C++"
-    warnings "Extra"
-    targetdir "../lib"
-    files {
+       "../source/gui/**.cpp",
        "../source/core/**.cpp",
        "../source/core/**.h",
        "../source/data/**.cpp",
@@ -147,10 +97,27 @@ project "transm"
        "NoManifest",
        "NoPCH"
     }
-    configuration "Debug"
+    configuration "debug"
         flags { "FatalWarnings" }
-	targetsuffix "d"
+	defines { "__WXDEBUG__" }
+	links { "../third-party/cepac/lib/cepacd" }
+    configuration "release"
+        flags { "LinkTimeOptimization" }
+	links { "../third-party/cepac/lib/cepac" }
     configuration "windows"
+        defines { 
+	   "WINVER=0x0610",
+	   "__WXMSW__",
+	   "_WINDOWS",
+	   "WIN32"
+	}
         files { "../source/util/HighResolutionTimerWindows.cpp" }
+	targetsuffix ("-win-v" .. os.outputof("cat ../VERSION"))
     configuration "not windows"
         files { "../source/util/HighResolutionTimerPosix.cpp" }
+    configuration "vs*"
+        defines { "_CRT_SECURE_NO_WARNINGS" }
+        defines { "_SCL_SECURE_NO_WARNINGS" }
+	flags { "WinMain" }
+	libdirs { "../third-party/wxWidgets/lib/vc_x64_lib" }
+    targetsuffix ("-gui-v" .. os.outputof("cat ../VERSION"))
