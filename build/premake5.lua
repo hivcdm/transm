@@ -70,7 +70,6 @@ project "transm.gui"
     warnings "Extra"
     targetdir "../bin"
     includedirs {
-       "../third-party/wxWidgets/include/msvc",
        "../third-party/wxWidgets/include"
     }
     defines { "wxUSE_GUI=1" }

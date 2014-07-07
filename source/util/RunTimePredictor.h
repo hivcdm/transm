@@ -33,7 +33,7 @@ public:
 
     void Update(const std::vector<int> &population_size)
     {
-        if(population_size.size() < degree_)
+      if((int)population_size.size() < degree_)
         {
             estimated_final_pop_size_ = population_size.front();
             estimated_percent_complete_ = population_size.size() / (double)total_months_;
@@ -97,18 +97,18 @@ private:
             throw std::invalid_argument("X and Y vector sizes do not match");
         }
 
-        size_t nCount = oX.size();
+	int nCount = oX.size();
         matrix<T> oXMatrix(nCount, degree_);
         matrix<T> oYMatrix(nCount, 1);
 
         // copy y matrix
-        for(size_t i = 0; i < nCount; i++)
+        for(int i = 0; i < nCount; i++)
         {
             oYMatrix(i, 0) = oY[i];
         }
 
         // create the X matrix
-        for(size_t nRow = 0; nRow < nCount; nRow++)
+        for(int nRow = 0; nRow < nCount; nRow++)
         {
             T nVal = 1.0f;
             for(int nCol = 0; nCol < degree_; nCol++)
@@ -143,7 +143,7 @@ private:
         double pop_size = 0;
         double nXT = 1;
 
-        for(size_t j = 0; j < degree_; j++)
+        for(int j = 0; j < degree_; j++)
         {
             // multiply current x by a coefficient
             pop_size += coefficients_[j] * nXT;

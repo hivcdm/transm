@@ -199,9 +199,9 @@ void TargetGroup::Update(Population &population, int current_time,
                 }
             }
 
-            if(num_allocated < people.size())
+            if(num_allocated < (int)people.size())
             {
-                while(num_allocated < people.size())
+	        while(num_allocated < (int)people.size())
                 {
                     double rand = rng.rand();
                     int random_allocation_index;
@@ -239,7 +239,7 @@ void TargetGroup::Update(Population &population, int current_time,
                 int allocations_index = (int)(rng.rand() * partition_allocations.size());
                 int partition_index = partition_allocations[allocations_index].first;
 
-                if(partition_index < partitions_.size())
+                if(partition_index < (int)partitions_.size())
                 {
                     AssignToPartition(population, *person_iter, partition_index);
                 }
@@ -260,11 +260,11 @@ Intervention::Intervention(int time, int duration) : time_(time), duration_(dura
 }
 
 TargetGroup::TargetGroup(const std::string &label, int start, int end, bool open, bool permanent, Nullable<PopulationTarget> target)
-    : label_(label), 
-    enrollment_period_({start, end}),
-    open_(open),
-    permanent_effect_(permanent),
-    target_(target)
+    : enrollment_period_({start, end}),
+      open_(open),
+      permanent_effect_(permanent),
+      label_(label),
+      target_(target)
 {
 
 }

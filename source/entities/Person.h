@@ -466,21 +466,6 @@ public:
     template<typename D>
     D getDemographicProfileVal() const;
 
-    template<>
-    DemographicProfile::Gender getDemographicProfileVal() const { return (DemographicProfile::Gender)getDemographicProfileVal(DemographicProfile::GENDER); }
-
-    template<>
-    DemographicProfile::SexualActivityStatus getDemographicProfileVal() const 
-    { 
-        return (DemographicProfile::SexualActivityStatus)getDemographicProfileVal(DemographicProfile::SEXUAL_ACTIVITY_STATUS); 
-    }
-
-    template<>
-    DemographicProfile::Employment getDemographicProfileVal() const
-    {
-        return (DemographicProfile::Employment)getDemographicProfileVal(DemographicProfile::EMPLOYMENT);
-    }
-
 	//sets and gets current BucketDemographicProfile membership
 	DemographicProfile::ProfileID getCurrBucketProfileID();
 	void setCurrBucketProfileID(DemographicProfile::ProfileID _profileID);

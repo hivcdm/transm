@@ -84,7 +84,7 @@ public:
     PartitionSummary GetPartitionSummary(const std::string &partition_name,
         bool include_non_sexually_active = true) const
     {
-        int partition_index = 0;
+        std::size_t partition_index = 0;
 
         for(auto &partition : partitions_)
         {
@@ -101,7 +101,7 @@ public:
             throw std::runtime_error("partition not found");
         }
 
-        auto in_partition = [=](const std::pair<Person *, int> &p) { return p.second == partition_index; };
+        auto in_partition = [=](const std::pair<Person *, int> &p) { return p.second == (int)partition_index; };
         auto is_sexually_active = [&](const std::pair<Person *, int> &p) { return in_partition(p) && p.first->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SA; };
         auto is_prevalent = [&](const std::pair<Person *, int> &p) { return in_partition(p) && p.first->ageInfected > -1 && p.first->ageInfected + 1 != (int)p.first->age; };
         auto is_incident = [&](const std::pair<Person *, int> &p) { return in_partition(p) && p.first->ageInfected + 1 == (int)p.first->age; };

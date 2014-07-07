@@ -321,9 +321,9 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 			// to be reinserted into the EntityPool once we have iterated through all buckets
 			if(p->rollForDeath(parameters_.randomNums))
 			{
-				bool wasProcessed = false;
+			  //				bool wasProcessed = false;
 				p_Iter = entities->removePersonFromAll(p_Iter);
-				wasProcessed = true;
+				//				wasProcessed = true;
 				ProcessDeath(parameters_, p, calculateLE);
 				totalDied++;
 

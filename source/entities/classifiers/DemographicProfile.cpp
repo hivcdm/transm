@@ -5,16 +5,7 @@
 #include "DemographicProfile.h"
 #include "../Person.h"
 #include "../../util/Utility.h"
-
-#ifdef __APPLE__
-namespace std {
-template <typename T, typename... Args>
-auto make_unique(Args&&... args) -> std::unique_ptr<T>
-{
-    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-}
-}
-#endif
+#include "../../util/make_unique.h"
 
 //declare strings of Enums
 const std::vector<std::string> demographicStrs = {"SEXUAL_ACTIVITY_STATUS", "GENDER", "SEXUAL_ORIENTATION", "RELATIONSHIP_STATUS", "EMPLOYMENT"};

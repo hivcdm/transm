@@ -70,6 +70,22 @@ Person::CD4Strata Person::getCd4Stratum() const
 	}
 }
 
+
+    template<>
+    DemographicProfile::Gender Person::getDemographicProfileVal() const { return (DemographicProfile::Gender)getDemographicProfileVal(DemographicProfile::GENDER); }
+
+    template<>
+    DemographicProfile::SexualActivityStatus Person::getDemographicProfileVal() const 
+    { 
+        return (DemographicProfile::SexualActivityStatus)getDemographicProfileVal(DemographicProfile::SEXUAL_ACTIVITY_STATUS); 
+    }
+
+    template<>
+    DemographicProfile::Employment Person::getDemographicProfileVal() const
+    {
+        return (DemographicProfile::Employment)getDemographicProfileVal(DemographicProfile::EMPLOYMENT);
+    }
+
 bool Person::isEligibleForTreatment(const SimContext::TreatmentInputs::ARTStartPolicy &artStartPolicy)
 {
 	// Evaluate the CD4 only criteria

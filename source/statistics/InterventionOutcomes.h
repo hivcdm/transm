@@ -51,7 +51,7 @@ public:
         {
             file << "\t" << group->GetLabel();
 
-            for(int i = 0; i < (group->GetPartitionNames().size() * 3) - 1; i++)
+            for(std::size_t i = 0; i < group->GetPartitionNames().size() * 3; i++)
             {
                 file << "\t";
             }

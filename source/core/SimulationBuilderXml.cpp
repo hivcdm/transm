@@ -2,16 +2,7 @@
 
 #include "SimulationBuilderXml.h"
 #include "../util/enum_iterator.h"
-
-#ifdef __APPLE__
-namespace std {
-template <typename T, typename... Args>
-auto make_unique(Args&&... args) -> std::unique_ptr<T>
-{
-    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-}
-}
-#endif
+#include "../util/make_unique.h"
 
 namespace {
 std::string to_string(SexualPartnership::Type type)
