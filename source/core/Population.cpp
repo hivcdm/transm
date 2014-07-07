@@ -2056,6 +2056,8 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Person *_
 		Person *chosenPartner = nullptr;
 		bool printTracePartner = false;
 
+        int maxRejections = ((Male *)_initiator)->getMaxPartnershipRejections();
+
 		//the partner that this man will have a relationship with
 		//remove the partner from the pool will be added back later
 		for(int i = 0; i < 10; i++)
@@ -2135,10 +2137,15 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Person *_
 			else if(partner != _initiator && popWideParams.ageOfMajority + partner->GetSexualActivityDelay() <= partner->getAge(TimeGranularity::Month))
 			{
                 auto rejectionChance = partner->GetPartnershipRejectionChance(_initiator->getRiskLevel(), _partnershipType);
-                if(rejectionChance == 0 || !parameters_.randomNums.chance(rejectionChance))
+
+                if(rejectionChance == 0 || !parameters_.randomNums.chance(rejectionChance)) // not rejected or partner rejection not set
                 {
                     foundPartner = true;
                     chosenPartner = partner;
+                    break;
+                }
+                else if(maxRejections != 0 && --maxRejections == 0) // rejected -> max reached?
+                {
                     break;
                 }
 			}

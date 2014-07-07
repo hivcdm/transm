@@ -91,6 +91,9 @@ public :
 
 		void SetActivityLevel(NormalDist activity_level) { activityLevel = activity_level; }
 
+        int GetMaxPartnershipRejections() const { return maxPartnershipRejections; }
+        void SetMaxPartnershipRejections(int rejections) { maxPartnershipRejections = rejections; }
+
 	private:
 		double chanceBecomeCSW;		//chance that a male will become a CSW
 		double partnerAcqMultWithSteady[Person::ENDRiskLevel];  //the rate multiplier for partner acquisition when a male has a Steady partner
@@ -123,6 +126,11 @@ public :
 
 		double coefficientOfVariation;
 		bool useCoefficientVariation;
+
+        // The number of times the male can be rejected by a female before he
+        // decreases his number of partnerships to be formed and stops looking
+        // for the current partner.
+        int maxPartnershipRejections;
 	};
 
 private:
@@ -189,10 +197,10 @@ public:
 	void rerollRiskGroup(EventParams &_eventParams);
 	//writes state of person to file
 	void saveState(ostream &_outStream, long currTime);
-
 	/** End: Inherited from Person **/
 
 	/** Start: functions for Males only **/
+    int getMaxPartnershipRejections() const { return populationSpecificParams.GetMaxPartnershipRejections(); }
 	//calculates the likelihood of using a condom based on the partnering type
 	double getCondomUseProb(Person *_p, SexualPartnership::Type _partnershipType);
 	//gets the efficacy of using a condom on preventing the spread of HIV

@@ -838,6 +838,8 @@ Male::SubPopParams SimulationBuilderXml::ReadMaleSubPopParams()
 	result.SetTransmitPerEventCoeff(Person::HVL_PRIMARY, Text<double>(transmission_node.child("primary")));
 	result.SetTransmitPerEventCoeff(Person::HVL_LATESTAGE, Text<double>(transmission_node.child("lateStage")));
 
+    result.SetMaxPartnershipRejections(Text<int>(behavior_node.child("maxPartnershipRejections")));
+
 	return result;
 }
 

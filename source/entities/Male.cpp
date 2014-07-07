@@ -12,6 +12,7 @@
 //(we only have 1 population for now so the size of the vector will default to 1
 
 Male::SubPopParams::SubPopParams()
+    : maxPartnershipRejections(0)
 {
 }
 
