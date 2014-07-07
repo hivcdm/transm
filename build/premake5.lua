@@ -86,7 +86,9 @@ project "transm.gui"
        "../source/statistics/**.cpp",
        "../source/statistics/**.h",
        "../source/util/**.cpp",
-       "../source/util/**.h"
+       "../source/util/**.h",
+       "../build/resources/resource.h",
+       "../build/resources/resource.rc"
     }
     excludes {
        "../source/util/HighResolutionTimer*.cpp"

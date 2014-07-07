@@ -536,7 +536,9 @@ void Simulation::Step()
     seconds_remaining -= hours_remaining * 3600;
     int minutes_remaining = seconds_remaining / 60;
     seconds_remaining -= minutes_remaining * 60;
-    std::cout << "\r" << run_time_predictor_.MakeProgressBar(100) << " " << time_ << " " << hours_remaining << ":" << minutes_remaining << ":" << seconds_remaining << "                                ";
+    parameters_.displayOut(run_time_predictor_.MakeProgressBar(40) + " " + 
+        std::to_string(time_) + " " + std::to_string(hours_remaining) + ":" + 
+        std::to_string(minutes_remaining) + ":" + std::to_string(seconds_remaining) + "\n");
 
     prevalence_ = population_.GetPopulationStatistics().infectionsTracker.getSAPrev(population_);
     incidence_ = population_.GetPopulationStatistics().infectionsTracker.getCurrTimeStepIncidentInfsTotal() / (double)population_.GetSize();
