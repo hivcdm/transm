@@ -1,26 +1,22 @@
 #pragma once
 
-#pragma warning( push )
-#pragma warning( disable : 4127 )
-#pragma warning( disable : 4267 )
-#pragma warning( disable : 4100 )
-#pragma warning( disable : 4244 )
-
-#include <boost/numeric/ublas/blas.hpp>
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/lu.hpp>
+#include <numeric>
 
 class RunTimePredictor
 {
 public:
-    RunTimePredictor(int degree = 2) 
-        : degree_(degree + 1), 
-        time_scale_(1 / 120.0),
-        pop_scale_(1 / 1000.0),
+    RunTimePredictor() 
+        : a_(0),
+        b_(0),
         total_months_(0),
-        coefficients_(degree_),
-        estimated_percent_complete_(0), 
-        estimated_final_pop_size_(0)
+        estimated_percent_complete_(0),
+        elapsed_time_(0),
+        sx2y_(0),
+        sylny_(0),
+        sxy_(0),
+        sxylny_(0),
+        sy_(0),
+        observations_(0)
     {
     }
 
@@ -31,36 +27,40 @@ public:
         total_months_ = months;
     }
 
-    void Update(const std::vector<int> &population_size)
+    void Update(const std::pair<int, double> &observation)
     {
-      if((int)population_size.size() < degree_)
+        observations_++;
+        elapsed_time_ += observation.second;
+
+        if(observations_ < 5)
         {
-            estimated_final_pop_size_ = population_size.front();
-            estimated_percent_complete_ = population_size.size() / (double)total_months_;
+            pop_average(observation);
             return;
         }
 
-        std::vector<double> scaled_time(population_size.size());
-        std::vector<double> scaled_population(population_size.size());
-        int sum_pop = 0;
+        auto average = pop_average(observation);
+        
+        sx2y_ += average.first * average.first * average.second;
+        sylny_ += average.second * std::log(average.second);
+        sxy_ += average.first * average.second;
+        sxylny_ += average.first * average.second * std::log(average.second);
+        sy_ += average.second;
 
-        for(std::size_t i = 0; i < population_size.size(); i++)
+        double denominator = sy_ * sx2y_ - sxy_ * sxy_;
+
+        if(denominator == 0)
         {
-            sum_pop += population_size[i];
-            scaled_time[i] = i * time_scale_;
-            scaled_population[i] = population_size[i] * pop_scale_;
+            return;
         }
 
-        coefficients_ = polyfit(scaled_time, scaled_population);
-
-        double predicted_pop = sum_pop;
-        for(int i = (int)population_size.size() + 1; i <= total_months_; i++)
-        {
-            predicted_pop += std::max(0.0, estimate_pop_size(i));
-        }
-
-        estimated_final_pop_size_ = (int)std::max(0.0, estimate_pop_size(total_months_));
-        estimated_percent_complete_ = sum_pop / predicted_pop;
+        a_ = std::exp((sx2y_ * sylny_ - sxy_ * sxylny_) / denominator);
+        b_ = 0.0022; std::max(0.0001, std::min(0.004, (sy_ * sxylny_ - sxy_ * sylny_) / denominator));
+        std::cout << b_ << std::endl;
+        auto f = [=](double x) { return a_ * std::exp(b_ * x); };
+        auto integral = [=](double a, double b) { return f(b) - f(a); };
+        double current_area = integral(1, observation.first);
+        double total_area = integral(1, total_months_);
+        estimated_percent_complete_ = current_area / total_area;
     }
 
     double GetEstimatedPercentComplete() const
@@ -68,14 +68,14 @@ public:
         return estimated_percent_complete_;
     }
 
-    double GetEstimatedTimeRemaining(double time_elapsed) const
+    double GetEstimatedTimeRemaining() const
     {
-        return GetEstimatedRunTime(time_elapsed) - time_elapsed;
+        return GetEstimatedRunTime() - elapsed_time_;
     }
 
-    double GetEstimatedRunTime(double time_elapsed) const
+    double GetEstimatedRunTime() const
     {
-        return time_elapsed / estimated_percent_complete_;
+        return estimated_percent_complete_ == 0 ? 0 : elapsed_time_ / estimated_percent_complete_;
     }
 
     std::string MakeProgressBar(std::size_t bar_length) const
@@ -86,81 +86,37 @@ public:
         return bar;
     }
 
+    std::pair<double, double> pop_average(const std::pair<int, double> next)
+    {
+        if(previous_.size() > 4)
+        {
+            previous_.pop_front();
+        }
+
+        previous_.push_back(next);
+
+        double sum_y = 0;
+
+        for(const auto &observation : previous_)
+        {
+            sum_y += observation.second;
+        }
+
+        return std::make_pair(next.first, sum_y / previous_.size());
+    }
+
 private:
-    template<typename T>
-    std::vector<T> polyfit(const std::vector<T>& oX, const std::vector<T>& oY)
-    {
-        using namespace boost::numeric::ublas;
-
-        if(oX.size() != oY.size())
-        {
-            throw std::invalid_argument("X and Y vector sizes do not match");
-        }
-
-	int nCount = oX.size();
-        matrix<T> oXMatrix(nCount, degree_);
-        matrix<T> oYMatrix(nCount, 1);
-
-        // copy y matrix
-        for(int i = 0; i < nCount; i++)
-        {
-            oYMatrix(i, 0) = oY[i];
-        }
-
-        // create the X matrix
-        for(int nRow = 0; nRow < nCount; nRow++)
-        {
-            T nVal = 1.0f;
-            for(int nCol = 0; nCol < degree_; nCol++)
-            {
-                oXMatrix(nRow, nCol) = nVal;
-                nVal *= oX[nRow];
-            }
-        }
-
-        // transpose X matrix
-        matrix<T> oXtMatrix(trans(oXMatrix));
-        // multiply transposed X matrix with X matrix
-        matrix<T> oXtXMatrix(prec_prod(oXtMatrix, oXMatrix));
-        // multiply transposed X matrix with Y matrix
-        matrix<T> oXtYMatrix(prec_prod(oXtMatrix, oYMatrix));
-
-        // lu decomposition
-        permutation_matrix<int> pert(oXtXMatrix.size1());
-        const std::size_t singular = lu_factorize(oXtXMatrix, pert);
-        // must be singular
-        BOOST_ASSERT(singular == 0);
-
-        // backsubstitution
-        lu_substitute(oXtXMatrix, pert, oXtYMatrix);
-
-        // copy the result to coeff
-        return std::vector<T>(oXtYMatrix.data().begin(), oXtYMatrix.data().end());
-    }
-
-    double estimate_pop_size(int time)
-    {
-        double pop_size = 0;
-        double nXT = 1;
-
-        for(int j = 0; j < degree_; j++)
-        {
-            // multiply current x by a coefficient
-            pop_size += coefficients_[j] * nXT;
-            // power up the X
-            nXT *= (time * time_scale_);
-        }
-
-        return pop_size / pop_scale_;
-    }
-
-    const int degree_;
-    const double time_scale_;
-    const double pop_scale_;
+    double a_;
+    double b_;
     int total_months_;
-    std::vector<double> coefficients_;
     double estimated_percent_complete_;
     int estimated_final_pop_size_;
+    double elapsed_time_;
+    std::deque<std::pair<int, double>> previous_;
+    double sx2y_;
+    double sylny_;
+    double sxy_;
+    double sxylny_;
+    double sy_;
+    int observations_;
 };
-
-#pragma warning( pop )

@@ -134,7 +134,7 @@ private:
 
     std::vector<Intervention> interventions_;
 
-    std::vector<int> population_size_;
+    std::vector<std::pair<int, double>> population_size_;
 
     RunTimePredictor run_time_predictor_;
 

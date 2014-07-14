@@ -293,8 +293,7 @@ Simulation::Simulation()
       hasPassedFirstMonthCalibPrev_(false),
       monthOfFirstMonthCalibPrev_(0),
       incidence_(0),
-      prevalence_(0),
-      run_time_predictor_(2)
+      prevalence_(0)
 {
 }
 
@@ -322,8 +321,6 @@ void Simulation::SetFixedSeed(int seed)
 void Simulation::FirstStep()
 {
     run_time_predictor_.SetTotalMonths(duration_);
-    start_time_ = timer_.GetTime();
-    population_size_.push_back((int)population_.GetSize());
 
 	//No longer creating a CEPAC trace file, but we still need to change over to the results folder before creating any other output files
 	CepacUtil::changeDirectoryToResults();
@@ -455,7 +452,7 @@ void Simulation::Step()
 		population_.ApplyRolloutContext(parameters_, time_);
 	}
 
-    std::size_t totalSize = SimulateMonth();
+    SimulateMonth();
 
 	//print out new infection stats
 	population_.CalcPrevalentPopulation(time_);
@@ -529,16 +526,20 @@ void Simulation::Step()
 
 	population_.ResetMonthlyStats();
 
-    population_size_.push_back((int)totalSize);
-    run_time_predictor_.Update(population_size_);
-    int seconds_remaining = (int)run_time_predictor_.GetEstimatedTimeRemaining(timer_.GetTime() - start_time_);
-    int hours_remaining = seconds_remaining / 3600;
-    seconds_remaining -= hours_remaining * 3600;
-    int minutes_remaining = seconds_remaining / 60;
-    seconds_remaining -= minutes_remaining * 60;
-    parameters_.displayOut(run_time_predictor_.MakeProgressBar(40) + " " + 
-        std::to_string(time_) + " " + std::to_string(hours_remaining) + ":" + 
-        std::to_string(minutes_remaining) + ":" + std::to_string(seconds_remaining) + "\n");
+    if(time_ > 1)
+    {
+        run_time_predictor_.Update(std::make_pair(time_, timer_.GetTime() - start_time_));
+        int seconds_remaining = (int)run_time_predictor_.GetEstimatedTimeRemaining();
+        int hours_remaining = seconds_remaining / 3600;
+        seconds_remaining -= hours_remaining * 3600;
+        int minutes_remaining = seconds_remaining / 60;
+        seconds_remaining -= minutes_remaining * 60;
+        parameters_.displayOut(run_time_predictor_.MakeProgressBar(40) + " " +
+            std::to_string(time_) + " " + std::to_string(hours_remaining) + ":" +
+            std::to_string(minutes_remaining) + ":" + std::to_string(seconds_remaining) + "\n");
+    }
+
+    start_time_ = timer_.GetTime();
 
     prevalence_ = population_.GetPopulationStatistics().infectionsTracker.getSAPrev(population_);
     incidence_ = population_.GetPopulationStatistics().infectionsTracker.getCurrTimeStepIncidentInfsTotal() / (double)population_.GetSize();
