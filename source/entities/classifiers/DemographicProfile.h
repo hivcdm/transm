@@ -23,85 +23,94 @@ class DemographicProfile
 
 public:
 
-	//-------------< Begin Enums that hold relevent Demographics for BucketDemographicProfile Placement >------------------//
-	/*
-		Unfortunately, when we want to change enum Demographic, we also need to change:
-			void initEnums()
-			fields/variables: demographicStrs,enumStrs,TotalNumBuckets
+    //-------------< Begin Enums that hold relevent Demographics for BucketDemographicProfile Placement >------------------//
+    /*
+    Unfortunately, when we want to change enum Demographic, we also need to change:
+    void initEnums()
+    fields/variables: demographicStrs,enumStrs,TotalNumBuckets
 
-		For each enum, the END*** value is considered as a wildcard value in profile selection-related functions
-	*/
-	enum Demographic
-	{
-		SEXUAL_ACTIVITY_STATUS,
-		GENDER,
-		SEXUAL_ORIENTATION,
-		RELATIONSHIP_STATUS,
-		EMPLOYMENT,
-		//LOCATION,	 this was proposed at one point and might come back someday
-		ENDDemographic
-	};
+    For each enum, the END*** value is considered as a wildcard value in profile selection-related functions
+    */
+    enum class Demographic
+    {
+        SexualActivityStatus,
+        Gender,
+        SexualOrientation,
+        RelationshipStatus,
+        Employment,
+        //Location,	 this was proposed at one point and might come back someday
+        Last,
+        First = SexualActivityStatus
+    };
 
-	//The ordering of the SexualActivityStatus enums matter b/c of aging.
-	//Bad case: We age all NA first. Someone ages out of the NA bucket into an SA one.
-	//			 Then we age all SA folks. If we aren't careful, then someone who
-	//			 just joined an SA bucket might be aged again.
-	enum SexualActivityStatus
-	{
-		SA,
-		NA,
-		ENDSexualActivityStatus,
-	};
+    //The ordering of the SexualActivityStatus enums matter b/c of aging.
+    //Bad case: We age all NA first. Someone ages out of the NA bucket into an SA one.
+    //			 Then we age all SA folks. If we aren't careful, then someone who
+    //			 just joined an SA bucket might be aged again.
+    enum class SexualActivityStatus
+    {
+        Active,
+        NotActive,
+        Last,
+        First = Active
+    };
 
-	//Every Person is one of these genders
-	enum Gender
-	{
-		MALE,
-		FEMALE,
-		ENDGender,
-	};
+    //Every Person is one of these genders
+    enum class Gender
+    {
+        Male,
+        Female,
+        Last,
+        First = Male
+    };
 
-	enum SexualOrientation
-	{
-		HETERO,
-		HOMO,
-		ENDSexualOrientation,
-	};
+    enum class SexualOrientation
+    {
+        Heterosexual,
+        Homosexual,
+        Last,
+        First = Heterosexual
+    };
 
 
-	//The ordering of the RelationshipStatus enums matter b/c of deaths.
-	//we actually need to check death in NON_SINGLEs before singles. B/c there is a chance that both
-	// members of the couples are dead. so what will happen is that 1 will be returned to the single's pool
-	// so we don't want to skip processing this person. We could check both at the same time, but that could possibly
-	// create a ripple effect of linked couple's needing the separate at the same time
-	enum RelationshipStatus
-	{
-		NON_SINGLE,
-		SINGLE,
-		ENDRelationshipStatus
-	};
+    //The ordering of the RelationshipStatus enums matter b/c of deaths.
+    //we actually need to check death in NON_SINGLEs before singles. B/c there is a chance that both
+    // members of the couples are dead. so what will happen is that 1 will be returned to the single's pool
+    // so we don't want to skip processing this person. We could check both at the same time, but that could possibly
+    // create a ripple effect of linked couple's needing the separate at the same time
+    enum class RelationshipStatus
+    {
+        NonSingle,
+        Single,
+        Last,
+        First = NonSingle
+    };
 
-	enum Employment
-	{
-		NON_CSW,
-		CSW,
-		/*
-		//TRUCK_DRIVER
-		*/
-		ENDEmployment,
-	};
+    enum class Employment
+    {
+        NonCsw,
+        Csw,
+        // TruckDriver
+        Last,
+        First = NonCsw
+    };
 
-	/*
-	enum Location {
-		URBAN,
-		RURAL,
-	};
-	*/
+    /*
+    enum class Location {
+    Urban,
+    Rural,
+    Last,
+    First = Urban
+    };
+    */
 
 	static Demographic MaxDemographic;
 	//we have to statically define this here, b/c we  use this value elsewhere to statically declare arrays...
-	static const unsigned int TotalNumBuckets = ENDSexualActivityStatus *ENDGender *ENDSexualOrientation
-	        *ENDRelationshipStatus *ENDEmployment;
+    static const unsigned int TotalNumBuckets = (unsigned int)SexualActivityStatus::Last
+        * (unsigned int)Gender::Last
+        * (unsigned int)SexualOrientation::Last
+        * (unsigned int)RelationshipStatus::Last
+        * (unsigned int)Employment::Last;
 
 	//-------------< END Enums that hold relevent Demographics for BucketDemographicProfile Placement >------------------//
 
@@ -132,7 +141,7 @@ public:
 
 private:
 	//storage of actual enum values for a DemographicProfile object. It's basically a tuple.
-	BaseEnumCls::Enum enums[DemographicProfile::ENDDemographic];
+    std::array<BaseEnumCls::Enum, (std::size_t)DemographicProfile::Demographic::Last> enums;
 
 	//these hold class wrappers of each enum to allow for easy printing and iterating of demographic vals
 	static std::vector<BaseEnumCls> DemographicEnumCls;

@@ -35,17 +35,17 @@ public:
         /// <summary>
         /// determines size as proportion of the population
         /// </summary>
-        double proportionOfPopulation[DemographicProfile::ENDGender];
+        double proportionOfPopulation[(std::size_t)DemographicProfile::Gender::Last];
 
         /// <summary>
         /// number of males and female csw in this bucket that are infected (at prevalence delay)
         /// </summary>
-        int numInfectedCSW[DemographicProfile::ENDGender];
+        int numInfectedCSW[(std::size_t)DemographicProfile::Gender::Last];
 
         /// <summary>
         /// number of male and female non-csw in this bucket that are infected (at prevalence delay)
         /// </summary>
-        int numInfectedRisk[DemographicProfile::ENDGender][Person::ENDRiskLevel];
+        int numInfectedRisk[(std::size_t)DemographicProfile::Gender::Last][Person::ENDRiskLevel];
 	};
 
 	PopulationParameters();
@@ -61,9 +61,15 @@ public:
 	void setProportionMale(double proportion_male) { proportionMale = proportion_male; }
 
 	int getAgeOfMajority() const { return ageOfMajority; }
-    void setAgeOfMajority(int ageOfMajority, TimeGranularity granularity = TimeGranularity::Year) { this->ageOfMajority = Utility::convertTime(granularity, TimeGranularity::Month, ageOfMajority); }
+    void setAgeOfMajority(int ageOfMajority, TimeGranularity granularity = TimeGranularity::Year) 
+    { 
+        this->ageOfMajority = Utility::convertTime(granularity, TimeGranularity::Month, ageOfMajority); 
+    }
 
-	void SetPartnershipHasDuration(DemographicProfile::Gender gender, SexualPartnership::Type type, bool has_duration) { partnershipsHaveDuration[gender][(int)type] = has_duration; }
+    void SetPartnershipHasDuration(DemographicProfile::Gender gender, SexualPartnership::Type type, bool has_duration) 
+    { 
+        partnershipsHaveDuration[(std::size_t)gender][(std::size_t)type] = has_duration;
+    }
 
 	const Male::SubPopParams &GetMaleParameters() const { return defaultMaleParams; }
 	void SetMaleParameters(Male::SubPopParams &params) { defaultMaleParams = params; }
@@ -74,10 +80,10 @@ public:
 	{
 		switch(gender)
 		{
-		case DemographicProfile::MALE: 
+		case DemographicProfile::Gender::Male: 
             defaultMaleParams.SetTransmitPerEventCoeff(stratum, coefficient);
             break;
-		case DemographicProfile::FEMALE: 
+		case DemographicProfile::Gender::Female: 
             defaultFemaleParams.SetTransmitPerEventCoeff(stratum, coefficient);
             break;
 		default: 
@@ -98,17 +104,17 @@ public:
 	const std::vector<AgeBucketPrevalenceInfo> &GetInitialAgeBuckets() const { return initialAgeBuckets; }
 	std::vector<AgeBucketPrevalenceInfo> &GetInitialAgeBuckets() { return initialAgeBuckets; }
 
-	void SetInitialCswProportion(DemographicProfile::Gender gender, double proportion) { initProbCSW[gender] = proportion; }
-	void SetCswEndAge(DemographicProfile::Gender gender, int age_months) { CSWEndAgeMth[gender] = age_months; }
+    void SetInitialCswProportion(DemographicProfile::Gender gender, double proportion) { initProbCSW[(std::size_t)gender] = proportion; }
+    void SetCswEndAge(DemographicProfile::Gender gender, int age_months) { CSWEndAgeMth[(std::size_t)gender] = age_months; }
 
 	void SetChanceBecomeCsw(DemographicProfile::Gender gender, double chance)
 	{
 		switch(gender)
 		{
-        case DemographicProfile::MALE: 
+        case DemographicProfile::Gender::Male: 
             defaultMaleParams.SetChanceBecomeCsw(chance);
             break;
-        case DemographicProfile::FEMALE:
+        case DemographicProfile::Gender::Female:
             defaultFemaleParams.SetChanceBecomeCsw(chance);
             break;
 		default: 
@@ -120,10 +126,10 @@ public:
 	{
 		switch(gender)
 		{
-		case DemographicProfile::MALE:
+		case DemographicProfile::Gender::Male:
             defaultMaleParams.SetProportionHighRisk(employment, proportion);
             break;
-		case DemographicProfile::FEMALE: 
+		case DemographicProfile::Gender::Female: 
            defaultFemaleParams.SetProportionHighRisk(employment, proportion);
            break;
 		default:
@@ -173,12 +179,12 @@ private:
     /// <summary>
     /// initial proportion of pop as CSW
     /// </summary>
-	double initProbCSW[DemographicProfile::ENDGender];
+    double initProbCSW[(std::size_t)DemographicProfile::Gender::Last];
 
     /// <summary>
     /// max age of csw in months
     /// </summary>
-	int CSWEndAgeMth[DemographicProfile::ENDGender];
+    int CSWEndAgeMth[(std::size_t)DemographicProfile::Gender::Last];
 
     /// <summary>
     /// prevalence parameters stratified by age.
@@ -199,7 +205,7 @@ private:
 	/// this is a quick way to check whether a partnership is technically a fling or not
 	/// right now, behavior for males is the only one that has been coded
     /// </summary>
-	bool partnershipsHaveDuration[DemographicProfile::ENDGender][(int)SexualPartnership::Type::ENDType];
+    bool partnershipsHaveDuration[(std::size_t)DemographicProfile::Gender::Last][(std::size_t)SexualPartnership::Type::ENDType];
 
     /// <summary>
     /// cost per condom in dollars

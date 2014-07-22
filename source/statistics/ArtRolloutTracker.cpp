@@ -209,18 +209,18 @@ void ArtRolloutTracker::buildRow(int time, Population *_population)
 
 	for(auto outcome : TRACKED_OUTCOMES)
 	{
-		for(DemographicProfile::Gender gender = static_cast<DemographicProfile::Gender>(0); gender < DemographicProfile::ENDGender; ++gender)
+		for(auto gender : enum_iterator<DemographicProfile::Gender>())
 		{
-			PushElement(counter.GetCount(outcome, std::make_pair("gender", gender)));
+            PushElement(counter.GetCount(outcome, std::make_pair("gender", (int)gender)));
 		}
 
-		for(DemographicProfile::Gender gender = static_cast<DemographicProfile::Gender>(0); gender < DemographicProfile::ENDGender; ++gender)
+        for(auto gender : enum_iterator<DemographicProfile::Gender>())
 		{
-			PushElement(counter.GetCount(outcome, std::make_pair("gender", gender), std::make_pair("sexualActivityStatus", DemographicProfile::NA)));
+            PushElement(counter.GetCount(outcome, std::make_pair("gender", (int)gender), std::make_pair("sexualActivityStatus", (int)DemographicProfile::SexualActivityStatus::NotActive)));
 
 			for(std::size_t ageGroup = 0; ageGroup < ageRanges.size(); ++ageGroup)
 			{
-				PushElement(counter.GetCount(outcome, std::make_pair("gender", gender), std::make_pair("sexualActivityStatus", DemographicProfile::SA), std::make_pair("ageGroup", (int)ageGroup)));
+                PushElement(counter.GetCount(outcome, std::make_pair("gender", (int)gender), std::make_pair("sexualActivityStatus", (int)DemographicProfile::SexualActivityStatus::Active), std::make_pair("ageGroup", (int)ageGroup)));
 			}
 		}
 
@@ -229,19 +229,19 @@ void ArtRolloutTracker::buildRow(int time, Population *_population)
 			PushElement(counter.GetCount(outcome, std::make_pair("cd4Stratum", cd4Stratum)));
 		}
 
-		for(DemographicProfile::Employment employment = static_cast<DemographicProfile::Employment>(0); employment < DemographicProfile::ENDEmployment; ++employment)
+		for(auto employment : enum_iterator<DemographicProfile::Employment>())
 		{
 			for(Person::RiskLevel riskLevel = static_cast<Person::RiskLevel>(0); riskLevel < Person::ENDRiskLevel; ++riskLevel)
 			{
-				for(DemographicProfile::Gender gender = static_cast<DemographicProfile::Gender>(0); gender < DemographicProfile::ENDGender; ++gender)
+                for(auto gender : enum_iterator<DemographicProfile::Gender>())
 				{
 					// We don't include Male CSWs for now
-					if(gender == DemographicProfile::MALE && employment == DemographicProfile::CSW)
+					if(gender == DemographicProfile::Gender::Male && employment == DemographicProfile::Employment::Csw)
 					{
 						continue;
 					}
 
-					PushElement(counter.GetCount(outcome, std::make_pair("gender", gender), std::make_pair("employment", employment), std::make_pair("riskLevel", riskLevel)));
+                    PushElement(counter.GetCount(outcome, std::make_pair("gender", (int)gender), std::make_pair("employment", (int)employment), std::make_pair("riskLevel", (int)riskLevel)));
 				}
 			}
 		}

@@ -57,7 +57,7 @@ PopulationStatistics::SinglePartAcqStats::SinglePartAcqStats()
 
 PopulationStatistics::SurvivalStats::SurvivalStats()
 {
-	for(int i = 0; i < DemographicProfile::ENDGender; i++)
+	for(int i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
 	{
 		numDeathGender[i] = 0;
 		timeToDeathGenderSum[i] = 0;
@@ -70,7 +70,7 @@ PopulationStatistics::SurvivalStats::SurvivalStats()
 		timeFromInfToDeathGenderSumSquare[i] = 0;
 	}
 
-	for(int i = 0; i < DemographicProfile::ENDEmployment; i++)
+    for(int i = 0; i < (std::size_t)DemographicProfile::Employment::Last; i++)
 	{
 		for(int j = 0; j < Person::ENDRiskLevel; j++)
 		{
@@ -112,8 +112,8 @@ void PopulationStatistics::processDeath(Person *_p, EventParams &_eventParams)
 {
 	assert((_p != nullptr));
 	assert((!_p->isAlive()));
-	DemographicProfile::Gender gend = (DemographicProfile::Gender) _p->getDemographicProfileVal(DemographicProfile::GENDER);
-	DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) _p->getDemographicProfileVal(DemographicProfile::EMPLOYMENT);
+	DemographicProfile::Gender gend = (DemographicProfile::Gender) _p->getDemographicProfileVal(DemographicProfile::Demographic::Gender);
+	DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) _p->getDemographicProfileVal(DemographicProfile::Demographic::Employment);
 	Person::RiskLevel risk = _p->getRiskLevel();
 	int prevDelay = _eventParams.delayPrevalence;
 
@@ -121,12 +121,12 @@ void PopulationStatistics::processDeath(Person *_p, EventParams &_eventParams)
 	{
 		//time spent in model after prev delay until death
 		int timeToDeath = min<int>(_p->age - _p->initAge, _eventParams.currTime - prevDelay);
-		survivalStats->numDeathGender[gend]++;
-		survivalStats->timeToDeathGenderSum[gend] += timeToDeath;
-		survivalStats->timeToDeathGenderSumSquare[gend] += timeToDeath * timeToDeath;
-		survivalStats->numDeathEmplRisk[cswStatus][risk]++;
-		survivalStats->timeToDeathEmplRiskSum[cswStatus][risk] += timeToDeath;
-		survivalStats->timeToDeathEmplRiskSumSquare[cswStatus][risk] += timeToDeath * timeToDeath;
+		survivalStats->numDeathGender[(std::size_t)gend]++;
+        survivalStats->timeToDeathGenderSum[(std::size_t)gend] += timeToDeath;
+        survivalStats->timeToDeathGenderSumSquare[(std::size_t)gend] += timeToDeath * timeToDeath;
+        survivalStats->numDeathEmplRisk[(std::size_t)cswStatus][risk]++;
+        survivalStats->timeToDeathEmplRiskSum[(std::size_t)cswStatus][risk] += timeToDeath;
+        survivalStats->timeToDeathEmplRiskSumSquare[(std::size_t)cswStatus][risk] += timeToDeath * timeToDeath;
 
 		if(_p->getGenerationOfInfection() == Constants::PREVALENT_INFECTION)  //initial prev case
 		{
@@ -143,22 +143,22 @@ void PopulationStatistics::processDeath(Person *_p, EventParams &_eventParams)
 
 		if(!_p->isInfected())
 		{
-			survivalStats->numInfOrDeathGender[gend]++;
-			survivalStats->timeToInfOrDeathGenderSum[gend] += timeToDeath;
-			survivalStats->timeToInfOrDeathGenderSumSquare[gend] += timeToDeath * timeToDeath;
-			survivalStats->numInfOrDeathEmplRisk[cswStatus][risk]++;
-			survivalStats->timeToInfOrDeathEmplRiskSum[cswStatus][risk] += timeToDeath;
-			survivalStats->timeToInfOrDeathEmplRiskSumSquare[cswStatus][risk] += timeToDeath * timeToDeath;
+            survivalStats->numInfOrDeathGender[(std::size_t)gend]++;
+            survivalStats->timeToInfOrDeathGenderSum[(std::size_t)gend] += timeToDeath;
+            survivalStats->timeToInfOrDeathGenderSumSquare[(std::size_t)gend] += timeToDeath * timeToDeath;
+            survivalStats->numInfOrDeathEmplRisk[(std::size_t)cswStatus][risk]++;
+            survivalStats->timeToInfOrDeathEmplRiskSum[(std::size_t)cswStatus][risk] += timeToDeath;
+            survivalStats->timeToInfOrDeathEmplRiskSumSquare[(std::size_t)cswStatus][risk] += timeToDeath * timeToDeath;
 		}
 		else
 		{
 			int timeFromInfToDeath = _p->age - _p->ageInfected;
-			survivalStats->numInfDeathGender[gend]++;
-			survivalStats->timeFromInfToDeathGenderSum[gend] += timeFromInfToDeath;
-			survivalStats->timeFromInfToDeathGenderSumSquare[gend] += timeFromInfToDeath * timeFromInfToDeath;
-			survivalStats->numInfDeathEmplRisk[cswStatus][risk]++;
-			survivalStats->timeFromInfToDeathEmplRiskSum[cswStatus][risk] += timeFromInfToDeath;
-			survivalStats->timeFromInfToDeathEmplRiskSumSquare[cswStatus][risk] += timeFromInfToDeath * timeFromInfToDeath;
+            survivalStats->numInfDeathGender[(std::size_t)gend]++;
+            survivalStats->timeFromInfToDeathGenderSum[(std::size_t)gend] += timeFromInfToDeath;
+            survivalStats->timeFromInfToDeathGenderSumSquare[(std::size_t)gend] += timeFromInfToDeath * timeFromInfToDeath;
+            survivalStats->numInfDeathEmplRisk[(std::size_t)cswStatus][risk]++;
+            survivalStats->timeFromInfToDeathEmplRiskSum[(std::size_t)cswStatus][risk] += timeFromInfToDeath;
+            survivalStats->timeFromInfToDeathEmplRiskSumSquare[(std::size_t)cswStatus][risk] += timeFromInfToDeath * timeFromInfToDeath;
 		}
 	}
 
@@ -268,15 +268,15 @@ void PopulationStatistics::printSurvivalStats(std::ostream &_outStream)
 	         Constants::TAB;
 	secondRow << Constants::TAB << "Gender" << Constants::TAB << Constants::TAB;
 	thirdRow << "Total" << Constants::TAB << "Male" << Constants::TAB << "Female" << Constants::TAB;
-	unsigned int numTotal = survivalStats->numInfOrDeathGender[DemographicProfile::MALE] +
-	                        survivalStats->numInfOrDeathGender[DemographicProfile::FEMALE];
+    unsigned int numTotal = survivalStats->numInfOrDeathGender[(std::size_t)DemographicProfile::Gender::Male] +
+        survivalStats->numInfOrDeathGender[(std::size_t)DemographicProfile::Gender::Female];
 
 	if(numTotal != 0)
 	{
-		double timeMean = (survivalStats->timeToInfOrDeathGenderSum[DemographicProfile::MALE] +
-		                   survivalStats->timeToInfOrDeathGenderSum[DemographicProfile::FEMALE]) / (double) numTotal;
-		double timeSD = sqrt((survivalStats->timeToInfOrDeathGenderSumSquare[DemographicProfile::MALE] +
-		                      survivalStats->timeToInfOrDeathGenderSumSquare[DemographicProfile::FEMALE]) / (double) numTotal - timeMean * timeMean);
+        double timeMean = (survivalStats->timeToInfOrDeathGenderSum[(std::size_t)DemographicProfile::Gender::Male] +
+            survivalStats->timeToInfOrDeathGenderSum[(std::size_t)DemographicProfile::Gender::Female]) / (double)numTotal;
+        double timeSD = sqrt((survivalStats->timeToInfOrDeathGenderSumSquare[(std::size_t)DemographicProfile::Gender::Male] +
+            survivalStats->timeToInfOrDeathGenderSumSquare[(std::size_t)DemographicProfile::Gender::Female]) / (double)numTotal - timeMean * timeMean);
 		fourthRow << timeMean << Constants::TAB;
 		fifthRow << timeSD << Constants::TAB;
 	}
@@ -286,7 +286,7 @@ void PopulationStatistics::printSurvivalStats(std::ostream &_outStream)
 		fifthRow << "N/A" << Constants::TAB;
 	}
 
-	for(int i = 0; i < DemographicProfile::ENDGender; i++)
+    for(int i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
 	{
 		if(survivalStats->numInfOrDeathGender[i] != 0)
 		{
@@ -307,15 +307,15 @@ void PopulationStatistics::printSurvivalStats(std::ostream &_outStream)
 	firstRow << Constants::TAB << Constants::TAB << Constants::TAB;
 	secondRow << "Risk Group" << Constants::TAB << "Non-CSW" << Constants::TAB << "Non-CSW" << Constants::TAB;
 	thirdRow << "CSW" << Constants::TAB << "High Risk" << Constants::TAB << "Low Risk" << Constants::TAB;
-	unsigned int numCSW = survivalStats->numInfOrDeathEmplRisk[DemographicProfile::CSW][Person::HIGH] +
-	                      survivalStats->numInfOrDeathEmplRisk[DemographicProfile::CSW][Person::LOW];
+    unsigned int numCSW = survivalStats->numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][Person::HIGH] +
+        survivalStats->numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][Person::LOW];
 
 	if(numCSW != 0)
 	{
-		double timeMean = (survivalStats->timeToInfOrDeathEmplRiskSum[DemographicProfile::CSW][Person::HIGH] +
-		                   survivalStats->timeToInfOrDeathEmplRiskSum[DemographicProfile::CSW][Person::LOW]) / (double) numCSW;
-		double timeSD = sqrt((survivalStats->timeToInfOrDeathEmplRiskSumSquare[DemographicProfile::CSW][Person::HIGH] +
-		                      survivalStats->timeToInfOrDeathEmplRiskSumSquare[DemographicProfile::CSW][Person::LOW]) /
+        double timeMean = (survivalStats->timeToInfOrDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][Person::HIGH] +
+            survivalStats->timeToInfOrDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][Person::LOW]) / (double)numCSW;
+        double timeSD = sqrt((survivalStats->timeToInfOrDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][Person::HIGH] +
+            survivalStats->timeToInfOrDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][Person::LOW]) /
 		                     (double) numCSW - timeMean * timeMean);
 		fourthRow << timeMean << Constants::TAB;
 		fifthRow << timeSD << Constants::TAB;
@@ -328,12 +328,12 @@ void PopulationStatistics::printSurvivalStats(std::ostream &_outStream)
 
 	for(int j = 0; j < Person::ENDRiskLevel; j++)
 	{
-		if(survivalStats->numInfOrDeathEmplRisk[DemographicProfile::NON_CSW][j] != 0)
+        if(survivalStats->numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::NonCsw][j] != 0)
 		{
-			double timeMean = survivalStats->timeToInfOrDeathEmplRiskSum[DemographicProfile::NON_CSW][j] /
-			                  (double) survivalStats->numInfOrDeathEmplRisk[DemographicProfile::NON_CSW][j];
-			double timeSD = sqrt(survivalStats->timeToInfOrDeathEmplRiskSumSquare[DemographicProfile::NON_CSW][j] /
-			                     (double) survivalStats->numInfOrDeathEmplRisk[DemographicProfile::NON_CSW][j] - timeMean * timeMean);
+            double timeMean = survivalStats->timeToInfOrDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::NonCsw][j] /
+                (double)survivalStats->numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::NonCsw][j];
+            double timeSD = sqrt(survivalStats->timeToInfOrDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::NonCsw][j] /
+                (double)survivalStats->numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::NonCsw][j] - timeMean * timeMean);
 			fourthRow << timeMean << Constants::TAB;
 			fifthRow << timeSD << Constants::TAB;
 		}
@@ -348,15 +348,15 @@ void PopulationStatistics::printSurvivalStats(std::ostream &_outStream)
 	firstRow << "Time to Death" << Constants::TAB << Constants::TAB << Constants::TAB;
 	secondRow << Constants::TAB << "Gender" << Constants::TAB << Constants::TAB;
 	thirdRow << "Total" << Constants::TAB << "Male" << Constants::TAB << "Female" << Constants::TAB;
-	numTotal = survivalStats->numDeathGender[DemographicProfile::MALE] +
-	           survivalStats->numDeathGender[DemographicProfile::FEMALE];
+    numTotal = survivalStats->numDeathGender[(std::size_t)DemographicProfile::Gender::Male] +
+        survivalStats->numDeathGender[(std::size_t)DemographicProfile::Gender::Female];
 
 	if(numTotal != 0)
 	{
-		double timeMean = (survivalStats->timeToDeathGenderSum[DemographicProfile::MALE] +
-		                   survivalStats->timeToDeathGenderSum[DemographicProfile::FEMALE]) / (double) numTotal;
-		double timeSD = sqrt((survivalStats->timeToDeathGenderSumSquare[DemographicProfile::MALE] +
-		                      survivalStats->timeToDeathGenderSumSquare[DemographicProfile::FEMALE]) / (double) numTotal - timeMean * timeMean);
+        double timeMean = (survivalStats->timeToDeathGenderSum[(std::size_t)DemographicProfile::Gender::Male] +
+            survivalStats->timeToDeathGenderSum[(std::size_t)DemographicProfile::Gender::Female]) / (double)numTotal;
+        double timeSD = sqrt((survivalStats->timeToDeathGenderSumSquare[(std::size_t)DemographicProfile::Gender::Male] +
+            survivalStats->timeToDeathGenderSumSquare[(std::size_t)DemographicProfile::Gender::Female]) / (double)numTotal - timeMean * timeMean);
 		fourthRow << timeMean << Constants::TAB;
 		fifthRow << timeSD << Constants::TAB;
 	}
@@ -366,7 +366,7 @@ void PopulationStatistics::printSurvivalStats(std::ostream &_outStream)
 		fifthRow << "N/A" << Constants::TAB;
 	}
 
-	for(int i = 0; i < DemographicProfile::ENDGender; i++)
+    for(int i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
 	{
 		if(survivalStats->numDeathGender[i] != 0)
 		{
@@ -386,15 +386,15 @@ void PopulationStatistics::printSurvivalStats(std::ostream &_outStream)
 	firstRow << Constants::TAB << Constants::TAB << Constants::TAB;
 	secondRow << "Risk Group" << Constants::TAB << "Non-CSW" << Constants::TAB << "Non-CSW" << Constants::TAB;
 	thirdRow << "CSW" << Constants::TAB << "High Risk" << Constants::TAB << "Low Risk" << Constants::TAB;
-	numCSW = survivalStats->numDeathEmplRisk[DemographicProfile::CSW][Person::HIGH] +
-	         survivalStats->numDeathEmplRisk[DemographicProfile::CSW][Person::LOW];
+    numCSW = survivalStats->numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][Person::HIGH] +
+        survivalStats->numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][Person::LOW];
 
 	if(numCSW != 0)
 	{
-		double timeMean = (survivalStats->timeToDeathEmplRiskSum[DemographicProfile::CSW][Person::HIGH] +
-		                   survivalStats->timeToDeathEmplRiskSum[DemographicProfile::CSW][Person::LOW]) / (double) numCSW;
-		double timeSD = sqrt((survivalStats->timeToDeathEmplRiskSumSquare[DemographicProfile::CSW][Person::HIGH] +
-		                      survivalStats->timeToDeathEmplRiskSumSquare[DemographicProfile::CSW][Person::LOW]) / (double) numCSW - timeMean *
+        double timeMean = (survivalStats->timeToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][Person::HIGH] +
+            survivalStats->timeToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][Person::LOW]) / (double)numCSW;
+        double timeSD = sqrt((survivalStats->timeToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][Person::HIGH] +
+            survivalStats->timeToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][Person::LOW]) / (double)numCSW - timeMean *
 		                     timeMean);
 		fourthRow << timeMean << Constants::TAB;
 		fifthRow << timeSD << Constants::TAB;
@@ -407,12 +407,12 @@ void PopulationStatistics::printSurvivalStats(std::ostream &_outStream)
 
 	for(int j = 0; j < Person::ENDRiskLevel; j++)
 	{
-		if(survivalStats->numDeathEmplRisk[DemographicProfile::NON_CSW][j] != 0)
+        if(survivalStats->numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::NonCsw][j] != 0)
 		{
-			double timeMean = survivalStats->timeToDeathEmplRiskSum[DemographicProfile::NON_CSW][j] /
-			                  (double) survivalStats->numDeathEmplRisk[DemographicProfile::NON_CSW][j];
-			double timeSD = sqrt(survivalStats->timeToDeathEmplRiskSumSquare[DemographicProfile::NON_CSW][j] /
-			                     (double) survivalStats->numDeathEmplRisk[DemographicProfile::NON_CSW][j] - timeMean * timeMean);
+            double timeMean = survivalStats->timeToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::NonCsw][j] /
+                (double)survivalStats->numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::NonCsw][j];
+            double timeSD = sqrt(survivalStats->timeToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::NonCsw][j] /
+                (double)survivalStats->numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::NonCsw][j] - timeMean * timeMean);
 			fourthRow << timeMean << Constants::TAB;
 			fifthRow << timeSD << Constants::TAB;
 		}
@@ -448,15 +448,15 @@ void PopulationStatistics::printSurvivalStats(std::ostream &_outStream)
 	firstRow << "Time from Infection to Death" << Constants::TAB << Constants::TAB << Constants::TAB;
 	secondRow << Constants::TAB << "Gender" << Constants::TAB << Constants::TAB;
 	thirdRow << "Total" << Constants::TAB << "Male" << Constants::TAB << "Female" << Constants::TAB;
-	numTotal = survivalStats->numInfDeathGender[DemographicProfile::MALE] +
-	           survivalStats->numInfDeathGender[DemographicProfile::FEMALE];
+    numTotal = survivalStats->numInfDeathGender[(std::size_t)DemographicProfile::Gender::Male] +
+        survivalStats->numInfDeathGender[(std::size_t)DemographicProfile::Gender::Female];
 
 	if(numTotal != 0)
 	{
-		double timeMean = (survivalStats->timeFromInfToDeathGenderSum[DemographicProfile::MALE] +
-		                   survivalStats->timeFromInfToDeathGenderSum[DemographicProfile::FEMALE]) / (double) numTotal;
-		double timeSD = sqrt((survivalStats->timeFromInfToDeathGenderSumSquare[DemographicProfile::MALE] +
-		                      survivalStats->timeFromInfToDeathGenderSumSquare[DemographicProfile::FEMALE]) / (double) numTotal - timeMean * timeMean);
+        double timeMean = (survivalStats->timeFromInfToDeathGenderSum[(std::size_t)DemographicProfile::Gender::Male] +
+            survivalStats->timeFromInfToDeathGenderSum[(std::size_t)DemographicProfile::Gender::Female]) / (double)numTotal;
+        double timeSD = sqrt((survivalStats->timeFromInfToDeathGenderSumSquare[(std::size_t)DemographicProfile::Gender::Male] +
+            survivalStats->timeFromInfToDeathGenderSumSquare[(std::size_t)DemographicProfile::Gender::Female]) / (double)numTotal - timeMean * timeMean);
 		fourthRow << timeMean << Constants::TAB;
 		fifthRow << timeSD << Constants::TAB;
 	}
@@ -466,7 +466,7 @@ void PopulationStatistics::printSurvivalStats(std::ostream &_outStream)
 		fifthRow << "N/A" << Constants::TAB;
 	}
 
-	for(int i = 0; i < DemographicProfile::ENDGender; i++)
+    for(int i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
 	{
 		if(survivalStats->numInfDeathGender[i] != 0)
 		{
@@ -487,15 +487,15 @@ void PopulationStatistics::printSurvivalStats(std::ostream &_outStream)
 	firstRow << Constants::TAB << Constants::TAB << Constants::TAB;
 	secondRow << "Risk Group" << Constants::TAB << "Non-CSW" << Constants::TAB << "Non-CSW" << Constants::TAB;
 	thirdRow << "CSW" << Constants::TAB << "High Risk" << Constants::TAB << "Low Risk" << Constants::TAB;
-	numCSW = survivalStats->numInfDeathEmplRisk[DemographicProfile::CSW][Person::HIGH] +
-	         survivalStats->numInfDeathEmplRisk[DemographicProfile::CSW][Person::LOW];
+    numCSW = survivalStats->numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][Person::HIGH] +
+        survivalStats->numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][Person::LOW];
 
 	if(numCSW != 0)
 	{
-		double timeMean = (survivalStats->timeFromInfToDeathEmplRiskSum[DemographicProfile::CSW][Person::HIGH] +
-		                   survivalStats->timeFromInfToDeathEmplRiskSum[DemographicProfile::CSW][Person::LOW]) / (double) numCSW;
-		double timeSD = sqrt((survivalStats->timeFromInfToDeathEmplRiskSumSquare[DemographicProfile::CSW][Person::HIGH] +
-		                      survivalStats->timeFromInfToDeathEmplRiskSumSquare[DemographicProfile::CSW][Person::LOW]) /
+        double timeMean = (survivalStats->timeFromInfToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][Person::HIGH] +
+            survivalStats->timeFromInfToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][Person::LOW]) / (double)numCSW;
+        double timeSD = sqrt((survivalStats->timeFromInfToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][Person::HIGH] +
+            survivalStats->timeFromInfToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][Person::LOW]) /
 		                     (double) numCSW - timeMean * timeMean);
 		fourthRow << timeMean << Constants::TAB;
 		fifthRow << timeSD << Constants::TAB;
@@ -508,12 +508,12 @@ void PopulationStatistics::printSurvivalStats(std::ostream &_outStream)
 
 	for(int j = 0; j < Person::ENDRiskLevel; j++)
 	{
-		if(survivalStats->numInfDeathEmplRisk[DemographicProfile::NON_CSW][j] != 0)
+        if(survivalStats->numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::NonCsw][j] != 0)
 		{
-			double timeMean = survivalStats->timeFromInfToDeathEmplRiskSum[DemographicProfile::NON_CSW][j] /
-			                  (double) survivalStats->numInfDeathEmplRisk[DemographicProfile::NON_CSW][j];
-			double timeSD = sqrt(survivalStats->timeFromInfToDeathEmplRiskSumSquare[DemographicProfile::NON_CSW][j] /
-			                     (double) survivalStats->numInfDeathEmplRisk[DemographicProfile::NON_CSW][j] - timeMean * timeMean);
+            double timeMean = survivalStats->timeFromInfToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::NonCsw][j] /
+                (double)survivalStats->numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::NonCsw][j];
+            double timeSD = sqrt(survivalStats->timeFromInfToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::NonCsw][j] /
+                (double)survivalStats->numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::NonCsw][j] - timeMean * timeMean);
 			fourthRow << timeMean << Constants::TAB;
 			fifthRow << timeSD << Constants::TAB;
 		}
@@ -746,8 +746,8 @@ void PopulationStatistics::recordIncidentInfection(EventParams &_eventParams, lo
 	assert((_infector != nullptr) && (_infector->isAlive()));
 	assert((_infected != nullptr) && (_infected->isAlive()));
 	assert(_time >= 0);
-	DemographicProfile::Gender gend = (DemographicProfile::Gender) _infected->getDemographicProfileVal(DemographicProfile::GENDER);
-	DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) _infected->getDemographicProfileVal(DemographicProfile::EMPLOYMENT);
+	DemographicProfile::Gender gend = (DemographicProfile::Gender) _infected->getDemographicProfileVal(DemographicProfile::Demographic::Gender);
+	DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) _infected->getDemographicProfileVal(DemographicProfile::Demographic::Employment);
 	Person::RiskLevel risk = _infected->getRiskLevel();
 	int prevDelay = _eventParams.delayPrevalence;
 
@@ -755,12 +755,12 @@ void PopulationStatistics::recordIncidentInfection(EventParams &_eventParams, lo
 	{
 		//time spent in model after prev delay until death
 		int timeToInfection = min<int>(_infected->age - _infected->initAge, _eventParams.currTime - prevDelay);
-		survivalStats->numInfOrDeathGender[gend]++;
-		survivalStats->timeToInfOrDeathGenderSum[gend] += timeToInfection;
-		survivalStats->timeToInfOrDeathGenderSumSquare[gend] += timeToInfection * timeToInfection;
-		survivalStats->numInfOrDeathEmplRisk[cswStatus][risk]++;
-		survivalStats->timeToInfOrDeathEmplRiskSum[cswStatus][risk] += timeToInfection;
-		survivalStats->timeToInfOrDeathEmplRiskSumSquare[cswStatus][risk] += timeToInfection * timeToInfection;
+        survivalStats->numInfOrDeathGender[(std::size_t)gend]++;
+        survivalStats->timeToInfOrDeathGenderSum[(std::size_t)gend] += timeToInfection;
+        survivalStats->timeToInfOrDeathGenderSumSquare[(std::size_t)gend] += timeToInfection * timeToInfection;
+        survivalStats->numInfOrDeathEmplRisk[(std::size_t)cswStatus][risk]++;
+        survivalStats->timeToInfOrDeathEmplRiskSum[(std::size_t)cswStatus][risk] += timeToInfection;
+        survivalStats->timeToInfOrDeathEmplRiskSumSquare[(std::size_t)cswStatus][risk] += timeToInfection * timeToInfection;
 	}
 
 	infectionsTracker.recordIncidentInfection(_time, _partnershipType, _infector, _infected, _print, _traceOutStream);

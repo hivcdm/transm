@@ -102,7 +102,7 @@ public:
         }
 
         auto in_partition = [=](const std::pair<Person *, int> &p) { return p.second == (int)partition_index; };
-        auto is_sexually_active = [&](const std::pair<Person *, int> &p) { return in_partition(p) && p.first->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SA; };
+        auto is_sexually_active = [&](const std::pair<Person *, int> &p) { return in_partition(p) && p.first->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::Active; };
         auto is_prevalent = [&](const std::pair<Person *, int> &p) { return in_partition(p) && p.first->ageInfected > -1 && p.first->ageInfected + 1 != (int)p.first->age; };
         auto is_incident = [&](const std::pair<Person *, int> &p) { return in_partition(p) && p.first->ageInfected + 1 == (int)p.first->age; };
         auto is_prevalent_sa = [&](const std::pair<Person *, int> &p) { return in_partition(p) && is_sexually_active(p) && is_prevalent(p); };

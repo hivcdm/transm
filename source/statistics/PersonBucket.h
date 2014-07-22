@@ -13,19 +13,19 @@ public:
 	{
 		const DemographicProfile *demographicProfile = person.getDemographicProfile();
         DemographicProfile::SexualActivityStatus sexualActivityStatus = static_cast<DemographicProfile::SexualActivityStatus>
-                (demographicProfile->get(DemographicProfile::SEXUAL_ACTIVITY_STATUS));
-		values_.push_back(sexualActivityStatus);
-        DemographicProfile::Gender gender = static_cast<DemographicProfile::Gender>(demographicProfile->get(DemographicProfile::GENDER));
-		values_.push_back(gender);
+                (demographicProfile->get(DemographicProfile::Demographic::SexualActivityStatus));
+        values_.push_back((std::size_t)sexualActivityStatus);
+        DemographicProfile::Gender gender = static_cast<DemographicProfile::Gender>(demographicProfile->get(DemographicProfile::Demographic::Gender));
+        values_.push_back((std::size_t)gender);
         DemographicProfile::SexualOrientation sexualOrientation = static_cast<DemographicProfile::SexualOrientation>(demographicProfile->get(
-                    DemographicProfile::SEXUAL_ORIENTATION));
-		values_.push_back(sexualOrientation);
+                    DemographicProfile::Demographic::SexualOrientation));
+        values_.push_back((std::size_t)sexualOrientation);
         DemographicProfile::RelationshipStatus relationshipStatus = static_cast<DemographicProfile::RelationshipStatus>(demographicProfile->get(
-                    DemographicProfile::RELATIONSHIP_STATUS));
-		values_.push_back(relationshipStatus);
+                    DemographicProfile::Demographic::RelationshipStatus));
+        values_.push_back((std::size_t)relationshipStatus);
         DemographicProfile::Employment employment = static_cast<DemographicProfile::Employment>(demographicProfile->get(
-                                                DemographicProfile::EMPLOYMENT));
-		values_.push_back(employment);
+                                                DemographicProfile::Demographic::Employment));
+        values_.push_back((std::size_t)employment);
         Person::RiskLevel riskLevel = person.getRiskLevel();
 		values_.push_back(riskLevel);
         int ageGroup = -1;

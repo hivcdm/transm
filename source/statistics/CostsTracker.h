@@ -63,7 +63,7 @@ private:
 		std::array<double, NumArtLinesToRecord> artCosts;
 		double drugCosts;
 		double toxicityCosts;
-		std::array<double, DemographicProfile::ENDGender> totalCostsByGender;
+		std::array<double, (std::size_t)DemographicProfile::Gender::Last> totalCostsByGender;
 		std::array<double, Person::ENDHIVStatus> totalCostsByHivState;
 		std::array<double, Person::ENDCD4Strata> totalCostsByCd4;
 		std::array<double, Person::ENDHVLStrata + 1> totalCostsByHvl;

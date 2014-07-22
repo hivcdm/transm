@@ -18,7 +18,7 @@ const std::vector<std::vector<std::string>> enumStrs =
 	{"NON_SINGLE", "SINGLE"},
 	{"NON_CSW", "CSW"}
 };
-DemographicProfile::Demographic DemographicProfile::MaxDemographic = DemographicProfile::Demographic(DemographicProfile::ENDDemographic - 1);
+DemographicProfile::Demographic DemographicProfile::MaxDemographic = DemographicProfile::Demographic((std::size_t)DemographicProfile::Demographic::Last - 1);
 
 std::vector<BaseEnumCls> DemographicProfile::DemographicEnumCls;
 std::vector<std::unique_ptr<const DemographicProfile>> DemographicProfile::ProfileIDtoProfile;
@@ -31,8 +31,8 @@ const DemographicProfile::ProfileID DemographicProfile::NOT_UNIQUE = Demographic
             -1);	//used as a return value to getProfileID to signify that the current tuple of enums inside this class contain a wildcard
 const DemographicProfile::ProfileID DemographicProfile::MIN = DemographicProfile::ProfileID(0);
 const DemographicProfile::ProfileID DemographicProfile::MAX = DemographicProfile::TotalNumBuckets - 1;
-const DemographicProfile::ProfileID DemographicProfile::END = DemographicProfile::ProfileID((1 + ENDSexualActivityStatus) * (1 + ENDGender) *
-        (1 + ENDSexualOrientation) * (1 + ENDRelationshipStatus) * (1 + ENDEmployment));
+const DemographicProfile::ProfileID DemographicProfile::END = DemographicProfile::ProfileID((1 + (std::size_t)SexualActivityStatus::Last) * (1 + (std::size_t)Gender::Last) *
+    (1 + (std::size_t)SexualOrientation::Last) * (1 + (std::size_t)RelationshipStatus::Last) * (1 + (std::size_t)Employment::Last));
 
 //----------------< Start Functions & fields for class DemographicProfile >--------------------//
 
@@ -55,19 +55,19 @@ DemographicProfile::DemographicProfile(ProfileID _profileID)
 bool DemographicProfile::operator==(const DemographicProfile _a) const
 {
 	//i don't know why we can't use memcmp, but it seems to not be working correctly.
-	//return (::memcmp( enums, _a.enums, DemographicProfile::ENDDemographic) == 0);
+	//return (::memcmp( enums, _a.enums, DemographicProfile::Demographic::Last) == 0);
 	// it thinks that {1,0,0,0} is equal to {1,1,1,1}
 	//check from left-most value for equality
 	DemographicProfile::Demographic currDemographic = DemographicProfile::Demographic(0);
 
-	while(currDemographic < DemographicProfile::ENDDemographic)
+	while(currDemographic < DemographicProfile::Demographic::Last)
 	{
-		if(enums[currDemographic] != _a.enums[currDemographic])
+        if(enums[(std::size_t)currDemographic] != _a.enums[(std::size_t)currDemographic])
 		{
 			return false;
 		}
 
-		currDemographic = DemographicProfile::Demographic(currDemographic + 1);
+		currDemographic = DemographicProfile::Demographic((std::size_t)currDemographic + 1);
 	}
 
 	return true;
@@ -91,17 +91,17 @@ bool DemographicProfile::operator<(const DemographicProfile _a) const
 
 	while(currDemographic >= min)
 	{
-		if(enums[currDemographic] > _a.enums[currDemographic])
+        if(enums[(std::size_t)currDemographic] > _a.enums[(std::size_t)currDemographic])
 		{
 			return false;
 		}
 
-		if(enums[currDemographic] < _a.enums[currDemographic])
+        if(enums[(std::size_t)currDemographic] < _a.enums[(std::size_t)currDemographic])
 		{
 			return true;
 		}
 
-		--currDemographic;
+        currDemographic = (Demographic)(((std::size_t)currDemographic) - 1);
 	}
 
 	return true;
@@ -127,10 +127,10 @@ void DemographicProfile::operator=(const DemographicProfile _a)
 	DemographicProfile::Demographic currDemographic = DemographicProfile::Demographic(0);
 
 	//set the internal enum fields equal to _a
-	while(currDemographic < DemographicProfile::ENDDemographic)
+	while(currDemographic < DemographicProfile::Demographic::Last)
 	{
 		set(currDemographic, _a.get(currDemographic));
-        ++currDemographic;
+        currDemographic = (Demographic)((std::size_t)currDemographic + 1);
 	}
 }
 
@@ -168,14 +168,14 @@ void DemographicProfile::operator++(int)
 			carry = false;
 		}
 
-		--currPlace;
+		currPlace = (Demographic)((std::size_t)currPlace - 1);
 	} //while(currPlace >= DemographicProfile::DemographicCategoriesCls.getMin())  {
 }
 
 BaseEnumCls::Enum DemographicProfile::get(DemographicProfile::Demographic _demographic) const
 {
 	assert(Utility::withinRange(_demographic, DemographicProfile::Demographic(0), DemographicProfile::MaxDemographic));
-	return enums[_demographic];
+    return enums[(std::size_t)_demographic];
 }
 
 DemographicProfile::ProfileID DemographicProfile::getProfileID() const
@@ -193,19 +193,19 @@ bool DemographicProfile::match(const DemographicProfile &_selector) const
 	while(currDemographic <= DemographicProfile::MaxDemographic)
 	{
 		//skip if wildcard
-		if(_selector.get(currDemographic) == DemographicProfile::DemographicEnumCls.at(currDemographic).getWildcard())
+        if(_selector.get(currDemographic) == DemographicProfile::DemographicEnumCls.at((std::size_t)currDemographic).getWildcard())
 		{
-			currDemographic = DemographicProfile::Demographic(currDemographic + 1);
+            currDemographic = DemographicProfile::Demographic((std::size_t)currDemographic + 1);
 			continue;
 		}
 
 		//if enums don't match, then this tuple doesn't match
-		if(_selector.get(currDemographic) != (enums[currDemographic]))
+        if(_selector.get(currDemographic) != (enums[(std::size_t)currDemographic]))
 		{
 			return false;
 		}
 
-		currDemographic = DemographicProfile::Demographic(currDemographic + 1);
+        currDemographic = DemographicProfile::Demographic((std::size_t)currDemographic + 1);
 	}
 
 	return true;
@@ -224,7 +224,7 @@ void DemographicProfile::parse(string _tupleStr)
 	Utility::Tokenize(_tupleStr, tokens, Constants::COLON);
 
 	//make sure we have correct amount of tokens
-	if(tokens.size() != DemographicProfile::ENDDemographic)
+    if(tokens.size() != (std::size_t)DemographicProfile::Demographic::Last)
 	{
 		throw std::runtime_error("Tuple String " + _tupleStr + " is not valid");
 	}
@@ -234,17 +234,17 @@ void DemographicProfile::parse(string _tupleStr)
 	const BaseEnumCls *currCategoryCls;
 
 	//loop through each Demographic
-	while(currDemographic < DemographicProfile::ENDDemographic)
+	while(currDemographic < DemographicProfile::Demographic::Last)
 	{
 		//get the current Demographic helper enum
 		currCategoryCls = DemographicProfile::getEnumCls(currDemographic);
 		//get the enum value from _tupleStr's tokens
-		BaseEnumCls::Enum e = currCategoryCls->fromString(tokens.at(currDemographic));
+        BaseEnumCls::Enum e = currCategoryCls->fromString(tokens.at((std::size_t)currDemographic));
 		//if we get currCategoryCls->fromString(tokens.at(currDemographic)) to throw an exception, then we can use a better error msg
 		//cerr << "Tuple String " << _tupleStr << " is not valid. (" << _tupleStr.at(currDemographic) << ")" << std::endl;
 		set(currDemographic, e);
-		currDemographic = DemographicProfile::Demographic(currDemographic + 1);
-	} //while(currDemographic < DemographicProfile::ENDDemographic) {
+        currDemographic = DemographicProfile::Demographic((std::size_t)currDemographic + 1);
+	} //while(currDemographic < DemographicProfile::Demographic::Last) {
 }
 
 
@@ -258,11 +258,11 @@ void DemographicProfile::saveState(std::ostream &_outStream)
 	_outStream << "dmg:";
 	_outStream << "[";
 
-	for(int i = 0; i < ENDDemographic; i++)
+    for(int i = 0; i < (std::size_t)Demographic::Last; i++)
 	{
 		_outStream << enums[i];
 
-		if(i != ENDDemographic - 1)
+        if(i != (std::size_t)Demographic::Last - 1)
 		{
 			_outStream << ",";
 		}
@@ -301,7 +301,7 @@ void DemographicProfile::selectProfileIDs(std::vector<ProfileID> &_selected, con
 		{
 			if(DemographicProfile::ProfileIDtoProfile.at(i)->match(*this))
 			{
-				_selected.push_back((int)i);
+				_selected.push_back((ProfileID)i);
 			}
 
 			i++;
@@ -320,7 +320,7 @@ void DemographicProfile::set(DemographicProfile::Demographic _demographic, BaseE
 	assert(Utility::withinRange(_demographic, DemographicProfile::Demographic(0), DemographicProfile::MaxDemographic));
 	assert(DemographicProfile::getEnumCls(_demographic)->isValidNonWildCard(_enum)
 	       || (_enum == DemographicProfile::getEnumCls(_demographic)->getWildcard()));
-	enums[_demographic] = _enum;
+    enums[(std::size_t)_demographic] = _enum;
 }
 
 
@@ -343,11 +343,11 @@ void DemographicProfile::set(DemographicProfile::ProfileID _profileID)
 		//set each value of Tuple to wildcard
 		DemographicProfile::Demographic currDemographic = DemographicProfile::Demographic(0);
 
-		while(currDemographic < DemographicProfile::ENDDemographic)
+		while(currDemographic < DemographicProfile::Demographic::Last)
 		{
-			set(currDemographic, DemographicProfile::DemographicEnumCls.at(currDemographic).getNumEnums());
-			currDemographic = DemographicProfile::Demographic(currDemographic + 1);
-		}//while(currDemographic < DemographicProfile::ENDDemographic) {
+            set(currDemographic, DemographicProfile::DemographicEnumCls.at((std::size_t)currDemographic).getNumEnums());
+            currDemographic = DemographicProfile::Demographic((std::size_t)currDemographic + 1);
+		}//while(currDemographic < DemographicProfile::Demographic::Last) {
 	}
 	else
 	{
@@ -365,10 +365,10 @@ void DemographicProfile::set(const DemographicProfile &_dmgProfile)
 {
 	DemographicProfile::Demographic currDemographic = DemographicProfile::Demographic(0);
 
-	while(currDemographic < DemographicProfile::ENDDemographic)
+	while(currDemographic < DemographicProfile::Demographic::Last)
 	{
 		set(currDemographic, _dmgProfile.get(currDemographic));
-		currDemographic = DemographicProfile::Demographic(currDemographic + 1);
+        currDemographic = DemographicProfile::Demographic((std::size_t)currDemographic + 1);
 	}
 }
 
@@ -398,14 +398,14 @@ const BaseEnumCls *DemographicProfile::getEnumCls(DemographicProfile::Demographi
 		DemographicProfile::initEnums();
 	}
 
-	return &(DemographicProfile::DemographicEnumCls.at(_demographic));
+    return &(DemographicProfile::DemographicEnumCls.at((std::size_t)_demographic));
 }
 
 const string *DemographicProfile::getString(ProfileID _profileID, Demographic _demographic)
 {
 	assert(Utility::withinRange(_profileID, DemographicProfile::MIN, DemographicProfile::MAX));
 	assert(Utility::withinRange(_demographic, DemographicProfile::Demographic(0), DemographicProfile::MaxDemographic));
-	return DemographicProfile::DemographicEnumCls.at(_demographic).toString(DemographicProfile::get(_profileID, _demographic));
+    return DemographicProfile::DemographicEnumCls.at((std::size_t)_demographic).toString(DemographicProfile::get(_profileID, _demographic));
 }
 
 const string *DemographicProfile::toString(ProfileID _profileID)
@@ -423,11 +423,11 @@ const string *DemographicProfile::toString(ProfileID _profileID)
 
 void DemographicProfile::initEnums()
 {
-	DemographicProfile::DemographicEnumCls.push_back(EnumCls<SexualActivityStatus>(enumStrs[SEXUAL_ACTIVITY_STATUS]));
-	DemographicProfile::DemographicEnumCls.push_back(EnumCls<Gender>(enumStrs[GENDER]));
-	DemographicProfile::DemographicEnumCls.push_back(EnumCls<SexualOrientation>(enumStrs[SEXUAL_ORIENTATION]));
-	DemographicProfile::DemographicEnumCls.push_back(EnumCls<RelationshipStatus>(enumStrs[RELATIONSHIP_STATUS]));
-	DemographicProfile::DemographicEnumCls.push_back(EnumCls<Employment>(enumStrs[EMPLOYMENT]));
+	DemographicProfile::DemographicEnumCls.push_back(EnumCls<SexualActivityStatus>(enumStrs[(std::size_t)DemographicProfile::Demographic::SexualActivityStatus]));
+    DemographicProfile::DemographicEnumCls.push_back(EnumCls<Gender>(enumStrs[(std::size_t)DemographicProfile::Demographic::Gender]));
+    DemographicProfile::DemographicEnumCls.push_back(EnumCls<SexualOrientation>(enumStrs[(std::size_t)DemographicProfile::Demographic::SexualOrientation]));
+    DemographicProfile::DemographicEnumCls.push_back(EnumCls<RelationshipStatus>(enumStrs[(std::size_t)DemographicProfile::Demographic::RelationshipStatus]));
+    DemographicProfile::DemographicEnumCls.push_back(EnumCls<Employment>(enumStrs[(std::size_t)DemographicProfile::Demographic::Employment]));
 }
 
 void DemographicProfile::initProfileIDMap()
@@ -446,10 +446,10 @@ void DemographicProfile::initProfileIDMap()
 	//  function before it is used
 	DemographicProfile::Demographic currDemographic = DemographicProfile::Demographic(0);
 
-	while(currDemographic < DemographicProfile::ENDDemographic)
+	while(currDemographic < DemographicProfile::Demographic::Last)
 	{
 		currDemographicProfile.set(currDemographic, DemographicProfile::getEnumCls(currDemographic)->getMin());
-		currDemographic = DemographicProfile::Demographic(currDemographic + 1);
+        currDemographic = DemographicProfile::Demographic((std::size_t)currDemographic + 1);
 	}
 
 	//iterate through all possible ProfileID's and corresponding tuples
@@ -462,13 +462,13 @@ void DemographicProfile::initProfileIDMap()
 		//generate the string representation of current profileID
 		stringstream currEnumStr;
 
-		for(Demographic category = DemographicProfile::Demographic(DemographicProfile::ENDDemographic - 1);
-		        category >= DemographicProfile::Demographic(0); category = DemographicProfile::Demographic(category - 1))
+        for(Demographic category = DemographicProfile::Demographic((std::size_t)DemographicProfile::Demographic::Last - 1);
+            category >= DemographicProfile::Demographic(0); category = DemographicProfile::Demographic((std::size_t)category - 1))
 		{
 			//Don't print out SA and HETERO (for now -- too redundant)
-			if(category != DemographicProfile::SEXUAL_ACTIVITY_STATUS && category != DemographicProfile::SEXUAL_ORIENTATION)
+			if(category != DemographicProfile::Demographic::SexualActivityStatus && category != DemographicProfile::Demographic::SexualOrientation)
 			{
-				currEnumStr << *(DemographicProfile::DemographicEnumCls.at(category).toString(currDemographicProfile.get(category)));
+                currEnumStr << *(DemographicProfile::DemographicEnumCls.at((std::size_t)category).toString(currDemographicProfile.get(category)));
 
 				if(category > DemographicProfile::Demographic(1))
 				{

@@ -49,8 +49,8 @@ void CostsTracker::RecordCepacCosts(double costUndiscounted, double costDiscount
 	undiscounted_.totalCostsByHivState[status] += costUndiscounted;
 	discounted_.totalCostsByHivState[status] += costDiscounted;
 
-	undiscounted_.totalCostsByGender[gender] += costUndiscounted;
-	discounted_.totalCostsByGender[gender] += costDiscounted;
+    undiscounted_.totalCostsByGender[(std::size_t)gender] += costUndiscounted;
+    discounted_.totalCostsByGender[(std::size_t)gender] += costDiscounted;
 
 	if(status != Person::NEGATIVE)
 	{
@@ -266,7 +266,7 @@ void CostsTracker::BuildRow(int time)
 		PushElement(costs.drugCosts);
 		PushElement(costs.toxicityCosts);
 
-		for(int i = 0; i < DemographicProfile::ENDGender; i++)
+        for(int i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
 		{
 			PushElement(costs.totalCostsByGender[i]);
 		}

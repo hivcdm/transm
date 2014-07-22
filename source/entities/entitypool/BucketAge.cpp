@@ -254,7 +254,7 @@ bool BucketAge::erase(Person *_person)
 		numRisk[_person->getRiskLevel()]--;
 		numRiskHIVStatus[_person->getRiskLevel()][_person->getHIVStatus()]--;
 
-		if(DemographicProfile::get(_person->getCurrBucketProfileID(), DemographicProfile::EMPLOYMENT) == DemographicProfile::CSW)
+		if(DemographicProfile::get(_person->getCurrBucketProfileID(), DemographicProfile::Demographic::Employment) == (std::size_t)DemographicProfile::Employment::Csw)
 		{
 			numRiskCSW[_person->getRiskLevel()]--;
 		}
@@ -321,7 +321,7 @@ bool BucketAge::insert(Person *_person)
 	numRisk[_person->getRiskLevel()]++;
 	numRiskHIVStatus[_person->getRiskLevel()][_person->getHIVStatus()]++;
 
-	if(_person->getDemographicProfileVal(DemographicProfile::EMPLOYMENT) == DemographicProfile::CSW)
+    if(_person->getDemographicProfileVal(DemographicProfile::Demographic::Employment) == (std::size_t)DemographicProfile::Employment::Csw)
 	{
 		numRiskCSW[_person->getRiskLevel()]++;
 	}

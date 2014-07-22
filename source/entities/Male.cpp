@@ -46,7 +46,7 @@ SexualBehavior &Male::SubPopParams::getSexualBehavior(SexualPartnership::Type _t
 
 double Male::SubPopParams::getProportionHighRisk(DemographicProfile::Employment _cswStatus) const
 {
-	return proportionHighRisk[_cswStatus];
+    return proportionHighRisk[(std::size_t)_cswStatus];
 }
 NormalDist Male::SubPopParams::getActivityLevel() const
 {
@@ -142,7 +142,7 @@ Male::Male(EventParams &_eventParams, int _age, bool _circumcised, unsigned int 
 		}
 	}
 
-	dmgProfile.set(DemographicProfile::GENDER, DemographicProfile::MALE);
+    dmgProfile.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
 
 	circumcised = _circumcised;
 	//Set this male's risk level assume everyone is low risk on creation. Risk is rerolled when they roll for become sex worker
@@ -407,7 +407,7 @@ int Male::rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType
 
 void Male::rerollRiskGroup(EventParams &_eventParams)
 {
-	DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) getDemographicProfileVal(DemographicProfile::EMPLOYMENT);
+	DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) getDemographicProfileVal(DemographicProfile::Demographic::Employment);
 	double chanceHighRisk = populationSpecificParams.getProportionHighRisk(cswStatus);
 	Person::RiskLevel oldRisk = risk;
 
