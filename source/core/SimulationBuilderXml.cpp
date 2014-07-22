@@ -962,15 +962,15 @@ Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node cri
 
             if(value == "male")
             {
-                target.value.gender.value = DemographicProfile::MALE;
+                target.value.gender.value = DemographicProfile::Gender::Male;
             }
             else if(value == "female")
             {
-                target.value.gender.value = DemographicProfile::FEMALE;
+                target.value.gender.value = DemographicProfile::Gender::Female;
             }
             else
             {
-                throw std::runtime_error("invalid gender");
+                throw std::runtime_error("invalid group target value for " + name + ": " + value);
             }
         }
         else if(name == "circumcised")
@@ -987,7 +987,7 @@ Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node cri
             }
             else
             {
-                throw std::runtime_error("invalid circumcision value: " + value);
+                throw std::runtime_error("invalid group target value for " + name + ": " + value);
             }
         }
         else if(name == "hiv-status")
@@ -1024,7 +1024,7 @@ Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node cri
             }
             else
             {
-                throw std::runtime_error("invalid hiv-status value: " + value);
+                throw std::runtime_error("invalid group target value for " + name + ": " + value);
             }
         }
         else if(name == "age")
@@ -1043,6 +1043,117 @@ Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node cri
                 target.value.age_upper.value = std::stoi(value);
             }
 
+            if(target.value.age_lower.value > target.value.age_upper.value)
+            {
+                throw std::runtime_error("age range lower bound must be less than or equal to upper bound");
+            }
+
+            if(target.value.age_lower.value < 0)
+            {
+                throw std::runtime_error("age range lower bound must be greater than or equal to 0");
+            }
+        }
+        else if(name == "employment")
+        {
+            target.value.employment.has_value = true;
+
+            if(value == "csw")
+            {
+                target.value.employment.value = DemographicProfile::Employment::Csw;
+            }
+            else if(value == "non-csw")
+            {
+                target.value.employment.value = DemographicProfile::Employment::NonCsw;
+            }
+            else
+            {
+                throw std::runtime_error("invalid group target value for " + name + ": " + value);
+            }
+        }
+        else if(name == "risk-group")
+        {
+            target.value.risk_level.has_value = true;
+
+            if(value == "high")
+            {
+                target.value.risk_level.value = Person::HIGH;
+            }
+            else if(value == "low")
+            {
+                target.value.risk_level.value = Person::LOW;
+            }
+            else
+            {
+                throw std::runtime_error("invalid group target value for " + name + ": " + value);
+            }
+        }
+        else if(name == "sexual-activity-status")
+        {
+            target.value.gender.has_value = true;
+
+            if(value == "active")
+            {
+                target.value.gender.value = DemographicProfile::Gender::Male;
+            }
+            else if(value == "not-active")
+            {
+                target.value.gender.value = DemographicProfile::Gender::Female;
+            }
+            else
+            {
+                throw std::runtime_error("invalid group target value for " + name + ": " + value);
+            }
+        }
+        else if(name == "sexual-orientation")
+        {
+            target.value.sexual_orientation.has_value = true;
+
+            if(value == "hetero")
+            {
+                target.value.sexual_orientation.value = DemographicProfile::SexualOrientation::Heterosexual;
+            }
+            else if(value == "homo")
+            {
+                target.value.sexual_orientation.value = DemographicProfile::SexualOrientation::Homosexual;
+            }
+            else
+            {
+                throw std::runtime_error("invalid group target value for " + name + ": " + value);
+            }
+        }
+        else if(name == "relationship-status")
+        {
+            target.value.relationship_status.has_value = true;
+
+            if(value == "single")
+            {
+                target.value.relationship_status.value = DemographicProfile::RelationshipStatus::Single;
+            }
+            else if(value == "non-single")
+            {
+                target.value.relationship_status.value = DemographicProfile::RelationshipStatus::NonSingle;
+            }
+            else
+            {
+                throw std::runtime_error("invalid group target value for " + name + ": " + value);
+            }
+        }
+        else if(name == "treatment-status")
+        {
+            target.value.on_treatment.has_value = true;
+
+            if(value == "treated")
+            {
+                target.value.on_treatment.value = true;
+            }
+            else if(value == "untreated")
+            {
+                target.value.on_treatment.value = false;
+            }
+            else
+            {
+                throw std::runtime_error("invalid group target value for " + name + ": " + value);
+            }
         }
         else
         {
