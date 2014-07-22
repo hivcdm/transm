@@ -696,7 +696,11 @@ void Simulation::UpdateInterventions(const std::unordered_set<Person *> &dead_pe
 void Simulation::RegisterTargetGroup(const TargetGroup &group)
 {
     groups_.push_back(group);
-    outputs_.intervention_outcomes.RegisterGroup(groups_.back());
+
+    if(groups_.size() == 1)
+    {
+        outputs_.intervention_outcomes.RegisterGroupContainer(groups_);
+    }
 }
 
 /***

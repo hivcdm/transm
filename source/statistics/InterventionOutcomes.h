@@ -8,25 +8,29 @@
 class InterventionOutcomes
 {
 public:
-    void RegisterGroup(const TargetGroup &group)
+    InterventionOutcomes() : group_container_(nullptr)
+    {
+    }
+
+    void RegisterGroupContainer(const std::vector<TargetGroup> &group)
     {
         if(!rows_.empty())
         {
             throw std::runtime_error("can't register new groups after simulation has begun");
         }
 
-        registered_groups_.push_back(&group);
+        group_container_ = &group;
     }
 
     void Update(int current_month)
     {
         std::vector<int> current_row;
 
-        for(auto group : registered_groups_)
+        for(auto &group : *group_container_)
         {
-            for(auto partition : group->GetPartitionNames())
+            for(auto partition : group.GetPartitionNames())
             {
-                auto summary = group->GetPartitionSummary(partition, false);
+                auto summary = group.GetPartitionSummary(partition, false);
 
                 current_row.push_back(summary.population_size);
                 current_row.push_back(summary.incident_cases);
@@ -47,11 +51,11 @@ public:
         std::fstream file;
         file.open(filename, std::ios::out);
 
-        for(auto group : registered_groups_)
+        for(auto &group : *group_container_)
         {
-            file << "\t" << group->GetLabel();
+            file << "\t" << group.GetLabel();
 
-            for(std::size_t i = 0; i < group->GetPartitionNames().size() * 3; i++)
+            for(std::size_t i = 0; i < group.GetPartitionNames().size() * 3; i++)
             {
                 file << "\t";
             }
@@ -60,13 +64,13 @@ public:
         file << std::endl;
         file << "\t";
 
-        for(auto group : registered_groups_)
+        for(auto &group : *group_container_)
         {
-            for(auto partition : group->GetPartitionNames())
+            for(auto partition : group.GetPartitionNames())
             {
                 file << partition;
 
-                for(int i = 0; i < 2; i++)
+                for(int i = 0; i < 3; i++)
                 {
                     file << "\t";
                 }
@@ -76,9 +80,9 @@ public:
         file << std::endl;
         file << "Month";
 
-        for(auto group : registered_groups_)
+        for(auto &group : *group_container_)
         {
-            for(auto partition : group->GetPartitionNames())
+            for(auto partition : group.GetPartitionNames())
             {
                 file << "\tPopulation Size\tIncident Cases\tPrevalent Cases";
             }
@@ -107,5 +111,5 @@ public:
 
 private:
     std::vector<std::vector<int>> rows_;
-    std::vector<const TargetGroup *> registered_groups_;
+    const std::vector<TargetGroup> *group_container_;
 };

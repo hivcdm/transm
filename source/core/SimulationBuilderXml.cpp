@@ -962,11 +962,11 @@ Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node cri
 
             if(value == "male")
             {
-                target.value.gender.value = DemographicProfile::Gender::Male;
+                target.value.gender.value = DemographicProfile::Gender::MALE;
             }
             else if(value == "female")
             {
-                target.value.gender.value = DemographicProfile::Gender::Female;
+                target.value.gender.value = DemographicProfile::Gender::FEMALE;
             }
             else
             {
@@ -1059,11 +1059,11 @@ Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node cri
 
             if(value == "csw")
             {
-                target.value.employment.value = DemographicProfile::Employment::Csw;
+                target.value.employment.value = DemographicProfile::Employment::CSW;
             }
             else if(value == "non-csw")
             {
-                target.value.employment.value = DemographicProfile::Employment::NonCsw;
+                target.value.employment.value = DemographicProfile::Employment::NON_CSW;
             }
             else
             {
@@ -1093,11 +1093,11 @@ Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node cri
 
             if(value == "active")
             {
-                target.value.gender.value = DemographicProfile::Gender::Male;
+                target.value.sexual_activity_status.value = DemographicProfile::SexualActivityStatus::SA;
             }
             else if(value == "not-active")
             {
-                target.value.gender.value = DemographicProfile::Gender::Female;
+                target.value.sexual_activity_status.value = DemographicProfile::SexualActivityStatus::NA;
             }
             else
             {
@@ -1110,11 +1110,11 @@ Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node cri
 
             if(value == "hetero")
             {
-                target.value.sexual_orientation.value = DemographicProfile::SexualOrientation::Heterosexual;
+                target.value.sexual_orientation.value = DemographicProfile::SexualOrientation::HETERO;
             }
             else if(value == "homo")
             {
-                target.value.sexual_orientation.value = DemographicProfile::SexualOrientation::Homosexual;
+                target.value.sexual_orientation.value = DemographicProfile::SexualOrientation::HOMO;
             }
             else
             {
@@ -1127,11 +1127,11 @@ Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node cri
 
             if(value == "single")
             {
-                target.value.relationship_status.value = DemographicProfile::RelationshipStatus::Single;
+                target.value.relationship_status.value = DemographicProfile::RelationshipStatus::SINGLE;
             }
             else if(value == "non-single")
             {
-                target.value.relationship_status.value = DemographicProfile::RelationshipStatus::NonSingle;
+                target.value.relationship_status.value = DemographicProfile::RelationshipStatus::NON_SINGLE;
             }
             else
             {
