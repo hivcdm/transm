@@ -335,22 +335,22 @@ private:
     /// <summary>
 	/// Size of CSW's by Risk and gender
     /// </summary>
-    std::size_t currSizeGenderRiskCSW[DemographicProfile::Gender::Last][Person::ENDRiskLevel];
+    std::size_t currSizeGenderRiskCSW[(std::size_t)DemographicProfile::Gender::Last][Person::ENDRiskLevel];
 
     /// <summary>
 	/// Size by gender
     /// </summary>
-    std::size_t currSizeGender[DemographicProfile::Gender::Last];
+    std::size_t currSizeGender[(std::size_t)DemographicProfile::Gender::Last];
 
     /// <summary>
 	/// non-sexually active by gender
     /// </summary>
-    std::size_t currNASizeByGender[DemographicProfile::Gender::Last];
+    std::size_t currNASizeByGender[(std::size_t)DemographicProfile::Gender::Last];
 
     /// <summary>
 	/// sexually active by risk and gender
     /// </summary>
-    std::size_t currSASizeGenderRisk[DemographicProfile::Gender::Last][Person::ENDRiskLevel];
+    std::size_t currSASizeGenderRisk[(std::size_t)DemographicProfile::Gender::Last][Person::ENDRiskLevel];
 
     /// <summary>
 	/// Num Died this month by Death Cause

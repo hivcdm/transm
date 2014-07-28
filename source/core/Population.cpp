@@ -60,7 +60,7 @@ void Population::InitPartnershipBuckets()
 	//men can form all types of partnerships
 	std::vector<SexualPartnership::Type> availPartnershipTypes;
 
-	for(int type = 0; type < (std::size_t)SexualPartnership::Type::ENDType; ++type)
+	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
 	{
 		availPartnershipTypes.push_back(SexualPartnership::Type(type));
 	}
@@ -448,7 +448,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 	int	endedPartnershipCount[(std::size_t)SexualPartnership::Type::ENDType];
 
 	//initialize counters
-	for(int type = 0; type < (std::size_t)SexualPartnership::Type::ENDType; ++type)
+	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
 	{
 		newPartnershipCount[type] = 0;
 		attemptedPartnershipCount[type] = 0;
@@ -468,7 +468,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 		std::list<SexualPartnership *> partnershipsToEnd;	//list of all partnerships due to end
 
 		//Decide who needs to split up
-		for(int type = 0; type < (std::size_t)SexualPartnership::Type::ENDType; ++type)
+		for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
 		{
 			//get partnerships of 'type' whose durations have elapsed, i.e. time to split
 			endedPartnershipCount[type] += initiator->getPartnershipsToEnd(parameters_.currTime, SexualPartnership::Type(type), partnershipsToEnd, false);
@@ -537,7 +537,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 
 		//for existing partnerships, have sexual activity
 		//Have all the sexual activity with current partners (includes new partners)
-		for(int type = 0; type < (std::size_t)SexualPartnership::Type::ENDType; ++type)
+		for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
 		{
 			std::list<Person *> newlyInfected;
 			//sexual activity among any existing partnerships that have a duration associated with them
@@ -593,7 +593,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 	//Ends the second pass through (i.e. the sex acts pass through)
 
 	//print out results to traces
-	for(int type = 0; type < (std::size_t)SexualPartnership::Type::ENDType; ++type)
+	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
 	{
         if(parameters_.debugLevel > DebugLevel::Zero)
 		{
@@ -637,7 +637,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 				int numPartners[(std::size_t)SexualPartnership::Type::ENDType];
 				int totalNumPartners = 0;
 
-				for(int i = 0; i < (std::size_t)SexualPartnership::Type::ENDType; i++)
+				for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
 				{
 					numPartners[i] = (*p_Iter)->getNumPartners((SexualPartnership::Type) i);
 					concurrent = (concurrent << 1) + (numPartners[i] != 0 ? 1 : 0);
@@ -847,7 +847,7 @@ std::size_t Population::UpdateSize()
 		currSizeRisk[risk] = 0;
 		currSizeRiskCSW[risk] = 0;
 
-        for(int j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
+        for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 		{
 			currSizeGenderRiskCSW[j][risk] = 0;
 		}
@@ -1629,15 +1629,15 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 	          << "Casual Partnership Prev Ratio (FtM)" << Constants::TAB << "Prop in Concurrent Ratio (FtM)" << Constants::TAB <<
 	          "Avg Num Acts Ratio (LR to HR Females)" << Constants::TAB;
 
-    for(int i = 0; i < (std::size_t)SexualPartnership::Type::ENDType; i++)
+    for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
 	{
-        for(int j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
+        for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 		{
 			numInPartnership[i][j] = 0;
 		}
 	}
 
-    for(int i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
+    for(int i = 0; i < (int)DemographicProfile::Gender::Last; i++)
 	{
 		numInConcurrent[i] = 0;
 		numSexuallyActive[i] = 0;
@@ -2261,9 +2261,9 @@ long Population::CalcPrevalentPopulation(long _time)
 	//initialize prevalence tallies to 0
 	for(int i = 0; i < Person::ENDRiskLevel; i++)
 	{
-        for(int j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
+	  for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 		{
-            for(int k = 0; k < (std::size_t)DemographicProfile::Employment::Last; k++)
+            for(int k = 0; k < (int)DemographicProfile::Employment::Last; k++)
 			{
 				prevalenceByRiskGenderEmployment[i][j][k] = 0;
 			}
@@ -2500,9 +2500,9 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 		secondRow << "Steady" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
 		          Constants::TAB << Constants::TAB << Constants::TAB;
 
-        for(int l = 0; l < (std::size_t)DemographicProfile::Employment::Last; l++)
+        for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
 		{
-            for(int j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
+            for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 			{
 				for(int m = Person::HIGH; m >= 0; m--)
 				{
@@ -2520,11 +2520,11 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
 		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 
-        for(int l = 0; l < (std::size_t)DemographicProfile::Employment::Last; l++)
+        for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
 		{
-            for(int k = 0; k < (std::size_t)DemographicProfile::RelationshipStatus::Last; k++)
+            for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
 			{
-                for(int j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
+                for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 				{
 					for(int m = Person::HIGH; m >= 0; m--)
 					{
@@ -2543,11 +2543,11 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
 		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 
-        for(int l = 0; l < (std::size_t)DemographicProfile::Employment::Last; l++)
+        for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
 		{
-            for(int k = 0; k < (std::size_t)DemographicProfile::RelationshipStatus::Last; k++)
+            for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
 			{
-                for(int j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
+                for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 				{
 					for(int m = Person::HIGH; m >= 0; m--)
 					{
@@ -2566,11 +2566,11 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
 		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 
-        for(int l = 0; l < (std::size_t)DemographicProfile::Employment::Last; l++)
+        for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
 		{
-            for(int k = 0; k < (std::size_t)DemographicProfile::RelationshipStatus::Last; k++)
+		  for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
 			{
-                for(int j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
+                for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 				{
 					for(int m = Person::HIGH; m >= 0; m--)
 					{
@@ -2654,13 +2654,13 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
     unsigned long numInMultiple[(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::Employment::Last][Person::ENDRiskLevel][4];
 	unsigned long doubleNumPartnerships[(int)SexualPartnership::Type::ENDType][3];
 
-    for(int i = 0; i < (std::size_t)SexualPartnership::Type::ENDType; i++)
+    for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
 	{
-        for(int j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
+        for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 		{
-            for(int k = 0; k < (std::size_t)DemographicProfile::RelationshipStatus::Last; k++)
+            for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
 			{
-                for(int l = 0; l < (std::size_t)DemographicProfile::Employment::Last; l++)
+                for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
 				{
 					for(int m = 0; m < Person::ENDRiskLevel; m++)
 					{
@@ -2676,9 +2676,9 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 		}
 	}
 
-    for(int i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
+    for(int i = 0; i < (int)DemographicProfile::Gender::Last; i++)
 	{
-        for(int j = 0; j < (std::size_t)DemographicProfile::Employment::Last; j++)
+        for(int j = 0; j < (int)DemographicProfile::Employment::Last; j++)
 		{
 			for(int k = 0; k < Person::ENDRiskLevel; k++)
 			{
@@ -2763,9 +2763,9 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 	}
 
 	//steady
-    for(int l = 0; l < (std::size_t)DemographicProfile::Employment::Last; l++)
+    for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
 	{
-        for(int j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
+        for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 		{
 			for(int m = Person::HIGH; m >= 0; m--)
 			{
@@ -2775,11 +2775,11 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 	}
 
 	//regular
-    for(int l = 0; l < (std::size_t)DemographicProfile::Employment::Last; l++)
+    for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
 	{
-        for(int k = 0; k < (std::size_t)DemographicProfile::RelationshipStatus::Last; k++)
+        for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
 		{
-            for(int j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
+            for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 			{
 				for(int m = Person::HIGH; m >= 0; m--)
 				{
@@ -2790,11 +2790,11 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 	}
 
 	//casual
-    for(int l = 0; l < (std::size_t)DemographicProfile::Employment::Last; l++)
+    for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
 	{
-        for(int k = 0; k < (std::size_t)DemographicProfile::RelationshipStatus::Last; k++)
+        for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
 		{
-            for(int j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
+            for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 			{
 				for(int m = Person::HIGH; m >= 0; m--)
 				{
@@ -2805,11 +2805,11 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 	}
 
 	//CSW
-    for(int l = 0; l < (std::size_t)DemographicProfile::Employment::Last; l++)
+    for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
 	{
-        for(int k = 0; k < (std::size_t)DemographicProfile::RelationshipStatus::Last; k++)
+        for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
 		{
-            for(int j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
+            for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 			{
 				for(int m = Person::HIGH; m >= 0; m--)
 				{
@@ -2834,7 +2834,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 		}
 	}
 
-    for(int i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
+    for(int i = 0; i < (int)DemographicProfile::Gender::Last; i++)
 	{
 		for(int k = 0; k < Person::ENDRiskLevel; k++)
 		{
@@ -3017,9 +3017,9 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 
 	for(int i = 0; i < Person::ENDRiskLevel; i++)
 	{
-        for(int j = 0; j < (std::size_t)DemographicProfile::Employment::Last; j++)
+        for(int j = 0; j < (int)DemographicProfile::Employment::Last; j++)
 		{
-            for(int k = 0; k < (std::size_t)DemographicProfile::Gender::Last; k++)
+            for(int k = 0; k < (int)DemographicProfile::Gender::Last; k++)
 			{
 				for(int m = 0; m < Person::ENDHIVStatus; m++)
 				{
@@ -3073,9 +3073,9 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 
 	for(int i = 0; i < Person::ENDRiskLevel; i++)
 	{
-        for(int j = 0; j < (std::size_t)DemographicProfile::Employment::Last; j++)
+        for(int j = 0; j < (int)DemographicProfile::Employment::Last; j++)
 		{
-            for(int k = 0; k < (std::size_t)DemographicProfile::Gender::Last; k++)
+            for(int k = 0; k < (int)DemographicProfile::Gender::Last; k++)
 			{
 				for(int m = 0; m < Person::ENDHIVStatus; m++)
 				{
@@ -3100,7 +3100,7 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 
 	for(int i = 0; i < Person::ENDRiskLevel; i++)
 	{
-        for(int k = 0; k < (std::size_t)DemographicProfile::Gender::Last; k++)
+        for(int k = 0; k < (int)DemographicProfile::Gender::Last; k++)
 		{
 			for(int m = 0; m < Person::ENDHIVStatus; m++)
 			{
@@ -3124,7 +3124,7 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 			hivStatusRisk[m] = 0;
 		}
 
-        for(int k = 0; k < (std::size_t)DemographicProfile::Gender::Last; k++)
+        for(int k = 0; k < (int)DemographicProfile::Gender::Last; k++)
 		{
 			for(int m = 0; m < Person::ENDHIVStatus; m++)
 			{
@@ -3139,7 +3139,7 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 	}
 
 	//HIV Status of SA population by Gender and Risk
-    for(int k = 0; k < (std::size_t)DemographicProfile::Gender::Last; k++)
+    for(int k = 0; k < (int)DemographicProfile::Gender::Last; k++)
 	{
 		unsigned long hivStatusGender[Person::ENDHIVStatus];
 		unsigned long hivStatusGenderRisk[Person::ENDRiskLevel][Person::ENDHIVStatus];
@@ -3156,7 +3156,7 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 
 		for(int i = 0; i < Person::ENDRiskLevel; i++)
 		{
-            for(int j = 0; j < (std::size_t)DemographicProfile::Employment::Last; j++)
+            for(int j = 0; j < (int)DemographicProfile::Employment::Last; j++)
 			{
 				for(int m = 0; m < Person::ENDHIVStatus; m++)
 				{
@@ -3303,7 +3303,7 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 
 	for(int i = Person::HIGH; i >= 0; i--)
 	{
-        for(int j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
+        for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
         {
             _outStream << GetSASize((DemographicProfile::Gender) j,
                 (Person::RiskLevel) i) - currSizeGenderRiskCSW[j][i] << Constants::TAB;

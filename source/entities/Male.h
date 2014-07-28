@@ -100,7 +100,7 @@ public :
 
 		//sexual behavior params for each type as specified by SexualPartnership::Type
 		std::vector<SexualBehavior> sexualBehaviorParams;
-		double proportionHighRisk[DemographicProfile::Employment::Last];  //proportion of male population that is in the "high risk" lists based on csw status
+		double proportionHighRisk[(std::size_t)DemographicProfile::Employment::Last];  //proportion of male population that is in the "high risk" lists based on csw status
 		NormalDist activityLevel; //Distribution of activity level (i.e. marbles)
 
 		//the age that partnering discount will start
