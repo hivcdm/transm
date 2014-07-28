@@ -54,8 +54,7 @@ public:
         }
 
         a_ = std::exp((sx2y_ * sylny_ - sxy_ * sxylny_) / denominator);
-        b_ = 0.0022; std::max(0.0001, std::min(0.004, (sy_ * sxylny_ - sxy_ * sylny_) / denominator));
-        std::cout << b_ << std::endl;
+        b_ = 0.0022; //std::max(0.0001, std::min(0.004, (sy_ * sxylny_ - sxy_ * sylny_) / denominator));
         auto f = [=](double x) { return a_ * std::exp(b_ * x); };
         auto integral = [=](double a, double b) { return f(b) - f(a); };
         double current_area = integral(1, observation.first);

@@ -48,6 +48,8 @@ public:
 
     void Write(const std::string &filename) const
     {
+        if(group_container_ == nullptr) return;
+
         std::fstream file;
         file.open(filename, std::ios::out);
 

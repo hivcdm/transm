@@ -14,7 +14,6 @@ void SimulationReader::ConstructSimulation(const std::string &filename)
 	builder_.Reset();
 	builder_.SetInputFile(filename);
 	builder_.CheckVersion();
-	builder_.LoadTemplateParameters();
 	builder_.ReadSimulationParameters();
 	builder_.ReadPopulationParameters();
 	builder_.InitializePopulation();

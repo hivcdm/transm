@@ -526,7 +526,7 @@ void Simulation::Step()
 
 	population_.ResetMonthlyStats();
 
-    if(time_ > 1)
+    if(time_ > 5)
     {
         run_time_predictor_.Update(std::make_pair(time_, timer_.GetTime() - start_time_));
         int seconds_remaining = (int)run_time_predictor_.GetEstimatedTimeRemaining();
@@ -537,6 +537,15 @@ void Simulation::Step()
         parameters_.displayOut(run_time_predictor_.MakeProgressBar(40) + " " +
             std::to_string(time_) + " " + std::to_string(hours_remaining) + ":" +
             std::to_string(minutes_remaining) + ":" + std::to_string(seconds_remaining) + "\n");
+    }
+    else
+    {
+        if(time_ > 1)
+        {
+            run_time_predictor_.Update(std::make_pair(time_, timer_.GetTime() - start_time_));
+        }
+
+        parameters_.displayOut("Estimating time remaining...\n");
     }
 
     start_time_ = timer_.GetTime();
@@ -685,6 +694,8 @@ void Simulation::SetNonAidsDeathFromCepac(SimContext &cepacSimContext, std::vect
 
 void Simulation::UpdateInterventions(const std::unordered_set<Person *> &dead_people)
 {
+    if(groups_.empty()) return;
+
     for(auto &group : groups_)
     {
         group.Update(population_, time_, parameters_.randomNums, dead_people);

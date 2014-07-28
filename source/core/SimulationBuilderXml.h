@@ -21,8 +21,6 @@ public:
 
 	void CheckVersion();
 
-	void LoadTemplateParameters();
-
 	void ReadSimulationParameters();
 
 	void ReadPopulationParameters();
