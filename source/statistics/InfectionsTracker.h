@@ -32,7 +32,7 @@ private:
 	/** This contains prevalent infections of all buckets in an EntityPool. Should be sync'd w/ curr timestep */
 	unsigned long currPrevalentInfections[DemographicProfile::TotalNumBuckets][NUMBER_GENERATIONS_TO_TRACE];
 	unsigned long
-	currPrevalentInfectionsRiskGenderEmployment[Person::ENDRiskLevel][DemographicProfile::ENDGender][DemographicProfile::ENDEmployment];
+        currPrevalentInfectionsRiskGenderEmployment[Person::ENDRiskLevel][(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::Employment::Last];
 
 	/** This contains prevalent infections of all buckets in an EntityPool stratified by age and gender. Should be sync'd w/ curr timestep */
 	AgeRangeSizeContainer currPrevalentInfectionsAgeMale;
@@ -49,22 +49,22 @@ private:
 	unsigned long currTimeStepIncidentInfs[Person::ENDHVLStrata];
 	/** Infections in the current time step, stratified by risk and CSW status */
 	unsigned long
-	currTimeStepIncidentInfsRiskGenderEmployment[Person::ENDRiskLevel][DemographicProfile::ENDGender][DemographicProfile::ENDEmployment];
+        currTimeStepIncidentInfsRiskGenderEmployment[Person::ENDRiskLevel][(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::Employment::Last];
 	/** Infections in the current time step stratified by Age and Gender*/
 	AgeRangeSizeContainer currTimeStepIncidentInfsAgeMale;
 	AgeRangeSizeContainer currTimeStepIncidentInfsAgeFemale;
 
 	/** sum of age of infection and diagnosis for incident infections in current time step*/
-	unsigned long currTimeStepAgeInfectionSumGender[DemographicProfile::ENDGender];
-	unsigned long currTimeStepAgeInfectionSumSqGender[DemographicProfile::ENDGender];
-	unsigned int currTimeStepNumInfectedGender[DemographicProfile::ENDGender];
+    unsigned long currTimeStepAgeInfectionSumGender[(std::size_t)DemographicProfile::Gender::Last];
+    unsigned long currTimeStepAgeInfectionSumSqGender[(std::size_t)DemographicProfile::Gender::Last];
+    unsigned int currTimeStepNumInfectedGender[(std::size_t)DemographicProfile::Gender::Last];
 
 	unsigned long
-	currTimeStepAgeInfectionSumRiskGenderEmployment[Person::ENDRiskLevel][DemographicProfile::ENDGender][DemographicProfile::ENDEmployment];
+        currTimeStepAgeInfectionSumRiskGenderEmployment[Person::ENDRiskLevel][(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::Employment::Last];
 	unsigned long
-	currTimeStepAgeInfectionSumSqRiskGenderEmployment[Person::ENDRiskLevel][DemographicProfile::ENDGender][DemographicProfile::ENDEmployment];
+        currTimeStepAgeInfectionSumSqRiskGenderEmployment[Person::ENDRiskLevel][(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::Employment::Last];
 	unsigned int
-	currTimeStepNumInfectedRiskGenderEmployment[Person::ENDRiskLevel][DemographicProfile::ENDGender][DemographicProfile::ENDEmployment];
+        currTimeStepNumInfectedRiskGenderEmployment[Person::ENDRiskLevel][(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::Employment::Last];
 
 	/** sum of cd4 at transmission for incident infection in current time step*/
 	double currTimeStepCD4InfectionSum;
@@ -73,9 +73,9 @@ private:
 
 	/** Total Infections in History*/
 	AgeRangeSizeContainer totalIncidentInfsAge;
-	unsigned long totalIncidentInfsGender[DemographicProfile::ENDGender];
+    unsigned long totalIncidentInfsGender[(std::size_t)DemographicProfile::Gender::Last];
 	unsigned long
-	totalIncidentInfsRiskGenderEmployment[Person::ENDRiskLevel][DemographicProfile::ENDGender][DemographicProfile::ENDEmployment];
+        totalIncidentInfsRiskGenderEmployment[Person::ENDRiskLevel][(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::Employment::Last];
 	unsigned long totalIncidentInfsRiskCSW[Person::ENDRiskLevel];
 	unsigned long totalIncidentInfsRisk[Person::ENDRiskLevel];
 	/** Exposures in the current time step, stratified by HVL of the infector
@@ -159,7 +159,7 @@ public :
 								const AgeRangeSizeContainer &_prevalenceByAgeMale,
 								const AgeRangeSizeContainer &_prevalenceByAgeFemale,
 	                            unsigned long
-	                            _PrevalenceByRiskGenderEmployment[Person::ENDRiskLevel][DemographicProfile::ENDGender][DemographicProfile::ENDEmployment]);
+                                _PrevalenceByRiskGenderEmployment[Person::ENDRiskLevel][(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::Employment::Last]);
 
 	//-----------------< Begin functions to print out infections >-----------------------//
 	//prints both flings and couple infections (who infected whom) 1 row = 1 month

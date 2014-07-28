@@ -20,50 +20,14 @@ PopulationParameters::AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(int _minA
 	assert((_minAgeMth >= 0) && (_maxAgeMth > 0) && (_maxAgeMth > _minAgeMth));
 	minAgeMth = _minAgeMth;
 	maxAgeMth = _maxAgeMth;
-	proportionOfPopulation[DemographicProfile::MALE] = _proportionOfPopulationMale;
-	proportionOfPopulation[DemographicProfile::FEMALE] = _proportionOfPopulationFemale;
-	numInfectedCSW[DemographicProfile::MALE] = _numInfectedCSWMale;
-	numInfectedCSW[DemographicProfile::FEMALE] = _numInfectedCSWFemale;
-	numInfectedRisk[DemographicProfile::MALE][Person::LOW] = _numInfectedNonCSWMalesLowRisk;
-	numInfectedRisk[DemographicProfile::MALE][Person::HIGH] = _numInfectedNonCSWMalesHighRisk;
-	numInfectedRisk[DemographicProfile::FEMALE][Person::LOW] = _numInfectedNonCSWFemalesLowRisk;
-	numInfectedRisk[DemographicProfile::FEMALE][Person::HIGH] = _numInfectedNonCSWFemalesHighRisk;
-}
-
-void PopulationParameters::AgeBucketPrevalenceInfo::print(EventParams &_eventParams)
-{
-	_eventParams.displayOut("\tAges ");
-	_eventParams.displayOut(boost::lexical_cast<std::string>(minAgeMth).c_str());
-	_eventParams.displayOut(" - ");
-	_eventParams.displayOut(boost::lexical_cast<std::string>(maxAgeMth).c_str());
-	_eventParams.displayOut("\n");
-	_eventParams.displayOut("\tproportion population male = ");
-	_eventParams.displayOut(boost::lexical_cast<std::string>(proportionOfPopulation[DemographicProfile::MALE]).c_str());
-	_eventParams.displayOut("\n");
-	_eventParams.displayOut("\tproportion population female = ");
-	_eventParams.displayOut(boost::lexical_cast<std::string>(proportionOfPopulation[DemographicProfile::FEMALE]).c_str());
-	_eventParams.displayOut("\n");
-	_eventParams.displayOut("\tnum infected csw males = ");
-	_eventParams.displayOut(boost::lexical_cast<std::string>(numInfectedCSW[DemographicProfile::MALE]).c_str());
-	_eventParams.displayOut("\n");
-	_eventParams.displayOut("\tnum infected csw females = ");
-	_eventParams.displayOut(boost::lexical_cast<std::string>(numInfectedCSW[DemographicProfile::FEMALE]).c_str());
-	_eventParams.displayOut("\n");
-	_eventParams.displayOut("\tnum infected high risk males = ");
-	_eventParams.displayOut(boost::lexical_cast<std::string>
-	                        (numInfectedRisk[DemographicProfile::MALE][Person::HIGH]).c_str());
-	_eventParams.displayOut("\n");
-	_eventParams.displayOut("\tnum infected high risk females = ");
-	_eventParams.displayOut(boost::lexical_cast<std::string>
-	                        (numInfectedRisk[DemographicProfile::FEMALE][Person::HIGH]).c_str());
-	_eventParams.displayOut("\n");
-	_eventParams.displayOut("\tnum infected low risk males = ");
-	_eventParams.displayOut(boost::lexical_cast<std::string>(numInfectedRisk[DemographicProfile::MALE][Person::LOW]).c_str());
-	_eventParams.displayOut("\n");
-	_eventParams.displayOut("\tnum infected low risk females = ");
-	_eventParams.displayOut(boost::lexical_cast<std::string>
-	                        (numInfectedRisk[DemographicProfile::FEMALE][Person::LOW]).c_str());
-	_eventParams.displayOut("\n");
+    proportionOfPopulation[(std::size_t)DemographicProfile::Gender::Male] = _proportionOfPopulationMale;
+    proportionOfPopulation[(std::size_t)DemographicProfile::Gender::Female] = _proportionOfPopulationFemale;
+    numInfectedCSW[(std::size_t)DemographicProfile::Gender::Male] = _numInfectedCSWMale;
+    numInfectedCSW[(std::size_t)DemographicProfile::Gender::Female] = _numInfectedCSWFemale;
+    numInfectedRisk[(std::size_t)DemographicProfile::Gender::Male][Person::LOW] = _numInfectedNonCSWMalesLowRisk;
+    numInfectedRisk[(std::size_t)DemographicProfile::Gender::Male][Person::HIGH] = _numInfectedNonCSWMalesHighRisk;
+    numInfectedRisk[(std::size_t)DemographicProfile::Gender::Female][Person::LOW] = _numInfectedNonCSWFemalesLowRisk;
+    numInfectedRisk[(std::size_t)DemographicProfile::Gender::Female][Person::HIGH] = _numInfectedNonCSWFemalesHighRisk;
 }
 
 PopulationParameters::PopulationParameters()

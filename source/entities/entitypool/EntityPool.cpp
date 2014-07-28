@@ -90,7 +90,7 @@ void EntityPool::printBucketLabels(ostream &_outStream, bool _printPropInfected)
 
 		_outStream << (*bucket->getLabel()) << " (Total)" << Constants::TAB;
 
-		if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::SEXUAL_ACTIVITY_STATUS) == DemographicProfile::SA)
+        if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
 		{
 			_outStream << (*bucket->getLabel()) << " (HR)" << Constants::TAB;
 			_outStream << (*bucket->getLabel()) << " (LR)" << Constants::TAB;
@@ -154,7 +154,7 @@ void EntityPool::printBucketSizes(std::ostream &_outStream, const std::string &,
 		long bucketSize = bucket->size();
 		_outStream << bucketSize << Constants::TAB;
 
-		if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::SEXUAL_ACTIVITY_STATUS) == DemographicProfile::SA)
+        if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
 		{
 			long bucketSizeHR = ((BucketSexualMixing *) bucket)->sizeRisk(Person::HIGH);
 			long bucketSizeLR = ((BucketSexualMixing *) bucket)->sizeRisk(Person::LOW);
@@ -170,7 +170,7 @@ void EntityPool::printBucketSizes(std::ostream &_outStream, const std::string &,
 	{
 		Person *male = *maleIter;
 
-		if(male->getDemographicProfile()->get(DemographicProfile::SEXUAL_ACTIVITY_STATUS) == DemographicProfile::SA)
+        if(male->getDemographicProfile()->get(DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
 		{
 			_totalSexuallyActive++;
 		}
@@ -190,7 +190,7 @@ void EntityPool::printBucketSizes(std::ostream &_outStream, const std::string &,
 	{
 		Person *female = *femaleIter;
 
-		if(female->getDemographicProfile()->get(DemographicProfile::SEXUAL_ACTIVITY_STATUS) == DemographicProfile::SA)
+        if(female->getDemographicProfile()->get(DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
 		{
 			_totalSexuallyActive++;
 		}
@@ -331,7 +331,7 @@ unsigned long EntityPool::sizeNotSexuallyActive()
 		}
 
 		//Only add the sizes of non-sexually active buckets
-		if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::SEXUAL_ACTIVITY_STATUS) == DemographicProfile::NA)
+        if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
 		{
 			size += entityBuckets.at(currBucketIndex)->size();
 		}
@@ -362,9 +362,9 @@ unsigned long EntityPool::sizeNotSexuallyActive(DemographicProfile::Gender _gend
 		}
 
 		//Only add the sizes of non-sexually active buckets that match demographic profile
-		if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::SEXUAL_ACTIVITY_STATUS) == DemographicProfile::NA)
+        if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
 		{
-			if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::GENDER) == static_cast<BaseEnumCls::Enum>(_gender))
+			if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::Gender) == static_cast<BaseEnumCls::Enum>(_gender))
 			{
 				size += entityBuckets.at(currBucketIndex)->size();
 			}
@@ -396,9 +396,9 @@ unsigned long EntityPool::sizeSexuallyActive(DemographicProfile::Gender _gender,
 		}
 
 		//Only add the sizes of sexually active buckets that match demographic profile
-		if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::SEXUAL_ACTIVITY_STATUS) == DemographicProfile::SA)
+        if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
 		{
-			if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::GENDER) == static_cast<BaseEnumCls::Enum>(_gender))
+			if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::Gender) == static_cast<BaseEnumCls::Enum>(_gender))
 			{
 				size += ((BucketSexualMixing *)(entityBuckets.at(currBucketIndex)))->sizeRisk(_risk);
 			}
@@ -429,7 +429,7 @@ unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMo
 		}
 
 		//Only add the sizes of sexually active buckets
-		if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::SEXUAL_ACTIVITY_STATUS) == DemographicProfile::SA)
+        if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
 		{
 			size += ((BucketSexualMixing *)(entityBuckets.at(currBucketIndex)))->sizeByAge(minAgeMonths, maxAgeMonths);
 		}
@@ -460,9 +460,9 @@ unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMo
 		}
 
 		//Only add the sizes of sexually active buckets
-		if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::SEXUAL_ACTIVITY_STATUS) == DemographicProfile::SA)
+        if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
 		{
-			if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::GENDER) == static_cast<BaseEnumCls::Enum>(_gender))
+			if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::Gender) == static_cast<BaseEnumCls::Enum>(_gender))
 			{
 				size += ((BucketSexualMixing *)(entityBuckets.at(currBucketIndex)))->sizeByAge(minAgeMonths, maxAgeMonths);
 			}
@@ -479,13 +479,13 @@ unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMo
  */
 bool EntityPool::addPersonToAll(Person *_p)
 {
-	if(_p->getDemographicProfileVal(DemographicProfile::GENDER) == DemographicProfile::MALE)
+    if(_p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
 	{
 		allMales.push_back(_p);
 	}
 	else
 	{
-		assert(_p->getDemographicProfileVal(DemographicProfile::GENDER) == DemographicProfile::FEMALE);
+        assert(_p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Female);
 		allFemales.push_back(_p);
 	}
 
@@ -501,11 +501,11 @@ list<Person *>::iterator EntityPool::removePersonFromAll(list<Person *>::iterato
 	list<Person *>::iterator toReturn;
 	removeEntity(*_pIter);
 
-	if((*_pIter)->getDemographicProfileVal(DemographicProfile::GENDER) == DemographicProfile::MALE)
+    if((*_pIter)->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
 	{
 		toReturn = allMales.erase(_pIter);
 	}
-	else if((*_pIter)->getDemographicProfileVal(DemographicProfile::GENDER) == DemographicProfile::FEMALE)
+    else if((*_pIter)->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Female)
 	{
 		toReturn = allFemales.erase(_pIter);
 	}
@@ -523,7 +523,7 @@ list<Person *>::iterator EntityPool::removePersonFromAll(list<Person *>::iterato
  */
 list<Person *>::iterator EntityPool::begin(DemographicProfile::Gender _gender)
 {
-	if(_gender == DemographicProfile::MALE)
+	if(_gender == DemographicProfile::Gender::Male)
 	{
 		return allMales.begin();
 	}
@@ -539,7 +539,7 @@ list<Person *>::iterator EntityPool::begin(DemographicProfile::Gender _gender)
  */
 list<Person *>::iterator EntityPool::end(DemographicProfile::Gender _gender)
 {
-	if(_gender == DemographicProfile::MALE)
+	if(_gender == DemographicProfile::Gender::Male)
 	{
 		return allMales.end();
 	}
@@ -566,17 +566,17 @@ EntityPool::EntityPool(int ageOfMajority, unsigned int _popID, const std::map<Se
 	std::vector<DemographicProfile::ProfileID> validBucketIDs;
 	//we only want 2 NA buckets (male, female)  b/c they aren't involved in sexual mixing
 	//so instantiate 2 of the NA Buckets (NA, Hetero, nonCSW
-	selector.set(DemographicProfile::SEXUAL_ACTIVITY_STATUS, DemographicProfile::NA);
-	selector.set(DemographicProfile::SEXUAL_ORIENTATION, DemographicProfile::HETERO);
-	selector.set(DemographicProfile::RELATIONSHIP_STATUS, DemographicProfile::SINGLE);
-	selector.set(DemographicProfile::EMPLOYMENT, DemographicProfile::NON_CSW);
+    selector.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::NotActive);
+    selector.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Heterosexual);
+    selector.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::Single);
+    selector.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::NonCsw);
 	selector.selectProfileIDs(validBucketIDs, nullptr);
 	//check if we only have 2 buckets
-	assert(validBucketIDs.size() == DemographicProfile::ENDGender);
+    assert(validBucketIDs.size() == (std::size_t)DemographicProfile::Gender::Last);
 	//We want to instantiate all heterosexual SA Buckets
 	selector.set(DemographicProfile::END);
-	selector.set(DemographicProfile::SEXUAL_ACTIVITY_STATUS, DemographicProfile::SA);
-	selector.set(DemographicProfile::SEXUAL_ORIENTATION, DemographicProfile::HETERO);
+    selector.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::Active);
+    selector.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Heterosexual);
 	selector.selectProfileIDs(validBucketIDs, nullptr);
 
 	//instantiate the spaces for all our buckets. The # of buckets depends on class BucketClassifiers
@@ -585,8 +585,8 @@ EntityPool::EntityPool(int ageOfMajority, unsigned int _popID, const std::map<Se
 	{
 		DemographicProfile::ProfileID currBucketID = validBucketIDs.at(i);
 
-		//at this point, DemographicProfile still matches the DemographicProfile::SA
-		if(DemographicProfile::NA == DemographicProfile::get(validBucketIDs.at(i), DemographicProfile::SEXUAL_ACTIVITY_STATUS))
+		//at this point, DemographicProfile still matches the DemographicProfile::SexualActivityStatus::Active
+        if((std::size_t)DemographicProfile::SexualActivityStatus::NotActive == DemographicProfile::get(validBucketIDs.at(i), DemographicProfile::Demographic::SexualActivityStatus))
 		{
 			//make an NA bucket
 			entityBuckets.at(currBucketID) = new BucketDemographicProfile(currBucketID, DemographicProfile::toString(currBucketID), true);
@@ -594,8 +594,8 @@ EntityPool::EntityPool(int ageOfMajority, unsigned int _popID, const std::map<Se
 		else
 		{
 			//CSW can't be in STEADY relationships
-			bool invalidCombo = (DemographicProfile::CSW == DemographicProfile::get(validBucketIDs.at(i), DemographicProfile::EMPLOYMENT)) &&
-			                    (DemographicProfile::NON_SINGLE == DemographicProfile::get(validBucketIDs.at(i), DemographicProfile::RELATIONSHIP_STATUS)) ;
+            bool invalidCombo = ((std::size_t)DemographicProfile::Employment::Csw == DemographicProfile::get(validBucketIDs.at(i), DemographicProfile::Demographic::Employment)) &&
+                ((std::size_t)DemographicProfile::RelationshipStatus::NonSingle == DemographicProfile::get(validBucketIDs.at(i), DemographicProfile::Demographic::RelationshipStatus));
 
 			if(!invalidCombo)
 			{
@@ -609,17 +609,10 @@ EntityPool::EntityPool(int ageOfMajority, unsigned int _popID, const std::map<Se
 EntityPool::~EntityPool(void)
 {
 	//Delete all people in allFemales and allMales in order to prevent memory leaks
-	list<Person *>::iterator p_Iter;
+	std::list<Person *>::iterator p_Iter;
 
-	for(int gend = DemographicProfile::MALE; gend < DemographicProfile::ENDGender; gend++)
+	for(auto gender : enum_iterator<DemographicProfile::Gender>())
 	{
-		DemographicProfile::Gender gender = DemographicProfile::MALE;
-
-		if(gend == DemographicProfile::FEMALE)
-		{
-			gender = DemographicProfile::FEMALE;
-		}
-
 		p_Iter = begin(gender);
 
 		while(p_Iter != end(gender))
@@ -639,7 +632,7 @@ EntityPool::~EntityPool(void)
 	{
 		if(entityBuckets.at(j) != nullptr)
 		{
-			if(DemographicProfile::NA != DemographicProfile::get(entityBuckets.at(j)->getProfileID(), DemographicProfile::SEXUAL_ACTIVITY_STATUS))
+            if((std::size_t)DemographicProfile::SexualActivityStatus::NotActive != DemographicProfile::get(entityBuckets.at(j)->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus))
 			{
 				delete(BucketSexualMixing *)entityBuckets.at(j);
 			}

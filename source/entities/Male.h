@@ -81,7 +81,7 @@ public :
 
 		void SetTransmitPerEventCoeff(HVLStrata hvl, double coeff) { transmitPerEventCoeffs[hvl] = coeff; }
 
-		void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) { proportionHighRisk[employment] = proportion; }
+        void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) { proportionHighRisk[(std::size_t)employment] = proportion; }
 
 		void SetAverageYearsYounger(SexualPartnership::Type type, NormalDist dist) { sexualBehaviorParams[(int)type].setAverageYearsYounger(dist); }
 		void SetAcquisitionRatePerMonth(Person::RiskLevel risk, SexualPartnership::Type type, LogNormalDist dist) { sexualBehaviorParams[(int)type].setAcquisitionRatePerMonth(risk, dist); }
@@ -100,7 +100,7 @@ public :
 
 		//sexual behavior params for each type as specified by SexualPartnership::Type
 		std::vector<SexualBehavior> sexualBehaviorParams;
-		double proportionHighRisk[DemographicProfile::ENDEmployment];  //proportion of male population that is in the "high risk" lists based on csw status
+		double proportionHighRisk[DemographicProfile::Employment::Last];  //proportion of male population that is in the "high risk" lists based on csw status
 		NormalDist activityLevel; //Distribution of activity level (i.e. marbles)
 
 		//the age that partnering discount will start

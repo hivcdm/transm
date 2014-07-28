@@ -26,15 +26,19 @@ public:
 		double GetTransmitPerEventCoeff(HVLStrata _hvl) const;
 		void SetTransmitPerEventCoeff(HVLStrata hvl, double coeff) { transmitPerEventCoeffs[hvl] = coeff; }
 		void SetChanceBecomeCsw(double chance) { chanceBecomeCSW = chance; }
-		void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) { proportionHighRisk[employment] = proportion; }
+        void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) { proportionHighRisk[(std::size_t)employment] = proportion; }
 
 	private:
 		friend class SimulationBuilder;
 
-		double chanceBecomeCSW;		//chance that a female will become a CSW
-		double proportionHighRisk[DemographicProfile::ENDEmployment];  //proportion of female population that is in the "high risk" lists
-		NormalDist activityLevel; //Distribution of activity level (i.e. marbles)
-		std::array<double, HVLStrata::ENDHVLStrata> transmitPerEventCoeffs;	 //chance of infection for women->men, w/o circumcision or condoms
+        //chance that a female will become a CSW
+		double chanceBecomeCSW;
+        //proportion of female population that is in the "high risk" lists
+        std::array<double, (std::size_t)DemographicProfile::Employment::Last> proportionHighRisk;
+        //Distribution of activity level (i.e. marbles)
+		NormalDist activityLevel;
+        //chance of infection for women->men, w/o circumcision or condoms
+		std::array<double, HVLStrata::ENDHVLStrata> transmitPerEventCoeffs;
 	};
 
 public:

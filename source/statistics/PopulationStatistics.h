@@ -63,52 +63,60 @@ public:
 	class SinglePartAcqStats
 	{
 	public:
-		static const int NUM_PARTNER_BINS = 16; //Number of partner bins to store for freq plot
+        //Number of partner bins to store for freq plot
+		static const int NUM_PARTNER_BINS = 16;
+
 		SinglePartAcqStats();
-		long partnerFreq[NUM_PARTNER_BINS]; //Number of people with specified number of partners
+
+        //Number of people with specified number of partners
+		long partnerFreq[NUM_PARTNER_BINS];
 	};
 
 	class SurvivalStats
 	{
 	public:
 		SurvivalStats();
-		unsigned long
-		timeToDeathGenderSum[DemographicProfile::ENDGender]; //sum of time to death for people who die during model run (used to calculate mean) strat by gender
-		unsigned long
-		timeToDeathGenderSumSquare[DemographicProfile::ENDGender];//sum square of time to death strat by gender (used to calculate SD)
-		unsigned int numDeathGender[DemographicProfile::ENDGender]; //number who died strat by gender
 
-		unsigned long
-		timeToDeathEmplRiskSum[DemographicProfile::ENDEmployment][Person::ENDRiskLevel]; //time to death stratified by CSW status and Risk level
-		unsigned long timeToDeathEmplRiskSumSquare[DemographicProfile::ENDEmployment][Person::ENDRiskLevel];
-		unsigned int numDeathEmplRisk[DemographicProfile::ENDEmployment][Person::ENDRiskLevel];
+        //sum of time to death for people who die during model run (used to calculate mean) strat by gender
+		unsigned long timeToDeathGenderSum[(std::size_t)DemographicProfile::Gender::Last];
+        //sum square of time to death strat by gender (used to calculate SD)
+		unsigned long timeToDeathGenderSumSquare[(std::size_t)DemographicProfile::Gender::Last];
+        //number who died strat by gender
+        unsigned int numDeathGender[(std::size_t)DemographicProfile::Gender::Last];
 
-		unsigned long timeToDeathHIVStatusSum[ENDInitHIVStatus]; //time to death stratified by initial HIV status
+        //time to death stratified by CSW status and Risk level
+		unsigned long timeToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Last][Person::ENDRiskLevel];
+        unsigned long timeToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Last][Person::ENDRiskLevel];
+        unsigned int numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Last][Person::ENDRiskLevel];
+
+        //time to death stratified by initial HIV status
+		unsigned long timeToDeathHIVStatusSum[ENDInitHIVStatus];
 		unsigned long timeToDeathHIVStatusSumSquare[ENDInitHIVStatus];
 		unsigned int numDeathHIVStatus[ENDInitHIVStatus];
 
-		unsigned long
-		timeToInfOrDeathGenderSum[DemographicProfile::ENDGender]; //sum of time to infection or death for people who die during model run (used to calculate mean) strat by gender
-		unsigned long
-		timeToInfOrDeathGenderSumSquare[DemographicProfile::ENDGender];//sum square of time to infection or death strat by gender (used to calculate SD)
-		unsigned int
-		numInfOrDeathGender[DemographicProfile::ENDGender]; //number who got infected or died (not counting initial HIV+ prevalent cases)
+        //sum of time to infection or death for people who die during model run (used to calculate mean) strat by gender
+		unsigned long timeToInfOrDeathGenderSum[(std::size_t)DemographicProfile::Gender::Last];
+        //sum square of time to infection or death strat by gender (used to calculate SD)
+		unsigned long timeToInfOrDeathGenderSumSquare[(std::size_t)DemographicProfile::Gender::Last];
+        //number who got infected or died (not counting initial HIV+ prevalent cases)
+		unsigned int numInfOrDeathGender[(std::size_t)DemographicProfile::Gender::Last];
 
-		unsigned long
-		timeToInfOrDeathEmplRiskSum[DemographicProfile::ENDEmployment][Person::ENDRiskLevel]; //time to inf or death stratified by CSW status and Risk level
-		unsigned long timeToInfOrDeathEmplRiskSumSquare[DemographicProfile::ENDEmployment][Person::ENDRiskLevel];
-		unsigned int numInfOrDeathEmplRisk[DemographicProfile::ENDEmployment][Person::ENDRiskLevel];
+        //time to inf or death stratified by CSW status and Risk level
+		unsigned long timeToInfOrDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Last][Person::ENDRiskLevel];
+        unsigned long timeToInfOrDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Last][Person::ENDRiskLevel];
+        unsigned int numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Last][Person::ENDRiskLevel];
 
-		unsigned long
-		timeFromInfToDeathGenderSum[DemographicProfile::ENDGender]; //sum of time from infection to death for people who die during model run (used to calculate mean) strat by gender
-		unsigned long
-		timeFromInfToDeathGenderSumSquare[DemographicProfile::ENDGender];//sum square of time from infection to death strat by gender (used to calculate SD)
-		unsigned int numInfDeathGender[DemographicProfile::ENDGender]; //number who died while infected (counting prevalent HIV+)
+        //sum of time from infection to death for people who die during model run (used to calculate mean) strat by gender
+		unsigned long timeFromInfToDeathGenderSum[(std::size_t)DemographicProfile::Gender::Last]; 
+        //sum square of time from infection to death strat by gender (used to calculate SD)
+		unsigned long timeFromInfToDeathGenderSumSquare[(std::size_t)DemographicProfile::Gender::Last];
+        //number who died while infected (counting prevalent HIV+)
+        unsigned int numInfDeathGender[(std::size_t)DemographicProfile::Gender::Last];
 
-		unsigned long
-		timeFromInfToDeathEmplRiskSum[DemographicProfile::ENDEmployment][Person::ENDRiskLevel]; //time from inf to death stratified by CSW status and Risk level
-		unsigned long timeFromInfToDeathEmplRiskSumSquare[DemographicProfile::ENDEmployment][Person::ENDRiskLevel];
-		unsigned int numInfDeathEmplRisk[DemographicProfile::ENDEmployment][Person::ENDRiskLevel];
+        //time from inf to death stratified by CSW status and Risk level
+		unsigned long timeFromInfToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Last][Person::ENDRiskLevel]; 
+        unsigned long timeFromInfToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Last][Person::ENDRiskLevel];
+        unsigned int numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Last][Person::ENDRiskLevel];
 
 	};
 private:

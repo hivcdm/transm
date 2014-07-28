@@ -17,7 +17,7 @@ int Person::numTracesSoFar = 0;
 
 //This is pretty much only used by the NA folks who are NA at the end of the model and need to have their LMs added to total
 //TODO: But maybe they shouldn't?
-vector<double> Person::probDeathNatCauses[DemographicProfile::ENDGender];
+std::vector<double> Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Last];
 
 const std::vector<std::string> Person::StatsStr =
 {
@@ -72,18 +72,18 @@ Person::CD4Strata Person::getCd4Stratum() const
 
 
     template<>
-    DemographicProfile::Gender Person::getDemographicProfileVal() const { return (DemographicProfile::Gender)getDemographicProfileVal(DemographicProfile::GENDER); }
+    DemographicProfile::Gender Person::getDemographicProfileVal() const { return (DemographicProfile::Gender)getDemographicProfileVal(DemographicProfile::Demographic::Gender); }
 
     template<>
     DemographicProfile::SexualActivityStatus Person::getDemographicProfileVal() const 
     { 
-        return (DemographicProfile::SexualActivityStatus)getDemographicProfileVal(DemographicProfile::SEXUAL_ACTIVITY_STATUS); 
+        return (DemographicProfile::SexualActivityStatus)getDemographicProfileVal(DemographicProfile::Demographic::SexualActivityStatus); 
     }
 
     template<>
     DemographicProfile::Employment Person::getDemographicProfileVal() const
     {
-        return (DemographicProfile::Employment)getDemographicProfileVal(DemographicProfile::EMPLOYMENT);
+        return (DemographicProfile::Employment)getDemographicProfileVal(DemographicProfile::Demographic::Employment);
     }
 
 bool Person::isEligibleForTreatment(const SimContext::TreatmentInputs::ARTStartPolicy &artStartPolicy)
@@ -208,9 +208,9 @@ void Person::addPartnership(SexualPartnership *_partnership)
 	//if a STEADY partnership was added && we are SINGLE, the we need to change or RELATIONSHIP_STATUS
 	if((_partnership->getType() == SexualPartnership::Type::Steady) &&
 		(!partners[(int)SexualPartnership::Type::Steady].empty()) &&
-	        (getDemographicProfileVal(DemographicProfile::RELATIONSHIP_STATUS) == DemographicProfile::SINGLE))
+        (getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus) == (std::size_t)DemographicProfile::RelationshipStatus::Single))
 	{
-		dmgProfile.set(DemographicProfile::RELATIONSHIP_STATUS, DemographicProfile::NON_SINGLE);
+        dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::NonSingle);
 	}
 }
 
@@ -225,7 +225,7 @@ void Person::becomeInfected(int _generationOfInfection, EventParams &_eventParam
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
 	{
-		if(getDemographicProfileVal(DemographicProfile::GENDER) == DemographicProfile::MALE)
+        if(getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
 		{
             _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "@ Male ";
 		}
@@ -367,7 +367,7 @@ void Person::initialCEPACpatient(EventParams &_eventParams)
 		//initial CEPAC patient for this person
 		SimContext::GENDER_TYPE cepacGender = SimContext::GENDER_FEMALE;
 
-		if(getDemographicProfileVal(DemographicProfile::GENDER) == DemographicProfile::MALE)
+        if(getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
 		{
 			cepacGender = SimContext::GENDER_MALE;
 		}
@@ -565,13 +565,13 @@ void Person::setMonthOfLatestConcurrent(int _month)
 }
 void Person::becomeSexuallyActive(EventParams &_eventParams)
 {
-	dmgProfile.set(DemographicProfile::SEXUAL_ACTIVITY_STATUS, DemographicProfile::SA);
+    dmgProfile.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::Active);
 	//CEPAC person needs to be initialized
 	initialCEPACpatient(_eventParams);
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
 	{
-		if(getDemographicProfileVal(DemographicProfile::GENDER) == DemographicProfile::MALE)
+        if(getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
 		{
             _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " % Male ";
 		}
@@ -759,7 +759,7 @@ bool Person::hasPartnership(SexualPartnership::Type partnershipType)
 void Person::print(ostream &_outStream, const std::string &_prefix) const
 {
 	_outStream << _prefix << std::endl;
-	_outStream << ((getDemographicProfileVal(DemographicProfile::GENDER) == DemographicProfile::MALE) ? "Male" : "Female") << Constants::TAB;
+    _outStream << ((getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male) ? "Male" : "Female") << Constants::TAB;
 	_outStream << "ID: " << id << Constants::TAB;
 	_outStream << "(";
 	getDemographicProfile()->print(_outStream, "");
@@ -859,9 +859,9 @@ void Person::removePartnership(SexualPartnership *_partnership)
 	//if a STEADY partnership was removed and we have no more, then we should be set to SINGLE
 	if((_partnership->getType() == SexualPartnership::Type::Steady) &&
 		(partners[(int)SexualPartnership::Type::Steady].empty()) &&
-	        (getDemographicProfileVal(DemographicProfile::RELATIONSHIP_STATUS) == DemographicProfile::NON_SINGLE))
+        (getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus) == (std::size_t)DemographicProfile::RelationshipStatus::NonSingle))
 	{
-		dmgProfile.set(DemographicProfile::RELATIONSHIP_STATUS, DemographicProfile::SINGLE);
+        dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::Single);
 	}
 }
 
@@ -883,7 +883,7 @@ void Person::rollForBecomeSexWorker(EventParams &_eventParams, bool _isInit, dou
 	{
         if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
 		{
-			if(getDemographicProfileVal(DemographicProfile::GENDER) == DemographicProfile::MALE)
+            if(getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
 			{
                 _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " % Male ";
 			}
@@ -895,7 +895,7 @@ void Person::rollForBecomeSexWorker(EventParams &_eventParams, bool _isInit, dou
             _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << getID() << " becomes CSW" << std::endl;
 		}
 
-		dmgProfile.set(DemographicProfile::EMPLOYMENT, DemographicProfile::CSW);
+        dmgProfile.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::Csw);
 	}
 }
 
@@ -903,7 +903,7 @@ void Person::quitSexWork(EventParams &_eventParams)
 {
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
 	{
-		if(getDemographicProfileVal(DemographicProfile::GENDER) == DemographicProfile::MALE)
+        if(getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
 		{
             _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " % Male ";
 		}
@@ -915,7 +915,7 @@ void Person::quitSexWork(EventParams &_eventParams)
         _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << getID() << " quits being CSW" << std::endl;
 	}
 
-	dmgProfile.set(DemographicProfile::EMPLOYMENT, DemographicProfile::NON_CSW);
+    dmgProfile.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::NonCsw);
 }
 
 //determine whether this person died
@@ -969,16 +969,16 @@ bool Person::rollForDeath(RandomNumberGenerator &_randomNums)
 	else
 	{
 		//this part of the function is for uninfected persons
-		assert(Person::probDeathNatCauses[getDemographicProfileVal(DemographicProfile::GENDER)].size() > 0);
+		assert(Person::probDeathNatCauses[getDemographicProfileVal(DemographicProfile::Demographic::Gender)].size() > 0);
 
 		//if this person is past Person::maxYrForDeathStats, they should not be alive
 		//get the correct probability of death for this person's gender and age
-        if(getAge(TimeGranularity::Year) >= static_cast<int>(Person::probDeathNatCauses[getDemographicProfileVal(DemographicProfile::GENDER)].size()))
+        if(getAge(TimeGranularity::Year) >= static_cast<int>(Person::probDeathNatCauses[getDemographicProfileVal(DemographicProfile::Demographic::Gender)].size()))
 		{
             cout << "The age is " << getAge(TimeGranularity::Year) << std::endl;
 		}
 
-        double deathRate = Person::probDeathNatCauses[getDemographicProfileVal(DemographicProfile::GENDER)].at(getAge(TimeGranularity::Year));
+        double deathRate = Person::probDeathNatCauses[getDemographicProfileVal(DemographicProfile::Demographic::Gender)].at(getAge(TimeGranularity::Year));
 		death = _randomNums.chance(deathRate);
 
 		if(death)
@@ -1222,7 +1222,7 @@ double Person::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 	if(costThisMonthUndiscounted > 0)
 	{
 		costsTracker->RecordCepacCosts(costThisMonthUndiscounted, costThisMonthDiscounted,
-			static_cast<DemographicProfile::Gender>(getDemographicProfileVal(DemographicProfile::GENDER)), getCd4Stratum(), 
+			static_cast<DemographicProfile::Gender>(getDemographicProfileVal(DemographicProfile::Demographic::Gender)), getCd4Stratum(), 
 			getHVL(), getHIVStatus());
 
 		std::array<double, SimContext::COST_NUM_TYPES> medicalCostsUndiscounted;
@@ -1725,11 +1725,11 @@ Person::Person(int _age, unsigned int _populationID) : sexualActivityDelay(0)
 	resetNumActs();
 	//set the person's initial demographic profile. gender is set within the Male/Female constructors
 	//everyone is set as NA, but you can call becomeSexuallyActive(_eventParams) elsewhere if you want this person to be SA
-	dmgProfile.set(DemographicProfile::SEXUAL_ACTIVITY_STATUS, DemographicProfile::NA);
-	dmgProfile.set(DemographicProfile::SEXUAL_ORIENTATION, DemographicProfile::HETERO);
-	dmgProfile.set(DemographicProfile::RELATIONSHIP_STATUS, DemographicProfile::SINGLE);
+    dmgProfile.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::NotActive);
+    dmgProfile.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Heterosexual);
+    dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::Single);
 	//everyone is set as NON_CSW, but you can call becomeCSW() elsewhere if you want this person to be CSW
-	dmgProfile.set(DemographicProfile::EMPLOYMENT, DemographicProfile::NON_CSW);
+    dmgProfile.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::NonCsw);
 	hivStatus = NEGATIVE;
 	cd4 = -1;
 	hvl = UNINFECTED;

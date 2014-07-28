@@ -96,7 +96,7 @@ public:
 	bool PassesPartnershipCalibration(EventParams &_eventParams);
 
     /// <summary>
-    /// create birthRate * currSize people who are age 0 and add them to the DemographicProfile::NA population
+    /// create birthRate * currSize people who are age 0 and add them to the DemographicProfile::SexualActivityStatus::NotActive population
     /// </summary>
 	void Births(EventParams &_eventParams);
 
@@ -335,22 +335,22 @@ private:
     /// <summary>
 	/// Size of CSW's by Risk and gender
     /// </summary>
-    std::size_t currSizeGenderRiskCSW[DemographicProfile::ENDGender][Person::ENDRiskLevel];
+    std::size_t currSizeGenderRiskCSW[DemographicProfile::Gender::Last][Person::ENDRiskLevel];
 
     /// <summary>
 	/// Size by gender
     /// </summary>
-    std::size_t currSizeGender[DemographicProfile::ENDGender];
+    std::size_t currSizeGender[DemographicProfile::Gender::Last];
 
     /// <summary>
 	/// non-sexually active by gender
     /// </summary>
-    std::size_t currNASizeByGender[DemographicProfile::ENDGender];
+    std::size_t currNASizeByGender[DemographicProfile::Gender::Last];
 
     /// <summary>
 	/// sexually active by risk and gender
     /// </summary>
-    std::size_t currSASizeGenderRisk[DemographicProfile::ENDGender][Person::ENDRiskLevel];
+    std::size_t currSASizeGenderRisk[DemographicProfile::Gender::Last][Person::ENDRiskLevel];
 
     /// <summary>
 	/// Num Died this month by Death Cause

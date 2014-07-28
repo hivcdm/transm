@@ -96,25 +96,25 @@ void TargetGroup::Update(Population &population, int current_time,
             }
 
             if(target_.value.gender.has_value
-                && target_.value.gender.value != (DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::GENDER))
+                && target_.value.gender.value != (DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender))
             {
                 return false;
             }
 
             if(target_.value.relationship_status.has_value
-                && target_.value.relationship_status.value != (DemographicProfile::RelationshipStatus)person->getDemographicProfileVal(DemographicProfile::RELATIONSHIP_STATUS))
+                && target_.value.relationship_status.value != (DemographicProfile::RelationshipStatus)person->getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus))
             {
                 return false;
             }
 
             if(target_.value.sexual_activity_status.has_value
-                && target_.value.sexual_activity_status.value != (DemographicProfile::SexualActivityStatus)person->getDemographicProfileVal(DemographicProfile::SEXUAL_ACTIVITY_STATUS))
+                && target_.value.sexual_activity_status.value != (DemographicProfile::SexualActivityStatus)person->getDemographicProfileVal(DemographicProfile::Demographic::SexualActivityStatus))
             {
                 return false;
             }
 
             if(target_.value.sexual_orientation.has_value
-                && target_.value.sexual_orientation.value != (DemographicProfile::SexualOrientation)person->getDemographicProfileVal(DemographicProfile::SEXUAL_ORIENTATION))
+                && target_.value.sexual_orientation.value != (DemographicProfile::SexualOrientation)person->getDemographicProfileVal(DemographicProfile::Demographic::SexualOrientation))
             {
                 return false;
             }
@@ -653,8 +653,8 @@ bool Simulation::LoadCepacSimContexts(const CepacTreatmentFiles &treatment_files
 		{
 			CepacInputParser cepacInput(treatment_file.file_name);
 			auto probabilities = cepacInput.parseNonAidsDeathProbabilities();
-			Person::probDeathNatCauses[DemographicProfile::MALE] = probabilities[0];
-			Person::probDeathNatCauses[DemographicProfile::FEMALE] = probabilities[1];
+			Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Male] = probabilities[0];
+            Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Female] = probabilities[1];
 		}
 	}
 
@@ -696,7 +696,11 @@ void Simulation::UpdateInterventions(const std::unordered_set<Person *> &dead_pe
 void Simulation::RegisterTargetGroup(const TargetGroup &group)
 {
     groups_.push_back(group);
-    outputs_.intervention_outcomes.RegisterGroup(groups_.back());
+
+    if(groups_.size() == 1)
+    {
+        outputs_.intervention_outcomes.RegisterGroupContainer(groups_);
+    }
 }
 
 /***
@@ -720,7 +724,9 @@ std::size_t Simulation::SimulateMonth()
             }
         }
 
-		SetNonAidsDeathFromCepac(*parameters_.cepacSimContexts[simIndex], Person::probDeathNatCauses[DemographicProfile::MALE], Person::probDeathNatCauses[DemographicProfile::FEMALE]);
+        SetNonAidsDeathFromCepac(*parameters_.cepacSimContexts[simIndex], 
+            Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Male],
+            Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Female]);
 	}
 
 	//output the current timestep of the simulation

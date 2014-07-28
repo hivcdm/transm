@@ -174,7 +174,7 @@ public:
 	const static int maxYrForDeathStats = 101;
 
 	//contains probabilities of nonAIDS-death, read from CEPAC .in file
-	static std::vector<double>probDeathNatCauses[DemographicProfile::ENDGender];
+	static std::vector<double>probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Last];
 
 	//there is option to print patient traces to a text file. this keeps track of how many we've done so far
 	static int numTracesSoFar;
@@ -500,7 +500,7 @@ public:
 	void addPartnership(SexualPartnership *_partnership);
 
 	//returns true if this person is available for steady partnership
-	// however, this does not change the person's DemographicProfile value that corresponds to DemographicProfile::RELATIONSHIP_STATUS
+	// however, this does not change the person's DemographicProfile value that corresponds to DemographicProfile::Demographic::RelationshipStatus
 	bool availableForPartnership(SexualPartnership::Type _partnershipType) const;
 
 	//use this when looking for a partner,

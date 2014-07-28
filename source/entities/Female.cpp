@@ -66,7 +66,7 @@ double Female::SubPopParams::GetChanceBecomeCSW() const
 
 double Female::SubPopParams::GetProportionHighRisk(DemographicProfile::Employment _cswStatus) const
 {
-	return proportionHighRisk[_cswStatus];
+    return proportionHighRisk[(std::size_t)_cswStatus];
 }
 NormalDist Female::SubPopParams::GetActivityLevel() const
 {
@@ -83,7 +83,7 @@ Female::Female(EventParams &_eventParams, int _ageMths, unsigned int _population
 	populationSpecificParams(params),
     overrideChanceCondomUse_(-1)
 {
-	dmgProfile.set(DemographicProfile::GENDER, DemographicProfile::FEMALE);
+    dmgProfile.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Female);
 	activityLevel = _eventParams.randomNums.randNorm_NaturalNum(populationSpecificParams.GetActivityLevel());
 
 	//activity level should not ever be 0
@@ -119,7 +119,7 @@ Female::~Female(void)
 
 double Female::getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
 {
-	assert(_p->getDemographicProfileVal(DemographicProfile::GENDER) == DemographicProfile::MALE);
+    assert(_p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male);
 	Male *m = (Male *)_p;
 	//transmission coeff				  (1 - (condoms are used and succeed)) * (1 - (male is circumcised))
 	double circEff = m->getCircumProtectEff();
@@ -191,7 +191,7 @@ void Female::SetChanceCondomUsePerEvent(Person::RiskLevel /*risk*/, SexualPartne
 
 void Female::rerollRiskGroup(EventParams &_eventParams)
 {
-	DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) getDemographicProfileVal(DemographicProfile::EMPLOYMENT);
+	DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) getDemographicProfileVal(DemographicProfile::Demographic::Employment);
 	double chanceHighRisk = populationSpecificParams.GetProportionHighRisk(cswStatus);
 
 	if(_eventParams.randomNums.chance(chanceHighRisk))
