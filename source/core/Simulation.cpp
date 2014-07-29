@@ -202,7 +202,7 @@ void TargetGroup::Update(Population &population, int current_time,
             while(num_allocated < people.size())
             {
                 double rand = rng.rand();
-                int random_allocation_index = 0;
+		std::size_t random_allocation_index = 0;
 
                 for(auto &partition : partitions_)
                 {
