@@ -195,7 +195,7 @@ def run(args):
     while len(args) > 2:
         arg = args.pop(0)
         if arg.startswith('batch_size='):
-            batch_size = int(arg[6:])
+            batch_size = int(arg[11:])
         elif arg.startswith('weight_cutoff='):
             weight_cutoff = float(arg[15:])
         else:
