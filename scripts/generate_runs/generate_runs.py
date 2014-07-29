@@ -75,9 +75,22 @@ def replace_parameters(parameters, template_tree, month_of_1990):
         if (1990 + months_after_1990 / 12) < earliest_end_year:
             root.find('./duration').text = str(month_of_1990 + 12 * (earliest_end_year - 1990))
 
-    for intervention in root.find('./interventions/populationInterventions'):
-        adjusted_time = month_of_1990 + 12 * (int(intervention.attrib['time']) - 1990)
-        intervention.set('time', str(adjusted_time))
+    if root.find('./interventions/populationInterventions'):
+        for intervention in root.find('./interventions/populationInterventions'):
+            adjusted_time = month_of_1990 + 12 * (int(intervention.attrib['time']) - 1990)
+            intervention.set('time', str(adjusted_time))
+
+    if root.find('./interventions/groups'):
+        for group in root.find('./interventions/groups'):
+            period = group.find('./enrollment-period').text
+            if '-' in period:
+                start, end = map(int, period.split('-'))
+                start = month_of_1990 + 12 * (start - 1990)
+                end = month_of_1990 + 12 * (end - 1990)
+                group.find('./enrollment-period').text = '{}-{}'.format(start, end)
+            else:
+                time = month_of_1990 + 12 * (int(period) - 1990)
+                group.find('./enrollment-period').text = '{}-{}'.format(time)
 
     for rollout_file_time in root.findall('./interventions/artRolloutIntervention/rolloutTreatmentFiles/rolloutFile/time'):
         if int(rollout_file_time.text) in [-1, 0]:
