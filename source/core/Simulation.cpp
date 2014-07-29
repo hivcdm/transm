@@ -182,15 +182,15 @@ void TargetGroup::Update(Population &population, int current_time,
         }
         else
         {
-            std::vector<std::pair<int, int>> partition_allocations;
+            std::vector<std::pair<std::size_t, std::size_t>> partition_allocations;
 
-            int num_allocated = 0;
+            std::size_t num_allocated = 0;
             double sum_proportion = 0;
 
             for(int i = 0; i < (int)partitions_.size(); i++)
             {
                 sum_proportion += partitions_[i].GetProportion();
-                int partition_allocation = static_cast<int>(partitions_[i].GetProportion() * people.size());
+                auto partition_allocation = (std::size_t)(partitions_[i].GetProportion() * people.size());
 
                 if(partition_allocation != 0)
                 {
@@ -199,49 +199,48 @@ void TargetGroup::Update(Population &population, int current_time,
                 }
             }
 
-            if(num_allocated < (int)people.size())
+            while(num_allocated < people.size())
             {
-	        while(num_allocated < (int)people.size())
+                double rand = rng.rand();
+                int random_allocation_index = 0;
+
+                for(auto &partition : partitions_)
                 {
-                    double rand = rng.rand();
-                    int random_allocation_index;
+                    rand -= partition.GetProportion();
 
-                    for(random_allocation_index = 0; random_allocation_index < (int)partitions_.size(); random_allocation_index++)
+                    if(rand < 0)
                     {
-                        rand -= partitions_[random_allocation_index].GetProportion();
-
-                        if(rand < 0)
-                        {
-                            break;
-                        }
+                        break;
                     }
 
-                    auto partition_allocations_iter = std::find_if(partition_allocations.begin(), partition_allocations.end(), 
-                        [=](const std::pair<int, int> &p) { return p.first == random_allocation_index; });
-
-                    if(partition_allocations_iter == partition_allocations.end())
-                    {
-                        partition_allocations.push_back(std::make_pair(random_allocation_index, 1));
-                    }
-                    else
-                    {
-                        partition_allocations_iter->second++;
-                    }
-
-                    num_allocated++;
+                    random_allocation_index++;
                 }
+
+                auto partition_allocations_iter = std::find_if(partition_allocations.begin(), partition_allocations.end(),
+                    [=](const std::pair<std::size_t, std::size_t> &p) { return p.first == random_allocation_index; });
+
+                if(partition_allocations_iter == partition_allocations.end())
+                {
+                    partition_allocations.push_back(std::make_pair(random_allocation_index, 1));
+                }
+                else
+                {
+                    partition_allocations_iter->second++;
+                }
+
+                num_allocated++;
             }
 
             auto person_iter = people.begin();
 
             while(!partition_allocations.empty())
             {
-                int allocations_index = (int)(rng.rand() * partition_allocations.size());
-                int partition_index = partition_allocations[allocations_index].first;
+                int allocations_index = (int)(rng.randInt() % partition_allocations.size());
+                auto partition_index = partition_allocations[allocations_index].first;
 
-                if(partition_index < (int)partitions_.size())
+                if(partition_index < partitions_.size())
                 {
-                    AssignToPartition(population, *person_iter, partition_index);
+                    AssignToPartition(population, *person_iter, (int)partition_index);
                 }
 
                 if(--partition_allocations[allocations_index].second == 0)

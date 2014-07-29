@@ -33,6 +33,7 @@ public:
                 auto summary = group.GetPartitionSummary(partition, false);
 
                 current_row.push_back(summary.population_size);
+                current_row.push_back(summary.population_size_sa);
                 current_row.push_back(summary.incident_cases);
                 current_row.push_back(summary.prevalent_cases);
             }
@@ -57,7 +58,7 @@ public:
         {
             file << "\t" << group.GetLabel();
 
-            for(std::size_t i = 0; i < group.GetPartitionNames().size() * 3; i++)
+            for(std::size_t i = 0; i < group.GetPartitionNames().size() * 4; i++)
             {
                 file << "\t";
             }
@@ -72,7 +73,7 @@ public:
             {
                 file << partition;
 
-                for(int i = 0; i < 3; i++)
+                for(int i = 0; i < 4; i++)
                 {
                     file << "\t";
                 }
@@ -86,7 +87,7 @@ public:
         {
             for(auto partition : group.GetPartitionNames())
             {
-                file << "\tPopulation Size\tIncident Cases\tPrevalent Cases";
+                file << "\tPopulation Size\tSA Population Size\tIncident Cases\tPrevalent Cases";
             }
         }
 

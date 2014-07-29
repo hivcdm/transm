@@ -142,7 +142,7 @@ private:
 	std::set<Person *> uniqueYearlyAccessingTreatment;
 	std::set<Person *> uniqueYearlyEligibleForTreatment;
 	std::set<Person *> uniqueYearlyTreated;
-	std::vector<int> yearlyTestsByResult;
+    std::vector<int> yearlyTestsByResult;
 
 public:
 

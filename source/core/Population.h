@@ -384,6 +384,10 @@ private:
     /// </summary>
 	std::list<Person *> rolloutTreatedPool;
 
+    void recordMale(Person *person);
+    std::size_t num_circumcised_na;
+    std::size_t num_circumcised_sa;
+
     /// <summary>
     /// </summary>
 	PopulationParameters popWideParams;

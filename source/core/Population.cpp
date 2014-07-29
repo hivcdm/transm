@@ -900,6 +900,25 @@ std::size_t Population::UpdateSize()
 		ageRangeSizePair.second = entities->sizeSexuallyActiveByAge(ageRangeSizePair.first.lower, ageRangeSizePair.first.upper, DemographicProfile::Gender::Female);
 	}
 
+    num_circumcised_na = 0;
+    num_circumcised_sa = 0;
+
+    entities->forEach([this](Person *p)
+    {
+        if(p->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Male
+            && ((Male *)p)->isCircumcised())
+        {
+            if(p->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::Active)
+            {
+                num_circumcised_sa++;
+            }
+            else
+            {
+                num_circumcised_na++;
+            }
+        }
+    });
+
 	return currSize;
 }
 
@@ -3262,8 +3281,8 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 		}
 
 		//write out string buffers to trace file
-		_outStream << firstRow.str() << std::endl;
-		_outStream << secondRow.str() << std::endl;
+		_outStream << firstRow.str() << "Number circumcised" << std::endl;
+		_outStream << secondRow.str() << "NA" << Constants::TAB << "SA" << std::endl;
 	} //if( _time == 0) {
 
 	//Month
@@ -3332,6 +3351,9 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 	{
 		_outStream << ageRangeSize.second << Constants::TAB;
 	}
+
+    _outStream << num_circumcised_na << Constants::TAB;
+    _outStream << num_circumcised_sa << Constants::TAB;
 
 	_outStream << std::endl;
 }

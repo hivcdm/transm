@@ -48,6 +48,7 @@ public:
     struct PartitionSummary
     {
         int population_size;
+        int population_size_sa;
         int incident_cases;
         int prevalent_cases;
     };
@@ -117,12 +118,14 @@ public:
                 if(include_non_sexually_active)
                 {
                     summary.population_size = (int)std::count_if(member_partitions_.begin(), member_partitions_.end(), in_partition);
+                    summary.population_size_sa = (int)std::count_if(member_partitions_.begin(), member_partitions_.end(), is_sexually_active);
                     summary.incident_cases = (int)std::count_if(member_partitions_.begin(), member_partitions_.end(), is_incident);
                     summary.prevalent_cases = (int)std::count_if(member_partitions_.begin(), member_partitions_.end(), is_prevalent);
                 }
                 else
                 {
-                    summary.population_size = (int)std::count_if(member_partitions_.begin(), member_partitions_.end(), is_sexually_active);
+                    summary.population_size = (int)std::count_if(member_partitions_.begin(), member_partitions_.end(), in_partition);
+                    summary.population_size_sa = (int)std::count_if(member_partitions_.begin(), member_partitions_.end(), is_sexually_active);
                     summary.incident_cases = (int)std::count_if(member_partitions_.begin(), member_partitions_.end(), is_incident_sa);
                     summary.prevalent_cases = (int)std::count_if(member_partitions_.begin(), member_partitions_.end(), is_prevalent_sa);
                 }
