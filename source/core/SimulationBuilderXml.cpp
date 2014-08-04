@@ -1091,15 +1091,15 @@ Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node cri
         }
         else if(name == "sexual-activity-status")
         {
-            target.value.gender.has_value = true;
+            target.value.sexual_activity_status.has_value = true;
 
             if(value == "active")
             {
-                target.value.gender.value = DemographicProfile::Gender::Male;
+                target.value.sexual_activity_status.value = DemographicProfile::SexualActivityStatus::Active;
             }
             else if(value == "not-active")
             {
-                target.value.gender.value = DemographicProfile::Gender::Female;
+                target.value.sexual_activity_status.value = DemographicProfile::SexualActivityStatus::NotActive;
             }
             else
             {
