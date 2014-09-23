@@ -161,13 +161,13 @@ void TargetGroup::Update(Population &population, int current_time,
 
     if((open_ && enrollment_period_.end >= current_time) || enrollment_period_.start == current_time)
     {
-        std::unordered_set<Person *> people;
+        std::vector<Person *> people;
 
         for(auto person : population.Find(match))
         {
             if(!InGroup(person))
             {
-                people.insert(person);
+                people.push_back(person);
             }
         }
 
@@ -182,6 +182,9 @@ void TargetGroup::Update(Population &population, int current_time,
         }
         else
         {
+            auto generate_rand = [&](int i) { return rng.randInt() % i; };
+            std::random_shuffle(people.begin(), people.end(), generate_rand);
+
             std::vector<std::pair<std::size_t, std::size_t>> partition_allocations;
 
             std::size_t num_allocated = 0;
@@ -202,7 +205,7 @@ void TargetGroup::Update(Population &population, int current_time,
             while(num_allocated < people.size())
             {
                 double rand = rng.rand();
-		std::size_t random_allocation_index = 0;
+                std::size_t random_allocation_index = 0;
 
                 for(auto &partition : partitions_)
                 {

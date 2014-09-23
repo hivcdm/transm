@@ -32,10 +32,56 @@ public:
             {
                 auto summary = group.GetPartitionSummary(partition, false);
 
-                current_row.push_back(summary.population_size);
-                current_row.push_back(summary.population_size_sa);
-                current_row.push_back(summary.incident_cases);
-                current_row.push_back(summary.prevalent_cases);
+                current_row.push_back((int)summary.population_size);
+                current_row.push_back((int)summary.population_size_na);
+                current_row.push_back((int)summary.population_size_sa);
+                current_row.push_back((int)summary.pop_size_na_male);
+
+                for(auto &age_range : summary.sa_size_by_age_range_male)
+                {
+                    current_row.push_back((int)std::get<2>(age_range));
+                }
+                current_row.push_back((int)summary.pop_size_na_female);
+                for(auto &age_range : summary.sa_size_by_age_range_female)
+                {
+                    current_row.push_back((int)std::get<2>(age_range));
+                }
+                for(auto &risk_group : summary.size_risk_group)
+                {
+                    current_row.push_back((int)risk_group.second);
+                }
+
+                current_row.push_back((int)summary.incident_cases);
+                current_row.push_back((int)summary.incident_male);
+                for(auto &age_range : summary.incident_by_age_range_male)
+                {
+                    current_row.push_back((int)std::get<2>(age_range));
+                }
+                current_row.push_back((int)summary.incident_female);
+                for(auto &age_range : summary.incident_by_age_range_female)
+                {
+                    current_row.push_back((int)std::get<2>(age_range));
+                }
+                for(auto &risk_group : summary.incident_risk_group)
+                {
+                    current_row.push_back((int)risk_group.second);
+                }
+
+                current_row.push_back((int)summary.prevalent_cases);
+                current_row.push_back((int)summary.prevalent_male);
+                for(auto &age_range : summary.prevalent_by_age_range_male)
+                {
+                    current_row.push_back((int)std::get<2>(age_range));
+                }
+                current_row.push_back((int)summary.prevalent_female);
+                for(auto &age_range : summary.prevalent_by_age_range_female)
+                {
+                    current_row.push_back((int)std::get<2>(age_range));
+                }
+                for(auto &risk_group : summary.prevalent_risk_group)
+                {
+                    current_row.push_back((int)risk_group.second);
+                }
             }
         }
 
@@ -58,7 +104,7 @@ public:
         {
             file << "\t" << group.GetLabel();
 
-            for(std::size_t i = 0; i < group.GetPartitionNames().size() * 4; i++)
+            for(std::size_t i = 0; i < group.GetPartitionNames().size() * 84; i++)
             {
                 file << "\t";
             }
@@ -73,10 +119,32 @@ public:
             {
                 file << partition;
 
-                for(int i = 0; i < 4; i++)
+                for(int i = 0; i < 83; i++)
                 {
                     file << "\t";
                 }
+            }
+        }
+
+        file << std::endl;
+        file << "\t";
+
+        for(auto &group : *group_container_)
+        {
+            for(auto partition : group.GetPartitionNames())
+            {
+                file << "Population Sizes			Male Population Sizes										Female Population Sizes																Incident Cases																											Prevalent Cases																											";
+            }
+        }
+
+        file << std::endl;
+        file << "\t";
+
+        for(auto &group : *group_container_)
+        {
+            for(auto partition : group.GetPartitionNames())
+            {
+                file << "			Non-Sexually Active Population	Sexually Active Population									Non-Sexually Active Population	Sexually Active Population									Risk Group							Male Incident Cases										Female Incident Cases										Risk Group							Male Prevalent Cases										Female Prevalent Cases										Risk Group						";
             }
         }
 
@@ -87,7 +155,7 @@ public:
         {
             for(auto partition : group.GetPartitionNames())
             {
-                file << "\tPopulation Size\tSA Population Size\tIncident Cases\tPrevalent Cases";
+                file << "	Total	NA Population Size	SA Population Size	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	CSW High Risk	CSW Low Risk	Non-CSW High Risk Male	Non-CSW High Risk Female	Non-CSW Low Risk Male	Non-CSW Low Risk Female	Total	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	CSW High Risk	CSW Low Risk	Non-CSW High Risk Male	Non-CSW High Risk Female	Non-CSW Low Risk Male	Non-CSW Low Risk Female	Total	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	CSW High Risk	CSW Low Risk	Non-CSW High Risk Male	Non-CSW High Risk Female	Non-CSW Low Risk Male	Non-CSW Low Risk Female";
             }
         }
 
