@@ -13,6 +13,10 @@ std::string to_string(SexualPartnership::Type type)
 	case SexualPartnership::Type::Regular: return "Regular";
 	case SexualPartnership::Type::Casual: return "Casual";
 	case SexualPartnership::Type::Csw: return "Csw";
+    case SexualPartnership::Type::SteadyMsm: return "SteadyMsm";
+    case SexualPartnership::Type::RegularMsm: return "RegularMsm";
+    case SexualPartnership::Type::CasualMsm: return "CasualMsm";
+    case SexualPartnership::Type::CswMsm: return "CswMsm";
 	default: throw std::runtime_error("unknown type");
 	}
 }
@@ -112,173 +116,6 @@ void SimulationBuilderXml::CheckVersion()
 		throw std::runtime_error("bad input version");
 	}
 }
-
-/*
-void SimulationBuilderXml::LoadTemplateParameters()
-{
-	auto simulation_node = document_.child("simulation");
-
-	for(auto intervention_iter : simulation_node.select_nodes("/simulation/interventions/generalInterventions/intervention"))
-	{
-		auto intervention_node = intervention_iter.node();
-
-		Parameter parameter;
-		parameter.time = Attr<int>(intervention_node, "time");
-		parameter.value = Attr<std::string>(intervention_node, "value");
-		auto key = Attr<std::string>(intervention_node, "key");
-
-		for(auto attribute : intervention_node.attributes())
-		{
-			std::string name(attribute.name());
-			if(name.substr(0, 7) != "target-")
-			{
-				continue;
-			}
-			parameter.target.has_value = true;
-			std::string value(attribute.as_string());
-			if(name == "target-gender")
-			{
-				parameter.target.value.gender.has_value = true;
-				if(value == "male")
-				{
-					parameter.target.value.gender.value = DemographicProfile::Gender::Male;
-				}
-				else if(value == "female")
-				{
-					parameter.target.value.gender.value = DemographicProfile::Gender::Female;
-				}
-			}
-			else if(name == "target-employment")
-			{
-				parameter.target.value.employment.has_value = true;
-				if(value == "csw")
-				{
-					parameter.target.value.employment.value = DemographicProfile::Employment::Csw;
-				}
-				else if(value == "non-csw")
-				{
-					parameter.target.value.employment.value = DemographicProfile::Employment::NonCsw;
-				}
-			}
-			else if(name == "target-risk-group")
-			{
-				parameter.target.value.risk_level.has_value = true;
-				if(value == "high")
-				{
-					parameter.target.value.risk_level.value = Person::HIGH;
-				}
-				else if(value == "low")
-				{
-					parameter.target.value.risk_level.value = Person::LOW;
-				}
-			}
-			else if(name == "target-age")
-			{
-				parameter.target.value.age_lower.has_value = true;
-				parameter.target.value.age_upper.has_value = true;
-				std::string age_range = value;
-				auto hyphen_index = age_range.find('-');
-				if(hyphen_index == std::string::npos)
-				{
-					throw std::runtime_error("age range must be of the form [lower]-[upper]");
-				}
-				parameter.target.value.age_lower.value = std::stoi(age_range.substr(0, hyphen_index));
-				parameter.target.value.age_upper.value = std::stoi(age_range.substr(hyphen_index + 1));
-				if(parameter.target.value.age_lower.value > parameter.target.value.age_upper.value)
-				{
-					throw std::runtime_error("age range lower bound must be less than upper bound");
-				}
-				if(parameter.target.value.age_lower.value < 0)
-				{
-					throw std::runtime_error("age range lower bound must be >= 0");
-				}
-			}
-			else if(name == "target-sexual-activity-status")
-			{
-				parameter.target.value.gender.has_value = true;
-				if(value == "active")
-				{
-					parameter.target.value.gender.value = DemographicProfile::Gender::Male;
-				}
-				else if(value == "not-active")
-				{
-					parameter.target.value.gender.value = DemographicProfile::Gender::Female;
-				}
-			}
-			else if(name == "target-sexual-orientation")
-			{
-				parameter.target.value.sexual_orientation.has_value = true;
-				if(value == "hetero")
-				{
-					parameter.target.value.sexual_orientation.value = DemographicProfile::SexualOrientation::Heterosexual;
-				}
-				else if(value == "homo")
-				{
-					parameter.target.value.sexual_orientation.value = DemographicProfile::SexualOrientation::Homosexual;
-				}
-			}
-			else if(name == "target-relationship-status")
-			{
-				parameter.target.value.relationship_status.has_value = true;
-				if(value == "single")
-				{
-					parameter.target.value.relationship_status.value = DemographicProfile::RelationshipStatus::Single;
-				}
-				else if(value == "non-single")
-				{
-					parameter.target.value.relationship_status.value = DemographicProfile::RelationshipStatus::NonSingle;
-				}
-			}
-			else if(name == "target-treatment-status")
-			{
-				parameter.target.value.on_treatment.has_value = true;
-				if(value == "treated")
-				{
-					parameter.target.value.on_treatment.value = true;
-				}
-				else if(value == "untreated")
-				{
-					parameter.target.value.on_treatment.value = false;
-				}
-			}
-			else if(name == "target-hiv-status")
-			{
-				parameter.target.value.observed_hiv_status.has_value = true;
-				if(value == "observed-acute")
-				{
-					parameter.target.value.observed_hiv_status.value = Person::OBSERVED_ACUTE;
-				}
-				else if(value == "observed-chronic")
-				{
-					parameter.target.value.observed_hiv_status.value = Person::OBSERVED_CHRONIC;
-				}
-				else if(value == "observed-late-stage")
-				{
-					parameter.target.value.observed_hiv_status.value = Person::OBSERVED_LATESTAGE;
-				}
-				else if(value == "unobserved-acute")
-				{
-					parameter.target.value.observed_hiv_status.value = Person::UNOBSERVED_ACUTE;
-				}
-				else if(value == "unobserved-chronic")
-				{
-					parameter.target.value.observed_hiv_status.value = Person::UNOBSERVED_CHRONIC;
-				}
-				else if(value == "unobserved-late-stage")
-				{
-					parameter.target.value.observed_hiv_status.value = Person::UNOBSERVED_LATESTAGE;
-				}
-			}
-			else
-			{
-				throw std::runtime_error("unknown target type: " + name);
-			}
-		}
-
-		parameters_[key].push_back(parameter);
-	}
-}
-*/
 
 void SimulationBuilderXml::ReadSimulationParameters()
 {
@@ -542,6 +379,7 @@ void SimulationBuilderXml::InitializePopulation()
 
     for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
     {
+        if(!population_parameters.GetMaleParameters().hasSexualBehavior(partnership_type)) continue;
         auto assortativeness = population_parameters.GetMaleParameters().getSexualBehavior(partnership_type).getAssortativeness();
         assort[partnership_type] = assortativeness;
     }
@@ -575,19 +413,31 @@ void SimulationBuilderXml::InitializePopulation()
 	}
 
 	// Create the people in the population 
-	long totalNumMales = Utility::round<long>(population_parameters.GetInitialSize() * population_parameters.GetMaleProportion());
-	long totalNumFemales = std::max<long>(population_parameters.GetInitialSize() - totalNumMales, 0);
+	auto totalNumHeteroMales = Utility::round<std::size_t>(population_parameters.GetInitialSize() * population_parameters.GetMaleProportion());
+    auto totalNumBisexualMales = Utility::round<std::size_t>(population_parameters.GetInitialSize() * population_parameters.GetBisexualMaleProportion());
+    auto totalNumMsms = Utility::round<std::size_t>(population_parameters.GetInitialSize() * population_parameters.GetMsmProportion());
+    auto totalNumMales = totalNumBisexualMales + totalNumHeteroMales + totalNumMsms;
+    auto totalNumFemales = std::max<std::size_t>(population_parameters.GetInitialSize() - totalNumMales, 0);
+    
+    std::size_t createdHeteroMales = 0, createdBisexualMales = 0, createdMsms = 0;
+
 	//the params.xml file should have detailed the prevalent characteristics of each age bucket
 	//  we will go through each age bucket and create the part of the prevalent population that falls within the bucket
 	std::vector<AgeRange> ageRanges;
 
-	for(auto ageBucketParams : population_parameters.GetInitialAgeBuckets())
+	for(auto &ageBucketParams : population_parameters.GetInitialAgeBuckets())
 	{
-        auto numMalesInCurrentBucket = Utility::round<std::size_t>(totalNumMales * ageBucketParams.proportionOfPopulation[(std::size_t)DemographicProfile::Gender::Male]);
-        auto numFemalesInCurrentBucket = Utility::round<std::size_t>(totalNumFemales * ageBucketParams.proportionOfPopulation[(std::size_t)DemographicProfile::Gender::Female]);
+        auto last = ageBucketParams.minAgeMth == population_parameters.GetInitialAgeBuckets().back().minAgeMth
+            && ageBucketParams.maxAgeMth == population_parameters.GetInitialAgeBuckets().back().maxAgeMth;
+
+        auto numHeteroMalesInCurrentBucket = last ? totalNumHeteroMales - createdHeteroMales : Utility::round<std::size_t>(totalNumHeteroMales * ageBucketParams.proportionHeteroMale);
+        auto numMsmsInCurrentBucket = last ? totalNumMsms - createdMsms : Utility::round<std::size_t>(totalNumMsms * ageBucketParams.proportionMsm);
+        auto numBisexualMalesInCurrentBucket = last ? totalNumBisexualMales - createdBisexualMales : Utility::round<std::size_t>(totalNumBisexualMales * ageBucketParams.proportionBisexualMale);
+        auto numMalesInCurrentBucket = numHeteroMalesInCurrentBucket + numMsmsInCurrentBucket + numBisexualMalesInCurrentBucket;
+        auto numFemalesInCurrentBucket = Utility::round<std::size_t>(totalNumFemales * ageBucketParams.proportionFemale);
 
 		//calc how many people are in the current age range
-		auto currentBucketSize = numMalesInCurrentBucket + numFemalesInCurrentBucket;
+		auto currentBucketSize = numHeteroMalesInCurrentBucket + numMsmsInCurrentBucket + numBisexualMalesInCurrentBucket + numFemalesInCurrentBucket;
 
 		//Number of persons of each gender to be traced in detailed output file
 		auto numToTrace = static_cast<std::size_t>(population.GetNumberToTrace());
@@ -595,11 +445,34 @@ void SimulationBuilderXml::InitializePopulation()
 		for(std::size_t count = 0; count < currentBucketSize; count++)
 		{
 			//Determine whether or not person should be traced in SinglePersonTrace
-			bool tracePerson = (count < numToTrace || (count >= numMalesInCurrentBucket && (count - numMalesInCurrentBucket) < numToTrace));
+			bool tracePerson = (count < numToTrace || (count >= numHeteroMalesInCurrentBucket && (count - numHeteroMalesInCurrentBucket) < numToTrace));
 
 			//create a person, males first and females second
 			auto gender = (count < numMalesInCurrentBucket) ? DemographicProfile::Gender::Male : DemographicProfile::Gender::Female;
-			auto person = population.GeneratePerson(simulation_.GetEventParams(), gender, &ageBucketParams, tracePerson);
+            auto orientation = DemographicProfile::SexualOrientation::Heterosexual;
+
+            if(gender == DemographicProfile::Gender::Male)
+            {
+                if(count > numHeteroMalesInCurrentBucket)
+                {
+                    if(count > numHeteroMalesInCurrentBucket + numMsmsInCurrentBucket)
+                    {
+                        orientation = DemographicProfile::SexualOrientation::Bisexual;
+                        createdBisexualMales++;
+                    }
+                    else
+                    {
+                        orientation = DemographicProfile::SexualOrientation::Homosexual;
+                        createdMsms++;
+                    }
+                }
+                else
+                {
+                    createdHeteroMales++;
+                }
+            }
+
+			auto person = population.GeneratePerson(simulation_.GetEventParams(), gender, orientation, &ageBucketParams, tracePerson);
 
 			//add the created person to the EntityPool
 			population.entities->addPersonToAll(person);
@@ -611,7 +484,7 @@ void SimulationBuilderXml::InitializePopulation()
 		//Add a tuple to the currSizeByAgeRange vector along with the initial size of the age range
 		ageRanges.push_back(ageRange);
 		population.currSizeByAgeRange.push_back(ageRangeSize);
-		population.currSizeByAgeRangeMale.push_back(std::make_pair(ageRange, numMalesInCurrentBucket));
+		population.currSizeByAgeRangeMale.push_back(std::make_pair(ageRange, numHeteroMalesInCurrentBucket));
 		population.currSizeByAgeRangeFemale.push_back(std::make_pair(ageRange, numFemalesInCurrentBucket));
 	}
 
@@ -742,10 +615,15 @@ EventParams::RolloutEligibility SimulationBuilderXml::ReadRolloutEligibility()
     return eligibility;
 }
 
-SexualBehavior SimulationBuilderXml::ReadSexualBehavior(SexualPartnership::Type type)
+SexualBehavior SimulationBuilderXml::ReadSexualBehavior(const std::string &entity_type, SexualPartnership::Type type)
 {
-	auto path = "/simulation/population/entities/entity[@type='Male']/behavior/partnershipTypes/partnership[@type='" + to_string(type) + "']";
+	auto path = "/simulation/population/entities/entity[@type='" + entity_type + "']/behavior/partnershipTypes/partnership[@type='" + to_string(type) + "']";
 	auto node = document_.select_single_node(path.c_str()).node();
+
+    if(node == nullptr)
+    {
+        throw std::runtime_error("behavior not defined for entity type " + entity_type + " and partnership type " + to_string(type));
+    }
 
 	SexualBehavior result(type);
 
@@ -779,7 +657,7 @@ SexualBehavior SimulationBuilderXml::ReadSexualBehavior(SexualPartnership::Type 
 
 Male::SubPopParams SimulationBuilderXml::ReadMaleSubPopParams()
 {
-	auto node = document_.select_single_node("/simulation/population/entities/entity[@type='Male']").node();
+	auto node = document_.select_single_node("/simulation/population/entities/entity[@type='HeteroMale']").node();
 
 	Male::SubPopParams result;
 
@@ -797,21 +675,29 @@ Male::SubPopParams SimulationBuilderXml::ReadMaleSubPopParams()
 
 	for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
 	{
-		auto params = ReadSexualBehavior(partnership_type);
+        try
+        {
+            auto params = ReadSexualBehavior("HeteroMale", partnership_type);
 
-		if(use_high_risk_multiplier)
-		{
-			if(partnership_type == SexualPartnership::Type::Csw && use_csw_high_risk_multiplier)
-			{
-				params.SetHighRiskMultiplier(csw_high_risk_multiplier);
-			}
-			else
-			{
-				params.SetHighRiskMultiplier(high_risk_multiplier);
-			}
-		}
+            if(use_high_risk_multiplier)
+            {
+                if(partnership_type == SexualPartnership::Type::Csw && use_csw_high_risk_multiplier)
+                {
+                    params.SetHighRiskMultiplier(csw_high_risk_multiplier);
+                }
+                else
+                {
+                    params.SetHighRiskMultiplier(high_risk_multiplier);
+                }
+            }
 
-		result.AddSexualBehavior(params);
+            result.AddSexualBehavior(params);
+        }
+        catch(std::runtime_error &e)
+        {
+            std::cout << e.what() << std::endl;
+            continue;
+        }
 	}
 
 	NormalDist activityLevel;
@@ -845,6 +731,157 @@ Male::SubPopParams SimulationBuilderXml::ReadMaleSubPopParams()
 	return result;
 }
 
+Msm::SubPopParams SimulationBuilderXml::ReadMsmSubPopParams()
+{
+    auto node = document_.select_single_node("/simulation/population/entities/entity[@type='Msm']").node();
+
+    Msm::SubPopParams result;
+
+    auto behavior_node = node.child("behavior");
+    result.SetChanceBecomeCsw(Text<double>(behavior_node.child("chanceBecomeSexWorker")));
+    result.SetPartnerAcqMultWithSteady(Person::HIGH, Text<double>(behavior_node.child("partnerAcqMultWithSteadyHighRisk")));
+    result.SetPartnerAcqMultWithSteady(Person::LOW, Text<double>(behavior_node.child("partnerAcqMultWithSteadyLowRisk")));
+
+    bool use_high_risk_multiplier = Attr<bool>(behavior_node.child("highRiskAcqRateMultiplier"), "enabled");
+    double high_risk_multiplier = Text<double>(behavior_node.child("highRiskAcqRateMultiplier"));
+    bool use_csw_high_risk_multiplier = Attr<bool>(behavior_node.child("highRiskCswAcqRateMultiplier"), "enabled");
+    double csw_high_risk_multiplier = Text<double>(behavior_node.child("highRiskCswAcqRateMultiplier"));
+
+    result.SetCoefficientVariation(false, 0);
+
+    for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
+    {
+        try
+        {
+            auto params = ReadSexualBehavior("Msm", partnership_type);
+
+            if(use_high_risk_multiplier)
+            {
+                if(partnership_type == SexualPartnership::Type::Csw && use_csw_high_risk_multiplier)
+                {
+                    params.SetHighRiskMultiplier(csw_high_risk_multiplier);
+                }
+                else
+                {
+                    params.SetHighRiskMultiplier(high_risk_multiplier);
+                }
+            }
+
+            result.AddSexualBehavior(params);
+        }
+        catch(std::runtime_error &e)
+        {
+            std::cout << e.what() << std::endl;
+            continue;
+        }
+    }
+
+    NormalDist activityLevel;
+    activityLevel.mean = 1;
+    activityLevel.stddev = 0;
+    result.SetActivityLevel(activityLevel);
+
+    result.SetProportionHighRisk(DemographicProfile::Employment::Csw, Text<double>(behavior_node.child("proportionHighRiskCsw")));
+    result.SetProportionHighRisk(DemographicProfile::Employment::NonCsw, Text<double>(behavior_node.child("proportionHighRiskNonCsw")));
+
+    auto discountingStartAgeYrs = Text<int>(behavior_node.child("ageDiscounting").child("startAgeYrs"));
+    auto acquisitionDiscByYr = Text<double>(behavior_node.child("ageDiscounting").child("acquisitionDiscByYr"));
+    auto coitalActsDiscByYr = Text<double>(behavior_node.child("ageDiscounting").child("coitalActsDiscByYr"));
+    result.setAgeDiscounting(discountingStartAgeYrs, acquisitionDiscByYr, coitalActsDiscByYr);
+
+    auto health_node = node.child("health");
+    result.SetCircucmsionProtectEfficacy(Text<double>(health_node.child("circumcisionProtectEfficacy")));
+    result.SetCondomProtectEff(Text<double>(health_node.child("condomProtectEfficacy")));
+
+    auto transmission_node = node.child("health").child("transmissionCoefficients");
+    auto transmission_coefficients = Text<std::array<double, 7>>(transmission_node.child("valsByHVL"));
+    for(int i = 0; i < 7; i++)
+    {
+        result.SetTransmitPerEventCoeff(Person::HVLStrata(i), transmission_coefficients[i]);
+    }
+    result.SetTransmitPerEventCoeff(Person::HVL_PRIMARY, Text<double>(transmission_node.child("primary")));
+    result.SetTransmitPerEventCoeff(Person::HVL_LATESTAGE, Text<double>(transmission_node.child("lateStage")));
+
+    result.SetMaxPartnershipRejections(Text<int>(behavior_node.child("maxPartnershipRejections")));
+
+    return result;
+}
+
+BisexualMale::SubPopParams SimulationBuilderXml::ReadBiMaleSubPopParams()
+{
+    auto node = document_.select_single_node("/simulation/population/entities/entity[@type='BisexualMale']").node();
+
+    BisexualMale::SubPopParams result;
+
+    auto behavior_node = node.child("behavior");
+    result.SetChanceBecomeCsw(Text<double>(behavior_node.child("chanceBecomeSexWorker")));
+    result.SetPartnerAcqMultWithSteady(Person::HIGH, Text<double>(behavior_node.child("partnerAcqMultWithSteadyHighRisk")));
+    result.SetPartnerAcqMultWithSteady(Person::LOW, Text<double>(behavior_node.child("partnerAcqMultWithSteadyLowRisk")));
+
+    bool use_high_risk_multiplier = Attr<bool>(behavior_node.child("highRiskAcqRateMultiplier"), "enabled");
+    double high_risk_multiplier = Text<double>(behavior_node.child("highRiskAcqRateMultiplier"));
+    bool use_csw_high_risk_multiplier = Attr<bool>(behavior_node.child("highRiskCswAcqRateMultiplier"), "enabled");
+    double csw_high_risk_multiplier = Text<double>(behavior_node.child("highRiskCswAcqRateMultiplier"));
+
+    result.SetCoefficientVariation(false, 0);
+
+    for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
+    {
+        try
+        {
+            auto params = ReadSexualBehavior("BisexualMale", partnership_type);
+
+            if(use_high_risk_multiplier)
+            {
+                if(partnership_type == SexualPartnership::Type::Csw && use_csw_high_risk_multiplier)
+                {
+                    params.SetHighRiskMultiplier(csw_high_risk_multiplier);
+                }
+                else
+                {
+                    params.SetHighRiskMultiplier(high_risk_multiplier);
+                }
+            }
+
+            result.AddSexualBehavior(params);
+        }
+        catch(std::runtime_error &e)
+        {
+            std::cout << e.what() << std::endl;
+            continue;
+        }
+    }
+
+    NormalDist activityLevel;
+    activityLevel.mean = 1;
+    activityLevel.stddev = 0;
+    result.SetActivityLevel(activityLevel);
+
+    result.SetProportionHighRisk(DemographicProfile::Employment::Csw, Text<double>(behavior_node.child("proportionHighRiskCsw")));
+    result.SetProportionHighRisk(DemographicProfile::Employment::NonCsw, Text<double>(behavior_node.child("proportionHighRiskNonCsw")));
+
+    auto discountingStartAgeYrs = Text<int>(behavior_node.child("ageDiscounting").child("startAgeYrs"));
+    auto acquisitionDiscByYr = Text<double>(behavior_node.child("ageDiscounting").child("acquisitionDiscByYr"));
+    auto coitalActsDiscByYr = Text<double>(behavior_node.child("ageDiscounting").child("coitalActsDiscByYr"));
+    result.setAgeDiscounting(discountingStartAgeYrs, acquisitionDiscByYr, coitalActsDiscByYr);
+
+    auto health_node = node.child("health");
+    result.SetCircucmsionProtectEfficacy(Text<double>(health_node.child("circumcisionProtectEfficacy")));
+    result.SetCondomProtectEff(Text<double>(health_node.child("condomProtectEfficacy")));
+
+    auto transmission_node = node.child("health").child("transmissionCoefficients");
+    auto transmission_coefficients = Text<std::array<double, 7>>(transmission_node.child("valsByHVL"));
+    for(int i = 0; i < 7; i++)
+    {
+        result.SetTransmitPerEventCoeff(Person::HVLStrata(i), transmission_coefficients[i]);
+    }
+    result.SetTransmitPerEventCoeff(Person::HVL_PRIMARY, Text<double>(transmission_node.child("primary")));
+    result.SetTransmitPerEventCoeff(Person::HVL_LATESTAGE, Text<double>(transmission_node.child("lateStage")));
+
+    result.SetMaxPartnershipRejections(Text<int>(behavior_node.child("maxPartnershipRejections")));
+
+    return result;
+}
 
 Female::SubPopParams SimulationBuilderXml::ReadFemaleSubPopParams()
 {
@@ -887,7 +924,9 @@ void SimulationBuilderXml::ReadPopulationParameters()
 		population_parameters.GetInitialAgeBuckets().emplace_back(
             Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Attr<int>(age_bucket_node, "lower")),
             Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Attr<int>(age_bucket_node, "upper")) + 11,
-			Text<double>(age_bucket_node.child("distribMale")),
+			Text<double>(age_bucket_node.child("distribHeteroMale")),
+            Text<double>(age_bucket_node.child("distribMsm")),
+            Text<double>(age_bucket_node.child("distribBisexualMale")),
 			Text<double>(age_bucket_node.child("distribFemale")),
 			Text<int>(age_bucket_node.child("numInfectedMaleCsw")),
 			Text<int>(age_bucket_node.child("numInfectedFemaleCsw")),
@@ -903,37 +942,50 @@ void SimulationBuilderXml::ReadPopulationParameters()
     population_parameters.SetCswEndAge(DemographicProfile::Gender::Female, Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Text<int>(initial_state_node.child("cswEndAgeFemale"))));
 
 	//normalize %population values for each age bucket
-	std::array<double, (std::size_t)DemographicProfile::Gender::Last> totalPopulationproportionages;
-	totalPopulationproportionages.fill(0);
+    double totalFemaleProportion = 0;
+    double totalHeteroMaleProportion = 0;
+    double totalBiMaleProportion = 0;
+    double totalMsmProportion = 0;
 
 	//get the total of proportionage values of AgeBucketPrevalencInfo.proportionOfPopulation
-    for(std::size_t i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
-	{
 		for(auto &age_bucket : population_parameters.GetInitialAgeBuckets())
 		{
-			totalPopulationproportionages[i] += age_bucket.proportionOfPopulation[i];
+			totalFemaleProportion += age_bucket.proportionFemale;
+            totalHeteroMaleProportion += age_bucket.proportionHeteroMale;
+            totalBiMaleProportion += age_bucket.proportionBisexualMale;
+            totalMsmProportion += age_bucket.proportionMsm;
 		}
 
 		//normalize each proportionage value so that the sum of them == 1
 		for(auto &age_bucket : population_parameters.GetInitialAgeBuckets())
 		{
-			age_bucket.proportionOfPopulation[i] /= totalPopulationproportionages[i];
+			age_bucket.proportionFemale /= totalFemaleProportion;
+            age_bucket.proportionHeteroMale /= totalHeteroMaleProportion;
+            age_bucket.proportionBisexualMale /= totalBiMaleProportion;
+            age_bucket.proportionMsm /= totalMsmProportion;
 		}
-	}
 
 	population_parameters.setBirthRate(Text<double>(population_node.child("birthRate")));
-	population_parameters.setProportionMale(Text<double>(population_node.child("proportionMale")));
+	population_parameters.setProportionHeteroMale(Text<double>(population_node.child("birthProportions").child("proportionHeteroMale")));
+    population_parameters.setProportionMsm(Text<double>(population_node.child("birthProportions").child("proportionMsm")));
+    population_parameters.setProportionBisexualMale(Text<double>(population_node.child("birthProportions").child("proportionBisexualMale")));
+    population_parameters.setProportionFemale(Text<double>(population_node.child("birthProportions").child("proportionFemale")));
 	population_parameters.setProportionCircumcised(Text<double>(population_node.child("proportionCircumcised")));
 	population_parameters.setAgeOfMajority(Text<int>(population_node.child("ageOfMajority")), TimeGranularity::Year);
 
 	auto defaultMaleParams = ReadMaleSubPopParams();
 	population_parameters.SetMaleParameters(defaultMaleParams);
+    auto defaultMsmParams = ReadMsmSubPopParams();
+    population_parameters.SetMsmParameters(defaultMsmParams);
+    auto defaultBiMaleParams = ReadBiMaleSubPopParams();
+    population_parameters.SetBiMaleParameters(defaultBiMaleParams);
 	auto defaultFemaleParams = ReadFemaleSubPopParams();
 	population_parameters.SetFemaleParameters(defaultFemaleParams);
 
 	//save flags to indicate whether particular partnership types have duration or not
 	for(auto type : enum_iterator<SexualPartnership::Type>())
 	{
+        if(!defaultMaleParams.hasSexualBehavior(type)) continue;
 		auto has_duration = !(defaultMaleParams.getSexualBehavior(SexualPartnership::Type(type)).getPartnershipDurationMth(Person::LOW).isZeroDistrib)
 			&& !(defaultMaleParams.getSexualBehavior(SexualPartnership::Type(type)).getPartnershipDurationMth(Person::HIGH).isZeroDistrib);
 		population_parameters.SetPartnershipHasDuration(DemographicProfile::Gender::Male, type, has_duration);
@@ -1494,7 +1546,7 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
             auto value = Text<double>(node);
             intervention.SetPopulationCallback(
                 [=](Population &p) { 
-                    p.popWideParams.setProportionMale(value); });
+                    p.popWideParams.setProportionHeteroMale(value); });
             break;
         }
         case KnownIntervention::ProportionCircumcised:

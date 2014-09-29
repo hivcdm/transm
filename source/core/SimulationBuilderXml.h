@@ -51,9 +51,13 @@ private:
 
 	Male::SubPopParams ReadMaleSubPopParams();
 
+    Msm::SubPopParams ReadMsmSubPopParams();
+
+    BisexualMale::SubPopParams ReadBiMaleSubPopParams();
+
     std::vector<Intervention> ParseInterventions(pugi::xml_node interventions_node, bool individual);
 
-	SexualBehavior ReadSexualBehavior(SexualPartnership::Type type);
+	SexualBehavior ReadSexualBehavior(const std::string &entity_type, SexualPartnership::Type type);
 
     Intervention ReadIntervention(pugi::xml_node &node, bool individual);
 

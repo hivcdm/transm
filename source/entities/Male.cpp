@@ -34,13 +34,13 @@ double Male::SubPopParams::getPartnerAcqMultWithSteady(Person::RiskLevel _risk) 
 //sexual behavior params for each type as specified by SexualPartnership::Type
 const SexualBehavior &Male::SubPopParams::getSexualBehavior(SexualPartnership::Type _type) const
 {
-	return sexualBehaviorParams.at((int)_type);
+	return sexualBehaviorParams.at(_type);
 }
 
 //sexual behavior params for each type as specified by SexualPartnership::Type
 SexualBehavior &Male::SubPopParams::getSexualBehavior(SexualPartnership::Type _type)
 {
-	return sexualBehaviorParams.at((int)_type);
+	return sexualBehaviorParams.at(_type);
 }
 
 
@@ -150,6 +150,8 @@ Male::Male(EventParams &_eventParams, int _age, bool _circumcised, unsigned int 
 
 	for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
 	{
+        if(!populationSpecificParams.hasSexualBehavior(partnership_type)) continue;
+
 		auto &sexualBehaviorParams = populationSpecificParams.getSexualBehavior(partnership_type);
 
 		auto acquisition_rate_dist = sexualBehaviorParams.getAcquisitionRatePerMonth(risk);
@@ -336,6 +338,8 @@ bool Male::possibleMatch(SexualPartnership::Type _partnershipType, Person *_p)
 
 int Male::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType)
 {
+    if(!populationSpecificParams.hasSexualBehavior(_partnershipType)) return 0;
+
 	assert(_partnershipType < SexualPartnership::Type::ENDType);
 
 	//person can only have 1 steady partner at a time so return 0 if person is already in Steady
@@ -424,6 +428,8 @@ void Male::rerollRiskGroup(EventParams &_eventParams)
 	{
 		for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
 		{
+            if(!populationSpecificParams.hasSexualBehavior(partnership_type)) continue;
+
 			const SexualBehavior &sexualBehaviorParams = 
 				populationSpecificParams.getSexualBehavior(partnership_type);
 			auto acquisition_rate = sexualBehaviorParams.getAcquisitionRatePerMonth(risk);

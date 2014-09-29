@@ -1,7 +1,9 @@
 #pragma once
 
-#include "../entities/Male.h"
+#include "../entities/BisexualMale.h"
 #include "../entities/Female.h"
+#include "../entities/Male.h"
+#include "../entities/Msm.h"
 #include "../statistics/CostsTracker.h"
 
 class PopulationParameters
@@ -15,7 +17,8 @@ public:
 	public:
 		AgeBucketPrevalenceInfo();
 
-		AgeBucketPrevalenceInfo(int _minAgeMth, int _maxAgeMth, double _proportionOfPopulationMale,
+        AgeBucketPrevalenceInfo(int _minAgeMth, int _maxAgeMth, double _proportionOfPopulationHeteroMale, 
+            double _proportionOfPopulationMsm, double _proportionOfPopulationBisexualMale,
 			double _proportionOfPopulationFemale, int _numInfectedCSWMale, int _numInfectedCSWFemale,
 			int _numInfectedNonCSWMalesLowRisk, int _numInfectedNonCSWFemalesLowRisk,
 			int _numInfectedNonCSWMalesHighRisk, int _numInfectedNonCSWFemalesHighRisk);
@@ -35,7 +38,10 @@ public:
         /// <summary>
         /// determines size as proportion of the population
         /// </summary>
-        double proportionOfPopulation[(std::size_t)DemographicProfile::Gender::Last];
+        double proportionHeteroMale;
+        double proportionMsm;
+        double proportionBisexualMale;
+        double proportionFemale;
 
         /// <summary>
         /// number of males and female csw in this bucket that are infected (at prevalence delay)
@@ -58,7 +64,10 @@ public:
 	void setProportionCircumcised(double value) { proportionCircumcised = value; }
 
 	double getProportionMale() const;
-	void setProportionMale(double proportion_male) { proportionMale = proportion_male; }
+	void setProportionHeteroMale(double proportion_male) { proportionHeteroMale = proportion_male; }
+    void setProportionMsm(double proportion_msm) { proportionMsm = proportion_msm; }
+    void setProportionBisexualMale(double proportion_bi) { proportionBisexualMale = proportion_bi; }
+    void setProportionFemale(double proportion_female) { proportionFemale = proportion_female; }
 
 	int getAgeOfMajority() const { return ageOfMajority; }
     void setAgeOfMajority(int ageOfMajority, TimeGranularity granularity = TimeGranularity::Year) 
@@ -73,6 +82,8 @@ public:
 
 	const Male::SubPopParams &GetMaleParameters() const { return defaultMaleParams; }
 	void SetMaleParameters(Male::SubPopParams &params) { defaultMaleParams = params; }
+    void SetMsmParameters(Msm::SubPopParams &params) { defaultMsmParams = params; }
+    void SetBiMaleParameters(BisexualMale::SubPopParams &params) { defaultBisexualMaleParams = params; }
 	const Female::SubPopParams &GetFemaleParameters() const { return defaultFemaleParams; }
 	void SetFemaleParameters(Female::SubPopParams &params) { defaultFemaleParams = params; }
 
@@ -99,7 +110,9 @@ public:
 	int GetInitialSize() const { return initSize; }
 	void SetInitialSize(int size) { initSize = size; }
 
-	double GetMaleProportion() const { return proportionMale; }
+	double GetMaleProportion() const { return proportionHeteroMale; }
+    double GetMsmProportion() const { return proportionMsm; }
+    double GetBisexualMaleProportion() const { return proportionBisexualMale; }
 
 	const std::vector<AgeBucketPrevalenceInfo> &GetInitialAgeBuckets() const { return initialAgeBuckets; }
 	std::vector<AgeBucketPrevalenceInfo> &GetInitialAgeBuckets() { return initialAgeBuckets; }
@@ -173,7 +186,11 @@ private:
 
     int sexualActivityDelay;
 
-	double proportionMale;
+	double proportionHeteroMale;
+    double proportionBisexualMale;
+    double proportionMsm;
+    double proportionFemale;
+
 	double proportionCircumcised;
 
     /// <summary>
@@ -192,9 +209,19 @@ private:
 	std::vector<AgeBucketPrevalenceInfo> initialAgeBuckets;
 
     /// <summary>
-    /// holds the population-level parameters for population of males
+    /// holds the population-level parameters for population of heterosexual males
     /// </summary>
 	Male::SubPopParams defaultMaleParams;
+
+    /// <summary>
+    /// holds the population-level parameters for population of msms
+    /// </summary>
+    Msm::SubPopParams defaultMsmParams;
+
+    /// <summary>
+    /// holds the population-level parameters for population of bisexual males
+    /// </summary>
+    BisexualMale::SubPopParams defaultBisexualMaleParams;
 
     /// <summary>
     /// holds the population-level parameters for population of females

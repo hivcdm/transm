@@ -9,6 +9,8 @@
 
 PopulationParameters::AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(int _minAgeMth, int _maxAgeMth,
         double _proportionOfPopulationMale,
+        double _proportionOfPopulationMsm, 
+        double _proportionOfPopulationBisexualMale,
         double _proportionOfPopulationFemale,
         int _numInfectedCSWMale,
 		int _numInfectedCSWFemale,
@@ -20,8 +22,10 @@ PopulationParameters::AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(int _minA
 	assert((_minAgeMth >= 0) && (_maxAgeMth > 0) && (_maxAgeMth > _minAgeMth));
 	minAgeMth = _minAgeMth;
 	maxAgeMth = _maxAgeMth;
-    proportionOfPopulation[(std::size_t)DemographicProfile::Gender::Male] = _proportionOfPopulationMale;
-    proportionOfPopulation[(std::size_t)DemographicProfile::Gender::Female] = _proportionOfPopulationFemale;
+    proportionHeteroMale = _proportionOfPopulationMale;
+    proportionMsm = _proportionOfPopulationMsm;
+    proportionBisexualMale = _proportionOfPopulationBisexualMale;
+    proportionFemale = _proportionOfPopulationFemale;
     numInfectedCSW[(std::size_t)DemographicProfile::Gender::Male] = _numInfectedCSWMale;
     numInfectedCSW[(std::size_t)DemographicProfile::Gender::Female] = _numInfectedCSWFemale;
     numInfectedRisk[(std::size_t)DemographicProfile::Gender::Male][Person::LOW] = _numInfectedNonCSWMalesLowRisk;
@@ -37,7 +41,8 @@ PopulationParameters::PopulationParameters()
 	initSize = 10000;
 	birthRate = 0.0038;
 	ageOfMajority = 180;
-	proportionMale = 0.51;
+	proportionHeteroMale = 0.51;
+    proportionFemale = 1 - proportionHeteroMale;
 	proportionCircumcised = 0.20;
     sexualActivityDelay = 0;
 }

@@ -162,6 +162,11 @@ public:
     /// <summary>
     /// returns internal count of how big the current population is
     /// </summary>
+    std::size_t GetSize(DemographicProfile::Gender gender, DemographicProfile::SexualOrientation sexual_orientation);
+
+    /// <summary>
+    /// returns internal count of how big the current population is
+    /// </summary>
     std::size_t GetSASize(DemographicProfile::Gender _gender, Person::RiskLevel _risk);
 
     /// <summary>
@@ -225,7 +230,7 @@ private:
     /// @param _ageBucketParams	parameters that determine a prevalent person's characteristics. If this is nullptr, then this method will create a newborn
     /// @return a newly formed person
     /// </summary>
-	Person *GeneratePerson(EventParams &_eventParams, DemographicProfile::Gender _gender,
+	Person *GeneratePerson(EventParams &_eventParams, DemographicProfile::Gender _gender, DemographicProfile::SexualOrientation sexual_orientation,
 	                       PopulationParameters::AgeBucketPrevalenceInfo *_ageBucketParams, bool toTrace);
 
     /// <summary>
@@ -341,6 +346,11 @@ private:
 	/// Size by gender
     /// </summary>
     std::size_t currSizeGender[(std::size_t)DemographicProfile::Gender::Last];
+
+    /// <summary>
+    /// Size by gender and orientation
+    /// </summary>
+    std::size_t currSizeGenderOrientation[(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::SexualOrientation::Last];
 
     /// <summary>
 	/// non-sexually active by gender
@@ -460,7 +470,7 @@ private:
     private:
     std::unordered_map<unsigned long, PersonSummary> individual_summaries_;
 
-    static const int NumIndividualSummaries = 1000;
+    static const int NumIndividualSummaries = 10000;
 
     void SaveIndividualSummaries(std::ostream &stream) const;
 };

@@ -11,6 +11,7 @@
 #include "Simulation.h"
 #include "../entities/Female.h"
 #include "../entities/Male.h"
+#include "../entities/Msm.h"
 #include "../entities/behaviors/SexualBehavior.h"
 #include "../statistics/InfectionsTracker.h"
 #include "../statistics/CostsTracker.h"
@@ -54,6 +55,7 @@ void Population::InitPartnershipBuckets()
     selector.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::Active);
     selector.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
     selector.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::NonCsw);
+    //selector.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Heterosexual);
 	//all SA, non-CSW males can form partnerships of any type
 	std::vector<DemographicProfile::ProfileID> eligibleInitiators;
 	selector.selectProfileIDs(eligibleInitiators, nullptr);
@@ -85,7 +87,7 @@ void Population::InitPartnershipBuckets()
 	for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
 	{
 		//get the parameters for current relationship type
-		const SexualBehavior &partneringParams = popWideParams.defaultMaleParams.getSexualBehavior(partnership_type);
+        const SexualBehavior &partneringParams = popWideParams.defaultMaleParams.hasSexualBehavior(partnership_type) ? popWideParams.defaultMaleParams.getSexualBehavior(partnership_type) : popWideParams.defaultMsmParams.getSexualBehavior(partnership_type);
 
 		//get available demographicProfiles that are available for this partnership
 		for(unsigned int j = 0; j < partneringParams.getNumAvailableBuckets(); ++j)
@@ -96,7 +98,7 @@ void Population::InitPartnershipBuckets()
 			currProfileSelector.selectProfileIDs(selectedIDs, nullptr);
 
             //TODO:eventually, we should change this.
-			assert(selectedIDs.size() == 1);	//we don't want any wild cards in the DemographicProfile string.
+			//assert(selectedIDs.size() == 1);	//we don't want any wild cards in the DemographicProfile string.
 
 			//check to see whether we have a repeat Bucket.
 			for(size_t i = 0; i < potentialPartnerBuckets[partnership_type].size(); ++i)
@@ -141,24 +143,43 @@ void Population::Births(EventParams &parameters_)
 {
 	//number of people to be born this month
 	unsigned long numBorn = Utility::round<unsigned long>(currSize * popWideParams.birthRate);
-	unsigned long numMales = static_cast<unsigned long>(popWideParams.proportionMale * numBorn);
-	DemographicProfile::Gender gender;
-	Person *p = nullptr;
+	unsigned long numHeteroMales = static_cast<unsigned long>(popWideParams.proportionHeteroMale * numBorn);
+    unsigned long numBisexualMales = static_cast<unsigned long>(popWideParams.proportionBisexualMale * numBorn);
+    unsigned long numMsms = static_cast<unsigned long>(popWideParams.proportionMsm * numBorn);
+    unsigned long numMales = numHeteroMales + numBisexualMales + numMsms;
+    //unsigned long numFemales = static_cast<unsigned long>(popWideParams.proportionFemale * numBorn);
 
 	//create currSize * birthRate New people
 	for(unsigned long i = 0; i < numBorn; ++i)
 	{
 		//determine gender
-		gender = (i < numMales) ? DemographicProfile::Gender::Male : DemographicProfile::Gender::Female;
-		bool toTrace = parameters_.currTime >= parameters_.monthTraceNewborns ? parameters_.numNewbornsTraced <
-		               parameters_.numNewbornsToTrace : false;
+		auto gender = (i < numMales) ? DemographicProfile::Gender::Male : DemographicProfile::Gender::Female;
+        auto orientation = DemographicProfile::SexualOrientation::Heterosexual;
+
+        if(gender == DemographicProfile::Gender::Male)
+        {
+            if(i > numHeteroMales)
+            {
+                if(i > numBisexualMales + numHeteroMales)
+                {
+                    orientation = DemographicProfile::SexualOrientation::Homosexual;
+                }
+                else
+                {
+                    orientation = DemographicProfile::SexualOrientation::Bisexual;
+                }
+            }
+        }
+
+        bool toTrace = parameters_.currTime >= parameters_.monthTraceNewborns 
+            && parameters_.numNewbornsTraced < parameters_.numNewbornsToTrace;
 
 		if(toTrace)
 		{
 			parameters_.numNewbornsTraced++;
 		}
 
-		p = GeneratePerson(parameters_, gender, nullptr, toTrace);
+		auto p = GeneratePerson(parameters_, gender, orientation, nullptr, toTrace);
 
         if(parameters_.debugLevel > DebugLevel::One && parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
 		{
@@ -522,6 +543,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 		for(size_t i = 0; i < partnershipTypes.size(); i++)
 		{
 			SexualPartnership::Type type = partnershipTypes.at(i);
+
 			//this method distinguishes between partnerships with and without duration and
 			//  executes different code depending on which. If the partnership has no duration
 			//  associated with it, then the sexual act is done during this method
@@ -660,7 +682,6 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 	}
 }
 
-/*
 void Population::SaveIndividualSummaries(std::ostream &stream) const
 {
     std::vector<PersonSummary> ordered_(individual_summaries_.size());
@@ -684,9 +705,9 @@ void Population::SaveIndividualSummaries(std::ostream &stream) const
         stream << ",\"employment\"" << ":";
         stream << (summary.profile.get(DemographicProfile::Demographic::Employment) == 0 ? "\"non-csw\"" : "\"csw\"");
         stream << ",\"sexual_activity_status\"" << ":";
-        stream << (summary.profile.get(DemographicProfile::Demographic::SexualActivityStatus) == 0 ? "\"sexually active\"" : "\"not active\"");
+        stream << (summary.profile.get(DemographicProfile::Demographic::SexualActivityStatus) == 0 ? "\"sexually-active\"" : "\"not-active\"");
         stream << ",\"sexual_orientation\"" << ":";
-        stream << (summary.profile.get(DemographicProfile::Demographic::SexualOrientation) == 0 ? "\"hetero\"" : "\"homo\"");
+        stream << (summary.profile.get(DemographicProfile::Demographic::SexualOrientation) == 0 ? "\"hetero\"" : summary.profile.get(DemographicProfile::Demographic::SexualOrientation) == 1 ? "\"homo\"" : "\"bisexual\"");
         stream << ",\"relationship_status\"" << ":";
         stream << (summary.profile.get(DemographicProfile::Demographic::RelationshipStatus) == 0 ? "\"non-single\"" : "\"single\"");
         stream << ",\"risk_group\"" << ":" << (summary.risk_group == Person::HIGH ? "\"high\"" : "\"low\"");
@@ -726,8 +747,8 @@ void Population::SaveIndividualSummaries(std::ostream &stream) const
     stream << "]" << std::endl;
     stream << "}" << std::endl;
 }
-*/
 
+/*
 void WritePerson(std::ostream &stream, const std::map<int, std::vector<int>> &infected, int person_id, const std::unordered_map<unsigned long, Population::PersonSummary> &summaries)
 {
     if(person_id == -1)
@@ -785,6 +806,7 @@ void Population::SaveIndividualSummaries(std::ostream &stream) const
 
     WritePerson(stream, infected, -1, individual_summaries_);
 }
+*/
 
 /**
 Iterates through current entities in the population and returns a total number of people
@@ -807,19 +829,30 @@ std::size_t Population::UpdateSize()
 
 	//Size by gender
 	DemographicProfile GenderProfile;
+    std::vector<DemographicProfile::ProfileID> GenderProfileIDs;
+
 	//First tally the men
     GenderProfile.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
-	std::vector<DemographicProfile::ProfileID> GenderProfileIDs;
     currSizeGender[(std::size_t)DemographicProfile::Gender::Male] = 0;
-	GenderProfile.selectProfileIDs(GenderProfileIDs, nullptr);
 
-	for(size_t i = 0; i < GenderProfileIDs.size(); i++)
-	{
-        currSizeGender[(std::size_t)DemographicProfile::Gender::Male] += entities->size(GenderProfileIDs[i]);
-	}
+    for(auto orientation : {DemographicProfile::SexualOrientation::Heterosexual, DemographicProfile::SexualOrientation::Homosexual, DemographicProfile::SexualOrientation::Bisexual})
+    {
+        GenderProfile.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)orientation);
+        GenderProfileIDs.clear();
+        GenderProfile.selectProfileIDs(GenderProfileIDs, nullptr);
+
+        currSizeGenderOrientation[(std::size_t)DemographicProfile::Gender::Male][(std::size_t)orientation] = 0;
+
+        for(std::size_t i = 0; i < GenderProfileIDs.size(); i++)
+        {
+            currSizeGender[(std::size_t)DemographicProfile::Gender::Male] += entities->size(GenderProfileIDs[i]);
+            currSizeGenderOrientation[(std::size_t)DemographicProfile::Gender::Male][(std::size_t)orientation] += entities->size(GenderProfileIDs[i]);
+        }
+    }
 
 	//Next tally the women
     GenderProfile.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Female);
+    GenderProfile.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Heterosexual);
 	GenderProfileIDs.clear();
     currSizeGender[(std::size_t)DemographicProfile::Gender::Female] = 0;
 	GenderProfile.selectProfileIDs(GenderProfileIDs, nullptr);
@@ -1038,7 +1071,7 @@ void Population::DissolveSexualPartnerships(EventParams &parameters_, Person *_i
 	}
 }
 
-Person *Population::GeneratePerson(EventParams &parameters_, DemographicProfile::Gender _gender,
+Person *Population::GeneratePerson(EventParams &parameters_, DemographicProfile::Gender _gender, DemographicProfile::SexualOrientation sexual_orientation,
                                    PopulationParameters::AgeBucketPrevalenceInfo *_ageBucketParams, bool toTrace)
 {
 	Person *toReturn = nullptr;	//pointer to the person that was just generated
@@ -1050,26 +1083,45 @@ Person *Population::GeneratePerson(EventParams &parameters_, DemographicProfile:
 	//create the person
 	if(_gender == DemographicProfile::Gender::Male)
 	{
-		toReturn = new Male(parameters_, ageMth, parameters_.randomNums.chance(popWideParams.proportionCircumcised),
-		                    populationID, popWideParams.defaultMaleParams);
+        auto circumcised = parameters_.randomNums.chance(popWideParams.proportionCircumcised);
+        
+        if(sexual_orientation == DemographicProfile::SexualOrientation::Heterosexual)
+        {
+            toReturn = new Male(parameters_, ageMth, circumcised,
+                populationID, popWideParams.defaultMaleParams);
+        }
+        else if(sexual_orientation == DemographicProfile::SexualOrientation::Homosexual)
+        {
+            toReturn = new Msm(parameters_, ageMth, circumcised,
+                populationID, popWideParams.defaultMsmParams);
+        }
+        else if(sexual_orientation == DemographicProfile::SexualOrientation::Bisexual)
+        {
+            toReturn = new BisexualMale(parameters_, ageMth, circumcised,
+                populationID, popWideParams.defaultBisexualMaleParams);
+        }
+        else
+        {
+            throw std::runtime_error("unsupported sexual orientation");
+        }
+
+        if(circumcised)
+        {
+            populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, 
+                popWideParams.circumcisionCost * toReturn->getCepacDiscountFactor());
+        }
 	}
 	else
 	{
+        if(sexual_orientation != DemographicProfile::SexualOrientation::Heterosexual)
+        {
+            throw std::runtime_error("unsupported sexual orientation");
+        }
+
 		toReturn = new Female(parameters_, ageMth, populationID, popWideParams.defaultFemaleParams);
 	}
 
     toReturn->SetSexualActivityDelay(popWideParams.sexualActivityDelay);
-
-	//If it was a boy and he was circumcised, add the costs
-    if(toReturn->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
-	{
-		Male *m = (Male *)toReturn;
-
-		if(m->isCircumcised())
-		{
-			populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * m->getCepacDiscountFactor());
-		}
-	}
 
 	//Set this person to be trace if toTrace is true
 	if(toTrace)
@@ -1300,7 +1352,7 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 
 void Population::RecordInfection(const Person *infectee, const Person *infector, int time)
 {
-    if(individual_summaries_.size() >= 1000)
+    if(individual_summaries_.size() >= NumIndividualSummaries)
     {
         return;
     }
@@ -2411,6 +2463,11 @@ std::size_t Population::GetSize(DemographicProfile::Gender gender)
     return currSizeGender[(std::size_t)gender];
 }
 
+std::size_t Population::GetSize(DemographicProfile::Gender gender, DemographicProfile::SexualOrientation sexual_orientation)
+{
+    return currSizeGenderOrientation[(std::size_t)gender][(std::size_t)sexual_orientation];
+}
+
 std::size_t Population::GetSASize(DemographicProfile::Gender _gender, Person::RiskLevel _risk)
 {
     return currSASizeGenderRisk[(std::size_t)_gender][(std::size_t)_risk];
@@ -2501,7 +2558,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 	std::string employmentLabels[] = { "Non-CSW", "CSW" };
 	std::string riskLabels[] = { "LR", "HR" };
 	std::string relationshipLabels[] = { "Non-Single", "Single" };
-	std::string partnershipLabels[] = { "Steady", "Regular", "Casual", "CSW" };
+	std::string partnershipLabels[] = { "Steady", "Regular", "Casual", "CSW", "SteadyMSM", "RegularMSM", "CasualMSM", "CSWMSM" };
 	std::string riskLabels2[] = { "HR", "Mix", "LR" };
 
 	if(_time == 0)
@@ -2762,7 +2819,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 			//e.g. if person has partnerships steady and casual concurrent will equal 8+2=10
 			int concurrent = 0;
 
-			for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
+			for(int i = 0; i < 4; i++)
 			{
 				concurrent = (concurrent << 1) + (hasType[i] ? 1 : 0);
 			}
@@ -3228,8 +3285,12 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 		          "ART Toxicity" << Constants::TAB << "Proph Toxicity" << Constants::TAB << "Other" << Constants::TAB << "Total" <<
 		          Constants::TAB;
 		firstRow << "Gender" << Constants::TAB;
-		secondRow << "Males" << Constants::TAB;
+		secondRow << "Males (Heterosexual)" << Constants::TAB;
+        secondRow << "Males (MSM)" << Constants::TAB;
+        secondRow << "Males (Bisexual)" << Constants::TAB;
 		firstRow << Constants::TAB;
+        firstRow << Constants::TAB;
+        firstRow << Constants::TAB;
 		secondRow << "Females" << Constants::TAB;
 		firstRow << "Risk Group (SA Pop)" << Constants::TAB << Constants::TAB;
 		secondRow << "CSW HR" << Constants::TAB << "CSW LR" << Constants::TAB;
@@ -3314,7 +3375,10 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 
 	_outStream << totalDeaths << Constants::TAB;
 	//output size of male and female populations
-	_outStream << GetSize(DemographicProfile::Gender::Male) << Constants::TAB;
+    for(auto orientation : {DemographicProfile::SexualOrientation::Heterosexual, DemographicProfile::SexualOrientation::Homosexual, DemographicProfile::SexualOrientation::Bisexual})
+    {
+        _outStream << GetSize(DemographicProfile::Gender::Male, orientation) << Constants::TAB;
+    }
 	_outStream << GetSize(DemographicProfile::Gender::Female) << Constants::TAB;
 	//output size by risk
 	_outStream << currSizeRiskCSW[Person::HIGH] << Constants::TAB << currSizeRiskCSW[Person::LOW] <<

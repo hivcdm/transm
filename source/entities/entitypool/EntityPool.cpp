@@ -567,16 +567,16 @@ EntityPool::EntityPool(int ageOfMajority, unsigned int _popID, const std::map<Se
 	//we only want 2 NA buckets (male, female)  b/c they aren't involved in sexual mixing
 	//so instantiate 2 of the NA Buckets (NA, Hetero, nonCSW
     selector.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::NotActive);
-    selector.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Heterosexual);
+    //selector.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Heterosexual);
     selector.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::Single);
     selector.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::NonCsw);
 	selector.selectProfileIDs(validBucketIDs, nullptr);
 	//check if we only have 2 buckets
-    assert(validBucketIDs.size() == (std::size_t)DemographicProfile::Gender::Last);
+    assert(validBucketIDs.size() == (std::size_t)DemographicProfile::Gender::Last * (std::size_t)DemographicProfile::SexualOrientation::Last);
 	//We want to instantiate all heterosexual SA Buckets
 	selector.set(DemographicProfile::END);
     selector.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::Active);
-    selector.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Heterosexual);
+    //selector.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Heterosexual);
 	selector.selectProfileIDs(validBucketIDs, nullptr);
 
 	//instantiate the spaces for all our buckets. The # of buckets depends on class BucketClassifiers

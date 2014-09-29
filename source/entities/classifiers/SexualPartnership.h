@@ -30,14 +30,10 @@ public :
 		Regular,
 		Casual,
 		Csw,
-		//SteadyMsm,
-		//RegularMsm,
-		//CasualMsm,
-		//CswMsm,
-		//SteadyBisexual,
-		//RegularBisexual,
-		//CasualBisexual,
-		//CswBisexual
+		SteadyMsm,
+		RegularMsm,
+		CasualMsm,
+		CswMsm,
 		ENDType,
 		Last = ENDType,
 		First = Steady

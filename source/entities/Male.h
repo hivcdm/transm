@@ -37,6 +37,8 @@ public :
 		const SexualBehavior &getSexualBehavior(SexualPartnership::Type _type) const;
 		SexualBehavior &getSexualBehavior(SexualPartnership::Type _type);
 
+        bool hasSexualBehavior(SexualPartnership::Type type) const { return sexualBehaviorParams.find(type) != sexualBehaviorParams.end(); }
+
 		double getProportionHighRisk(DemographicProfile::Employment _cswStatus) const;
 		NormalDist getActivityLevel() const;
 
@@ -77,17 +79,17 @@ public :
 
 		void SetCoefficientVariation(bool use, double coefficient) { useCoefficientVariation = use; coefficientOfVariation = coefficient; }
 
-		void AddSexualBehavior(SexualBehavior params) { sexualBehaviorParams.push_back(params); }
+		void AddSexualBehavior(SexualBehavior params) { sexualBehaviorParams[params.getPartnershipType()] = params; }
 
 		void SetTransmitPerEventCoeff(HVLStrata hvl, double coeff) { transmitPerEventCoeffs[hvl] = coeff; }
 
         void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) { proportionHighRisk[(std::size_t)employment] = proportion; }
 
-		void SetAverageYearsYounger(SexualPartnership::Type type, NormalDist dist) { sexualBehaviorParams[(int)type].setAverageYearsYounger(dist); }
-		void SetAcquisitionRatePerMonth(Person::RiskLevel risk, SexualPartnership::Type type, LogNormalDist dist) { sexualBehaviorParams[(int)type].setAcquisitionRatePerMonth(risk, dist); }
-		void SetCoitalEventsPerMonth(Person::RiskLevel risk, SexualPartnership::Type type, double mean) { sexualBehaviorParams[(int)type].setCoitalEventsPerMonth(risk, mean); }
-		void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { sexualBehaviorParams[(int)type].setChanceCondomUsePerEvent(risk, dist); }
-		void SetPartnershipDuration(Person::RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { sexualBehaviorParams[(int)type].setPartnershipDuration(risk, dist); }
+		void SetAverageYearsYounger(SexualPartnership::Type type, NormalDist dist) { sexualBehaviorParams[type].setAverageYearsYounger(dist); }
+		void SetAcquisitionRatePerMonth(Person::RiskLevel risk, SexualPartnership::Type type, LogNormalDist dist) { sexualBehaviorParams[type].setAcquisitionRatePerMonth(risk, dist); }
+		void SetCoitalEventsPerMonth(Person::RiskLevel risk, SexualPartnership::Type type, double mean) { sexualBehaviorParams[type].setCoitalEventsPerMonth(risk, mean); }
+		void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { sexualBehaviorParams[type].setChanceCondomUsePerEvent(risk, dist); }
+		void SetPartnershipDuration(Person::RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { sexualBehaviorParams[type].setPartnershipDuration(risk, dist); }
 
 		void SetActivityLevel(NormalDist activity_level) { activityLevel = activity_level; }
 
@@ -99,7 +101,7 @@ public :
 		double partnerAcqMultWithSteady[Person::ENDRiskLevel];  //the rate multiplier for partner acquisition when a male has a Steady partner
 
 		//sexual behavior params for each type as specified by SexualPartnership::Type
-		std::vector<SexualBehavior> sexualBehaviorParams;
+		std::unordered_map<SexualPartnership::Type, SexualBehavior> sexualBehaviorParams;
 		double proportionHighRisk[(std::size_t)DemographicProfile::Employment::Last];  //proportion of male population that is in the "high risk" lists based on csw status
 		NormalDist activityLevel; //Distribution of activity level (i.e. marbles)
 

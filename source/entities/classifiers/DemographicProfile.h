@@ -68,6 +68,7 @@ public:
     {
         Heterosexual,
         Homosexual,
+        Bisexual,
         Last,
         First = Heterosexual
     };

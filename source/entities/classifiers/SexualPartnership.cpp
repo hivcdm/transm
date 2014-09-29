@@ -12,7 +12,11 @@ const std::map<SexualPartnership::Type, std::string> SexualPartnership::TypeStri
 	{SexualPartnership::Type::Steady, "Steady"},
 	{SexualPartnership::Type::Regular, "Regular"},
 	{SexualPartnership::Type::Casual, "Casual"},
-	{SexualPartnership::Type::Csw, "CSW"}
+	{SexualPartnership::Type::Csw, "Csw"},
+    {SexualPartnership::Type::SteadyMsm, "SteadyMsm"},
+    {SexualPartnership::Type::RegularMsm, "RegularMsm"},
+    {SexualPartnership::Type::CasualMsm, "CasualMsm"},
+    {SexualPartnership::Type::CswMsm, "CswMsm"}
 };
 
 SexualPartnership::SexualPartnership(Person *_person1, Person *_person2, EventParams &_eventParams,

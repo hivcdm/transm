@@ -34,6 +34,8 @@ public :
 		double weight;
 	};
 
+    SexualBehavior() : SexualBehavior(SexualPartnership::Type::Last) { }
+
 	SexualBehavior(SexualPartnership::Type type) : partnershipType(type) { }
 
 	void AddAvailableBucket(const AvailableBucket &bucket) { availableBuckets.push_back(bucket); }
