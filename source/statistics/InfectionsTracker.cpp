@@ -34,9 +34,9 @@ InfectionsTracker::InfectionsTracker()
 
 	for(int i = 0; i < Person::ENDRiskLevel; i++)
 	{
-        for(int j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
+        for(std::size_t j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
 		{
-            for(int k = 0; k < (std::size_t)DemographicProfile::Employment::Last; k++)
+            for(std::size_t k = 0; k < (std::size_t)DemographicProfile::Employment::Last; k++)
 			{
 				currTimeStepIncidentInfsRiskGenderEmployment[i][j][k] = 0;
 				totalIncidentInfsRiskGenderEmployment[i][j][k] = 0;
@@ -48,7 +48,7 @@ InfectionsTracker::InfectionsTracker()
 	currTimeStepCD4InfectionSum = 0;
 	currTimeStepCD4InfectionSumSq = 0;
 
-    for(int i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
+    for(std::size_t i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
 	{
 		totalIncidentInfsGender[i] = 0;
 		currTimeStepNumInfectedGender[i] = 0;
@@ -64,9 +64,9 @@ InfectionsTracker::InfectionsTracker()
 
 	for(int i = 0; i < Person::ENDRiskLevel; i++)
 	{
-        for(int j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
+        for(std::size_t j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
 		{
-            for(int k = 0; k < (std::size_t)DemographicProfile::Employment::Last; k++)
+            for(std::size_t k = 0; k < (std::size_t)DemographicProfile::Employment::Last; k++)
 			{
 				currTimeStepNumInfectedRiskGenderEmployment[i][j][k] = 0;
 				currTimeStepAgeInfectionSumRiskGenderEmployment[i][j][k] = 0;
@@ -213,9 +213,9 @@ void InfectionsTracker::resetIncidentInfections(long _time)
 
 	for(int i = 0; i < Person::ENDRiskLevel; i++)
 	{
-        for(int j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
+        for(std::size_t j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
 		{
-            for(int k = 0; k < (std::size_t)DemographicProfile::Employment::Last; k++)
+            for(std::size_t k = 0; k < (std::size_t)DemographicProfile::Employment::Last; k++)
 			{
 				currTimeStepIncidentInfsRiskGenderEmployment[i][j][k] = 0;
 			}
@@ -226,7 +226,7 @@ void InfectionsTracker::resetIncidentInfections(long _time)
 	currTimeStepCD4InfectionSum = 0;
 	currTimeStepCD4InfectionSumSq = 0;
 
-    for(int i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
+    for(std::size_t i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
 	{
 		currTimeStepAgeInfectionSumGender[i] = 0;
 		currTimeStepAgeInfectionSumSqGender[i] = 0;
@@ -235,9 +235,9 @@ void InfectionsTracker::resetIncidentInfections(long _time)
 
 	for(int i = 0; i < Person::ENDRiskLevel; i++)
 	{
-        for(int j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
+        for(std::size_t j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
 		{
-            for(int k = 0; k < (std::size_t)DemographicProfile::Employment::Last; k++)
+            for(std::size_t k = 0; k < (std::size_t)DemographicProfile::Employment::Last; k++)
 			{
 				currTimeStepAgeInfectionSumRiskGenderEmployment[i][j][k] = 0;
 				currTimeStepAgeInfectionSumSqRiskGenderEmployment[i][j][k] = 0;
@@ -409,9 +409,9 @@ void InfectionsTracker::setPrevalentInfections(long /*_time*/,
 
 	for(int i = 0; i < Person::ENDRiskLevel; i++)
 	{
-        for(int j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
+        for(std::size_t j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
 		{
-            for(int k = 0; k < (std::size_t)DemographicProfile::Employment::Last; k++)
+            for(std::size_t k = 0; k < (std::size_t)DemographicProfile::Employment::Last; k++)
 			{
 				currPrevalentInfectionsRiskGenderEmployment[i][j][k] = _prevalenceByRiskGenderEmployment[i][j][k];
 			}
@@ -1037,7 +1037,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	//write out age of infection for incident infections that month (mean and SD)
 	_outStream << Constants::TAB;
 
-    for(int i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
+    for(std::size_t i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
 	{
 		if(currTimeStepNumInfectedGender[i] != 0)
 		{
@@ -1056,7 +1056,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 	for(int i = 0; i < Person::ENDRiskLevel; i++)
 	{
-        for(int j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
+        for(std::size_t j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
 		{
             numInfectedCSW += currTimeStepNumInfectedRiskGenderEmployment[i][j][(std::size_t)DemographicProfile::Employment::Csw];
 		}
@@ -1069,7 +1069,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 		for(int i = 0; i < Person::ENDRiskLevel; i++)
 		{
-            for(int j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
+            for(std::size_t j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
 			{
                 ageSumCSW += currTimeStepAgeInfectionSumRiskGenderEmployment[i][j][(std::size_t)DemographicProfile::Employment::Csw];
                 ageSumSqCSW += currTimeStepAgeInfectionSumSqRiskGenderEmployment[i][j][(std::size_t)DemographicProfile::Employment::Csw];
@@ -1089,7 +1089,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	{
 		double numInfected = 0;
 
-        for(int j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
+        for(std::size_t j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
 		{
             numInfected += currTimeStepNumInfectedRiskGenderEmployment[i][j][(std::size_t)DemographicProfile::Employment::Csw];
 		}
@@ -1099,7 +1099,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 			double ageSum  = 0;
 			double ageSumSq = 0;
 
-            for(int j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
+            for(std::size_t j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
 			{
                 ageSum += currTimeStepAgeInfectionSumRiskGenderEmployment[i][j][(std::size_t)DemographicProfile::Employment::Csw];
                 ageSumSq += currTimeStepAgeInfectionSumSqRiskGenderEmployment[i][j][(std::size_t)DemographicProfile::Employment::Csw];
@@ -1117,7 +1117,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 	for(int i = Person::ENDRiskLevel - 1; i >= 0; i--)
 	{
-        for(int j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
+        for(std::size_t j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
 		{
             double numInfected = currTimeStepNumInfectedRiskGenderEmployment[i][j][(std::size_t)DemographicProfile::Employment::NonCsw];
 

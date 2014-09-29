@@ -109,7 +109,6 @@ private:
     double b_;
     int total_months_;
     double estimated_percent_complete_;
-    int estimated_final_pop_size_;
     double elapsed_time_;
     std::deque<std::pair<int, double>> previous_;
     double sx2y_;

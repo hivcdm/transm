@@ -258,7 +258,7 @@ void DemographicProfile::saveState(std::ostream &_outStream)
 	_outStream << "dmg:";
 	_outStream << "[";
 
-    for(int i = 0; i < (std::size_t)Demographic::Last; i++)
+	for(std::size_t i = 0; i < (std::size_t)Demographic::Last; i++)
 	{
 		_outStream << enums[i];
 
