@@ -1,9 +1,9 @@
 #include <vector>
 #include <boost/math/special_functions/erf.hpp>
 
-#include "PopulationStatistics.h"
-#include "../core/Constants.h"
-#include "../entities/Person.h"
+#include "PopulationStatistics.hpp"
+#include "core/Constants.hpp"
+#include "entities/Person.hpp"
 
 const std::vector<std::string> PopulationStatistics::LifeStatsStr =
 {

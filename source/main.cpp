@@ -1,10 +1,10 @@
 #include <boost/filesystem.hpp>
 #include <include.h>
 
-#include "core/SimulationBuilderXml.h"
-#include "core/SimulationReader.h"
-#include "statistics/TransmissionSummaryStats.h"
-#include "util/Utility.h"
+#include "core/SimulationBuilderXml.hpp"
+#include "core/SimulationReader.hpp"
+#include "statistics/TransmissionSummaryStats.hpp"
+#include "utility/Utility.hpp"
 
 // unreachable code in main()'s top-level for-loop for some reason
 #if defined(_MSC_VER) && _MSC_VER >= 1800

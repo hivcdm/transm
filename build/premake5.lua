@@ -33,6 +33,9 @@ project "transm"
        "../third-party/tclap/include",
        "../third-party/xlnt/include"
     }
+    libdirs {
+       "../third-party/boost/lib64-msvc-12.0"
+    }
     configuration "debug"
         flags { "FatalWarnings" }
     configuration "release"

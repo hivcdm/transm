@@ -1,7 +1,7 @@
-#include "Female.h"
-#include "Male.h"
-#include "../core/Constants.h"
-#include "../util/Utility.h"
+#include "Female.hpp"
+#include "Male.hpp"
+#include "core/Constants.hpp"
+#include "utility/Utility.hpp"
 
 int Female::rollForNewPartnershipDuration(SexualPartnership::Type, RandomNumberGenerator &, Person *)
 {

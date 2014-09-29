@@ -1,8 +1,8 @@
 
-#include "SimulationReader.h"
-#include "SimulationBuilder.h"
-#include "PopulationParameters.h"
-#include "../entities/behaviors/SexualBehavior.h"
+#include "SimulationReader.hpp"
+#include "SimulationBuilder.hpp"
+#include "PopulationParameters.hpp"
+#include "entities/SexualBehavior.hpp"
 
 SimulationReader::SimulationReader(SimulationBuilder &builder) : builder_(builder)
 {

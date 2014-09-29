@@ -1,12 +1,12 @@
 #include <vector>
 
-#include "Male.h"
-#include "classifiers/SexualPartnership.h"
-#include "behaviors/SexualBehavior.h"
-#include "entitypool/EntityPool.h"
-#include "../util/Utility.h"
-#include "../util/enum_iterator.h"
-#include "../util/rand/RandomNumberGenerator.h"
+#include "Male.hpp"
+#include "SexualPartnership.hpp"
+#include "SexualBehavior.hpp"
+#include "entitypool/EntityPool.hpp"
+#include "utility/Utility.hpp"
+#include "utility/enum_iterator.hpp"
+#include "utility/RandomNumberGenerator.hpp"
 
 //each index of the array contains parameters for a different population
 //(we only have 1 population for now so the size of the vector will default to 1

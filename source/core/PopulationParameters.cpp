@@ -1,9 +1,9 @@
-#include "Population.h"
-#include "../entities/Female.h"
-#include "../entities/Male.h"
-#include "../entities/Person.h"
-#include "../entities/behaviors/SexualBehavior.h"
-#include "../util/Utility.h"
+#include "Population.hpp"
+#include "entities/Female.hpp"
+#include "entities/Male.hpp"
+#include "entities/Person.hpp"
+#include "entities/SexualBehavior.hpp"
+#include "utility/Utility.hpp"
 
 //-------------< Begin AgeBucketPrevalenceInfo methods >-------------------//
 

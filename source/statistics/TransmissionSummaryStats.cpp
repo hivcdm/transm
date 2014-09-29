@@ -1,6 +1,6 @@
-#include "TransmissionSummaryStats.h"
-#include "PopulationStatistics.h"
-#include "../data/EventParams.h"
+#include "TransmissionSummaryStats.hpp"
+#include "PopulationStatistics.hpp"
+#include "data/EventParams.hpp"
 
 /* Constructor takes summariesFileName as input, clears summaries vector */
 TransmissionSummaryStats::TransmissionSummaryStats(const std::string &summariesFileName)

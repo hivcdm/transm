@@ -4,15 +4,15 @@
 #include <boost/filesystem.hpp>
 #include <include.h>
 
-#include "Simulation.h"
-#include "Constants.h"
-#include "Population.h"
-#include "../util/CepacInputParser.h"
-#include "../data/EventParams.h"
-#include "../entities/classifiers/DemographicProfile.h"
-#include "../entities/behaviors/SexualBehavior.h"
-#include "../util/HighResolutionTimer.h"
-#include "../util/Utility.h"
+#include "Simulation.hpp"
+#include "Constants.hpp"
+#include "Population.hpp"
+#include "utility/CepacInputParser.hpp"
+#include "data/EventParams.hpp"
+#include "entities/DemographicProfile.hpp"
+#include "entities/SexualBehavior.hpp"
+#include "utility/HighResolutionTimer.hpp"
+#include "utility/Utility.hpp"
 
 TargetGroup::PopulationTarget TargetGroup::PopulationTarget::Any;
 

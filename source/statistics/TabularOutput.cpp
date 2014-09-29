@@ -1,7 +1,7 @@
 #include <sstream>
 
-#include "TabularOutput.h"
-#include "../core/Constants.h"
+#include "TabularOutput.hpp"
+#include "core/Constants.hpp"
 
 TabularOutput::TabularOutput() :
 	numHeaderRows(0),

@@ -1,9 +1,9 @@
 #include <iostream>
 #include <sstream>
 
-#include "InfectionsTracker.h"
-#include "../core/Constants.h"
-#include "../core/Population.h"
+#include "InfectionsTracker.hpp"
+#include "core/Constants.hpp"
+#include "core/Population.hpp"
 
 InfectionsTracker::InfectionsTracker()
 {

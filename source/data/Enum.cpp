@@ -1,7 +1,6 @@
-#include "Enum.h"
-#include "../util/Utility.h"
-#include "../core/Constants.h"
-
+#include "Enum.hpp"
+#include "utility/Utility.hpp"
+#include "core/Constants.hpp"
 
 const std::string BaseEnumCls::WILDCARD = "*";
 

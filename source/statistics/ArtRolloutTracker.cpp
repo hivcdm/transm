@@ -1,9 +1,9 @@
 #include <include.h>
 
-#include "ArtRolloutTracker.h"
-#include "PersonBucket.h"
-#include "../core/Population.h"
-#include "../entities/Person.h"
+#include "ArtRolloutTracker.hpp"
+#include "PersonBucket.hpp"
+#include "core/Population.hpp"
+#include "entities/Person.hpp"
 
 const std::string ArtRolloutTracker::RISK_GROUP_NAMES[] =
 {

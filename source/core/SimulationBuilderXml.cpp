@@ -1,8 +1,8 @@
 #include <boost/filesystem.hpp>
 
-#include "SimulationBuilderXml.h"
-#include "../util/enum_iterator.h"
-#include "../util/make_unique.h"
+#include "SimulationBuilderXml.hpp"
+#include "utility/enum_iterator.hpp"
+#include "utility/make_unique.hpp"
 
 namespace {
 std::string to_string(SexualPartnership::Type type)

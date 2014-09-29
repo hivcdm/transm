@@ -6,17 +6,17 @@
 #include <unordered_set>
 #include <vector>
 
-#include "Population.h"
-#include "Constants.h"
-#include "Simulation.h"
-#include "../entities/Female.h"
-#include "../entities/Male.h"
-#include "../entities/Msm.h"
-#include "../entities/behaviors/SexualBehavior.h"
-#include "../statistics/InfectionsTracker.h"
-#include "../statistics/CostsTracker.h"
-#include "../util/Utility.h"
-#include "../util/rand/RandomNumberGenerator.h"
+#include "Population.hpp"
+#include "Constants.hpp"
+#include "Simulation.hpp"
+#include "entities/Female.hpp"
+#include "entities/Male.hpp"
+#include "entities/Msm.hpp"
+#include "entities/SexualBehavior.hpp"
+#include "statistics/InfectionsTracker.hpp"
+#include "statistics/CostsTracker.hpp"
+#include "utility/Utility.hpp"
+#include "utility/RandomNumberGenerator.hpp"
 
 /***
 Data needed :

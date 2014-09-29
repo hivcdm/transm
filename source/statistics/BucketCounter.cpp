@@ -1,4 +1,4 @@
-#include "BucketCounter.h"
+#include "BucketCounter.hpp"
 
 BucketCounter::BucketCounter(const std::vector<std::string> &buckets, const std::vector<std::string> &counts)
 : countNames_(counts), bucketNames_(buckets)
