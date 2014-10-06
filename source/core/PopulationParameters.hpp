@@ -72,7 +72,7 @@ public:
 	int getAgeOfMajority() const { return ageOfMajority; }
     void setAgeOfMajority(int ageOfMajority, TimeGranularity granularity = TimeGranularity::Year) 
     { 
-        this->ageOfMajority = Utility::convertTime(granularity, TimeGranularity::Month, ageOfMajority); 
+        this->ageOfMajority = Utility::convert_time(granularity, TimeGranularity::Month, ageOfMajority); 
     }
 
     void SetPartnershipHasDuration(DemographicProfile::Gender gender, SexualPartnership::Type type, bool has_duration) 

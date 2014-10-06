@@ -1,6 +1,13 @@
 #include <iostream>
 #include <boost/filesystem.hpp>
 
+#ifdef _WIN32
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <ShlObj.h>
+#endif
+
 #include "Utility.hpp"
 
 namespace {
@@ -16,7 +23,7 @@ std::string to_string(TimeGranularity granularity)
 }
 }
 
-Version Version::FromString(const std::string &version_string)
+Version Version::from_string(const std::string &version_string)
 {
 	Version v;
 	auto major_minor_separator = version_string.find('.');
@@ -30,12 +37,12 @@ Version Version::FromString(const std::string &version_string)
 	return v;
 }
 
-std::string Version::ToString(const Version &version)
+std::string Version::to_string(const Version &version)
 {
 	return std::to_string(version.major) + "." + std::to_string(version.minor) + "." + std::to_string(version.patch);
 }
 
-int Version::Compare(const Version &v1, const Version &v2, bool ignore_patch)
+int Version::compare(const Version &v1, const Version &v2, bool ignore_patch)
 {
 	if(v1.major != v2.major)
 	{
@@ -55,61 +62,132 @@ int Version::Compare(const Version &v1, const Version &v2, bool ignore_patch)
 	return 0;
 }
 
-const Version Utility::MODEL_VERSION = Version::FromString("3.5.7");
+double Utility::day_to_month_multiplier = 1.0 / 30;
+double Utility::day_to_year_multiplier = 1.0 / 365;
+double Utility::month_to_year_multiplier = 1.0 / 12;
 
-double Utility::dayToMonthMult = 1.0 / 30;
-double Utility::dayToYearMult = 1.0 / 365;
-double Utility::monthToYearMult = 1.0 / 12;
 
-std::vector<std::string> Utility::transmFilesToRun;
-
-void Utility::findInputFiles(const std::string &inputDirectory, const std::string &workingDirectory)
+path Utility::get_model_directory()
 {
-    std::string directoryPath = inputDirectory;
+#ifdef __APPLE__
+    std::array<char, 1024> path;
+    uint32_t size = static_cast<uint32_t>(path.size());
 
-    if(boost::filesystem::path(inputDirectory).has_extension() && boost::filesystem::path(inputDirectory).extension() == ".xml" && boost::filesystem::exists(inputDirectory))
+    if(_NSGetExecutablePath(path.data(), &size) == 0)
     {
-        transmFilesToRun.push_back(inputDirectory);
-        return;
+        std::string executable_string(path.begin(), std::find(path.begin(), path.end(), '\0'));
+        class path executable_path(executable_string);
+        return executable_path.parent_path();
     }
 
-    if(boost::filesystem::path(directoryPath).is_relative())
+    throw std::runtime_error("buffer too small, " + std::to_string(path.size()) + ", should be: " + std::to_string(size));
+#elif defined(_WIN32)
+    std::array<TCHAR, MAX_PATH> buffer;
+    DWORD result = GetModuleFileName(nullptr, buffer.data(), (DWORD)buffer.size());
+
+    if(result == 0 || result == buffer.size())
     {
-        try
+        throw std::runtime_error("GetModuleFileName failed or buffer was too small");
+    }
+
+    auto full_string = std::string(buffer.begin(), buffer.begin() + result);
+    return path(full_string).parent_path();
+#else
+    char arg1[20];
+    char exepath[PATH_MAX + 1] = {0};
+
+    sprintf(arg1, "/proc/%d/exe", getpid());
+    readlink(arg1, exepath, 1024);
+    return std::string(exepath).substr(0, std::strlen(exepath) - 9);
+#endif
+}
+
+path Utility::get_user_directory()
+{
+#ifdef _WIN32
+    std::array<TCHAR, MAX_PATH> path_array;
+    if(SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, path_array.data()) == S_OK)
+    {
+        path::string_type path_string(path_array.begin(), path_array.begin() + std::wcslen(path_array.data()));
+        return path(path_string);
+    }
+#else
+
+#endif
+    return path();
+}
+
+path Utility::get_config_file_path()
+{
+    return get_user_directory() / path("transm.config");
+}
+
+Version Utility::get_model_version()
+{
+    static const path model_directory = get_model_directory();
+    static const path version_path = model_directory / path::dotdot() / path("VERSION");
+    std::ifstream version_file(version_path.string());
+    std::string version_string;
+    version_file >> version_string;
+    return Version::from_string(version_string);
+}
+
+std::unordered_map<std::string, std::string> Utility::load_config()
+{
+    if(!filesystem::exists(get_config_file_path()))
+    {
+        throw std::runtime_error("config not found. run model using transm wrapper script.");
+    }
+
+    std::ifstream config_file(get_config_file_path().string());
+    std::string line;
+    static const std::string separator = " ::: ";
+    std::unordered_map<std::string, std::string> config;
+
+    while(std::getline(config_file, line))
+    {
+        bool found = false;
+        std::size_t match_offset = 0;
+
+        for(std::size_t offset = 0; offset < line.size() - separator.size(); offset++)
         {
-            directoryPath = boost::filesystem::canonical(inputDirectory, workingDirectory).string();
+            found = true;
+
+            for(std::size_t i = 0; i < separator.size(); i++)
+            {
+                if(line[offset + i] != separator[i])
+                {
+                    found = false;
+                    break;
+                }
+            }
+
+            if(found)
+            {
+                match_offset = offset;
+                break;
+            }
         }
-        catch(...)
+
+        if(found)
         {
-            auto combined = (boost::filesystem::path(workingDirectory) / inputDirectory).string();
-            throw std::runtime_error("directory not found: " + combined);
+            std::string key = line.substr(0, match_offset);
+            std::string value = line.substr(match_offset + separator.size());
+            config[key] = value;
         }
     }
 
-	boost::filesystem::directory_iterator end_iter;
+    return config;
+}
 
-    if(!boost::filesystem::exists(directoryPath))
-    {
-        throw std::runtime_error("directory not found: " + directoryPath);
-    }
-     
-    if(!boost::filesystem::is_directory(directoryPath))
-    {
-        throw std::runtime_error("given path is not a directory: " + directoryPath);
-    }
-
-	for(boost::filesystem::directory_iterator dir_iter(directoryPath); dir_iter != end_iter; ++dir_iter)
-	{
-		if(boost::filesystem::is_regular_file(dir_iter->status()) 
-            && dir_iter->path().extension() == ".xml")
-		{
-            transmFilesToRun.push_back(dir_iter->path().string());
-		}
-	}
+path Utility::get_batches_directory()
+{
+    static auto config = load_config();
+    return config.at("batches_directory");
 }
 
 //convert _val from one TimeGranularity to another
-unsigned int Utility::convertTime(TimeGranularity _from, TimeGranularity _to, double _val)
+unsigned int Utility::convert_time(TimeGranularity _from, TimeGranularity _to, double _val)
 {
 	assert(_val >= 0);
 	unsigned int converted_value = 0;
@@ -120,11 +198,11 @@ unsigned int Utility::convertTime(TimeGranularity _from, TimeGranularity _to, do
 	}
     else if(_from == TimeGranularity::Day && _to == TimeGranularity::Month)
 	{
-		converted_value = (int)floor(_val * Utility::dayToMonthMult);
+		converted_value = (int)floor(_val * Utility::day_to_month_multiplier);
 	}
     else if(_from == TimeGranularity::Day && _to == TimeGranularity::Year)
 	{
-		converted_value = (int)floor(_val * Utility::dayToYearMult);
+		converted_value = (int)floor(_val * Utility::day_to_year_multiplier);
 	}
     else if(_from == TimeGranularity::Month && _to == TimeGranularity::Day)
 	{
@@ -136,7 +214,7 @@ unsigned int Utility::convertTime(TimeGranularity _from, TimeGranularity _to, do
 	}
     else if(_from == TimeGranularity::Month && _to == TimeGranularity::Year)
 	{
-		converted_value = (int)floor(_val * Utility::monthToYearMult);
+		converted_value = (int)floor(_val * Utility::month_to_year_multiplier);
 	}
     else if(_from == TimeGranularity::Year && _to == TimeGranularity::Day)
 	{
@@ -158,9 +236,9 @@ unsigned int Utility::convertTime(TimeGranularity _from, TimeGranularity _to, do
 	return converted_value;
 }
 
-bool Utility::isNormDistZero(const NormalDist _normDist)
+bool Utility::is_norm_dist_zero(const NormalDist &dist)
 {
-	return (_normDist.mean == 0) && (_normDist.stddev == 0);
+	return dist.mean == 0 && dist.stddev == 0;
 }
 
 void Utility::normalize(std::vector<double> &_weights)
@@ -183,26 +261,25 @@ void Utility::normalize(std::vector<double> &_weights)
 	}
 }
 
-//converts a probability to a rate
-double Utility::probToRate(double _prob)
+double Utility::prob_to_rate(double _prob)
 {
-	assert(Utility::withinRange<double>(_prob, 0.0, 1.0));
+	assert(Utility::within_range<double>(_prob, 0.0, 1.0));
 	return -log(1 - _prob);
 }
 
-//converts a rate to a probability
-double Utility::rateToProb(double _rate)
+double Utility::rate_to_prob(double _rate)
 {
 	//convert the cumulative rate back into a probability
 	return 1 - exp(-_rate);
 }
 
-//this function was taken from
+//this implementation was taken from
 // http://www.oopweb.com/CPP/Documents/CPPHOWTO/Volume/C++Programming-HOWTO-7.html
-void Utility::Tokenize(const std::string &str,
-                    std::vector<std::string> &tokens,
+std::vector<std::string> Utility::tokenize(const std::string &str,
                     const std::string &delimiters = " ")
 {
+    std::vector<std::string> tokens;
+
 	// Skip delimiters at beginning.
 	std::string::size_type lastPos = str.find_first_not_of(delimiters, 0);
 	// Find first "non-delimiter".
@@ -217,10 +294,12 @@ void Utility::Tokenize(const std::string &str,
 		// Find next "non-delimiter"
 		pos = str.find_first_of(delimiters, lastPos);
 	}
+
+    return tokens;
 }
 
 
-bool Utility::validProbability(double _prob)
+bool Utility::valid_probability(double _prob)
 {
-	return Utility::withinRange(_prob, 0.0, 1.0);
+	return Utility::within_range(_prob, 0.0, 1.0);
 }

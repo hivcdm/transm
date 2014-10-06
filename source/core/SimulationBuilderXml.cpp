@@ -109,9 +109,9 @@ void SimulationBuilderXml::SetInputFile(const std::string &filename)
 void SimulationBuilderXml::CheckVersion()
 {
 	auto version_string = Attr<std::string>(document_.child("simulation"), "version");
-	auto version = Version::FromString(version_string);
+	auto version = Version::from_string(version_string);
 
-	if(Version::Compare(version, Utility::MODEL_VERSION, true) != 0)
+	if(Version::compare(version, Utility::get_model_version(), true) != 0)
 	{
 		throw std::runtime_error("bad input version");
 	}
@@ -922,8 +922,8 @@ void SimulationBuilderXml::ReadPopulationParameters()
 	for(auto age_bucket_node : initial_state_node.child("ageDistributionYrs").children("range"))
 	{
 		population_parameters.GetInitialAgeBuckets().emplace_back(
-            Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Attr<int>(age_bucket_node, "lower")),
-            Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Attr<int>(age_bucket_node, "upper")) + 11,
+            Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Attr<int>(age_bucket_node, "lower")),
+            Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Attr<int>(age_bucket_node, "upper")) + 11,
 			Text<double>(age_bucket_node.child("distribHeteroMale")),
             Text<double>(age_bucket_node.child("distribMsm")),
             Text<double>(age_bucket_node.child("distribBisexualMale")),
@@ -938,8 +938,8 @@ void SimulationBuilderXml::ReadPopulationParameters()
 
 	population_parameters.SetInitialCswProportion(DemographicProfile::Gender::Male, Text<double>(initial_state_node.child("chanceBeingCswMale")));
 	population_parameters.SetInitialCswProportion(DemographicProfile::Gender::Female, Text<double>(initial_state_node.child("chanceBeingCswFemale")));
-    population_parameters.SetCswEndAge(DemographicProfile::Gender::Male, Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Text<int>(initial_state_node.child("cswEndAgeMale"))));
-    population_parameters.SetCswEndAge(DemographicProfile::Gender::Female, Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Text<int>(initial_state_node.child("cswEndAgeFemale"))));
+    population_parameters.SetCswEndAge(DemographicProfile::Gender::Male, Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Text<int>(initial_state_node.child("cswEndAgeMale"))));
+    population_parameters.SetCswEndAge(DemographicProfile::Gender::Female, Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Text<int>(initial_state_node.child("cswEndAgeFemale"))));
 
 	//normalize %population values for each age bucket
     double totalFemaleProportion = 0;

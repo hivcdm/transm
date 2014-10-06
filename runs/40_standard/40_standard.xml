@@ -293,6 +293,23 @@
         </range>
       </ageDistributionYrs>
     </initialState>
+    <transmissionCoefficients>
+      <maleToFemale>
+	<valsByHVL>0.0001	0.0001 0.0012	0.0012	0.0014	0.0023	0.0023</valsByHVL>
+	<primary>0.00819</primary>
+	<lateStage>0.00355</lateStage>
+      </maleToFemale>
+      <femaleToMale>
+	<valsByHVL>0.0001	0.0001 0.0012	0.0012	0.0014	0.0023	0.0023</valsByHVL>
+	<primary>0.00819</primary>
+	<lateStage>0.00355</lateStage>
+      </femaleToMale>
+      <maleToMale>
+	<valsByHVL>0.0001	0.0001 0.0012	0.0012	0.0014	0.0023	0.0023</valsByHVL>
+	<primary>0.00819</primary>
+	<lateStage>0.00355</lateStage>
+      </maleToMale>
+    </transmissionCoefficients>
     <entities>
       <entity type="HeteroMale">
         <behavior>
@@ -592,11 +609,6 @@
         <health>
           <circumcisionProtectEfficacy>0.56</circumcisionProtectEfficacy>
           <condomProtectEfficacy>0.8</condomProtectEfficacy>
-          <transmissionCoefficients>
-	    <valsByHVL>0.0001	0.0001 0.0012	0.0012	0.0014	0.0023	0.0023</valsByHVL>
-            <primary>0.00819</primary>
-            <lateStage>0.00355</lateStage>
-          </transmissionCoefficients>
         </health>
       </entity>
       <entity type="Msm">
@@ -897,11 +909,6 @@
         <health>
           <circumcisionProtectEfficacy>0.56</circumcisionProtectEfficacy>
           <condomProtectEfficacy>0.8</condomProtectEfficacy>
-          <transmissionCoefficients>
-	    <valsByHVL>0.0001	0.0001 0.0012	0.0012	0.0014	0.0023	0.0023</valsByHVL>
-            <primary>0.00819</primary>
-            <lateStage>0.00355</lateStage>
-          </transmissionCoefficients>
         </health>
       </entity>
       <entity type="BisexualMale">
@@ -1479,11 +1486,6 @@
         <health>
           <circumcisionProtectEfficacy>0.56</circumcisionProtectEfficacy>
           <condomProtectEfficacy>0.8</condomProtectEfficacy>
-          <transmissionCoefficients>
-	    <valsByHVL>0.0001	0.0001 0.0012	0.0012	0.0014	0.0023	0.0023</valsByHVL>
-            <primary>0.00819</primary>
-            <lateStage>0.00355</lateStage>
-          </transmissionCoefficients>
         </health>
       </entity>
       <entity type="Female">
@@ -1493,11 +1495,6 @@
           <proportionHighRiskNonCsw>0.257155900521</proportionHighRiskNonCsw>
         </behavior>
         <health>
-          <transmissionCoefficients>
-	    <valsByHVL>0.0001	0.0001 0.0012	0.0012	0.0014	0.0023	0.0023</valsByHVL>
-            <primary>0.00819</primary>
-            <lateStage>0.00355</lateStage>
-          </transmissionCoefficients>
         </health>
       </entity>
     </entities>

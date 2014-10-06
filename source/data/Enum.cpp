@@ -110,7 +110,7 @@ bool BaseEnumCls::isValidEnum(BaseEnumCls::Enum _e) const
 bool BaseEnumCls::isValidNonWildCard(BaseEnumCls::Enum _e) const
 {
 	assert(initialized);
-	return Utility::withinRange<BaseEnumCls::Enum>(_e, getMin(), getMax());
+	return Utility::within_range<BaseEnumCls::Enum>(_e, getMin(), getMax());
 }
 
 const std::string *BaseEnumCls::toString(BaseEnumCls::Enum _e) const

@@ -70,19 +70,19 @@ int BisexualMale::SubPopParams::getPartneringDiscStartAgeYrs() const
 
 double BisexualMale::SubPopParams::getPartneringAcqDiscMult(int _ageYrs) const
 {
-    assert(Utility::withinRange(_ageYrs, 0, Person::maxYrForDeathStats));
+    assert(Utility::within_range(_ageYrs, 0, Person::maxYrForDeathStats));
     return partneringAcqDiscMult.at(_ageYrs - partneringDiscStartAgeYrs);
 }
 
 double BisexualMale::SubPopParams::getPartneringActsDiscMult(int _ageYrs) const
 {
-    assert(Utility::withinRange(_ageYrs, 0, Person::maxYrForDeathStats));
+    assert(Utility::within_range(_ageYrs, 0, Person::maxYrForDeathStats));
     return partneringActsDiscMult.at(_ageYrs - partneringDiscStartAgeYrs);
 }
 
 double BisexualMale::SubPopParams::getTransmitPerEventCoeff(HVLStrata _hvl) const
 {
-    assert(Utility::withinRange(_hvl, Person::HVLStrata(0), Person::HVLStrata(transmitPerEventCoeffs.size() - 1)));
+    assert(Utility::within_range(_hvl, Person::HVLStrata(0), Person::HVLStrata(transmitPerEventCoeffs.size() - 1)));
     return transmitPerEventCoeffs.at(_hvl);
 }
 
@@ -130,7 +130,7 @@ BisexualMale::BisexualMale(EventParams &_eventParams, int _age, bool _circumcise
     populationSpecificParams(params)
 {
     //If age is out of range, set it at the closest boundary.
-    if(!Utility::withinRange<int>(_age, 0, Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Person::maxYrForDeathStats)))
+    if(!Utility::within_range<int>(_age, 0, Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Person::maxYrForDeathStats)))
     {
         if(_age < 0)
         {
@@ -138,7 +138,7 @@ BisexualMale::BisexualMale(EventParams &_eventParams, int _age, bool _circumcise
         }
         else
         {
-            _age = Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Person::maxYrForDeathStats);
+            _age = Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Person::maxYrForDeathStats);
         }
     }
 
@@ -215,7 +215,7 @@ double BisexualMale::getFOI(Person *_p, SexualPartnership::Type _partnershipType
 {
     //note: in the case of male->female transmission, circumcision makes no difference
     //transmission coeff				1-	(condoms are used and succeed)
-    assert(Utility::validProbability(getCondomProtectEff()));
+    assert(Utility::valid_probability(getCondomProtectEff()));
     assert((_p != nullptr));
     assert(_p->isAlive());
     assert(_partnershipType < SexualPartnership::Type::ENDType);
@@ -225,7 +225,7 @@ double BisexualMale::getFOI(Person *_p, SexualPartnership::Type _partnershipType
     {
         chanceCondomUse = _p->GetOverrideChanceCondomUse();
     }
-    assert(Utility::validProbability(chanceCondomUse));
+    assert(Utility::valid_probability(chanceCondomUse));
     condomUsedLastFOICalculation = _eventParams.randomNums.chance(chanceCondomUse);
     //Determine the condom efficacy --> 0 if no condom was used
     double condomEff = 0;
@@ -321,7 +321,7 @@ double BisexualMale::rollForAgeDifference(SexualPartnership::Type _partnershipTy
 
 double BisexualMale::getTransmissionCoeff()
 {
-    assert(Utility::withinRange(hvl, HVL_ZERO, HVL_LATESTAGE));
+    assert(Utility::within_range(hvl, HVL_ZERO, HVL_LATESTAGE));
     return populationSpecificParams.getTransmitPerEventCoeff(hvl);
 }
 
@@ -334,7 +334,7 @@ bool BisexualMale::possibleMatch(SexualPartnership::Type _partnershipType, Perso
     assert(false);  // check if we are using years instead of Month
     int minAge = static_cast<int>(getMinPartnerSelectVal(Person::AGE, _partnershipType));
     int maxAge = static_cast<int>(getMaxPartnerSelectVal(Person::AGE, _partnershipType));
-    return Utility::withinRange(_p->getAge(TimeGranularity::Month), minAge, maxAge);
+    return Utility::within_range(_p->getAge(TimeGranularity::Month), minAge, maxAge);
 }
 
 int BisexualMale::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType)

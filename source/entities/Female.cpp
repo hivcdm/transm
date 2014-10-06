@@ -175,7 +175,7 @@ double Female::getMaxPartnerSelectVal(Person::SelectingCriteria /*_PSC*/,
 
 double Female::getTransmissionCoeff()
 {
-	assert(Utility::withinRange(hvl, HVL_ZERO, HVL_LATESTAGE));
+	assert(Utility::within_range(hvl, HVL_ZERO, HVL_LATESTAGE));
 	return populationSpecificParams.GetTransmitPerEventCoeff(hvl);
 }
 

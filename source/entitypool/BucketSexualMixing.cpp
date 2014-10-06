@@ -72,13 +72,13 @@ unsigned int BucketSexualMixing::getCorrectBufferIndex(Person *_p)
 	//get person's age in right time granularity
 	unsigned int pAge = _p->getAge(timeGranularity);
 
-	if(!Utility::withinRange<unsigned int>(pAge, minAge, maxAge))
+	if(!Utility::within_range<unsigned int>(pAge, minAge, maxAge))
 	{
         cout << "Age is " << _p->getAge(TimeGranularity::Month) << " but minAge is " << minAge << " and max age is " << maxAge <<
 		     endl;
 	}
 
-	assert(Utility::withinRange(pAge, minAge, maxAge));
+	assert(Utility::within_range(pAge, minAge, maxAge));
 
 	/*//if this person's DemographicProfile doesn't match DemographicProfile, return -1
 	if (getProfileID() != _p->getDemographicProfile()->getProfileID()){
@@ -87,7 +87,7 @@ unsigned int BucketSexualMixing::getCorrectBufferIndex(Person *_p)
 	}*/
 
 	//age determines place in the circular buffer
-	if(!Utility::withinRange<unsigned int>(pAge, minAge, maxAge))
+	if(!Utility::within_range<unsigned int>(pAge, minAge, maxAge))
 	{
 		//If person is out of range of this buffer, return -1 which is an invalid entry
 		return (unsigned int)personsByAge->size();

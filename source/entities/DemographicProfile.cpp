@@ -48,7 +48,7 @@ DemographicProfile::DemographicProfile(const DemographicProfile &_dmgProfile)
 
 DemographicProfile::DemographicProfile(ProfileID _profileID)
 {
-	assert((_profileID == DemographicProfile::END) || Utility::withinRange(_profileID, DemographicProfile::MIN, DemographicProfile::MAX));
+	assert((_profileID == DemographicProfile::END) || Utility::within_range(_profileID, DemographicProfile::MIN, DemographicProfile::MAX));
 	set(_profileID);
 }
 
@@ -174,7 +174,7 @@ void DemographicProfile::operator++(int)
 
 BaseEnumCls::Enum DemographicProfile::get(DemographicProfile::Demographic _demographic) const
 {
-	assert(Utility::withinRange(_demographic, DemographicProfile::Demographic(0), DemographicProfile::MaxDemographic));
+	assert(Utility::within_range(_demographic, DemographicProfile::Demographic(0), DemographicProfile::MaxDemographic));
     return enums[(std::size_t)_demographic];
 }
 
@@ -219,9 +219,8 @@ void DemographicProfile::parse(string _tupleStr)
 	}
 
 	//we want to tokenize a string representatino of a tuple
-	vector<string> tokens;
 	//currently allowed delimiters are: "_"
-	Utility::Tokenize(_tupleStr, tokens, Constants::COLON);
+	auto tokens = Utility::tokenize(_tupleStr, Constants::COLON);
 
 	//make sure we have correct amount of tokens
     if(tokens.size() != (std::size_t)DemographicProfile::Demographic::Last)
@@ -317,7 +316,7 @@ void DemographicProfile::set(DemographicProfile::Demographic _demographic, BaseE
 		DemographicProfile::initEnums();
 	}
 
-	assert(Utility::withinRange(_demographic, DemographicProfile::Demographic(0), DemographicProfile::MaxDemographic));
+	assert(Utility::within_range(_demographic, DemographicProfile::Demographic(0), DemographicProfile::MaxDemographic));
 	assert(DemographicProfile::getEnumCls(_demographic)->isValidNonWildCard(_enum)
 	       || (_enum == DemographicProfile::getEnumCls(_demographic)->getWildcard()));
     enums[(std::size_t)_demographic] = _enum;
@@ -326,7 +325,7 @@ void DemographicProfile::set(DemographicProfile::Demographic _demographic, BaseE
 
 void DemographicProfile::set(DemographicProfile::ProfileID _profileID)
 {
-	assert((_profileID == DemographicProfile::END) || Utility::withinRange(_profileID, DemographicProfile::MIN, DemographicProfile::MAX));
+	assert((_profileID == DemographicProfile::END) || Utility::within_range(_profileID, DemographicProfile::MIN, DemographicProfile::MAX));
 
 	if(DemographicProfile::DemographicEnumCls.size() == 0)
 	{
@@ -384,14 +383,14 @@ const string *DemographicProfile::toString() const
 
 BaseEnumCls::Enum DemographicProfile::get(ProfileID _profileID, Demographic _demographic)
 {
-	assert(Utility::withinRange(_profileID, DemographicProfile::MIN, DemographicProfile::MAX));
-	assert(Utility::withinRange(_demographic, DemographicProfile::Demographic(0), DemographicProfile::MaxDemographic));
+	assert(Utility::within_range(_profileID, DemographicProfile::MIN, DemographicProfile::MAX));
+	assert(Utility::within_range(_demographic, DemographicProfile::Demographic(0), DemographicProfile::MaxDemographic));
 	return DemographicProfile::ProfileIDtoProfile.at(_profileID)->get(_demographic);
 }
 
 const BaseEnumCls *DemographicProfile::getEnumCls(DemographicProfile::Demographic _demographic)
 {
-	assert(Utility::withinRange(_demographic, DemographicProfile::Demographic(0), DemographicProfile::MaxDemographic));
+	assert(Utility::within_range(_demographic, DemographicProfile::Demographic(0), DemographicProfile::MaxDemographic));
 
 	if(DemographicProfile::DemographicEnumCls.size() == 0)
 	{
@@ -403,14 +402,14 @@ const BaseEnumCls *DemographicProfile::getEnumCls(DemographicProfile::Demographi
 
 const string *DemographicProfile::getString(ProfileID _profileID, Demographic _demographic)
 {
-	assert(Utility::withinRange(_profileID, DemographicProfile::MIN, DemographicProfile::MAX));
-	assert(Utility::withinRange(_demographic, DemographicProfile::Demographic(0), DemographicProfile::MaxDemographic));
+	assert(Utility::within_range(_profileID, DemographicProfile::MIN, DemographicProfile::MAX));
+	assert(Utility::within_range(_demographic, DemographicProfile::Demographic(0), DemographicProfile::MaxDemographic));
     return DemographicProfile::DemographicEnumCls.at((std::size_t)_demographic).toString(DemographicProfile::get(_profileID, _demographic));
 }
 
 const string *DemographicProfile::toString(ProfileID _profileID)
 {
-	assert(Utility::withinRange(_profileID, DemographicProfile::MIN, DemographicProfile::MAX));
+	assert(Utility::within_range(_profileID, DemographicProfile::MIN, DemographicProfile::MAX));
 
 	//make sure the internal dmgProfileID-related  fields are initiated before returning any information to the outside
 	if(DemographicProfile::ProfileIDtoProfile.size() == 0)

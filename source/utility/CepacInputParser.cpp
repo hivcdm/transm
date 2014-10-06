@@ -18,9 +18,8 @@ std::array<std::vector<double>, 2> CepacInputParser::parseNonAidsDeathProbabilit
 	//if we tried to open the CEPAC file, just silently fail and use hardcoded defaults
 	if(!inputStream_.fail())
 	{
-		std::vector<std::string> maleValues;		//holds the tokenized input of the probabilities of non-aids death
-		std::vector<std::string> femaleValues;
-		std::string currLine;				//contains the current line of the file we're looking at
+        //contains the current line of the file we're looking at
+        std::string currLine;
 
 		//go through CEPAC .in file until we find the right row
 		do
@@ -34,17 +33,19 @@ std::array<std::vector<double>, 2> CepacInputParser::parseNonAidsDeathProbabilit
 		} while(currLine.find("NonAIDSDthProb_Male", 0) == std::string::npos);
 
 		//currLine should now contain row for male non AIDS death probabilities
-		Utility::Tokenize(currLine, maleValues, Constants::TAB);
+		auto male_values = Utility::tokenize(currLine, Constants::TAB);
+
 		std::getline(inputStream_, currLine);
+
 		//currLine should now contain row for female non AIDS death probabilities
-		Utility::Tokenize(currLine, femaleValues, Constants::TAB);
+		auto female_values = Utility::tokenize(currLine, Constants::TAB);
 
 		//generate the non-aids death probabilitiy
 		//we start the loop at 1 instead of 0 b/c first token contains a text label of the row. the probabilities start at index 1
-		for(size_t i = 1; i < maleValues.size(); ++i)
+		for(std::size_t i = 1; i < male_values.size(); ++i)
 		{
-			probabilities[0].push_back(Utility::fromString<double>(maleValues.at(i)));
-			probabilities[1].push_back(Utility::fromString<double>(femaleValues.at(i)));
+			probabilities[0].push_back(Utility::from_string<double>(male_values.at(i)));
+			probabilities[1].push_back(Utility::from_string<double>(female_values.at(i)));
 		}
 	}
 

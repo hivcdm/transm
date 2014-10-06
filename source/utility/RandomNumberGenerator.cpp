@@ -44,7 +44,7 @@ int RandomNumberGenerator::chooseIndex(const std::vector<double> &_indexProbabil
 
 bool RandomNumberGenerator::chance(double _probability)
 {
-	//assert(Utility::validProbability(_probability));
+	//assert(Utility::valid_probability(_probability));
 	if(_probability <= 0)
 	{
 		return false;

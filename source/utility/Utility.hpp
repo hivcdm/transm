@@ -2,16 +2,18 @@
 
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
+#include "filesystem.hpp"
 #include "RandomNumberGenerator.hpp"
 #include "core/Constants.hpp"
 
 struct Version
 {
-	static Version FromString(const std::string &version_string);
-	static std::string ToString(const Version &version);
-	static int Compare(const Version &v1, const Version &v2, bool ignore_patch = false);
+	static Version from_string(const std::string &version_string);
+	static std::string to_string(const Version &version);
+	static int compare(const Version &v1, const Version &v2, bool ignore_patch = false);
 
 	int major = 0;
 	int minor = 1;
@@ -20,82 +22,137 @@ struct Version
 
 class Utility
 {
+    //usually we would divide to convert between these time increments
+    //but division is more expensive, so multiply by inverse instead.
+    static double day_to_month_multiplier;
+    static double day_to_year_multiplier;
+    static double month_to_year_multiplier;
 
-	//usually we would divide to convert between these time increments
-	//but division is more expensive, so multiply by inverse instead.
-	static double dayToMonthMult;
-	static double dayToYearMult;
-	static double monthToYearMult;
 public:
-	/* Constant values for transmission model version and file/directory information */
-	static const Version MODEL_VERSION;
+    /// <summary>
+    /// Return the location in which the currently executing model is stored.
+    /// </summary>
+    static path get_model_directory();
 
-	static std::vector<std::string> transmFilesToRun;
-	static void findInputFiles(const std::string &inputDirectory, const std::string &workingDirectory);
+    /// <summary>
+    /// Return the user directory ($HOME). This depends on platform.
+    /// </summary>
+    static path get_user_directory();
 
-	//convert _val from one TimeGranularity to another
-	static unsigned int convertTime(TimeGranularity _from, TimeGranularity _to, double _val);
+    /// <summary>
+    /// Return the location of the config file. This depends on platform.
+    /// </summary>
+    static path get_config_file_path();
 
-	/**
-	Converts a string value to another datatype
-	**/
+    /// <summary>
+    /// Return a version object that represents the version of the running model.
+    /// </summary>
+    static Version get_model_version();
+
+    /// <summary>
+    /// Return an unordered map of key->value config options.
+    /// </summary>
+    static std::unordered_map<std::string, std::string> load_config();
+
+    /// <summary>
+    /// Returns the directory in which batches are stored.
+    /// </summary>
+    static path get_batches_directory();
+
+    // TODO: can we use types to replace this method? e.g. TimeDays, TimeMonths, etc.
+    /// <summary>
+	/// Convert val from "from" TimeGranularity to "to" TimeGranularity
+    /// </summary>
+	static unsigned int convert_time(TimeGranularity from, TimeGranularity to, double val);
+
+	// TODO: replace with standard library functions like std::stod
+	/// <summary>
+    /// Converts a string value to another datatype.
+	/// </summary>
 	template <class T>
-	static T fromString(std::string _s);
+	static T from_string(std::string s);
 
-	//returns true if _elem is a member of _set
+    // TODO: replace
+    /// <summary>
+	/// Returns true if need is a member of haystack
+    /// </summary>
 	template <class T>
-	static bool memberOf(std::set<T> _set, T _elem);
+	static bool member_of(const std::set<T> &haystack, const T &needle);
 
-	//retursn true if _elem is a member of _vector
-	template <class T>
-	static bool memberOf(std::vector<T> _vector, T _elem);
+    // TODO: replace
+    /// <summary>
+    /// Returns true if need is a member of haystack
+    /// </summary>
+    template <class T>
+    static bool member_of(const std::vector<T> &haystack, const T &needle);
 
-	static void normalize(std::vector<double> &_weights);
+    /// <summary>
+    /// Divide a vector of relative probabilities by the sum so that they add up to 1.
+    /// </summary>
+    /// <remarks>
+    /// This is used for sampling from a categorical distribution.
+    /// </summary>
+	static void normalize(std::vector<double> &weights);
 
-	//converts a probability to a rate
-	static double probToRate(double _prob);
-	//converts a rate to a probability
-	static double rateToProb(double _rate);
+    // TODO: is this being used?
+    /// <summary>
+	/// Convert a probability, prob, to a rate
+    /// </summary>
+	static double prob_to_rate(double prob);
+
+    // TODO: is this being used?
+	/// <summary>
+    /// Converts a rate, rate, to a probability.
+    /// </summary>
+	static double rate_to_prob(double rate);
 
 	template <typename T>
-	static T round(double d)
-	{
-		double decimals = d - floor(d);
+    static T round(double d);
 
-		if(decimals >= 0.5)
-		{
-			return static_cast<T>(ceil(d));
-		}
-		else
-		{
-			return static_cast<T>(floor(d));
-		}
-	}
-
-	static bool isNormDistZero(const NormalDist _normDist);
-	/**
-	returns true if _val is within [_min,_max]
-	**/
+	static bool is_norm_dist_zero(const NormalDist &dist);
+	
+    /// <summary>
+	/// returns true if _val is within [_min,_max]
+	/// </summary>
 	template <class T>
-	static bool withinRange(T _val, T _min, T _max);
+	static bool within_range(T val, T min, T max);
 
-	//returns true if 0.0 <= _prob <= 1.0
-	static bool validProbability(double _prob);
+    /// <summary>
+	/// Returns true if 0.0 <= prob <= 1.0
+    /// </summary>
+	static bool valid_probability(double prob);
 
-	//this function was taken from
-	// http://www.oopweb.com/CPP/Documents/CPPHOWTO/Volume/C++Programming-HOWTO-7.html
-	static void Tokenize(const std::string &str, std::vector<std::string> &tokens, const std::string &delimiters);
+    /// <summary>
+    /// Return the set of tokens resulting form splitting str on provided delimiters.
+    /// </summary>
+	static std::vector<std::string> tokenize(const std::string &str, const std::string &delimiters);
 };
 
-//returns true if _elem is a member of _set
+// Template implementations.
+
+template <typename T>
+static T Utility::round(double d)
+{
+    double decimals = d - std::floor(d);
+
+    if(decimals >= 0.5)
+    {
+        return static_cast<T>(std::ceil(d));
+    }
+    else
+    {
+        return static_cast<T>(std::floor(d));
+    }
+}
+
 template <class T>
-bool Utility::memberOf(std::set<T> _set, T _elem)
+bool Utility::member_of(const std::set<T> &haystack, const T &needle)
 {
 	return (_set.find(_elem) != _set.end())	;
 }
 
 template <class T>
-bool Utility::memberOf(std::vector<T> _vector, T _elem)
+bool Utility::member_of(const std::vector<T> &haystack, const T &needle)
 {
 	for(int i = 0; i < _vector.size(); i++)
 	{
@@ -108,21 +165,17 @@ bool Utility::memberOf(std::vector<T> _vector, T _elem)
 	return false;
 }
 
-
-/**
-Converts a string value to another datatype
-**/
 template <class T>
-T Utility::fromString(std::string _s)
+T Utility::from_string(const std::string s)
 {
-	std::istringstream converter(_s);
+	std::istringstream converter(s);
 	T converted;
 	converter >> converted;
 	return converted;
 }
 
 template <class T>
-bool Utility::withinRange(T _val, T _min, T _max)
+bool Utility::within_range(T val, T min, T max)
 {
-	return ((_min <= _val) && (_max >= _val));
+	return min <= val && max >= val;
 }

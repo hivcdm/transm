@@ -604,7 +604,7 @@ int Person::getAge(TimeGranularity _granularity) const
 	}
 	else
 	{
-        return Utility::convertTime(TimeGranularity::Month, _granularity, age);
+        return Utility::convert_time(TimeGranularity::Month, _granularity, age);
 	}
 }
 
@@ -1685,7 +1685,7 @@ Person::Person(int _age, unsigned int _populationID) : sexualActivityDelay(0)
 	populationID = _populationID;
 #ifndef TESTING
 
-    if(!Utility::withinRange<int>(_age, 0, Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Person::maxYrForDeathStats)))
+    if(!Utility::within_range<int>(_age, 0, Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Person::maxYrForDeathStats)))
 	{
 		if(_age < 0)
 		{
@@ -1693,8 +1693,8 @@ Person::Person(int _age, unsigned int _populationID) : sexualActivityDelay(0)
 		}
 		else
 		{
-			//cout << "SOMEONE WAS TOO OLD (" << _age << ")!  MAKING THEM " << Utility::convertTime(YEAR, MONTH, Person::maxYrForDeathStats) << "!" << std::endl;
-            _age = Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Person::maxYrForDeathStats);
+			//cout << "SOMEONE WAS TOO OLD (" << _age << ")!  MAKING THEM " << Utility::convert_time(YEAR, MONTH, Person::maxYrForDeathStats) << "!" << std::endl;
+            _age = Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Person::maxYrForDeathStats);
 		}
 	}
 

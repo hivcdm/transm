@@ -126,8 +126,8 @@ unsigned long InfectionsTracker::getNumIncidentInfections()
 unsigned long InfectionsTracker::getNumIncidentInfections(DemographicProfile::ProfileID _infectorsProfileID,
         DemographicProfile::ProfileID _infectedsProfileID)
 {
-	assert(Utility::withinRange(_infectorsProfileID, DemographicProfile::MIN, DemographicProfile::MAX));
-	assert(Utility::withinRange(_infectedsProfileID, DemographicProfile::MIN, DemographicProfile::MAX));
+	assert(Utility::within_range(_infectorsProfileID, DemographicProfile::MIN, DemographicProfile::MAX));
+	assert(Utility::within_range(_infectedsProfileID, DemographicProfile::MIN, DemographicProfile::MAX));
 	//it seems that while loops are generally faster than for loops?
 	auto currPartnershipType = SexualPartnership::Type::First;
 	auto endPartnershipType = SexualPartnership::Type::ENDType;
@@ -150,8 +150,8 @@ unsigned long InfectionsTracker::getNumIncidentInfections(SexualPartnership::Typ
         DemographicProfile::ProfileID _infectorsProfileID, DemographicProfile::ProfileID _infectedsProfileID)
 {
 	assert(_partnershipType != SexualPartnership::Type::ENDType);
-	assert(Utility::withinRange(_infectorsProfileID, DemographicProfile::MIN, DemographicProfile::MAX));
-	assert(Utility::withinRange(_infectedsProfileID, DemographicProfile::MIN, DemographicProfile::MAX));
+	assert(Utility::within_range(_infectorsProfileID, DemographicProfile::MIN, DemographicProfile::MAX));
+	assert(Utility::within_range(_infectedsProfileID, DemographicProfile::MIN, DemographicProfile::MAX));
 	return incidentInfections[(int)_partnershipType][_infectorsProfileID][_infectedsProfileID];
 }
 
@@ -293,9 +293,9 @@ void InfectionsTracker::recordIncidentInfection(long _time, SexualPartnership::T
 	assert(_time >= 0);
 	//check to see if the people are valid: not null, not dead, in a valid bucket
 	assert((_infector != nullptr) && (_infector->isAlive())
-	       && (Utility::withinRange(_infector->getDemographicProfile()->getProfileID(), DemographicProfile::MIN, DemographicProfile::MAX)));
+	       && (Utility::within_range(_infector->getDemographicProfile()->getProfileID(), DemographicProfile::MIN, DemographicProfile::MAX)));
 	assert((_infected != nullptr) && (_infected->isAlive())
-	       && (Utility::withinRange(_infected->getDemographicProfile()->getProfileID(), DemographicProfile::MIN, DemographicProfile::MAX)));
+	       && (Utility::within_range(_infected->getDemographicProfile()->getProfileID(), DemographicProfile::MIN, DemographicProfile::MAX)));
 	assert(_partnershipType < SexualPartnership::Type::ENDType);
 
 	//reset counter for incident infections and exposures for current timestep
