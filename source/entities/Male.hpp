@@ -14,6 +14,7 @@
 class Male : public Person
 {
 public :
+    /*virtual*/ std::string getEntityType() const;
 	void Circumcise();
     bool IsCircumcised() const { return circumcised; }
 
@@ -31,7 +32,6 @@ public :
 
 		double getChanceBecomeCSW() const;
 		double getPartnerAcqMultWithSteady(Person::RiskLevel _risk) const;
-		double getTransmitPerEventCoeff(HVLStrata _hvl) const;
 
 		//sexual behavior params for each type as specified by SexualPartnership::Type
 		const SexualBehavior &getSexualBehavior(SexualPartnership::Type _type) const;
@@ -81,8 +81,6 @@ public :
 
 		void AddSexualBehavior(SexualBehavior params) { sexualBehaviorParams[params.getPartnershipType()] = params; }
 
-		void SetTransmitPerEventCoeff(HVLStrata hvl, double coeff) { transmitPerEventCoeffs[hvl] = coeff; }
-
         void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) { proportionHighRisk[(std::size_t)employment] = proportion; }
 
 		void SetAverageYearsYounger(SexualPartnership::Type type, NormalDist dist) { sexualBehaviorParams[type].setAverageYearsYounger(dist); }
@@ -124,7 +122,6 @@ public :
 		//factors that determind foif
 		double circumProtectEff;	  //transmission protection that circumcision provides (a positive multiplier <= 1)
 		double condomProtectEff;   //transmission protection that condoms provide  (a positive multiplier <= 1)
-		std::array<double, HVLStrata::ENDHVLStrata> transmitPerEventCoeffs;	 //chance of infection for men->woman, w/o circumcision or condoms
 
 		double coefficientOfVariation;
 		bool useCoefficientVariation;
@@ -177,20 +174,17 @@ public:
 
     void SetChanceBecomeSexWorker(double chance) { populationSpecificParams.SetChanceBecomeCsw(chance); }
 
-    void SetTransmissionCoefficient(HVLStrata stratum, double coefficient) { populationSpecificParams.SetTransmitPerEventCoeff(stratum, coefficient); }
-
     void SetAssortativeness(SexualPartnership::Type partnership_type, double assortativeness) { populationSpecificParams.getSexualBehavior(partnership_type).setAssortativeness(assortativeness); }
 
 	double getChanceBecomeCsw() const;
 
-	double getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventParams &_eventParams);
+    double getFOI(Person *_p, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams);
 
 	double getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
 	double getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
 	//Returns the age difference (in years) to center around
 	double rollForAgeDifference(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums);
 
-	double getTransmissionCoeff();
 	bool possibleMatch(SexualPartnership::Type _partnershipType, Person *_p);
 	int rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType);
 	int rollNumEventsPerPartner(Person *_p, RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType);

@@ -145,7 +145,7 @@ bool Person::isEligibleForTreatment(const SimContext::TreatmentInputs::ARTStartP
 }
 
 Person *Person::allPartnerSexualActivity(EventParams &_eventParams, SexualPartnership::Type _partnershipType,
-        list<Person *> &_newlyInfected, InfectionsTracker *infTrack)
+    list<Person *> &_newlyInfected, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients)
 {
 	assert(_partnershipType < SexualPartnership::Type::ENDType);
 	//iterate through all partnerships of SexualActivity::Type _partnershipType and have them engage in sexual activity
@@ -159,7 +159,7 @@ Person *Person::allPartnerSexualActivity(EventParams &_eventParams, SexualPartne
 		//initiate sexual activity only if you are partner1
 		if((*iter)->getPartner1() == this)
 		{
-			Person *infected = (*iter)->monthlySexualActivity(_eventParams, infTrack);
+			Person *infected = (*iter)->monthlySexualActivity(_eventParams, infTrack, transmission_coefficients);
 
 			//if you or your partners got infected, the infected joins the _newlyInfected list
 			if(infected != nullptr)
@@ -1009,7 +1009,7 @@ void Person::setSimContext(SimContext *newSimContext)
 }
 
 Person *Person::sexualActivity(Person *_p, int _numActs, SexualPartnership::Type _partnershipType,
-                               EventParams &_eventParams, InfectionsTracker *infTrack)
+    EventParams &_eventParams, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients)
 {
 	assert((_p != nullptr));
 	assert(_p->isAlive());
@@ -1050,7 +1050,7 @@ Person *Person::sexualActivity(Person *_p, int _numActs, SexualPartnership::Type
 		/** Regardless of infection, record the exposure */
 		infTrack->recordExposure(_eventParams.currTime, infected);
 		//force of infection from infected to uninfected
-		double foifPerEvent = infected->getFOI(uninfected, _partnershipType, _eventParams);
+		double foifPerEvent = infected->getFOI(uninfected, transmission_coefficients, _partnershipType, _eventParams);
 
 		//If a condom was used, increase the number of condoms used for each person by numActs
 		if(infected->getCondomUsedLastFOICalculation())

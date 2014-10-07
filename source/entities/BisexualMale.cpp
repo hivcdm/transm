@@ -11,6 +11,11 @@
 //each index of the array contains parameters for a different population
 //(we only have 1 population for now so the size of the vector will default to 1
 
+std::string BisexualMale::getEntityType() const 
+{ 
+    return "bisexual_male";
+}
+
 BisexualMale::SubPopParams::SubPopParams()
     : maxPartnershipRejections(0)
 {
@@ -80,12 +85,6 @@ double BisexualMale::SubPopParams::getPartneringActsDiscMult(int _ageYrs) const
     return partneringActsDiscMult.at(_ageYrs - partneringDiscStartAgeYrs);
 }
 
-double BisexualMale::SubPopParams::getTransmitPerEventCoeff(HVLStrata _hvl) const
-{
-    assert(Utility::within_range(_hvl, Person::HVLStrata(0), Person::HVLStrata(transmitPerEventCoeffs.size() - 1)));
-    return transmitPerEventCoeffs.at(_hvl);
-}
-
 void BisexualMale::SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng)
 {
     populationSpecificParams.getSexualBehavior(partnershipType).setChanceCondomUsePerEvent(risk, dist);
@@ -143,7 +142,7 @@ BisexualMale::BisexualMale(EventParams &_eventParams, int _age, bool _circumcise
     }
 
     dmgProfile.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
-    dmgProfile.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Bisexual);
+    dmgProfile.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Homosexual);
 
     circumcised = _circumcised;
     //Set this male's risk level assume everyone is low risk on creation. Risk is rerolled when they roll for become sex worker
@@ -211,7 +210,7 @@ bool BisexualMale::isCircumcised()
 
 
 //in this case, the male is infected and female is uninfected
-double BisexualMale::getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
+double BisexualMale::getFOI(Person *_p, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
 {
     //note: in the case of male->female transmission, circumcision makes no difference
     //transmission coeff				1-	(condoms are used and succeed)
@@ -235,12 +234,23 @@ double BisexualMale::getFOI(Person *_p, SexualPartnership::Type _partnershipType
         condomEff = getCondomProtectEff();
     }
 
-    double FOI = getTransmissionCoeff() *	(1 - condomEff);
+    double base_foi = 0;
+
+    if(_p->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Female)
+    {
+        base_foi = transmission_coefficients.at(TransmissionType::male_to_female)[getHVL()];
+    }
+    else
+    {
+        base_foi = transmission_coefficients.at(TransmissionType::male_to_male)[getHVL()];
+    }
+
+    double FOI = base_foi * (1 - condomEff);
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (trace() || _p->trace()))
     {
         _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !Transmission coefficient from " << getID() << " to " <<
-            _p->getID() << " is " << getTransmissionCoeff();
+            _p->getID() << " is " << base_foi;
         _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << ";" << std::endl << " !A condom was ";
 
         if(!condomUsedLastFOICalculation)
@@ -318,13 +328,6 @@ double BisexualMale::rollForAgeDifference(SexualPartnership::Type _partnershipTy
     double ageDifference = _randomNums.randNorm(averageYearsYounger[(int)_partnershipType]);
     return ageDifference;
 }
-
-double BisexualMale::getTransmissionCoeff()
-{
-    assert(Utility::within_range(hvl, HVL_ZERO, HVL_LATESTAGE));
-    return populationSpecificParams.getTransmitPerEventCoeff(hvl);
-}
-
 
 bool BisexualMale::possibleMatch(SexualPartnership::Type _partnershipType, Person *_p)
 {

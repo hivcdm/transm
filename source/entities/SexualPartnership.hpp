@@ -1,5 +1,6 @@
 #pragma once
 
+#include "TransmissionType.hpp"
 #include "data/Enum.hpp"
 #include "data/EventParams.hpp"
 #include "utility/RandomNumberGenerator.hpp"
@@ -137,7 +138,7 @@ public :
 	@return returns a pointer to a person who has been newly infected. nullptr if no infection occured
 	@author schung5
 	**/
-	Person *monthlySexualActivity(EventParams &_eventParams, InfectionsTracker *infTrack);
+    Person *monthlySexualActivity(EventParams &_eventParams, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, 9UL>> &transmission_coefficients);
 
 	int getTimeOfFormation()
 	{

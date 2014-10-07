@@ -3,6 +3,11 @@
 #include "core/Constants.hpp"
 #include "utility/Utility.hpp"
 
+std::string Female::getEntityType() const
+{
+    return "female";
+}
+
 int Female::rollForNewPartnershipDuration(SexualPartnership::Type, RandomNumberGenerator &, Person *)
 {
     throw std::runtime_error("not implemented for women");
@@ -73,11 +78,6 @@ NormalDist Female::SubPopParams::GetActivityLevel() const
 	return activityLevel;
 }
 
-double Female::SubPopParams::GetTransmitPerEventCoeff(HVLStrata _hvl) const
-{
-	return transmitPerEventCoeffs.at(_hvl);
-}
-
 Female::Female(EventParams &_eventParams, int _ageMths, unsigned int _populationID, const Female::SubPopParams &params)
 	: Person(_ageMths, _populationID),
 	populationSpecificParams(params),
@@ -117,7 +117,7 @@ Female::~Female(void)
 
 
 
-double Female::getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
+double Female::getFOI(Person *_p, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
 {
     assert(_p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male);
 	Male *m = (Male *)_p;
@@ -133,12 +133,15 @@ double Female::getFOI(Person *_p, SexualPartnership::Type _partnershipType, Even
 		condomEff = m->getCondomProtectEff();
 	}
 
-	double FOI = getTransmissionCoeff() * (1 - condomEff) * (1 - circEff);
+    assert(_p->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Male);
+
+    double base_foi = transmission_coefficients.at(TransmissionType::female_to_male)[getHVL()];
+    double FOI = base_foi * (1 - condomEff) * (1 - circEff);
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (trace() || _p->trace()))
 	{
         _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !Transmission coefficient from " << getID() << " to " <<
-		        _p->getID() << " is " << getTransmissionCoeff();
+		        _p->getID() << " is " << base_foi;
         _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << ";" << std::endl << " !A condom was ";
 
 		if(!condomUsedLastFOICalculation)
@@ -171,12 +174,6 @@ double Female::getMaxPartnerSelectVal(Person::SelectingCriteria /*_PSC*/,
                                       SexualPartnership::Type /*_partnershipType*/) const
 {
 	return numeric_limits<unsigned int>::max();
-}
-
-double Female::getTransmissionCoeff()
-{
-	assert(Utility::within_range(hvl, HVL_ZERO, HVL_LATESTAGE));
-	return populationSpecificParams.GetTransmitPerEventCoeff(hvl);
 }
 
 double Female::getChanceBecomeCsw() const

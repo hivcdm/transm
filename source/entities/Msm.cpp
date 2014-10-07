@@ -8,6 +8,12 @@
 #include "utility/enum_iterator.hpp"
 #include "utility/RandomNumberGenerator.hpp"
 
+
+std::string Msm::getEntityType() const
+{
+    return "msm";
+}
+
 //each index of the array contains parameters for a different population
 //(we only have 1 population for now so the size of the vector will default to 1
 
@@ -78,12 +84,6 @@ double Msm::SubPopParams::getPartneringActsDiscMult(int _ageYrs) const
 {
     assert(Utility::within_range(_ageYrs, 0, Person::maxYrForDeathStats));
     return partneringActsDiscMult.at(_ageYrs - partneringDiscStartAgeYrs);
-}
-
-double Msm::SubPopParams::getTransmitPerEventCoeff(HVLStrata _hvl) const
-{
-    assert(Utility::within_range(_hvl, Person::HVLStrata(0), Person::HVLStrata(transmitPerEventCoeffs.size() - 1)));
-    return transmitPerEventCoeffs.at(_hvl);
 }
 
 void Msm::SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng)
@@ -211,7 +211,7 @@ bool Msm::isCircumcised()
 
 
 //in this case, the male is infected and female is uninfected
-double Msm::getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
+double Msm::getFOI(Person *_p, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
 {
     //note: in the case of male->female transmission, circumcision makes no difference
     //transmission coeff				1-	(condoms are used and succeed)
@@ -235,12 +235,15 @@ double Msm::getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventPa
         condomEff = getCondomProtectEff();
     }
 
-    double FOI = getTransmissionCoeff() *	(1 - condomEff);
+    assert(_p->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Male);
+
+    double base_foi = transmission_coefficients.at(TransmissionType::male_to_male)[getHVL()];
+    double FOI = base_foi * (1 - condomEff);
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (trace() || _p->trace()))
     {
         _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !Transmission coefficient from " << getID() << " to " <<
-            _p->getID() << " is " << getTransmissionCoeff();
+            _p->getID() << " is " << base_foi;
         _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << ";" << std::endl << " !A condom was ";
 
         if(!condomUsedLastFOICalculation)
@@ -318,13 +321,6 @@ double Msm::rollForAgeDifference(SexualPartnership::Type _partnershipType, Rando
     double ageDifference = _randomNums.randNorm(averageYearsYounger[(int)_partnershipType]);
     return ageDifference;
 }
-
-double Msm::getTransmissionCoeff()
-{
-    assert(Utility::within_range(hvl, HVL_ZERO, HVL_LATESTAGE));
-    return populationSpecificParams.getTransmitPerEventCoeff(hvl);
-}
-
 
 bool Msm::possibleMatch(SexualPartnership::Type _partnershipType, Person *_p)
 {

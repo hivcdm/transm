@@ -10,6 +10,7 @@
 class Female : public Person
 {
 public:
+    /*virtual*/ std::string getEntityType() const;
 	/// <summary>
 	/// These are parameters that describe the population of females.
 	/// Each Population in the Sim will have a separate one of these referenced by the population's ID.
@@ -23,8 +24,6 @@ public:
 		double GetProportionHighRisk(DemographicProfile::Employment) const;
 		NormalDist GetActivityLevel() const;
 		void SetActivityLevel(NormalDist &dist) { activityLevel = dist; }
-		double GetTransmitPerEventCoeff(HVLStrata _hvl) const;
-		void SetTransmitPerEventCoeff(HVLStrata hvl, double coeff) { transmitPerEventCoeffs[hvl] = coeff; }
 		void SetChanceBecomeCsw(double chance) { chanceBecomeCSW = chance; }
         void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) { proportionHighRisk[(std::size_t)employment] = proportion; }
 
@@ -37,8 +36,6 @@ public:
         std::array<double, (std::size_t)DemographicProfile::Employment::Last> proportionHighRisk;
         //Distribution of activity level (i.e. marbles)
 		NormalDist activityLevel;
-        //chance of infection for women->men, w/o circumcision or condoms
-		std::array<double, HVLStrata::ENDHVLStrata> transmitPerEventCoeffs;
 	};
 
 public:
@@ -56,8 +53,6 @@ public:
 
     void SetChanceBecomeSexWorker(double chance) { populationSpecificParams.SetChanceBecomeCsw(chance); }
 
-    void SetTransmissionCoefficient(HVLStrata stratum, double coefficient) { populationSpecificParams.SetTransmitPerEventCoeff(stratum, coefficient); }
-
     void SetAssortativeness(SexualPartnership::Type /*partnership_type*/, double /*assortativeness*/) { throw std::runtime_error("not implemented for women"); }
 
 	/** Start: Inherited from Person, comments found there **/
@@ -67,7 +62,7 @@ public:
 	@return the force of infection for this female infecting an uninfected male
 	@author schung5
 	**/
-	double getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventParams &_eventParams);
+    double getFOI(Person *_p, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams);
 
 	double getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
 	double getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
@@ -84,7 +79,6 @@ public:
 
 	void Circumcise();
 
-	double getTransmissionCoeff();
 	void rerollRiskGroup(EventParams &_eventParams);
 	//writes state of person to file
 	void saveState(ostream &_outStream, long currTime);

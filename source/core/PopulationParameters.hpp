@@ -4,6 +4,7 @@
 #include "entities/Female.hpp"
 #include "entities/Male.hpp"
 #include "entities/Msm.hpp"
+#include "entities/TransmissionType.hpp"
 #include "statistics/CostsTracker.hpp"
 
 class PopulationParameters
@@ -87,19 +88,9 @@ public:
 	const Female::SubPopParams &GetFemaleParameters() const { return defaultFemaleParams; }
 	void SetFemaleParameters(Female::SubPopParams &params) { defaultFemaleParams = params; }
 
-	void SetTransmissionCoefficient(DemographicProfile::Gender gender, Person::HVLStrata stratum, double coefficient)
+	void SetTransmissionCoefficients(const std::unordered_map<TransmissionType, std::array<double, Person::ENDHVLStrata>> &coefficients)
 	{
-		switch(gender)
-		{
-		case DemographicProfile::Gender::Male: 
-            defaultMaleParams.SetTransmitPerEventCoeff(stratum, coefficient);
-            break;
-		case DemographicProfile::Gender::Female: 
-            defaultFemaleParams.SetTransmitPerEventCoeff(stratum, coefficient);
-            break;
-		default: 
-            throw std::runtime_error("bad gender");
-		}
+        transmission_coefficients_ = coefficients;
 	}
 
     void SetSexualActivityDelay(int delay) { sexualActivityDelay = delay; }
@@ -117,8 +108,8 @@ public:
 	const std::vector<AgeBucketPrevalenceInfo> &GetInitialAgeBuckets() const { return initialAgeBuckets; }
 	std::vector<AgeBucketPrevalenceInfo> &GetInitialAgeBuckets() { return initialAgeBuckets; }
 
-    void SetInitialCswProportion(DemographicProfile::Gender gender, double proportion) { initProbCSW[(std::size_t)gender] = proportion; }
-    void SetCswEndAge(DemographicProfile::Gender gender, int age_months) { CSWEndAgeMth[(std::size_t)gender] = age_months; }
+    void SetInitialCswProportion(const std::string &entity_type, double proportion) { initProbCSW[entity_type] = proportion; }
+    void SetCswEndAge(const std::string &entity_type, int age_months) { CSWEndAgeMth[entity_type] = age_months; }
 
 	void SetChanceBecomeCsw(DemographicProfile::Gender gender, double chance)
 	{
@@ -196,17 +187,22 @@ private:
     /// <summary>
     /// initial proportion of pop as CSW
     /// </summary>
-    double initProbCSW[(std::size_t)DemographicProfile::Gender::Last];
+    std::unordered_map<std::string, double> initProbCSW;
 
     /// <summary>
     /// max age of csw in months
     /// </summary>
-    int CSWEndAgeMth[(std::size_t)DemographicProfile::Gender::Last];
+    std::unordered_map<std::string, int> CSWEndAgeMth;
 
     /// <summary>
     /// prevalence parameters stratified by age.
     /// </summary>
 	std::vector<AgeBucketPrevalenceInfo> initialAgeBuckets;
+
+    /// <summary>
+    /// Base FOI for different transmission types at various viral loads.
+    /// </summary>
+    std::unordered_map<TransmissionType, std::array<double, Person::ENDHVLStrata>> transmission_coefficients_;
 
     /// <summary>
     /// holds the population-level parameters for population of heterosexual males

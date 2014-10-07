@@ -47,6 +47,8 @@ private:
 
 	EventParams::RolloutEligibility ReadRolloutEligibility();
 
+    std::unordered_map<TransmissionType, std::array<double, Person::ENDHVLStrata>> ReadTransmissionCoefficients();
+
 	Female::SubPopParams ReadFemaleSubPopParams();
 
 	Male::SubPopParams ReadMaleSubPopParams();

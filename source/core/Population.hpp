@@ -230,7 +230,7 @@ private:
     /// @param _ageBucketParams	parameters that determine a prevalent person's characteristics. If this is nullptr, then this method will create a newborn
     /// @return a newly formed person
     /// </summary>
-	Person *GeneratePerson(EventParams &_eventParams, DemographicProfile::Gender _gender, DemographicProfile::SexualOrientation sexual_orientation,
+	Person *GeneratePerson(EventParams &_eventParams, const std::string &entity_type,
 	                       PopulationParameters::AgeBucketPrevalenceInfo *_ageBucketParams, bool toTrace);
 
     /// <summary>

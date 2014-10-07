@@ -14,7 +14,7 @@ const std::vector<std::vector<std::string>> enumStrs =
 {
 	{"SA", "NA"},
 	{"MALE", "FEMALE"},
-	{"HETERO", "HOMO", "BI"},
+	{"HETERO", "HOMO"},
 	{"NON_SINGLE", "SINGLE"},
 	{"NON_CSW", "CSW"}
 };

@@ -68,7 +68,7 @@ void Population::InitPartnershipBuckets()
 	}
 
 	//For each initiator demographic profile, store the fact that they can have any partner type
-	for(size_t i = 0; i < eligibleInitiators.size(); i++)
+	for(std::size_t i = 0; i < eligibleInitiators.size(); i++)
 	{
 		BucketSexualMixing *bucket = (BucketSexualMixing *)entities->getBucket(eligibleInitiators.at(i));
 
@@ -81,54 +81,61 @@ void Population::InitPartnershipBuckets()
 	}
 
 	DemographicProfile currProfileSelector;
-	vector<DemographicProfile::ProfileID> selectedIDs;
+	std::vector<DemographicProfile::ProfileID> selectedIDs;
 
 	//iterate through all partnership types. the available Buckets are different by partnership
 	for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
 	{
-		//get the parameters for current relationship type
-        const SexualBehavior &partneringParams = popWideParams.defaultMaleParams.hasSexualBehavior(partnership_type) ? popWideParams.defaultMaleParams.getSexualBehavior(partnership_type) : popWideParams.defaultMsmParams.getSexualBehavior(partnership_type);
+        try
+        {
+            //get the parameters for current relationship type
+            const SexualBehavior &partneringParams = popWideParams.defaultMaleParams.hasSexualBehavior(partnership_type) ? popWideParams.defaultMaleParams.getSexualBehavior(partnership_type) : popWideParams.defaultMsmParams.getSexualBehavior(partnership_type);
 
-		//get available demographicProfiles that are available for this partnership
-		for(unsigned int j = 0; j < partneringParams.getNumAvailableBuckets(); ++j)
-		{
-			selectedIDs.clear();
-			//contains profile ID's that were selected from
-			currProfileSelector.set(partneringParams.getAvailableBucket(j).dmgProfileSelector);
-			currProfileSelector.selectProfileIDs(selectedIDs, nullptr);
+            //get available demographicProfiles that are available for this partnership
+            for(unsigned int j = 0; j < partneringParams.getNumAvailableBuckets(); ++j)
+            {
+                selectedIDs.clear();
+                //contains profile ID's that were selected from
+                currProfileSelector.set(partneringParams.getAvailableBucket(j).dmgProfileSelector);
+                currProfileSelector.selectProfileIDs(selectedIDs, nullptr);
 
-            //TODO:eventually, we should change this.
-			//assert(selectedIDs.size() == 1);	//we don't want any wild cards in the DemographicProfile string.
+                //TODO:eventually, we should change this.
+                //assert(selectedIDs.size() == 1);	//we don't want any wild cards in the DemographicProfile string.
 
-			//check to see whether we have a repeat Bucket.
-			for(size_t i = 0; i < potentialPartnerBuckets[partnership_type].size(); ++i)
-			{
-                if(potentialPartnerBuckets[partnership_type].at(i)->getProfileID() == selectedIDs.at(0))
-				{
-                    throw std::runtime_error("For available buckets for partnership type '"
-                        + SexualPartnership::TypeStrings.at(SexualPartnership::Type(partnership_type))
-                        + "', " + *DemographicProfile::toString(selectedIDs.at(0))
-                        + " is listed multiple times either via repeat or wildcard overlaps");
-				}
-			}
+                //check to see whether we have a repeat Bucket.
+                for(size_t i = 0; i < potentialPartnerBuckets[partnership_type].size(); ++i)
+                {
+                    if(potentialPartnerBuckets[partnership_type].at(i)->getProfileID() == selectedIDs.at(0))
+                    {
+                        throw std::runtime_error("For available buckets for partnership type '"
+                            + SexualPartnership::TypeStrings.at(SexualPartnership::Type(partnership_type))
+                            + "', " + *DemographicProfile::toString(selectedIDs.at(0))
+                            + " is listed multiple times either via repeat or wildcard overlaps");
+                    }
+                }
 
-			BucketSexualMixing *bucket = (BucketSexualMixing *)entities->getBucket(selectedIDs.at(0));
+                BucketSexualMixing *bucket = (BucketSexualMixing *)entities->getBucket(selectedIDs.at(0));
 
-			if(bucket == nullptr)
-			{
-                throw std::runtime_error("This Demographic Profile " 
-                    + *DemographicProfile::toString(selectedIDs.at(0))
-                    + " has not been instantiated and so cannot be used");
-			}
-			else
-			{
-                potentialPartnerBuckets[partnership_type].push_back(bucket);
-                eligibleBucketWeights[partnership_type].push_back(partneringParams.getAvailableBucket(j).weight);
-			}
-		}
+                if(bucket == nullptr)
+                {
+                    throw std::runtime_error("This Demographic Profile "
+                        + *DemographicProfile::toString(selectedIDs.at(0))
+                        + " has not been instantiated and so cannot be used");
+                }
+                else
+                {
+                    potentialPartnerBuckets[partnership_type].push_back(bucket);
+                    eligibleBucketWeights[partnership_type].push_back(partneringParams.getAvailableBucket(j).weight);
+                }
+            }
 
-		//make sure that the weights sum to 1
-        Utility::normalize(eligibleBucketWeights[partnership_type]);
+            //make sure that the weights sum to 1
+            Utility::normalize(eligibleBucketWeights[partnership_type]);
+        }
+        catch(const std::exception &/*e*/)
+        {
+            continue;
+        }
 	}
 }
 
@@ -153,20 +160,19 @@ void Population::Births(EventParams &parameters_)
 	for(unsigned long i = 0; i < numBorn; ++i)
 	{
 		//determine gender
-		auto gender = (i < numMales) ? DemographicProfile::Gender::Male : DemographicProfile::Gender::Female;
-        auto orientation = DemographicProfile::SexualOrientation::Heterosexual;
+		std::string entity_type = (i < numMales) ? "male" : "female";
 
-        if(gender == DemographicProfile::Gender::Male)
+        if(entity_type == "male")
         {
             if(i > numHeteroMales)
             {
                 if(i > numBisexualMales + numHeteroMales)
                 {
-                    orientation = DemographicProfile::SexualOrientation::Homosexual;
+                    entity_type = "msm";
                 }
                 else
                 {
-                    orientation = DemographicProfile::SexualOrientation::Bisexual;
+                    entity_type = "bisexual_male";
                 }
             }
         }
@@ -179,7 +185,7 @@ void Population::Births(EventParams &parameters_)
 			parameters_.numNewbornsTraced++;
 		}
 
-		auto p = GeneratePerson(parameters_, gender, orientation, nullptr, toTrace);
+		auto p = GeneratePerson(parameters_, entity_type, nullptr, toTrace);
 
         if(parameters_.debugLevel > DebugLevel::One && parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
 		{
@@ -391,14 +397,18 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 
 				if(oldStatus != p->hivStatus)
 				{
-                    if(p->getDemographicProfile()->get(p->getDemographicProfile()->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
+                    auto sa_status = p->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>();
+
+                    if(sa_status != DemographicProfile::SexualActivityStatus::NotActive)
 					{
-						((BucketSexualMixing *) entities->getBucket(p->getDemographicProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
-						        p->hivStatus);
+                        auto bucket = entities->getBucket(p->getDemographicProfile()->getProfileID());
+                        // This shouldn't fail because all sexually activity people are in sexual mixing buckets
+                        auto sexual_mixing_bucket = static_cast<BucketSexualMixing *>(bucket); 
+                        sexual_mixing_bucket->changeHIVStatus(p, oldStatus, p->hivStatus);
 					}
 				}
 
-                if(p->getAge(TimeGranularity::Month) < popWideParams.CSWEndAgeMth[p->getDemographicProfileVal(DemographicProfile::Demographic::Gender)])
+                if(p->getAge(TimeGranularity::Month) < popWideParams.CSWEndAgeMth[p->getEntityType()])
 				{
 					p->rollForBecomeSexWorker(parameters_, false);
 				}
@@ -412,7 +422,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 
 			//Check for age to stop becoming CSW
             if(p->getDemographicProfileVal(DemographicProfile::Demographic::Employment) == (std::size_t)DemographicProfile::Employment::Csw
-                && p->getAge(TimeGranularity::Month) >= popWideParams.CSWEndAgeMth[p->getDemographicProfileVal(DemographicProfile::Demographic::Gender)])
+                && p->getAge(TimeGranularity::Month) >= popWideParams.CSWEndAgeMth[p->getEntityType()])
 			{
 				p->quitSexWork(parameters_);
 				entities->refreshBucketDemographicProfile(p, &p_Iter);
@@ -564,7 +574,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 			std::list<Person *> newlyInfected;
 			//sexual activity among any existing partnerships that have a duration associated with them
 			Person *infectedMe = initiator->allPartnerSexualActivity(parameters_, SexualPartnership::Type(type), newlyInfected,
-			                     &(populationStatistics.infectionsTracker));
+                &populationStatistics.infectionsTracker, popWideParams.transmission_coefficients_);
 			//TODO: Get a condom use count here!
 			//record all incident infections
 			std::list<Person *>::iterator newlyInfectedIter = newlyInfected.begin();
@@ -707,7 +717,7 @@ void Population::SaveIndividualSummaries(std::ostream &stream) const
         stream << ",\"sexual_activity_status\"" << ":";
         stream << (summary.profile.get(DemographicProfile::Demographic::SexualActivityStatus) == 0 ? "\"sexually-active\"" : "\"not-active\"");
         stream << ",\"sexual_orientation\"" << ":";
-        stream << (summary.profile.get(DemographicProfile::Demographic::SexualOrientation) == 0 ? "\"hetero\"" : summary.profile.get(DemographicProfile::Demographic::SexualOrientation) == 1 ? "\"homo\"" : "\"bisexual\"");
+        stream << (summary.profile.get(DemographicProfile::Demographic::SexualOrientation) == 0 ? "\"hetero\"" : "\"homo\"");
         stream << ",\"relationship_status\"" << ":";
         stream << (summary.profile.get(DemographicProfile::Demographic::RelationshipStatus) == 0 ? "\"non-single\"" : "\"single\"");
         stream << ",\"risk_group\"" << ":" << (summary.risk_group == Person::HIGH ? "\"high\"" : "\"low\"");
@@ -835,7 +845,7 @@ std::size_t Population::UpdateSize()
     GenderProfile.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
     currSizeGender[(std::size_t)DemographicProfile::Gender::Male] = 0;
 
-    for(auto orientation : {DemographicProfile::SexualOrientation::Heterosexual, DemographicProfile::SexualOrientation::Homosexual, DemographicProfile::SexualOrientation::Bisexual})
+    for(auto orientation : {DemographicProfile::SexualOrientation::Heterosexual, DemographicProfile::SexualOrientation::Homosexual})
     {
         GenderProfile.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)orientation);
         GenderProfileIDs.clear();
@@ -1071,7 +1081,7 @@ void Population::DissolveSexualPartnerships(EventParams &parameters_, Person *_i
 	}
 }
 
-Person *Population::GeneratePerson(EventParams &parameters_, DemographicProfile::Gender _gender, DemographicProfile::SexualOrientation sexual_orientation,
+Person *Population::GeneratePerson(EventParams &parameters_, const std::string &entity_type,
                                    PopulationParameters::AgeBucketPrevalenceInfo *_ageBucketParams, bool toTrace)
 {
 	Person *toReturn = nullptr;	//pointer to the person that was just generated
@@ -1081,28 +1091,28 @@ Person *Population::GeneratePerson(EventParams &parameters_, DemographicProfile:
 	             _ageBucketParams->maxAgeMth);
 
 	//create the person
-	if(_gender == DemographicProfile::Gender::Male)
+	if(entity_type != "female")
 	{
         auto circumcised = parameters_.randomNums.chance(popWideParams.proportionCircumcised);
         
-        if(sexual_orientation == DemographicProfile::SexualOrientation::Heterosexual)
+        if(entity_type == "male")
         {
             toReturn = new Male(parameters_, ageMth, circumcised,
                 populationID, popWideParams.defaultMaleParams);
         }
-        else if(sexual_orientation == DemographicProfile::SexualOrientation::Homosexual)
+        else if(entity_type == "msm")
         {
             toReturn = new Msm(parameters_, ageMth, circumcised,
                 populationID, popWideParams.defaultMsmParams);
         }
-        else if(sexual_orientation == DemographicProfile::SexualOrientation::Bisexual)
+        else if(entity_type == "bisexual_male")
         {
             toReturn = new BisexualMale(parameters_, ageMth, circumcised,
                 populationID, popWideParams.defaultBisexualMaleParams);
         }
         else
         {
-            throw std::runtime_error("unsupported sexual orientation");
+            throw std::runtime_error("unsupported entity type");
         }
 
         if(circumcised)
@@ -1113,11 +1123,6 @@ Person *Population::GeneratePerson(EventParams &parameters_, DemographicProfile:
 	}
 	else
 	{
-        if(sexual_orientation != DemographicProfile::SexualOrientation::Heterosexual)
-        {
-            throw std::runtime_error("unsupported sexual orientation");
-        }
-
 		toReturn = new Female(parameters_, ageMth, populationID, popWideParams.defaultFemaleParams);
 	}
 
@@ -1134,9 +1139,9 @@ Person *Population::GeneratePerson(EventParams &parameters_, DemographicProfile:
 	if(ageMth >= popWideParams.ageOfMajority)
 	{
 		//see if they will be a CSW
-        if(ageMth < popWideParams.CSWEndAgeMth[(std::size_t)_gender])
+        if(ageMth < popWideParams.CSWEndAgeMth[entity_type])
 		{
-            toReturn->rollForBecomeSexWorker(parameters_, true, popWideParams.initProbCSW[(std::size_t)_gender]);
+            toReturn->rollForBecomeSexWorker(parameters_, true, popWideParams.initProbCSW[entity_type]);
 		}
 
 		//reroll their risk group
@@ -3286,8 +3291,7 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 		          Constants::TAB;
 		firstRow << "Gender" << Constants::TAB;
 		secondRow << "Males (Heterosexual)" << Constants::TAB;
-        secondRow << "Males (MSM)" << Constants::TAB;
-        secondRow << "Males (Bisexual)" << Constants::TAB;
+        secondRow << "Males (Homosexual)" << Constants::TAB;
 		firstRow << Constants::TAB;
         firstRow << Constants::TAB;
         firstRow << Constants::TAB;
@@ -3375,7 +3379,7 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 
 	_outStream << totalDeaths << Constants::TAB;
 	//output size of male and female populations
-    for(auto orientation : {DemographicProfile::SexualOrientation::Heterosexual, DemographicProfile::SexualOrientation::Homosexual, DemographicProfile::SexualOrientation::Bisexual})
+    for(auto orientation : {DemographicProfile::SexualOrientation::Heterosexual, DemographicProfile::SexualOrientation::Homosexual})
     {
         _outStream << GetSize(DemographicProfile::Gender::Male, orientation) << Constants::TAB;
     }

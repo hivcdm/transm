@@ -111,7 +111,7 @@ bool SexualPartnership::isMember(Person *_p)
 	return ((_p == partners[0]) || (_p == partners[1]));
 }
 
-Person *SexualPartnership::monthlySexualActivity(EventParams &_eventParams, InfectionsTracker *infTrack)
+Person *SexualPartnership::monthlySexualActivity(EventParams &_eventParams, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, Person::ENDHVLStrata>> &transmission_coefficients)
 {
 	int eventsThisMonth = partners[0]->rollNumEventsPerPartner(partners[1], _eventParams.randomNums, type);
 
@@ -120,7 +120,7 @@ Person *SexualPartnership::monthlySexualActivity(EventParams &_eventParams, Infe
 		eventsThisMonth = 1;
 	}
 
-	return partners[0]->sexualActivity(partners[1], eventsThisMonth, type, _eventParams, infTrack);
+	return partners[0]->sexualActivity(partners[1], eventsThisMonth, type, _eventParams, infTrack, transmission_coefficients);
 }
 
 void SexualPartnership::printPartners(std::ostream &_outStream, const std::string &_prefix)

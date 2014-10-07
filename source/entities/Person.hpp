@@ -8,8 +8,9 @@
 
 #include "DemographicProfile.hpp"
 #include "SexualPartnership.hpp"
-#include "entitypool/FullVector.hpp"
+#include "TransmissionType.hpp"
 #include "core/Constants.hpp"
+#include "entitypool/FullVector.hpp"
 #include "statistics/StatsRecord.hpp"
 #include "utility/Utility.hpp"
 
@@ -107,7 +108,9 @@ public:
 		/// Final stage of disease progression
 		/// </summary>
 		HVL_LATESTAGE,
-		ENDHVLStrata
+		ENDHVLStrata,
+        Last = ENDHVLStrata,
+        First = UNINFECTED
 	};
 
 	enum HIVStatus
@@ -178,8 +181,6 @@ public:
 
 	//there is option to print patient traces to a text file. this keeps track of how many we've done so far
 	static int numTracesSoFar;
-
-    virtual void SetTransmissionCoefficient(HVLStrata stratum, double coefficient) = 0;
 
     virtual void SetAssortativeness(SexualPartnership::Type partnership_type, double assortativeness) = 0;
 
@@ -347,10 +348,9 @@ public:
 	/** this calculates the FOI towards Person _p (this uses the Transmission coefficient) per event
 	// @param _p - partner
 	// @param _parteringType - whether this is a fling or steadyCouple */
-	virtual double getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventParams &_eventParams) = 0;
-
-	/** get the transmission coefficient of the person... based on HVL */
-	virtual double getTransmissionCoeff() = 0;
+	virtual double getFOI(Person *_p, 
+        const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients,
+        SexualPartnership::Type _partnershipType, EventParams &_eventParams) = 0;
 
 	//returns true if person is currently alive
 	bool isAlive() const;
@@ -452,6 +452,7 @@ public:
 	int getSexualActivity();
 
 	//---------------< Start DemographicProfile related methods >------------------------//
+    virtual std::string getEntityType() const = 0;
 
 	/*
 	changes this person to sexually active
@@ -570,7 +571,7 @@ public:
 	@return returns a pointer to the person who infected this person.
 	*/
 	Person *allPartnerSexualActivity(EventParams &_eventParams, SexualPartnership::Type _partnershipType,
-	                                 list<Person *> &_newlyInfected, InfectionsTracker *infTrack);
+        list<Person *> &_newlyInfected, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients);
 
 	//returns whether this person could partner with Person _p
 	//  split this by gender because there might be behaviour differences between them
@@ -601,7 +602,7 @@ public:
 	returns a pointer to a person who has been newly infected. nullptr if no infection occured
 	*/
 	Person *sexualActivity(Person *_p, int _numActs, SexualPartnership::Type _partnershipType, EventParams &_eventParams,
-	                       InfectionsTracker *infTrack);
+        InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients);
 
 	//-----------------< END methods Partnering/Selection Methods >-----------------------//
 
