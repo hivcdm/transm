@@ -14,13 +14,13 @@ long FullVector::FVcounter = 0;
 
 FullVector::FullVector()
 {
-	vector<Person *> vP;
+	std::vector<Person *> vP;
 	vPerson = vP;
 	ID = FullVector::FVcounter;
 	FullVector::FVcounter++;
 }
 
-FullVector::FullVector(vector<Person *> vP)
+FullVector::FullVector(std::vector<Person *> vP)
 {
 	vPerson = vP;
 	vector<Person *>::iterator vPiter;

@@ -107,16 +107,6 @@ Female::~Female(void)
 {
 }
 
-
-//-----------< START methods that will populate static fields or store to file >----------------//
-
-
-//-----------< END methods that will populate static fields or store to file >----------------//
-
-/** These methods are inherited from Person **/
-
-
-
 double Female::getFOI(Person *_p, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
 {
     assert(_p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male);

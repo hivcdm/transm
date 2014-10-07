@@ -77,7 +77,6 @@ BucketAge::~BucketAge()
 	FVNoDist.clear();
 }
 
-//------------< Start Methods taken from EntityIndex >-------------//
 //clears all elements from this index
 void BucketAge::clear()
 {
@@ -141,7 +140,7 @@ unsigned long BucketAge::getNumInfected(Person::RiskLevel _risk)
 //prints every person in this index to _outStream
 void BucketAge::print(ostream &_outStream, const std::string &_prefix)
 {
-	vector<Person *>::iterator PersonIter = begin();
+	std::vector<Person *>::iterator PersonIter = begin();
 
 	while(PersonIter != end())
 	{
@@ -150,10 +149,6 @@ void BucketAge::print(ostream &_outStream, const std::string &_prefix)
 	}
 }
 
-//-------------< End Methods taken from EntityIndex >--------------//
-
-
-//-----------< Start Insertion and Retrieval Methods >-------------//
 //draw any member from this pool, this function has a speed optimization
 //this function is used by class BucketSexualMixing
 //  draw a particular key first to narrow down potentials
@@ -335,13 +330,11 @@ bool BucketAge::insert(Person *_person)
 	return true;
 }
 
-//------------< End Insertion and Retrieval Methods >--------------//
-//------------------< Start Iteration Methods >--------------------//
 /* @function: begin
  * @returns: An iterator of LLNoDist: the FullVector of person's with
  * exactly one copy of each person in the Bucket
  */
-vector<Person *>::iterator BucketAge::begin()
+std::vector<Person *>::iterator BucketAge::begin()
 {
 	return FVNoDist.begin();
 }
@@ -350,13 +343,10 @@ vector<Person *>::iterator BucketAge::begin()
  * @returns: An iterator of LLNoDist: the FullVector of person's with
  * exactly one copy of each person in the Bucket
  */
-vector<Person *>::iterator BucketAge::end()
+std::vector<Person *>::iterator BucketAge::end()
 {
 	return FVNoDist.end();
 }
-
-//-------------------< End Iteration Methods >---------------------//
-//-----------------< Start Getters and Setters >-------------------//
 
 DemographicProfile::ProfileID BucketAge::getBinID()
 {

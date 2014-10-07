@@ -25,8 +25,6 @@ public:
 	//Destructor
 	~BucketAge();
 
-
-	//------------< Start Methods taken from EntityIndex >-------------//
 	//clears all elements from this index
 	void clear();
 
@@ -44,10 +42,6 @@ public:
 	//prints every person in this index to _outStream
     void print(ostream &_outStream, const std::string &_prefix);
 
-	//-------------< End Methods taken from EntityIndex >--------------//
-
-
-	//-----------< Start Insertion and Retrieval Methods >-------------//
 	/*
 	 * Uses the random number generator (_randomNums) to randomly draw a person
 	 * -- Either draws from the FV related to _riskLevel or the random FV if _use_random == true
@@ -79,23 +73,18 @@ public:
 	 * @returns: true if person was successfully added, false otherwise
 	 */
 	bool insert(Person *_person);
-	//------------< End Insertion and Retrieval Methods >--------------//
-	//------------------< Start Iteration Methods >--------------------//
 
 	/* @function: begin
 	 * @returns: An iterator of LLNoDist: the linked list of persons with
 	 * exactly one copy of each person in the Bucket
 	 */
-	vector<Person *>::iterator begin();
+	std::vector<Person *>::iterator begin();
 
 	/* @function: end
 	 * @returns: An iterator of LLNoDist: the linked list of persons with
 	 * exactly one copy of each person in the Bucket
 	 */
-	vector<Person *>::iterator end();
-
-	//-------------------< End Iteration Methods >---------------------//
-	//-----------------< Start Getters and Setters >-------------------//
+	std::vector<Person *>::iterator end();
 
 	DemographicProfile::ProfileID getBinID();
 
@@ -158,13 +147,9 @@ public:
 
     void printAll(ostream &_outStream, const std::string &_prefix);
 
-
-	//------------------< End Getters and Setters >--------------------//
-
-
 private:
 	//FVinfected and FVuninfected keep track of number of persons and number of uninfected vs. infected persons by generation of infection
-	vector<FullVector *> FVinfected;
+	std::vector<FullVector *> FVinfected;
 	FullVector FVuninfected;
 	//FV with no probability distribution: 1 copy of each person
 	//Use this for iterator functions

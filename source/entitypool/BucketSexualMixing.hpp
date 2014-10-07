@@ -75,12 +75,11 @@ public :
         TimeGranularity _timeGranularity, const std::map<SexualPartnership::Type, double> &_assort);
 	virtual ~BucketSexualMixing();
 
-	//-------------< Begin inherited from class BucketDemographicProfile >---------------------//
-	//clears all elements from this index without deleting members
-	//TESTED
+    /// <summary>
+	/// clears all elements from this index without deleting members.
+    /// </summary>
 	void clear();
 
-	//TESTED
 	Person *drawMember(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType, bool _remove);
 
 	/***
@@ -125,16 +124,11 @@ public :
 
     void forEach(std::function<void(Person *)> callback);
 
-	//-------------< End inherited from class BucketDemographicProfile >---------------------//
-	//-------------< Begin iterator methods >------------------//
-	//TESTED
 	BucketAllAges::iterator begin();
 
 	//TESTED
 	BucketAllAges::iterator end();
 
-	//--------------< End iterator methods >-------------------//
-	//-------< Begin additional methods based on this structure >-------//
 	/*
 	 * @params: minMonthAge, maxMonthAge
 	 * @returns: total number of persons in this with age between minMonthAge and maxMonthAge
@@ -197,9 +191,8 @@ public :
 	 * @returns: List of persons set to die (of old age)
 	 */
 	//TESTED
-	list<Person *> ageOneTimeStep();
+	std::list<Person *> ageOneTimeStep();
 
-	//--------< End additional methods based on this structure >--------//
 private :
 
 	/*

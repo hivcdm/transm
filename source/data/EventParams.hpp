@@ -190,7 +190,6 @@ public :
 
 	int monthOf1990;
 
-	//--------- CEPAC related objects -------------//
 	//CEPAC related simContext (input)
 	std::vector<SimContext *> cepacSimContexts;
 
@@ -230,7 +229,6 @@ public :
 	RunStats *cepacRunStats;
 	//CEPAC tracing object (output)
 	Tracer *cepacTracer;
-	//--------- CEPAC related objects -------------//
 
 	//calibration inputs
 	CalibrationInputs calibrationInputs;

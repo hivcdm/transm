@@ -39,27 +39,11 @@ class BaseEnumCls
 {
 
 public:
-
 	typedef unsigned int Enum;
 
-	enum nullptr_ENUM {	};
+	enum NULL_ENUM {};
 
 	const static std::string WILDCARD;
-	/*
-		class ExceptionBadEnum : public exception {
-
-			Enum e;
-
-			ExceptionBadEnum(Enum _e) {
-				e = _e;
-			}
-
-			virtual const char* what() const throw() {
-				ostringstream o
-				return "Bad Enum
-			}
-		};
-	*/
 protected:
 	//flag is set to true if this class has been initialized with string values
 	bool initialized;

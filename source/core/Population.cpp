@@ -143,9 +143,6 @@ Population::~Population()
 {
 }
 
-//-----------------< Event-related methods -----------------------------//
-
-
 void Population::Births(EventParams &parameters_)
 {
 	//number of people to be born this month
@@ -503,7 +500,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 		{
 			//get partnerships of 'type' whose durations have elapsed, i.e. time to split
 			endedPartnershipCount[type] += initiator->getPartnershipsToEnd(parameters_.currTime, SexualPartnership::Type(type), partnershipsToEnd, false);
-		}//foreach SexualPartnership::type
+		}
 
 		//Now, split them up... man, it would suck for their kids (if they had any)
 		DissolveSexualPartnerships(parameters_, initiator, partnershipsToEnd);
@@ -513,7 +510,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 		{
 			entities->refreshBucketDemographicProfile(initiator, &p_Iter);
 		}
-	} //for (p_Iter = entities->begin(DemographicProfile::Gender::Male); p_Iter != entities->end(DemographicProfile::Gender::Male); p_Iter++) {
+	}
 
 	//Ending the first pass (dissolving partnerships)
 
@@ -545,7 +542,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
         }
 
 		//Get available partnership types
-		vector<SexualPartnership::Type> partnershipTypes =
+		std::vector<SexualPartnership::Type> partnershipTypes =
 		    profilesToPartnershipTypes[initiator->getCurrBucketProfileID()];
 
 		//iterate through the SexualPartnership::Type that people in the current bucket engage in
@@ -561,11 +558,9 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 			initiator->resetLatestUnformedPartnerships(type);
 			//TODO: Get the ratio of numFormed to numIntendedToForm
 			int numFormed = CreatePartnerships(parameters_, initiator, &p_Iter, type);
-			//if(numFormed > 0) {
 			newPartnershipCount[(std::size_t)type] += numFormed;
-			//} //if(numFormed > 0) {
 			attemptedPartnershipCount[(std::size_t)type] += numFormed + initiator->getLatestUnformedPartnerships(type);
-		} //for(int i =0; i < bucketIter->second.size(); i ++) {
+		}
 
 		//for existing partnerships, have sexual activity
 		//Have all the sexual activity with current partners (includes new partners)
@@ -614,13 +609,13 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 				}
 
 				newlyInfectedIter++;
-			}//while(newlyInfectedIter != newlyInfected.end())
-		} //for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::Type::ENDType; ++type) {
+			}
+		}
 
 		//Add the cost of condom usage
 		auto totalCondomCostUndiscounted = initiator->getCondomsUsedThisMonth() * popWideParams.condomCost;
 		populationStatistics.costsTracker.RecordCondomUse(totalCondomCostUndiscounted, totalCondomCostUndiscounted * initiator->getCepacDiscountFactor());
-	} //for (p_Iter = entities->begin(DemographicProfile::Gender::Male); p_Iter != entities->end(DemographicProfile::Gender::Male); p_Iter++)
+	}
 
 	//Ends the second pass through (i.e. the sex acts pass through)
 
@@ -649,7 +644,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 				                         "Number Ended", true);
 			}
 		}
-	} //for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::Type::ENDType; ++type) {
+	}
 
 	if(parameters_.calibrationInputs.useCalibration
 	        && parameters_.currTime > (parameters_.calibrationInputs.monthOfCalibration - 12)
@@ -875,11 +870,11 @@ std::size_t Population::UpdateSize()
 	//Count all the CSW's
 	DemographicProfile CSWProfile;
     CSWProfile.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::Csw);
-	vector<DemographicProfile::ProfileID> CSWProfileIDs;
+	std::vector<DemographicProfile::ProfileID> CSWProfileIDs;
 	currCSWSize = 0;
 	CSWProfile.selectProfileIDs(CSWProfileIDs, nullptr);
 
-	for(size_t i = 0; i < CSWProfileIDs.size(); i++)
+	for(std::size_t i = 0; i < CSWProfileIDs.size(); i++)
 	{
 		currCSWSize += entities->size(CSWProfileIDs[i]);
 	}
@@ -925,7 +920,7 @@ std::size_t Population::UpdateSize()
 			}
 
 			currProfileID++;
-		}	//while(currBucketIndex < entityBuckets->size()) {
+		}
 	}
 
 	for(auto &ageRangeSizePair : currSizeByAgeRange)
@@ -1002,9 +997,6 @@ void Population::UpdateFinalPhysicalState(EventParams &parameters_)
 	}
 }
 
-
-//--------------------------< BEGIN helper methods  >-------------------------------------//
-
 void Population::DissolveSexualPartnerships(EventParams &parameters_, Person *_initiator,
         std::list<SexualPartnership *> &_partnershipsToEnd)
 {
@@ -1066,7 +1058,7 @@ void Population::DissolveSexualPartnerships(EventParams &parameters_, Person *_i
 			}
 
 			parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << std::endl;
-		}//if (parameters_.outputTrace[EventParams::TraceFile::Type::SinglePerson] && (_initiator->trace() || partner->trace()))
+		}
 
 		//if the partnership has any duration, destructor removes the pointer from both members partner lists
 		delete(*partnerIter);
@@ -1276,7 +1268,7 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 				((BucketSexualMixing *)entities->getBucket(p->getDemographicProfile()->getProfileID()))->increaseInfected(p);
 			}
 		}
-	}//for()
+	}
 
 	//loop through all females and apply prevalence to population
 	for(std::list<Person *>::iterator females_iter = entities->begin(DemographicProfile::Gender::Female);
@@ -1352,7 +1344,7 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 				((BucketSexualMixing *)entities->getBucket(p->getDemographicProfile()->getProfileID()))->increaseInfected(p);
 			}
 		}
-	}//for()
+	}
 }
 
 void Population::RecordInfection(const Person *infectee, const Person *infector, int time)
@@ -1442,7 +1434,7 @@ void Population::DetermineRankings(const EventParams::RolloutEligibility &criter
 
 		if(checkOiHist || checkCd4 || checkCd4OiHist || checkHvl || checkCd4Hvl)
 		{
-			list <Person *>::iterator untIter = rolloutUntreatedPool.begin();
+			auto untIter = rolloutUntreatedPool.begin();
 
 			//loop through people in the untreated pool to check for their eligibility
 			while(untIter != rolloutUntreatedPool.end())
@@ -2104,99 +2096,99 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Person *_
 		        numPartners << " " << (SexualPartnership::TypeStrings.at(_partnershipType)) << " partnerships:" << std::endl;
 	}
 
-	while(numPartners > 0)
-	{
-		//Decrement numPartners
-		numPartners--;
-		//pick the bucket that we will attempt to choose from
-		BucketDemographicProfile *bucket = potentialPartnerBuckets[_partnershipType].at(parameters_.randomNums.chooseIndex(
-			Population::eligibleBucketWeights[_partnershipType]));
-		assert(bucket != nullptr);
-		std::list<Person *> attemptedPartners;
-		bool foundPartner = false;
-		Person *chosenPartner = nullptr;
-		bool printTracePartner = false;
+    while(numPartners > 0)
+    {
+        //Decrement numPartners
+        numPartners--;
+        //pick the bucket that we will attempt to choose from
+        BucketDemographicProfile *bucket = potentialPartnerBuckets[_partnershipType].at(parameters_.randomNums.chooseIndex(
+            Population::eligibleBucketWeights[_partnershipType]));
+        assert(bucket != nullptr);
+        std::list<Person *> attemptedPartners;
+        bool foundPartner = false;
+        Person *chosenPartner = nullptr;
+        bool printTracePartner = false;
 
         int maxRejections = ((Male *)_initiator)->getMaxPartnershipRejections();
 
-		//the partner that this man will have a relationship with
-		//remove the partner from the pool will be added back later
-		for(int i = 0; i < 10; i++)
-		{
-			Person *partner = bucket->drawMember(parameters_.randomNums, _initiator, _partnershipType, true);
+        //the partner that this man will have a relationship with
+        //remove the partner from the pool will be added back later
+        for(int i = 0; i < 10; i++)
+        {
+            Person *partner = bucket->drawMember(parameters_.randomNums, _initiator, _partnershipType, true);
 
-			if(partner == nullptr)
-			{
-				if(printToTrace)
-				{
-					parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "  +x Male " << _initiator->getID() <<
-					        " attempted to draw from empty bucket" << std::endl;
-					parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "   x Partnership not formed!" << std::endl;
-				}
+            if(partner == nullptr)
+            {
+                if(printToTrace)
+                {
+                    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "  +x Male " << _initiator->getID() <<
+                        " attempted to draw from empty bucket" << std::endl;
+                    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "   x Partnership not formed!" << std::endl;
+                }
 
-				//This partnership will not be formed: increase the number of unformed partnerships
-				_initiator->increaseUnformedPartnershipTallies(_partnershipType);
-				break;
-			}
+                //This partnership will not be formed: increase the number of unformed partnerships
+                _initiator->increaseUnformedPartnershipTallies(_partnershipType);
+                break;
+            }
 
             if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && partner->trace())
-			{
-				parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "+ Female " << partner->getID() << " is chosen for a " << 
-				        (SexualPartnership::TypeStrings.at(_partnershipType)) << " partnership:" << std::endl;
-				printTracePartner = true;
-			}
+            {
+                parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "+ Female " << partner->getID() << " is chosen for a " <<
+                    (SexualPartnership::TypeStrings.at(_partnershipType)) << " partnership:" << std::endl;
+                printTracePartner = true;
+            }
 
-			assert(partner != nullptr);
-			assert(partner->isAlive());
-			attemptedPartners.push_back(partner);
+            assert(partner != nullptr);
+            assert(partner->isAlive());
+            attemptedPartners.push_back(partner);
 
-			//if we tried to draw someone we are already seeing, then redraw until we pick someone new
-			if(_initiator->isPartneredWith(partner))
-			{
+            //if we tried to draw someone we are already seeing, then redraw until we pick someone new
+            if(_initiator->isPartneredWith(partner))
+            {
                 if(parameters_.debugLevel > DebugLevel::One)
-				{
-					_initiator->print(cerr, "");
-					cerr << _initiator->getID() << " Attempted repeat partnership with " << partner->getID() << ", " <<
-					     (SexualPartnership::TypeStrings.at(_partnershipType)) << std::endl;
-					_initiator->printCurrentPartners(cerr, "");
-				}
+                {
+                    _initiator->print(cerr, "");
+                    cerr << _initiator->getID() << " Attempted repeat partnership with " << partner->getID() << ", " <<
+                        (SexualPartnership::TypeStrings.at(_partnershipType)) << std::endl;
+                    _initiator->printCurrentPartners(cerr, "");
+                }
 
                 if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (_initiator->trace() || partner->trace()))
-				{
-					if(_initiator->trace())
-					{
+                {
+                    if(_initiator->trace())
+                    {
                         if(_initiator->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
-						{
-							parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "  +x Male ";
-						}
-						else
-						{
-							parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "  +x Female ";
-						}
+                        {
+                            parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "  +x Male ";
+                        }
+                        else
+                        {
+                            parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "  +x Female ";
+                        }
 
-						parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << _initiator->getID() << " attempted repeat partnership with " <<
-						        partner->getID() << std::endl;
-					}
-					else
-					{
+                        parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << _initiator->getID() << " attempted repeat partnership with " <<
+                            partner->getID() << std::endl;
+                    }
+                    else
+                    {
                         if(partner->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Female)
-						{
-							parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "  +x Female ";
-						}
-						else
-						{
-							parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "  +x Male ";
-						}
+                        {
+                            parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "  +x Female ";
+                        }
+                        else
+                        {
+                            parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "  +x Male ";
+                        }
 
-						parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << partner->getID() << " was selected *again* by " <<
-						        _initiator->getID() << std::endl;
-					}
+                        parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << partner->getID() << " was selected *again* by " <<
+                            _initiator->getID() << std::endl;
+                    }
 
-					parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "   x Repeat partnership not formed!" << std::endl;
-				}
-			}
-			else if(partner != _initiator && popWideParams.ageOfMajority + partner->GetSexualActivityDelay() <= partner->getAge(TimeGranularity::Month))
-			{
+                    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "   x Repeat partnership not formed!" << std::endl;
+                }
+            }
+            else if(partner != _initiator && popWideParams.ageOfMajority + partner->GetSexualActivityDelay() <= partner->getAge(TimeGranularity::Month))
+            {
                 auto rejectionChance = partner->GetPartnershipRejectionChance(_initiator->getRiskLevel(), _partnershipType);
 
                 if(rejectionChance == 0 || !parameters_.randomNums.chance(rejectionChance)) // not rejected or partner rejection not set
@@ -2209,62 +2201,62 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Person *_
                 {
                     break;
                 }
-			}
-		}
+            }
+        }
 
-		if(!foundPartner)
-		{
-			//This partnership will not be formed: increase the number of unformed partnerships
-			_initiator->increaseUnformedPartnershipTallies(_partnershipType);
+        if(!foundPartner)
+        {
+            //This partnership will not be formed: increase the number of unformed partnerships
+            _initiator->increaseUnformedPartnershipTallies(_partnershipType);
 
-			for(std::list<Person *>::iterator it = attemptedPartners.begin(); it != attemptedPartners.end(); it++)
-			{
-				//If woman was removed from entity pool, put her back!
-				if((*it)->getCurrBucketProfileID() == DemographicProfile::END)
-				{
-					entities->addEntity((*it));
-				}
-			}
+            for(std::list<Person *>::iterator it = attemptedPartners.begin(); it != attemptedPartners.end(); it++)
+            {
+                //If woman was removed from entity pool, put her back!
+                if((*it)->getCurrBucketProfileID() == DemographicProfile::END)
+                {
+                    entities->addEntity((*it));
+                }
+            }
 
-			continue;
-		}
+            continue;
+        }
 
-		if(printToTrace || printTracePartner)
-		{
-			parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "  + Male " << _initiator->getID() << " (";
-			_initiator->getDemographicProfile()->print(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].file, "");
-            parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " age " << _initiator->getAge(TimeGranularity::Month) << ", " 
+        if(printToTrace || printTracePartner)
+        {
+            parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "  + Male " << _initiator->getID() << " (";
+            _initiator->getDemographicProfile()->print(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].file, "");
+            parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " age " << _initiator->getAge(TimeGranularity::Month) << ", "
                 << chosenPartner->getSexualActivity() << " marbles, " << ((chosenPartner->getRiskLevel() == Person::HIGH) ? "HIGH" : "LOW") << " risk) forms " <<
-			        (SexualPartnership::TypeStrings.at(_partnershipType)) << " with female " << chosenPartner->getID() << " (";
-			chosenPartner->getDemographicProfile()->print(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].file, "");
-			parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " age " << chosenPartner->getAge(TimeGranularity::Month) 
+                (SexualPartnership::TypeStrings.at(_partnershipType)) << " with female " << chosenPartner->getID() << " (";
+            chosenPartner->getDemographicProfile()->print(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].file, "");
+            parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " age " << chosenPartner->getAge(TimeGranularity::Month)
                 << ", " << chosenPartner->getSexualActivity() << " marbles, " << ((chosenPartner->getRiskLevel() == Person::HIGH) ? "HIGH" : "LOW") << " risk)";
-		}
+        }
 
-		//the pointer to this partnership will be stored within initiator.
-		new SexualPartnership(_initiator, chosenPartner, parameters_, _partnershipType);
+        //the pointer to this partnership will be stored within initiator.
+        new SexualPartnership(_initiator, chosenPartner, parameters_, _partnershipType);
 
-		//add all persons back to entity pool
-		for(std::list<Person *>::iterator it = attemptedPartners.begin(); it != attemptedPartners.end(); it++)
-		{
-			//If woman was removed from entity pool, put her back!
-			if((*it)->getCurrBucketProfileID() == DemographicProfile::END)
-			{
-				entities->addEntity((*it));
-			}
-		}
+        //add all persons back to entity pool
+        for(std::list<Person *>::iterator it = attemptedPartners.begin(); it != attemptedPartners.end(); it++)
+        {
+            //If woman was removed from entity pool, put her back!
+            if((*it)->getCurrBucketProfileID() == DemographicProfile::END)
+            {
+                entities->addEntity((*it));
+            }
+        }
 
-		if(!_initiator->inCorrectBucketDemographicProfile())
-		{
-			entities->refreshBucketDemographicProfile(_initiator, nullptr);
-		}
+        if(!_initiator->inCorrectBucketDemographicProfile())
+        {
+            entities->refreshBucketDemographicProfile(_initiator, nullptr);
+        }
 
-		assert(chosenPartner->inCorrectBucketDemographicProfile());
-		assert(_initiator->inCorrectBucketDemographicProfile());
+        assert(chosenPartner->inCorrectBucketDemographicProfile());
+        assert(_initiator->inCorrectBucketDemographicProfile());
 
-		//increment if partnership was formed
-		numFormed++;
-	} //for(int partner = 0; partner < numPartners; partner++) {
+        //increment if partnership was formed
+        numFormed++;
+    }
 
 	//TODO: Return difference between numFormed and original value of numPartners as well as numFormed... create field inside initiator
 	return numFormed;
@@ -2305,7 +2297,7 @@ void Population::ProcessDeath(EventParams &parameters_, Person *_p, bool calcula
 	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
 	{
 		_p->getPartnershipsToEnd(parameters_.currTime, SexualPartnership::Type(type), formerPartnerships, true);
-	} //for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::Type::ENDType; ++type) {
+	}
 
 	DissolveSexualPartnerships(parameters_, _p, formerPartnerships);
 	currDeathCauses[_p->deathStatus]++;
@@ -2508,7 +2500,7 @@ void Population::PrintMethodResults(EventParams &parameters_, const std::string 
 			parameters_.trace_files[EventParams::TraceFile::Type::Events] << Constants::TAB;
 			entities->printBucketLabels(parameters_.trace_files[EventParams::TraceFile::Type::Events].file, _showInfections);
 			parameters_.trace_files[EventParams::TraceFile::Type::Events] << std::endl;
-		} //if( parameters_.currTime == 0 ) {
+		}
 
 		//print out the sizes of the buckets to a string stream
 		std::ostringstream bucketTotalsStr;
@@ -2536,7 +2528,7 @@ void Population::PrintMethodResults(EventParams &parameters_, const std::string 
 			parameters_.trace_files[EventParams::TraceFile::Type::Events] << totalInSteady << Constants::TAB;
 			parameters_.trace_files[EventParams::TraceFile::Type::Events] << totalInRegular << Constants::TAB;
 			parameters_.trace_files[EventParams::TraceFile::Type::Events] << Constants::TAB;
-		}//if( _d > One) {
+		}
 
 		parameters_.trace_files[EventParams::TraceFile::Type::Events] << bucketTotalsStr.str();
 
@@ -3348,7 +3340,7 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 		//write out string buffers to trace file
 		_outStream << firstRow.str() << "Number circumcised" << std::endl;
 		_outStream << secondRow.str() << "NA" << Constants::TAB << "SA" << std::endl;
-	} //if( _time == 0) {
+	}
 
 	//Month
 	if(_time == 0)

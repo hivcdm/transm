@@ -145,8 +145,6 @@ private:
     std::vector<int> yearlyTestsByResult;
 
 public:
-
-	//----------< End type declarations >-------------------//
 	SingleLEStats *selectedLEStats;
 	SinglePartAcqStats *selectedPartAcqStats;
 	SurvivalStats *survivalStats;
@@ -159,7 +157,7 @@ public:
 
 	EnumCls<PopulationStatistics::LifeStats> *enumClass; //used in lifeStats; declared here so that deletion is possible
 
-	StatsRecord<LifeStats, BaseEnumCls::nullptr_ENUM> *lifeStats;
+	StatsRecord<LifeStats, BaseEnumCls::NULL_ENUM> *lifeStats;
 
 	PopulationStatistics();
 	~PopulationStatistics();

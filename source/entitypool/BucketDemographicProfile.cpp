@@ -13,7 +13,6 @@ void BucketDemographicProfile::forEach(std::function<void(Person *)> callback)
     }
 }
 
-//------------< Begin Implemented Methods >----------------//
 //returns the BucketDemographicProfile's ID number
 DemographicProfile::ProfileID BucketDemographicProfile::getProfileID()
 {
@@ -126,22 +125,18 @@ unsigned long BucketDemographicProfile::size()
  * @effects: Ages everyone in the bucket one timestep
  * @returns: List of persons too old for timestep (should always be null)
  */
-list<Person *> BucketDemographicProfile::ageOneTimeStep()
+std::list<Person *> BucketDemographicProfile::ageOneTimeStep()
 {
-	list<Person *> lP;
-	multimap<unsigned long, Person *>::iterator pIter;
+	std::list<Person *> lP;
 
-	for(pIter = simpleEntityIndex->begin(); pIter != simpleEntityIndex->end(); pIter++)
+	for(auto pIter = simpleEntityIndex->begin(); pIter != simpleEntityIndex->end(); pIter++)
 	{
 		(pIter->second)->ageOneTimeUnit();
 	}
 
 	return lP;
 }
-//------------------< End BucketDemographicProfile Virtual methods >------------------//
 
-
-//-----------------< Begin Constructors and Destructors >----------------//
 //this function should not be used in this sim, it's just here for a default constructor
 BucketDemographicProfile::BucketDemographicProfile()
 {

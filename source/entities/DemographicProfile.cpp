@@ -34,8 +34,6 @@ const DemographicProfile::ProfileID DemographicProfile::MAX = DemographicProfile
 const DemographicProfile::ProfileID DemographicProfile::END = DemographicProfile::ProfileID((1 + (std::size_t)SexualActivityStatus::Last) * (1 + (std::size_t)Gender::Last) *
     (1 + (std::size_t)SexualOrientation::Last) * (1 + (std::size_t)RelationshipStatus::Last) * (1 + (std::size_t)Employment::Last));
 
-//----------------< Start Functions & fields for class DemographicProfile >--------------------//
-
 DemographicProfile::DemographicProfile()
 {
 	set(DemographicProfile::END);
@@ -169,7 +167,7 @@ void DemographicProfile::operator++(int)
 		}
 
 		currPlace = (Demographic)((std::size_t)currPlace - 1);
-	} //while(currPlace >= DemographicProfile::DemographicCategoriesCls.getMin())  {
+	}
 }
 
 BaseEnumCls::Enum DemographicProfile::get(DemographicProfile::Demographic _demographic) const
@@ -240,10 +238,9 @@ void DemographicProfile::parse(string _tupleStr)
 		//get the enum value from _tupleStr's tokens
         BaseEnumCls::Enum e = currCategoryCls->fromString(tokens.at((std::size_t)currDemographic));
 		//if we get currCategoryCls->fromString(tokens.at(currDemographic)) to throw an exception, then we can use a better error msg
-		//cerr << "Tuple String " << _tupleStr << " is not valid. (" << _tupleStr.at(currDemographic) << ")" << std::endl;
 		set(currDemographic, e);
         currDemographic = DemographicProfile::Demographic((std::size_t)currDemographic + 1);
-	} //while(currDemographic < DemographicProfile::Demographic::Last) {
+	}
 }
 
 
@@ -291,7 +288,7 @@ void DemographicProfile::selectProfileIDs(std::vector<ProfileID> &_selected, con
 			}
 
 			i++;
-		} //while(i < _available->size()) {
+		}
 	}
 	else
 	{
@@ -306,7 +303,7 @@ void DemographicProfile::selectProfileIDs(std::vector<ProfileID> &_selected, con
 			i++;
 		}
 		while(i <= DemographicProfile::MAX);
-	}//if(_available) {
+	}
 }
 
 void DemographicProfile::set(DemographicProfile::Demographic _demographic, BaseEnumCls::Enum _enum)
@@ -346,7 +343,7 @@ void DemographicProfile::set(DemographicProfile::ProfileID _profileID)
 		{
             set(currDemographic, DemographicProfile::DemographicEnumCls.at((std::size_t)currDemographic).getNumEnums());
             currDemographic = DemographicProfile::Demographic((std::size_t)currDemographic + 1);
-		}//while(currDemographic < DemographicProfile::Demographic::Last) {
+		}
 	}
 	else
 	{
@@ -375,11 +372,6 @@ const string *DemographicProfile::toString() const
 {
 	return &DemographicProfile::ProfileIDtoStr[getProfileID()];
 }
-
-//----------------< End Functions for class DemographicProfile >--------------------//
-
-
-//--------------------< Begin Static Methods >-----------------------//
 
 BaseEnumCls::Enum DemographicProfile::get(ProfileID _profileID, Demographic _demographic)
 {
@@ -489,6 +481,3 @@ void DemographicProfile::initProfileIDMap()
 		currDemographicProfile++;
 	}
 }
-
-//--------< End fields and functions to change if enum Demographic values change >-------------------//
-

@@ -404,8 +404,6 @@ unsigned long BucketSexualMixing::size()
 	return total;
 }
 
-
-//-------------< Begin iterator methods >------------------//
 BucketSexualMixing::BucketAllAges::iterator BucketSexualMixing::begin()
 {
 	return personsByAge->begin();
@@ -425,8 +423,7 @@ BucketAge *BucketSexualMixing::getYoungest()
 {
 	return personsByAge->front();
 }
-//--------------< End iterator methods >-------------------//
-//-------< Begin additional methods based on this structure >-------//
+
 /*
  * @returns: total number of persons in this with age between minMonthAge and maxMonthAge
  */
@@ -596,8 +593,8 @@ list<Person *> BucketSexualMixing::ageOneTimeStep()
 	//Kill off the oldest
 	BucketAge *oldestPersons = getOldest();
 	//Iterate through all oldest remove them from this and put them in list of "expired" persons to be returned
-	list<Person *> toReturn;
-	vector<Person *>::iterator personIterator = oldestPersons->begin();
+	std::list<Person *> toReturn;
+	auto personIterator = oldestPersons->begin();
 
 	while(personIterator != oldestPersons->end() && oldestPersons->size() > 0)
 	{

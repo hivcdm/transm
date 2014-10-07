@@ -177,7 +177,7 @@ double InfectionsTracker::getSAPrev(Population &_population)
 	int totalInfectedSA = totalInfected;
 	DemographicProfile NAProfile;
     NAProfile.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::NotActive);
-	vector<DemographicProfile::ProfileID> NAProfileIDs;
+	std::vector<DemographicProfile::ProfileID> NAProfileIDs;
 	NAProfile.selectProfileIDs(NAProfileIDs, nullptr);
 
     for(std::size_t i = 0; i < NAProfileIDs.size(); i++)
@@ -422,8 +422,6 @@ void InfectionsTracker::setPrevalentInfections(long /*_time*/,
 	currPrevalentInfectionsAgeFemale = _prevalenceByAgeFemale;
 }
 
-//-----------------< Begin functions to print out infections >-----------------------//
-
 int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, ostream &_outStream, Population *_population)
 {
 	assert(_time >= 0);
@@ -625,14 +623,14 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 		thirdRow << "Infecteds:" << Constants::TAB;
 		//write out headers that tally infections from one DemographicProfile to another
 		//loop through all used ProfileID's and create internal string buffer headers for future timestep trace output
-		list<DemographicProfile::ProfileID>::iterator infectorProfileID = profileIDsForDetailedTrace.begin();
+		auto infectorProfileID = profileIDsForDetailedTrace.begin();
 
 		while(infectorProfileID != profileIDsForDetailedTrace.end())
 		{
 			//first row profile str refers to infectors
 			firstRow << "Total Infected in History (Prevalent Cases Excluded)";
 			secondRow << *DemographicProfile::toString(*infectorProfileID);
-			list<DemographicProfile::ProfileID>::iterator infectedProfileID = profileIDsForDetailedTrace.begin();
+			auto infectedProfileID = profileIDsForDetailedTrace.begin();
 
 			while(infectedProfileID != profileIDsForDetailedTrace.end())
 			{
@@ -641,10 +639,10 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 				//second row profile str refers to infecteds
 				thirdRow << *DemographicProfile::toString(*infectedProfileID) << Constants::TAB;
 				infectedProfileID++;
-			} //while(infectorProfileID < profileIDsForDetailedTrace.end()) {
+			}
 
 			infectorProfileID++;
-		} //while(infectedProfileID < profileIDsForDetailedTrace.end()) {
+		}
 
 		//write out headers that tally total infections based on age and gender and risk group
 		for(int i = 0; i < numAgeRanges; i++)
@@ -692,7 +690,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 		_outStream << firstRow.str() << std::endl;
 		_outStream << secondRow.str() << std::endl;
 		_outStream << thirdRow.str() << std::endl;
-	} //if( _time == 0) {
+	}
 
 	//if no incident infections happened during this time, then make sure that we have 0 in the currTime incident infections and exposures
 	if(_time > static_cast<long>(currTimeStep))
@@ -832,7 +830,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 	//First tally the infected men
     GenderProfile.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
-	vector<DemographicProfile::ProfileID> GenderProfileIDs;
+	std::vector<DemographicProfile::ProfileID> GenderProfileIDs;
 	GenderProfile.selectProfileIDs(GenderProfileIDs, nullptr);
 
 	for(size_t i = 0; i < GenderProfileIDs.size(); i++)
@@ -878,7 +876,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	int totalInfectedCSW = 0;
 	DemographicProfile CSWProfile;
     CSWProfile.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::Csw);
-	vector<DemographicProfile::ProfileID> CSWProfileIDs;
+	std::vector<DemographicProfile::ProfileID> CSWProfileIDs;
 	CSWProfile.selectProfileIDs(CSWProfileIDs, nullptr);
 
 	for(size_t i = 0; i < CSWProfileIDs.size(); i++)
@@ -974,20 +972,20 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	{
 		int infectionsByType = 0;
 		//tally all the infections that happened with partnershipType for all possible infector and infected DemographicProfiles
-		list<DemographicProfile::ProfileID>::iterator infectorProfileID = profileIDsForDetailedTrace.begin();
+		auto infectorProfileID = profileIDsForDetailedTrace.begin();
 
 		while(infectorProfileID != profileIDsForDetailedTrace.end())
 		{
-			list<DemographicProfile::ProfileID>::iterator infectedProfileID = profileIDsForDetailedTrace.begin();
+			auto infectedProfileID = profileIDsForDetailedTrace.begin();
 
 			while(infectedProfileID != profileIDsForDetailedTrace.end())
 			{
 				infectionsByType += incidentInfections[partnershipType][*infectorProfileID][*infectedProfileID];
 				infectedProfileID++;
-			} //while(infectorProfileID < profileIDsForDetailedTrace.end()) {
+			}
 
 			infectorProfileID++;
-		} //while(infectedProfileID < profileIDsForDetailedTrace.end()) {
+		}
 
 		_outStream << infectionsByType << Constants::TAB;
 	}
@@ -995,11 +993,11 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	_outStream << Constants::TAB;
 	//write out all incident infections that happened in history
 	// only ProfileID's in profileIDsForDetailedTrace are included
-	list<DemographicProfile::ProfileID>::iterator infectorProfileID = profileIDsForDetailedTrace.begin();
+	auto infectorProfileID = profileIDsForDetailedTrace.begin();
 
 	while(infectorProfileID != profileIDsForDetailedTrace.end())
 	{
-		list<DemographicProfile::ProfileID>::iterator infectedProfileID = profileIDsForDetailedTrace.begin();
+		auto infectedProfileID = profileIDsForDetailedTrace.begin();
 
 		while(infectedProfileID != profileIDsForDetailedTrace.end())
 		{
@@ -1013,10 +1011,10 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 			_outStream << infs << Constants::TAB;
 			infectedProfileID++;
-		} //while(infectorProfileID < profileIDsForDetailedTrace.end()) {
+		}
 
 		infectorProfileID++;
-	} //while(infectedProfileID < profileIDsForDetailedTrace.end()) {
+	}
 
 	//write out all incident infections that happened in history stratified by age and gender and risk
 	for(int i = 0; i < numAgeRanges; i++)

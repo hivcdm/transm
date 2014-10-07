@@ -29,17 +29,10 @@ Otherwise, the number of fields in say a Population object or a Person would be 
 template<typename PointStatIDs, typename StratifiedStatIDs>
 class StatsRecord
 {
-
 	//any stats that can be represented as a single value
 	std::vector<double> singleValStats;
 	EnumCls<PointStatIDs> *statIDEnumCls;
 
-	/*
-	// container for all statified statistics, which are stored in array form
-	vector<vector<double>> stratifiedStats;
-	EnumCls<StratifiedStatIDs>* stratifiedStatIDEnumCls;
-
-	*/
 public:
 	/**
 		Saves the an instance of EnumCls that wraps the enumerated stats that we are using
@@ -56,8 +49,6 @@ public:
 	~StatsRecord();
 
 	void print(std::ostream &_outStream);
-	//------------< Begin Single value stats methods >---------------------//
-
 
 	//get internal value that corresponds with _statID
 	double getStat(PointStatIDs _statID) const;
@@ -89,55 +80,6 @@ public:
 
 	//returns true if _statID is valid for this instance of StatsRecord
 	bool validStatID(PointStatIDs _statID) const;
-	//------------< End Single value stats methods >---------------------//
-
-
-
-	/*
-	//------------< Begin Stratified stats methods >---------------------//
-
-
-	*
-		multiply _value to index _index of the internal stats vector that corresponds with _statID
-		@param _statID statistic identifier
-		@param _index index within the Stratified that will be changed
-
-	*
-	double getStat(StratifiedStatIDs _statID, int _index)  const;
-
-	*
-		add _value to index _index of the internal array that corresponds with _statID
-		function will check to see whether _index is larger than the size of the internal array
-		@param _statID statistic identifier
-		@param _index index within the internal stats vector that will be changed
-		@param _value the number we will add to the current value at _index
-	*
-	void incrStat(StratifiedStatIDs _statID, int _index, double _value);
-
-	*
-		multiply _value to index _index of the internal array that corresponds with _statID
-		@param _statID statistic identifier
-		@param _index index within the internal stats vector that will be changed
-		@param _value the number we will multiply to the current value at _index
-
-	*
-	void multStat(StratifiedStatIDs _statID, int _index, double _value);
-
-
-	*
-		set the internal value of the statistic that corresponds to _value
-	*
-	void setStat(StratifiedStatIDs _statID, int _index, double _value);
-
-	**
-	returns true if 1) _statID is valid for this instance of StatsRecord
-					2) _index is valid for valid _statID
-		we are basically checking for out-of-bounds of internal data structures
-	*
-	bool validStatID(StratifiedStatIDs _statID, int _index) const;
-
-	//------------< End Stratified stats methods >---------------------//
-	*/
 
 };
 
@@ -161,63 +103,11 @@ StatsRecord<PointStatIDs, StratifiedStatIDs>::~StatsRecord()
 template<typename PointStatIDs, typename StratifiedStatIDs>
 void StatsRecord<PointStatIDs, StratifiedStatIDs>::init(EnumCls<PointStatIDs> *_statIDEnumCls)
 {
-	assert(typeid(StratifiedStatIDs) == typeid(BaseEnumCls::nullptr_ENUM));
+	assert(typeid(StratifiedStatIDs) == typeid(BaseEnumCls::NULL_ENUM));
 	statIDEnumCls = _statIDEnumCls;
 	//make room internally to store numSingleStats values
 	singleValStats.resize(_statIDEnumCls->getNumEnums(), 0.0);
 }
-
-
-/*
-template<typename PointStatIDs, typename StratifiedStatIDs>
-StatsRecord<PointStatIDs,StratifiedStatIDs>::StatsRecord(  EnumCls<PointStatIDs>* _statIDs,  EnumCls<StratifiedStatIDs> * _stratifiedStatIDs, size_t _stratifiedStatDims[]) {
-	assert( typeid(StratifiedStatIDs) != typeid(BaseEnumCls::nullptr_ENUM));
-
-	statIDEnumCls = _statIDs;
-	stratifiedStatIDEnumCls = _stratifiedStatIDs;
-
-	//make room internally to store numSingleStats values
-	singleValStats.resize(_statIDs->getNumEnums(), 0.0);
-
-	//make room internally to store numArrayStatIDs vectors
-	stratifiedStats.resize(_stratifiedStatIDs->getNumEnums());
-
-	//iterate through all stratified stats
-	for(size_t i = 0; i < _stratifiedStatIDs.getNumEnums(); i++) {
-		//make room internally to store numStrata values
-		stratifiedStats.at(i).resize( _stratifiedStatDims[i], 0.0);
-	}
-}
-*/
-
-/*
-template<typename PointStatIDs, typename StratifiedStatIDs>
-void StatsRecord<PointStatIDs, StratifiedStatIDs>::print(std::ostream &_outStream)
-{
-	//print out single value stats
-	for(auto i = static_cast<PointStatIDs>(0); i < statIDEnumCls->getNumEnums(); ++i)
-	{
-		statIDEnumCls->appendEnumStr(_outStream, i);
-		_outStream << "\t" << singleValStats.at(i) << std::endl;
-	}
-
-	//print out array stats
-	for(auto i = static_cast<StratifiedStatIDs>(0); i < stratifiedStatIDEnumCls->getNumEnums(); ++i)
-	{
-		stratifiedStatIDEnumCls->appendEnumStr(_outStream, i);
-		_outStream << ":\t(";
-
-		for(size_t j = 0; j < stratifiedStats.at(i).size(); j++)
-		{
-			_outStream << stratifiedStats.at(i).at(j) << "\t";
-		}
-
-		_outStream << ")" << std::endl;
-	}
-}
-*/
-
-//------------< Begin Single value stats methods >---------------------//
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
 double StatsRecord<PointStatIDs, StratifiedStatIDs>::getStat(PointStatIDs _statID)  const
@@ -252,43 +142,3 @@ bool StatsRecord<PointStatIDs, StratifiedStatIDs>::validStatID(PointStatIDs _sta
 {
 	return (statIDEnumCls->isValidNonWildCard(_statID));
 }
-
-//------------< End Single value stats methods >---------------------//
-
-/*
-//------------< Begin Stratified stats methods >---------------------//
-template<typename PointStatIDs, typename StratifiedStatIDs>
-double StatsRecord<PointStatIDs,StratifiedStatIDs>::getStat(StratifiedStatIDs _statID, int _index)  const{
-	assert( validStatID(_statID, _index) );
-	return stratifiedStats.at(_statID).at(_index);
-}
-
-template<typename PointStatIDs, typename StratifiedStatIDs>
-void StatsRecord<PointStatIDs,StratifiedStatIDs>::incrStat(StratifiedStatIDs _statID, int _index, double _value){
-	assert( validStatID(_statID, _index) );
-	stratifiedStats.at(_statID).at(_index) += _value;
-}
-
-template<typename PointStatIDs, typename StratifiedStatIDs>
-void StatsRecord<PointStatIDs,StratifiedStatIDs>::multStat(StratifiedStatIDs _statID, int _index, double _value){
-	assert( validStatID(_statID, _index) );
-	stratifiedStats.at(_statID).at(_index) *= _value;
-}
-
-template<typename PointStatIDs, typename StratifiedStatIDs>
-void StatsRecord<PointStatIDs,StratifiedStatIDs>::setStat(StratifiedStatIDs _statID, int _index, double _value){
-	assert( validStatID(_statID, _index) );
-	stratifiedStats.at(_statID).at(_index) = _value;
-}
-
-template<typename PointStatIDs, typename StratifiedStatIDs>
-bool StatsRecord<PointStatIDs,StratifiedStatIDs>::validStatID(StratifiedStatIDs _statID, int _index) const{
-	return ( stratifiedStatIDEnumCls->isValidNonWildCard(_statID)) &&
-			 (_index >= 0) &&
-			 (_index < stratifiedStats.at(_statID).size())
-		   );
-}
-
-//------------< End Stratified stats methods >---------------------//
-
-*/

@@ -536,7 +536,7 @@ void SimulationBuilderXml::InitializePopulation()
 		//try to form partnership, will add Male back to the pool if partnership was formed
 		population.CreatePartnerships(population.parameters_, m, nullptr, SexualPartnership::Type::Steady, true);
 		numCouples--;
-	} //while(numCouples > 0) {
+	}
 
 	//number of regular couples -- % married of adult population by DemographicProfile::SexualActivityStatus::ActiveStatus / 2
 	//Note that some people may end up in multiple relationships -- this should come out in the wash (?)
@@ -562,7 +562,7 @@ void SimulationBuilderXml::InitializePopulation()
 		//form partnership, will add Male back to the pool if partnership was formed
 		population.CreatePartnerships(population.parameters_, m, nullptr, SexualPartnership::Type::Regular, true);
 		numCouples--;
-	} //while(numCouples > 0) {
+	}
 
 	//count the size of the population and store value
 	population.UpdateSize();

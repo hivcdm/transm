@@ -7,23 +7,16 @@
 
 class Person;
 
-/**
-This class corresponds to a Person's demographic profile.
-
-It contains a tuple of the Person's demographic classifiers. The elements of the tuple are defined by enum Demographic.
-
-Each unique tuple corresponds to a ProfileID. Each ProfileID corresponds to a BucketDemographicProfile within EntityPool
-
-Each Person contains an instance of DemographicProfile which then determines which BucketDemographicProfile they will be contained in
-
-@author schung5
-**/
+/// <summary>
+/// This class corresponds to a Person's demographic profile.
+/// It contains a tuple of the Person's demographic classifiers. The elements of the tuple are defined by enum Demographic.
+/// Each unique tuple corresponds to a ProfileID. Each ProfileID corresponds to a BucketDemographicProfile within EntityPool
+/// Each Person contains an instance of DemographicProfile which then determines which BucketDemographicProfile they will be contained in
+/// </summary>
 class DemographicProfile
 {
 
 public:
-
-    //-------------< Begin Enums that hold relevent Demographics for BucketDemographicProfile Placement >------------------//
     /*
     Unfortunately, when we want to change enum Demographic, we also need to change:
     void initEnums()
@@ -43,10 +36,12 @@ public:
         First = SexualActivityStatus
     };
 
-    //The ordering of the SexualActivityStatus enums matter b/c of aging.
-    //Bad case: We age all NA first. Someone ages out of the NA bucket into an SA one.
-    //			 Then we age all SA folks. If we aren't careful, then someone who
-    //			 just joined an SA bucket might be aged again.
+    /// <summary>
+    /// The ordering of the SexualActivityStatus enums matter b/c of aging.
+    /// Bad case: We age all NA first. Someone ages out of the NA bucket into an SA one.
+    ///			 Then we age all SA folks. If we aren't careful, then someone who
+    ///			 just joined an SA bucket might be aged again.
+    /// </summary>
     enum class SexualActivityStatus
     {
         Active,
@@ -112,10 +107,6 @@ public:
         * (unsigned int)RelationshipStatus::Last
         * (unsigned int)Employment::Last;
 
-	//-------------< END Enums that hold relevent Demographics for BucketDemographicProfile Placement >------------------//
-
-	//------------< Begin type and struct definitions >--------------//
-
 	//each unique profile has a unique integer value assigned to it.
 	// tuples that have wildcard values do not have a profileID
 	typedef int ProfileID;
@@ -129,15 +120,14 @@ public:
 		}
 	};
 
-	//------------< END type and struct definitions >--------------//
-
-	//------------< Begin fields >--------------//
-
-	static const ProfileID
-	NOT_UNIQUE;	//used as a return value to getProfileID to signify that the current tuple of enums inside this class contain a wildcard
-	static const ProfileID MIN;			//min possible ProfileID
-	static const ProfileID MAX;			//max useable ProfileID. i.e. a bucket exists for it
-	static const ProfileID END;			//this is the ProfileID when all enums are at their wildcard value
+    //used as a return value to getProfileID to signify that the current tuple of enums inside this class contain a wildcard
+	static const ProfileID NOT_UNIQUE;
+    //min possible ProfileID
+	static const ProfileID MIN;
+    //max useable ProfileID. i.e. a bucket exists for it
+	static const ProfileID MAX;
+    //this is the ProfileID when all enums are at their wildcard value
+	static const ProfileID END;
 
 private:
 	//storage of actual enum values for a DemographicProfile object. It's basically a tuple.
@@ -152,24 +142,13 @@ private:
 	static std::vector<std::unique_ptr<const DemographicProfile>> ProfileIDtoProfile;
 	static std::vector <std::string> ProfileIDtoStr;
 
-	//------------< End fields >--------------//
-
 	//is called if initProfileIDMapCalled == false
 	static void initProfileIDMap();
 	//is called if initEnumsCalled == false
 	static void initEnums();
 
-
 public:
-
-	/**
-	operators. All these are implemented less efficiently b/c I couldn't figure out
-	why memcmp wouldn't work.
-
-	author: schung5
-	**/
-
-
+	//TODO: All these are implemented less efficiently b/c I couldn't figure out why memcmp wouldn't work.
 	bool operator==(const DemographicProfile) const;
 	bool operator!=(const DemographicProfile) const;
 	// left-most numbers have more weight for equality purposes than right ones
@@ -180,8 +159,6 @@ public:
 	void operator=(const DemographicProfile);
 	//	sets this tuple to the next unique value
 	void operator++(int);
-
-
 
 	//initializes person with END values for dmgProfile. i.e. uninitialized
 	DemographicProfile();
@@ -266,8 +243,6 @@ public:
 
 public :
 
-	//----------------< Begin Static Methods >------------------------------//
-
 	//deallocates the statically stored strings we generated for fast lookup
 	//this is to prevent any memory leaks
 	static void deallocStaticMembers();
@@ -290,7 +265,4 @@ public :
 
 	//gets a string representation of the _demographic value of the tuple that corresponds to _profileID
 	static const std::string *getString(ProfileID _profileID, Demographic _demographic);
-
-	//----------------< End Static Methods >------------------------------//
-
 };

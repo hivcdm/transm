@@ -28,7 +28,7 @@ PopulationStatistics::PopulationStatistics()
 {
 	assert(PopulationStatistics::LifeStatsStr.size() == PopulationStatistics::ENDLifeStats);
 	enumClass = new EnumCls<PopulationStatistics::LifeStats>(PopulationStatistics::LifeStatsStr);
-	lifeStats = new StatsRecord<PopulationStatistics::LifeStats, BaseEnumCls::nullptr_ENUM>(enumClass);
+	lifeStats = new StatsRecord<PopulationStatistics::LifeStats, BaseEnumCls::NULL_ENUM>(enumClass);
 	survivalStats = new SurvivalStats();
 	//Set up the timeToRecord vector... by default, record at every 1/4 of the maxTime
 	timesToRecord.push_back(1);
@@ -100,13 +100,6 @@ PopulationStatistics::~PopulationStatistics()
 	delete selectedLEStats;
 	delete selectedPartAcqStats;
 	delete survivalStats;
-	//Don't delete the SingleTimeStats because they get used in the TransmissionSummaryStats
-	/*for (vector<SingleTimeStats*>::iterator j = selectedSummaryStats.begin(); j != selectedSummaryStats.end(); j++) {
-		SingleTimeStats *summary = *j;
-		delete summary;
-	}*/
-	//Don't delete the selectedSummaryStats because they get used in the TransmissionSummaryStats
-	//selectedSummaryStats.clear();
 }
 void PopulationStatistics::processDeath(Person *_p, EventParams &_eventParams)
 {
@@ -194,18 +187,12 @@ void PopulationStatistics::processPostMaxTimeDeath(Person *_p)
 	{
 		lifeStats->incrStat(PopulationStatistics::TOTAL_HIV_POS_LM, stats->getStat(Person::STAT_TOTAL_LM));
 		lifeStats->incrStat(PopulationStatistics::TOTAL_HIV_POS_POSTINFECT_LM, stats->getStat(Person::STAT_HIV_POS_POSTINFECT_LM));
-		//Don't count the number of deaths for final tally if they didn't time within the time frame
-		//lifeStats->incrStat( PopulationStatistics::TOTAL_HIV_POS_DTHS, 1);
 		lifeStats->incrStat(PopulationStatistics::TOTAL_HIV_POS, 1);
 	}
 	else
 	{
 		lifeStats->incrStat(PopulationStatistics::TOTAL_HIV_NEG_LM, stats->getStat(Person::STAT_TOTAL_LM));
-		//Don't count the number of deaths for final tally if they didn't time within the time frame
-		//lifeStats->incrStat( PopulationStatistics::TOTAL_HIV_NEG_DTHS, 1);
 		lifeStats->incrStat(PopulationStatistics::TOTAL_HIV_NEG, 1);
-		//this person was exposed to virus but not infected
-		//infectionStats->incrStat( PopulationStatistics::TOTAL_EXPOSED_BUT_NOT_INFECTED, stats->getStat(Person::STAT_EXPOSURES_BEFORE_INF));
 	}
 
 	lifeStats->incrStat(PopulationStatistics::TOTAL_LM, stats->getStat(Person::STAT_TOTAL_LM));

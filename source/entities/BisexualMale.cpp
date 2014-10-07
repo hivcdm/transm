@@ -25,7 +25,6 @@ BisexualMale::SubPopParams::~SubPopParams()
 {
 }
 
-//------------ < Begin getters >-----------------//
 double BisexualMale::SubPopParams::getChanceBecomeCSW() const
 {
     return chanceBecomeCSW;
@@ -202,12 +201,6 @@ bool BisexualMale::isCircumcised()
 {
     return circumcised;
 }
-
-//-------------< END methods that are for BisexualMales only >------------------------//
-
-
-//-----------------< Start methods which are inherited from Person >-----------------//
-
 
 //in this case, the male is infected and female is uninfected
 double BisexualMale::getFOI(Person *_p, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)

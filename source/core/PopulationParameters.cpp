@@ -5,8 +5,6 @@
 #include "entities/SexualBehavior.hpp"
 #include "utility/Utility.hpp"
 
-//-------------< Begin AgeBucketPrevalenceInfo methods >-------------------//
-
 PopulationParameters::AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(int _minAgeMth, int _maxAgeMth,
         double _proportionOfPopulationMale,
         double _proportionOfPopulationMsm, 

@@ -33,11 +33,6 @@ const std::vector<std::string> Person::StatsStr =
 
 EnumCls<Person::Stats> Person::StatsEnum(Person::StatsStr);
 
-//----------------< Start Methods for Person >-------------------//
-//All implemented methods are in alphabetical order execept for the constructors/destructors (at bottom of Person section)
-//The virtual methods are implemeted by Male and Female and are the very bottom fo the file
-
-
 void Person::ageOneTimeUnit()
 {
 	age++;
@@ -145,12 +140,13 @@ bool Person::isEligibleForTreatment(const SimContext::TreatmentInputs::ARTStartP
 }
 
 Person *Person::allPartnerSexualActivity(EventParams &_eventParams, SexualPartnership::Type _partnershipType,
-    list<Person *> &_newlyInfected, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients)
+    std::list<Person *> &_newlyInfected, InfectionsTracker *infTrack, 
+    const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients)
 {
 	assert(_partnershipType < SexualPartnership::Type::ENDType);
 	//iterate through all partnerships of SexualActivity::Type _partnershipType and have them engage in sexual activity
-	list<SexualPartnership *>::iterator iter = partners[(int)_partnershipType].begin();
-	list<SexualPartnership *>::iterator iterEnd = partners[(int)_partnershipType].end();
+	auto iter = partners[(int)_partnershipType].begin();
+	auto iterEnd = partners[(int)_partnershipType].end();
 	//becomes non-nullptr only when this person gets infected. We are saving the partner who infected this person
 	Person *infectedMe = nullptr;
 
@@ -171,11 +167,11 @@ Person *Person::allPartnerSexualActivity(EventParams &_eventParams, SexualPartne
 				{
 					infectedMe = (*iter)->getOtherPartner(this);
 				}
-			} //if(infected != nullptr) {
+			}
 		}
 
 		iter++;
-	} //while(iter != iterEnd) {
+	}
 
 	return infectedMe;
 }
@@ -356,7 +352,8 @@ void Person::becomeInfected(int _generationOfInfection, EventParams &_eventParam
 
 void Person::initialCEPACpatient(EventParams &_eventParams)
 {
-	//Only initialize the person if they haven't already been initialized!  (Prevalent cases will get called to initialize twice!)
+	// Only initialize the person if they haven't already been initialized!  
+    // Prevalent cases will get called to initialize twice!
 	if(!wentThroughCEPAC)
 	{
 		wentThroughCEPAC = true;
@@ -372,12 +369,6 @@ void Person::initialCEPACpatient(EventParams &_eventParams)
 			cepacGender = SimContext::GENDER_MALE;
 		}
 
-		//MULTIRUN
-		/*if (_eventParams.currTime > 20){
-			cepacPatient = new Patient(_eventParams.cepacSimContext2, _eventParams.cepacRunStats, _eventParams.cepacTracer,
-					true, getAge(MONTH), cepacGender, (_generationOfInfection > 0));
-		} else {*/
-		//TODO: Switch to multiple input sheets!
 		SimContext *simContextToUse;
 
 		if(_eventParams.useRollout)
@@ -393,7 +384,6 @@ void Person::initialCEPACpatient(EventParams &_eventParams)
 		cepacPatient = new Patient(simContextToUse, _eventParams.cepacRunStats, _eventParams.cepacTracer,
             true, getAge(TimeGranularity::Month), cepacGender, setAsIncidentCase, _eventParams.currTime);
 
-		//}
 		//Only update hvl and cd4 if the patient is infected
 		//update HVL and CD4  and infection status for this Person if they are infected
 		if(isInfected())
@@ -483,7 +473,7 @@ void Person::initialCEPACpatient(EventParams &_eventParams)
 			{
 				oiHistory[i] = cepacPatient->getDiseaseState()->hasTrueOIHistory[i];
 			}
-		}//if (isInfected)
+		}
 
 		Person::numTracesSoFar++;
 	}
@@ -630,7 +620,7 @@ unsigned long Person::getID() const
 }
 
 long Person::getPartnershipsToEnd(long _currTime, SexualPartnership::Type _partnershipType,
-                                  list<SexualPartnership *> &_partnershipsToEnd, bool _fromDeath)
+                                  std::list<SexualPartnership *> &_partnershipsToEnd, bool _fromDeath)
 {
 	assert(_partnershipType < SexualPartnership::Type::ENDType);
 	assert((_currTime >= 0) || _fromDeath);
@@ -642,8 +632,8 @@ long Person::getPartnershipsToEnd(long _currTime, SexualPartnership::Type _partn
 
 	//iterate through all current partnerships that had any duration to them.
 	//The iterator points to class SexualPartnership
-	list<SexualPartnership *>::iterator iter = partners[(int)_partnershipType].begin();
-	list<SexualPartnership *>::iterator iterEnd = partners[(int)_partnershipType].end();
+	auto iter = partners[(int)_partnershipType].begin();
+	auto iterEnd = partners[(int)_partnershipType].end();
 	long numEnded = 0;
 
 	//go through all partnerships
@@ -657,7 +647,7 @@ long Person::getPartnershipsToEnd(long _currTime, SexualPartnership::Type _partn
 		}
 
 		iter++;
-	} //	while(iter != iterEnd) {
+	}
 
 	return numEnded;
 }
@@ -730,8 +720,8 @@ bool Person::isPartneredWith(Person *_p)
 	for(int partnershipType = 0; partnershipType < (int)SexualPartnership::Type::ENDType; ++partnershipType)
 	{
 		//iterate through each partnership and check if _p is a member of one of them
-		list<SexualPartnership *>::iterator iter = partners[(int)partnershipType].begin();
-		list<SexualPartnership *>::iterator endIter = partners[(int)partnershipType].end();
+		auto iter = partners[(int)partnershipType].begin();
+		auto endIter = partners[(int)partnershipType].end();
 
 		while(iter != endIter)
 		{
@@ -968,21 +958,13 @@ bool Person::rollForDeath(RandomNumberGenerator &_randomNums)
 	//There may be those remaining that didn't go through CEPAC: the non-sexually actives!
 	else
 	{
-		//this part of the function is for uninfected persons
-		assert(Person::probDeathNatCauses[getDemographicProfileVal(DemographicProfile::Demographic::Gender)].size() > 0);
+        auto gender = getDemographicProfileVal<DemographicProfile::Gender>();
+        auto age = getAge(TimeGranularity::Year);
+        double deathRate = probDeathNatCauses[(std::size_t)gender].at(age);
 
-		//if this person is past Person::maxYrForDeathStats, they should not be alive
-		//get the correct probability of death for this person's gender and age
-        if(getAge(TimeGranularity::Year) >= static_cast<int>(Person::probDeathNatCauses[getDemographicProfileVal(DemographicProfile::Demographic::Gender)].size()))
+        if(_randomNums.chance(deathRate))
 		{
-            cout << "The age is " << getAge(TimeGranularity::Year) << std::endl;
-		}
-
-        double deathRate = Person::probDeathNatCauses[getDemographicProfileVal(DemographicProfile::Demographic::Gender)].at(getAge(TimeGranularity::Year));
-		death = _randomNums.chance(deathRate);
-
-		if(death)
-		{
+            death = true;
 			deathStatus = DTH_NONAIDS;
 		}
 	}
@@ -1008,25 +990,33 @@ void Person::setSimContext(SimContext *newSimContext)
 	cepacPatient->setSimContext(newSimContext);
 }
 
-Person *Person::sexualActivity(Person *_p, int _numActs, SexualPartnership::Type _partnershipType,
-    EventParams &_eventParams, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients)
+Person *Person::sexualActivity(Person *_p, int _numActs, 
+    SexualPartnership::Type _partnershipType, EventParams &_eventParams, 
+    InfectionsTracker *infTrack, 
+    const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients)
 {
 	assert((_p != nullptr));
 	assert(_p->isAlive());
 	assert(_partnershipType < SexualPartnership::Type::ENDType);
 	//TODO: CONDOM STUFF!
 
-    if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (trace() || _p->trace()))
+    if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled)
 	{
 		if(trace())
 		{
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "# Male " << getID() << " engages in " << _numActs <<
-			        " acts with his " << (SexualPartnership::TypeStrings.at(_partnershipType)) << " " << _p->getID() << std::endl;
+            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] 
+                << "# " << getEntityType() << " " << getID() << " engages in " 
+                << _numActs << " acts with his " 
+                << (SexualPartnership::TypeStrings.at(_partnershipType)) 
+                << " " << _p->getID() << std::endl;
 		}
-		else
+        else if(_p->trace())
 		{
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "# Female " << _p->getID() << " engages in " << _numActs <<
-			        " acts with her " << (SexualPartnership::TypeStrings.at(_partnershipType)) << " " << getID() << std::endl;
+            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson]
+                << "# " << _p->getEntityType() << " " << _p->getID() << " engages in "
+                << _numActs << " acts with her "
+                << (SexualPartnership::TypeStrings.at(_partnershipType))
+                << " " << getID() << std::endl;
 		}
 	}
 
@@ -1099,7 +1089,7 @@ Person *Person::sexualActivity(Person *_p, int _numActs, SexualPartnership::Type
 
 		//uninfected person was exposed but not infected
 		uninfected->stats.incrStat(Person::STAT_EXPOSURES_BEFORE_INF, _numActs);
-	}//if( !_eventParams.randomNums.chance(pow( 1-foifPerEvent, eventsThisMonth)) ) {
+	}
 
 	return nullptr;
 }
@@ -1437,25 +1427,21 @@ bool Person::getCondomUsedLastFOICalculation()
 	return condomUsedLastFOICalculation;
 }
 
-//-------------< Start FullVector indices related methods >----------------------//
 /* @function: setFVindices
  * @arguments: vector<int> FVind, FullVector* FV
  * @effects: if this.FVindices is currently empty and all indices correlate with members
  * of FV that point to this, sets this.FVindices to FVind
  * @return: true if this.FVindices was set to FVind or false otherwise
  */
-bool Person::setFVindices(vector<unsigned int> FVind, FullVector *FV)
+bool Person::setFVindices(std::vector<unsigned int> FVind, FullVector *FV)
 {
 	//First make sure there is no vector already associated with FV
-	map<FullVector *, vector<unsigned int>>::iterator iter = FVindices.find(FV);
-
-	if(iter == FVindices.end())
+    if(FVindices.find(FV) == FVindices.end())
 	{
 		//Make sure all members of FVind are indices of FV pointing to this
 		bool FVmatch = true;
-		vector<unsigned int>::iterator iter;
-
-		for(iter = FVind.begin(); iter != FVind.end(); iter++)
+		
+		for(auto iter = FVind.begin(); iter != FVind.end(); iter++)
 		{
 			if(FV->at(*iter)->getID() != id)
 			{
@@ -1488,29 +1474,28 @@ bool Person::addFVindices(int index, FullVector *FV)
 		//Will be used to check if index is already in the appropriate FVindex
 		bool indexAlreadyInFVindices = false;
 		//Will store the appropriate FVindex;
-		vector<unsigned int> *FVindex;
+		std::vector<unsigned int> *FVindex;
 		//See if the FVindices for FV exists
-		map<FullVector *, vector<unsigned int>>::iterator mIter = FVindices.find(FV);
+		auto mIter = FVindices.find(FV);
 
 		if(mIter != FVindices.end())
 		{
 			FVindex = &(mIter->second);
-			//Check that index is not already in this.FVindices
-			vector<unsigned int>::iterator iter;
 
-			for(iter = FVindex->begin(); iter != FVindex->end(); iter++)
+			//Check that index is not already in this.FVindices
+			for(auto iter = FVindex->begin(); iter != FVindex->end(); iter++)
 			{
 				if(static_cast<int>(*iter) == index)
 				{
 					indexAlreadyInFVindices = true;
 					break;
-				}//if (*iter == index)
-			}//for (iter = FVindex->begin(); ...
-		}//if (mIter != FVindices.end())
+				}
+			}
+		}
 		else
 		{
 			//Create new vector<unsigned int> for FV if one doesn't exist
-			vector<unsigned int> newFVindex;
+			std::vector<unsigned int> newFVindex;
 			FVindices[FV] = newFVindex;
 			mIter = FVindices.find(FV);
 			FVindex = &(mIter->second);
@@ -1545,14 +1530,13 @@ bool Person::removeFVindices(int index, FullVector *FV)
 
 	if(conditionsToRemoveAreGo)
 	{
-		map<FullVector *, vector<unsigned int>>::iterator mIter = FVindices.find(FV);
+		auto mIter = FVindices.find(FV);
 
 		if(mIter != FVindices.end())
 		{
-			vector<unsigned int> *FVindex = &(mIter->second);
-			vector<unsigned int>::iterator iter;
+			auto FVindex = &(mIter->second);
 
-			for(iter = FVindex->begin(); iter != FVindex->end(); iter++)
+			for(auto iter = FVindex->begin(); iter != FVindex->end(); iter++)
 			{
 				if(static_cast<int>(*iter) == index)
 				{
@@ -1580,14 +1564,13 @@ bool Person::removeFVindices(int index, FullVector *FV)
  */
 bool Person::memberFVindices(int index, FullVector *FV)
 {
-	map<FullVector *, vector<unsigned int>>::iterator mIter = FVindices.find(FV);
+	auto mIter = FVindices.find(FV);
 
 	if(mIter != FVindices.end())
 	{
-		vector<unsigned int> FVindex = mIter->second;
-		vector<unsigned int>::iterator iter;
+		auto FVindex = mIter->second;
 
-		for(iter = FVindex.begin(); iter != FVindex.end(); iter++)
+		for(auto iter = FVindex.begin(); iter != FVindex.end(); iter++)
 		{
 			if(static_cast<int>(*iter) == index)
 			{
@@ -1599,113 +1582,58 @@ bool Person::memberFVindices(int index, FullVector *FV)
 	return false;
 }
 
+//XXX: lots of passing vectors by value around here, check on performance!
 /* @function: getFVindices
  * @arguments: none
  * @effects: none
  * @return: copy of this.FVindices
  */
-vector<unsigned int> Person::getFVindices(FullVector *FV)
+std::vector<unsigned int> Person::getFVindices(FullVector *FV)
 {
-	vector<unsigned int> vcopy;
-	/*map<FullVector*, vector<int> >::iterator iter = FVindices.find(FV);
-	if (iter != FVindices.end()){
-		vcopy.assign(iter->second.begin(), iter->second.end());
-	}*/
-	//ERINWASHERE
-	//NEW
-	vector<unsigned int> personsIndices = FVindices[FV];
+	std::vector<unsigned int> vcopy;
+	std::vector<unsigned int> personsIndices = FVindices[FV];
 
 	if(personsIndices.size() > 0)
 	{
 		vcopy.assign(personsIndices.begin(), personsIndices.end());
 	}
 
-	//ENDNEW
 	return vcopy;
 }
 
-//-------------< End FullVector indices related methods >----------------------//
-
-//-------------< Start BucketAge related methods >----------------------//
-/* @function: getRiskLevel
- * @return: this.risk
- */
 Person::RiskLevel Person::getRiskLevel() const
 {
 	return risk;
 }
 
-/* @function: getHivStatus
- * @return: this.hivStatus
- */
 Person::HIVStatus Person::getHIVStatus() const
 {
 	return hivStatus;
 }
 
-/* @function: getSexualActivity
- * @return: this.activityLevel
- */
 int Person::getSexualActivity()
 {
 	return activityLevel;
 }
-
-/**** Start constructors, destructors, initializers *****/
-
-/*
-Person::Person()
-{
-	//healthAfterInfection = nullptr;
-	risk = LOW;
-	traceMe = false;
-	generationOfInfection = -1;
-	ageInfected = -1;
-	wentThroughCEPAC = false;
-	cepacPatient = nullptr;
-    sexualActivityDelay = 0;
-
-	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
-	{
-		unformedPartnershipsLatestTime[type] = 0;
-		unformedPartnershipsTotal[type] = 0;
-		numPartnersInHistory[type] = 0;
-		monthOfLatestPartnershipDissolution[type] = 0;
-	}
-
-	monthOfLatestConcurrent = 0;
-	CEPACcosts = 0;
-}
-*/
 
 //this constructor is used by the Male and Female classes
 Person::Person(int _age, unsigned int _populationID) : sexualActivityDelay(0)
 {
 	id = Person::idCounter++;
 	populationID = _populationID;
-#ifndef TESTING
 
-    if(!Utility::within_range<int>(_age, 0, Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Person::maxYrForDeathStats)))
+    auto max_age = Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Person::maxYrForDeathStats);
+    if(!Utility::within_range<int>(_age, 0, max_age))
 	{
-		if(_age < 0)
-		{
-			_age = 0;
-		}
-		else
-		{
-			//cout << "SOMEONE WAS TOO OLD (" << _age << ")!  MAKING THEM " << Utility::convert_time(YEAR, MONTH, Person::maxYrForDeathStats) << "!" << std::endl;
-            _age = Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Person::maxYrForDeathStats);
-		}
+        throw std::runtime_error("invalid age");
 	}
 
-#endif
 	age = _age;
 	initAge = _age;
 	ageInfected = -1;
 	death = false;
 	deathStatus = ALIVE;
 	sexualActivityLevel = 1.0;
-	//healthAfterInfection = nullptr;
 	cepacPatient = nullptr;
 	CEPACcosts = 0;
 	wentThroughCEPAC = false;
@@ -1744,15 +1672,16 @@ Person::~Person(void)
 	//TODO: If they're not dead, force kill them (in CEPAC) to log the stats (?)
 	//Didn't I do this somewhere?
 	delete cepacPatient;
+
 	//take person out of all current relationships
-	list<SexualPartnership *>::iterator toDelete;
+	std::list<SexualPartnership *>::iterator toDelete;
 
 	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
 	{
-		list<SexualPartnership *>::iterator iter = partners[type].begin();
-		list<SexualPartnership *>::iterator iterEnd = partners[type].end();
+		auto iter = partners[type].begin();
+		auto end = partners[type].end();
 
-		while(iter != iterEnd)
+		while(iter != end)
 		{
 			toDelete = iter;
 			iter++;
@@ -1765,14 +1694,14 @@ void Person::deletePersonWithoutDeleting()
 {
 	//Don't delete the cepacPatient -- this causes a weird exception when you try to delete it at the close of simulation, so keep it around
 	//take person out of all current relationships
-	list<SexualPartnership *>::iterator toDelete;
+	std::list<SexualPartnership *>::iterator toDelete;
 
 	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
 	{
-		list<SexualPartnership *>::iterator iter = partners[type].begin();
-		list<SexualPartnership *>::iterator iterEnd = partners[type].end();
+        std::list<SexualPartnership *>::iterator iter = partners[type].begin();
+        std::list<SexualPartnership *>::iterator end = partners[type].end();
 
-		while(iter != iterEnd)
+		while(iter != end)
 		{
 			toDelete = iter;
 			iter++;
@@ -1780,7 +1709,7 @@ void Person::deletePersonWithoutDeleting()
 		}
 	}
 
-	std::map<FullVector *, vector<unsigned int>>::iterator FViter = FVindices.begin();
+	auto FViter = FVindices.begin();
 
 	while(FViter != FVindices.end())
 	{
@@ -1788,8 +1717,6 @@ void Person::deletePersonWithoutDeleting()
 		FViter++;
 	}
 }
-
-/**** End constructors, destructors, initializers *****/
 
 int Person::getCEPACSimContextIndex(EventParams &_eventParams)
 {

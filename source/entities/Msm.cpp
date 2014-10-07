@@ -26,7 +26,6 @@ Msm::SubPopParams::~SubPopParams()
 {
 }
 
-//------------ < Begin getters >-----------------//
 double Msm::SubPopParams::getChanceBecomeCSW() const
 {
     return chanceBecomeCSW;
@@ -203,12 +202,6 @@ bool Msm::isCircumcised()
 {
     return circumcised;
 }
-
-//-------------< END methods that are for Msms only >------------------------//
-
-
-//-----------------< Start methods which are inherited from Person >-----------------//
-
 
 //in this case, the male is infected and female is uninfected
 double Msm::getFOI(Person *_p, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)

@@ -57,7 +57,7 @@ void EntityPool::print(ostream &_outStream)
 		bucket->print(_outStream, Constants::TABTAB);
 		_outStream << std::endl;
 		currBucketIndex++;
-	} //while(currBucketIndex < entityBuckets.size()) {
+	}
 }
 
 //print out all the labels of all the Buckets in the EntityPool. separate each by TAB
@@ -93,7 +93,7 @@ void EntityPool::printBucketLabels(ostream &_outStream, bool _printPropInfected)
 		}
 
 		currBucketIndex++;
-	} //while(currBucketIndex < entityBuckets.size()) {
+	}
 }
 
 //list out # people in each BucketDemographicProfile
@@ -160,7 +160,7 @@ void EntityPool::printBucketSizes(std::ostream &_outStream, const std::string &,
 		_totalSize += bucketSize;
 		_totalInfected += numInfected;
 		currBucketIndex++;
-	} //while(currBucketIndex < entityBuckets.size()) {
+	}
 
 	for(list<Person *>::iterator maleIter = allMales.begin(); maleIter != allMales.end(); maleIter++)
 	{
@@ -287,7 +287,7 @@ unsigned long EntityPool::size()
 
 		size += entityBuckets.at(currBucketIndex)->size();
 		currBucketIndex++;
-	}	//while(currBucketIndex < entityBuckets.size()) {
+	}
 
 	return size;
 }
@@ -333,7 +333,7 @@ unsigned long EntityPool::sizeNotSexuallyActive()
 		}
 
 		currBucketIndex++;
-	}	//while(currBucketIndex < entityBuckets.size()) {
+	}
 
 	return size;
 }
@@ -367,7 +367,7 @@ unsigned long EntityPool::sizeNotSexuallyActive(DemographicProfile::Gender _gend
 		}
 
 		currBucketIndex++;
-	}	//while(currBucketIndex < entityBuckets.size()) {
+	}
 
 	return size;
 }
@@ -401,7 +401,7 @@ unsigned long EntityPool::sizeSexuallyActive(DemographicProfile::Gender _gender,
 		}
 
 		currBucketIndex++;
-	}	//while(currBucketIndex < entityBuckets.size()) {
+	}
 
 	return size;
 }
@@ -431,7 +431,7 @@ unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMo
 		}
 
 		currBucketIndex++;
-	}	//while(currBucketIndex < entityBuckets.size()) {
+	}
 
 	return size;
 }
@@ -465,11 +465,11 @@ unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMo
 		}
 
 		currBucketIndex++;
-	}	//while(currBucketIndex < entityBuckets.size()) {
+	}
 
 	return size;
 }
-//-------------------< Begin allMale and allFemale functions >----------------//
+
 /*
  * adds Person to BucketDemographicProfile AND allMales or allFemales depending on gender
  */
@@ -492,9 +492,9 @@ bool EntityPool::addPersonToAll(Person *_p)
  * removes Person from BucketDemographicProfile AND allMales or allFemales depending on gender
  * should be used only when *(_pIter) dies or when deleting this
  */
-list<Person *>::iterator EntityPool::removePersonFromAll(list<Person *>::iterator _pIter)
+std::list<Person *>::iterator EntityPool::removePersonFromAll(std::list<Person *>::iterator _pIter)
 {
-	list<Person *>::iterator toReturn;
+	std::list<Person *>::iterator toReturn;
 	removeEntity(*_pIter);
 
     if((*_pIter)->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
@@ -544,10 +544,6 @@ list<Person *>::iterator EntityPool::end(DemographicProfile::Gender _gender)
 		return allFemales.end();
 	}
 }
-
-//-------------------< End allMale and allFemale functions >----------------//
-//---------------< Begin constructors and destructors >-------------------------//
-
 
 //creates a New EntityPool
 // @param _SAEntAgeMths age of sexual debut
@@ -599,7 +595,7 @@ EntityPool::EntityPool(int ageOfMajority, unsigned int _popID, const std::map<Se
                     ageOfMajority, 12 * Person::maxYrForDeathStats + 1, TimeGranularity::Month, _assort);
 			}
 		}
-	}	//for(unsigned int i = 0; validBucketIDs.size(); ++i) {
+	}
 }
 
 EntityPool::~EntityPool(void)
@@ -637,5 +633,5 @@ EntityPool::~EntityPool(void)
 				delete entityBuckets.at(j);
 			}
 		}
-	} //for(BaseEnumCls::Enum j = 0; j < entityBuckets.size(); ++j) {
+	}
 }

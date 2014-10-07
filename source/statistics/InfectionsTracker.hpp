@@ -38,11 +38,15 @@ private:
 	AgeRangeSizeContainer currPrevalentInfectionsAgeMale;
 	AgeRangeSizeContainer currPrevalentInfectionsAgeFemale;
 
-	/** This contains profileID's that we will include in our traces. */
-	list<DemographicProfile::ProfileID> profileIDsForDetailedTrace;
+    /// <summary>
+	/// This contains profileID's that we will include in our traces.
+    /// </summary>
+	std::list<DemographicProfile::ProfileID> profileIDsForDetailedTrace;
 
-	/** This is a copy of the sim clock. We keep a copy to know when the time has advanced
-		and when we need to reset incidence for the timestep */
+    /// <summary>
+	/// This is a copy of the sim clock. We keep a copy to know when the time has advanced
+	/// and when we need to reset incidence for the timestep.
+    /// </summary>
 	unsigned int currTimeStep;
 
 	/** Infections in the current time step, stratified by HVL of the infector */
@@ -161,7 +165,6 @@ public :
 	                            unsigned long
                                 _PrevalenceByRiskGenderEmployment[Person::ENDRiskLevel][(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::Employment::Last]);
 
-	//-----------------< Begin functions to print out infections >-----------------------//
 	//prints both flings and couple infections (who infected whom) 1 row = 1 month
 	/**
 	@param _time the current time in the simulation

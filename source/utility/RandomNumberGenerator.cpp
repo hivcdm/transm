@@ -226,9 +226,6 @@ int RandomNumberGenerator::randPoisson(double _mu)
 	return count;
 }
 
-//-----------< End rand num functions >-----------------//
-
-//-----------< Begin Getters and Setters >---------------//
 unsigned int RandomNumberGenerator::getSeed()
 {
 	return seed;
@@ -243,6 +240,4 @@ void RandomNumberGenerator::reset(unsigned int _seed)
 {
 	seed = _seed;
 	mtRand.seed((boost::mt19937::result_type) _seed);
-	//	isaac = QTIsaac<UINT32>(mtRand.randInt(), mtRand.randInt(),mtRand.randInt());	//Isaac
 }
-//-----------< End Getters and Setters >---------------//
