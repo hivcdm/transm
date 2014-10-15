@@ -847,8 +847,8 @@ EventParams &Simulation::GetEventParams()
 
 Outputs Simulation::Run(MessageCallback message_callback)
 {
-    batch_status_.change_state(name_, SimState::running);
-    batch_status_.change_process_id(name_, Utility::get_current_process_id());
+    batch_status_.set_state(name_, SimState::running);
+    batch_status_.set_process_id(name_, Utility::get_current_process_id());
 
 	MessageCallback old = parameters_.messageCallback;
 	parameters_.messageCallback = message_callback;
@@ -861,13 +861,13 @@ Outputs Simulation::Run(MessageCallback message_callback)
 	while(time_ < duration_)
 	{
 		Step();
-        batch_status_.change_percent_complete(name_, static_cast<int>(100.0 * time_ / duration_));
+        batch_status_.set_percent_complete(name_, static_cast<int>(100.0 * time_ / duration_));
 	}
 
 	LastStep();
 
 	parameters_.messageCallback = old;
-    batch_status_.change_state(name_, SimState::completed);
+    batch_status_.set_state(name_, SimState::completed);
 
 	return outputs_;
 }

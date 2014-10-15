@@ -56,7 +56,7 @@ public:
     { 
         name_ = name; 
         parameters_.simName = name; 
-        batch_status_.change_state(name_, SimState::queued);
+        batch_status_.set_state(name_, SimState::queued);
     }
 
 	void AddLifeExpectancyRecordTime(int time) { population_.populationStatistics.addLifeExpectancyRecordTime(time); }
