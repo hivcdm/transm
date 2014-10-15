@@ -18,11 +18,11 @@ public:
 	public:
 		AgeBucketPrevalenceInfo();
 
-        AgeBucketPrevalenceInfo(int _minAgeMth, int _maxAgeMth, double _proportionOfPopulationHeteroMale, 
-            double _proportionOfPopulationMsm, double _proportionOfPopulationBisexualMale,
-			double _proportionOfPopulationFemale, int _numInfectedCSWMale, int _numInfectedCSWFemale,
-			int _numInfectedNonCSWMalesLowRisk, int _numInfectedNonCSWFemalesLowRisk,
-			int _numInfectedNonCSWMalesHighRisk, int _numInfectedNonCSWFemalesHighRisk);
+        AgeBucketPrevalenceInfo(int _minAgeMth, int _maxAgeMth, 
+            const std::unordered_map<std::string, double> &entity_proportions, 
+            std::size_t _numInfectedCSWMale, std::size_t _numInfectedCSWFemale,
+			std::size_t _numInfectedNonCSWMalesLowRisk, std::size_t _numInfectedNonCSWFemalesLowRisk,
+			std::size_t _numInfectedNonCSWMalesHighRisk, std::size_t _numInfectedNonCSWFemalesHighRisk);
 
 		void print(EventParams &_eventParams);
 
@@ -39,20 +39,17 @@ public:
         /// <summary>
         /// determines size as proportion of the population
         /// </summary>
-        double proportionHeteroMale;
-        double proportionMsm;
-        double proportionBisexualMale;
-        double proportionFemale;
+        std::unordered_map<std::string, double> entityProportions;
 
         /// <summary>
         /// number of males and female csw in this bucket that are infected (at prevalence delay)
         /// </summary>
-        int numInfectedCSW[(std::size_t)DemographicProfile::Gender::Last];
+        std::size_t numInfectedCSW[(std::size_t)DemographicProfile::Gender::Last];
 
         /// <summary>
         /// number of male and female non-csw in this bucket that are infected (at prevalence delay)
         /// </summary>
-        int numInfectedRisk[(std::size_t)DemographicProfile::Gender::Last][Person::ENDRiskLevel];
+        std::size_t numInfectedRisk[(std::size_t)DemographicProfile::Gender::Last][Person::ENDRiskLevel];
 	};
 
 	PopulationParameters();
@@ -64,11 +61,8 @@ public:
 	double getProportionCircumcised() const { return proportionCircumcised; }
 	void setProportionCircumcised(double value) { proportionCircumcised = value; }
 
-	double getProportionMale() const;
-	void setProportionHeteroMale(double proportion_male) { proportionHeteroMale = proportion_male; }
-    void setProportionMsm(double proportion_msm) { proportionMsm = proportion_msm; }
-    void setProportionBisexualMale(double proportion_bi) { proportionBisexualMale = proportion_bi; }
-    void setProportionFemale(double proportion_female) { proportionFemale = proportion_female; }
+    double getBirthProportion(const std::string &entity_type) const { return birthProportions.at(entity_type); }
+    void setBirthProportion(const std::string &entity_type, double proportion) { birthProportions[entity_type] = proportion; }
 
 	int getAgeOfMajority() const { return ageOfMajority; }
     void setAgeOfMajority(int ageOfMajority, TimeGranularity granularity = TimeGranularity::Year) 
@@ -100,10 +94,6 @@ public:
 
 	int GetInitialSize() const { return initSize; }
 	void SetInitialSize(int size) { initSize = size; }
-
-	double GetMaleProportion() const { return proportionHeteroMale; }
-    double GetMsmProportion() const { return proportionMsm; }
-    double GetBisexualMaleProportion() const { return proportionBisexualMale; }
 
 	const std::vector<AgeBucketPrevalenceInfo> &GetInitialAgeBuckets() const { return initialAgeBuckets; }
 	std::vector<AgeBucketPrevalenceInfo> &GetInitialAgeBuckets() { return initialAgeBuckets; }
@@ -177,10 +167,7 @@ private:
 
     int sexualActivityDelay;
 
-	double proportionHeteroMale;
-    double proportionBisexualMale;
-    double proportionMsm;
-    double proportionFemale;
+    std::unordered_map<std::string, double> birthProportions;
 
 	double proportionCircumcised;
 

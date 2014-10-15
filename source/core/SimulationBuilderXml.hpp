@@ -3,6 +3,7 @@
 #include <string>
 #include <pugixml.hpp>
 
+#include "BatchStatus.hpp"
 #include "SimulationBuilder.hpp"
 #include "Simulation.hpp"
 #include "utility/CepacInputParser.hpp"
@@ -11,7 +12,7 @@
 class SimulationBuilderXml : public SimulationBuilder
 {
 public:
-	SimulationBuilderXml() : simulation_() {}
+	SimulationBuilderXml(BatchStatus &status) : simulation_(status) {}
 
 	Simulation &GetResult();
 
@@ -44,6 +45,10 @@ private:
 	{
 		return from_string<T>(node.attribute(name.c_str()).as_string());
 	}
+
+    using EntityDistributions = std::unordered_map<std::string, double>;
+
+    EntityDistributions ReadEntityDistributions(pugi::xml_node node);
 
 	EventParams::RolloutEligibility ReadRolloutEligibility();
 

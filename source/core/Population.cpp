@@ -147,9 +147,9 @@ void Population::Births(EventParams &parameters_)
 {
 	//number of people to be born this month
 	unsigned long numBorn = Utility::round<unsigned long>(currSize * popWideParams.birthRate);
-	unsigned long numHeteroMales = static_cast<unsigned long>(popWideParams.proportionHeteroMale * numBorn);
-    unsigned long numBisexualMales = static_cast<unsigned long>(popWideParams.proportionBisexualMale * numBorn);
-    unsigned long numMsms = static_cast<unsigned long>(popWideParams.proportionMsm * numBorn);
+	unsigned long numHeteroMales = static_cast<unsigned long>(popWideParams.birthProportions["hetero-male"] * numBorn);
+    unsigned long numBisexualMales = static_cast<unsigned long>(popWideParams.birthProportions["bisexual-male"] * numBorn);
+    unsigned long numMsms = static_cast<unsigned long>(popWideParams.birthProportions["msm"] * numBorn);
     unsigned long numMales = numHeteroMales + numBisexualMales + numMsms;
     //unsigned long numFemales = static_cast<unsigned long>(popWideParams.proportionFemale * numBorn);
 

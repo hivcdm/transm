@@ -17,7 +17,8 @@ std::string BisexualMale::getEntityType() const
 }
 
 BisexualMale::SubPopParams::SubPopParams()
-    : maxPartnershipRejections(0)
+    : maxPartnershipRejections(0),
+    cswEndAge(0)
 {
 }
 

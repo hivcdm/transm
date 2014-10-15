@@ -25,7 +25,7 @@ std::vector<std::string> find_input_files(const path &batch_directory)
         });
         std::transform(all_files.begin(), new_end,
             std::back_inserter(input_files), [](const path &p)
-        { return p.filename().string(); });
+        { return p.stem().string(); });
     }
     else
     {
@@ -73,10 +73,10 @@ int run_simulation(const std::string &batch_name, std::function<void(const std::
         CepacUtil::changeDirectoryToInputs();
         std::cout << "Running File: " << task_name << std::endl;
 
-        SimulationBuilderXml builder;
+        SimulationBuilderXml builder(status);
         SimulationReader reader(builder);
 
-        auto task_filename = batches_directory / batch_name / path(task_name);
+        auto task_filename = batches_directory / batch_name / path(task_name + ".xml");
         reader.ConstructSimulation(task_filename.string());
 
         auto &simulation = builder.GetResult();

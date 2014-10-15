@@ -17,24 +17,6 @@ enum class SimState
     completed
 };
 
-class SimStatus
-{
-public:
-    SimStatus(const std::string &name, BatchStatus &batch);
-
-    void set_progress(double progress);
-    void set_state(SimState state);
-    SimState get_state() const;
-
-private:
-    SimStatus &operator=(const SimStatus &s) = delete;
-
-    const std::string name_;
-    BatchStatus &batch_;
-    SimState state_;
-    double progress_;
-};
-
 class BatchStatus
 {
 public:
@@ -42,6 +24,7 @@ public:
     ~BatchStatus();
 
     void initialize(const std::vector<std::string> &task_names);
+    void change_process_id(const std::string &filename, std::size_t process_id);
     void change_state(const std::string &filename, SimState new_state);
     void change_percent_complete(const std::string &filename, int percent_complete);
 

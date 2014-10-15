@@ -3,6 +3,7 @@
 #include <unordered_set>
 #include <pugixml.hpp>
 
+#include "BatchStatus.hpp"
 #include "Intervention.hpp"
 #include "Outputs.hpp"
 #include "Population.hpp"
@@ -20,7 +21,7 @@ class Simulation
 public:
 	typedef std::function<void(const std::string &)> MessageCallback;
 
-	Simulation();
+	Simulation(BatchStatus &batch_status);
 
 	~Simulation();
 
@@ -51,7 +52,12 @@ public:
 
 	void SetFixedSeed(int seed);
 
-	void SetName(const std::string &name) { name_ = name; parameters_.simName = name; }
+	void SetName(const std::string &name) 
+    { 
+        name_ = name; 
+        parameters_.simName = name; 
+        batch_status_.change_state(name_, SimState::queued);
+    }
 
 	void AddLifeExpectancyRecordTime(int time) { population_.populationStatistics.addLifeExpectancyRecordTime(time); }
 
@@ -139,5 +145,7 @@ private:
     RunTimePredictor run_time_predictor_;
 
     double start_time_;
+
+    BatchStatus &batch_status_;
 };
 

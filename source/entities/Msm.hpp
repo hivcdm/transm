@@ -94,7 +94,11 @@ public:
         int GetMaxPartnershipRejections() const { return maxPartnershipRejections; }
         void SetMaxPartnershipRejections(int rejections) { maxPartnershipRejections = rejections; }
 
+        void SetCswEndAge(int end_age) { cswEndAge = end_age; }
+        int GetCswEndAge() const { return cswEndAge; }
+
     private:
+        int cswEndAge; // in months
         double chanceBecomeCSW;		//chance that a male will become a CSW
         double partnerAcqMultWithSteady[Person::ENDRiskLevel];  //the rate multiplier for partner acquisition when a male has a Steady partner
 

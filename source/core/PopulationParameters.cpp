@@ -6,24 +6,15 @@
 #include "utility/Utility.hpp"
 
 PopulationParameters::AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(int _minAgeMth, int _maxAgeMth,
-        double _proportionOfPopulationMale,
-        double _proportionOfPopulationMsm, 
-        double _proportionOfPopulationBisexualMale,
-        double _proportionOfPopulationFemale,
-        int _numInfectedCSWMale,
-		int _numInfectedCSWFemale,
-		int _numInfectedNonCSWMalesLowRisk,
-		int _numInfectedNonCSWFemalesLowRisk,
-		int _numInfectedNonCSWMalesHighRisk,
-		int _numInfectedNonCSWFemalesHighRisk)
+    const std::unordered_map<std::string, double> &entity_proportions,
+    std::size_t _numInfectedCSWMale, std::size_t _numInfectedCSWFemale,
+    std::size_t _numInfectedNonCSWMalesLowRisk, std::size_t _numInfectedNonCSWFemalesLowRisk,
+    std::size_t _numInfectedNonCSWMalesHighRisk, std::size_t _numInfectedNonCSWFemalesHighRisk) :
+    minAgeMth(_minAgeMth),
+    maxAgeMth(_maxAgeMth),
+    entityProportions(entity_proportions)
 {
 	assert((_minAgeMth >= 0) && (_maxAgeMth > 0) && (_maxAgeMth > _minAgeMth));
-	minAgeMth = _minAgeMth;
-	maxAgeMth = _maxAgeMth;
-    proportionHeteroMale = _proportionOfPopulationMale;
-    proportionMsm = _proportionOfPopulationMsm;
-    proportionBisexualMale = _proportionOfPopulationBisexualMale;
-    proportionFemale = _proportionOfPopulationFemale;
     numInfectedCSW[(std::size_t)DemographicProfile::Gender::Male] = _numInfectedCSWMale;
     numInfectedCSW[(std::size_t)DemographicProfile::Gender::Female] = _numInfectedCSWFemale;
     numInfectedRisk[(std::size_t)DemographicProfile::Gender::Male][Person::LOW] = _numInfectedNonCSWMalesLowRisk;
@@ -39,8 +30,8 @@ PopulationParameters::PopulationParameters()
 	initSize = 10000;
 	birthRate = 0.0038;
 	ageOfMajority = 180;
-	proportionHeteroMale = 0.51;
-    proportionFemale = 1 - proportionHeteroMale;
+	birthProportions["hetero-male"] = 0.51;
+    birthProportions["female"] = 1 - birthProportions["hetero-male"];
 	proportionCircumcised = 0.20;
     sexualActivityDelay = 0;
 }

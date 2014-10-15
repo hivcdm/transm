@@ -135,6 +135,8 @@ public:
 	RandomNumberGenerator();
 	RandomNumberGenerator(unsigned int _seed);
 
+    std::string GetState() const { return std::to_string(mtRand.i); }
+
 private:
 	//the current seed for this random number generator
 	uint32_t seed;

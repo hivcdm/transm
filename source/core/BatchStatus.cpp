@@ -3,30 +3,6 @@
 #include "BatchStatus.hpp"
 #include "utility/utility.hpp"
 
-SimStatus::SimStatus(const std::string &name, BatchStatus &batch)
-    : name_(name), batch_(batch), state_(SimState::queued), progress_(0)
-{
-    set_progress(0);
-    set_state(SimState::queued);
-}
-
-void SimStatus::set_state(SimState state)
-{
-    state_ = state;
-    batch_.change_state(name_, state);
-}
-
-void SimStatus::set_progress(double progress)
-{
-    progress_ = progress;
-    batch_.change_percent_complete(name_, (int)(progress * 100));
-}
-
-SimState SimStatus::get_state() const
-{
-    return state_;
-}
-
 BatchStatus::BatchStatus(const std::string &batch_name)
     : batch_name_(batch_name),
     initialized_(false),
@@ -58,6 +34,12 @@ void BatchStatus::initialize(const std::vector<std::string> &task_names)
     }
 
     initialized_ = true;
+}
+
+void BatchStatus::change_process_id(const std::string &filename, std::size_t process_id)
+{
+    std::string query = "UPDATE task SET process_id=" + std::to_string(process_id) + " WHERE name=\"" + filename + "\"; ";
+    throw_if_not_ok(sqlite3_exec(task_db_, query.c_str(), nullptr, nullptr, nullptr));
 }
 
 void BatchStatus::change_state(const std::string &filename, SimState new_state)
@@ -113,7 +95,7 @@ void BatchStatus::create_task_table()
 {
     if(!task_table_exists())
     {
-        std::string query = "CREATE TABLE task (name CHAR(260) PRIMARY KEY NOT NULL, state INT, percent INT);";
+        std::string query = "CREATE TABLE task (name CHAR(260) PRIMARY KEY NOT NULL, state INT, percent INT, process_id INT);";
         throw_if_not_ok(sqlite3_exec(task_db_, query.c_str(), nullptr, nullptr, nullptr));
     }
 }
@@ -138,7 +120,7 @@ void BatchStatus::insert_task(const std::string &task_name)
 {
     if(!task_exists(task_name))
     {
-        std::string query = "INSERT INTO task VALUES (\"" + task_name + "\", 0, 0);";
+        std::string query = "INSERT INTO task VALUES (\"" + task_name + "\", 0, 0, 0);";
         throw_if_not_ok(sqlite3_exec(task_db_, query.c_str(), nullptr, nullptr, nullptr));
     }
 }

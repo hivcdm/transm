@@ -29,6 +29,8 @@ class Utility
     static double month_to_year_multiplier;
 
 public:
+    static std::size_t get_current_process_id();
+
     /// <summary>
     /// Return the location in which the currently executing model is stored.
     /// </summary>

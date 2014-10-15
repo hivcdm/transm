@@ -66,6 +66,10 @@ double Utility::day_to_month_multiplier = 1.0 / 30;
 double Utility::day_to_year_multiplier = 1.0 / 365;
 double Utility::month_to_year_multiplier = 1.0 / 12;
 
+std::size_t Utility::get_current_process_id()
+{
+    return GetCurrentProcessId();
+}
 
 path Utility::get_model_directory()
 {

@@ -38,8 +38,10 @@ project "transm"
     }
     configuration "debug"
         flags { "FatalWarnings" }
+	optimize "Off"
     configuration "release"
         flags { "LinkTimeOptimization" }
+	optimize "Full"
     configuration "windows"
         files { "../source/utility/platform/windows/**.cpp" }
         defines { "_SCL_SECURE_NO_WARNINGS" }
@@ -76,5 +78,8 @@ project "third-party"
        "../third-party/tclap/include",
        "../third-party/xlnt/include"
     }
+    configuration "debug"
+        optimize "Off"
     configuration "release"
         flags { "LinkTimeOptimization" }
+	optimize "Full"

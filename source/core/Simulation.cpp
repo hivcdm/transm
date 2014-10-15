@@ -287,7 +287,7 @@ void Simulation::RegisterIntervention(const Intervention &intervention)
     interventions_.push_back(intervention);
 }
 
-Simulation::Simulation()
+Simulation::Simulation(BatchStatus &batch_status)
     : time_(0),
       parameters_(),
       population_(parameters_),
@@ -295,7 +295,8 @@ Simulation::Simulation()
       hasPassedFirstMonthCalibPrev_(false),
       monthOfFirstMonthCalibPrev_(0),
       incidence_(0),
-      prevalence_(0)
+      prevalence_(0),
+      batch_status_(batch_status)
 {
 }
 
@@ -537,7 +538,7 @@ void Simulation::Step()
         int minutes_remaining = seconds_remaining / 60;
         seconds_remaining -= minutes_remaining * 60;
         parameters_.displayOut(run_time_predictor_.MakeProgressBar(40) + " " +
-            std::to_string(time_) + " " + std::to_string(hours_remaining) + ":" +
+            std::to_string(time_) + " " + parameters_.randomNums.GetState() + " " + std::to_string(hours_remaining) + ":" +
             std::to_string(minutes_remaining) + ":" + std::to_string(seconds_remaining) + "\n");
     }
     else
@@ -846,6 +847,9 @@ EventParams &Simulation::GetEventParams()
 
 Outputs Simulation::Run(MessageCallback message_callback)
 {
+    batch_status_.change_state(name_, SimState::running);
+    batch_status_.change_process_id(name_, Utility::get_current_process_id());
+
 	MessageCallback old = parameters_.messageCallback;
 	parameters_.messageCallback = message_callback;
 
@@ -857,11 +861,13 @@ Outputs Simulation::Run(MessageCallback message_callback)
 	while(time_ < duration_)
 	{
 		Step();
+        batch_status_.change_percent_complete(name_, static_cast<int>(100.0 * time_ / duration_));
 	}
 
 	LastStep();
 
 	parameters_.messageCallback = old;
+    batch_status_.change_state(name_, SimState::completed);
 
 	return outputs_;
 }

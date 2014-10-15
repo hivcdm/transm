@@ -93,7 +93,11 @@ public:
         int GetMaxPartnershipRejections() const { return maxPartnershipRejections; }
         void SetMaxPartnershipRejections(int rejections) { maxPartnershipRejections = rejections; }
 
+        void SetCswEndAge(int end_age) { cswEndAge = end_age; }
+        int GetCswEndAge() const { return cswEndAge; }
+
     private:
+        int cswEndAge; // in months
         /// <summary>
         /// chance that a male will become a CSW
         /// </summary>

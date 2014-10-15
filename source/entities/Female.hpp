@@ -27,9 +27,13 @@ public:
 		void SetChanceBecomeCsw(double chance) { chanceBecomeCSW = chance; }
         void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) { proportionHighRisk[(std::size_t)employment] = proportion; }
 
+        void SetCswEndAge(int end_age) { cswEndAge = end_age; }
+        int GetCswEndAge() const { return cswEndAge; }
+
 	private:
 		friend class SimulationBuilder;
 
+        int cswEndAge; // in months
         //chance that a female will become a CSW
 		double chanceBecomeCSW;
         //proportion of female population that is in the "high risk" lists
