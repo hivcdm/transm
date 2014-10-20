@@ -1,10 +1,12 @@
 #include <array>
+#include <cassert>
 #include <stdexcept>
 
 #ifdef _WIN32
 #include <Windows.h>
 #else
 #include <glob.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #endif
 
@@ -388,7 +390,7 @@ bool filesystem::is_directory(const path &p)
     auto status = stat(p.native().c_str(), &st_buf);
     if(status != 0)
     {
-        throw std::runtime_error("stat failed");
+      return false;
     }
     return S_ISDIR(st_buf.st_mode);
 #endif
@@ -404,7 +406,7 @@ bool filesystem::is_regular_file(const path &p)
     auto status = stat(p.native().c_str(), &st_buf);
     if(status != 0)
     {
-        throw std::runtime_error("stat failed");
+      return false;
     }
     return S_ISREG(st_buf.st_mode);
 #endif
@@ -423,7 +425,7 @@ path filesystem::current_path()
     GetCurrentDirectory((DWORD)buffer.size(), buffer.data());
     return path(path::string_type(buffer.begin(), buffer.end()));
 #else
-    std::array<char, PATH_MAX> buffer;
+    std::array<char, 512> buffer;
     assert(getcwd(buffer.data(), buffer.size()) != nullptr);
     return path(std::string(buffer.begin(), buffer.end()));
 #endif
