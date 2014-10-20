@@ -19,6 +19,12 @@ BatchStatus::~BatchStatus()
     }
 }
 
+
+/// <summary>
+/// Create the database if it doesn't exists and open it.
+/// Insert each given simulation as a new row in the database.
+/// After this is called, the object is "initialized".
+/// </summary>
 void BatchStatus::initialize(const std::vector<std::string> &sim_names)
 {
     throw_if_not_ok(sqlite3_initialize());
