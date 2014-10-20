@@ -1,12 +1,12 @@
 #include <unordered_set>
 #include <tclap/CmdLine.h>
 
-#include "core/BatchStatus.hpp"
-#include "core/Simulation.hpp"
-#include "core/SimulationBuilderXml.hpp"
-#include "core/SimulationReader.hpp"
-#include "statistics/TransmissionSummaryStats.hpp"
-#include "utility/Utility.hpp"
+#include "core/batchstatus.hpp"
+#include "core/simulation.hpp"
+#include "core/simulationbuilderxml.hpp"
+#include "core/simulationreader.hpp"
+#include "statistics/transmissionsummarystats.hpp"
+#include "utility/utility.hpp"
 #include "utility/filesystem.hpp"
 
 namespace {
@@ -80,8 +80,6 @@ int run_simulation(const std::string &batch_name, std::function<void(const std::
         reader.ConstructSimulation(task_filename.string());
 
         auto &simulation = builder.GetResult();
-
-        auto message_callback = [](const std::string &s) { std::cout << s; };
         auto outputs = simulation.Run(message_callback);
 
         cepac_summary.addRunStats(&simulation.GetCEPACRunStats());

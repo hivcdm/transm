@@ -25,16 +25,13 @@ project "transm"
     }
     includedirs {
        "../source",
-       "../third-party/boost",
+       "../third-party/boost/include",
        "../third-party/rana/include",
        "../third-party/cepac/src",
        "../third-party/pugixml/src",
        "../third-party/sqlite",
        "../third-party/tclap/include",
        "../third-party/xlnt/include"
-    }
-    libdirs {
-       "../third-party/boost/lib64-msvc-12.0"
     }
     configuration "debug"
         flags { "FatalWarnings" }

@@ -418,7 +418,11 @@ bool filesystem::exists(const path &p)
 
 path filesystem::current_path()
 {
+#ifdef _WIN32
     std::array<TCHAR, MAX_PATH> buffer;
     GetCurrentDirectory((DWORD)buffer.size(), buffer.data());
     return path(path::string_type(buffer.begin(), buffer.end()));
+#else
+    throw std::runtime_error("not implemented");
+#endif
 }
