@@ -131,7 +131,11 @@ path Utility::get_user_directory()
 
 path Utility::get_config_file_path()
 {
-    return get_user_directory() / path("transm.config");
+#ifdef _WIN32
+    return get_user_directory() / path("transm") / path("transm.config");
+#else
+    return get_user_directory() / path(".transm") / path("transm.config");
+#endif
 }
 
 std::string get_executable_name()
