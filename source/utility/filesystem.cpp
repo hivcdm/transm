@@ -406,7 +406,7 @@ bool filesystem::is_regular_file(const path &p)
     {
         throw std::runtime_error("stat failed");
     }
-    return S_ISDIR(st_buf.st_mode);
+    return S_ISREG(st_buf.st_mode);
 #endif
 }
 
