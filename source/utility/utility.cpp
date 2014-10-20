@@ -132,13 +132,48 @@ path Utility::get_config_file_path()
     return get_user_directory() / path("transm.config");
 }
 
+std::string get_executable_name()
+{
+#ifdef __APPLE__
+    std::array<char, 1024> path;
+    uint32_t size = static_cast<uint32_t>(path.size());
+
+    if(_NSGetExecutablePath(path.data(), &size) == 0)
+    {
+        std::string executable_string(path.begin(), std::find(path.begin(), path.end(), '\0'));
+        class path executable_path(executable_string);
+        return executable_path.stem().string();
+    }
+
+    throw std::runtime_error("buffer too small, " + std::to_string(path.size()) + ", should be: " + std::to_string(size));
+#elif defined(_WIN32)
+    std::array<TCHAR, MAX_PATH> buffer;
+    DWORD result = GetModuleFileName(nullptr, buffer.data(), (DWORD)buffer.size());
+
+    if(result == 0 || result == buffer.size())
+    {
+        throw std::runtime_error("GetModuleFileName failed or buffer was too small");
+    }
+
+    auto full_string = std::string(buffer.begin(), buffer.begin() + result);
+    return path(full_string).stem().string();
+#else
+    char arg1[20];
+    char exepath[PATH_MAX + 1] = {0};
+
+    sprintf(arg1, "/proc/%d/exe", getpid());
+    readlink(arg1, exepath, 1024);
+    std::string full_path(exepath);
+    return full_path.substr(full_path.find_last_of('/'));
+#endif
+}
+
 Version Utility::get_model_version()
 {
-    static const path model_directory = get_model_directory();
-    static const path version_path = model_directory / path::dotdot() / path("VERSION");
-    std::ifstream version_file(version_path.string());
-    std::string version_string;
-    version_file >> version_string;
+    auto exe_name = get_executable_name();
+    auto hyphen_index = exe_name.find_last_of('-');
+    assert(hyphen_index != std::string::npos);
+    auto version_string = exe_name.substr(hyphen_index + 2);
     return Version::from_string(version_string);
 }
 

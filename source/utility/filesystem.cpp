@@ -248,7 +248,7 @@ path path::stem() const
     if(empty()) return path();
     auto name = filename().pathname_;
     if(filesystem::is_dotdir(name)) return name;
-    auto dot_index = name.find('.');
+    auto dot_index = name.find_last_of('.');
     if(dot_index == string_type::npos) return name;
     return name.substr(0, dot_index);
 }
@@ -258,7 +258,7 @@ path path::extension() const
     if(empty()) return path();
     auto name = filename().pathname_;
     if(filesystem::is_dotdir(name)) return path();
-    auto dot_index = name.find('.');
+    auto dot_index = name.find_last_of('.');
     if(dot_index == string_type::npos) return path();
     return name.substr(dot_index);
 }
