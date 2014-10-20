@@ -369,7 +369,7 @@ std::vector<path> filesystem::listdir(const path &directory)
     }
 #else
     glob_t glob_result;
-    glob(directory.native().c_str(), GLOB_TILDE, nullptr, &glob_result);
+    glob((directory / path("*")).string().c_str(), GLOB_TILDE, nullptr, &glob_result);
     for(std::size_t i = 0; i < glob_result.gl_pathc; ++i)
     {
         contents.push_back(path::string_type(glob_result.gl_pathv[i]));

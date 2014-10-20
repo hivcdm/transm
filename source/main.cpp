@@ -115,7 +115,7 @@ void print_version(const std::string &executable)
 int main(int argc, char *argv[])
 {
     auto executable = path(argv[0]).filename().string();
-    auto message_callback = [](const std::string &message) { std::cout << message << std::endl; };
+    auto message_callback = [](const std::string &message) { std::cout << message; };
 
     try
     {

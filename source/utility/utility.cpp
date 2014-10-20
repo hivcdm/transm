@@ -123,7 +123,7 @@ path Utility::get_user_directory()
 #else
     char *home_path = getenv("HOME");
     assert(home_path != nullptr);
-    user_directory = home_path;
+    user_directory = std::string(home_path);
 #endif
     return user_directory;
 }
