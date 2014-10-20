@@ -423,6 +423,8 @@ path filesystem::current_path()
     GetCurrentDirectory((DWORD)buffer.size(), buffer.data());
     return path(path::string_type(buffer.begin(), buffer.end()));
 #else
-    throw std::runtime_error("not implemented");
+    std::array<char, PATH_MAX> buffer;
+    assert(getcwd(buffer.data(), buffer.size()) != nullptr);
+    return path(std::string(buffer.begin(), buffer.end()));
 #endif
 }
