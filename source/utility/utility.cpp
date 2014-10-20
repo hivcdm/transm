@@ -114,19 +114,18 @@ path Utility::get_model_directory()
 
 path Utility::get_user_directory()
 {
+    path user_directory;
 #ifdef _WIN32
     std::array<TCHAR, MAX_PATH> path_array;
-    if(SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, path_array.data()) == S_OK)
-    {
-        path::string_type path_string(path_array.begin(), path_array.begin() + std::wcslen(path_array.data()));
-        return path(path_string);
-    }
-    assert(false);
+    assert(SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, path_array.data()) == S_OK);
+    path::string_type path_string(path_array.begin(), path_array.begin() + std::wcslen(path_array.data()));
+    user_directory = path_string;
 #else
     char *home_path = getenv("HOME");
     assert(home_path != nullptr);
-    return path(std::string(home_path));
+    user_directory = home_path;
 #endif
+    return user_directory;
 }
 
 path Utility::get_config_file_path()
