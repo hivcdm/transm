@@ -57,7 +57,7 @@ PopulationStatistics::SinglePartAcqStats::SinglePartAcqStats()
 
 PopulationStatistics::SurvivalStats::SurvivalStats()
 {
-	for(int i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
+    for(std::size_t i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
 	{
 		numDeathGender[i] = 0;
 		timeToDeathGenderSum[i] = 0;
@@ -70,7 +70,7 @@ PopulationStatistics::SurvivalStats::SurvivalStats()
 		timeFromInfToDeathGenderSumSquare[i] = 0;
 	}
 
-    for(int i = 0; i < (std::size_t)DemographicProfile::Employment::Last; i++)
+    for(std::size_t i = 0; i < (std::size_t)DemographicProfile::Employment::Last; i++)
 	{
 		for(int j = 0; j < Person::ENDRiskLevel; j++)
 		{
@@ -286,7 +286,7 @@ void PopulationStatistics::printSurvivalStats(std::ostream &_outStream)
 		fifthRow << "N/A" << Constants::TAB;
 	}
 
-    for(int i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
+	for(std::size_t i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
 	{
 		if(survivalStats->numInfOrDeathGender[i] != 0)
 		{
@@ -366,7 +366,7 @@ void PopulationStatistics::printSurvivalStats(std::ostream &_outStream)
 		fifthRow << "N/A" << Constants::TAB;
 	}
 
-    for(int i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
+	for(std::size_t i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
 	{
 		if(survivalStats->numDeathGender[i] != 0)
 		{
@@ -466,7 +466,7 @@ void PopulationStatistics::printSurvivalStats(std::ostream &_outStream)
 		fifthRow << "N/A" << Constants::TAB;
 	}
 
-    for(int i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
+	for(std::size_t i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
 	{
 		if(survivalStats->numInfDeathGender[i] != 0)
 		{
