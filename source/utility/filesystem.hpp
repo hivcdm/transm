@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+namespace transm {
+
 class path
 {
 public:
@@ -99,3 +101,5 @@ public:
     static void rename(const path &from, const path &to);
     static path temp_directory_path();
 };
+
+} // namespace transm

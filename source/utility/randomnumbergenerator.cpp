@@ -3,6 +3,8 @@
 #include "randomnumbergenerator.hpp"
 #include "utility.hpp"
 
+namespace transm {
+
 RandomNumberGenerator::RandomNumberGenerator()
 {
 	mtRand.seed(static_cast<uint32_t>(time(nullptr)));
@@ -241,3 +243,5 @@ void RandomNumberGenerator::reset(unsigned int _seed)
 	seed = _seed;
 	mtRand.seed((boost::mt19937::result_type) _seed);
 }
+
+} // namespace transm

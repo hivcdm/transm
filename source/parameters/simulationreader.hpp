@@ -3,6 +3,8 @@
 #include <memory>
 #include <string>
 
+namespace transm {
+
 class SimulationBuilder;
 class Simulation;
 
@@ -18,3 +20,5 @@ public:
 private:
 	SimulationBuilder &builder_;
 };
+
+} // namespace transm

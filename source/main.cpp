@@ -3,11 +3,13 @@
 
 #include "core/batchstatus.hpp"
 #include "core/simulation.hpp"
-#include "core/simulationbuilderxml.hpp"
-#include "core/simulationreader.hpp"
+#include "parameters/simulationbuilderxml.hpp"
+#include "parameters/simulationreader.hpp"
 #include "statistics/transmissionsummarystats.hpp"
 #include "utility/utility.hpp"
 #include "utility/filesystem.hpp"
+
+using namespace transm;
 
 namespace {
 

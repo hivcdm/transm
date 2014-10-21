@@ -7,15 +7,17 @@
 #include <vector>
 
 #include "intervention.hpp"
-#include "populationparameters.hpp"
 #include "data/agerangesizecontainer.hpp"
 #include "entities/female.hpp"
 #include "entities/male.hpp"
-#include "entities/person.hpp"
+#include "entities/entity.hpp"
 #include "entitypool/entitypool.hpp"
+#include "parameters/populationparameters.hpp"
 #include "statistics/populationstatistics.hpp"
 #include "utility/randomnumbergenerator.hpp"
 #include "utility/nullable.hpp"
+
+namespace transm {
 
 /// <summary>
 /// This class contains the main simulation logic
@@ -29,7 +31,7 @@ public:
 	/// <summary>
     /// This is the main circular buffer containing the BucketAge structures
     /// </summary>
-	typedef boost::circular_buffer_space_optimized<BucketAge *> BucketAllAges;
+    using BucketAllAges = boost::circular_buffer_space_optimized<BucketAge *>;
 
 	/// <summary>
     /// Creates a new population object given an XML input subtree which contains the parameters
@@ -48,9 +50,9 @@ public:
 
 	void SetCircumcisionCost(double circumcision_cost) { popWideParams.circumcisionCost = circumcision_cost; }
 
-	void Circumcise(Person *p);
+	void Circumcise(Entity *p);
 
-    std::unordered_set<Person *> Find(std::function<bool(Person *)> predicate);
+    std::unordered_set<Entity *> Find(std::function<bool(Entity *)> predicate);
 
     /// <summary>
 	/// determines which DemographicProfiles have the power to initiate relationships and determines which
@@ -83,7 +85,7 @@ public:
     /// </summary>
 	void ApplyRolloutContext(EventParams &_eventParams, int time);
 
-	void StartTreatment(Person *person, SimContext *treatedContext);
+	void StartTreatment(Entity *person, SimContext *treatedContext);
 
     /// <summary>
     /// Applies Treatment to certain portions of the population if ART Rollout is turned on
@@ -137,12 +139,12 @@ public:
     /// <summary>
     /// gets the age bucket of the person
     /// </summary>
-	PopulationParameters::AgeBucketPrevalenceInfo &GetAgeBucket(Person *);
+	PopulationParameters::AgeBucketPrevalenceInfo &GetAgeBucket(Entity *);
 
     /// <summary>
     /// gets the index of the age bucket of the person
     /// </summary>
-	int GetAgeBucketIndex(Person *);
+	int GetAgeBucketIndex(Entity *);
 
     /// <summary>
     /// returns internal count of how big the current population is
@@ -167,12 +169,12 @@ public:
     /// <summary>
     /// returns internal count of how big the current population is
     /// </summary>
-    std::size_t GetSASize(DemographicProfile::Gender _gender, Person::RiskLevel _risk);
+    std::size_t GetSASize(DemographicProfile::Gender _gender, Entity::RiskLevel _risk);
 
     /// <summary>
     /// returns internal count of how big the current population is
     /// </summary>
-    std::size_t GetCSWSize(DemographicProfile::Gender _gender, Person::RiskLevel _risk);
+    std::size_t GetCSWSize(DemographicProfile::Gender _gender, Entity::RiskLevel _risk);
 
     /// <summary>
     ///
@@ -189,7 +191,7 @@ public:
     /// </summary>
     PopulationStatistics &GetPopulationStatistics() { return populationStatistics; }
 
-    const std::unordered_set<Person *> &GetDeadPeopleThisMonth() const { return dead_people_this_month_; }
+    const std::unordered_set<Entity *> &GetDeadPeopleThisMonth() const { return dead_people_this_month_; }
 
     /// <summary>
     ///
@@ -216,13 +218,13 @@ private:
 	/// @param _forceNumPartnersOne if true will force _initiator to create just one partnership of type _partnership type (useful for initial regular partnerships
 	/// @return number of partnerships formed
     /// </remarks>
-	unsigned long CreatePartnerships(EventParams &_eventParams, Person *_initiator, std::list<Person *>::iterator *_p_Iter,
+	unsigned long CreatePartnerships(EventParams &_eventParams, Entity *_initiator, std::list<Entity *>::iterator *_p_Iter,
 	                                 SexualPartnership::Type _partnershipType, bool _forceNumPartnersOne = false);
 
     /// <summary>
 	/// dissolves a list of particular sexual partnerships. Removes the pointer to the SexualPartnership from each member and then deletes it
     /// </summary>
-	void DissolveSexualPartnerships(EventParams &_eventParams, Person *_initiator,
+	void DissolveSexualPartnerships(EventParams &_eventParams, Entity *_initiator,
 	                                std::list<SexualPartnership *> &_partnershipsToEnd);
 
     /// <summary>
@@ -230,14 +232,14 @@ private:
     /// @param _ageBucketParams	parameters that determine a prevalent person's characteristics. If this is nullptr, then this method will create a newborn
     /// @return a newly formed person
     /// </summary>
-	Person *GeneratePerson(EventParams &_eventParams, const std::string &entity_type,
+	Entity *GenerateEntity(EventParams &_eventParams, const std::string &entity_type,
 	                       PopulationParameters::AgeBucketPrevalenceInfo *_ageBucketParams, bool toTrace);
 
     /// <summary>
 	/// processes the death of 1 person, updates statistics, removes that person from any relationships
 	/// @param _deceased pointer to deceased person
     /// </summary>
-	void ProcessDeath(EventParams &_eventParams, Person *_p, bool calculateLE);
+	void ProcessDeath(EventParams &_eventParams, Entity *_p, bool calculateLE);
 
     /// <summary>
     /// 
@@ -295,7 +297,7 @@ private:
     /// </summary>
 	void RecordShiftedOutcomes(EventParams &_eventParams, std::ostream &_outStream);
 
-    void RecordInfection(const Person *infectee, const Person *infector, int time);
+    void RecordInfection(const Entity *infectee, const Entity *infector, int time);
 
     /// <summary>
     /// this is used to assign each New population a unique id
@@ -330,17 +332,17 @@ private:
     /// <summary>
 	/// Size by Risk
     /// </summary>
-    std::size_t currSizeRisk[Person::ENDRiskLevel];
+    std::size_t currSizeRisk[Entity::ENDRiskLevel];
 
     /// <summary>
 	/// Size of CSW's by Risk
     /// </summary>
-    std::size_t currSizeRiskCSW[Person::ENDRiskLevel];
+    std::size_t currSizeRiskCSW[Entity::ENDRiskLevel];
 
     /// <summary>
 	/// Size of CSW's by Risk and gender
     /// </summary>
-    std::size_t currSizeGenderRiskCSW[(std::size_t)DemographicProfile::Gender::Last][Person::ENDRiskLevel];
+    std::size_t currSizeGenderRiskCSW[(std::size_t)DemographicProfile::Gender::Last][Entity::ENDRiskLevel];
 
     /// <summary>
 	/// Size by gender
@@ -360,12 +362,12 @@ private:
     /// <summary>
 	/// sexually active by risk and gender
     /// </summary>
-    std::size_t currSASizeGenderRisk[(std::size_t)DemographicProfile::Gender::Last][Person::ENDRiskLevel];
+    std::size_t currSASizeGenderRisk[(std::size_t)DemographicProfile::Gender::Last][Entity::ENDRiskLevel];
 
     /// <summary>
 	/// Num Died this month by Death Cause
     /// </summary>
-    std::size_t currDeathCauses[Person::ENDDeathStatus];
+    std::size_t currDeathCauses[Entity::ENDDeathStatus];
 
     /// <summary>
 	/// Size by age range: tuple is size, minAge, maxAge
@@ -387,14 +389,14 @@ private:
     /// <summary>
 	/// The people who are infected but still untreated (Only used for rollout)
     /// </summary>
-	std::list<Person *> rolloutUntreatedPool;
+	std::list<Entity *> rolloutUntreatedPool;
 
     /// <summary>
 	/// The people who are currently being treated (Only used for rollout)
     /// </summary>
-	std::list<Person *> rolloutTreatedPool;
+	std::list<Entity *> rolloutTreatedPool;
 
-    void recordMale(Person *person);
+    void recordMale(Entity *person);
     std::size_t num_circumcised_na;
     std::size_t num_circumcised_sa;
 
@@ -434,7 +436,7 @@ private:
 
     /// <summary>
     /// </summary>
-	std::array<std::vector<Person *>, 5> rankedForTreatment;
+	std::array<std::vector<Entity *>, 5> rankedForTreatment;
 
     /// <summary>
     /// tallies the statistics that the population generates throughout the simulation
@@ -449,12 +451,12 @@ private:
     /// </summary>
 	double treatmentCorrectionFactor_;
 
-    std::unordered_set<Person *> dead_people_this_month_;
+    std::unordered_set<Entity *> dead_people_this_month_;
 
     std::vector<Intervention> interventions_;
 
     public:
-    struct PersonSummary
+    struct EntitySummary
     {
         unsigned long person_id;
         int time_infected;
@@ -464,13 +466,15 @@ private:
         int age_at_infection;
         int time_of_death;
         DemographicProfile profile;
-        Person::RiskLevel risk_group;
+        Entity::RiskLevel risk_group;
     };
 
     private:
-    std::unordered_map<unsigned long, PersonSummary> individual_summaries_;
+    std::unordered_map<unsigned long, EntitySummary> individual_summaries_;
 
     static const int NumIndividualSummaries = 10000;
 
     void SaveIndividualSummaries(std::ostream &stream) const;
 };
+
+} // namespace transm

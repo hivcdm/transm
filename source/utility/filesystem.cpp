@@ -12,6 +12,8 @@
 
 #include "filesystem.hpp"
 
+namespace transm {
+
 const path &path::dot()
 {
 #ifdef _WIN32
@@ -430,3 +432,5 @@ path filesystem::current_path()
     return path(std::string(buffer.begin(), buffer.end()));
 #endif
 }
+
+} // namespace transm

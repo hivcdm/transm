@@ -1,12 +1,7 @@
-/*
- * FullVector.cpp
- *
- *  Created on: Nov 3, 2008
- *      Author: errhode
- */
-
 #include <vector>
 #include "fullvector.hpp"
+
+namespace transm {
 
 long FullVector::FVcounter = 0;
 
@@ -14,16 +9,16 @@ long FullVector::FVcounter = 0;
 
 FullVector::FullVector()
 {
-	std::vector<Person *> vP;
+	std::vector<Entity *> vP;
 	vPerson = vP;
 	ID = FullVector::FVcounter;
 	FullVector::FVcounter++;
 }
 
-FullVector::FullVector(std::vector<Person *> vP)
+FullVector::FullVector(std::vector<Entity *> vP)
 {
 	vPerson = vP;
-	vector<Person *>::iterator vPiter;
+	vector<Entity *>::iterator vPiter;
 	int i = 0;
 
 	for(vPiter = vP.begin(); vPiter != vP.end(); vPiter++)
@@ -36,9 +31,9 @@ FullVector::FullVector(std::vector<Person *> vP)
 	FullVector::FVcounter++;
 }
 
-FullVector::FullVector(int num, Person *p)
+FullVector::FullVector(int num, Entity *p)
 {
-	vector<Person *> vP(num, p);
+	vector<Entity *> vP(num, p);
 	vPerson = vP;
 	int i;
 
@@ -64,25 +59,25 @@ FullVector::~FullVector()
  */
 
 //TESTED
-Person *FullVector::operator[](int index)
+Entity *FullVector::operator[](int index)
 {
 	return vPerson[index];
 }
 
 //TESTED
-Person *FullVector::at(int loc)
+Entity *FullVector::at(int loc)
 {
 	return vPerson.at(loc);
 }
 
 //UNTESTED
-Person *FullVector::back()
+Entity *FullVector::back()
 {
 	return vPerson.back();
 }
 
 //TESTED
-vector<Person *>::iterator FullVector::begin()
+vector<Entity *>::iterator FullVector::begin()
 {
 	return vPerson.begin();
 }
@@ -107,7 +102,7 @@ bool FullVector::empty()
 	return vPerson.empty();
 }
 
-bool FullVector::exists(Person *_p)
+bool FullVector::exists(Entity *_p)
 {
 	//If this is empty, return false
 	if(empty())
@@ -136,13 +131,13 @@ bool FullVector::exists(Person *_p)
 }
 
 //TESTED
-vector<Person *>::iterator FullVector::end()
+vector<Entity *>::iterator FullVector::end()
 {
 	return vPerson.end();
 }
 
 //UNTESTED
-Person *FullVector::front()
+Entity *FullVector::front()
 {
 	return vPerson.front();
 }
@@ -154,20 +149,20 @@ int FullVector::max_size()
 }
 
 //TESTED
-void FullVector::push_back(Person *p)
+void FullVector::push_back(Entity *p)
 {
 	vPerson.push_back(p);
 	p->addFVindices((int)vPerson.size() - 1, this);
 }
 
 //TESTED
-vector<Person *>::reverse_iterator FullVector::rbegin()
+vector<Entity *>::reverse_iterator FullVector::rbegin()
 {
 	return vPerson.rbegin();
 }
 
 //TESTED
-vector<Person *>::reverse_iterator FullVector::rend()
+vector<Entity *>::reverse_iterator FullVector::rend()
 {
 	return vPerson.rend();
 }
@@ -190,7 +185,7 @@ int FullVector::size()
  * @return: Returns true if all pointers were successfully removed, returns false otherwise (including if person was not in FV)
  */
 //TESTED
-bool FullVector::remove(Person *p)
+bool FullVector::remove(Entity *p)
 {
 	vector<unsigned int> pIndices = p->getFVindices(this);
 
@@ -200,7 +195,7 @@ bool FullVector::remove(Person *p)
 	}
 
 	vector<unsigned int>::iterator pIndIter;
-	Person *p2;
+	Entity *p2;
 
 	for(pIndIter = pIndices.begin(); pIndIter != pIndices.end(); pIndIter++)
 	{
@@ -238,7 +233,7 @@ bool FullVector::remove(Person *p)
  * @effects: Adds num copies of p to this; updates p.FVindices accordingly
  */
 //TESTED
-void FullVector::add(Person *p, int num)
+void FullVector::add(Entity *p, int num)
 {
 	int i;
 
@@ -254,12 +249,12 @@ void FullVector::add(Person *p, int num)
  * @returns: Person* p at index
  */
 //TESTED
-Person *FullVector::selectout(int index)
+Entity *FullVector::selectout(int index)
 {
 	if(index < static_cast<int>(vPerson.size()))
 	{
-		Person *p = vPerson[index];
-		Person *p2 = vPerson.back();
+		Entity *p = vPerson[index];
+		Entity *p2 = vPerson.back();
 		vPerson[index] = p2;
 		vPerson.pop_back();
 
@@ -290,8 +285,8 @@ bool FullVector::swapelements(int index1, int index2)
 {
 	if(index1 < static_cast<int>(vPerson.size()) && index2 < static_cast<int>(vPerson.size()))
 	{
-		Person *p1 = vPerson[index1];
-		Person *p2 = vPerson[index2];
+		Entity *p1 = vPerson[index1];
+		Entity *p2 = vPerson[index2];
 
 		if(p1 != p2)
 		{
@@ -313,7 +308,7 @@ bool FullVector::swapelements(int index1, int index2)
 
 void FullVector::print()
 {
-	vector<Person *>::iterator iter;
+	vector<Entity *>::iterator iter;
 	cout << "FV = : ";
 
 	for(iter = begin(); iter != end(); iter++)
@@ -328,3 +323,5 @@ int FullVector::getID()
 {
 	return ID;
 }
+
+} // namespace transm

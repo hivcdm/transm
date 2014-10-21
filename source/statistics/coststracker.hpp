@@ -7,10 +7,12 @@
 
 #include "bucketcounter.hpp"
 #include "tabularoutput.hpp"
-#include "entities/person.hpp"
+#include "entities/entity.hpp"
 #include "data/eventparams.hpp"
 
-class Person;
+namespace transm {
+
+class Entity;
 class Population;
 
 enum class ClinicalCostTypes : size_t
@@ -42,10 +44,10 @@ public:
 
 	void RecordTreatmentCosts(const std::array<double, 3> &costsUndiscounted, const std::array<double, 3> &costsDiscounted, int artLine);
 
-	void RecordCepacCosts(double costsUndiscounted, double costsDiscounted, DemographicProfile::Gender gender, Person::CD4Strata cd4,
-		Person::HVLStrata hvl, Person::HIVStatus status);
+	void RecordCepacCosts(double costsUndiscounted, double costsDiscounted, DemographicProfile::Gender gender, Entity::CD4Strata cd4,
+		Entity::HVLStrata hvl, Entity::HIVStatus status);
 
-	void RecordLifeMonth(double qualityOfLife, double discountFactor, Person::HIVStatus status);
+	void RecordLifeMonth(double qualityOfLife, double discountFactor, Entity::HIVStatus status);
 
 	void PrintCosts(int time, std::ostream &_outStream);
 
@@ -54,8 +56,8 @@ public:
 private:	
 	struct Costs
 	{
-		std::array<double, Person::ENDHIVStatus> lifeMonthsByHivStatus;
-		std::array<double, Person::ENDHIVStatus> qalmsByHivStatus;
+		std::array<double, Entity::ENDHIVStatus> lifeMonthsByHivStatus;
+		std::array<double, Entity::ENDHIVStatus> qalmsByHivStatus;
 		double condomCosts;
 		double circumcisionCosts;
 		std::array<double, SimContext::COST_NUM_TYPES> medicalCosts;
@@ -64,9 +66,9 @@ private:
 		double drugCosts;
 		double toxicityCosts;
 		std::array<double, (std::size_t)DemographicProfile::Gender::Last> totalCostsByGender;
-		std::array<double, Person::ENDHIVStatus> totalCostsByHivState;
-		std::array<double, Person::ENDCD4Strata> totalCostsByCd4;
-		std::array<double, Person::ENDHVLStrata + 1> totalCostsByHvl;
+		std::array<double, Entity::ENDHIVStatus> totalCostsByHivState;
+		std::array<double, Entity::ENDCD4Strata> totalCostsByCd4;
+		std::array<double, Entity::ENDHVLStrata + 1> totalCostsByHvl;
 	};
 
 	Costs undiscounted_;
@@ -79,3 +81,5 @@ private:
 
 	void Reset();
 };
+
+} // namespace transm

@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+namespace transm {
+
 /**
 This class parses the parts of a CEPAC .in file that is needed to run the transmission model
 It also stores the values that it has parsed and provides accessor functions
@@ -30,3 +32,5 @@ private:
 	//fstream of a valid CEPAC .in file
 	std::fstream inputStream_;
 };
+
+} // namespace transm

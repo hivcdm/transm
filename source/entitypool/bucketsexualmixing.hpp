@@ -26,7 +26,9 @@ errhode 4/20/2009: The index has been replaced by BucketAge, which implements a 
 #include "bucketdemographicprofile.hpp"
 #include "bucketage.hpp"
 
-class Person;
+namespace transm {
+
+class Entity;
 
 /**
 This class contains Person objects in different buckets based on age
@@ -35,10 +37,6 @@ The # of buckets depend on the timestep granularity used in the simulation
 **/
 class BucketSexualMixing : public BucketDemographicProfile
 {
-
-
-	//friend class BucketDemographicProfile::JavaStyleIterator;
-
 	//min and max age that this BucketDemographicProfile holds
 	unsigned int minAge;
 	unsigned int maxAge;
@@ -49,7 +47,7 @@ class BucketSexualMixing : public BucketDemographicProfile
 
 public:
 	//This is the main circular buffer containing the BucketAge structures
-	typedef boost::circular_buffer_space_optimized<BucketAge *> BucketAllAges;
+    using BucketAllAges = boost::circular_buffer_space_optimized<BucketAge *>;
 
     void SetAssortativeness(SexualPartnership::Type type, double assortativeness) { assort[type] = assortativeness; }
 
@@ -80,7 +78,7 @@ public :
     /// </summary>
 	void clear();
 
-	Person *drawMember(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType, bool _remove);
+	Entity *drawMember(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType, bool _remove);
 
 	/***
 	 * Draws random person for the age range desired by person for partnership type
@@ -90,15 +88,15 @@ public :
 	person exists, returns nullptr
 	***/
 	//TESTED
-	Person *drawMember(RandomNumberGenerator &_randomNums, Person *_chooser, SexualPartnership::Type _partnershipType, bool _remove);
+	Entity *drawMember(RandomNumberGenerator &_randomNums, Entity *_chooser, SexualPartnership::Type _partnershipType, bool _remove);
 
 	//will remove this Person (if he or she exists) from the index
 	//TESTED
-	bool erase(Person *_person);
+	bool erase(Entity *_person);
 
 	//tells whether _person exists in the index
 	//TESTED
-	bool exists(Person *_person);
+	bool exists(Entity *_person);
 
 	//counts number of infected people this EntityPool
 	//TESTED*
@@ -109,11 +107,11 @@ public :
 	/*
 	*returns the number of unique infected people by risk group
 	*/
-	unsigned long getNumInfected(Person::RiskLevel _risk);
+	unsigned long getNumInfected(Entity::RiskLevel _risk);
 
 	//will index a new Person
 	//TESTED
-	bool insert(Person *_person);
+	bool insert(Entity *_person);
 
 	//TESTED
     void print(ostream &_outStream, const std::string &_prefix);
@@ -122,7 +120,7 @@ public :
 	//TESTED
 	unsigned long size();
 
-    void forEach(std::function<void(Person *)> callback);
+    void forEach(std::function<void(Entity *)> callback);
 
 	BucketAllAges::iterator begin();
 
@@ -143,24 +141,24 @@ public :
 
 	/*
 	 * @returns: total number of marbles in all FVs associated with _risk
-	 * across all BucketAges in this; If _risk = Person::ENDRiskLevel,
+	 * across all BucketAges in this; If _risk = Entity::ENDRiskLevel,
 	 * returns the number of persons in the random risk bucket
 	 */
 	//TESTED
-	unsigned long sizeRisk(Person::RiskLevel _risk);
+	unsigned long sizeRisk(Entity::RiskLevel _risk);
 
 	/*
 	 * @returns: total number of unique persons in this bucket with given risk level that is CSW
-	 * across all BucketAges in this; If _risk = Person::ENDRiskLevel,
+	 * across all BucketAges in this; If _risk = Entity::ENDRiskLevel,
 	 * returns the number of persons in the random risk bucket
 	 */
-	unsigned long sizeRiskCSW(Person::RiskLevel _risk);
+	unsigned long sizeRiskCSW(Entity::RiskLevel _risk);
 
 	/*
 	 * @returns: total number of unique persons in this bucket with given risk level and hiv status
 	 * across all BucketAges in this;
 	 */
-	unsigned long sizeRiskHIVStatus(Person::RiskLevel _risk, Person::HIVStatus _hivStatus);
+	unsigned long sizeRiskHIVStatus(Entity::RiskLevel _risk, Entity::HIVStatus _hivStatus);
 
 	/*
 	 * @returns: total number of marbles in all Random Risk FVs across all
@@ -177,12 +175,12 @@ public :
 	 * false otherwise
 	 */
 	//TESTED
-	bool increaseInfected(Person *_person);
+	bool increaseInfected(Entity *_person);
 
 	/* @function: changeHIVstatus
 	 * @effects: if person is in this Bucket and thier hiv status changes decrement the old status and increment new status
 	 */
-	void changeHIVStatus(Person *_p, Person::HIVStatus _orig, Person::HIVStatus _new);
+	void changeHIVStatus(Entity *_p, Entity::HIVStatus _orig, Entity::HIVStatus _new);
 
 	/*
 	 * @effects: Sets all persons in oldest BucketAge to die and processes their
@@ -191,7 +189,7 @@ public :
 	 * @returns: List of persons set to die (of old age)
 	 */
 	//TESTED
-	std::list<Person *> ageOneTimeStep();
+	std::list<Entity *> ageOneTimeStep();
 
 private :
 
@@ -200,12 +198,12 @@ private :
 	if _p does not belong in this BucketDemographicProfile, then will return size of personsByAge
 	*/
 	//TESTED
-	unsigned int getCorrectBufferIndex(Person *_p);
+	unsigned int getCorrectBufferIndex(Entity *_p);
 
 	//gets a random person with age in [_ageLowerBound,_ageUpperBound]
 	//TESTED
-	Person *getRandomPerson(RandomNumberGenerator &_randomNums, unsigned int _ageLowerBound, unsigned int _ageUpperBound,
-	                        Person::RiskLevel _risk, SexualPartnership::Type _partnershipType, bool _remove);
+	Entity *getRandomPerson(RandomNumberGenerator &_randomNums, unsigned int _ageLowerBound, unsigned int _ageUpperBound,
+	                        Entity::RiskLevel _risk, SexualPartnership::Type _partnershipType, bool _remove);
 
 	//Returns AgeBucket of oldest persons
 	//TESTED
@@ -216,3 +214,4 @@ private :
 	BucketAge *getYoungest();
 };
 
+} // namespace transm

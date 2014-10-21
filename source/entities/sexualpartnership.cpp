@@ -2,10 +2,12 @@
 #include <string>
 
 #include "sexualpartnership.hpp"
-#include "person.hpp"
+#include "entity.hpp"
 #include "male.hpp"
 #include "data/eventparams.hpp"
 #include "statistics/populationstatistics.hpp"
+
+namespace transm {
 
 const std::map<SexualPartnership::Type, std::string> SexualPartnership::TypeStrings = 
 {
@@ -19,7 +21,7 @@ const std::map<SexualPartnership::Type, std::string> SexualPartnership::TypeStri
     {SexualPartnership::Type::CswMsm, "CswMsm"}
 };
 
-SexualPartnership::SexualPartnership(Person *_person1, Person *_person2, EventParams &_eventParams,
+SexualPartnership::SexualPartnership(Entity *_person1, Entity *_person2, EventParams &_eventParams,
                                      SexualPartnership::Type _partnershipType)
 {
 	//save the type of partnership this is
@@ -73,17 +75,17 @@ bool SexualPartnership::checkTimeForSplit(long _currTime)
 	return (_currTime >= timePartnerDissolution);
 }
 
-Person *SexualPartnership::getPartner1()
+Entity *SexualPartnership::getPartner1()
 {
 	return partners[0];
 }
 
-Person *SexualPartnership::getPartner2()
+Entity *SexualPartnership::getPartner2()
 {
 	return partners[1];
 }
 
-Person *SexualPartnership::getOtherPartner(Person *_member)
+Entity *SexualPartnership::getOtherPartner(Entity *_member)
 {
 	assert(isMember(_member));
 
@@ -106,12 +108,12 @@ int SexualPartnership::getDissolutionTime()
 {
 	return timePartnerDissolution;
 }
-bool SexualPartnership::isMember(Person *_p)
+bool SexualPartnership::isMember(Entity *_p)
 {
 	return ((_p == partners[0]) || (_p == partners[1]));
 }
 
-Person *SexualPartnership::monthlySexualActivity(EventParams &_eventParams, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, Person::ENDHVLStrata>> &transmission_coefficients)
+Entity *SexualPartnership::monthlySexualActivity(EventParams &_eventParams, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, Entity::ENDHVLStrata>> &transmission_coefficients)
 {
 	int eventsThisMonth = partners[0]->rollNumEventsPerPartner(partners[1], _eventParams.randomNums, type);
 
@@ -144,3 +146,5 @@ SexualPartnership::~SexualPartnership()
 	partners[0] = nullptr;
 	partners[1] = nullptr;
 }
+
+} // namespace transm

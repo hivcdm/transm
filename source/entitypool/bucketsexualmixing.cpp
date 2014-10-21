@@ -5,7 +5,9 @@
 #include "utility/utility.hpp"
 #include "utility/randomnumbergenerator.hpp"
 
-void BucketSexualMixing::forEach(std::function<void(Person *)> callback)
+namespace transm {
+
+void BucketSexualMixing::forEach(std::function<void(Entity *)> callback)
 {
     for(auto bucket_age : *this)
     {
@@ -67,7 +69,7 @@ BucketSexualMixing::~BucketSexualMixing()
 }
 
 
-unsigned int BucketSexualMixing::getCorrectBufferIndex(Person *_p)
+unsigned int BucketSexualMixing::getCorrectBufferIndex(Entity *_p)
 {
 	//get person's age in right time granularity
 	unsigned int pAge = _p->getAge(timeGranularity);
@@ -110,7 +112,7 @@ void BucketSexualMixing::clear()
 	}
 }
 
-Person *BucketSexualMixing::drawMember(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType, bool _remove)
+Entity *BucketSexualMixing::drawMember(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType, bool _remove)
 {
 	if(size() == 0)
 	{
@@ -120,13 +122,13 @@ Person *BucketSexualMixing::drawMember(RandomNumberGenerator &_randomNums, Sexua
 	//Use minAge and maxAge for bucket
 	//default use risk level of low
 	//Assortative param will set it to random anyhow
-	return getRandomPerson(_randomNums, minAge, maxAge, Person::LOW, _partnershipType, _remove);
+	return getRandomPerson(_randomNums, minAge, maxAge, Entity::LOW, _partnershipType, _remove);
 }
 
 /***
 @param _remove - will remove this person from the BucketSexualMixing if this is true
 ***/
-Person *BucketSexualMixing::drawMember(RandomNumberGenerator &_randomNums, Person *_chooser, SexualPartnership::Type _partnershipType, bool _remove)
+Entity *BucketSexualMixing::drawMember(RandomNumberGenerator &_randomNums, Entity *_chooser, SexualPartnership::Type _partnershipType, bool _remove)
 {
 	//these determine the bounds of which ages we will consider
 	int minDesired = 0;
@@ -149,7 +151,7 @@ Person *BucketSexualMixing::drawMember(RandomNumberGenerator &_randomNums, Perso
 }
 
 //will remove this Person (if he or she exists) from the index
-bool BucketSexualMixing::erase(Person *_person)
+bool BucketSexualMixing::erase(Entity *_person)
 {
 	assert(_person != nullptr);
 	unsigned int correctIndex = getCorrectBufferIndex(_person);
@@ -172,7 +174,7 @@ bool BucketSexualMixing::erase(Person *_person)
 }
 
 //tells whether _person exists in the index
-bool BucketSexualMixing::exists(Person *_person)
+bool BucketSexualMixing::exists(Entity *_person)
 {
 	unsigned int correctIndex = getCorrectBufferIndex(_person);
 
@@ -218,7 +220,7 @@ unsigned long BucketSexualMixing::getNumInfected(int generation)
 /*
  * @returns: total number of infected persons in this risk group
  */
-unsigned long BucketSexualMixing::getNumInfected(Person::RiskLevel _risk)
+unsigned long BucketSexualMixing::getNumInfected(Entity::RiskLevel _risk)
 {
 	BucketAllAges::iterator ageBucketIter;
 	unsigned long totalInfected = 0;
@@ -232,8 +234,8 @@ unsigned long BucketSexualMixing::getNumInfected(Person::RiskLevel _risk)
 	return totalInfected;
 }
 
-Person *BucketSexualMixing::getRandomPerson(RandomNumberGenerator &_randomNums, unsigned int _ageLowerBound,
-        unsigned int _ageUpperBound, Person::RiskLevel _risk, SexualPartnership::Type _partnershipType, bool _remove)
+Entity *BucketSexualMixing::getRandomPerson(RandomNumberGenerator &_randomNums, unsigned int _ageLowerBound,
+        unsigned int _ageUpperBound, Entity::RiskLevel _risk, SexualPartnership::Type _partnershipType, bool _remove)
 {
 	if(_ageLowerBound < minAge)
 	{
@@ -246,7 +248,7 @@ Person *BucketSexualMixing::getRandomPerson(RandomNumberGenerator &_randomNums, 
 	unsigned int maxIndex = std::min<unsigned int>(_ageUpperBound - minAge,
 	                        (unsigned int)personsByAge->size() - 1);
 	//Use assort to determine whether to use random or _risk bin
-	Person::RiskLevel riskToDraw;
+	Entity::RiskLevel riskToDraw;
 
 	if(_randomNums.chance(assort[_partnershipType]))
 	{
@@ -254,7 +256,7 @@ Person *BucketSexualMixing::getRandomPerson(RandomNumberGenerator &_randomNums, 
 	}
 	else
 	{
-		riskToDraw = Person::ENDRiskLevel;
+		riskToDraw = Entity::ENDRiskLevel;
 	}
 
 	//figure out # of eligible people
@@ -320,7 +322,7 @@ Person *BucketSexualMixing::getRandomPerson(RandomNumberGenerator &_randomNums, 
 		if(randPick < personsByAge->at(currIndex)->numChoices(riskToDraw))
 		{
 			BucketAge *ageBucket = personsByAge->at(currIndex);
-			Person *p = ageBucket->drawMember(_randomNums, _risk, _partnershipType, (riskToDraw == Person::ENDRiskLevel), _remove);
+			Entity *p = ageBucket->drawMember(_randomNums, _risk, _partnershipType, (riskToDraw == Entity::ENDRiskLevel), _remove);
 
 			//we have to tell the person that they are not part of a bucket anymore
 			if(_remove && p)
@@ -339,7 +341,7 @@ Person *BucketSexualMixing::getRandomPerson(RandomNumberGenerator &_randomNums, 
 }
 
 //will index a New Person
-bool BucketSexualMixing::insert(Person *_person)
+bool BucketSexualMixing::insert(Entity *_person)
 {
 	//Don't allow person with wrong DemographicProfile to be inserted
 	if(_person->getDemographicProfile()->getProfileID() != getProfileID())
@@ -470,9 +472,9 @@ unsigned long BucketSexualMixing::sizeInfectedByAge(int minMonthAge, int maxMont
  * @returns: total number of marbles in all FVs associated with _risk
  * BucketAges in this
  */
-unsigned long BucketSexualMixing::sizeRisk(Person::RiskLevel _risk)
+unsigned long BucketSexualMixing::sizeRisk(Entity::RiskLevel _risk)
 {
-	assert(_risk <= Person::ENDRiskLevel);
+	assert(_risk <= Entity::ENDRiskLevel);
 	BucketAllAges::iterator bucketIter;
 	unsigned long total = 0;
 
@@ -489,9 +491,9 @@ unsigned long BucketSexualMixing::sizeRisk(Person::RiskLevel _risk)
  * @returns: total number of unique persons in this bucket that is CSW with given _risk
  * BucketAges in this
  */
-unsigned long BucketSexualMixing::sizeRiskCSW(Person::RiskLevel _risk)
+unsigned long BucketSexualMixing::sizeRiskCSW(Entity::RiskLevel _risk)
 {
-	assert(_risk <= Person::ENDRiskLevel);
+	assert(_risk <= Entity::ENDRiskLevel);
 	BucketAllAges::iterator bucketIter;
 	unsigned long total = 0;
 
@@ -507,10 +509,10 @@ unsigned long BucketSexualMixing::sizeRiskCSW(Person::RiskLevel _risk)
  * @returns: total number of unique persons in this bucket with given risk level and hiv status
  * across all BucketAges in this;
  */
-unsigned long BucketSexualMixing::sizeRiskHIVStatus(Person::RiskLevel _risk, Person::HIVStatus _hivStatus)
+unsigned long BucketSexualMixing::sizeRiskHIVStatus(Entity::RiskLevel _risk, Entity::HIVStatus _hivStatus)
 {
-	assert(_risk <= Person::ENDRiskLevel);
-	assert(_hivStatus <= Person::ENDHIVStatus);
+	assert(_risk <= Entity::ENDRiskLevel);
+	assert(_hivStatus <= Entity::ENDHIVStatus);
 	BucketAllAges::iterator bucketIter;
 	unsigned long total = 0;
 
@@ -548,7 +550,7 @@ unsigned long BucketSexualMixing::sizeRandom()
  * @return: returns true if _person.isInfected and number was increased and
  * false otherwise
  */
-bool BucketSexualMixing::increaseInfected(Person *_person)
+bool BucketSexualMixing::increaseInfected(Entity *_person)
 {
 	if(!(_person->isInfected()))
 	{
@@ -570,7 +572,7 @@ bool BucketSexualMixing::increaseInfected(Person *_person)
 /* @function: changeHIVstatus
  * @effects: if person is in this Bucket and thier hiv status changes decrement the old status and increment new status
  */
-void BucketSexualMixing::changeHIVStatus(Person *_p, Person::HIVStatus _orig, Person::HIVStatus _new)
+void BucketSexualMixing::changeHIVStatus(Entity *_p, Entity::HIVStatus _orig, Entity::HIVStatus _new)
 {
 	int index = getCorrectBufferIndex(_p);
 
@@ -588,19 +590,19 @@ void BucketSexualMixing::changeHIVStatus(Person *_p, Person::HIVStatus _orig, Pe
  * to age++ (to account for new index of BucketAge
  * @returns: List of persons expired out of this (of old age)
  */
-list<Person *> BucketSexualMixing::ageOneTimeStep()
+list<Entity *> BucketSexualMixing::ageOneTimeStep()
 {
 	//Kill off the oldest
 	BucketAge *oldestPersons = getOldest();
 	//Iterate through all oldest remove them from this and put them in list of "expired" persons to be returned
-	std::list<Person *> toReturn;
+	std::list<Entity *> toReturn;
 	auto personIterator = oldestPersons->begin();
 
 	while(personIterator != oldestPersons->end() && oldestPersons->size() > 0)
 	{
 		try
 		{
-			Person *oldPerson = (*personIterator);
+			Entity *oldPerson = (*personIterator);
 			//We're going to remove oldPerson, so advance the iterator now before it gets confused
 			personIterator++;
 			toReturn.push_back(oldPerson);
@@ -636,3 +638,5 @@ list<Person *> BucketSexualMixing::ageOneTimeStep()
 
 	return toReturn;
 }
+
+} // namespace transm

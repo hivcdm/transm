@@ -3,7 +3,9 @@
 
 #include "populationstatistics.hpp"
 #include "core/constants.hpp"
-#include "entities/person.hpp"
+#include "entities/entity.hpp"
+
+namespace transm {
 
 const std::vector<std::string> PopulationStatistics::LifeStatsStr =
 {
@@ -40,7 +42,7 @@ PopulationStatistics::PopulationStatistics()
 
 PopulationStatistics::SingleLEStats::SingleLEStats()
 {
-	for(int i = 0; i < Person::maxYrForDeathStats; i++)
+	for(int i = 0; i < Entity::maxYrForDeathStats; i++)
 	{
 		deathsByAge[i] = 0;
 		popByAge[i] = 0;
@@ -72,7 +74,7 @@ PopulationStatistics::SurvivalStats::SurvivalStats()
 
     for(std::size_t i = 0; i < (std::size_t)DemographicProfile::Employment::Last; i++)
 	{
-		for(int j = 0; j < Person::ENDRiskLevel; j++)
+		for(int j = 0; j < Entity::ENDRiskLevel; j++)
 		{
 			numDeathEmplRisk[i][j] = 0;
 			timeToDeathEmplRiskSum[i][j] = 0;
@@ -101,13 +103,13 @@ PopulationStatistics::~PopulationStatistics()
 	delete selectedPartAcqStats;
 	delete survivalStats;
 }
-void PopulationStatistics::processDeath(Person *_p, EventParams &_eventParams)
+void PopulationStatistics::processDeath(Entity *_p, EventParams &_eventParams)
 {
 	assert((_p != nullptr));
 	assert((!_p->isAlive()));
 	DemographicProfile::Gender gend = (DemographicProfile::Gender) _p->getDemographicProfileVal(DemographicProfile::Demographic::Gender);
 	DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) _p->getDemographicProfileVal(DemographicProfile::Demographic::Employment);
-	Person::RiskLevel risk = _p->getRiskLevel();
+	Entity::RiskLevel risk = _p->getRiskLevel();
 	int prevDelay = _eventParams.delayPrevalence;
 
 	if(_eventParams.currTime > prevDelay)
@@ -155,47 +157,47 @@ void PopulationStatistics::processDeath(Person *_p, EventParams &_eventParams)
 		}
 	}
 
-	const Person::StatsRecord *stats = _p->getStats();
+	const Entity::StatsRecord *stats = _p->getStats();
 
 	if(_p->isInfected())
 	{
-		lifeStats->incrStat(PopulationStatistics::TOTAL_HIV_POS_LM, stats->getStat(Person::STAT_TOTAL_LM));
-		lifeStats->incrStat(PopulationStatistics::TOTAL_HIV_POS_POSTINFECT_LM, stats->getStat(Person::STAT_HIV_POS_POSTINFECT_LM));
+		lifeStats->incrStat(PopulationStatistics::TOTAL_HIV_POS_LM, stats->getStat(Entity::STAT_TOTAL_LM));
+		lifeStats->incrStat(PopulationStatistics::TOTAL_HIV_POS_POSTINFECT_LM, stats->getStat(Entity::STAT_HIV_POS_POSTINFECT_LM));
 		lifeStats->incrStat(PopulationStatistics::TOTAL_HIV_POS_DTHS, 1);
 		lifeStats->incrStat(PopulationStatistics::TOTAL_HIV_POS, 1);
 	}
 	else
 	{
-		lifeStats->incrStat(PopulationStatistics::TOTAL_HIV_NEG_LM, stats->getStat(Person::STAT_TOTAL_LM));
+		lifeStats->incrStat(PopulationStatistics::TOTAL_HIV_NEG_LM, stats->getStat(Entity::STAT_TOTAL_LM));
 		lifeStats->incrStat(PopulationStatistics::TOTAL_HIV_NEG_DTHS, 1);
 		lifeStats->incrStat(PopulationStatistics::TOTAL_HIV_NEG, 1);
 		//this person was exposed to virus but not infected
-		//infectionStats->incrStat( PopulationStatistics::TOTAL_EXPOSED_BUT_NOT_INFECTED, stats->getStat(Person::STAT_EXPOSURES_BEFORE_INF));
+		//infectionStats->incrStat( PopulationStatistics::TOTAL_EXPOSED_BUT_NOT_INFECTED, stats->getStat(Entity::STAT_EXPOSURES_BEFORE_INF));
 	}
 
-	lifeStats->incrStat(PopulationStatistics::TOTAL_LM, stats->getStat(Person::STAT_TOTAL_LM));
+	lifeStats->incrStat(PopulationStatistics::TOTAL_LM, stats->getStat(Entity::STAT_TOTAL_LM));
 }
 
-void PopulationStatistics::processPostMaxTimeDeath(Person *_p)
+void PopulationStatistics::processPostMaxTimeDeath(Entity *_p)
 {
 	assert((_p != nullptr));
 	//assert((!_p->isAlive()));
 	//assert(!(_p->cepacPatient->isAlive()));
-	const Person::StatsRecord *stats = _p->getStats();
+	const Entity::StatsRecord *stats = _p->getStats();
 
 	if(_p->isInfected())
 	{
-		lifeStats->incrStat(PopulationStatistics::TOTAL_HIV_POS_LM, stats->getStat(Person::STAT_TOTAL_LM));
-		lifeStats->incrStat(PopulationStatistics::TOTAL_HIV_POS_POSTINFECT_LM, stats->getStat(Person::STAT_HIV_POS_POSTINFECT_LM));
+		lifeStats->incrStat(PopulationStatistics::TOTAL_HIV_POS_LM, stats->getStat(Entity::STAT_TOTAL_LM));
+		lifeStats->incrStat(PopulationStatistics::TOTAL_HIV_POS_POSTINFECT_LM, stats->getStat(Entity::STAT_HIV_POS_POSTINFECT_LM));
 		lifeStats->incrStat(PopulationStatistics::TOTAL_HIV_POS, 1);
 	}
 	else
 	{
-		lifeStats->incrStat(PopulationStatistics::TOTAL_HIV_NEG_LM, stats->getStat(Person::STAT_TOTAL_LM));
+		lifeStats->incrStat(PopulationStatistics::TOTAL_HIV_NEG_LM, stats->getStat(Entity::STAT_TOTAL_LM));
 		lifeStats->incrStat(PopulationStatistics::TOTAL_HIV_NEG, 1);
 	}
 
-	lifeStats->incrStat(PopulationStatistics::TOTAL_LM, stats->getStat(Person::STAT_TOTAL_LM));
+	lifeStats->incrStat(PopulationStatistics::TOTAL_LM, stats->getStat(Entity::STAT_TOTAL_LM));
 }
 
 void PopulationStatistics::printLMStats(std::ostream &_outStream)
@@ -294,15 +296,15 @@ void PopulationStatistics::printSurvivalStats(std::ostream &_outStream)
 	firstRow << Constants::TAB << Constants::TAB << Constants::TAB;
 	secondRow << "Risk Group" << Constants::TAB << "Non-CSW" << Constants::TAB << "Non-CSW" << Constants::TAB;
 	thirdRow << "CSW" << Constants::TAB << "High Risk" << Constants::TAB << "Low Risk" << Constants::TAB;
-    unsigned int numCSW = survivalStats->numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][Person::HIGH] +
-        survivalStats->numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][Person::LOW];
+    unsigned int numCSW = survivalStats->numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][Entity::HIGH] +
+        survivalStats->numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][Entity::LOW];
 
 	if(numCSW != 0)
 	{
-        double timeMean = (survivalStats->timeToInfOrDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][Person::HIGH] +
-            survivalStats->timeToInfOrDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][Person::LOW]) / (double)numCSW;
-        double timeSD = sqrt((survivalStats->timeToInfOrDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][Person::HIGH] +
-            survivalStats->timeToInfOrDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][Person::LOW]) /
+        double timeMean = (survivalStats->timeToInfOrDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][Entity::HIGH] +
+            survivalStats->timeToInfOrDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][Entity::LOW]) / (double)numCSW;
+        double timeSD = sqrt((survivalStats->timeToInfOrDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][Entity::HIGH] +
+            survivalStats->timeToInfOrDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][Entity::LOW]) /
 		                     (double) numCSW - timeMean * timeMean);
 		fourthRow << timeMean << Constants::TAB;
 		fifthRow << timeSD << Constants::TAB;
@@ -313,7 +315,7 @@ void PopulationStatistics::printSurvivalStats(std::ostream &_outStream)
 		fifthRow << "N/A" << Constants::TAB;
 	}
 
-	for(int j = 0; j < Person::ENDRiskLevel; j++)
+	for(int j = 0; j < Entity::ENDRiskLevel; j++)
 	{
         if(survivalStats->numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::NonCsw][j] != 0)
 		{
@@ -373,15 +375,15 @@ void PopulationStatistics::printSurvivalStats(std::ostream &_outStream)
 	firstRow << Constants::TAB << Constants::TAB << Constants::TAB;
 	secondRow << "Risk Group" << Constants::TAB << "Non-CSW" << Constants::TAB << "Non-CSW" << Constants::TAB;
 	thirdRow << "CSW" << Constants::TAB << "High Risk" << Constants::TAB << "Low Risk" << Constants::TAB;
-    numCSW = survivalStats->numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][Person::HIGH] +
-        survivalStats->numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][Person::LOW];
+    numCSW = survivalStats->numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][Entity::HIGH] +
+        survivalStats->numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][Entity::LOW];
 
 	if(numCSW != 0)
 	{
-        double timeMean = (survivalStats->timeToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][Person::HIGH] +
-            survivalStats->timeToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][Person::LOW]) / (double)numCSW;
-        double timeSD = sqrt((survivalStats->timeToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][Person::HIGH] +
-            survivalStats->timeToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][Person::LOW]) / (double)numCSW - timeMean *
+        double timeMean = (survivalStats->timeToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][Entity::HIGH] +
+            survivalStats->timeToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][Entity::LOW]) / (double)numCSW;
+        double timeSD = sqrt((survivalStats->timeToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][Entity::HIGH] +
+            survivalStats->timeToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][Entity::LOW]) / (double)numCSW - timeMean *
 		                     timeMean);
 		fourthRow << timeMean << Constants::TAB;
 		fifthRow << timeSD << Constants::TAB;
@@ -392,7 +394,7 @@ void PopulationStatistics::printSurvivalStats(std::ostream &_outStream)
 		fifthRow << "N/A" << Constants::TAB;
 	}
 
-	for(int j = 0; j < Person::ENDRiskLevel; j++)
+	for(int j = 0; j < Entity::ENDRiskLevel; j++)
 	{
         if(survivalStats->numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::NonCsw][j] != 0)
 		{
@@ -474,15 +476,15 @@ void PopulationStatistics::printSurvivalStats(std::ostream &_outStream)
 	firstRow << Constants::TAB << Constants::TAB << Constants::TAB;
 	secondRow << "Risk Group" << Constants::TAB << "Non-CSW" << Constants::TAB << "Non-CSW" << Constants::TAB;
 	thirdRow << "CSW" << Constants::TAB << "High Risk" << Constants::TAB << "Low Risk" << Constants::TAB;
-    numCSW = survivalStats->numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][Person::HIGH] +
-        survivalStats->numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][Person::LOW];
+    numCSW = survivalStats->numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][Entity::HIGH] +
+        survivalStats->numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][Entity::LOW];
 
 	if(numCSW != 0)
 	{
-        double timeMean = (survivalStats->timeFromInfToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][Person::HIGH] +
-            survivalStats->timeFromInfToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][Person::LOW]) / (double)numCSW;
-        double timeSD = sqrt((survivalStats->timeFromInfToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][Person::HIGH] +
-            survivalStats->timeFromInfToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][Person::LOW]) /
+        double timeMean = (survivalStats->timeFromInfToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][Entity::HIGH] +
+            survivalStats->timeFromInfToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][Entity::LOW]) / (double)numCSW;
+        double timeSD = sqrt((survivalStats->timeFromInfToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][Entity::HIGH] +
+            survivalStats->timeFromInfToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][Entity::LOW]) /
 		                     (double) numCSW - timeMean * timeMean);
 		fourthRow << timeMean << Constants::TAB;
 		fifthRow << timeSD << Constants::TAB;
@@ -493,7 +495,7 @@ void PopulationStatistics::printSurvivalStats(std::ostream &_outStream)
 		fifthRow << "N/A" << Constants::TAB;
 	}
 
-	for(int j = 0; j < Person::ENDRiskLevel; j++)
+	for(int j = 0; j < Entity::ENDRiskLevel; j++)
 	{
         if(survivalStats->numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::NonCsw][j] != 0)
 		{
@@ -521,13 +523,13 @@ void PopulationStatistics::printSurvivalStats(std::ostream &_outStream)
 void PopulationStatistics::printLEStats(std::ostream &_outStream, long currTime)
 {
 	assert((selectedLEStats != nullptr));
-	double proportionalDeathRate[Person::maxYrForDeathStats];//proportionaldeathrate=number of deaths/total number of people for each age bucket
-	double lifeTablePop[Person::maxYrForDeathStats];//number of people who survive to age bucket for a hypothetical Pop of n people
-	double lifeTableDeaths[Person::maxYrForDeathStats];//number of deaths in life table for hypothetical Population
-	double lifeTableMidpointSurvival[Person::maxYrForDeathStats];//number of people who survive to midpoint of age cat
-	double lifeTableTotalRemainingYears[Person::maxYrForDeathStats];//total person years left for all individuals who survive to age cat
-	double lifeTableLifeExpectancy[Person::maxYrForDeathStats];//mean number of years expected until death for survivors to age cat
-	double survivalFunction[Person::maxYrForDeathStats];//proportion of pop that survive to year x
+	double proportionalDeathRate[Entity::maxYrForDeathStats];//proportionaldeathrate=number of deaths/total number of people for each age bucket
+	double lifeTablePop[Entity::maxYrForDeathStats];//number of people who survive to age bucket for a hypothetical Pop of n people
+	double lifeTableDeaths[Entity::maxYrForDeathStats];//number of deaths in life table for hypothetical Population
+	double lifeTableMidpointSurvival[Entity::maxYrForDeathStats];//number of people who survive to midpoint of age cat
+	double lifeTableTotalRemainingYears[Entity::maxYrForDeathStats];//total person years left for all individuals who survive to age cat
+	double lifeTableLifeExpectancy[Entity::maxYrForDeathStats];//mean number of years expected until death for survivors to age cat
+	double survivalFunction[Entity::maxYrForDeathStats];//proportion of pop that survive to year x
 	int medianLELowerIndex = 0; //The index for which the survivalFunction is just over .5
 	double medianLE;//The median Life Expectancy
 	double medianDensity; //The value of the density function at the median
@@ -536,13 +538,13 @@ void PopulationStatistics::printLEStats(std::ostream &_outStream, long currTime)
 	lifeTablePop[0] = 0;
 
 	//add back people who died in that year
-	for(int i = 0; i < Person::maxYrForDeathStats; i++)
+	for(int i = 0; i < Entity::maxYrForDeathStats; i++)
 	{
 		selectedLEStats->popByAge[i] += selectedLEStats->deathsByAge[i];
 		lifeTablePop[0] += selectedLEStats->popByAge[i];
 	}
 
-	for(int i = 0; i < Person::maxYrForDeathStats; i++)
+	for(int i = 0; i < Entity::maxYrForDeathStats; i++)
 	{
 		if(selectedLEStats->popByAge[i] == 0)
 		{
@@ -564,16 +566,16 @@ void PopulationStatistics::printLEStats(std::ostream &_outStream, long currTime)
 	}
 
 	//everyone dies at last age bucket
-	proportionalDeathRate[Person::maxYrForDeathStats - 1] = 1;
-	lifeTableTotalRemainingYears[Person::maxYrForDeathStats - 1] = 0;
+	proportionalDeathRate[Entity::maxYrForDeathStats - 1] = 1;
+	lifeTableTotalRemainingYears[Entity::maxYrForDeathStats - 1] = 0;
 
-	for(int i = Person::maxYrForDeathStats - 2; i >= 0; i--)
+	for(int i = Entity::maxYrForDeathStats - 2; i >= 0; i--)
 	{
 		lifeTableTotalRemainingYears[i] = lifeTableTotalRemainingYears[i + 1] + lifeTableMidpointSurvival[i];
 		lifeTableLifeExpectancy[i] = lifeTableTotalRemainingYears[i] / lifeTableMidpointSurvival[i];
 	}
 
-	for(int i = 0; i < Person::maxYrForDeathStats; i++)
+	for(int i = 0; i < Entity::maxYrForDeathStats; i++)
 	{
 		if(survivalFunction[i] < .5)
 		{
@@ -583,7 +585,7 @@ void PopulationStatistics::printLEStats(std::ostream &_outStream, long currTime)
 		medianLELowerIndex = i;
 	}
 
-	if(medianLELowerIndex != Person::maxYrForDeathStats - 1)
+	if(medianLELowerIndex != Entity::maxYrForDeathStats - 1)
 	{
 		medianLE = medianLELowerIndex + (survivalFunction[medianLELowerIndex] - .5) / (survivalFunction[medianLELowerIndex] -
 		           survivalFunction[medianLELowerIndex + 1]);
@@ -605,7 +607,7 @@ void PopulationStatistics::printLEStats(std::ostream &_outStream, long currTime)
 
 	_outStream << std::endl;
 
-	for(int i = 0; i < Person::maxYrForDeathStats; i++)
+	for(int i = 0; i < Entity::maxYrForDeathStats; i++)
 	{
 		_outStream << i << "\t" << selectedLEStats->deathsByAge[i] << "\t" << selectedLEStats->popByAge[i] << "\t"
 		           << lifeTablePop[i] << "\t" << lifeTableDeaths[i] << "\t" << proportionalDeathRate[i] << "\t" <<
@@ -728,14 +730,14 @@ void PopulationStatistics::printPartAcqStats(std::ostream &_outStream, long curr
 	_outStream << std::endl;
 }
 void PopulationStatistics::recordIncidentInfection(EventParams &_eventParams, long _time, SexualPartnership::Type _partnershipType,
-                                       const  Person *_infector, const Person *_infected, bool _print, ostream &_traceOutStream)
+                                       const  Entity *_infector, const Entity *_infected, bool _print, ostream &_traceOutStream)
 {
 	assert((_infector != nullptr) && (_infector->isAlive()));
 	assert((_infected != nullptr) && (_infected->isAlive()));
 	assert(_time >= 0);
 	DemographicProfile::Gender gend = (DemographicProfile::Gender) _infected->getDemographicProfileVal(DemographicProfile::Demographic::Gender);
 	DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) _infected->getDemographicProfileVal(DemographicProfile::Demographic::Employment);
-	Person::RiskLevel risk = _infected->getRiskLevel();
+	Entity::RiskLevel risk = _infected->getRiskLevel();
 	int prevDelay = _eventParams.delayPrevalence;
 
 	if(_eventParams.currTime > prevDelay)
@@ -884,25 +886,25 @@ void PopulationStatistics::recordTestStats(int numTests, const std::vector<int> 
 	}
 }
 
-void PopulationStatistics::recordTreatmentAccessEligiblity(Person *person)
+void PopulationStatistics::recordTreatmentAccessEligiblity(Entity *person)
 {
 	uniqueYearlyEligibleForTreatmentAccess.insert(person);
 	artTracker.recordTreatmentAccessEligiblity(person);
 }
 
-void PopulationStatistics::recordTreatmentAccess(Person *person)
+void PopulationStatistics::recordTreatmentAccess(Entity *person)
 {
 	uniqueYearlyAccessingTreatment.insert(person);
 	artTracker.recordTreatmentAccess(person);
 }
 
-void PopulationStatistics::recordTreatmentEligiblity(Person *person)
+void PopulationStatistics::recordTreatmentEligiblity(Entity *person)
 {
 	uniqueYearlyEligibleForTreatment.insert(person);
 	artTracker.recordTreatmentEligiblity(person);
 }
 
-void PopulationStatistics::recordTreatment(Person *person)
+void PopulationStatistics::recordTreatment(Entity *person)
 {
 	uniqueYearlyTreated.insert(person);
 	artTracker.recordTreatment(person);
@@ -925,3 +927,5 @@ void PopulationStatistics::resetYear(int newYear)
 	uniqueYearlyEligibleForTreatment.clear();
 	uniqueYearlyTreated.clear();
 }
+
+} // namespace transm

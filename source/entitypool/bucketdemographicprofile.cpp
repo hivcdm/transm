@@ -3,9 +3,11 @@
 
 #include "bucketdemographicprofile.hpp"
 #include "core/simulation.hpp"
-#include "entities/person.hpp"
+#include "entities/entity.hpp"
 
-void BucketDemographicProfile::forEach(std::function<void(Person *)> callback)
+namespace transm {
+
+void BucketDemographicProfile::forEach(std::function<void(Entity *)> callback)
 {
     for(auto person : *this)
     {
@@ -26,7 +28,7 @@ BucketDemographicProfile::PersonSet *BucketDemographicProfile::getEntityIndex()
 	return simpleEntityIndex;
 }
 
-Person *BucketDemographicProfile::drawMember(RandomNumberGenerator &, Person *, SexualPartnership::Type, bool)
+Entity *BucketDemographicProfile::drawMember(RandomNumberGenerator &, Entity *, SexualPartnership::Type, bool)
 {
     throw std::runtime_error("not implemented");
 }
@@ -45,10 +47,10 @@ void BucketDemographicProfile::clear()
 	simpleEntityIndex->clear();
 }
 
-Person *BucketDemographicProfile::drawMember(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType, bool _remove)
+Entity *BucketDemographicProfile::drawMember(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType, bool _remove)
 {
 	assert(simpleEntityIndex != nullptr);
-	Person *removed = simpleEntityIndex->drawMember(_randomNums, _partnershipType, _remove);
+	Entity *removed = simpleEntityIndex->drawMember(_randomNums, _partnershipType, _remove);
 
 	//we have to tell the person that they are not part of a bucket anymore
 	if(_remove && removed)
@@ -59,7 +61,7 @@ Person *BucketDemographicProfile::drawMember(RandomNumberGenerator &_randomNums,
 	return removed;
 }
 
-bool BucketDemographicProfile::erase(Person *_person)
+bool BucketDemographicProfile::erase(Entity *_person)
 {
 	assert(simpleEntityIndex != nullptr);
 	assert(_person != nullptr);
@@ -80,7 +82,7 @@ bool BucketDemographicProfile::erase(Person *_person)
 	return false;
 }
 
-bool BucketDemographicProfile::exists(Person *_person)
+bool BucketDemographicProfile::exists(Entity *_person)
 {
 	assert(simpleEntityIndex != nullptr);
 	assert(_person != nullptr);
@@ -99,7 +101,7 @@ unsigned long BucketDemographicProfile::getNumInfected(int generation)
 	return simpleEntityIndex->getNumInfected(generation);
 }
 
-bool BucketDemographicProfile::insert(Person *_person)
+bool BucketDemographicProfile::insert(Entity *_person)
 {
 	assert(simpleEntityIndex != nullptr);
 	assert(_person != nullptr);
@@ -125,9 +127,9 @@ unsigned long BucketDemographicProfile::size()
  * @effects: Ages everyone in the bucket one timestep
  * @returns: List of persons too old for timestep (should always be null)
  */
-std::list<Person *> BucketDemographicProfile::ageOneTimeStep()
+std::list<Entity *> BucketDemographicProfile::ageOneTimeStep()
 {
-	std::list<Person *> lP;
+	std::list<Entity *> lP;
 
 	for(auto pIter = simpleEntityIndex->begin(); pIter != simpleEntityIndex->end(); pIter++)
 	{
@@ -156,3 +158,5 @@ BucketDemographicProfile::~BucketDemographicProfile()
 {
 	delete simpleEntityIndex;
 }
+
+} // namespace transm

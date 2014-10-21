@@ -15,6 +15,8 @@
 #include "statistics/statsrecord.hpp"
 #include "utility/utility.hpp"
 
+namespace transm {
+
 class ArtRolloutTracker;
 class CostsTracker;
 class EntityPool;
@@ -30,7 +32,7 @@ class RandomNumberGenerator;
 /// Fields and Methods are divided into the following categories:
 /// Physical, Relational, DemographicProfile-related, other
 /// </remarks>
-class Person
+class Entity
 {
 	/// <summary>
 	/// used to create unique id's for each person
@@ -51,7 +53,7 @@ public:
     virtual void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) = 0;
 
 	/// <summary>
-	/// every Person's CD4 count falls in a CD4 strata - used in CEPAC
+	/// every Entity's CD4 count falls in a CD4 strata - used in CEPAC
 	/// </summary>
 	enum CD4Strata
 	{
@@ -65,7 +67,7 @@ public:
 	};
 
 	/// <summary>
-	/// every Person's hvl level falls in an HVL stratum (values in copies/mL)
+	/// every Entity's hvl level falls in an HVL stratum (values in copies/mL)
 	/// </summary>
 	enum HVLStrata
 	{
@@ -165,13 +167,15 @@ public:
 		STAT_GENERATION_OF_INFECTION,			//generation of infection: prevalent case is 0, otherwise (1+generation of infectors infection)
 		STAT_ENDStats
 	};
+
 	//string representations of enum Stats
 	static const std::vector<std::string> StatsStr;
+
 	//this is a enum class wrapper that has helpful enum-related functions
 	static EnumCls<Stats> StatsEnum;
-	//this is a type declaration of a class that keeps track of statistics defined in enum Stats
-	typedef ::StatsRecord<Stats, BaseEnumCls::NULL_ENUM> StatsRecord;
 
+	//this is a type declaration of a class that keeps track of statistics defined in enum Stats
+	using StatsRecord = StatsRecord<Stats, BaseEnumCls::NULL_ENUM>;
 
 	//the CEPAC death table has stats for 0-100 years old.
 	//  people automatically die at this age in the dynamic model
@@ -186,7 +190,7 @@ public:
     virtual void SetAssortativeness(SexualPartnership::Type partnership_type, double assortativeness) = 0;
 
 protected:
-    //keeps track of which population this Person belongs to
+    //keeps track of which population this Entity belongs to
 	unsigned int populationID;
 
     //person's unique id number
@@ -200,7 +204,7 @@ protected:
 	//  sometimes a person's dmgProfile is changed, so we have to refresh their place in the EntityPool
 	DemographicProfile::ProfileID currentBucketID;
 
-	//Person's relational state
+	//Entity's relational state
 	//contains all current partnerships including CSW and Casual
 	std::list<SexualPartnership *> partners[(int)SexualPartnership::Type::ENDType];
 
@@ -262,27 +266,27 @@ protected:
 public:
 
 	//dummy constructor
-	Person();
+	Entity();
 
 	//this constructor creates an actual person that can be simulated. It is generally called by Male and Female
 	// we pass in _eventParams because becomeInfected() needs it...
-	Person(int _age, unsigned int _populationID);
+	Entity(int _age, unsigned int _populationID);
 
-	virtual ~Person();
+	virtual ~Entity();
 
-    //age of Person (in months)
+    //age of Entity (in months)
     unsigned int age;
 
-    //age of Person on model init (in months)
+    //age of Entity on model init (in months)
 	unsigned int initAge;
 
-    //age of Person when they got infected (-1 for uninfected)
+    //age of Entity when they got infected (-1 for uninfected)
 	int ageInfected;
 
     //whether this person is dead or not
 	bool death;
 
-    //Person's infected status
+    //Entity's infected status
 	HIVStatus hivStatus;
 
     //CD4 cell count
@@ -307,8 +311,8 @@ public:
 	bool isEligibleForTreatment(const SimContext::TreatmentInputs::ARTStartPolicy &artStartPolicy);
 
 	//This is for keeping dead people around for graph printing reasons
-	//It mimics the destructor without destroying the Person object.
-	void deletePersonWithoutDeleting();
+	//It mimics the destructor without destroying the Entity object.
+	void deleteEntityWithoutDeleting();
 
 	void ageOneTimeUnit();
 
@@ -374,10 +378,10 @@ public:
         return hvl;
 	}
 
-	/** this calculates the FOI towards Person _p (this uses the Transmission coefficient) per event
+	/** this calculates the FOI towards Entity _p (this uses the Transmission coefficient) per event
 	// @param _p - partner
 	// @param _parteringType - whether this is a fling or steadyCouple */
-	virtual double getFOI(Person *_p, 
+	virtual double getFOI(Entity *_p, 
         const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients,
         SexualPartnership::Type _partnershipType, EventParams &_eventParams) = 0;
 
@@ -462,12 +466,12 @@ public:
 	/* @function: getRiskLevel
 	 * @return: this.risk
 	 */
-	Person::RiskLevel getRiskLevel() const;
+	Entity::RiskLevel getRiskLevel() const;
 
 	/* @function: getHIVStatus
 	 * @return: this.hivStatus
 	 */
-	Person::HIVStatus getHIVStatus() const;
+	Entity::HIVStatus getHIVStatus() const;
 
 	/* @function: getSexualActivity
 	 * @return: this.activityLevel
@@ -527,7 +531,7 @@ public:
 	/*
 	returns true if this person is already in some sort of REGULAR or STEADY partnership with _p
 	*/
-	bool isPartneredWith(Person *_p);
+	bool isPartneredWith(Entity *_p);
 
 	//Return true if the person is in a relationship of the given type
 	bool hasPartnership(SexualPartnership::Type);
@@ -538,7 +542,7 @@ public:
 	It is used a data structure that has a template argument for sorting key
 
 	If we change any enums here, we should change:
-		class Person::Sorter;
+		class Entity::Sorter;
 		_KeyValType getMinPartnerSelectVal(SexualPartnership::Type _partnershipType, Gender _partnerGender) const; - for class Male, Female
 		_KeyValType getMaxPartnerSelectVal(SexualPartnership::Type _partnershipType, Gender _partnerGender) const; - for class Male, Female
 	********/
@@ -553,8 +557,8 @@ public:
 	//we are not allowed to have virtual templated functions... so we are forced to set return as double
 	//  @param _partnershipType - type of partnership this person is seeking
 	//	@param _partnerGender - gender of prospective partner
-	virtual double getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const = 0;
-	virtual double getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const = 0;
+	virtual double getMinPartnerSelectVal(Entity::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const = 0;
+	virtual double getMaxPartnerSelectVal(Entity::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const = 0;
 
 	//Returns the age difference (in years) to center around
 	virtual double rollForAgeDifference(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums) = 0;
@@ -574,12 +578,12 @@ public:
 	sexual activity will only happen for the SexualPartnerships where this person is partner1
 	@return returns a pointer to the person who infected this person.
 	*/
-	Person *allPartnerSexualActivity(EventParams &_eventParams, SexualPartnership::Type _partnershipType,
-        list<Person *> &_newlyInfected, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients);
+	Entity *allPartnerSexualActivity(EventParams &_eventParams, SexualPartnership::Type _partnershipType,
+        list<Entity *> &_newlyInfected, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients);
 
-	//returns whether this person could partner with Person _p
+	//returns whether this person could partner with Entity _p
 	//  split this by gender because there might be behaviour differences between them
-	virtual bool possibleMatch(SexualPartnership::Type _partnershipType, Person *_p) = 0;
+	virtual bool possibleMatch(SexualPartnership::Type _partnershipType, Entity *_p) = 0;
 
 	//removes indications that this person is a particular sexual partnership
 	//  this is called when that partnership separates
@@ -587,25 +591,25 @@ public:
 	void removePartnership(SexualPartnership *_partnership);
 
 	//for a New partnership, roll how this person wants to be in this relationship
-	virtual int rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums, Person *_p) = 0;
+	virtual int rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums, Entity *_p) = 0;
 
 	/*
-	for a particular month, choose how many partners of _partnershipType this Person will have
+	for a particular month, choose how many partners of _partnershipType this Entity will have
 	*/
 	virtual int rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType) = 0;
 
 	//for a particular partner, choose how many events this male will have
-	virtual int rollNumEventsPerPartner(Person *_p, RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType) = 0;
+	virtual int rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType) = 0;
 
 	/*
-	sexual activity with person _p. This can happen within context of class SexualPartnership or just between to Persons
+	sexual activity with person _p. This can happen within context of class SexualPartnership or just between to Entitys
 	@param _p partner for sexual activity
 	@param _numActs number of sexual acts that happened
 	@param _randomNums random number generator
 	@param _infectionsTracker tracks the number of inf
 	returns a pointer to a person who has been newly infected. nullptr if no infection occured
 	*/
-	Person *sexualActivity(Person *_p, int _numActs, SexualPartnership::Type _partnershipType, EventParams &_eventParams,
+	Entity *sexualActivity(Entity *_p, int _numActs, SexualPartnership::Type _partnershipType, EventParams &_eventParams,
         InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients);
 
 	//gets the age of the person in desired granularity
@@ -621,7 +625,7 @@ public:
 	//sets traceMe to true
 	void setToBeTraced();
 
-	const Person::StatsRecord *getStats();
+	const Entity::StatsRecord *getStats();
 
 	//prints out person's id information
     void print(std::ostream &_outStream, const std::string &_prefix) const;
@@ -658,14 +662,14 @@ public:
 	/// this class has a method that compares two Entities based on the desired key
 	/// _PSC holds the key that we search and index against.
 	/// _DEFAULTKEY provides a 2nd layer of ordering if people have identical _PSC
-	/// true is returned if key value of _p1 >= _p2. If key values are equal, then sorts based on Person's EntityID num
+	/// true is returned if key value of _p1 >= _p2. If key values are equal, then sorts based on Entity's EntityID num
 	/// </summary>
-	template <Person::SelectingCriteria _PSC, class _KeyValType>
+	template <Entity::SelectingCriteria _PSC, class _KeyValType>
 	class Sorter
 	{
 	public :
 		//gets value associated with _p
-		static inline _KeyValType getSortKey(Person *_p)
+		static inline _KeyValType getSortKey(Entity *_p)
 		{
 			switch(_PSC)
 			{
@@ -678,7 +682,7 @@ public:
 		}
 
 		//functor associated with the < operator. Generally used for template args in in sets and maps
-		inline bool operator()(const Person *_p1, const Person *_p2) const
+		inline bool operator()(const Entity *_p1, const Entity *_p2) const
 		{
 			return getSortKey(_p1) < getSortKey(_p2);
 		}
@@ -689,3 +693,5 @@ private:
 	//Return the current index of which SimContext should be used to update the health of a patient
 	int getCEPACSimContextIndex(EventParams &_eventParams);
 };
+
+} // namespace transm

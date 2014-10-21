@@ -11,7 +11,9 @@
 #include "data/enum.hpp"
 #include "entities/sexualpartnership.hpp"
 
-class Person;
+namespace transm {
+
+class Entity;
 
 /// <summary>
 /// This class contains population level statistics
@@ -56,8 +58,8 @@ public:
 	{
 	public:
 		SingleLEStats();
-		long deathsByAge[Person::maxYrForDeathStats];//number of deaths in that time period by age
-		long popByAge[Person::maxYrForDeathStats]; //number of people in that age bucket
+		long deathsByAge[Entity::maxYrForDeathStats];//number of deaths in that time period by age
+		long popByAge[Entity::maxYrForDeathStats]; //number of people in that age bucket
 	};
 
 	class SinglePartAcqStats
@@ -85,9 +87,9 @@ public:
         unsigned int numDeathGender[(std::size_t)DemographicProfile::Gender::Last];
 
         //time to death stratified by CSW status and Risk level
-		unsigned long timeToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Last][Person::ENDRiskLevel];
-        unsigned long timeToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Last][Person::ENDRiskLevel];
-        unsigned int numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Last][Person::ENDRiskLevel];
+		unsigned long timeToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Last][Entity::ENDRiskLevel];
+        unsigned long timeToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Last][Entity::ENDRiskLevel];
+        unsigned int numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Last][Entity::ENDRiskLevel];
 
         //time to death stratified by initial HIV status
 		unsigned long timeToDeathHIVStatusSum[ENDInitHIVStatus];
@@ -102,9 +104,9 @@ public:
 		unsigned int numInfOrDeathGender[(std::size_t)DemographicProfile::Gender::Last];
 
         //time to inf or death stratified by CSW status and Risk level
-		unsigned long timeToInfOrDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Last][Person::ENDRiskLevel];
-        unsigned long timeToInfOrDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Last][Person::ENDRiskLevel];
-        unsigned int numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Last][Person::ENDRiskLevel];
+		unsigned long timeToInfOrDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Last][Entity::ENDRiskLevel];
+        unsigned long timeToInfOrDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Last][Entity::ENDRiskLevel];
+        unsigned int numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Last][Entity::ENDRiskLevel];
 
         //sum of time from infection to death for people who die during model run (used to calculate mean) strat by gender
 		unsigned long timeFromInfToDeathGenderSum[(std::size_t)DemographicProfile::Gender::Last]; 
@@ -114,9 +116,9 @@ public:
         unsigned int numInfDeathGender[(std::size_t)DemographicProfile::Gender::Last];
 
         //time from inf to death stratified by CSW status and Risk level
-		unsigned long timeFromInfToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Last][Person::ENDRiskLevel]; 
-        unsigned long timeFromInfToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Last][Person::ENDRiskLevel];
-        unsigned int numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Last][Person::ENDRiskLevel];
+		unsigned long timeFromInfToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Last][Entity::ENDRiskLevel]; 
+        unsigned long timeFromInfToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Last][Entity::ENDRiskLevel];
+        unsigned int numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Last][Entity::ENDRiskLevel];
 
 	};
 private:
@@ -138,10 +140,10 @@ private:
 	int yearlyCumulativeSexuallyActivePopSize;
 	int yearlyIncidentInfections;
 	int yearlyTests;
-	std::set<Person *> uniqueYearlyEligibleForTreatmentAccess;
-	std::set<Person *> uniqueYearlyAccessingTreatment;
-	std::set<Person *> uniqueYearlyEligibleForTreatment;
-	std::set<Person *> uniqueYearlyTreated;
+	std::set<Entity *> uniqueYearlyEligibleForTreatmentAccess;
+	std::set<Entity *> uniqueYearlyAccessingTreatment;
+	std::set<Entity *> uniqueYearlyEligibleForTreatment;
+	std::set<Entity *> uniqueYearlyTreated;
     std::vector<int> yearlyTestsByResult;
 
 public:
@@ -163,10 +165,10 @@ public:
 	~PopulationStatistics();
 
 	//processes a person's death
-	void processDeath(Person *_p, EventParams &_eventParams);
+	void processDeath(Entity *_p, EventParams &_eventParams);
 
 	//processes a death that occurs after maxTime (for average life expectancy stats)
-	void processPostMaxTimeDeath(Person *_p);
+	void processPostMaxTimeDeath(Entity *_p);
 
 	void printLMStats(std::ostream &_outStream);
 
@@ -180,7 +182,7 @@ public:
 
 	//records an incident infection (calls InfectionTracker's method)
 	void recordIncidentInfection(EventParams &_eventParams, long _time, SexualPartnership::Type _partnershipType,
-	                             const Person *_infector, const Person *_infected, bool _print, ostream &_traceOutStream);
+	                             const Entity *_infector, const Entity *_infected, bool _print, ostream &_traceOutStream);
 
 	//returns the next time greater than or equal to currTime in the list
 	long getNextTimeToRecord(long currTime);
@@ -203,13 +205,15 @@ public:
 	void resetYear(int newYear);
 	void recordYearStartStats(int sexuallyActivePopSize, int prevalentCases);
 	void recordTestStats(int numTests, const std::vector<int> &numTestsByResult);
-	void recordTreatmentAccessEligiblity(Person *person);
-	void recordTreatmentAccess(Person *person);
-	void recordTreatmentEligiblity(Person *person);
-	void recordTreatment(Person *person);
+	void recordTreatmentAccessEligiblity(Entity *person);
+	void recordTreatmentAccess(Entity *person);
+	void recordTreatmentEligiblity(Entity *person);
+	void recordTreatment(Entity *person);
 
 	void addLifeExpectancyRecordTime(int time) { timesToRecordLE.push_back(time); }
     void setMedianLECI(double ci) { medianLECI = ci; }
 
 	std::vector<PopulationStatistics::SingleTimeStats *> *getSelectedSummaryStats();
 };
+
+} // namespace transm

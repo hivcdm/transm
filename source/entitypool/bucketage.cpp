@@ -1,18 +1,20 @@
 #include "bucketage.hpp"
 
+namespace transm {
+
 //Constructor
 BucketAge::BucketAge()
 {
 	numPersons = 0;
 	numInfected = 0;
 
-	for(int i = 0; i < Person::ENDRiskLevel; i++)
+	for(int i = 0; i < Entity::ENDRiskLevel; i++)
 	{
 		numRisk[i] = 0;
 		numRiskCSW[i] = 0;
 		numInfectedRisk[i] = 0;
 
-		for(int j = 0; j < Person::ENDHIVStatus; j++)
+		for(int j = 0; j < Entity::ENDHIVStatus; j++)
 		{
 			numRiskHIVStatus[i][j] = 0;
 		}
@@ -32,13 +34,13 @@ BucketAge::BucketAge(DemographicProfile::ProfileID BinID, unsigned int popID, co
 	numPersons = 0;
 	numInfected = 0;
 
-	for(int i = 0; i < Person::ENDRiskLevel; i++)
+	for(int i = 0; i < Entity::ENDRiskLevel; i++)
 	{
 		numRisk[i] = 0;
 		numRiskCSW[i] = 0;
 		numInfectedRisk[i] = 0;
 
-		for(int j = 0; j < Person::ENDHIVStatus; j++)
+		for(int j = 0; j < Entity::ENDHIVStatus; j++)
 		{
 			numRiskHIVStatus[i][j] = 0;
 		}
@@ -87,13 +89,13 @@ void BucketAge::clear()
 	numPersons = 0;
 	numInfected = 0;
 
-	for(int i = 0; i < Person::ENDRiskLevel; i++)
+	for(int i = 0; i < Entity::ENDRiskLevel; i++)
 	{
 		numRisk[i] = 0;
 		numRiskCSW[i] = 0;
 		numInfectedRisk[i] = 0;
 
-		for(int j = 0; j < Person::ENDHIVStatus; j++)
+		for(int j = 0; j < Entity::ENDHIVStatus; j++)
 		{
 			numRiskHIVStatus[i][j] = 0;
 		}
@@ -101,7 +103,7 @@ void BucketAge::clear()
 }
 
 //tells whether _person exists in the index
-bool BucketAge::exists(Person *p)
+bool BucketAge::exists(Entity *p)
 {
 	return (FVNoDist.exists(p));
 }
@@ -125,7 +127,7 @@ unsigned long BucketAge::getNumInfected(int generation)
 	return FVinfected[generation]->size();
 }
 
-unsigned long BucketAge::getNumInfected(Person::RiskLevel _risk)
+unsigned long BucketAge::getNumInfected(Entity::RiskLevel _risk)
 {
 	return numInfectedRisk[_risk];
 }
@@ -133,7 +135,7 @@ unsigned long BucketAge::getNumInfected(Person::RiskLevel _risk)
 //prints every person in this index to _outStream
 void BucketAge::print(ostream &_outStream, const std::string &_prefix)
 {
-	std::vector<Person *>::iterator PersonIter = begin();
+	std::vector<Entity *>::iterator PersonIter = begin();
 
 	while(PersonIter != end())
 	{
@@ -151,7 +153,7 @@ void BucketAge::print(ostream &_outStream, const std::string &_prefix)
 //				- if a key is chosen where there are no entities, choose the next
 //					key w/ members in it
 //TESTED... without random number generator
-Person *BucketAge::drawMember(RandomNumberGenerator &_randomNums, Person::RiskLevel _riskLevel,
+Entity *BucketAge::drawMember(RandomNumberGenerator &_randomNums, Entity::RiskLevel _riskLevel,
                               SexualPartnership::Type /*_partnershipType*/, bool _use_random, bool _remove)
 {
 	if(numPersons == 0)
@@ -165,11 +167,11 @@ Person *BucketAge::drawMember(RandomNumberGenerator &_randomNums, Person::RiskLe
 	{
 		toDrawFrom = &(FVProbDist_random);
 	}
-	else if(_riskLevel == Person::LOW)
+	else if(_riskLevel == Entity::LOW)
 	{
 		toDrawFrom = &(FVProbDist_low);
 	}
-	else if(_riskLevel == Person::HIGH)
+	else if(_riskLevel == Entity::HIGH)
 	{
 		toDrawFrom = &(FVProbDist_high);
 	}
@@ -186,7 +188,7 @@ Person *BucketAge::drawMember(RandomNumberGenerator &_randomNums, Person::RiskLe
 		if(_remove)
 		{
 			//Remove person from all FV
-			Person *personToReturn = toDrawFrom->selectout(toPick);
+			Entity *personToReturn = toDrawFrom->selectout(toPick);
 			erase(personToReturn);
 			return personToReturn;
 		}
@@ -208,7 +210,7 @@ Person *BucketAge::drawMember(RandomNumberGenerator &_randomNums, Person::RiskLe
  * @returns: true if _person was previously a member of this and was successfully removed, false is
  * _person was not a member of this
  */
-bool BucketAge::erase(Person *_person)
+bool BucketAge::erase(Entity *_person)
 {
 	if(exists(_person))
 	{
@@ -262,7 +264,7 @@ bool BucketAge::erase(Person *_person)
  * @returns: true if person was successfully added, false otherwise
  */
 //TESTED (without global assort param)
-bool BucketAge::insert(Person *_person)
+bool BucketAge::insert(Entity *_person)
 {
 	if(exists(_person))
 	{
@@ -280,7 +282,7 @@ bool BucketAge::insert(Person *_person)
 	int marblesInRiskFV = marbles;
 	//int marblesInRiskFV = marbles - marblesInRandomFV;
 
-	if(_person->getRiskLevel() == Person::HIGH)
+	if(_person->getRiskLevel() == Entity::HIGH)
 	{
 		FVProbDist_high.add(_person, marblesInRiskFV);
 	}
@@ -327,7 +329,7 @@ bool BucketAge::insert(Person *_person)
  * @returns: An iterator of LLNoDist: the FullVector of person's with
  * exactly one copy of each person in the Bucket
  */
-std::vector<Person *>::iterator BucketAge::begin()
+std::vector<Entity *>::iterator BucketAge::begin()
 {
 	return FVNoDist.begin();
 }
@@ -336,7 +338,7 @@ std::vector<Person *>::iterator BucketAge::begin()
  * @returns: An iterator of LLNoDist: the FullVector of person's with
  * exactly one copy of each person in the Bucket
  */
-std::vector<Person *>::iterator BucketAge::end()
+std::vector<Entity *>::iterator BucketAge::end()
 {
 	return FVNoDist.end();
 }
@@ -357,7 +359,7 @@ unsigned long BucketAge::size()
 /* @function: getNumRisk
  * @returns: The integer number of unique Persons in the bucket with given risk
  */
-unsigned long BucketAge::getNumRisk(Person::RiskLevel _risk)
+unsigned long BucketAge::getNumRisk(Entity::RiskLevel _risk)
 {
 	return numRisk[_risk];
 }
@@ -365,7 +367,7 @@ unsigned long BucketAge::getNumRisk(Person::RiskLevel _risk)
 /* @function: getNumRiskCSW
  * @returns: The integer number of unique Persons in the bucket with given risk that is CSW
  */
-unsigned long BucketAge::getNumRiskCSW(Person::RiskLevel _risk)
+unsigned long BucketAge::getNumRiskCSW(Entity::RiskLevel _risk)
 {
 	return numRiskCSW[_risk];
 }
@@ -373,7 +375,7 @@ unsigned long BucketAge::getNumRiskCSW(Person::RiskLevel _risk)
 /* @function: getNumRiskHIVStatus
  * @returns: The integer number of unique Persons in the bucket with given risk and HIV Status
  */
-unsigned long BucketAge::getNumRiskHIVStatus(Person::RiskLevel _risk, Person::HIVStatus _hivStatus)
+unsigned long BucketAge::getNumRiskHIVStatus(Entity::RiskLevel _risk, Entity::HIVStatus _hivStatus)
 {
 	return numRiskHIVStatus[_risk][_hivStatus];
 }
@@ -407,20 +409,20 @@ int BucketAge::numRandomRiskChoices()
 
 /* @function: numChoices
  * @returns: The integer number of (non-unique) Persons in the risk bucket associated with _risk
- * If _risk = Person::ENDRiskLevel, returns the number of persons in the random risk bucket
+ * If _risk = Entity::ENDRiskLevel, returns the number of persons in the random risk bucket
  */
 
-int BucketAge::numChoices(Person::RiskLevel _risk)
+int BucketAge::numChoices(Entity::RiskLevel _risk)
 {
-	if(_risk == Person::HIGH)
+	if(_risk == Entity::HIGH)
 	{
 		return numHighRiskChoices();
 	}
-	else if(_risk == Person::LOW)
+	else if(_risk == Entity::LOW)
 	{
 		return numLowRiskChoices();
 	}
-	else if(_risk == Person::ENDRiskLevel)
+	else if(_risk == Entity::ENDRiskLevel)
 	{
 		return numRandomRiskChoices();
 	}
@@ -435,7 +437,7 @@ int BucketAge::numChoices(Person::RiskLevel _risk)
  * @returns: true if numInfected was increased
  */
 
-bool BucketAge::increaseInfected(Person *_p)
+bool BucketAge::increaseInfected(Entity *_p)
 {
 	if(_p->isInfected())
 	{
@@ -462,7 +464,7 @@ bool BucketAge::increaseInfected(Person *_p)
 /* @function: changeHIVstatus
  * @effects: if person is in this BucketAge and thier hiv status changes decrement the old status and increment new status
  */
-void BucketAge::changeHIVStatus(Person *_p, Person::HIVStatus _orig, Person::HIVStatus _new)
+void BucketAge::changeHIVStatus(Entity *_p, Entity::HIVStatus _orig, Entity::HIVStatus _new)
 {
 	numRiskHIVStatus[_p->getRiskLevel()][_orig]--;
 	numRiskHIVStatus[_p->getRiskLevel()][_new]++;
@@ -488,3 +490,5 @@ void BucketAge::printAll(std::ostream &_outStream, const std::string &_prefix)
 	_outStream << "High Risk:   ";
 	FVProbDist_high.print();
 }
+
+} // namespace transm

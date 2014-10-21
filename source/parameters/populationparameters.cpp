@@ -1,9 +1,11 @@
-#include "population.hpp"
+#include "core/population.hpp"
 #include "entities/female.hpp"
 #include "entities/male.hpp"
-#include "entities/person.hpp"
+#include "entities/entity.hpp"
 #include "entities/sexualbehavior.hpp"
 #include "utility/utility.hpp"
+
+namespace transm {
 
 PopulationParameters::AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(int _minAgeMth, int _maxAgeMth,
     const std::unordered_map<std::string, double> &entity_proportions,
@@ -17,10 +19,10 @@ PopulationParameters::AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(int _minA
 	assert((_minAgeMth >= 0) && (_maxAgeMth > 0) && (_maxAgeMth > _minAgeMth));
     numInfectedCSW[(std::size_t)DemographicProfile::Gender::Male] = _numInfectedCSWMale;
     numInfectedCSW[(std::size_t)DemographicProfile::Gender::Female] = _numInfectedCSWFemale;
-    numInfectedRisk[(std::size_t)DemographicProfile::Gender::Male][Person::LOW] = _numInfectedNonCSWMalesLowRisk;
-    numInfectedRisk[(std::size_t)DemographicProfile::Gender::Male][Person::HIGH] = _numInfectedNonCSWMalesHighRisk;
-    numInfectedRisk[(std::size_t)DemographicProfile::Gender::Female][Person::LOW] = _numInfectedNonCSWFemalesLowRisk;
-    numInfectedRisk[(std::size_t)DemographicProfile::Gender::Female][Person::HIGH] = _numInfectedNonCSWFemalesHighRisk;
+    numInfectedRisk[(std::size_t)DemographicProfile::Gender::Male][Entity::LOW] = _numInfectedNonCSWMalesLowRisk;
+    numInfectedRisk[(std::size_t)DemographicProfile::Gender::Male][Entity::HIGH] = _numInfectedNonCSWMalesHighRisk;
+    numInfectedRisk[(std::size_t)DemographicProfile::Gender::Female][Entity::LOW] = _numInfectedNonCSWFemalesLowRisk;
+    numInfectedRisk[(std::size_t)DemographicProfile::Gender::Female][Entity::HIGH] = _numInfectedNonCSWFemalesHighRisk;
 }
 
 PopulationParameters::PopulationParameters()
@@ -44,3 +46,5 @@ double PopulationParameters::getBirthRate() const
 {
 	return birthRate;
 }
+
+} // namespace transm

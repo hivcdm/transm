@@ -11,6 +11,8 @@
 
 #include "bucket.hpp"
 
+namespace transm {
+
 struct QueryField
 {
 	int value;
@@ -19,7 +21,7 @@ struct QueryField
 
 class BucketCounter
 {
-	typedef std::unordered_map<Bucket, std::vector<int>, bucket_hash<Bucket>, bucket_equal_to<Bucket>> BucketContainer;
+    using BucketContainer = std::unordered_map<Bucket, std::vector<int>, bucket_hash<Bucket>, bucket_equal_to<Bucket>>;
 
 	struct query_equal
 	{
@@ -125,3 +127,5 @@ private:
 	BucketContainer counts_;
 	std::vector<std::string> bucketNames_;
 };
+
+} // namespace transm

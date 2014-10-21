@@ -4,12 +4,14 @@
 #include <vector>
 
 #include "bucket.hpp"
-#include "entities/person.hpp"
+#include "entities/entity.hpp"
+
+namespace transm {
 
 class PersonBucket : public Bucket
 {
 public:
-	PersonBucket(const Person &person, const std::vector<AgeRange> &ageGroups)
+	PersonBucket(const Entity &person, const std::vector<AgeRange> &ageGroups)
 	{
 		const DemographicProfile *demographicProfile = person.getDemographicProfile();
         DemographicProfile::SexualActivityStatus sexualActivityStatus = static_cast<DemographicProfile::SexualActivityStatus>
@@ -26,7 +28,7 @@ public:
         DemographicProfile::Employment employment = static_cast<DemographicProfile::Employment>(demographicProfile->get(
                                                 DemographicProfile::Demographic::Employment));
         values_.push_back((std::size_t)employment);
-        Person::RiskLevel riskLevel = person.getRiskLevel();
+        Entity::RiskLevel riskLevel = person.getRiskLevel();
 		values_.push_back(riskLevel);
         int ageGroup = -1;
         int age = person.getAge(TimeGranularity::Month);
@@ -41,7 +43,9 @@ public:
 
         assert(ageGroup != -1);
 		values_.push_back(ageGroup);
-        Person::CD4Strata cd4Stratum = person.getCd4Stratum();
+        Entity::CD4Strata cd4Stratum = person.getCd4Stratum();
 		values_.push_back(cd4Stratum);
 	}
 };
+
+} // namespace transm

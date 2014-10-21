@@ -3,6 +3,8 @@
 #include <string>
 #include <map>
 
+namespace transm {
+
 /// <summary>
 /// used to set amount of debug output
 /// </summary>
@@ -77,3 +79,5 @@ public:
 
 	static const int PREVALENT_INFECTION = 0;
 };
+
+} // namespace transm

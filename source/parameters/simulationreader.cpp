@@ -1,8 +1,9 @@
-
 #include "simulationreader.hpp"
 #include "simulationbuilder.hpp"
 #include "populationparameters.hpp"
 #include "entities/sexualbehavior.hpp"
+
+namespace transm {
 
 SimulationReader::SimulationReader(SimulationBuilder &builder) : builder_(builder)
 {
@@ -18,3 +19,5 @@ void SimulationReader::ConstructSimulation(const std::string &filename)
 	builder_.ReadPopulationParameters();
 	builder_.InitializePopulation();
 }
+
+} // namespace transm

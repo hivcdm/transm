@@ -3,7 +3,9 @@
 #include <fstream>
 
 #include "core/targetgroup.hpp"
-#include "entities/person.hpp"
+#include "entities/entity.hpp"
+
+namespace transm {
 
 class InterventionOutcomes
 {
@@ -184,3 +186,5 @@ private:
     std::vector<std::vector<int>> rows_;
     const std::vector<TargetGroup> *group_container_;
 };
+
+} // namespace transm

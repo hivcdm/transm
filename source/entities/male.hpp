@@ -3,15 +3,17 @@
 #include <map>
 #include <pugixml.hpp>
 
-#include "person.hpp"
+#include "entity.hpp"
 #include "sexualbehavior.hpp"
 #include "data/eventparams.hpp"
 #include "utility/randomnumbergenerator.hpp"
 
+namespace transm {
+
 /// <summary>
 /// All females in the simulation are members of this class, or a class derived from this one
 /// </summary>
-class Male : public Person
+class Male : public Entity
 {
 public :
     /*virtual*/ std::string getEntityType() const;
@@ -31,7 +33,7 @@ public :
 		~SubPopParams();
 
 		double getChanceBecomeCSW() const;
-		double getPartnerAcqMultWithSteady(Person::RiskLevel _risk) const;
+		double getPartnerAcqMultWithSteady(Entity::RiskLevel _risk) const;
 
 		//sexual behavior params for each type as specified by SexualPartnership::Type
 		const SexualBehavior &getSexualBehavior(SexualPartnership::Type _type) const;
@@ -53,11 +55,11 @@ public :
 			partneringDiscStartAgeYrs = startAgeYrs;
 			partneringAcqDiscPerYr = partneringAcqDisc;
 			partneringActsDiscPerYr = partneringActsDisc;
-			int numMults = Person::maxYrForDeathStats - partneringDiscStartAgeYrs + 1;
+			int numMults = Entity::maxYrForDeathStats - partneringDiscStartAgeYrs + 1;
 			double acqMult = 1 - partneringAcqDiscPerYr;
 			double actsMult = 1 - partneringActsDiscPerYr;
 
-			//generate vectors that contain discount multipliers. will cover from [partneringDiscStartAgeYrs,Person::maxYrForDeathStats]
+			//generate vectors that contain discount multipliers. will cover from [partneringDiscStartAgeYrs,Entity::maxYrForDeathStats]
 			partneringAcqDiscMult.clear();
 			partneringActsDiscMult.clear();
 			partneringAcqDiscMult.push_back(acqMult);
@@ -73,7 +75,7 @@ public :
 		void SetCircucmsionProtectEfficacy(double efficacy) { circumProtectEff = efficacy; }
 		void SetCondomProtectEff(double efficacy) { condomProtectEff = efficacy; }
 
-		void SetPartnerAcqMultWithSteady(Person::RiskLevel risk, double multiplier) { partnerAcqMultWithSteady[risk] = multiplier; }
+		void SetPartnerAcqMultWithSteady(Entity::RiskLevel risk, double multiplier) { partnerAcqMultWithSteady[risk] = multiplier; }
 
 		void SetChanceBecomeCsw(double chance) { chanceBecomeCSW = chance; }
 
@@ -84,10 +86,10 @@ public :
         void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) { proportionHighRisk[(std::size_t)employment] = proportion; }
 
 		void SetAverageYearsYounger(SexualPartnership::Type type, NormalDist dist) { sexualBehaviorParams[type].setAverageYearsYounger(dist); }
-		void SetAcquisitionRatePerMonth(Person::RiskLevel risk, SexualPartnership::Type type, LogNormalDist dist) { sexualBehaviorParams[type].setAcquisitionRatePerMonth(risk, dist); }
-		void SetCoitalEventsPerMonth(Person::RiskLevel risk, SexualPartnership::Type type, double mean) { sexualBehaviorParams[type].setCoitalEventsPerMonth(risk, mean); }
-		void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { sexualBehaviorParams[type].setChanceCondomUsePerEvent(risk, dist); }
-		void SetPartnershipDuration(Person::RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { sexualBehaviorParams[type].setPartnershipDuration(risk, dist); }
+		void SetAcquisitionRatePerMonth(Entity::RiskLevel risk, SexualPartnership::Type type, LogNormalDist dist) { sexualBehaviorParams[type].setAcquisitionRatePerMonth(risk, dist); }
+		void SetCoitalEventsPerMonth(Entity::RiskLevel risk, SexualPartnership::Type type, double mean) { sexualBehaviorParams[type].setCoitalEventsPerMonth(risk, mean); }
+		void SetChanceCondomUsePerEvent(Entity::RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { sexualBehaviorParams[type].setChanceCondomUsePerEvent(risk, dist); }
+		void SetPartnershipDuration(Entity::RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { sexualBehaviorParams[type].setPartnershipDuration(risk, dist); }
 
 		void SetActivityLevel(NormalDist activity_level) { activityLevel = activity_level; }
 
@@ -100,7 +102,7 @@ public :
 	private:
         int cswEndAge; // in months
 		double chanceBecomeCSW;		//chance that a male will become a CSW
-		double partnerAcqMultWithSteady[Person::ENDRiskLevel];  //the rate multiplier for partner acquisition when a male has a Steady partner
+		double partnerAcqMultWithSteady[Entity::ENDRiskLevel];  //the rate multiplier for partner acquisition when a male has a Steady partner
 
 		//sexual behavior params for each type as specified by SexualPartnership::Type
 		std::unordered_map<SexualPartnership::Type, SexualBehavior> sexualBehaviorParams;
@@ -114,7 +116,7 @@ public :
 		//coital acts/month get discounted every year
 		double partneringActsDiscPerYr;
 
-		//these contain the discount for every age between partneringDiscStartAgeYrs and Person::maxYrForDeathStats
+		//these contain the discount for every age between partneringDiscStartAgeYrs and Entity::maxYrForDeathStats
 		//we can calculate these once and use them over and over again.
 		//  we've actually saved these as multipliers so that for a particular age N > partneringDiscStartAgeYrs,
 		//		the acquisition rate will be multiplied by  (1 - partneringAcqDiscPerYr)^(partneringDiscStartAgeYrs - N)
@@ -162,10 +164,10 @@ public:
 
 	/** Start: Inherited from Person, comments found there **/
 
-	Person *choosePartner(RandomNumberGenerator &_randomNums, EntityPool *_availableEntities,
+	Entity *choosePartner(RandomNumberGenerator &_randomNums, EntityPool *_availableEntities,
 	                      SexualPartnership::Type _partnershipType, bool _remove);
 
-    void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng);
+    void SetChanceCondomUsePerEvent(Entity::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng);
 
 	void SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, double meanEvents);
 
@@ -181,27 +183,27 @@ public:
 
 	double getChanceBecomeCsw() const;
 
-    double getFOI(Person *_p, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams);
+    double getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams);
 
-	double getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
-	double getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
+	double getMinPartnerSelectVal(Entity::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
+	double getMaxPartnerSelectVal(Entity::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
 	//Returns the age difference (in years) to center around
 	double rollForAgeDifference(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums);
 
-	bool possibleMatch(SexualPartnership::Type _partnershipType, Person *_p);
+	bool possibleMatch(SexualPartnership::Type _partnershipType, Entity *_p);
 	int rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType);
-	int rollNumEventsPerPartner(Person *_p, RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType);
-	int rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums, Person *_p);
+	int rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType);
+	int rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums, Entity *_p);
 
 	void rerollRiskGroup(EventParams &_eventParams);
 	//writes state of person to file
 	void saveState(ostream &_outStream, long currTime);
-	/** End: Inherited from Person **/
+	/** End: Inherited from Entity **/
 
 	/** Start: functions for Males only **/
     int getMaxPartnershipRejections() const { return populationSpecificParams.GetMaxPartnershipRejections(); }
 	//calculates the likelihood of using a condom based on the partnering type
-	double getCondomUseProb(Person *_p, SexualPartnership::Type _partnershipType);
+	double getCondomUseProb(Entity *_p, SexualPartnership::Type _partnershipType);
 	//gets the efficacy of using a condom on preventing the spread of HIV
 	double getCondomProtectEff();
 	//gets the efficacy of circumcision on preventing the spread of HIV
@@ -217,3 +219,5 @@ public:
 
 	~Male();
 };
+
+} // namespace transm

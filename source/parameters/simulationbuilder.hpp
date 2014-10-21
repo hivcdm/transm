@@ -1,7 +1,9 @@
 #pragma once
 
-#include "simulation.hpp"
+#include "core/simulation.hpp"
 #include "populationparameters.hpp"
+
+namespace transm {
 
 class SimulationBuilder
 {
@@ -13,3 +15,5 @@ public:
 	virtual void ReadPopulationParameters() = 0;
 	virtual void InitializePopulation() = 0;
 };
+
+} // namespace transm

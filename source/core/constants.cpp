@@ -1,5 +1,7 @@
 #include "constants.hpp"
 
+namespace transm {
+
 std::string const Constants::ASTERISK = "*";
 std::string const Constants::BLANK = "";
 std::string const Constants::COLON = ":";
@@ -17,3 +19,5 @@ const std::map<BatchStatsVariables, std::string> Constants::BatchStatFileName =
     {BatchStatsVariables::CURRENTLYINFECTED, "numberInfected"},
     {BatchStatsVariables::NEWINFECTIONS, "newInfections"}
 };
+
+} // namespace transm

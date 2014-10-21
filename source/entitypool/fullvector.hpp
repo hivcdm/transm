@@ -1,9 +1,11 @@
 #pragma once
 
 #include <vector>
-#include "entities/person.hpp"
+#include "entities/entity.hpp"
 
-class Person;
+namespace transm {
+
+class Entity;
 
 /// <summary>
 /// This provides a std::vector< Person > that is guaranteed to always be densely
@@ -20,8 +22,8 @@ class FullVector
 
 public:
 	FullVector();
-	FullVector(vector<Person *> vP);
-	FullVector(int num, Person *p);
+	FullVector(vector<Entity *> vP);
+	FullVector(int num, Entity *p);
 
 	~FullVector();
 
@@ -29,13 +31,13 @@ public:
 	* WARNING: This operator can be used to retrieve values, but NOT to set them.
 	* Use the protected function "set" to set values at a specific index.
 	*/
-	Person *operator[](int index);
+	Entity *operator[](int index);
 
-	Person *at(int loc);
+	Entity *at(int loc);
 
-	Person *back();
+	Entity *back();
 
-	std::vector<Person *>::iterator begin();
+	std::vector<Entity *>::iterator begin();
 
 	int capacity();
 
@@ -43,19 +45,19 @@ public:
 
 	bool empty();
 
-	bool exists(Person *_p);
+	bool exists(Entity *_p);
 
-	std::vector<Person *>::iterator end();
+	std::vector<Entity *>::iterator end();
 
-	Person *front();
+	Entity *front();
 
 	int max_size();
 
-	void push_back(Person *p);
+	void push_back(Entity *p);
 
-	std::vector<Person *>::reverse_iterator rbegin();
+	std::vector<Entity *>::reverse_iterator rbegin();
 
-	std::vector<Person *>::reverse_iterator rend();
+	std::vector<Entity *>::reverse_iterator rend();
 
 	void reserve(int size);
 
@@ -68,20 +70,20 @@ public:
 	 * @effects: Removes all pointers to person p from the vector while keeping the vector dense
 	 * @return: Returns true if all pointers were successfully removed, returns false otherwise
 	 */
-	bool remove(Person *p);
+	bool remove(Entity *p);
 
 	/* @function add
 	 * @arguments: Person* p, int num
 	 * @effects: Adds num copies of p to this; updates p.FVindices accordingly
 	 */
-	void add(Person *p, int num);
+	void add(Entity *p, int num);
 
 	/* @function selectout
 	 * @arguments: int index
 	 * @effects: removes Person* p at index from FullVector while keeping the vector dense
 	 * @returns: Person* p at index
 	 */
-	Person *selectout(int index);
+	Entity *selectout(int index);
 
 	/* @function swapelements
 	 * @arguments: int index1, int index2
@@ -96,6 +98,8 @@ public:
 	int getID();
 
 protected:
-	std::vector<Person *> vPerson;
+	std::vector<Entity *> vPerson;
 	int ID;
 };
+
+} // namespace transm

@@ -2,6 +2,8 @@
 
 #include <numeric>
 
+namespace transm {
+
 class RunTimePredictor
 {
 public:
@@ -118,3 +120,5 @@ private:
     double sy_;
     int observations_;
 };
+
+} // namespace transm

@@ -8,6 +8,8 @@
 #include "utility/enum_iterator.hpp"
 #include "utility/randomnumbergenerator.hpp"
 
+namespace transm {
+
 //each index of the array contains parameters for a different population
 //(we only have 1 population for now so the size of the vector will default to 1
 
@@ -31,7 +33,7 @@ double Msmw::SubPopParams::getChanceBecomeCSW() const
     return chanceBecomeCSW;
 }
 
-double Msmw::SubPopParams::getPartnerAcqMultWithSteady(Person::RiskLevel _risk) const
+double Msmw::SubPopParams::getPartnerAcqMultWithSteady(Entity::RiskLevel _risk) const
 {
     return partnerAcqMultWithSteady[_risk];
 }
@@ -75,13 +77,13 @@ int Msmw::SubPopParams::getPartneringDiscStartAgeYrs() const
 
 double Msmw::SubPopParams::getPartneringAcqDiscMult(int _ageYrs) const
 {
-    assert(Utility::within_range(_ageYrs, 0, Person::maxYrForDeathStats));
+    assert(Utility::within_range(_ageYrs, 0, Entity::maxYrForDeathStats));
     return partneringAcqDiscMult.at(_ageYrs - partneringDiscStartAgeYrs);
 }
 
 double Msmw::SubPopParams::getPartneringActsDiscMult(int _ageYrs) const
 {
-    assert(Utility::within_range(_ageYrs, 0, Person::maxYrForDeathStats));
+    assert(Utility::within_range(_ageYrs, 0, Entity::maxYrForDeathStats));
     return partneringActsDiscMult.at(_ageYrs - partneringDiscStartAgeYrs);
 }
 
@@ -125,11 +127,11 @@ void Msmw::Circumcise()
 }
 
 Msmw::Msmw(EventParams &_eventParams, int _age, bool _circumcised, unsigned int _populationID, const Msmw::SubPopParams &params)
-    : Person(_age, _populationID),
+    : Entity(_age, _populationID),
     populationSpecificParams(params)
 {
     //If age is out of range, set it at the closest boundary.
-    if(!Utility::within_range<int>(_age, 0, Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Person::maxYrForDeathStats)))
+    if(!Utility::within_range<int>(_age, 0, Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Entity::maxYrForDeathStats)))
     {
         if(_age < 0)
         {
@@ -137,7 +139,7 @@ Msmw::Msmw(EventParams &_eventParams, int _age, bool _circumcised, unsigned int 
         }
         else
         {
-            _age = Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Person::maxYrForDeathStats);
+            _age = Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Entity::maxYrForDeathStats);
         }
     }
 
@@ -146,7 +148,7 @@ Msmw::Msmw(EventParams &_eventParams, int _age, bool _circumcised, unsigned int 
 
     circumcised = _circumcised;
     //Set this male's risk level assume everyone is low risk on creation. Risk is rerolled when they roll for become sex worker
-    risk = Person::LOW;
+    risk = Entity::LOW;
 
     for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
     {
@@ -180,7 +182,7 @@ Msmw::~Msmw()
 {
 }
 
-double Msmw::getCondomUseProb(Person *_p, SexualPartnership::Type _partnershipType)
+double Msmw::getCondomUseProb(Entity *_p, SexualPartnership::Type _partnershipType)
 {
     assert((_p != nullptr));
     assert(_p->isAlive());
@@ -204,7 +206,7 @@ bool Msmw::isCircumcised()
 }
 
 //in this case, the male is infected and female is uninfected
-double Msmw::getFOI(Person *_p, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
+double Msmw::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
 {
     //note: in the case of male->female transmission, circumcision makes no difference
     //transmission coeff				1-	(condoms are used and succeed)
@@ -260,11 +262,11 @@ double Msmw::getFOI(Person *_p, const std::unordered_map<TransmissionType, std::
 }
 
 
-double Msmw::getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const
+double Msmw::getMinPartnerSelectVal(Entity::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const
 {
     switch(_PSC)
     {
-    case Person::AGE:
+    case Entity::AGE:
     {
         if(getAge(TimeGranularity::Month) - (12 * averageYearsYounger[(int)_partnershipType].mean + 6) > 0)
         {
@@ -290,11 +292,11 @@ double Msmw::getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartne
 }
 
 
-double Msmw::getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const
+double Msmw::getMaxPartnerSelectVal(Entity::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const
 {
     switch(_PSC)
     {
-    case Person::AGE:
+    case Entity::AGE:
     {
         if(getAge(TimeGranularity::Month) - (12 * averageYearsYounger[(int)_partnershipType].mean - 6) > 0)
         {
@@ -323,14 +325,14 @@ double Msmw::rollForAgeDifference(SexualPartnership::Type _partnershipType, Rand
     return ageDifference;
 }
 
-bool Msmw::possibleMatch(SexualPartnership::Type _partnershipType, Person *_p)
+bool Msmw::possibleMatch(SexualPartnership::Type _partnershipType, Entity *_p)
 {
     assert((_p != nullptr));
     assert(_p->isAlive());
     assert(_partnershipType < SexualPartnership::Type::ENDType);
     assert(false);  // check if we are using years instead of Month
-    int minAge = static_cast<int>(getMinPartnerSelectVal(Person::AGE, _partnershipType));
-    int maxAge = static_cast<int>(getMaxPartnerSelectVal(Person::AGE, _partnershipType));
+    int minAge = static_cast<int>(getMinPartnerSelectVal(Entity::AGE, _partnershipType));
+    int maxAge = static_cast<int>(getMaxPartnerSelectVal(Entity::AGE, _partnershipType));
     return Utility::within_range(_p->getAge(TimeGranularity::Month), minAge, maxAge);
 }
 
@@ -371,7 +373,7 @@ int Msmw::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnersh
     return (_partnershipType != SexualPartnership::Type::Steady && _partnershipType != SexualPartnership::Type::SteadyMsm) ? numPartners : min(1, numPartners);
 }
 
-int Msmw::rollNumEventsPerPartner(Person *_p, RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType)
+int Msmw::rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType)
 {
     assert((_p != nullptr));
     assert(_p->isAlive());
@@ -398,7 +400,7 @@ int Msmw::rollNumEventsPerPartner(Person *_p, RandomNumberGenerator &_randomNums
 }
 
 
-int Msmw::rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums, Person *_p)
+int Msmw::rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums, Entity *_p)
 {
     assert((_p != nullptr));
     assert(_p->isAlive());
@@ -411,7 +413,7 @@ void Msmw::rerollRiskGroup(EventParams &_eventParams)
 {
     DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) getDemographicProfileVal(DemographicProfile::Demographic::Employment);
     double chanceHighRisk = populationSpecificParams.getProportionHighRisk(cswStatus);
-    Person::RiskLevel oldRisk = risk;
+    Entity::RiskLevel oldRisk = risk;
 
     if(_eventParams.randomNums.chance(chanceHighRisk))
     {
@@ -459,7 +461,7 @@ void Msmw::rerollRiskGroup(EventParams &_eventParams)
 void Msmw::saveState(ostream &_outStream, long currTime)
 {
     _outStream << "gend:m," << std::endl;
-    Person::saveState(_outStream, currTime);
+    Entity::saveState(_outStream, currTime);
     _outStream << "," << std::endl << "circ:" << circumcised << "," << std::endl;
     //partner acquisition rates
     bool firstInSequence = true;
@@ -510,3 +512,5 @@ void Msmw::saveState(ostream &_outStream, long currTime)
 
     _outStream << "]";
 }
+
+} // namespace transm

@@ -2,6 +2,8 @@
 
 #include "utility/HighResolutionTimer.hpp"
 
+namespace transm {
+
 struct HighResolutionTimerImpl
 {
 	LONGLONG start;
@@ -30,3 +32,5 @@ double HighResolutionTimer::GetTime()
 	QueryPerformanceCounter(&tick);
 	return static_cast<double>(tick.QuadPart - impl_->start) / impl_->updateFrequency;
 }
+
+} // namespace transm

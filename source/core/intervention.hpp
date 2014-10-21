@@ -4,9 +4,11 @@
 #include <string>
 #include <unordered_map>
 
+namespace transm {
+
 class Simulation;
 class Population;
-class Person;
+class Entity;
 
 class Intervention
 {
@@ -21,13 +23,13 @@ public:
     bool AffectsPopulation() const { return (bool)population_intervention_; }
     void Apply(Population &population);
 
-    void SetPopulationIndividualCallback(std::function<void(Population &, Person *)> callback) { population_individual_intervention_ = callback; }
+    void SetPopulationIndividualCallback(std::function<void(Population &, Entity *)> callback) { population_individual_intervention_ = callback; }
     bool AffectsPopulationIndividual() const { return (bool)population_individual_intervention_; }
-    void Apply(Population &population, Person *person);
+    void Apply(Population &population, Entity *person);
 
-    void SetIndividualCallback(std::function<void(Person *)> callback) { individual_intervention_ = callback; }
+    void SetIndividualCallback(std::function<void(Entity *)> callback) { individual_intervention_ = callback; }
     bool AffectsIndividual() const { return (bool)individual_intervention_; }
-    void Apply(Person *person);
+    void Apply(Entity *person);
 
     bool IsActive(int current_time) const;
     bool IsFirstMonth(int current_time) const;
@@ -38,6 +40,8 @@ private:
     int duration_;
     std::function<void(Simulation &)> simulation_intervention_;
     std::function<void(Population &)> population_intervention_;
-    std::function<void(Population &, Person *)> population_individual_intervention_;
-    std::function<void(Person *)> individual_intervention_;
+    std::function<void(Population &, Entity *)> population_individual_intervention_;
+    std::function<void(Entity *)> individual_intervention_;
 };
+
+} // namespace transm

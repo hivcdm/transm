@@ -5,7 +5,9 @@
 #include "data/enum.hpp"
 #include "core/constants.hpp"
 
-class Person;
+namespace transm {
+
+class Entity;
 
 /// <summary>
 /// This class corresponds to a Person's demographic profile.
@@ -109,7 +111,7 @@ public:
 
 	//each unique profile has a unique integer value assigned to it.
 	// tuples that have wildcard values do not have a profileID
-	typedef int ProfileID;
+	using ProfileID = int;
 
 	// functor for operator <. This is used in maps.
 	struct less
@@ -266,3 +268,5 @@ public :
 	//gets a string representation of the _demographic value of the tuple that corresponds to _profileID
 	static const std::string *getString(ProfileID _profileID, Demographic _demographic);
 };
+
+} // namespace transm

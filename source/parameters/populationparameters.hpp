@@ -7,6 +7,8 @@
 #include "entities/transmissiontype.hpp"
 #include "statistics/coststracker.hpp"
 
+namespace transm {
+
 class PopulationParameters
 {
 public:
@@ -49,7 +51,7 @@ public:
         /// <summary>
         /// number of male and female non-csw in this bucket that are infected (at prevalence delay)
         /// </summary>
-        std::size_t numInfectedRisk[(std::size_t)DemographicProfile::Gender::Last][Person::ENDRiskLevel];
+        std::size_t numInfectedRisk[(std::size_t)DemographicProfile::Gender::Last][Entity::ENDRiskLevel];
 	};
 
 	PopulationParameters();
@@ -82,7 +84,7 @@ public:
 	const Female::SubPopParams &GetFemaleParameters() const { return defaultFemaleParams; }
 	void SetFemaleParameters(Female::SubPopParams &params) { defaultFemaleParams = params; }
 
-	void SetTransmissionCoefficients(const std::unordered_map<TransmissionType, std::array<double, Person::ENDHVLStrata>> &coefficients)
+	void SetTransmissionCoefficients(const std::unordered_map<TransmissionType, std::array<double, Entity::ENDHVLStrata>> &coefficients)
 	{
         transmission_coefficients_ = coefficients;
 	}
@@ -132,12 +134,12 @@ public:
 	}
 
 	void SetAverageYearsYounger(SexualPartnership::Type type, NormalDist dist) { defaultMaleParams.SetAverageYearsYounger(type, dist); }
-	void SetAcquisitionRatePerMonth(Person::RiskLevel risk, SexualPartnership::Type type, LogNormalDist dist) { defaultMaleParams.SetAcquisitionRatePerMonth(risk, type, dist); }
-	void SetCoitalEventsPerMonth(Person::RiskLevel risk, SexualPartnership::Type type, double mean) { defaultMaleParams.SetCoitalEventsPerMonth(risk, type, mean); }
-	void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { defaultMaleParams.SetChanceCondomUsePerEvent(risk, type, dist); }
-	void SetPartnershipDuration(Person::RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { defaultMaleParams.SetPartnershipDuration(risk, type, dist); }
+	void SetAcquisitionRatePerMonth(Entity::RiskLevel risk, SexualPartnership::Type type, LogNormalDist dist) { defaultMaleParams.SetAcquisitionRatePerMonth(risk, type, dist); }
+	void SetCoitalEventsPerMonth(Entity::RiskLevel risk, SexualPartnership::Type type, double mean) { defaultMaleParams.SetCoitalEventsPerMonth(risk, type, mean); }
+	void SetChanceCondomUsePerEvent(Entity::RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { defaultMaleParams.SetChanceCondomUsePerEvent(risk, type, dist); }
+	void SetPartnershipDuration(Entity::RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { defaultMaleParams.SetPartnershipDuration(risk, type, dist); }
 
-	void SetPartnerAcquisitionSteadyMultiplier(Person::RiskLevel risk, double multiplier) { defaultMaleParams.SetPartnerAcqMultWithSteady(risk, multiplier); }
+	void SetPartnerAcquisitionSteadyMultiplier(Entity::RiskLevel risk, double multiplier) { defaultMaleParams.SetPartnerAcqMultWithSteady(risk, multiplier); }
 
     void SetCondomCost(double condom_cost) { condomCost = condom_cost; }
     void SetCircumcisionCost(double circumcision_cost) { circumcisionCost = circumcision_cost; }
@@ -189,7 +191,7 @@ private:
     /// <summary>
     /// Base FOI for different transmission types at various viral loads.
     /// </summary>
-    std::unordered_map<TransmissionType, std::array<double, Person::ENDHVLStrata>> transmission_coefficients_;
+    std::unordered_map<TransmissionType, std::array<double, Entity::ENDHVLStrata>> transmission_coefficients_;
 
     /// <summary>
     /// holds the population-level parameters for population of heterosexual males
@@ -227,3 +229,5 @@ private:
     /// </summary>
 	double circumcisionCost;
 };
+
+} // namespace transm

@@ -7,6 +7,8 @@
 
 #include "utility/utility.hpp"
 
+namespace transm {
+
 /**
 This function allows enums to use prefix add notation for enums
 **/
@@ -39,7 +41,7 @@ class BaseEnumCls
 {
 
 public:
-	typedef unsigned int Enum;
+	using Enum = unsigned int;
 
 	enum NULL_ENUM {};
 
@@ -120,7 +122,7 @@ class EnumCls : public BaseEnumCls
 
 public:
 	//makes this compatible with BaseEnumCls
-	typedef E Enum;
+	//using E = Enum;
 
 	EnumCls();
 
@@ -200,4 +202,4 @@ E EnumCls<E>::toEnum(std::string _enumStr)
 	return E(numEnums);
 }
 
-
+} // namespace transm

@@ -1,5 +1,7 @@
 #pragma once
 
+namespace transm {
+
 enum class TransmissionType
 {
     female_to_male,
@@ -7,17 +9,24 @@ enum class TransmissionType
     male_to_male
 };
 
-namespace std {
-  template<>
-  struct hash<TransmissionType>
-  {
-    using underlying_type = std::underlying_type<TransmissionType>::type;
+} // namespace transm
 
-    size_t operator()(const TransmissionType &t) const
+namespace std {
+
+/// <summary>
+/// Specialize std::hash for TransmissionType
+/// </summary>
+template<>
+struct hash<transm::TransmissionType>
+{
+    using underlying_type = underlying_type<transm::TransmissionType>::type;
+
+    size_t operator()(const transm::TransmissionType &t) const
     {
-      return hasher((underlying_type)t);
+        return hasher((underlying_type)t);
     }
 
-    hash<std::underlying_type<TransmissionType>::type> hasher;
-  };
+    hash<underlying_type> hasher;
+};
+
 } // namespace std

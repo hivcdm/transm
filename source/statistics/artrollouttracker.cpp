@@ -3,7 +3,9 @@
 #include "artrollouttracker.hpp"
 #include "personbucket.hpp"
 #include "core/population.hpp"
-#include "entities/person.hpp"
+#include "entities/entity.hpp"
+
+namespace transm {
 
 const std::string ArtRolloutTracker::RISK_GROUP_NAMES[] =
 {
@@ -61,7 +63,7 @@ void ArtRolloutTracker::SetAgeRanges(const std::vector<AgeRange> &ageRanges)
 	this->ageRanges = ageRanges;
 }
 
-void ArtRolloutTracker::recordTest(Person *person, bool accepted, bool returned, SimContext::TEST_RESULT result)
+void ArtRolloutTracker::recordTest(Entity *person, bool accepted, bool returned, SimContext::TEST_RESULT result)
 {
 	numTestsOffered++;
 
@@ -78,22 +80,22 @@ void ArtRolloutTracker::recordTest(Person *person, bool accepted, bool returned,
 	}
 }
 
-void ArtRolloutTracker::recordTreatmentAccessEligiblity(Person *person)
+void ArtRolloutTracker::recordTreatmentAccessEligiblity(Entity *person)
 {
 	counter.Increment(PersonBucket(*person, ageRanges), "eligible_for_access");
 }
 
-void ArtRolloutTracker::recordTreatmentAccess(Person *person)
+void ArtRolloutTracker::recordTreatmentAccess(Entity *person)
 {
 	counter.Increment(PersonBucket(*person, ageRanges), "accessing_treatment");
 }
 
-void ArtRolloutTracker::recordTreatmentEligiblity(Person *person)
+void ArtRolloutTracker::recordTreatmentEligiblity(Entity *person)
 {
 	counter.Increment(PersonBucket(*person, ageRanges), "eligible_for_treatment");
 }
 
-void ArtRolloutTracker::recordTreatment(Person *person)
+void ArtRolloutTracker::recordTreatment(Entity *person)
 {
 	counter.Increment(PersonBucket(*person, ageRanges), "treated");
 }
@@ -167,7 +169,7 @@ void ArtRolloutTracker::buildHeader()
 
 		SetHeaderCell(column, 2, "CD4 Stratum");
 
-		for(int cd4StratumIndex = 0; cd4StratumIndex < Person::ENDCD4Strata; ++cd4StratumIndex, ++column)
+		for(int cd4StratumIndex = 0; cd4StratumIndex < Entity::ENDCD4Strata; ++cd4StratumIndex, ++column)
 		{
 			SetHeaderCell(column, 3, SimContext::CD4_STRATA_STRS[cd4StratumIndex]);
 		}
@@ -224,14 +226,14 @@ void ArtRolloutTracker::buildRow(int time, Population *_population)
 			}
 		}
 
-		for(Person::CD4Strata cd4Stratum = static_cast<Person::CD4Strata>(0); cd4Stratum < Person::ENDCD4Strata; ++cd4Stratum)
+		for(Entity::CD4Strata cd4Stratum = static_cast<Entity::CD4Strata>(0); cd4Stratum < Entity::ENDCD4Strata; ++cd4Stratum)
 		{
 			PushElement(counter.GetCount(outcome, std::make_pair("cd4Stratum", cd4Stratum)));
 		}
 
 		for(auto employment : enum_iterator<DemographicProfile::Employment>())
 		{
-			for(Person::RiskLevel riskLevel = static_cast<Person::RiskLevel>(0); riskLevel < Person::ENDRiskLevel; ++riskLevel)
+			for(Entity::RiskLevel riskLevel = static_cast<Entity::RiskLevel>(0); riskLevel < Entity::ENDRiskLevel; ++riskLevel)
 			{
                 for(auto gender : enum_iterator<DemographicProfile::Gender>())
 				{
@@ -269,3 +271,5 @@ void ArtRolloutTracker::Reset()
 	numTestsAccepted = 0;
 	numTestsReturnedFor = 0;
 }
+
+} // namespace transm

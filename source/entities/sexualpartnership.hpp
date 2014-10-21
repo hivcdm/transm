@@ -5,9 +5,11 @@
 #include "data/eventparams.hpp"
 #include "utility/randomnumbergenerator.hpp"
 
-class Person;
-class PopulationStatistics;
+namespace transm {
+
+class Entity;
 class InfectionsTracker;
+class PopulationStatistics;
 
 /***
 This class represents a SexualPartnership that lasts more than 1 month
@@ -50,7 +52,7 @@ protected :
 	long timePartnerFormation;				//the time that this couple was formed
 	long timePartnerDissolution;			//time that this partnership will dissolve
 
-	Person *partners[2];			//this contains copies of pointers of partners
+	Entity *partners[2];			//this contains copies of pointers of partners
 
 public :
 
@@ -69,7 +71,7 @@ public :
 	@param _person2 Second person in the couple. If this is a heterosexual couple, make sure to put this one as Female
 	@author schung5
 	**/
-	SexualPartnership(Person *_person1, Person *_person2, EventParams &_eventParams,
+	SexualPartnership(Entity *_person1, Entity *_person2, EventParams &_eventParams,
 	                  SexualPartnership::Type _partnershipType);
 
 	/**
@@ -91,20 +93,20 @@ public :
 	Gets the pointer to partner 1. Should be male if this couple is heterosexual
 	@author schung5
 	**/
-	Person *getPartner1();
+	Entity *getPartner1();
 
 	/**
 	Gets the pointer to partner 2. Should be female if this couple is heterosexual
 	@author schung5
 	**/
-	Person *getPartner2();
+	Entity *getPartner2();
 
 
 	/**
 	@param _member one of the members of the couple
 	@returns the other member of the couple
 	**/
-	Person *getOtherPartner(Person *_member);
+	Entity *getOtherPartner(Entity *_member);
 
 	/**
 	Gets what the type of this partnership is
@@ -121,7 +123,7 @@ public :
 	returns true if _p is a member of this partnership
 	@author schung5
 	**/
-	bool isMember(Person *_p);
+	bool isMember(Entity *_p);
 
 	/**
 	@author schung5
@@ -138,7 +140,7 @@ public :
 	@return returns a pointer to a person who has been newly infected. nullptr if no infection occured
 	@author schung5
 	**/
-    Person *monthlySexualActivity(EventParams &_eventParams, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, 9UL>> &transmission_coefficients);
+    Entity *monthlySexualActivity(EventParams &_eventParams, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, 9UL>> &transmission_coefficients);
 
 	int getTimeOfFormation()
 	{
@@ -150,17 +152,24 @@ public :
 	}
 };
 
-namespace std {
-  template<>
-  struct hash<SexualPartnership::Type>
-  {
-    using underlying_type = std::underlying_type<SexualPartnership::Type>::type;
+} // namespace transm
 
-    size_t operator()(const SexualPartnership::Type &t) const
+namespace std {
+
+/// <summary>
+/// Specialize std::hash for SexualPartnership::Type
+/// </summary>
+template<>
+struct hash<transm::SexualPartnership::Type>
+{
+    using underlying_type = underlying_type<transm::SexualPartnership::Type>::type;
+
+    size_t operator()(const transm::SexualPartnership::Type &t) const
     {
-      return hasher((underlying_type)t);
+        return hasher((underlying_type)t);
     }
 
-    hash<std::underlying_type<SexualPartnership::Type>::type> hasher;
-  };
+    hash<underlying_type> hasher;
+};
+
 } // namespace std

@@ -1,5 +1,7 @@
 #include "coststracker.hpp"
 
+namespace transm {
+
 CostsTracker::CostsTracker()
 {
 	Reset();
@@ -22,7 +24,7 @@ void CostsTracker::PrintCosts(int time, std::ostream &_outStream)
 	Reset();
 }
 
-void CostsTracker::RecordLifeMonth(double qualityOfLife, double discountFactor, Person::HIVStatus status)
+void CostsTracker::RecordLifeMonth(double qualityOfLife, double discountFactor, Entity::HIVStatus status)
 {
 	undiscounted_.lifeMonthsByHivStatus[status]++;
 	undiscounted_.qalmsByHivStatus[status] += qualityOfLife;
@@ -43,8 +45,8 @@ void CostsTracker::RecordCircumcision(double costUndiscounted, double costDiscou
 	discounted_.circumcisionCosts += costDiscounted;
 }
 
-void CostsTracker::RecordCepacCosts(double costUndiscounted, double costDiscounted, DemographicProfile::Gender gender, Person::CD4Strata cd4, 
-	Person::HVLStrata hvl, Person::HIVStatus status)
+void CostsTracker::RecordCepacCosts(double costUndiscounted, double costDiscounted, DemographicProfile::Gender gender, Entity::CD4Strata cd4, 
+	Entity::HVLStrata hvl, Entity::HIVStatus status)
 {
 	undiscounted_.totalCostsByHivState[status] += costUndiscounted;
 	discounted_.totalCostsByHivState[status] += costDiscounted;
@@ -52,7 +54,7 @@ void CostsTracker::RecordCepacCosts(double costUndiscounted, double costDiscount
     undiscounted_.totalCostsByGender[(std::size_t)gender] += costUndiscounted;
     discounted_.totalCostsByGender[(std::size_t)gender] += costDiscounted;
 
-	if(status != Person::NEGATIVE)
+	if(status != Entity::NEGATIVE)
 	{
 		undiscounted_.totalCostsByCd4[cd4] += costUndiscounted;
 		undiscounted_.totalCostsByHvl[hvl + 1] += costUndiscounted;
@@ -206,27 +208,27 @@ void CostsTracker::BuildRow(int time)
 		double totalQalms = 0;
 		double cepacTotalCost = 0;
 
-		for(int i = 0; i < Person::ENDHIVStatus; i++)
+		for(int i = 0; i < Entity::ENDHIVStatus; i++)
 		{
 			totalLifeMonths += costs.lifeMonthsByHivStatus[i];
 			totalQalms += costs.qalmsByHivStatus[i];
 		}
 
-		for(int i = 0; i < Person::ENDCD4Strata; i++)
+		for(int i = 0; i < Entity::ENDCD4Strata; i++)
 		{
 			cepacTotalCost += costs.totalCostsByCd4[i];
 		}
 
 		PushElement(totalLifeMonths);
 
-		for(int i = 0; i < Person::ENDHIVStatus; i++)
+		for(int i = 0; i < Entity::ENDHIVStatus; i++)
 		{
 			PushElement(costs.lifeMonthsByHivStatus[i]);
 		}
 
 		PushElement(totalQalms);
 
-		for(int i = 0; i < Person::ENDHIVStatus; i++)
+		for(int i = 0; i < Entity::ENDHIVStatus; i++)
 		{
 			PushElement(costs.qalmsByHivStatus[i]);
 		}
@@ -271,17 +273,17 @@ void CostsTracker::BuildRow(int time)
 			PushElement(costs.totalCostsByGender[i]);
 		}
 
-		for(int i = 0; i < Person::ENDHIVStatus; i++)
+		for(int i = 0; i < Entity::ENDHIVStatus; i++)
 		{
 			PushElement(costs.totalCostsByHivState[i]);
 		}
 
-		for(int i = 0; i < Person::ENDCD4Strata; i++)
+		for(int i = 0; i < Entity::ENDCD4Strata; i++)
 		{
 			PushElement(costs.totalCostsByCd4[i]);
 		}
 
-		for(int i = -1; i < Person::ENDHVLStrata; i++)
+		for(int i = -1; i < Entity::ENDHVLStrata; i++)
 		{
 			PushElement(costs.totalCostsByHvl[i + 1]);
 		}
@@ -293,3 +295,5 @@ void CostsTracker::Reset()
 	discounted_ = Costs();
 	undiscounted_ = Costs();
 }
+
+} // namespace transm

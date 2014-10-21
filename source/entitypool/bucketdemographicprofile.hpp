@@ -3,7 +3,9 @@
 #include "entityindex.hpp"
 #include "entities/demographicprofile.hpp"
 
-class Person;
+namespace transm {
+
+class Entity;
 class RandomNumberGenerator;
 
 /// <summary>
@@ -19,7 +21,7 @@ public:
     /// <summary>
     /// this is an index based on person's ID
     /// </summary>
-    typedef EntityIndex<Person::ID, unsigned long> PersonSet;
+    using PersonSet = EntityIndex<Entity::ID, unsigned long>;
 
     /// <summary>
     /// this function should not be used in this sim, it's just here for a default constructor
@@ -63,7 +65,7 @@ public:
     /// <remarks>
 	///  _remove - if true, then will remove the chosen person from the BucketDemographicProfile
     /// </remarks>
-	virtual Person *drawMember(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType, bool _remove);
+	virtual Entity *drawMember(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType, bool _remove);
 
     /// <summary>
 	/// Draws a partner from this Bucket on behalf of _chooser. This will take into account the
@@ -75,11 +77,11 @@ public:
 	/// @param _partnershipType the type of partner this person is looking for
 	/// @param _remove - will remove this person from the bucket
 	/// </remarks>
-	virtual Person *drawMember(RandomNumberGenerator &_randomNums, Person *_chooser, SexualPartnership::Type _partnershipType, bool _remove);
+	virtual Entity *drawMember(RandomNumberGenerator &_randomNums, Entity *_chooser, SexualPartnership::Type _partnershipType, bool _remove);
 
     /// <summary>
     /// </summary>
-	virtual bool exists(Person *_person);
+	virtual bool exists(Entity *_person);
 
     /// <summary>
 	/// counts number of infected people this EntityPool
@@ -95,12 +97,12 @@ public:
 	/// this adds member into the pool
 	/// _toInsert - the Person being added to the pool.
     /// </summary>
-	virtual bool insert(Person *_toInsert);
+	virtual bool insert(Entity *_toInsert);
 
     /// <summary>
 	/// if _p exists in the bucket, will remove. remove true if existed
     /// </summary>
-	virtual bool erase(Person *_p);
+	virtual bool erase(Entity *_p);
 
     /// <summary>
 	/// returns the size of this BucketDemographicProfile
@@ -117,13 +119,13 @@ public:
 	/// @effects: Ages everyone in the bucket one timestep
 	/// @returns: List of persons too old for timestep (should be placed into other bucket)
     /// </summary>
-	virtual std::list<Person *> ageOneTimeStep();
+	virtual std::list<Entity *> ageOneTimeStep();
 
-    virtual void forEach(std::function<void(Person *)> callback);
+    virtual void forEach(std::function<void(Entity *)> callback);
 
-    std::multimap<unsigned long, Person *>::iterator begin() { return simpleEntityIndex->begin(); }
+    std::multimap<unsigned long, Entity *>::iterator begin() { return simpleEntityIndex->begin(); }
 
-    std::multimap<unsigned long, Person *>::iterator end() { return simpleEntityIndex->end(); }
+    std::multimap<unsigned long, Entity *>::iterator end() { return simpleEntityIndex->end(); }
 
 private:
     friend class JavaStyleIterator;
@@ -140,3 +142,5 @@ private:
     /// </summmary>
     DemographicProfile::ProfileID dmgProfileID;
 };
+
+} // namespace transm

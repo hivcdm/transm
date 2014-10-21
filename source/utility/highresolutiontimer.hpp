@@ -1,5 +1,7 @@
 #pragma once
 
+namespace transm {
+
 struct HighResolutionTimerImpl;
 
 class HighResolutionTimer
@@ -14,3 +16,5 @@ public:
 private:
 	HighResolutionTimerImpl *impl_;
 };
+
+} // namespace transm

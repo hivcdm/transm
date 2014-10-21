@@ -12,6 +12,8 @@
 
 #include "utility.hpp"
 
+namespace transm {
+
 namespace {
 std::string to_string(TimeGranularity granularity)
 {
@@ -353,3 +355,5 @@ bool Utility::valid_probability(double _prob)
 {
 	return Utility::within_range(_prob, 0.0, 1.0);
 }
+
+} // namespace transm

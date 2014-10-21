@@ -3,9 +3,11 @@
 #include <typeinfo>
 
 #include "demographicprofile.hpp"
-#include "person.hpp"
+#include "entity.hpp"
 #include "utility/utility.hpp"
 #include "utility/make_unique.hpp"
+
+namespace transm {
 
 //declare strings of Enums
 const std::vector<std::string> demographicStrs = {"SEXUAL_ACTIVITY_STATUS", "GENDER", "SEXUAL_ORIENTATION", "RELATIONSHIP_STATUS", "EMPLOYMENT"};
@@ -481,3 +483,5 @@ void DemographicProfile::initProfileIDMap()
 		currDemographicProfile++;
 	}
 }
+
+} // namespace transm

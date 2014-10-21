@@ -5,21 +5,23 @@
 
 #include "batchstatus.hpp"
 #include "intervention.hpp"
-#include "outputs.hpp"
 #include "population.hpp"
 #include "targetgroup.hpp"
 #include "data/eventparams.hpp"
+#include "statistics/outputs.hpp"
 #include "statistics/populationstatistics.hpp"
 #include "utility/highresolutiontimer.hpp"
 #include "utility/nullable.hpp"
 #include "utility/runtimepredictor.hpp"
+
+namespace transm {
 
 class InfectionsTracker;
 
 class Simulation
 {
 public:
-	typedef std::function<void(const std::string &)> MessageCallback;
+	using MessageCallback = std::function<void(const std::string &)>;
 
 	Simulation(BatchStatus &batch_status);
 
@@ -77,8 +79,8 @@ private:
 		int target_population;
 	};
 
-	typedef std::array<TreatmentFile, Constants::NUMBER_OF_CEPAC_FILES> CepacTreatmentFiles;
-	typedef std::array<TreatmentFile, Constants::NUMBER_OF_ROLLOUT_FILES> RolloutTreatmentFiles;
+    using CepacTreatmentFiles = std::array<TreatmentFile, Constants::NUMBER_OF_CEPAC_FILES>;
+    using RolloutTreatmentFiles = std::array<TreatmentFile, Constants::NUMBER_OF_ROLLOUT_FILES>;
 
 	void FirstStep();
 
@@ -98,7 +100,7 @@ private:
 	/** perform one timestep of simulation */
     std::size_t SimulateMonth();
 
-    void UpdateInterventions(const std::unordered_set<Person *> &dead_people);
+    void UpdateInterventions(const std::unordered_set<Entity *> &dead_people);
 
 	std::string name_;
 
@@ -149,3 +151,4 @@ private:
     BatchStatus &batch_status_;
 };
 
+} // namespace transm

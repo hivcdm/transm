@@ -9,6 +9,8 @@
 #include "randomnumbergenerator.hpp"
 #include "core/constants.hpp"
 
+namespace transm {
+
 struct Version
 {
 	static Version from_string(const std::string &version_string);
@@ -173,3 +175,5 @@ bool Utility::within_range(T val, T min, T max)
 {
 	return min <= val && max >= val;
 }
+
+} // namespace transm

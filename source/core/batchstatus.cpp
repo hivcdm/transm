@@ -3,6 +3,8 @@
 #include "batchstatus.hpp"
 #include "utility/utility.hpp"
 
+namespace transm {
+
 BatchStatus::BatchStatus(const std::string &batch_name)
     : batch_name_(batch_name),
     bool_query_result_(false),
@@ -131,3 +133,5 @@ void BatchStatus::insert_sim(const std::string &sim_name)
         throw_if_not_ok(sqlite3_exec(db_, query.c_str(), nullptr, nullptr, nullptr));
     }
 }
+
+} // namespace transm

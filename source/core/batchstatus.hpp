@@ -5,6 +5,8 @@
 
 struct sqlite3;
 
+namespace transm {
+
 /// <summary>
 /// Every simulation is in one of these states.
 /// </summary>
@@ -126,3 +128,5 @@ private:
     /// </summary>
     bool initialized_;
 };
+
+} // namespace transm

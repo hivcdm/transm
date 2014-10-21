@@ -11,6 +11,8 @@
 #include "utility/enum_iterator.hpp"
 #include "utility/randomnumbergenerator.hpp"
 
+namespace transm {
+
 template<typename T>
 struct Bounds
 {
@@ -307,3 +309,5 @@ public :
 		delete cepacTracer;
 	}
 };
+
+} // namespace transm

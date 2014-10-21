@@ -3,12 +3,14 @@
 #include "core/constants.hpp"
 #include "utility/utility.hpp"
 
+namespace transm {
+
 std::string Female::getEntityType() const
 {
     return "female";
 }
 
-int Female::rollForNewPartnershipDuration(SexualPartnership::Type, RandomNumberGenerator &, Person *)
+int Female::rollForNewPartnershipDuration(SexualPartnership::Type, RandomNumberGenerator &, Entity *)
 {
     throw std::runtime_error("not implemented for women");
 }
@@ -18,12 +20,12 @@ int Female::rollForNumPartners(RandomNumberGenerator &, SexualPartnership::Type)
     throw std::runtime_error("not implemented for women");
 }
 
-int Female::rollNumEventsPerPartner(Person *, RandomNumberGenerator &, SexualPartnership::Type)
+int Female::rollNumEventsPerPartner(Entity *, RandomNumberGenerator &, SexualPartnership::Type)
 {
     throw std::runtime_error("not implemented for women");
 }
 
-bool Female::possibleMatch(SexualPartnership::Type /*_partnershipType*/, Person * /*_p*/)
+bool Female::possibleMatch(SexualPartnership::Type /*_partnershipType*/, Entity * /*_p*/)
 {
     throw std::runtime_error("not implemented for women");
 }
@@ -79,7 +81,7 @@ NormalDist Female::SubPopParams::GetActivityLevel() const
 }
 
 Female::Female(EventParams &_eventParams, int _ageMths, unsigned int _populationID, const Female::SubPopParams &params)
-	: Person(_ageMths, _populationID),
+	: Entity(_ageMths, _populationID),
 	populationSpecificParams(params),
     overrideChanceCondomUse_(-1)
 {
@@ -92,7 +94,7 @@ Female::Female(EventParams &_eventParams, int _ageMths, unsigned int _population
 		activityLevel = 1;
 	}
 
-	risk = Person::LOW;
+	risk = Entity::LOW;
 
     for(auto risk : {LOW, HIGH})
     {
@@ -107,7 +109,7 @@ Female::~Female(void)
 {
 }
 
-double Female::getFOI(Person *_p, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
+double Female::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
 {
     assert(_p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male);
 	Male *m = (Male *)_p;
@@ -154,13 +156,13 @@ double Female::getFOI(Person *_p, const std::unordered_map<TransmissionType, std
 }
 
 //currently, females don't have much of a choice. Edit these functions to give them ability have have partner preferences
-double Female::getMinPartnerSelectVal(Person::SelectingCriteria /*_PSC*/,
+double Female::getMinPartnerSelectVal(Entity::SelectingCriteria /*_PSC*/,
                                       SexualPartnership::Type /*_partnershipType*/) const
 {
 	return numeric_limits<unsigned int>::min();
 }
 
-double Female::getMaxPartnerSelectVal(Person::SelectingCriteria /*_PSC*/,
+double Female::getMaxPartnerSelectVal(Entity::SelectingCriteria /*_PSC*/,
                                       SexualPartnership::Type /*_partnershipType*/) const
 {
 	return numeric_limits<unsigned int>::max();
@@ -171,7 +173,7 @@ double Female::getChanceBecomeCsw() const
 	return populationSpecificParams.GetChanceBecomeCSW();
 }
 
-void Female::SetChanceCondomUsePerEvent(Person::RiskLevel /*risk*/, SexualPartnership::Type /*partnershipType*/, BetaDist /*dist*/, RandomNumberGenerator &/*rng*/)
+void Female::SetChanceCondomUsePerEvent(Entity::RiskLevel /*risk*/, SexualPartnership::Type /*partnershipType*/, BetaDist /*dist*/, RandomNumberGenerator &/*rng*/)
 {
 	throw std::runtime_error("not allowed");
 }
@@ -189,28 +191,12 @@ void Female::rerollRiskGroup(EventParams &_eventParams)
 	{
 		risk = LOW;
 	}
-
-    /*
-	if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
-	{
-        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " % Female " << getID() << " rerolls as ";
-
-		if(risk == HIGH)
-		{
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "High";
-		}
-		else
-		{
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "Low";
-		}
-
-        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " risk" << std::endl;
-	}
-    */
 }
 
 void Female::saveState(ostream &_outStream, long currTime)
 {
 	_outStream << "gend:f," << std::endl;
-	Person::saveState(_outStream, currTime);
+	Entity::saveState(_outStream, currTime);
 }
+
+} // namespace transm

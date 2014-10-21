@@ -4,9 +4,11 @@
 #include <unordered_set>
 #include <vector>
 
-#include "entities/person.hpp"
+#include "entities/entity.hpp"
 #include "entities/demographicprofile.hpp"
 #include "utility/nullable.hpp"
+
+namespace transm {
 
 class TargetGroup
 {
@@ -15,7 +17,7 @@ public:
     {
         static PopulationTarget Any;
 
-        Nullable<Person::RiskLevel> risk_level;
+        Nullable<Entity::RiskLevel> risk_level;
         Nullable<DemographicProfile::Employment> employment;
         Nullable<DemographicProfile::SexualActivityStatus> sexual_activity_status;
         Nullable<DemographicProfile::Gender> gender;
@@ -23,7 +25,7 @@ public:
         Nullable<DemographicProfile::SexualOrientation> sexual_orientation;
         Nullable<int> age_lower;
         Nullable<int> age_upper;
-        Nullable<Person::HIVStatus> observed_hiv_status;
+        Nullable<Entity::HIVStatus> observed_hiv_status;
         Nullable<bool> on_treatment;
         Nullable<bool> circumcised;
 
@@ -74,12 +76,12 @@ public:
     TargetGroup(const std::string &label, int start, int end, bool open, bool permanent, Nullable<PopulationTarget> target);
 
     void Update(Population &p, int simulation_time, RandomNumberGenerator &rng, 
-        const std::unordered_set<Person *> &dead_people);
+        const std::unordered_set<Entity *> &dead_people);
 
     void AddPartition(const std::string &label, bool trace, double proportion,
         std::vector<Intervention> simulation_interventions);
 
-    void AssignToPartition(Population &pop, Person *p, int partition) 
+    void AssignToPartition(Population &pop, Entity *p, int partition) 
     { 
         if(!InGroup(p))
         {
@@ -88,7 +90,7 @@ public:
         }
     }
 
-    bool InGroup(Person *p) const { return member_partitions_.find(p) != member_partitions_.end(); }
+    bool InGroup(Entity *p) const { return member_partitions_.find(p) != member_partitions_.end(); }
 
     std::vector<std::string> GetPartitionNames() const
     {
@@ -120,54 +122,54 @@ public:
             throw std::runtime_error("partition not found");
         }
 
-        auto in_partition = [=](const std::pair<Person *, int> &p) { return p.second == (int)partition_index; };
-        auto is_sexually_active = [&](const std::pair<Person *, int> &p) { return in_partition(p) && p.first->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::Active; };
-        auto not_sexually_active = [&](const std::pair<Person *, int> &p) { return in_partition(p) && p.first->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::NotActive; };
-        auto is_prevalent = [&](const std::pair<Person *, int> &p) { return in_partition(p) && p.first->ageInfected > -1 && p.first->ageInfected + 1 != (int)p.first->age; };
-        auto is_incident = [&](const std::pair<Person *, int> &p) { return in_partition(p) && p.first->ageInfected + 1 == (int)p.first->age; };
-	//        auto is_prevalent_sa = [&](const std::pair<Person *, int> &p) { return in_partition(p) && is_sexually_active(p) && is_prevalent(p); };
-	//        auto is_incident_sa = [&](const std::pair<Person *, int> &p) { return in_partition(p) && is_sexually_active(p) && is_incident(p); };
-        auto is_gender = [&](const std::pair<Person *, int> &p, DemographicProfile::Gender gender) { return in_partition(p) && p.first->getDemographicProfileVal<DemographicProfile::Gender>() == gender; };
-        auto is_sa_gender = [&](const std::pair<Person *, int> &p, DemographicProfile::Gender gender) { return in_partition(p) && is_sexually_active(p) && is_gender(p, gender); };
-        auto is_na_gender = [&](const std::pair<Person *, int> &p, DemographicProfile::Gender gender) { return in_partition(p) && !is_sexually_active(p) && is_gender(p, gender); };
-        auto is_prev_gender = [&](const std::pair<Person *, int> &p, DemographicProfile::Gender gender) { return is_prevalent(p) && is_gender(p, gender); };
-        auto is_incident_gender = [&](const std::pair<Person *, int> &p, DemographicProfile::Gender gender) { return is_incident(p) && is_gender(p, gender); };
-        auto is_sa_in_age_range_gender = [&](const std::pair<Person *, int> &p, int lower, int upper, DemographicProfile::Gender gender) { return is_sa_gender(p, gender) && p.first->getAge(TimeGranularity::Month) >= lower && p.first->getAge(TimeGranularity::Month) <= upper; };
-        auto is_prev_in_age_range_gender = [&](const std::pair<Person *, int> &p, int lower, int upper, DemographicProfile::Gender gender) { return p.first->getAge(TimeGranularity::Month) >= lower && p.first->getAge(TimeGranularity::Month) <= upper && is_prev_gender(p, gender); };
-        auto is_incident_in_age_range_gender = [&](const std::pair<Person *, int> &p, int lower, int upper, DemographicProfile::Gender gender) { return is_incident_gender(p, gender) && p.first->getAge(TimeGranularity::Month) >= lower && p.first->getAge(TimeGranularity::Month) <= upper; };
-        auto is_in_risk_group = [&](const std::pair<Person *, int> &p, const std::string &risk_string)
+        auto in_partition = [=](const std::pair<Entity *, int> &p) { return p.second == (int)partition_index; };
+        auto is_sexually_active = [&](const std::pair<Entity *, int> &p) { return in_partition(p) && p.first->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::Active; };
+        auto not_sexually_active = [&](const std::pair<Entity *, int> &p) { return in_partition(p) && p.first->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::NotActive; };
+        auto is_prevalent = [&](const std::pair<Entity *, int> &p) { return in_partition(p) && p.first->ageInfected > -1 && p.first->ageInfected + 1 != (int)p.first->age; };
+        auto is_incident = [&](const std::pair<Entity *, int> &p) { return in_partition(p) && p.first->ageInfected + 1 == (int)p.first->age; };
+	//        auto is_prevalent_sa = [&](const std::pair<Entity *, int> &p) { return in_partition(p) && is_sexually_active(p) && is_prevalent(p); };
+	//        auto is_incident_sa = [&](const std::pair<Entity *, int> &p) { return in_partition(p) && is_sexually_active(p) && is_incident(p); };
+        auto is_gender = [&](const std::pair<Entity *, int> &p, DemographicProfile::Gender gender) { return in_partition(p) && p.first->getDemographicProfileVal<DemographicProfile::Gender>() == gender; };
+        auto is_sa_gender = [&](const std::pair<Entity *, int> &p, DemographicProfile::Gender gender) { return in_partition(p) && is_sexually_active(p) && is_gender(p, gender); };
+        auto is_na_gender = [&](const std::pair<Entity *, int> &p, DemographicProfile::Gender gender) { return in_partition(p) && !is_sexually_active(p) && is_gender(p, gender); };
+        auto is_prev_gender = [&](const std::pair<Entity *, int> &p, DemographicProfile::Gender gender) { return is_prevalent(p) && is_gender(p, gender); };
+        auto is_incident_gender = [&](const std::pair<Entity *, int> &p, DemographicProfile::Gender gender) { return is_incident(p) && is_gender(p, gender); };
+        auto is_sa_in_age_range_gender = [&](const std::pair<Entity *, int> &p, int lower, int upper, DemographicProfile::Gender gender) { return is_sa_gender(p, gender) && p.first->getAge(TimeGranularity::Month) >= lower && p.first->getAge(TimeGranularity::Month) <= upper; };
+        auto is_prev_in_age_range_gender = [&](const std::pair<Entity *, int> &p, int lower, int upper, DemographicProfile::Gender gender) { return p.first->getAge(TimeGranularity::Month) >= lower && p.first->getAge(TimeGranularity::Month) <= upper && is_prev_gender(p, gender); };
+        auto is_incident_in_age_range_gender = [&](const std::pair<Entity *, int> &p, int lower, int upper, DemographicProfile::Gender gender) { return is_incident_gender(p, gender) && p.first->getAge(TimeGranularity::Month) >= lower && p.first->getAge(TimeGranularity::Month) <= upper; };
+        auto is_in_risk_group = [&](const std::pair<Entity *, int> &p, const std::string &risk_string)
         {
             if(!in_partition(p)) return false;
 
             if(risk_string == "CSW High Risk")
             {
-                return p.first->getRiskLevel() == Person::RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::Csw;
+                return p.first->getRiskLevel() == Entity::RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::Csw;
             }
             if(risk_string == "CSW Low Risk")
             {
-                return p.first->getRiskLevel() == Person::RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::Csw;
+                return p.first->getRiskLevel() == Entity::RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::Csw;
             }
             if(risk_string == "Non-CSW High Risk Male")
             {
-                return p.first->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Male && p.first->getRiskLevel() == Person::RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
+                return p.first->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Male && p.first->getRiskLevel() == Entity::RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
             }
             if(risk_string == "Non-CSW High Risk Female")
             {
-                return p.first->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Female && p.first->getRiskLevel() == Person::RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
+                return p.first->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Female && p.first->getRiskLevel() == Entity::RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
             }
             if(risk_string == "Non-CSW Low Risk Male")
             {
-                return p.first->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Male && p.first->getRiskLevel() == Person::RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
+                return p.first->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Male && p.first->getRiskLevel() == Entity::RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
             }
             if(risk_string == "Non-CSW Low Risk Female")
             {
-                return p.first->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Female && p.first->getRiskLevel() == Person::RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
+                return p.first->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Female && p.first->getRiskLevel() == Entity::RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
             }
             throw std::runtime_error("unknown risk group");
         };
-	//        auto is_sa_in_risk_group = [&](const std::pair<Person *, int> &p, const std::string &risk_string) { return is_sexually_active(p) && is_in_risk_group(p, risk_string); };
-        auto is_prev_in_risk_group = [&](const std::pair<Person *, int> &p, const std::string &risk_string) { return is_prevalent(p) && is_in_risk_group(p, risk_string); };
-        auto is_incident_in_risk_group = [&](const std::pair<Person *, int> &p, const std::string &risk_string) { return is_incident(p) && is_in_risk_group(p, risk_string); };
+	//        auto is_sa_in_risk_group = [&](const std::pair<Entity *, int> &p, const std::string &risk_string) { return is_sexually_active(p) && is_in_risk_group(p, risk_string); };
+        auto is_prev_in_risk_group = [&](const std::pair<Entity *, int> &p, const std::string &risk_string) { return is_prevalent(p) && is_in_risk_group(p, risk_string); };
+        auto is_incident_in_risk_group = [&](const std::pair<Entity *, int> &p, const std::string &risk_string) { return is_incident(p) && is_in_risk_group(p, risk_string); };
 
         for(auto &partition : partitions_)
         {
@@ -219,7 +221,7 @@ public:
 
     std::string GetLabel() const { return label_; }
 
-    void Remove(Person *p) { if(member_partitions_.find(p) != member_partitions_.end()) member_partitions_.erase(p); }
+    void Remove(Entity *p) { if(member_partitions_.find(p) != member_partitions_.end()) member_partitions_.erase(p); }
 
 private:
     struct
@@ -237,7 +239,7 @@ private:
     public:
         double GetProportion() const { return proportion_; }
 
-        void ApplyInterventions(Population &pop, Person *p) 
+        void ApplyInterventions(Population &pop, Entity *p) 
         { 
             for(auto &intervention : interventions_)
             {
@@ -257,7 +259,9 @@ private:
 
     std::vector<Partition> partitions_;
 
-    std::unordered_map<Person *, int> member_partitions_;
+    std::unordered_map<Entity *, int> member_partitions_;
 
     Nullable<PopulationTarget> target_;
 };
+
+} // namespace transm

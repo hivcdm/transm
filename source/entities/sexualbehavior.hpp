@@ -2,9 +2,11 @@
 
 #include <vector>
 
-#include "person.hpp"
+#include "entity.hpp"
 #include "demographicprofile.hpp"
 #include "sexualpartnership.hpp"
+
+namespace transm {
 
 /// <summary>
 /// This can parse XML that contains info about sexual behavior for a particular
@@ -49,29 +51,29 @@ public :
 	/// </summary>
 	unsigned int getNumAvailableBuckets() const;
 
-	const LogNormalDist getAcquisitionRatePerMonth(Person::RiskLevel risk) const;
+	const LogNormalDist getAcquisitionRatePerMonth(Entity::RiskLevel risk) const;
 
 	const AvailableBucket getAvailableBucket(int _bucket) const;
 
-	double getCoitalEventsPerMonth(Person::RiskLevel risk) const;
+	double getCoitalEventsPerMonth(Entity::RiskLevel risk) const;
 
-	const BetaDist getChanceCondomUsePerEvent(Person::RiskLevel risk) const;
+	const BetaDist getChanceCondomUsePerEvent(Entity::RiskLevel risk) const;
 
 	const NormalDist getAverageYearsYounger() const;
 
-	const ShiftedLogNormalDist getPartnershipDurationMth(Person::RiskLevel risk) const;
+	const ShiftedLogNormalDist getPartnershipDurationMth(Entity::RiskLevel risk) const;
 
 	SexualPartnership::Type getPartnershipType() const;
 
-	void setChanceCondomUsePerEvent(Person::RiskLevel risk, BetaDist dist) { chanceCondomUsePerEvent[risk] = dist; }
+	void setChanceCondomUsePerEvent(Entity::RiskLevel risk, BetaDist dist) { chanceCondomUsePerEvent[risk] = dist; }
 
-	void setCoitalEventsPerMonth(Person::RiskLevel risk, double meanEvents) { coitalEventsPerMonth[risk] = meanEvents; }
+	void setCoitalEventsPerMonth(Entity::RiskLevel risk, double meanEvents) { coitalEventsPerMonth[risk] = meanEvents; }
 
-	void setPartnershipDuration(Person::RiskLevel risk, ShiftedLogNormalDist dist) { partnershipDurationMth[risk] = dist; }
+	void setPartnershipDuration(Entity::RiskLevel risk, ShiftedLogNormalDist dist) { partnershipDurationMth[risk] = dist; }
 
 	void setAverageYearsYounger(NormalDist dist) { averageYearsYounger = dist; }
 
-	void setAcquisitionRatePerMonth(Person::RiskLevel risk, LogNormalDist dist) { acquisitionRatePerMonth[risk] = dist; }
+	void setAcquisitionRatePerMonth(Entity::RiskLevel risk, LogNormalDist dist) { acquisitionRatePerMonth[risk] = dist; }
 
     double getAssortativeness() const { return assortativeness; }
 
@@ -86,9 +88,9 @@ private:
 	SexualPartnership::Type partnershipType;
 
 	//LogNormal distribution from which the people draw a rate to acquire this type of partner
-	LogNormalDist acquisitionRatePerMonth[Person::ENDRiskLevel];
+	LogNormalDist acquisitionRatePerMonth[Entity::ENDRiskLevel];
 	//average number of partners men acquire at a time
-	//double averagePartnersAtATime[Person::ENDRiskLevel];
+	//double averagePartnersAtATime[Entity::ENDRiskLevel];
 
 	//selection criteria
 	//particular buckets that are available for this kind of sexual partnership
@@ -98,11 +100,13 @@ private:
 	NormalDist averageYearsYounger;
 
 	//avg events per month across all Couples; will be used as a mean in Poisson distribution
-	double coitalEventsPerMonth[Person::ENDRiskLevel];
+	double coitalEventsPerMonth[Entity::ENDRiskLevel];
 
 	//chance per event that this person will use a condom
-	BetaDist chanceCondomUsePerEvent[Person::ENDRiskLevel];
+	BetaDist chanceCondomUsePerEvent[Entity::ENDRiskLevel];
 
 	//avg duration if partnerships across all Couples
-	ShiftedLogNormalDist partnershipDurationMth[Person::ENDRiskLevel];
+	ShiftedLogNormalDist partnershipDurationMth[Entity::ENDRiskLevel];
 };
+
+} // namespace transm

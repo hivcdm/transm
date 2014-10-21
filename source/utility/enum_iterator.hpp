@@ -2,18 +2,20 @@
 
 #include <iterator>
 
+namespace transm {
+
 template<class enum_type>
 class enum_iterator {
 private:
 	enum_type value;
-	typedef typename std::underlying_type<enum_type>::type under;
+    using under = typename std::underlying_type<enum_type>::type;
 public:
-	typedef std::size_t size_type;
-	typedef std::ptrdiff_t difference_type;
-	typedef enum_type value_type;
-	typedef enum_type reference;
-	typedef enum_type* pointer;
-	typedef std::random_access_iterator_tag iterator_category;
+	using size_type = std::size_t;
+	using difference_type = std::ptrdiff_t;
+	using value_type = enum_type;
+	using reference = enum_type;
+	using pointer = enum_type*;
+    using iterator_category = std::random_access_iterator_tag;
 
 	enum_iterator() :value() {}
 	enum_iterator(const enum_iterator& rhs) : value(rhs.value) {}
@@ -43,3 +45,5 @@ public:
 	enum_iterator begin() { return enum_iterator<enum_type>(enum_type::First); }
 	enum_iterator end() { return enum_iterator<enum_type>(enum_type::Last); }
 };
+
+} // namespace transm

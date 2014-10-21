@@ -13,6 +13,8 @@
 #include "utility/highresolutiontimer.hpp"
 #include "utility/utility.hpp"
 
+namespace transm {
+
 TargetGroup::PopulationTarget TargetGroup::PopulationTarget::Any;
 
 void Intervention::Apply(Simulation &simulation)
@@ -31,7 +33,7 @@ void Intervention::Apply(Population &population)
     }
 }
 
-void Intervention::Apply(Population &population, Person *person)
+void Intervention::Apply(Population &population, Entity *person)
 {
     if(population_individual_intervention_)
     {
@@ -43,7 +45,7 @@ void Intervention::Apply(Population &population, Person *person)
     }
 }
 
-void Intervention::Apply(Person *person)
+void Intervention::Apply(Entity *person)
 {
     if(individual_intervention_)
     {
@@ -72,7 +74,7 @@ bool Intervention::IsCompleted(int current_time) const
 }
 
 void TargetGroup::Update(Population &population, int current_time, 
-    RandomNumberGenerator &rng, const std::unordered_set<Person *> &dead_people)
+    RandomNumberGenerator &rng, const std::unordered_set<Entity *> &dead_people)
 {
     if(enrollment_period_.start > current_time)
     {
@@ -84,7 +86,7 @@ void TargetGroup::Update(Population &population, int current_time,
         Remove(person);
     }
 
-    auto match = [&](Person *person)
+    auto match = [&](Entity *person)
     {
         if(target_.has_value)
         {
@@ -160,7 +162,7 @@ void TargetGroup::Update(Population &population, int current_time,
 
     if((open_ && enrollment_period_.end >= current_time) || enrollment_period_.start == current_time)
     {
-        std::vector<Person *> people;
+        std::vector<Entity *> people;
 
         for(auto person : population.Find(match))
         {
@@ -177,7 +179,7 @@ void TargetGroup::Update(Population &population, int current_time,
 
         if(partitions_.size() == 1 && partitions_.front().GetProportion() == 1)
         {
-            std::for_each(people.begin(), people.end(), [&](Person *p) { AssignToPartition(population, p, 0); });
+            std::for_each(people.begin(), people.end(), [&](Entity *p) { AssignToPartition(population, p, 0); });
         }
         else
         {
@@ -440,7 +442,7 @@ void Simulation::Step()
 
             if(intervention.AffectsIndividual())
             {
-                population_.entities->forEach([&](Person *p) { intervention.Apply(p); });
+                population_.entities->forEach([&](Entity *p) { intervention.Apply(p); });
             }
         }
     }
@@ -664,8 +666,8 @@ bool Simulation::LoadCepacSimContexts(const CepacTreatmentFiles &treatment_files
 		{
 			CepacInputParser cepacInput(treatment_file.file_name);
 			auto probabilities = cepacInput.parseNonAidsDeathProbabilities();
-			Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Male] = probabilities[0];
-            Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Female] = probabilities[1];
+			Entity::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Male] = probabilities[0];
+            Entity::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Female] = probabilities[1];
 		}
 	}
 
@@ -694,7 +696,7 @@ void Simulation::SetNonAidsDeathFromCepac(SimContext &cepacSimContext, std::vect
 	}
 }
 
-void Simulation::UpdateInterventions(const std::unordered_set<Person *> &dead_people)
+void Simulation::UpdateInterventions(const std::unordered_set<Entity *> &dead_people)
 {
     if(groups_.empty()) return;
 
@@ -738,8 +740,8 @@ std::size_t Simulation::SimulateMonth()
         }
 
         SetNonAidsDeathFromCepac(*parameters_.cepacSimContexts[simIndex], 
-            Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Male],
-            Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Female]);
+            Entity::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Male],
+            Entity::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Female]);
 	}
 
 	//output the current timestep of the simulation
@@ -870,3 +872,5 @@ Outputs Simulation::Run(MessageCallback message_callback)
 
 	return outputs_;
 }
+
+} // namespace transm

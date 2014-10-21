@@ -5,6 +5,8 @@
 #include "core/constants.hpp"
 #include "utility/utility.hpp"
 
+namespace transm {
+
 CepacInputParser::CepacInputParser(const std::string &filename)
 {
 	inputStream_.open(filename.c_str(), std::ios::in);
@@ -53,3 +55,5 @@ std::array<std::vector<double>, 2> CepacInputParser::parseNonAidsDeathProbabilit
 
 	return probabilities;
 }
+
+} // namespace transm

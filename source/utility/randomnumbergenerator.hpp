@@ -9,6 +9,8 @@
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/poisson_distribution.hpp>
 
+namespace transm {
+
 struct NormalDist
 {
 	double mean;
@@ -144,6 +146,6 @@ private:
 	boost::mt19937 mtRand;			//Mersenne Twister
 	double mtRand_OneOverMaxMult;	//used to generate a number between 0.0 and 1.0 for mtRand
 	//division is slower than mult so use 1/mtRand.max()
-
-	//	QTIsaac<UINT32> isaac;	//Isaac
 };
+
+} // namespace transm

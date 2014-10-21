@@ -9,9 +9,11 @@
 #include "tabularoutput.hpp"
 #include "data/agerangesizecontainer.hpp"
 #include "data/eventparams.hpp"
-#include "entities/person.hpp"
+#include "entities/entity.hpp"
 
-class Person;
+namespace transm {
+
+class Entity;
 class Population;
 
 class ArtRolloutTracker : protected TabularOutput
@@ -22,12 +24,12 @@ public:
 
 	void SetAgeRanges(const std::vector<AgeRange> &ageRanges);
 
-	void recordTest(Person *person, bool accepted, bool returned, SimContext::TEST_RESULT result);
+	void recordTest(Entity *person, bool accepted, bool returned, SimContext::TEST_RESULT result);
 
-	void recordTreatmentAccessEligiblity(Person *person);
-	void recordTreatmentAccess(Person *person);
-	void recordTreatmentEligiblity(Person *person);
-	void recordTreatment(Person *person);
+	void recordTreatmentAccessEligiblity(Entity *person);
+	void recordTreatmentAccess(Entity *person);
+	void recordTreatmentEligiblity(Entity *person);
+	void recordTreatment(Entity *person);
 
 	void printArtRolloutOutcomes(int time, std::ostream &_outStream, Population *_population);
 
@@ -49,3 +51,5 @@ private:
 
 	void Reset();
 };
+
+} // namespace transm

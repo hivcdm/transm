@@ -1,13 +1,15 @@
 #pragma once
 
-#include "person.hpp"
+#include "entity.hpp"
 #include "data/eventparams.hpp"
 #include "utility/randomnumbergenerator.hpp"
+
+namespace transm {
 
 /// <summary>
 /// All females in the simulation are members of this class, or a class derived from this one
 /// </summary>
-class Female : public Person
+class Female : public Entity
 {
 public:
     /*virtual*/ std::string getEntityType() const;
@@ -66,18 +68,18 @@ public:
 	@return the force of infection for this female infecting an uninfected male
 	@author schung5
 	**/
-    double getFOI(Person *_p, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams);
+    double getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams);
 
-	double getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
-	double getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
+	double getMinPartnerSelectVal(Entity::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
+	double getMaxPartnerSelectVal(Entity::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
 
     double rollForAgeDifference(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums);
 
-    bool possibleMatch(SexualPartnership::Type _partnershipType, Person *_p);
+    bool possibleMatch(SexualPartnership::Type _partnershipType, Entity *_p);
 
-    int rollNumEventsPerPartner(Person *_p, RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType);
+    int rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType);
 
-    int rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums, Person *_p);
+    int rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums, Entity *_p);
 
     int rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType);
 
@@ -89,7 +91,7 @@ public:
 
 	double getChanceBecomeCsw() const;
 
-    void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng);
+    void SetChanceCondomUsePerEvent(Entity::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng);
 	void SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, double meanEvents);
 	void SetPartnershipDuration(RiskLevel risk, SexualPartnership::Type partnershipType, ShiftedLogNormalDist dist);
 	void SetAverageYearsYounger(SexualPartnership::Type partnershipType, NormalDist dist);
@@ -104,3 +106,5 @@ private:
     double overrideChanceCondomUse_;
     std::map<RiskLevel, std::map<SexualPartnership::Type, double>> partnershipRejectionChance_;
 };
+
+} // namespace transm

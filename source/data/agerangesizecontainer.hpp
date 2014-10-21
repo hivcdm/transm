@@ -3,11 +3,15 @@
 #include <utility>
 #include <vector>
 
+namespace transm {
+
 struct AgeRange
 {
 	int lower;
 	int upper;
 };
 
-typedef std::pair<AgeRange, std::size_t> AgeRangeSizePair;
-typedef std::vector<AgeRangeSizePair> AgeRangeSizeContainer;
+using AgeRangeSizePair = std::pair<AgeRange, std::size_t>;
+using AgeRangeSizeContainer = std::vector<AgeRangeSizePair>;
+
+} // namespace transm

@@ -5,6 +5,8 @@
 #include "populationstatistics.hpp"
 #include "data/eventparams.hpp"
 
+namespace transm {
+
 /// <summary>
 /// SummaryStats class contains a list of the summary statistics from each of the
 /// input files (simulation contexts) that are executed in a given run of the model.
@@ -63,3 +65,5 @@ private:
 	/* writes out popstats file header */
 	void writeSummariesFileHeader();
 };
+
+} // namespace transm

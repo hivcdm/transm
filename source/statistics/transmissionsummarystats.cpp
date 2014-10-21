@@ -2,6 +2,8 @@
 #include "populationstatistics.hpp"
 #include "data/eventparams.hpp"
 
+namespace transm {
+
 /* Constructor takes summariesFileName as input, clears summaries vector */
 TransmissionSummaryStats::TransmissionSummaryStats(const std::string &summariesFileName)
 {
@@ -128,4 +130,6 @@ void TransmissionSummaryStats::writeSummariesFileHeader()
 	}
 
 	summaryStatsStream << std::endl;
-} /* end writeSummariesFileHeader */
+}
+
+} // namespace transm

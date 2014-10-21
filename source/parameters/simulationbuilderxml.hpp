@@ -3,11 +3,13 @@
 #include <string>
 #include <pugixml.hpp>
 
-#include "batchstatus.hpp"
 #include "simulationbuilder.hpp"
-#include "simulation.hpp"
-#include "utility/cepacinputparser.hpp"
+#include "core/batchstatus.hpp"
+#include "core/simulation.hpp"
 #include "entities/sexualbehavior.hpp"
+#include "utility/cepacinputparser.hpp"
+
+namespace transm {
 
 class SimulationBuilderXml : public SimulationBuilder
 {
@@ -52,7 +54,7 @@ private:
 
 	EventParams::RolloutEligibility ReadRolloutEligibility();
 
-    std::unordered_map<TransmissionType, std::array<double, Person::ENDHVLStrata>> ReadTransmissionCoefficients();
+    std::unordered_map<TransmissionType, std::array<double, Entity::ENDHVLStrata>> ReadTransmissionCoefficients();
 
 	Female::SubPopParams ReadFemaleSubPopParams();
 
@@ -88,3 +90,5 @@ private:
 
 	PopulationParameters population_parameters;
 };
+
+} // namespace transm

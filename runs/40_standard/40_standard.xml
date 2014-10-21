@@ -182,7 +182,7 @@
       <entityDistributions>
 	<distribution type="female">0.5</distribution>
 	<distribution type="hetero-male">0.5</distribution>
-	<distribution type="bisexual-male">0</distribution>
+	<distribution type="msmw">0</distribution>
 	<distribution type="msm">0</distribution>
       </entityDistributions>
     </births>
@@ -192,55 +192,55 @@
         <ageRange lower="0" upper="16">
 	  <distribution type="female">0.407</distribution>
 	  <distribution type="hetero-male">0.429</distribution>
-	  <distribution type="bisexual-male">0</distribution>
+	  <distribution type="msmw">0</distribution>
 	  <distribution type="msm">0</distribution>
         </ageRange>
         <ageRange lower="17" upper="19">
 	  <distribution type="female">0.059</distribution>
 	  <distribution type="hetero-male">0.062</distribution>
-	  <distribution type="bisexual-male">0</distribution>
+	  <distribution type="msmw">0</distribution>
 	  <distribution type="msm">0</distribution>
         </ageRange>
         <ageRange lower="20" upper="24">
 	  <distribution type="female">0.089</distribution>
 	  <distribution type="hetero-male">0.091</distribution>
-	  <distribution type="bisexual-male">0</distribution>
+	  <distribution type="msmw">0</distribution>
 	  <distribution type="msm">0</distribution>
         </ageRange>
         <ageRange lower="25" upper="29">
 	  <distribution type="female">0.082</distribution>
 	  <distribution type="hetero-male">0.082</distribution>
-	  <distribution type="bisexual-male">0</distribution>
+	  <distribution type="msmw">0</distribution>
 	  <distribution type="msm">0</distribution>
         </ageRange>
         <ageRange lower="30" upper="34">
 	  <distribution type="female">0.074</distribution>
 	  <distribution type="hetero-male">0.073</distribution>
-	  <distribution type="bisexual-male">0</distribution>
+	  <distribution type="msmw">0</distribution>
 	  <distribution type="msm">0</distribution>
         </ageRange>
         <ageRange lower="35" upper="39">
 	  <distribution type="female">0.063</distribution>
 	  <distribution type="hetero-male">0.061</distribution>
-	  <distribution type="bisexual-male">0</distribution>
+	  <distribution type="msmw">0</distribution>
 	  <distribution type="msm">0</distribution>
         </ageRange>
         <ageRange lower="40" upper="44">
 	  <distribution type="female">0.052</distribution>
 	  <distribution type="hetero-male">0.05</distribution>
-	  <distribution type="bisexual-male">0</distribution>
+	  <distribution type="msmw">0</distribution>
 	  <distribution type="msm">0</distribution>
         </ageRange>
         <ageRange lower="45" upper="49">
 	  <distribution type="female">0.042</distribution>
 	  <distribution type="hetero-male">0.04</distribution>
-	  <distribution type="bisexual-male">0</distribution>
+	  <distribution type="msmw">0</distribution>
 	  <distribution type="msm">0</distribution>
         </ageRange>
         <ageRange lower="50" upper="100">
 	  <distribution type="female">0.132</distribution>
 	  <distribution type="hetero-male">0.112</distribution>
-	  <distribution type="bisexual-male">0</distribution>
+	  <distribution type="msmw">0</distribution>
 	  <distribution type="msm">0</distribution>
         </ageRange>
       </entityDistributions>

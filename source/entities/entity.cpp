@@ -1,4 +1,4 @@
-#include "person.hpp"
+#include "entity.hpp"
 #include "male.hpp"
 #include "female.hpp"
 #include "sexualpartnership.hpp"
@@ -10,16 +10,18 @@
 #include "statistics/artrollouttracker.hpp"
 #include "statistics/coststracker.hpp"
 
+namespace transm {
+
 class EntityPool;
 
-long Person::idCounter = 0;
-int Person::numTracesSoFar = 0;
+long Entity::idCounter = 0;
+int Entity::numTracesSoFar = 0;
 
 //This is pretty much only used by the NA folks who are NA at the end of the model and need to have their LMs added to total
 //TODO: But maybe they shouldn't?
-std::vector<double> Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Last];
+std::vector<double> Entity::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Last];
 
-const std::vector<std::string> Person::StatsStr =
+const std::vector<std::string> Entity::StatsStr =
 {
 	"TOTAL_LM",
 	"HIV_NEG_LM_INSIM",
@@ -31,14 +33,14 @@ const std::vector<std::string> Person::StatsStr =
 	"GENERATION_OF_INFECTION"
 };
 
-EnumCls<Person::Stats> Person::StatsEnum(Person::StatsStr);
+EnumCls<Entity::Stats> Entity::StatsEnum(Entity::StatsStr);
 
-void Person::ageOneTimeUnit()
+void Entity::ageOneTimeUnit()
 {
 	age++;
 }
 
-Person::CD4Strata Person::getCd4Stratum() const
+Entity::CD4Strata Entity::getCd4Stratum() const
 {
 	switch(cepacPatient->getDiseaseState()->currTrueCD4Strata)
 	{
@@ -67,21 +69,21 @@ Person::CD4Strata Person::getCd4Stratum() const
 
 
     template<>
-    DemographicProfile::Gender Person::getDemographicProfileVal() const { return (DemographicProfile::Gender)getDemographicProfileVal(DemographicProfile::Demographic::Gender); }
+    DemographicProfile::Gender Entity::getDemographicProfileVal() const { return (DemographicProfile::Gender)getDemographicProfileVal(DemographicProfile::Demographic::Gender); }
 
     template<>
-    DemographicProfile::SexualActivityStatus Person::getDemographicProfileVal() const 
+    DemographicProfile::SexualActivityStatus Entity::getDemographicProfileVal() const 
     { 
         return (DemographicProfile::SexualActivityStatus)getDemographicProfileVal(DemographicProfile::Demographic::SexualActivityStatus); 
     }
 
     template<>
-    DemographicProfile::Employment Person::getDemographicProfileVal() const
+    DemographicProfile::Employment Entity::getDemographicProfileVal() const
     {
         return (DemographicProfile::Employment)getDemographicProfileVal(DemographicProfile::Demographic::Employment);
     }
 
-bool Person::isEligibleForTreatment(const SimContext::TreatmentInputs::ARTStartPolicy &artStartPolicy)
+bool Entity::isEligibleForTreatment(const SimContext::TreatmentInputs::ARTStartPolicy &artStartPolicy)
 {
 	// Evaluate the CD4 only criteria
 	double trueCD4 = cepacPatient->getDiseaseState()->currTrueCD4;
@@ -139,8 +141,8 @@ bool Person::isEligibleForTreatment(const SimContext::TreatmentInputs::ARTStartP
 	return false;
 }
 
-Person *Person::allPartnerSexualActivity(EventParams &_eventParams, SexualPartnership::Type _partnershipType,
-    std::list<Person *> &_newlyInfected, InfectionsTracker *infTrack, 
+Entity *Entity::allPartnerSexualActivity(EventParams &_eventParams, SexualPartnership::Type _partnershipType,
+    std::list<Entity *> &_newlyInfected, InfectionsTracker *infTrack, 
     const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients)
 {
 	assert(_partnershipType < SexualPartnership::Type::ENDType);
@@ -148,14 +150,14 @@ Person *Person::allPartnerSexualActivity(EventParams &_eventParams, SexualPartne
 	auto iter = partners[(int)_partnershipType].begin();
 	auto iterEnd = partners[(int)_partnershipType].end();
 	//becomes non-nullptr only when this person gets infected. We are saving the partner who infected this person
-	Person *infectedMe = nullptr;
+	Entity *infectedMe = nullptr;
 
 	while(iter != iterEnd)
 	{
 		//initiate sexual activity only if you are partner1
 		if((*iter)->getPartner1() == this)
 		{
-			Person *infected = (*iter)->monthlySexualActivity(_eventParams, infTrack, transmission_coefficients);
+			Entity *infected = (*iter)->monthlySexualActivity(_eventParams, infTrack, transmission_coefficients);
 
 			//if you or your partners got infected, the infected joins the _newlyInfected list
 			if(infected != nullptr)
@@ -176,7 +178,7 @@ Person *Person::allPartnerSexualActivity(EventParams &_eventParams, SexualPartne
 	return infectedMe;
 }
 
-bool Person::availableForPartnership(SexualPartnership::Type _partnershipType) const
+bool Entity::availableForPartnership(SexualPartnership::Type _partnershipType) const
 {
 	if(_partnershipType == SexualPartnership::Type::Steady)
 	{
@@ -188,7 +190,7 @@ bool Person::availableForPartnership(SexualPartnership::Type _partnershipType) c
 	}
 }
 
-void Person::addPartnership(SexualPartnership *_partnership)
+void Entity::addPartnership(SexualPartnership *_partnership)
 {
 	assert(_partnership != nullptr);
 	assert((_partnership->getPartner1() != nullptr));
@@ -210,7 +212,7 @@ void Person::addPartnership(SexualPartnership *_partnership)
 	}
 }
 
-void Person::becomeInfected(int _generationOfInfection, EventParams &_eventParams)
+void Entity::becomeInfected(int _generationOfInfection, EventParams &_eventParams)
 {
     //hvl needs to be set even for people who are about to go through CEPAC so that isInfected() correctly returns true
 	hvl = HVL_PRIMARY;
@@ -249,9 +251,9 @@ void Person::becomeInfected(int _generationOfInfection, EventParams &_eventParam
         }
 	}
 
-	stats.setStat(Person::STAT_TIME_OF_INFECTION_MTH, _eventParams.currTime);
-    stats.setStat(Person::STAT_AGE_AT_INFECTION_MTH, getAge(TimeGranularity::Month));
-	stats.setStat(Person::STAT_GENERATION_OF_INFECTION, _generationOfInfection);
+	stats.setStat(Entity::STAT_TIME_OF_INFECTION_MTH, _eventParams.currTime);
+    stats.setStat(Entity::STAT_AGE_AT_INFECTION_MTH, getAge(TimeGranularity::Month));
+	stats.setStat(Entity::STAT_GENERATION_OF_INFECTION, _generationOfInfection);
 
 	//if a CEPAC person exists (i.e. they were created earlier and thus this is an incident case), set them to infected
 	if(wentThroughCEPAC)
@@ -350,7 +352,7 @@ void Person::becomeInfected(int _generationOfInfection, EventParams &_eventParam
 	}
 }
 
-void Person::initialCEPACpatient(EventParams &_eventParams)
+void Entity::initialCEPACpatient(EventParams &_eventParams)
 {
 	// Only initialize the person if they haven't already been initialized!  
     // Prevalent cases will get called to initialize twice!
@@ -385,7 +387,7 @@ void Person::initialCEPACpatient(EventParams &_eventParams)
             true, getAge(TimeGranularity::Month), cepacGender, setAsIncidentCase, _eventParams.currTime);
 
 		//Only update hvl and cd4 if the patient is infected
-		//update HVL and CD4  and infection status for this Person if they are infected
+		//update HVL and CD4  and infection status for this Entity if they are infected
 		if(isInfected())
 		{
 			cd4 = cepacPatient->getDiseaseState()->currTrueCD4;
@@ -475,11 +477,11 @@ void Person::initialCEPACpatient(EventParams &_eventParams)
 			}
 		}
 
-		Person::numTracesSoFar++;
+		Entity::numTracesSoFar++;
 	}
 }
 
-int Person::getGenerationOfInfection(bool cap_at_5) const
+int Entity::getGenerationOfInfection(bool cap_at_5) const
 {
 	//TODO: Make this a constant!
 	if(cap_at_5 && generationOfInfection > 5)
@@ -492,19 +494,19 @@ int Person::getGenerationOfInfection(bool cap_at_5) const
 	}
 }
 
-int Person::getNumPartners(SexualPartnership::Type _type)
+int Entity::getNumPartners(SexualPartnership::Type _type)
 {
 	return (int)partners[(int)_type].size();
 }
 
-int Person::getNumPartners(SexualPartnership::Type _type, bool sameRisk)
+int Entity::getNumPartners(SexualPartnership::Type _type, bool sameRisk)
 {
 	int numPartners = 0;
 
 	for(std::list<SexualPartnership *>::iterator partnerIter = partners[(int)_type].begin();
 		partnerIter != partners[(int)_type].end(); partnerIter++)
 	{
-		Person *partner;
+		Entity *partner;
 
 		if((*partnerIter)->getPartner1() == this)
 		{
@@ -526,11 +528,11 @@ int Person::getNumPartners(SexualPartnership::Type _type, bool sameRisk)
 	return numPartners;
 }
 
-int Person::getNumPartnersInHistory(SexualPartnership::Type _type)
+int Entity::getNumPartnersInHistory(SexualPartnership::Type _type)
 {
 	return numPartnersInHistory[(int)_type];
 }
-int Person::getNumPartnersInHistory()
+int Entity::getNumPartnersInHistory()
 {
 	int total = 0;
 
@@ -541,19 +543,19 @@ int Person::getNumPartnersInHistory()
 
 	return total;
 }
-int Person::getMonthOfLatestPartnershipDissolution(SexualPartnership::Type _type)
+int Entity::getMonthOfLatestPartnershipDissolution(SexualPartnership::Type _type)
 {
 	return monthOfLatestPartnershipDissolution[(int)_type];
 }
-int Person::getMonthOfLatestConcurrent()
+int Entity::getMonthOfLatestConcurrent()
 {
 	return monthOfLatestConcurrent;
 }
-void Person::setMonthOfLatestConcurrent(int _month)
+void Entity::setMonthOfLatestConcurrent(int _month)
 {
 	monthOfLatestConcurrent = _month;
 }
-void Person::becomeSexuallyActive(EventParams &_eventParams)
+void Entity::becomeSexuallyActive(EventParams &_eventParams)
 {
     dmgProfile.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::Active);
 	//CEPAC person needs to be initialized
@@ -574,19 +576,7 @@ void Person::becomeSexuallyActive(EventParams &_eventParams)
 	}
 }
 
-/*
-Person *Person::fling(Person *_p, SexualPartnership::Type _partnershipType, EventParams &_eventParams,
-                      InfectionsTracker *infTrack)
-{
-	assert((_p != nullptr));
-	assert(_p->isAlive());
-	assert(_partnershipType < SexualPartnership::Type::ENDType);
-	int numActs = rollNumEventsPerPartner(_p, _eventParams.randomNums, _partnershipType);
-	return sexualActivity(_p, numActs, _partnershipType, _eventParams, infTrack);
-}
-*/
-
-int Person::getAge(TimeGranularity _granularity) const
+int Entity::getAge(TimeGranularity _granularity) const
 {
     if(_granularity == TimeGranularity::Month)
 	{
@@ -599,27 +589,27 @@ int Person::getAge(TimeGranularity _granularity) const
 }
 
 
-DemographicProfile::ProfileID Person::getCurrBucketProfileID()
+DemographicProfile::ProfileID Entity::getCurrBucketProfileID()
 {
 	return currentBucketID;
 }
 
-const DemographicProfile *Person::getDemographicProfile() const
+const DemographicProfile *Entity::getDemographicProfile() const
 {
 	return &dmgProfile;
 }
 
-BaseEnumCls::Enum Person::getDemographicProfileVal(DemographicProfile::Demographic _demographic) const
+BaseEnumCls::Enum Entity::getDemographicProfileVal(DemographicProfile::Demographic _demographic) const
 {
 	return dmgProfile.get(_demographic);
 }
 
-unsigned long Person::getID() const
+unsigned long Entity::getID() const
 {
 	return id;
 }
 
-long Person::getPartnershipsToEnd(long _currTime, SexualPartnership::Type _partnershipType,
+long Entity::getPartnershipsToEnd(long _currTime, SexualPartnership::Type _partnershipType,
                                   std::list<SexualPartnership *> &_partnershipsToEnd, bool _fromDeath)
 {
 	assert(_partnershipType < SexualPartnership::Type::ENDType);
@@ -653,56 +643,56 @@ long Person::getPartnershipsToEnd(long _currTime, SexualPartnership::Type _partn
 }
 
 //Begin Unformed Partnership helper methods
-int Person::getTotalUnformedPartnerships(SexualPartnership::Type type)
+int Entity::getTotalUnformedPartnerships(SexualPartnership::Type type)
 {
 	return unformedPartnershipsTotal[(int)type];
 }
 
-int Person::getLatestUnformedPartnerships(SexualPartnership::Type type)
+int Entity::getLatestUnformedPartnerships(SexualPartnership::Type type)
 {
 	return unformedPartnershipsLatestTime[(int)type];
 }
 
-void Person::increaseUnformedPartnershipTallies(SexualPartnership::Type type)
+void Entity::increaseUnformedPartnershipTallies(SexualPartnership::Type type)
 {
 	unformedPartnershipsLatestTime[(int)type] += 1;
 	unformedPartnershipsTotal[(int)type] += 1;
 }
 
-void Person::resetLatestUnformedPartnerships(SexualPartnership::Type type)
+void Entity::resetLatestUnformedPartnerships(SexualPartnership::Type type)
 {
 	unformedPartnershipsLatestTime[(int)type] = 0;
 }
 
 //End Unformed Partnership helper methods
 
-unsigned int Person::getPopulationID()
+unsigned int Entity::getPopulationID()
 {
 	return populationID;
 }
 
 //returns traceMe
-bool Person::trace()
+bool Entity::trace()
 {
 	return traceMe;
 }
 //sets traceMe to true
-void Person::setToBeTraced()
+void Entity::setToBeTraced()
 {
 	traceMe = true;
 }
 
-const Person::StatsRecord *Person::getStats()
+const Entity::StatsRecord *Entity::getStats()
 {
 	return &stats;
 }
 
-bool Person::inCorrectBucketDemographicProfile()
+bool Entity::inCorrectBucketDemographicProfile()
 {
 	return (dmgProfile.getProfileID() == currentBucketID);
 }
 
-bool Person::isAlive() const
+bool Entity::isAlive() const
 {
 	if(this == nullptr)
 	{
@@ -712,7 +702,7 @@ bool Person::isAlive() const
 	return !death;
 }
 
-bool Person::isPartneredWith(Person *_p)
+bool Entity::isPartneredWith(Entity *_p)
 {
 	assert((_p != nullptr));
 	assert(_p->isAlive());
@@ -737,7 +727,7 @@ bool Person::isPartneredWith(Person *_p)
 	return false;
 }
 
-bool Person::hasPartnership(SexualPartnership::Type partnershipType)
+bool Entity::hasPartnership(SexualPartnership::Type partnershipType)
 {
 	if(partners[(int)partnershipType].size() > 0)
 	{
@@ -746,7 +736,7 @@ bool Person::hasPartnership(SexualPartnership::Type partnershipType)
 
 	return false;
 }
-void Person::print(ostream &_outStream, const std::string &_prefix) const
+void Entity::print(ostream &_outStream, const std::string &_prefix) const
 {
 	_outStream << _prefix << std::endl;
     _outStream << ((getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male) ? "Male" : "Female") << Constants::TAB;
@@ -757,12 +747,12 @@ void Person::print(ostream &_outStream, const std::string &_prefix) const
     _outStream << Constants::TAB << "Age(mos.): " << getAge(TimeGranularity::Month);
 	_outStream <<  Constants::TAB << "CD4: " << cd4;
 	_outStream << Constants::TAB << "HVL: " << hvl;
-	_outStream << Constants::TAB << "Risk: " << ((risk == Person::HIGH) ? "HIGH" : "LOW");
+	_outStream << Constants::TAB << "Risk: " << ((risk == Entity::HIGH) ? "HIGH" : "LOW");
 	_outStream << Constants::TAB << "Marbles: " << activityLevel;
 	_outStream << std::endl;
 }
 
-void Person::printCurrentPartners(ostream &_outStream, const std::string &prefix)
+void Entity::printCurrentPartners(ostream &_outStream, const std::string &prefix)
 {
     _outStream << prefix << std::endl;
 	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
@@ -778,7 +768,7 @@ void Person::printCurrentPartners(ostream &_outStream, const std::string &prefix
         int i = 0;
 		while(iter != iterEnd)
 		{
-			Person *partner = (*iter)->getOtherPartner(this);
+			Entity *partner = (*iter)->getOtherPartner(this);
 			partner->print(_outStream, "Partner " + std::to_string(i++));
 			iter++;
 		}
@@ -788,7 +778,7 @@ void Person::printCurrentPartners(ostream &_outStream, const std::string &prefix
 *This function saves the state of the patient to file
 *Uses Json like notation
 */
-void Person::saveState(ostream &_outStream, long currTime)
+void Entity::saveState(ostream &_outStream, long currTime)
 {
 	_outStream << "id:" << id << "," << std::endl; //id
 	dmgProfile.saveState(_outStream); //dmg profile
@@ -836,12 +826,12 @@ void Person::saveState(ostream &_outStream, long currTime)
 	_outStream << "hvl:" << hvl; //hvl in transmission includes primary and late stage
 }
 
-bool Person::isInfected()
+bool Entity::isInfected()
 {
 	return (hvl > UNINFECTED);
 }
 
-void Person::removePartnership(SexualPartnership *_partnership)
+void Entity::removePartnership(SexualPartnership *_partnership)
 {
 	assert(_partnership != nullptr);
 	partners[(int)_partnership->getType()].remove(_partnership);
@@ -855,7 +845,7 @@ void Person::removePartnership(SexualPartnership *_partnership)
 	}
 }
 
-void Person::rollForBecomeSexWorker(EventParams &_eventParams, bool _isInit, double initialProb)
+void Entity::rollForBecomeSexWorker(EventParams &_eventParams, bool _isInit, double initialProb)
 {
 	//see whether this person will become a CSW when they make their sexual debut
 	double currGenderChanceBecomeCSW;
@@ -889,7 +879,7 @@ void Person::rollForBecomeSexWorker(EventParams &_eventParams, bool _isInit, dou
 	}
 }
 
-void Person::quitSexWork(EventParams &_eventParams)
+void Entity::quitSexWork(EventParams &_eventParams)
 {
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
 	{
@@ -909,12 +899,12 @@ void Person::quitSexWork(EventParams &_eventParams)
 }
 
 //determine whether this person died
-bool Person::rollForDeath(RandomNumberGenerator &_randomNums)
+bool Entity::rollForDeath(RandomNumberGenerator &_randomNums)
 {
 	assert(death == false);
 
 	//if person is too old, then they automatically die
-    if(getAge(TimeGranularity::Month) >= (12 * Person::maxYrForDeathStats))
+    if(getAge(TimeGranularity::Month) >= (12 * Entity::maxYrForDeathStats))
 	{
 		death = true;
 		deathStatus = DTH_OTHER;
@@ -980,17 +970,17 @@ bool Person::rollForDeath(RandomNumberGenerator &_randomNums)
 	return death;
 }
 
-void Person::setCurrBucketProfileID(DemographicProfile::ProfileID _profileID)
+void Entity::setCurrBucketProfileID(DemographicProfile::ProfileID _profileID)
 {
 	currentBucketID = _profileID;
 }
 
-void Person::setSimContext(SimContext *newSimContext)
+void Entity::setSimContext(SimContext *newSimContext)
 {
 	cepacPatient->setSimContext(newSimContext);
 }
 
-Person *Person::sexualActivity(Person *_p, int _numActs, 
+Entity *Entity::sexualActivity(Entity *_p, int _numActs, 
     SexualPartnership::Type _partnershipType, EventParams &_eventParams, 
     InfectionsTracker *infTrack, 
     const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients)
@@ -1031,8 +1021,8 @@ Person *Person::sexualActivity(Person *_p, int _numActs,
 	}
 
 	//if infection occurs, return true
-	Person *infected = isInfected() ? this : _p;
-	Person *uninfected = isInfected() ? _p : this;
+	Entity *infected = isInfected() ? this : _p;
+	Entity *uninfected = isInfected() ? _p : this;
 	bool transmissionOccured = false;
 
 	for(int i = 0; i < _numActs; i++)
@@ -1067,11 +1057,11 @@ Person *Person::sexualActivity(Person *_p, int _numActs,
 		//record who infected whom
 		if(infected == this)
 		{
-			stats.incrStat(Person::STAT_NUM_INFECTED, 1);
+			stats.incrStat(Entity::STAT_NUM_INFECTED, 1);
 		}
 		else
 		{
-			_p->stats.incrStat(Person::STAT_NUM_INFECTED, 1);
+			_p->stats.incrStat(Entity::STAT_NUM_INFECTED, 1);
 		}
 
 		//if they get infected, then change status of uninfected to infected and count infection
@@ -1088,7 +1078,7 @@ Person *Person::sexualActivity(Person *_p, int _numActs,
 		}
 
 		//uninfected person was exposed but not infected
-		uninfected->stats.incrStat(Person::STAT_EXPOSURES_BEFORE_INF, _numActs);
+		uninfected->stats.incrStat(Entity::STAT_EXPOSURES_BEFORE_INF, _numActs);
 	}
 
 	return nullptr;
@@ -1102,56 +1092,56 @@ T Scale(const T &t, double factor)
 	return r;
 }
 
-Person::HVLStrata HvlFromCepacHvl(SimContext::HVL_STRATA stratum)
+Entity::HVLStrata HvlFromCepacHvl(SimContext::HVL_STRATA stratum)
 {
     switch(stratum)
     {
-    case SimContext::HVL_VLO: return Person::HVL_ZERO;
-    case SimContext::HVL__LO: return Person::HVL_ONE;
-    case SimContext::HVL_MLO: return Person::HVL_TWO;
-    case SimContext::HVL_MED: return Person::HVL_THREE;
-    case SimContext::HVL_MHI: return Person::HVL_FOUR;
-    case SimContext::HVL__HI: return Person::HVL_FIVE;
-    case SimContext::HVL_VHI: return Person::HVL_SIX;
+    case SimContext::HVL_VLO: return Entity::HVL_ZERO;
+    case SimContext::HVL__LO: return Entity::HVL_ONE;
+    case SimContext::HVL_MLO: return Entity::HVL_TWO;
+    case SimContext::HVL_MED: return Entity::HVL_THREE;
+    case SimContext::HVL_MHI: return Entity::HVL_FOUR;
+    case SimContext::HVL__HI: return Entity::HVL_FIVE;
+    case SimContext::HVL_VHI: return Entity::HVL_SIX;
     default: throw std::runtime_error("invalid hvl");
     }
 }
 
-std::string to_string(Person::HVLStrata stratum)
+std::string to_string(Entity::HVLStrata stratum)
 {
     switch(stratum)
     {
-    case Person::UNINFECTED: return "uninfected";
-    case Person::HVL_ZERO: return "0-20";
-    case Person::HVL_ONE: return "21-500";
-    case Person::HVL_TWO: return "501-3000";
-    case Person::HVL_THREE: return "3001-10000";
-    case Person::HVL_FOUR: return "10001-30000";
-    case Person::HVL_FIVE: return "30001-100000";
-    case Person::HVL_SIX: return "100000+";
-    case Person::HVL_PRIMARY: return "primary";
-    case Person::HVL_LATESTAGE: return "late-stage";
+    case Entity::UNINFECTED: return "uninfected";
+    case Entity::HVL_ZERO: return "0-20";
+    case Entity::HVL_ONE: return "21-500";
+    case Entity::HVL_TWO: return "501-3000";
+    case Entity::HVL_THREE: return "3001-10000";
+    case Entity::HVL_FOUR: return "10001-30000";
+    case Entity::HVL_FIVE: return "30001-100000";
+    case Entity::HVL_SIX: return "100000+";
+    case Entity::HVL_PRIMARY: return "primary";
+    case Entity::HVL_LATESTAGE: return "late-stage";
     default: throw std::runtime_error("invalid hvl");
     }
 }
 
-std::string to_string(Person::HIVStatus status)
+std::string to_string(Entity::HIVStatus status)
 {
     switch(status)
     {
-    case Person::NEGATIVE: return "negative";
-    case Person::OBSERVED_ACUTE: return "acute (observed)";
-    case Person::OBSERVED_CHRONIC: return "chronic (observed)";
-    case Person::OBSERVED_LATESTAGE: return "late-stage (observed)";
-    case Person::UNOBSERVED_ACUTE: return "acute (unobserved)";
-    case Person::UNOBSERVED_CHRONIC: return "chronic (unobserved)";
-    case Person::UNOBSERVED_LATESTAGE: return "late-stage (unobserved)";
+    case Entity::NEGATIVE: return "negative";
+    case Entity::OBSERVED_ACUTE: return "acute (observed)";
+    case Entity::OBSERVED_CHRONIC: return "chronic (observed)";
+    case Entity::OBSERVED_LATESTAGE: return "late-stage (observed)";
+    case Entity::UNOBSERVED_ACUTE: return "acute (unobserved)";
+    case Entity::UNOBSERVED_CHRONIC: return "chronic (unobserved)";
+    case Entity::UNOBSERVED_LATESTAGE: return "late-stage (unobserved)";
     default: throw std::runtime_error("invalid hiv status");
     }
 }
 
 
-double Person::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTracker, CostsTracker *costsTracker)
+double Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTracker, CostsTracker *costsTracker)
 {
 	//if this person has died, then don't update.
 	if(!isAlive())
@@ -1242,7 +1232,7 @@ double Person::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 		}
 	}
 
-	//update HVL and CD4 for this Person if they are infected
+	//update HVL and CD4 for this Entity if they are infected
 	if(isInfected())
 	{
         auto cd4Before = cd4;
@@ -1367,7 +1357,7 @@ double Person::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 
 //Call this after all transmission/population dynamics are done.
 //Runs infected through CEPAC until they die and adds their LM etc to CEPAC stats
-void Person::runCEPACtoDeath(RandomNumberGenerator &_randomNums)
+void Entity::runCEPACtoDeath(RandomNumberGenerator &_randomNums)
 {
 	if(!isAlive())
 	{
@@ -1394,35 +1384,35 @@ void Person::runCEPACtoDeath(RandomNumberGenerator &_randomNums)
 	}
 }
 
-void Person::resetCondomUsage()
+void Entity::resetCondomUsage()
 {
 	condomsUsedThisMonth = 0;
 }
 
-void Person::resetNumActs()
+void Entity::resetNumActs()
 {
 	numActsThisMonth = 0;
 }
-int Person::getCondomsUsedThisMonth()
+int Entity::getCondomsUsedThisMonth()
 {
 	return condomsUsedThisMonth;
 }
 
-int Person::getNumActsThisMonth()
+int Entity::getNumActsThisMonth()
 {
 	return numActsThisMonth;
 }
 
-void Person::incrementCondomsUsedThisMonth(int condoms)
+void Entity::incrementCondomsUsedThisMonth(int condoms)
 {
 	condomsUsedThisMonth += condoms;
 }
 
-void Person::incrementNumActsThisMonth(int _numActs)
+void Entity::incrementNumActsThisMonth(int _numActs)
 {
 	numActsThisMonth += _numActs;
 }
-bool Person::getCondomUsedLastFOICalculation()
+bool Entity::getCondomUsedLastFOICalculation()
 {
 	return condomUsedLastFOICalculation;
 }
@@ -1433,7 +1423,7 @@ bool Person::getCondomUsedLastFOICalculation()
  * of FV that point to this, sets this.FVindices to FVind
  * @return: true if this.FVindices was set to FVind or false otherwise
  */
-bool Person::setFVindices(std::vector<unsigned int> FVind, FullVector *FV)
+bool Entity::setFVindices(std::vector<unsigned int> FVind, FullVector *FV)
 {
 	//First make sure there is no vector already associated with FV
     if(FVindices.find(FV) == FVindices.end())
@@ -1467,7 +1457,7 @@ bool Person::setFVindices(std::vector<unsigned int> FVind, FullVector *FV)
  * this.FVindices, adds index to this.FVindices
  * @return: true if index was added to this.FVindices or false otherwise
  */
-bool Person::addFVindices(int index, FullVector *FV)
+bool Entity::addFVindices(int index, FullVector *FV)
 {
 	if(FV->at(index)->getID() == id)
 	{
@@ -1518,7 +1508,7 @@ bool Person::addFVindices(int index, FullVector *FV)
  * @effects: If FV[index] does not point to this, removes index from this.FVindices
  * @return: true if index was removed from this.FVindices, false otherwise
  */
-bool Person::removeFVindices(int index, FullVector *FV)
+bool Entity::removeFVindices(int index, FullVector *FV)
 {
 	//Check if FV[index] points to this... but first check if FV[index] is within the size of FV
 	bool conditionsToRemoveAreGo = (index > (FV->size() - 1));
@@ -1562,7 +1552,7 @@ bool Person::removeFVindices(int index, FullVector *FV)
  * @effects: none
  * @return: true iff this.FVindices contains index
  */
-bool Person::memberFVindices(int index, FullVector *FV)
+bool Entity::memberFVindices(int index, FullVector *FV)
 {
 	auto mIter = FVindices.find(FV);
 
@@ -1588,7 +1578,7 @@ bool Person::memberFVindices(int index, FullVector *FV)
  * @effects: none
  * @return: copy of this.FVindices
  */
-std::vector<unsigned int> Person::getFVindices(FullVector *FV)
+std::vector<unsigned int> Entity::getFVindices(FullVector *FV)
 {
 	std::vector<unsigned int> vcopy;
 	std::vector<unsigned int> personsIndices = FVindices[FV];
@@ -1601,28 +1591,28 @@ std::vector<unsigned int> Person::getFVindices(FullVector *FV)
 	return vcopy;
 }
 
-Person::RiskLevel Person::getRiskLevel() const
+Entity::RiskLevel Entity::getRiskLevel() const
 {
 	return risk;
 }
 
-Person::HIVStatus Person::getHIVStatus() const
+Entity::HIVStatus Entity::getHIVStatus() const
 {
 	return hivStatus;
 }
 
-int Person::getSexualActivity()
+int Entity::getSexualActivity()
 {
 	return activityLevel;
 }
 
 //this constructor is used by the Male and Female classes
-Person::Person(int _age, unsigned int _populationID) : sexualActivityDelay(0)
+Entity::Entity(int _age, unsigned int _populationID) : sexualActivityDelay(0)
 {
-	id = Person::idCounter++;
+	id = Entity::idCounter++;
 	populationID = _populationID;
 
-    auto max_age = Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Person::maxYrForDeathStats);
+    auto max_age = Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Entity::maxYrForDeathStats);
     if(!Utility::within_range<int>(_age, 0, max_age))
 	{
         throw std::runtime_error("invalid age");
@@ -1638,7 +1628,7 @@ Person::Person(int _age, unsigned int _populationID) : sexualActivityDelay(0)
 	CEPACcosts = 0;
 	wentThroughCEPAC = false;
 	generationOfInfection = -1;
-	stats.init(&Person::StatsEnum);
+	stats.init(&Entity::StatsEnum);
 	traceMe = false;
 
 	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
@@ -1666,7 +1656,7 @@ Person::Person(int _age, unsigned int _populationID) : sexualActivityDelay(0)
 	currentBucketID = DemographicProfile::END;
 }
 
-Person::~Person(void)
+Entity::~Entity(void)
 {
 	//If this person went through CEPAC, delete their CEPACpatient
 	//TODO: If they're not dead, force kill them (in CEPAC) to log the stats (?)
@@ -1690,7 +1680,7 @@ Person::~Person(void)
 	}
 }
 
-void Person::deletePersonWithoutDeleting()
+void Entity::deleteEntityWithoutDeleting()
 {
 	//Don't delete the cepacPatient -- this causes a weird exception when you try to delete it at the close of simulation, so keep it around
 	//take person out of all current relationships
@@ -1718,7 +1708,7 @@ void Person::deletePersonWithoutDeleting()
 	}
 }
 
-int Person::getCEPACSimContextIndex(EventParams &_eventParams)
+int Entity::getCEPACSimContextIndex(EventParams &_eventParams)
 {
 	int returnValue = 0;
 
@@ -1732,3 +1722,5 @@ int Person::getCEPACSimContextIndex(EventParams &_eventParams)
 
 	return returnValue;
 }
+
+} // namespace transm

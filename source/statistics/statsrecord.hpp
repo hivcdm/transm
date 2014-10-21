@@ -8,6 +8,8 @@
 
 #include "data/enum.hpp"
 
+namespace transm {
+
 /**
 This class keeps a record of statistics for any class. The templates make it easy to
 use in any class.
@@ -142,3 +144,5 @@ bool StatsRecord<PointStatIDs, StratifiedStatIDs>::validStatID(PointStatIDs _sta
 {
 	return (statIDEnumCls->isValidNonWildCard(_statID));
 }
+
+} // namespace transm

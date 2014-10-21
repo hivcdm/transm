@@ -3,6 +3,8 @@
 #include "tabularoutput.hpp"
 #include "core/constants.hpp"
 
+namespace transm {
+
 TabularOutput::TabularOutput() :
 	numHeaderRows(0),
 	numColumns(0),
@@ -81,3 +83,5 @@ void TabularOutput::ClearRow()
 	currentColumn = 0;
 	std::fill(currentRow.begin(), currentRow.end(), "");
 }
+
+} // namespace transm

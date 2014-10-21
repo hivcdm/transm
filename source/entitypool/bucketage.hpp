@@ -5,6 +5,8 @@
 #include "fullvector.hpp"
 #include "entities/demographicprofile.hpp"
 
+namespace transm {
+
 class BucketAge
 {
 
@@ -24,14 +26,14 @@ public:
 
 	//tells whether _person exists in the index
 	//Use person's internal index to help verify
-	bool exists(Person *p);
+	bool exists(Entity *p);
 
 	//will return how many HIV infected people are currently in the index
 	//Store as a number?
 	unsigned long getNumInfected();
 
 	unsigned long getNumInfected(int generation);
-	unsigned long getNumInfected(Person::RiskLevel _risk);
+	unsigned long getNumInfected(Entity::RiskLevel _risk);
 
 	//prints every person in this index to _outStream
     void print(ostream &_outStream, const std::string &_prefix);
@@ -41,13 +43,8 @@ public:
 	 * -- Either draws from the FV related to _riskLevel or the random FV if _use_random == true
 	 * -- Removes returned person from this is _remove == true
 	 */
-	Person *drawMember(RandomNumberGenerator &_randomNums, Person::RiskLevel _riskLevel, SexualPartnership::Type _partnershipType,
+	Entity *drawMember(RandomNumberGenerator &_randomNums, Entity::RiskLevel _riskLevel, SexualPartnership::Type _partnershipType,
 	                   bool _use_random, bool _remove);
-	//draw a member from this pool
-	//Person* drawMember(int _randomNums, Person *_chooser, int _partnershipType, bool _remove);
-
-	//draws person at position _randomAccessIndex in this index. This is random access...slow but necessary
-	//Person* getMember(unsigned long _randomAccessIndex, bool _remove);
 
 	/* @function: erase
 	 * @effects: removes _person from this by removing _person from all FVs; decrements numPersons by 1;
@@ -55,8 +52,8 @@ public:
 	 * @returns: true if _person was previously a member of this and was successfully removed, false is
 	 * _person was not a member of this
 	 */
-	bool erase(Person *_person);
-	bool erase(Person *_person, bool print);
+	bool erase(Entity *_person);
+	bool erase(Entity *_person, bool print);
 
 
 	//will index a new person
@@ -66,19 +63,19 @@ public:
 	 * assort
 	 * @returns: true if person was successfully added, false otherwise
 	 */
-	bool insert(Person *_person);
+	bool insert(Entity *_person);
 
 	/* @function: begin
 	 * @returns: An iterator of LLNoDist: the linked list of persons with
 	 * exactly one copy of each person in the Bucket
 	 */
-	std::vector<Person *>::iterator begin();
+	std::vector<Entity *>::iterator begin();
 
 	/* @function: end
 	 * @returns: An iterator of LLNoDist: the linked list of persons with
 	 * exactly one copy of each person in the Bucket
 	 */
-	std::vector<Person *>::iterator end();
+	std::vector<Entity *>::iterator end();
 
 	DemographicProfile::ProfileID getBinID();
 
@@ -90,17 +87,17 @@ public:
 	/* @function: getNumRisk
 	 * @returns: The integer number of unique Persons in the bucket with a given risk
 	 */
-	unsigned long getNumRisk(Person::RiskLevel _risk);
+	unsigned long getNumRisk(Entity::RiskLevel _risk);
 
 	/* @function: getNumRiskCSW
 	 * @returns: The integer number of unique Persons in the bucket with a given risk that is CSW
 	 */
-	unsigned long getNumRiskCSW(Person::RiskLevel _risk);
+	unsigned long getNumRiskCSW(Entity::RiskLevel _risk);
 
 	/* @function: getNumRiskHIVStatus
 	 * @returns: The integer number of unique Persons in the bucket with a given risk and hivStatus
 	 */
-	unsigned long getNumRiskHIVStatus(Person::RiskLevel _risk, Person::HIVStatus _hivStatus);
+	unsigned long getNumRiskHIVStatus(Entity::RiskLevel _risk, Entity::HIVStatus _hivStatus);
 
 	/* @function: numHighRiskChoices
 	 * @returns: The integer number of (non-unique) Persons in the high risk bucket
@@ -122,22 +119,22 @@ public:
 
 	/* @function: numChoices
 	 * @returns: The integer number of (non-unique) Persons in the risk bucket associated with _risk
-	 * If _risk = Person::ENDRiskLevel, returns the number of persons in the random risk bucket
+	 * If _risk = Entity::ENDRiskLevel, returns the number of persons in the random risk bucket
 	 */
 
-	int numChoices(Person::RiskLevel _risk);
+	int numChoices(Entity::RiskLevel _risk);
 
 	/* @function: increaseInfected
 	 * @effects: if person is in this BucketAge and is infected, increases the tally of numInfected
 	 * @returns: true if numInfected was increased
 	 */
 
-	bool increaseInfected(Person *_p);
+	bool increaseInfected(Entity *_p);
 
 	/* @function: changeHIVstatus
 	 * @effects: if person is in this BucketAge and thier hiv status changes decrement the old status and increment new status
 	 */
-	void changeHIVStatus(Person *_p, Person::HIVStatus _orig, Person::HIVStatus _new);
+	void changeHIVStatus(Entity *_p, Entity::HIVStatus _orig, Entity::HIVStatus _new);
 
     void printAll(ostream &_outStream, const std::string &_prefix);
 
@@ -166,8 +163,10 @@ private:
 	unsigned int populationID;
 	unsigned long numPersons;
 	unsigned long numInfected;
-	unsigned long numRisk[Person::ENDRiskLevel];
-	unsigned long numRiskCSW[Person::ENDRiskLevel]; // number of csw persons by risk bucket
-	unsigned long numInfectedRisk[Person::ENDRiskLevel];
-	unsigned long numRiskHIVStatus[Person::ENDRiskLevel][Person::ENDHIVStatus];
+	unsigned long numRisk[Entity::ENDRiskLevel];
+	unsigned long numRiskCSW[Entity::ENDRiskLevel]; // number of csw persons by risk bucket
+	unsigned long numInfectedRisk[Entity::ENDRiskLevel];
+	unsigned long numRiskHIVStatus[Entity::ENDRiskLevel][Entity::ENDHIVStatus];
 };
+
+} // namespace transm

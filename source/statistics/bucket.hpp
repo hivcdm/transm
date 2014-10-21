@@ -5,6 +5,8 @@
 #include <string>
 #include <boost/functional/hash.hpp>
 
+namespace transm {
+
 class Bucket
 {
 public:
@@ -65,3 +67,5 @@ struct bucket_equal_to<Bucket>
 		return a == b;
 	}
 };
+
+} // namespace transm

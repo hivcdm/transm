@@ -9,6 +9,8 @@
 #include "entities/demographicprofile.hpp"
 #include "entities/sexualpartnership.hpp"
 
+namespace transm {
+
 /// <summary>
 /// This is a container for Person objects which are separated into different BucketDemographicProfile depending on
 /// their DemographicProfile.
@@ -27,12 +29,12 @@ public:
 
 	~EntityPool();
 
-    void forEach(std::function<void(Person *)> callback);
+    void forEach(std::function<void(Entity *)> callback);
 
 	/// <summary>
 	/// adds an person to the correct bucket in the pool based on their current DemographicProfile
 	/// </summary>
-	bool addEntity(Person *_person);
+	bool addEntity(Entity *_person);
 
 	/// <summary>
 	/// Return the bucket that matches _profileID
@@ -69,14 +71,14 @@ public:
 	/// remove _person if exists in pool. returns false if _person is not in pool
 	/// We look in the DemographicProfile bucket that the person believes that they are in (_person->getCurrBucketProfileID()) as opposed to their current DemographicProfile
 	/// </summary>
-	bool removeEntity(Person *_person);
+	bool removeEntity(Entity *_person);
 
 	/// <summary>
 	/// if someone is a member of the wrong Bucket (based on their DemographicProfile), will remove and place them in the correct one
 	/// @param _person person that we have to move
 	/// @param _p_Iter if this is not nullptr, then use this _iter to remove the person. It will be a faster operation than finding them again within the map
 	/// </summary>
-	bool refreshBucketDemographicProfile(Person *_person, std::list<Person *>::iterator *_p_Iter, bool forceRefresh = false);
+	bool refreshBucketDemographicProfile(Entity *_person, std::list<Entity *>::iterator *_p_Iter, bool forceRefresh = false);
 
 	/// <summary>
 	/// calculates the current size of the EntityPool
@@ -96,7 +98,7 @@ public:
 	/// <summary>
 	/// calculate the current number of sexually active persons by risk and gender
 	/// </summary>
-	unsigned long sizeSexuallyActive(DemographicProfile::Gender _gender, Person::RiskLevel risk);
+	unsigned long sizeSexuallyActive(DemographicProfile::Gender _gender, Entity::RiskLevel risk);
 
 	/// <summary>
 	/// calculate the current number of persons that are not sexually active in the entity pool with a given gender
@@ -116,23 +118,23 @@ public:
 	/// <summary>
 	/// adds Person to BucketDemographicProfile AND allMales or allFemales depending on gender
 	/// </summary>
-	bool addPersonToAll(Person *_p);
+	bool addEntityToAll(Entity *_p);
 
 	/// <summary>
 	/// removes Person from BucketDemographicProfile AND allMales or allFemales depending on gender
 	/// should be used only when *(_pIter) dies
 	/// </summary>
-	std::list<Person *>::iterator removePersonFromAll(list<Person *>::iterator _pIter);
+	std::list<Entity *>::iterator removeEntityFromAll(list<Entity *>::iterator _pIter);
 
 	/// <summary>
 	/// Returns allMales->begin()
 	/// </summary>
-	std::list<Person *>::iterator begin(DemographicProfile::Gender _gender);
+	std::list<Entity *>::iterator begin(DemographicProfile::Gender _gender);
 
 	/// <summary>
 	/// Returns allMales->end()
 	/// </summary>
-	std::list<Person *>::iterator end(DemographicProfile::Gender _gender);
+	std::list<Entity *>::iterator end(DemographicProfile::Gender _gender);
 
 private:
 	/// <summary>
@@ -146,10 +148,12 @@ private:
 	/// <summary>
 	/// Master list of males for iterating
 	/// </summary>
-	std::list<Person *> allMales;
+	std::list<Entity *> allMales;
 
 	/// <summary>
 	/// Master list of females for iterating
 	/// </summary>
-	std::list<Person *> allFemales;
+	std::list<Entity *> allFemales;
 };
+
+} // namespace transm

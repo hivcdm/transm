@@ -3,10 +3,12 @@
 #include "entitypool.hpp"
 #include "bucketsexualmixing.hpp"
 #include "core/constants.hpp"
-#include "entities/person.hpp"
+#include "entities/entity.hpp"
 #include "utility/utility.hpp"
 
-void EntityPool::forEach(std::function<void(Person *)> callback)
+namespace transm {
+
+void EntityPool::forEach(std::function<void(Entity *)> callback)
 {
     for(auto bucket : entityBuckets)
     {
@@ -19,7 +21,7 @@ void EntityPool::forEach(std::function<void(Person *)> callback)
     }
 }
 
-bool EntityPool::addEntity(Person *_person)
+bool EntityPool::addEntity(Entity *_person)
 {
 	//gets the BucketDemographicProfile that this person is supposed to be a part of based on their DemographicProfile
 	BucketDemographicProfile *bucket = entityBuckets.at(_person->getDemographicProfile()->getProfileID());
@@ -152,8 +154,8 @@ void EntityPool::printBucketSizes(std::ostream &_outStream, const std::string &,
 
         if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
 		{
-			long bucketSizeHR = ((BucketSexualMixing *) bucket)->sizeRisk(Person::HIGH);
-			long bucketSizeLR = ((BucketSexualMixing *) bucket)->sizeRisk(Person::LOW);
+			long bucketSizeHR = ((BucketSexualMixing *) bucket)->sizeRisk(Entity::HIGH);
+			long bucketSizeLR = ((BucketSexualMixing *) bucket)->sizeRisk(Entity::LOW);
 			_outStream << bucketSizeHR << Constants::TAB << bucketSizeLR << Constants::TAB;
 		}
 
@@ -162,9 +164,9 @@ void EntityPool::printBucketSizes(std::ostream &_outStream, const std::string &,
 		currBucketIndex++;
 	}
 
-	for(list<Person *>::iterator maleIter = allMales.begin(); maleIter != allMales.end(); maleIter++)
+	for(list<Entity *>::iterator maleIter = allMales.begin(); maleIter != allMales.end(); maleIter++)
 	{
-		Person *male = *maleIter;
+		Entity *male = *maleIter;
 
         if(male->getDemographicProfile()->get(DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
 		{
@@ -182,9 +184,9 @@ void EntityPool::printBucketSizes(std::ostream &_outStream, const std::string &,
 		}
 	}
 
-	for(list<Person *>::iterator femaleIter = allFemales.begin(); femaleIter != allFemales.end(); femaleIter++)
+	for(list<Entity *>::iterator femaleIter = allFemales.begin(); femaleIter != allFemales.end(); femaleIter++)
 	{
-		Person *female = *femaleIter;
+		Entity *female = *femaleIter;
 
         if(female->getDemographicProfile()->get(DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
 		{
@@ -203,7 +205,7 @@ void EntityPool::printBucketSizes(std::ostream &_outStream, const std::string &,
 	}
 }
 
-bool EntityPool::removeEntity(Person *_person)
+bool EntityPool::removeEntity(Entity *_person)
 {
 	assert(_person != nullptr);
 	bool removed = false;
@@ -239,7 +241,7 @@ bool EntityPool::removeEntity(Person *_person)
 }
 
 
-bool EntityPool::refreshBucketDemographicProfile(Person *_person, list<Person *>::iterator * /*_p_Iter*/, bool forceRefresh)
+bool EntityPool::refreshBucketDemographicProfile(Entity *_person, list<Entity *>::iterator * /*_p_Iter*/, bool forceRefresh)
 {
 	assert(_person != nullptr);
 	bool success = false;
@@ -373,7 +375,7 @@ unsigned long EntityPool::sizeNotSexuallyActive(DemographicProfile::Gender _gend
 }
 
 //calculate the current number of persons that are sexually active in the entity pool with a given demographic
-unsigned long EntityPool::sizeSexuallyActive(DemographicProfile::Gender _gender, Person::RiskLevel _risk)
+unsigned long EntityPool::sizeSexuallyActive(DemographicProfile::Gender _gender, Entity::RiskLevel _risk)
 {
 	BucketDemographicProfile *bucket = nullptr;
 	unsigned long size = 0;		//total of the zie
@@ -473,7 +475,7 @@ unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMo
 /*
  * adds Person to BucketDemographicProfile AND allMales or allFemales depending on gender
  */
-bool EntityPool::addPersonToAll(Person *_p)
+bool EntityPool::addEntityToAll(Entity *_p)
 {
     if(_p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
 	{
@@ -492,9 +494,9 @@ bool EntityPool::addPersonToAll(Person *_p)
  * removes Person from BucketDemographicProfile AND allMales or allFemales depending on gender
  * should be used only when *(_pIter) dies or when deleting this
  */
-std::list<Person *>::iterator EntityPool::removePersonFromAll(std::list<Person *>::iterator _pIter)
+std::list<Entity *>::iterator EntityPool::removeEntityFromAll(std::list<Entity *>::iterator _pIter)
 {
-	std::list<Person *>::iterator toReturn;
+	std::list<Entity *>::iterator toReturn;
 	removeEntity(*_pIter);
 
     if((*_pIter)->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
@@ -517,7 +519,7 @@ std::list<Person *>::iterator EntityPool::removePersonFromAll(std::list<Person *
 /*
  * Returns allMales->begin()
  */
-list<Person *>::iterator EntityPool::begin(DemographicProfile::Gender _gender)
+list<Entity *>::iterator EntityPool::begin(DemographicProfile::Gender _gender)
 {
 	if(_gender == DemographicProfile::Gender::Male)
 	{
@@ -533,7 +535,7 @@ list<Person *>::iterator EntityPool::begin(DemographicProfile::Gender _gender)
 /*
  * Returns allMales->end()
  */
-list<Person *>::iterator EntityPool::end(DemographicProfile::Gender _gender)
+list<Entity *>::iterator EntityPool::end(DemographicProfile::Gender _gender)
 {
 	if(_gender == DemographicProfile::Gender::Male)
 	{
@@ -592,7 +594,7 @@ EntityPool::EntityPool(int ageOfMajority, unsigned int _popID, const std::map<Se
 			if(!invalidCombo)
 			{
 				entityBuckets.at(currBucketID) = new BucketSexualMixing(currBucketID, DemographicProfile::toString(currBucketID), _popID,
-                    ageOfMajority, 12 * Person::maxYrForDeathStats + 1, TimeGranularity::Month, _assort);
+                    ageOfMajority, 12 * Entity::maxYrForDeathStats + 1, TimeGranularity::Month, _assort);
 			}
 		}
 	}
@@ -601,7 +603,7 @@ EntityPool::EntityPool(int ageOfMajority, unsigned int _popID, const std::map<Se
 EntityPool::~EntityPool(void)
 {
 	//Delete all people in allFemales and allMales in order to prevent memory leaks
-	std::list<Person *>::iterator p_Iter;
+	std::list<Entity *>::iterator p_Iter;
 
 	for(auto gender : enum_iterator<DemographicProfile::Gender>())
 	{
@@ -609,9 +611,9 @@ EntityPool::~EntityPool(void)
 
 		while(p_Iter != end(gender))
 		{
-			Person *p = (*p_Iter);
+			Entity *p = (*p_Iter);
 			//Advances p_Iter one in the list, so no increment is necessary
-			p_Iter = removePersonFromAll(p_Iter);
+			p_Iter = removeEntityFromAll(p_Iter);
 			delete p;
 		}
 	}
@@ -635,3 +637,5 @@ EntityPool::~EntityPool(void)
 		}
 	}
 }
+
+} // namespace transm

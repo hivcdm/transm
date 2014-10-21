@@ -7,15 +7,18 @@
 #include <vector>
 #include <boost/functional/hash.hpp>
 
-typedef std::pair<int, int> Coordinate;
+namespace transm {
 
-namespace std
-{
+using Coordinate = std::pair < int, int > ;
+
+} // namespace transm
+
+namespace std {
 
 template<>
-struct hash<Coordinate>
+struct hash<transm::Coordinate>
 {
-	std::size_t operator()(Coordinate const &e) const
+    std::size_t operator()(transm::Coordinate const &e) const
 	{
 		std::size_t seed = 0;
 		boost::hash_combine(seed, e.first);
@@ -25,17 +28,19 @@ struct hash<Coordinate>
 };
 
 template<>
-struct equal_to<Coordinate>
+struct equal_to<transm::Coordinate>
 {
-	bool operator()(Coordinate const &x, Coordinate const &y) const
+    bool operator()(transm::Coordinate const &x, transm::Coordinate const &y) const
 	{
 		return x.first == y.first && x.second == y.second;
 	}
 };
 
-}
+} // namespace std
 
-typedef std::unordered_map<Coordinate, std::string> SparseTable;
+namespace transm {
+
+using SparseTable = std::unordered_map<Coordinate, std::string>;
 
 class TabularOutput
 {
@@ -66,3 +71,5 @@ private:
 	SparseTable header;
 	std::vector<std::string> currentRow;
 };
+
+} // namespace transm

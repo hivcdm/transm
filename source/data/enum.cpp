@@ -2,6 +2,8 @@
 #include "utility/utility.hpp"
 #include "core/constants.hpp"
 
+namespace transm {
+
 const std::string BaseEnumCls::WILDCARD = "*";
 
 BaseEnumCls::BaseEnumCls()
@@ -119,3 +121,5 @@ const std::string *BaseEnumCls::toString(BaseEnumCls::Enum _e) const
 	assert(isValidEnum(_e));
 	return &strs.at(_e);
 }
+
+} // namespace transm
