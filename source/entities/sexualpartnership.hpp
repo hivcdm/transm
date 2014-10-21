@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "transmissiontype.hpp"
 #include "data/enum.hpp"
 #include "data/eventparams.hpp"
@@ -163,13 +165,12 @@ template<>
 struct hash<transm::SexualPartnership::Type>
 {
     using underlying_type = underlying_type<transm::SexualPartnership::Type>::type;
+    using hasher = hash<underlying_type>;
 
     size_t operator()(const transm::SexualPartnership::Type &t) const
     {
-        return hasher((underlying_type)t);
+        return hasher()(static_cast<underlying_type>(t));
     }
-
-    hash<underlying_type> hasher;
 };
 
 } // namespace std

@@ -577,7 +577,7 @@ std::unordered_map<TransmissionType, std::array<double, Entity::ENDHVLStrata>> S
 
     auto read_coefficients = [](pugi::xml_node node) 
     {
-        std::array<double, Entity::ENDHVLStrata> coefficients = {0};
+        std::array<double, Entity::ENDHVLStrata> coefficients = {{0}};
         double value;
 
         for(auto hvl : enum_iterator<Entity::HVLStrata>())

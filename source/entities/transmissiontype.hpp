@@ -20,13 +20,12 @@ template<>
 struct hash<transm::TransmissionType>
 {
     using underlying_type = underlying_type<transm::TransmissionType>::type;
+    using hasher = hash<underlying_type>;
 
     size_t operator()(const transm::TransmissionType &t) const
     {
-        return hasher((underlying_type)t);
+        return hasher()(static_cast<underlying_type>(t));
     }
-
-    hash<underlying_type> hasher;
 };
 
 } // namespace std

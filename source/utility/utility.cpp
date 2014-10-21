@@ -10,6 +10,10 @@
 #include <unistd.h>
 #endif
 
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#endif
+
 #include "utility.hpp"
 
 namespace transm {

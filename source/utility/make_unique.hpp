@@ -1,10 +1,9 @@
 #pragma once
 
+#include <memory>
 #include <utility>
 
-namespace transm {
-
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__APPLE__)
 namespace std {
 template <typename T, typename... Args>
 auto make_unique(Args&&... args) -> std::unique_ptr<T>
@@ -13,5 +12,3 @@ auto make_unique(Args&&... args) -> std::unique_ptr<T>
 }
 }
 #endif
-
-} // namespace transm
