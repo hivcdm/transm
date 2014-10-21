@@ -148,9 +148,9 @@ void Population::Births(EventParams &parameters_)
 	//number of people to be born this month
 	unsigned long numBorn = Utility::round<unsigned long>(currSize * popWideParams.birthRate);
 	unsigned long numHeteroMales = static_cast<unsigned long>(popWideParams.birthProportions["hetero-male"] * numBorn);
-    unsigned long numBisexualMales = static_cast<unsigned long>(popWideParams.birthProportions["bisexual-male"] * numBorn);
+    unsigned long numMsmws = static_cast<unsigned long>(popWideParams.birthProportions["msmw"] * numBorn);
     unsigned long numMsms = static_cast<unsigned long>(popWideParams.birthProportions["msm"] * numBorn);
-    unsigned long numMales = numHeteroMales + numBisexualMales + numMsms;
+    unsigned long numMales = numHeteroMales + numMsmws + numMsms;
     //unsigned long numFemales = static_cast<unsigned long>(popWideParams.proportionFemale * numBorn);
 
 	//create currSize * birthRate New people
@@ -163,13 +163,13 @@ void Population::Births(EventParams &parameters_)
         {
             if(i > numHeteroMales)
             {
-                if(i > numBisexualMales + numHeteroMales)
+                if(i > numMsmws + numHeteroMales)
                 {
                     entity_type = "msm";
                 }
                 else
                 {
-                    entity_type = "bisexual_male";
+                    entity_type = "msmw";
                 }
             }
         }
@@ -1097,10 +1097,10 @@ Person *Population::GeneratePerson(EventParams &parameters_, const std::string &
             toReturn = new Msm(parameters_, ageMth, circumcised,
                 populationID, popWideParams.defaultMsmParams);
         }
-        else if(entity_type == "bisexual_male")
+        else if(entity_type == "msmw")
         {
-            toReturn = new BisexualMale(parameters_, ageMth, circumcised,
-                populationID, popWideParams.defaultBisexualMaleParams);
+            toReturn = new Msmw(parameters_, ageMth, circumcised,
+                populationID, popWideParams.defaultMsmwParams);
         }
         else
         {

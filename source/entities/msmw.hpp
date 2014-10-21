@@ -13,7 +13,7 @@
 /// <summary>
 /// All females in the simulation are members of this class, or a class derived from this one
 /// </summary>
-class BisexualMale : public Person
+class Msmw : public Person
 {
 public:
     void Circumcise();
@@ -188,7 +188,7 @@ public:
     /// this constructor creates an Msm that can be simulated
     /// constructor should set the CD4, HVL, and HVLsetpoint from age and gender
     /// </summary>
-    BisexualMale(EventParams &_eventParams, int _age, bool _circumcised, unsigned int _populationID, const BisexualMale::SubPopParams &params);
+    Msmw(EventParams &_eventParams, int _age, bool _circumcised, unsigned int _populationID, const Msmw::SubPopParams &params);
 
     Person *choosePartner(RandomNumberGenerator &_randomNums, EntityPool *_availableEntities,
         SexualPartnership::Type _partnershipType, bool _remove);
@@ -260,5 +260,5 @@ public:
     void SetOverrideChanceCondomUse(double) { throw std::runtime_error("not allowed for males"); };
     double GetOverrideChanceCondomUse() const { return -1; };
 
-    ~BisexualMale();
+    ~Msmw();
 };

@@ -60,7 +60,7 @@ private:
 
     Msm::SubPopParams ReadMsmSubPopParams();
 
-    BisexualMale::SubPopParams ReadBiMaleSubPopParams();
+    Msmw::SubPopParams ReadBiMaleSubPopParams();
 
     std::vector<Intervention> ParseInterventions(pugi::xml_node interventions_node, bool individual);
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "entities/bisexualmale.hpp"
+#include "entities/msmw.hpp"
 #include "entities/female.hpp"
 #include "entities/male.hpp"
 #include "entities/msm.hpp"
@@ -78,7 +78,7 @@ public:
 	const Male::SubPopParams &GetMaleParameters() const { return defaultMaleParams; }
 	void SetMaleParameters(Male::SubPopParams &params) { defaultMaleParams = params; }
     void SetMsmParameters(Msm::SubPopParams &params) { defaultMsmParams = params; }
-    void SetBiMaleParameters(BisexualMale::SubPopParams &params) { defaultBisexualMaleParams = params; }
+    void SetBiMaleParameters(Msmw::SubPopParams &params) { defaultMsmwParams = params; }
 	const Female::SubPopParams &GetFemaleParameters() const { return defaultFemaleParams; }
 	void SetFemaleParameters(Female::SubPopParams &params) { defaultFemaleParams = params; }
 
@@ -202,9 +202,9 @@ private:
     Msm::SubPopParams defaultMsmParams;
 
     /// <summary>
-    /// holds the population-level parameters for population of bisexual males
+    /// holds the population-level parameters for population of msmws
     /// </summary>
-    BisexualMale::SubPopParams defaultBisexualMaleParams;
+    Msmw::SubPopParams defaultMsmwParams;
 
     /// <summary>
     /// holds the population-level parameters for population of females

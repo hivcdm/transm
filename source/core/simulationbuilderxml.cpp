@@ -415,12 +415,12 @@ void SimulationBuilderXml::InitializePopulation()
 
 	// Create the people in the population 
 	auto totalNumHeteroMales = Utility::round<std::size_t>(population_parameters.GetInitialSize() * population_parameters.getBirthProportion("hetero-male"));
-    auto totalNumBisexualMales = Utility::round<std::size_t>(population_parameters.GetInitialSize() * population_parameters.getBirthProportion("bisexual-male"));
+    auto totalNumMsmws = Utility::round<std::size_t>(population_parameters.GetInitialSize() * population_parameters.getBirthProportion("msmw"));
     auto totalNumMsms = Utility::round<std::size_t>(population_parameters.GetInitialSize() * population_parameters.getBirthProportion("msm"));
-    auto totalNumMales = totalNumBisexualMales + totalNumHeteroMales + totalNumMsms;
+    auto totalNumMales = totalNumMsmws + totalNumHeteroMales + totalNumMsms;
     auto totalNumFemales = std::max<std::size_t>(population_parameters.GetInitialSize() - totalNumMales, 0);
     
-    std::size_t createdHeteroMales = 0, createdBisexualMales = 0, createdMsms = 0;
+    std::size_t createdHeteroMales = 0, createdMsmws = 0, createdMsms = 0;
 
 	//the params.xml file should have detailed the prevalent characteristics of each age bucket
 	//  we will go through each age bucket and create the part of the prevalent population that falls within the bucket
@@ -428,17 +428,17 @@ void SimulationBuilderXml::InitializePopulation()
 
 	for(auto &ageBucketParams : population_parameters.GetInitialAgeBuckets())
 	{
-        auto last = totalNumMsms + totalNumBisexualMales > 0 ? ageBucketParams.minAgeMth == population_parameters.GetInitialAgeBuckets().back().minAgeMth
+        auto last = totalNumMsms + totalNumMsmws > 0 ? ageBucketParams.minAgeMth == population_parameters.GetInitialAgeBuckets().back().minAgeMth
             && ageBucketParams.maxAgeMth == population_parameters.GetInitialAgeBuckets().back().maxAgeMth : false;
 
         auto numHeteroMalesInCurrentBucket = last ? totalNumHeteroMales - createdHeteroMales : Utility::round<std::size_t>(totalNumHeteroMales * ageBucketParams.entityProportions["hetero-male"]);
         auto numMsmsInCurrentBucket = last ? totalNumMsms - createdMsms : Utility::round<std::size_t>(totalNumMsms * ageBucketParams.entityProportions["msm"]);
-        auto numBisexualMalesInCurrentBucket = last ? totalNumBisexualMales - createdBisexualMales : Utility::round<std::size_t>(totalNumBisexualMales * ageBucketParams.entityProportions["bisexual-male"]);
-        auto numMalesInCurrentBucket = numHeteroMalesInCurrentBucket + numMsmsInCurrentBucket + numBisexualMalesInCurrentBucket;
+        auto numMsmwsInCurrentBucket = last ? totalNumMsmws - createdMsmws : Utility::round<std::size_t>(totalNumMsmws * ageBucketParams.entityProportions["msmw"]);
+        auto numMalesInCurrentBucket = numHeteroMalesInCurrentBucket + numMsmsInCurrentBucket + numMsmwsInCurrentBucket;
         auto numFemalesInCurrentBucket = Utility::round<std::size_t>(totalNumFemales * ageBucketParams.entityProportions["female"]);
 
 		//calc how many people are in the current age range
-		auto currentBucketSize = numHeteroMalesInCurrentBucket + numMsmsInCurrentBucket + numBisexualMalesInCurrentBucket + numFemalesInCurrentBucket;
+		auto currentBucketSize = numHeteroMalesInCurrentBucket + numMsmsInCurrentBucket + numMsmwsInCurrentBucket + numFemalesInCurrentBucket;
 
 		//Number of persons of each gender to be traced in detailed output file
 		auto numToTrace = static_cast<std::size_t>(population.GetNumberToTrace());
@@ -457,8 +457,8 @@ void SimulationBuilderXml::InitializePopulation()
                 {
                     if(count > numHeteroMalesInCurrentBucket + numMsmsInCurrentBucket)
                     {
-                        entity_type = "bisexual_male";
-                        createdBisexualMales++;
+                        entity_type = "msmw";
+                        createdMsmws++;
                     }
                     else
                     {
@@ -835,11 +835,11 @@ Msm::SubPopParams SimulationBuilderXml::ReadMsmSubPopParams()
     return result;
 }
 
-BisexualMale::SubPopParams SimulationBuilderXml::ReadBiMaleSubPopParams()
+Msmw::SubPopParams SimulationBuilderXml::ReadBiMaleSubPopParams()
 {
-    auto node = document_.select_single_node("/simulation/population/entities/entity[@type='BisexualMale']").node();
+    auto node = document_.select_single_node("/simulation/population/entities/entity[@type='Msmw']").node();
 
-    BisexualMale::SubPopParams result;
+    Msmw::SubPopParams result;
 
     if(node == nullptr)
     {
@@ -864,7 +864,7 @@ BisexualMale::SubPopParams SimulationBuilderXml::ReadBiMaleSubPopParams()
     {
         try
         {
-            auto params = ReadSexualBehavior("bisexual-male", partnership_type);
+            auto params = ReadSexualBehavior("msmw", partnership_type);
 
             if(use_high_risk_multiplier)
             {
@@ -1015,7 +1015,7 @@ void SimulationBuilderXml::ReadPopulationParameters()
 	//normalize %population values for each age bucket
     double totalFemaleProportion = 0;
     double totalHeteroMaleProportion = 0;
-    double totalBiMaleProportion = 0;
+    double totalMsmwProportion = 0;
     double totalMsmProportion = 0;
 
     population_parameters.SetTransmissionCoefficients(ReadTransmissionCoefficients());
@@ -1025,7 +1025,7 @@ void SimulationBuilderXml::ReadPopulationParameters()
 		{
 			totalFemaleProportion += age_bucket.entityProportions["female"];
             totalHeteroMaleProportion += age_bucket.entityProportions["hetero-male"];
-            totalBiMaleProportion += age_bucket.entityProportions["bisexual-male"];
+            totalMsmwProportion += age_bucket.entityProportions["msmw"];
             totalMsmProportion += age_bucket.entityProportions["msm"];
 		}
 
@@ -1034,7 +1034,7 @@ void SimulationBuilderXml::ReadPopulationParameters()
 		{
 			if(totalFemaleProportion != 0) age_bucket.entityProportions["female"] /= totalFemaleProportion;
             if(totalHeteroMaleProportion != 0) age_bucket.entityProportions["hetero-male"] /= totalHeteroMaleProportion;
-            if(totalBiMaleProportion != 0) age_bucket.entityProportions["bisexual-male"] /= totalBiMaleProportion;
+            if(totalMsmwProportion != 0) age_bucket.entityProportions["msmw"] /= totalMsmwProportion;
             if(totalMsmProportion != 0) age_bucket.entityProportions["msm"] /= totalMsmProportion;
 		}
 

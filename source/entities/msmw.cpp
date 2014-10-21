@@ -1,6 +1,6 @@
 #include <vector>
 
-#include "bisexualmale.hpp"
+#include "msmw.hpp"
 #include "sexualpartnership.hpp"
 #include "sexualbehavior.hpp"
 #include "entitypool/entitypool.hpp"
@@ -11,120 +11,120 @@
 //each index of the array contains parameters for a different population
 //(we only have 1 population for now so the size of the vector will default to 1
 
-std::string BisexualMale::getEntityType() const 
+std::string Msmw::getEntityType() const 
 { 
-    return "bisexual_male";
+    return "msmw";
 }
 
-BisexualMale::SubPopParams::SubPopParams() : 
+Msmw::SubPopParams::SubPopParams() : 
   cswEndAge(0),
   maxPartnershipRejections(0)  
 {
 }
 
-BisexualMale::SubPopParams::~SubPopParams()
+Msmw::SubPopParams::~SubPopParams()
 {
 }
 
-double BisexualMale::SubPopParams::getChanceBecomeCSW() const
+double Msmw::SubPopParams::getChanceBecomeCSW() const
 {
     return chanceBecomeCSW;
 }
 
-double BisexualMale::SubPopParams::getPartnerAcqMultWithSteady(Person::RiskLevel _risk) const
+double Msmw::SubPopParams::getPartnerAcqMultWithSteady(Person::RiskLevel _risk) const
 {
     return partnerAcqMultWithSteady[_risk];
 }
 
 //sexual behavior params for each type as specified by SexualPartnership::Type
-const SexualBehavior &BisexualMale::SubPopParams::getSexualBehavior(SexualPartnership::Type _type) const
+const SexualBehavior &Msmw::SubPopParams::getSexualBehavior(SexualPartnership::Type _type) const
 {
     return sexualBehaviorParams.at(_type);
 }
 
 //sexual behavior params for each type as specified by SexualPartnership::Type
-SexualBehavior &BisexualMale::SubPopParams::getSexualBehavior(SexualPartnership::Type _type)
+SexualBehavior &Msmw::SubPopParams::getSexualBehavior(SexualPartnership::Type _type)
 {
     return sexualBehaviorParams.at(_type);
 }
 
 
-double BisexualMale::SubPopParams::getProportionHighRisk(DemographicProfile::Employment _cswStatus) const
+double Msmw::SubPopParams::getProportionHighRisk(DemographicProfile::Employment _cswStatus) const
 {
     return proportionHighRisk[(std::size_t)_cswStatus];
 }
-NormalDist BisexualMale::SubPopParams::getActivityLevel() const
+NormalDist Msmw::SubPopParams::getActivityLevel() const
 {
     return activityLevel;
 }
 
-double BisexualMale::SubPopParams::getCircumProtectEff()  const
+double Msmw::SubPopParams::getCircumProtectEff()  const
 {
     return circumProtectEff;
 }
 
-double BisexualMale::SubPopParams::getCondomProtectEff()  const
+double Msmw::SubPopParams::getCondomProtectEff()  const
 {
     return condomProtectEff;
 }
 
-int BisexualMale::SubPopParams::getPartneringDiscStartAgeYrs() const
+int Msmw::SubPopParams::getPartneringDiscStartAgeYrs() const
 {
     return partneringDiscStartAgeYrs;
 }
 
-double BisexualMale::SubPopParams::getPartneringAcqDiscMult(int _ageYrs) const
+double Msmw::SubPopParams::getPartneringAcqDiscMult(int _ageYrs) const
 {
     assert(Utility::within_range(_ageYrs, 0, Person::maxYrForDeathStats));
     return partneringAcqDiscMult.at(_ageYrs - partneringDiscStartAgeYrs);
 }
 
-double BisexualMale::SubPopParams::getPartneringActsDiscMult(int _ageYrs) const
+double Msmw::SubPopParams::getPartneringActsDiscMult(int _ageYrs) const
 {
     assert(Utility::within_range(_ageYrs, 0, Person::maxYrForDeathStats));
     return partneringActsDiscMult.at(_ageYrs - partneringDiscStartAgeYrs);
 }
 
-void BisexualMale::SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng)
+void Msmw::SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng)
 {
     populationSpecificParams.getSexualBehavior(partnershipType).setChanceCondomUsePerEvent(risk, dist);
     chanceCondomUsePerEvent[(int)partnershipType] = rng.randBeta(dist);
 }
 
-void BisexualMale::SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, double meanEvents)
+void Msmw::SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, double meanEvents)
 {
     populationSpecificParams.getSexualBehavior(partnershipType).setCoitalEventsPerMonth(risk, meanEvents);
     numActsPerMonth[(int)partnershipType] = meanEvents;
 }
 
-void BisexualMale::SetPartnershipDuration(RiskLevel risk, SexualPartnership::Type partnershipType, ShiftedLogNormalDist dist)
+void Msmw::SetPartnershipDuration(RiskLevel risk, SexualPartnership::Type partnershipType, ShiftedLogNormalDist dist)
 {
     populationSpecificParams.getSexualBehavior(partnershipType).setPartnershipDuration(risk, dist);
 }
 
-void BisexualMale::SetAverageYearsYounger(SexualPartnership::Type partnershipType, NormalDist dist)
+void Msmw::SetAverageYearsYounger(SexualPartnership::Type partnershipType, NormalDist dist)
 {
     populationSpecificParams.getSexualBehavior(partnershipType).setAverageYearsYounger(dist);
     averageYearsYounger[(int)partnershipType] = dist;
 }
 
-void BisexualMale::SetAcquisitionRatePerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, LogNormalDist dist, RandomNumberGenerator &rng)
+void Msmw::SetAcquisitionRatePerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, LogNormalDist dist, RandomNumberGenerator &rng)
 {
     populationSpecificParams.getSexualBehavior(partnershipType).setAcquisitionRatePerMonth(risk, dist);
     partnerAcqRates[(int)partnershipType] = rng.randLogNormal(dist);
 }
 
-double BisexualMale::getChanceBecomeCsw() const
+double Msmw::getChanceBecomeCsw() const
 {
     return populationSpecificParams.getChanceBecomeCSW();
 }
 
-void BisexualMale::Circumcise()
+void Msmw::Circumcise()
 {
     circumcised = true;
 }
 
-BisexualMale::BisexualMale(EventParams &_eventParams, int _age, bool _circumcised, unsigned int _populationID, const BisexualMale::SubPopParams &params)
+Msmw::Msmw(EventParams &_eventParams, int _age, bool _circumcised, unsigned int _populationID, const Msmw::SubPopParams &params)
     : Person(_age, _populationID),
     populationSpecificParams(params)
 {
@@ -176,11 +176,11 @@ BisexualMale::BisexualMale(EventParams &_eventParams, int _age, bool _circumcise
     }
 }
 
-BisexualMale::~BisexualMale()
+Msmw::~Msmw()
 {
 }
 
-double BisexualMale::getCondomUseProb(Person *_p, SexualPartnership::Type _partnershipType)
+double Msmw::getCondomUseProb(Person *_p, SexualPartnership::Type _partnershipType)
 {
     assert((_p != nullptr));
     assert(_p->isAlive());
@@ -188,23 +188,23 @@ double BisexualMale::getCondomUseProb(Person *_p, SexualPartnership::Type _partn
     return chanceCondomUsePerEvent[(int)_partnershipType];
 }
 
-double BisexualMale::getCircumProtectEff()
+double Msmw::getCircumProtectEff()
 {
     return (circumcised ? populationSpecificParams.getCircumProtectEff() : 0);
 }
 
-double BisexualMale::getCondomProtectEff()
+double Msmw::getCondomProtectEff()
 {
     return populationSpecificParams.getCondomProtectEff();
 }
 
-bool BisexualMale::isCircumcised()
+bool Msmw::isCircumcised()
 {
     return circumcised;
 }
 
 //in this case, the male is infected and female is uninfected
-double BisexualMale::getFOI(Person *_p, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
+double Msmw::getFOI(Person *_p, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
 {
     //note: in the case of male->female transmission, circumcision makes no difference
     //transmission coeff				1-	(condoms are used and succeed)
@@ -260,7 +260,7 @@ double BisexualMale::getFOI(Person *_p, const std::unordered_map<TransmissionTyp
 }
 
 
-double BisexualMale::getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const
+double Msmw::getMinPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const
 {
     switch(_PSC)
     {
@@ -290,7 +290,7 @@ double BisexualMale::getMinPartnerSelectVal(Person::SelectingCriteria _PSC, Sexu
 }
 
 
-double BisexualMale::getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const
+double Msmw::getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const
 {
     switch(_PSC)
     {
@@ -317,13 +317,13 @@ double BisexualMale::getMaxPartnerSelectVal(Person::SelectingCriteria _PSC, Sexu
     }
 }
 
-double BisexualMale::rollForAgeDifference(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums)
+double Msmw::rollForAgeDifference(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums)
 {
     double ageDifference = _randomNums.randNorm(averageYearsYounger[(int)_partnershipType]);
     return ageDifference;
 }
 
-bool BisexualMale::possibleMatch(SexualPartnership::Type _partnershipType, Person *_p)
+bool Msmw::possibleMatch(SexualPartnership::Type _partnershipType, Person *_p)
 {
     assert((_p != nullptr));
     assert(_p->isAlive());
@@ -334,7 +334,7 @@ bool BisexualMale::possibleMatch(SexualPartnership::Type _partnershipType, Perso
     return Utility::within_range(_p->getAge(TimeGranularity::Month), minAge, maxAge);
 }
 
-int BisexualMale::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType)
+int Msmw::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType)
 {
     if(!populationSpecificParams.hasSexualBehavior(_partnershipType)) return 0;
 
@@ -371,7 +371,7 @@ int BisexualMale::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualP
     return (_partnershipType != SexualPartnership::Type::Steady && _partnershipType != SexualPartnership::Type::SteadyMsm) ? numPartners : min(1, numPartners);
 }
 
-int BisexualMale::rollNumEventsPerPartner(Person *_p, RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType)
+int Msmw::rollNumEventsPerPartner(Person *_p, RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType)
 {
     assert((_p != nullptr));
     assert(_p->isAlive());
@@ -398,7 +398,7 @@ int BisexualMale::rollNumEventsPerPartner(Person *_p, RandomNumberGenerator &_ra
 }
 
 
-int BisexualMale::rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums, Person *_p)
+int Msmw::rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums, Person *_p)
 {
     assert((_p != nullptr));
     assert(_p->isAlive());
@@ -407,7 +407,7 @@ int BisexualMale::rollForNewPartnershipDuration(SexualPartnership::Type _partner
     return (int)(_randomNums.randShiftedLogNormal(duration) + .5);
 }
 
-void BisexualMale::rerollRiskGroup(EventParams &_eventParams)
+void Msmw::rerollRiskGroup(EventParams &_eventParams)
 {
     DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) getDemographicProfileVal(DemographicProfile::Demographic::Employment);
     double chanceHighRisk = populationSpecificParams.getProportionHighRisk(cswStatus);
@@ -441,7 +441,7 @@ void BisexualMale::rerollRiskGroup(EventParams &_eventParams)
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
     {
-        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " % BisexualMale " << getID() << " rerolls as ";
+        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " % Msmw " << getID() << " rerolls as ";
 
         if(risk == HIGH)
         {
@@ -456,7 +456,7 @@ void BisexualMale::rerollRiskGroup(EventParams &_eventParams)
     }
 }
 
-void BisexualMale::saveState(ostream &_outStream, long currTime)
+void Msmw::saveState(ostream &_outStream, long currTime)
 {
     _outStream << "gend:m," << std::endl;
     Person::saveState(_outStream, currTime);
