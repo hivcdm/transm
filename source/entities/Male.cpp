@@ -88,31 +88,57 @@ double Male::SubPopParams::getTransmitPerEventCoeff(HVLStrata _hvl) const
 
 void Male::SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng)
 {
-	populationSpecificParams.getSexualBehavior(partnershipType).setChanceCondomUsePerEvent(risk, dist);
-    chanceCondomUsePerEvent[(int)partnershipType] = rng.randBeta(dist);
+    auto &behavior = populationSpecificParams.getSexualBehavior(partnershipType);
+    if(risk == getRiskLevel())
+    {
+        auto current_dist = behavior.getChanceCondomUsePerEvent(risk);
+        if(current_dist.alpha != dist.beta || current_dist.alpha != dist.alpha)
+        {
+            chanceCondomUsePerEvent[(int)partnershipType] = rng.randBeta(dist);
+        }
+    }
+	behavior.setChanceCondomUsePerEvent(risk, dist);
 }
 
 void Male::SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, double meanEvents)
 {
-	populationSpecificParams.getSexualBehavior(partnershipType).setCoitalEventsPerMonth(risk, meanEvents);
-    numActsPerMonth[(int)partnershipType] = meanEvents;
+    auto &behavior = populationSpecificParams.getSexualBehavior(partnershipType);
+    if(risk == getRiskLevel())
+    {
+        auto current_dist = behavior.getCoitalEventsPerMonth(risk);
+        if(current_dist != meanEvents)
+        {
+            numActsPerMonth[(int)partnershipType] = meanEvents;
+        }
+    }
+    behavior.setCoitalEventsPerMonth(risk, meanEvents);
 }
 
 void Male::SetPartnershipDuration(RiskLevel risk, SexualPartnership::Type partnershipType, ShiftedLogNormalDist dist)
 {
-	populationSpecificParams.getSexualBehavior(partnershipType).setPartnershipDuration(risk, dist);
+    auto &behavior = populationSpecificParams.getSexualBehavior(partnershipType);
+	behavior.setPartnershipDuration(risk, dist);
 }
 
 void Male::SetAverageYearsYounger(SexualPartnership::Type partnershipType, NormalDist dist)
 {
-	populationSpecificParams.getSexualBehavior(partnershipType).setAverageYearsYounger(dist);
+    auto &behavior = populationSpecificParams.getSexualBehavior(partnershipType);
+	behavior.setAverageYearsYounger(dist);
     averageYearsYounger[(int)partnershipType] = dist;
 }
 
 void Male::SetAcquisitionRatePerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, LogNormalDist dist, RandomNumberGenerator &rng)
 {
-	populationSpecificParams.getSexualBehavior(partnershipType).setAcquisitionRatePerMonth(risk, dist);
-    partnerAcqRates[(int)partnershipType] = rng.randLogNormal(dist);
+    auto &behavior = populationSpecificParams.getSexualBehavior(partnershipType);
+    if(risk == getRiskLevel())
+    {
+        auto current_dist = behavior.getAcquisitionRatePerMonth(risk);
+        if(current_dist.mu != dist.mu || current_dist.sigma != dist.sigma)
+        {
+            partnerAcqRates[(int)partnershipType] = rng.randLogNormal(dist);
+        }
+    }
+	behavior.setAcquisitionRatePerMonth(risk, dist);
 }
 
 double Male::getChanceBecomeCsw() const

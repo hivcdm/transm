@@ -660,7 +660,6 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 	}
 }
 
-/*
 void Population::SaveIndividualSummaries(std::ostream &stream) const
 {
     std::vector<PersonSummary> ordered_(individual_summaries_.size());
@@ -726,8 +725,8 @@ void Population::SaveIndividualSummaries(std::ostream &stream) const
     stream << "]" << std::endl;
     stream << "}" << std::endl;
 }
-*/
 
+/*
 void WritePerson(std::ostream &stream, const std::map<int, std::vector<int>> &infected, int person_id, const std::unordered_map<unsigned long, Population::PersonSummary> &summaries)
 {
     if(person_id == -1)
@@ -785,6 +784,7 @@ void Population::SaveIndividualSummaries(std::ostream &stream) const
 
     WritePerson(stream, infected, -1, individual_summaries_);
 }
+*/
 
 /**
 Iterates through current entities in the population and returns a total number of people
