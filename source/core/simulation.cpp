@@ -357,7 +357,7 @@ void Simulation::FirstStep()
 			"Non Sexually Active Population" << std::endl;
 	}
 
-    if(parameters_.monthOf1990 > 0 && parameters_.trace_files[EventParams::TraceFile::Type::ShiftedOutcomes].enabled)
+    if(parameters_.trace_files[EventParams::TraceFile::Type::ShiftedOutcomes].enabled)
 	{
 		population_.populationStatistics.enableShiftedOutcomes(parameters_.monthOf1990);
 	}
