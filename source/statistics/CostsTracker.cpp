@@ -266,7 +266,7 @@ void CostsTracker::BuildRow(int time)
 		PushElement(costs.drugCosts);
 		PushElement(costs.toxicityCosts);
 
-        for(int i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
+		for(std::size_t i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
 		{
 			PushElement(costs.totalCostsByGender[i]);
 		}

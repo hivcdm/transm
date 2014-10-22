@@ -125,8 +125,8 @@ public:
         auto not_sexually_active = [&](const std::pair<Person *, int> &p) { return in_partition(p) && p.first->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::NotActive; };
         auto is_prevalent = [&](const std::pair<Person *, int> &p) { return in_partition(p) && p.first->ageInfected > -1 && p.first->ageInfected + 1 != (int)p.first->age; };
         auto is_incident = [&](const std::pair<Person *, int> &p) { return in_partition(p) && p.first->ageInfected + 1 == (int)p.first->age; };
-        auto is_prevalent_sa = [&](const std::pair<Person *, int> &p) { return in_partition(p) && is_sexually_active(p) && is_prevalent(p); };
-        auto is_incident_sa = [&](const std::pair<Person *, int> &p) { return in_partition(p) && is_sexually_active(p) && is_incident(p); };
+//        auto is_prevalent_sa = [&](const std::pair<Person *, int> &p) { return in_partition(p) && is_sexually_active(p) && is_prevalent(p); };
+//        auto is_incident_sa = [&](const std::pair<Person *, int> &p) { return in_partition(p) && is_sexually_active(p) && is_incident(p); };
         auto is_gender = [&](const std::pair<Person *, int> &p, DemographicProfile::Gender gender) { return in_partition(p) && p.first->getDemographicProfileVal<DemographicProfile::Gender>() == gender; };
         auto is_sa_gender = [&](const std::pair<Person *, int> &p, DemographicProfile::Gender gender) { return in_partition(p) && is_sexually_active(p) && is_gender(p, gender); };
         auto is_na_gender = [&](const std::pair<Person *, int> &p, DemographicProfile::Gender gender) { return in_partition(p) && !is_sexually_active(p) && is_gender(p, gender); };
@@ -165,7 +165,7 @@ public:
             }
             throw std::runtime_error("unknown risk group");
         };
-        auto is_sa_in_risk_group = [&](const std::pair<Person *, int> &p, const std::string &risk_string) { return is_sexually_active(p) && is_in_risk_group(p, risk_string); };
+//        auto is_sa_in_risk_group = [&](const std::pair<Person *, int> &p, const std::string &risk_string) { return is_sexually_active(p) && is_in_risk_group(p, risk_string); };
         auto is_prev_in_risk_group = [&](const std::pair<Person *, int> &p, const std::string &risk_string) { return is_prevalent(p) && is_in_risk_group(p, risk_string); };
         auto is_incident_in_risk_group = [&](const std::pair<Person *, int> &p, const std::string &risk_string) { return is_incident(p) && is_in_risk_group(p, risk_string); };
 
