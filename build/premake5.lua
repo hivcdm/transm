@@ -4,11 +4,11 @@ solution "transm"
     location ("./" .. _ACTION)
     libdirs { 
        "../third-party/cepac/lib",
-       "../third-party/boost/stage/lib"
+       "../third-party/boost/lib"
     }
     includedirs { 
        "../third-party/cepac/src",
-       "../third-party/boost"
+       "../third-party/boost/include"
     }
     configuration "debug"
         flags { "Symbols" }
