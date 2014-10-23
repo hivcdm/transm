@@ -7,8 +7,8 @@
 
 #include "bucketcounter.hpp"
 #include "tabularoutput.hpp"
-#include "data/agerangesizecontainer.hpp"
-#include "data/eventparams.hpp"
+#include "parameters/agerangesizecontainer.hpp"
+#include "parameters/eventparams.hpp"
 #include "entities/entity.hpp"
 
 namespace transm {

@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "intervention.hpp"
-#include "data/agerangesizecontainer.hpp"
+#include "parameters/agerangesizecontainer.hpp"
 #include "entities/female.hpp"
 #include "entities/male.hpp"
 #include "entities/entity.hpp"

@@ -3,7 +3,7 @@
 #include "female.hpp"
 #include "sexualpartnership.hpp"
 #include "core/constants.hpp"
-#include "data/eventparams.hpp"
+#include "parameters/eventparams.hpp"
 #include "utility/utility.hpp"
 #include "utility/randomnumbergenerator.hpp"
 #include "statistics/infectionstracker.hpp"

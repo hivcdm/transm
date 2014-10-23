@@ -5,7 +5,7 @@
 
 #include "entity.hpp"
 #include "sexualbehavior.hpp"
-#include "data/eventparams.hpp"
+#include "parameters/eventparams.hpp"
 #include "utility/randomnumbergenerator.hpp"
 
 namespace transm {

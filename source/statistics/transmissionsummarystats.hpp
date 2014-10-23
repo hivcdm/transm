@@ -3,7 +3,7 @@
 #include <fstream>
 
 #include "populationstatistics.hpp"
-#include "data/eventparams.hpp"
+#include "parameters/eventparams.hpp"
 
 namespace transm {
 

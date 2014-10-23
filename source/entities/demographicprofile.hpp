@@ -2,8 +2,8 @@
 
 #include <map>
 
-#include "data/enum.hpp"
 #include "core/constants.hpp"
+#include "utility/enum.hpp"
 
 namespace transm {
 

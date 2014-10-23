@@ -7,7 +7,7 @@
 #include "constants.hpp"
 #include "population.hpp"
 #include "utility/cepacinputparser.hpp"
-#include "data/eventparams.hpp"
+#include "parameters/eventparams.hpp"
 #include "entities/demographicprofile.hpp"
 #include "entities/sexualbehavior.hpp"
 #include "utility/highresolutiontimer.hpp"

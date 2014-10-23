@@ -6,7 +6,7 @@
 #include <typeinfo>
 #include <vector>
 
-#include "data/enum.hpp"
+#include "utility/enum.hpp"
 
 namespace transm {
 

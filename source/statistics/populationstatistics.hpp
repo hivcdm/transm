@@ -8,8 +8,8 @@
 #include "coststracker.hpp"
 #include "infectionstracker.hpp"
 #include "statsrecord.hpp"
-#include "data/enum.hpp"
 #include "entities/sexualpartnership.hpp"
+#include "utility/enum.hpp"
 
 namespace transm {
 

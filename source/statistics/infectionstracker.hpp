@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "data/agerangesizecontainer.hpp"
+#include "parameters/agerangesizecontainer.hpp"
 #include "entities/entity.hpp"
 #include "entities/demographicprofile.hpp"
 #include "entities/sexualpartnership.hpp"

@@ -3,8 +3,8 @@
 #include <functional>
 
 #include "transmissiontype.hpp"
-#include "data/enum.hpp"
-#include "data/eventparams.hpp"
+#include "parameters/eventparams.hpp"
+#include "utility/enum.hpp"
 #include "utility/randomnumbergenerator.hpp"
 
 namespace transm {

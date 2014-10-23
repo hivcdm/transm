@@ -1,7 +1,4 @@
-#include "simulationbuilderxml.hpp"
-#include "utility/enum_iterator.hpp"
-#include "utility/filesystem.hpp"
-#include "utility/make_unique.hpp"
+#include "simulationparameters.hpp"
 
 namespace transm {
 
@@ -24,7 +21,7 @@ std::string to_string(SexualPartnership::Type type)
 }
 
 template<>
-bool SimulationBuilderXml::from_string(const std::string &value_string)
+bool SimulationParametersXml::from_string(const std::string &value_string)
 {
     if(value_string == "0" || value_string == "false")
     {
@@ -39,25 +36,25 @@ bool SimulationBuilderXml::from_string(const std::string &value_string)
 }
 
 template<>
-int SimulationBuilderXml::from_string(const std::string &value_string)
+int SimulationParametersXml::from_string(const std::string &value_string)
 {
 	return std::stoi(value_string);
 }
 
 template<>
-double SimulationBuilderXml::from_string(const std::string &value_string)
+double SimulationParametersXml::from_string(const std::string &value_string)
 {
 	return std::stod(value_string);
 }
 
 template<>
-std::string SimulationBuilderXml::from_string(const std::string &value)
+std::string SimulationParametersXml::from_string(const std::string &value)
 {
 	return value;
 }
 
 template<>
-std::array<double, 7> SimulationBuilderXml::from_string(const std::string &value_string)
+std::array<double, 7> SimulationParametersXml::from_string(const std::string &value_string)
 {
 	std::array<double, 7> values;
 	std::stringstream ss(value_string);
@@ -68,7 +65,7 @@ std::array<double, 7> SimulationBuilderXml::from_string(const std::string &value
 	return values;
 }
 
-NormalDist SimulationBuilderXml::GetNormalDist(const pugi::xml_node node)
+NormalDist SimulationParametersXml::GetNormalDist(const pugi::xml_node node)
 {
     NormalDist dist;
     auto dist_node = node.child("distribution");
@@ -77,37 +74,32 @@ NormalDist SimulationBuilderXml::GetNormalDist(const pugi::xml_node node)
     return dist;
 }
 
-LogNormalDist SimulationBuilderXml::GetLogNormalDist(const pugi::xml_node node)
+LogNormalDist SimulationParametersXml::GetLogNormalDist(const pugi::xml_node node)
 {
     auto dist = GetNormalDist(node);
     return LogNormalDist::FromNormal(dist);
 }
 
-BetaDist SimulationBuilderXml::GetBetaDist(const pugi::xml_node node)
+BetaDist SimulationParametersXml::GetBetaDist(const pugi::xml_node node)
 {
     auto dist = GetNormalDist(node);
     return BetaDist::FromNormal(dist);
 }
 
-ShiftedLogNormalDist SimulationBuilderXml::GetShiftedLogNormalDist(const pugi::xml_node node)
+ShiftedLogNormalDist SimulationParametersXml::GetShiftedLogNormalDist(const pugi::xml_node node)
 {
     auto dist = GetNormalDist(node);
     auto shift = Text<double>(node.child("distribution").child("shift"));
     return ShiftedLogNormalDist::FromShiftedNormal(dist, shift);
 }
 
-void SimulationBuilderXml::Reset()
-{
-	parameters_.clear();
-}
-
-void SimulationBuilderXml::SetInputFile(const std::string &filename)
+SimulationParametersXml::SimulationParametersXml(const std::string &filename)
 {
 	document_.load_file(filename.c_str());
-	simulation_.SetName(path(filename).stem().string());
+	name_ = path(filename).stem().string();
 }
 
-void SimulationBuilderXml::CheckVersion()
+Version SimulationParametersXml::GetVersion() const
 {
 	auto version_string = Attr<std::string>(document_.child("simulation"), "version");
 	auto version = Version::from_string(version_string);
@@ -116,9 +108,11 @@ void SimulationBuilderXml::CheckVersion()
 	{
 		throw std::runtime_error("bad input version");
 	}
+
+    return version;
 }
 
-void SimulationBuilderXml::ReadSimulationParameters()
+void SimulationParametersXml::GetSimulationParameters()
 {
 	auto simulation_node = document_.child("simulation");
 	auto &parameters = simulation_.GetEventParams();
@@ -343,12 +337,12 @@ void SimulationBuilderXml::ReadSimulationParameters()
     }
 }
 
-Simulation &SimulationBuilderXml::GetResult()
+Simulation &SimulationParametersXml::GetResult()
 {
 	return simulation_;
 }
 
-void SimulationBuilderXml::InitializePopulation()
+void SimulationParametersXml::InitializePopulation()
 {
 	auto &population = simulation_.GetPopulation();
 
@@ -571,7 +565,7 @@ void SimulationBuilderXml::InitializePopulation()
 	population.UpdateSize();
 }
 
-std::unordered_map<TransmissionType, std::array<double, Entity::ENDHVLStrata>> SimulationBuilderXml::ReadTransmissionCoefficients()
+std::unordered_map<TransmissionType, std::array<double, Entity::ENDHVLStrata>> SimulationParametersXml::ReadTransmissionCoefficients()
 {
     std::unordered_map<TransmissionType, std::array<double, Entity::ENDHVLStrata>> coefficient_map;
 
@@ -611,7 +605,7 @@ std::unordered_map<TransmissionType, std::array<double, Entity::ENDHVLStrata>> S
     return coefficient_map;
 }
 
-EventParams::RolloutEligibility SimulationBuilderXml::ReadRolloutEligibility()
+EventParams::RolloutEligibility SimulationParametersXml::ReadRolloutEligibility()
 {
     auto eligibility_node = document_.select_single_node("/simulation/interventions/artRolloutIntervention/rolloutEligibility").node();
     EventParams::RolloutEligibility eligibility;
@@ -657,7 +651,7 @@ EventParams::RolloutEligibility SimulationBuilderXml::ReadRolloutEligibility()
     return eligibility;
 }
 
-SexualBehavior SimulationBuilderXml::ReadSexualBehavior(const std::string &entity_type, SexualPartnership::Type type)
+SexualBehavior SimulationParametersXml::ReadSexualBehavior(const std::string &entity_type, SexualPartnership::Type type)
 {
 	auto path = "/simulation/population/entities/entity[@type='" + entity_type + "']/behavior/partnershipTypes/partnership[@type='" + to_string(type) + "']";
 	auto node = document_.select_single_node(path.c_str()).node();
@@ -695,7 +689,7 @@ SexualBehavior SimulationBuilderXml::ReadSexualBehavior(const std::string &entit
 	return result;
 }
 
-Male::SubPopParams SimulationBuilderXml::ReadMaleSubPopParams()
+Male::SubPopParams SimulationParametersXml::ReadMaleSubPopParams()
 {
 	auto node = document_.select_single_node("/simulation/population/entities/entity[@type='hetero-male']").node();
 
@@ -763,7 +757,7 @@ Male::SubPopParams SimulationBuilderXml::ReadMaleSubPopParams()
 	return result;
 }
 
-Msm::SubPopParams SimulationBuilderXml::ReadMsmSubPopParams()
+Msm::SubPopParams SimulationParametersXml::ReadMsmSubPopParams()
 {
     auto node = document_.select_single_node("/simulation/population/entities/entity[@type='msm']").node();
     
@@ -837,7 +831,7 @@ Msm::SubPopParams SimulationBuilderXml::ReadMsmSubPopParams()
     return result;
 }
 
-Msmw::SubPopParams SimulationBuilderXml::ReadBiMaleSubPopParams()
+Msmw::SubPopParams SimulationParametersXml::ReadBiMaleSubPopParams()
 {
     auto node = document_.select_single_node("/simulation/population/entities/entity[@type='Msmw']").node();
 
@@ -911,7 +905,7 @@ Msmw::SubPopParams SimulationBuilderXml::ReadBiMaleSubPopParams()
     return result;
 }
 
-Female::SubPopParams SimulationBuilderXml::ReadFemaleSubPopParams()
+Female::SubPopParams SimulationParametersXml::ReadFemaleSubPopParams()
 {
 	auto node = document_.select_single_node("/simulation/population/entities/entity[@type='female']").node();
 
@@ -931,7 +925,7 @@ Female::SubPopParams SimulationBuilderXml::ReadFemaleSubPopParams()
 	return result;
 }
 
-SimulationBuilderXml::EntityDistributions SimulationBuilderXml::ReadEntityDistributions(pugi::xml_node node)
+SimulationParametersXml::EntityDistributions SimulationParametersXml::ReadEntityDistributions(pugi::xml_node node)
 {
     EntityDistributions distributions;
 
@@ -944,7 +938,7 @@ SimulationBuilderXml::EntityDistributions SimulationBuilderXml::ReadEntityDistri
     return distributions;
 }
 
-void SimulationBuilderXml::ReadPopulationParameters()
+void SimulationParametersXml::ReadPopulationParameters()
 {
 	auto population_node = document_.child("simulation").child("population");
 
@@ -1323,7 +1317,7 @@ std::pair<int, int> ParseRange(const std::string &range_string, bool require_bot
     return {lower_bound, upper_bound};
 }
 
-std::vector<Intervention> SimulationBuilderXml::ParseInterventions(pugi::xml_node interventions_node, bool individual)
+std::vector<Intervention> SimulationParametersXml::ParseInterventions(pugi::xml_node interventions_node, bool individual)
 {
     std::vector<Intervention> interventions;
 
@@ -1335,7 +1329,7 @@ std::vector<Intervention> SimulationBuilderXml::ParseInterventions(pugi::xml_nod
     return interventions;
 }
 
-std::unordered_map<std::string, TargetGroup> SimulationBuilderXml::ReadGroups()
+std::unordered_map<std::string, TargetGroup> SimulationParametersXml::ReadGroups()
 {
     pugi::xml_node groups_node = 
         document_.select_single_node("/simulation/interventions/groups").node();
@@ -1424,7 +1418,7 @@ const std::map<KnownIntervention, std::string> KnownInterventionStrings =
 };
 
 template<>
-KnownIntervention SimulationBuilderXml::from_string(const std::string &intervention)
+KnownIntervention SimulationParametersXml::from_string(const std::string &intervention)
 {
     for(auto pair : KnownInterventionStrings)
     {
@@ -1438,7 +1432,7 @@ KnownIntervention SimulationBuilderXml::from_string(const std::string &intervent
 }
 
 template<>
-Entity::RiskLevel SimulationBuilderXml::from_string(const std::string &risk)
+Entity::RiskLevel SimulationParametersXml::from_string(const std::string &risk)
 {
     if(risk == "high") return Entity::RiskLevel::HIGH;
     if(risk == "low") return Entity::RiskLevel::LOW;
@@ -1447,7 +1441,7 @@ Entity::RiskLevel SimulationBuilderXml::from_string(const std::string &risk)
 }
 
 template<>
-DemographicProfile::Gender SimulationBuilderXml::from_string(const std::string &gender)
+DemographicProfile::Gender SimulationParametersXml::from_string(const std::string &gender)
 {
     if(gender == "male") return DemographicProfile::Gender::Male;
     if(gender == "female") return DemographicProfile::Gender::Female;
@@ -1456,7 +1450,7 @@ DemographicProfile::Gender SimulationBuilderXml::from_string(const std::string &
 }
 
 template<>
-DemographicProfile::Employment SimulationBuilderXml::from_string(const std::string &employment)
+DemographicProfile::Employment SimulationParametersXml::from_string(const std::string &employment)
 {
     if(employment == "csw") return DemographicProfile::Employment::Csw;
     if(employment == "non-csw") return DemographicProfile::Employment::NonCsw;
@@ -1465,7 +1459,7 @@ DemographicProfile::Employment SimulationBuilderXml::from_string(const std::stri
 }
 
 template<>
-Entity::HVLStrata SimulationBuilderXml::from_string(const std::string &hvl_string)
+Entity::HVLStrata SimulationParametersXml::from_string(const std::string &hvl_string)
 {
     if(hvl_string == "-1" || hvl_string == "uninfected") return Entity::HVLStrata::UNINFECTED;
     if(hvl_string == "0") return Entity::HVLStrata::HVL_ZERO;
@@ -1482,7 +1476,7 @@ Entity::HVLStrata SimulationBuilderXml::from_string(const std::string &hvl_strin
 }
 
 template<>
-SexualPartnership::Type SimulationBuilderXml::from_string(const std::string &type_string)
+SexualPartnership::Type SimulationParametersXml::from_string(const std::string &type_string)
 {
     if(type_string == "steady") return SexualPartnership::Type::Steady;
     if(type_string == "regular") return SexualPartnership::Type::Regular;
@@ -1492,7 +1486,7 @@ SexualPartnership::Type SimulationBuilderXml::from_string(const std::string &typ
     throw std::runtime_error("unknown partnership type: " + type_string);
 }
 
-Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool individual)
+Intervention SimulationParametersXml::ReadIntervention(pugi::xml_node &node, bool individual)
 {
     int time = node.attribute("time") != nullptr ? Attr<int>(node, "time") : -1;
     int duration = node.attribute("duration") != nullptr ? Attr<int>(node, "duration") : -1;

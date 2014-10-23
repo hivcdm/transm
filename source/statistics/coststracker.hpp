@@ -8,7 +8,7 @@
 #include "bucketcounter.hpp"
 #include "tabularoutput.hpp"
 #include "entities/entity.hpp"
-#include "data/eventparams.hpp"
+#include "parameters/eventparams.hpp"
 
 namespace transm {
 

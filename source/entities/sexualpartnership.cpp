@@ -4,7 +4,7 @@
 #include "sexualpartnership.hpp"
 #include "entity.hpp"
 #include "male.hpp"
-#include "data/eventparams.hpp"
+#include "parameters/eventparams.hpp"
 #include "statistics/populationstatistics.hpp"
 
 namespace transm {

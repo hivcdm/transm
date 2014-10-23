@@ -7,7 +7,7 @@
 #include "intervention.hpp"
 #include "population.hpp"
 #include "targetgroup.hpp"
-#include "data/eventparams.hpp"
+#include "parameters/eventparams.hpp"
 #include "statistics/outputs.hpp"
 #include "statistics/populationstatistics.hpp"
 #include "utility/highresolutiontimer.hpp"
