@@ -1,5 +1,5 @@
 #include "transmissionsummarystats.hpp"
-#include "populationstatistics.hpp"
+#include "populationstatisticsold.hpp"
 #include "parameters/eventparams.hpp"
 
 namespace transm {
@@ -25,11 +25,10 @@ TransmissionSummaryStats::~TransmissionSummaryStats(void)
 
 TransmissionSummaryStats::TransmissionSummary::~TransmissionSummary()
 {
-	//std::vector<PopulationStatistics::SingleTimeStats*>* selectedSummaryStats;
-	for(std::vector<PopulationStatistics::SingleTimeStats *>::iterator iter = selectedSummaryStats->begin();
+	for(std::vector<PopulationStatisticsOld::SingleTimeStats *>::iterator iter = selectedSummaryStats->begin();
 	        iter != selectedSummaryStats->end(); iter++)
 	{
-		PopulationStatistics::SingleTimeStats *singleTimeStat = *iter;
+		PopulationStatisticsOld::SingleTimeStats *singleTimeStat = *iter;
 		delete singleTimeStat;
 	}
 
@@ -38,7 +37,7 @@ TransmissionSummaryStats::TransmissionSummary::~TransmissionSummary()
 }
 
 /* addRunStats adds a new summary to the vector from a RunStats object */
-void TransmissionSummaryStats::addPopulationStatistics(PopulationStatistics &popStats, EventParams &eventParams)
+void TransmissionSummaryStats::addPopulationStatistics(PopulationStatisticsOld &popStats, EventParams &eventParams)
 {
 	/* Create a new summary object */
 	TransmissionSummary *summary = new TransmissionSummary();
@@ -50,9 +49,9 @@ void TransmissionSummaryStats::addPopulationStatistics(PopulationStatistics &pop
 	//summary->runDate = eventParams.
 	//summary->runTime = popSummary->runTime;
 	//summary->numCohorts = popSummary->numCohorts;
-	summary->selectedSummaryStats = new std::vector<PopulationStatistics::SingleTimeStats *>();
+	summary->selectedSummaryStats = new std::vector<PopulationStatisticsOld::SingleTimeStats *>();
 	int time = popStats.getNextTimeToRecord(0);
-	std::vector<PopulationStatistics::SingleTimeStats *>::iterator statsIterator = popStats.getSelectedSummaryStats()->begin();
+	std::vector<PopulationStatisticsOld::SingleTimeStats *>::iterator statsIterator = popStats.getSelectedSummaryStats()->begin();
 
 	while(time > 0 && statsIterator != popStats.getSelectedSummaryStats()->end())
 	{
@@ -69,14 +68,14 @@ void TransmissionSummaryStats::addPopulationStatistics(PopulationStatistics &pop
 		}
 	}
 
-	summary->LMsAverage = popStats.lifeStats->getStat(PopulationStatistics::TOTAL_LM) / (popStats.lifeStats->getStat(
-	                          PopulationStatistics::TOTAL_HIV_POS) + popStats.lifeStats->getStat(PopulationStatistics::TOTAL_HIV_NEG));
-	summary->HIVPosLMAverage = popStats.lifeStats->getStat(PopulationStatistics::TOTAL_HIV_POS_LM) / popStats.lifeStats->getStat(
-	                               PopulationStatistics::TOTAL_HIV_POS) ;
-	summary->HIVNegLMAverage = popStats.lifeStats->getStat(PopulationStatistics::TOTAL_HIV_NEG_LM) / popStats.lifeStats->getStat(
-	                               PopulationStatistics::TOTAL_HIV_NEG);
-	summary->HIVPosSurvivalAverage = popStats.lifeStats->getStat(PopulationStatistics::TOTAL_HIV_POS_POSTINFECT_LM) /
-	                                 popStats.lifeStats->getStat(PopulationStatistics::TOTAL_HIV_POS) ;
+	summary->LMsAverage = popStats.lifeStats->getStat(PopulationStatisticsOld::TOTAL_LM) / (popStats.lifeStats->getStat(
+	                          PopulationStatisticsOld::TOTAL_HIV_POS) + popStats.lifeStats->getStat(PopulationStatisticsOld::TOTAL_HIV_NEG));
+	summary->HIVPosLMAverage = popStats.lifeStats->getStat(PopulationStatisticsOld::TOTAL_HIV_POS_LM) / popStats.lifeStats->getStat(
+	                               PopulationStatisticsOld::TOTAL_HIV_POS) ;
+	summary->HIVNegLMAverage = popStats.lifeStats->getStat(PopulationStatisticsOld::TOTAL_HIV_NEG_LM) / popStats.lifeStats->getStat(
+	                               PopulationStatisticsOld::TOTAL_HIV_NEG);
+	summary->HIVPosSurvivalAverage = popStats.lifeStats->getStat(PopulationStatisticsOld::TOTAL_HIV_POS_POSTINFECT_LM) /
+	                                 popStats.lifeStats->getStat(PopulationStatisticsOld::TOTAL_HIV_POS) ;
 	//TODO: Fix me!
 	summary->AverageNumberOfPeopleEachPersonInfects = 1;
 	// Add the new summary to the summaries vector
@@ -104,7 +103,7 @@ void TransmissionSummaryStats::writeSummariesFile()
 
 		for(size_t j = 0; j < summary->selectedSummaryStats->size(); j++)
 		{
-			PopulationStatistics::SingleTimeStats *singleTimeStat = summary->selectedSummaryStats->at(j);
+			PopulationStatisticsOld::SingleTimeStats *singleTimeStat = summary->selectedSummaryStats->at(j);
 			summaryStatsStream << singleTimeStat->timeOfStats << "\t";
 			summaryStatsStream << singleTimeStat->prevalence << "\t";
 			summaryStatsStream << singleTimeStat->SAprevalence << "\t";

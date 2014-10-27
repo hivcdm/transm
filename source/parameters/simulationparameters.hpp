@@ -14,11 +14,11 @@ class SimulationParameters
 {
 public:
     using EntityDistributions = std::unordered_map<std::string, double>;
-    using TransmissionCoefficients = std::array<double, Entity::ENDHVLStrata>;
+    using TransmissionCoefficients = std::array<double, (std::size_t)Entity::HVLStrata::Last>;
     using TransmissionCoefficientsMap = std::unordered_map<TransmissionType, TransmissionCoefficients>;
     using InterventionsContainer = std::vector<Intervention>;
     using ConcurrencyDefinition = std::array<ConcurrencyDef, Constants::NUMBER_CONCURRENCY_DEFS>;
-    using TracingParameters = std::unordered_map < std::string, TraceFileParameters > ;
+    using TracingParameters = std::unordered_map<std::string, TraceFileParameters>;
 
     SimulationParameters();
     virtual ~SimulationParameters();
@@ -52,16 +52,25 @@ public:
     SimulationParametersXml(const std::string &filename);
     virtual ~SimulationParametersXml();
 
-    /*virtual*/ std::string GetName() const = 0;
-    /*virtual*/ Version GetVersion() const = 0;
-    /*virtual*/ PopulationParameters GetPopulationParameters() const = 0;
-    /*virtual*/ std::unordered_map<std::string, TargetGroup> GetTargetGroups() const = 0;
-    /*virtual*/ TransmissionCoefficientsMap GetTransmissionCoefficients() const = 0;
-    /*virtual*/ Female::SubPopParams GetFemaleSubPopParams() const = 0;
-    /*virtual*/ Male::SubPopParams GetMaleSubPopParams() const = 0;
-    /*virtual*/ Msm::SubPopParams GetMsmSubPopParams() const = 0;
-    /*virtual*/ Msmw::SubPopParams GetMsmwSubPopParams() const = 0;
-    /*virtual*/ InterventionsContainer GetPopulationInterventions() const = 0;
+    /*virtual*/ std::string GetName() const;
+    /*virtual*/ Version GetVersion() const;
+    /*virtual*/ std::uint32_t GetFixedSeed() const;
+    /*virtual*/ int GetDuration() const;
+    /*virtual*/ DebugLevel GetDebugLevel() const;
+    /*virtual*/ int GetMonthOf1990() const;
+    /*virtual*/ int GetInitialInfectionDelay() const;
+    /*virtual*/ ConcurrencyDefinition GetConcurrencyDefinition() const;
+    /*virtual*/ TracingParameters GetTracingParameters() const;
+    /*virtual*/ CalibrationInputs GetCalibrationParameters() const;
+    /*virtual*/ InterventionParameters GetInterventionParameters() const;
+    /*virtual*/ PopulationParameters GetPopulationParameters() const;
+    /*virtual*/ std::unordered_map<std::string, TargetGroup> GetTargetGroups() const;
+    /*virtual*/ TransmissionCoefficientsMap GetTransmissionCoefficients() const;
+    /*virtual*/ Female::SubPopParams GetFemaleSubPopParams() const;
+    /*virtual*/ Male::SubPopParams GetMaleSubPopParams() const;
+    /*virtual*/ Msm::SubPopParams GetMsmSubPopParams() const;
+    /*virtual*/ Msmw::SubPopParams GetMsmwSubPopParams() const;
+    /*virtual*/ InterventionsContainer GetPopulationInterventions() const;
 
 private:
     template<typename T>
@@ -79,18 +88,20 @@ private:
         return from_string<T>(node.attribute(name.c_str()).as_string());
     }
 
-    NormalDist GetNormalDist(const pugi::xml_node node);
-    LogNormalDist GetLogNormalDist(const pugi::xml_node node);
-    BetaDist GetBetaDist(const pugi::xml_node node);
-    ShiftedLogNormalDist GetShiftedLogNormalDist(const pugi::xml_node node);
+    NormalDist GetNormalDist(const pugi::xml_node node) const;
+    LogNormalDist GetLogNormalDist(const pugi::xml_node node) const;
+    BetaDist GetBetaDist(const pugi::xml_node node) const;
+    ShiftedLogNormalDist GetShiftedLogNormalDist(const pugi::xml_node node) const;
 
-    EntityDistributions ReadEntityDistributions(pugi::xml_node node);
+    EntityDistributions GetEntityDistributions(pugi::xml_node node) const;
 
-    InterventionsContainer ParseInterventions(pugi::xml_node interventions_node, bool individual);
+    InterventionsContainer GetInterventions(pugi::xml_node interventions_node, bool individual) const;
 
-    SexualBehavior ReadSexualBehavior(const std::string &entity_type, SexualPartnership::Type type);
+    SexualBehavior GetSexualBehavior(const std::string &entity_type, SexualPartnership::Type type) const;
 
-    Intervention ReadIntervention(pugi::xml_node &node, bool individual);
+    Intervention GetIntervention(pugi::xml_node &node, bool individual) const;
+
+    RolloutEligibility GetRolloutEligibility() const;
 
     pugi::xml_document document_;
     std::string name_;

@@ -8,6 +8,7 @@
 #include "population.hpp"
 #include "targetgroup.hpp"
 #include "parameters/eventparams.hpp"
+#include "parameters/simulationparameters.hpp"
 #include "statistics/outputs.hpp"
 #include "statistics/populationstatistics.hpp"
 #include "utility/highresolutiontimer.hpp"
@@ -27,13 +28,15 @@ public:
 
 	~Simulation();
 
+    void Initialize(SimulationParameters &parameters);
+
 	Outputs Run(MessageCallback message_callback);
 
 	//returns eventParams.cepacRunStats for adding to the general popstats
 	RunStats &GetCEPACRunStats();
 
 	//returns population->popStats information for creating popStats-like file for transmission output
-	PopulationStatistics &GetPopulationStatistics();
+	PopulationStatisticsOld &GetPopulationStatistics();
 
 	EventParams &GetEventParams();
 

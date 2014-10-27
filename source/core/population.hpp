@@ -13,7 +13,10 @@
 #include "entities/entity.hpp"
 #include "entitypool/entitypool.hpp"
 #include "parameters/populationparameters.hpp"
-#include "statistics/populationstatistics.hpp"
+#include "parameters/agebucketprevalenceinfo.hpp"
+#include "parameters/concurrencydefinition.hpp"
+#include "statistics/monthlystats.hpp"
+#include "statistics/populationstatisticsold.hpp"
 #include "utility/randomnumbergenerator.hpp"
 #include "utility/nullable.hpp"
 
@@ -44,7 +47,7 @@ public:
 
 	unsigned int GetId() const { return populationID; }
 
-	void SetParameters(const PopulationParameters &parameters) { popWideParams = parameters; }
+    void Initialize(const PopulationParameters &parameters);
 
 	void SetCondomCost(double condom_cost) { popWideParams.condomCost = condom_cost; }
 
@@ -139,7 +142,7 @@ public:
     /// <summary>
     /// gets the age bucket of the person
     /// </summary>
-	PopulationParameters::AgeBucketPrevalenceInfo &GetAgeBucket(Entity *);
+	AgeBucketPrevalenceInfo &GetAgeBucket(Entity *);
 
     /// <summary>
     /// gets the index of the age bucket of the person
@@ -184,12 +187,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-	const PopulationStatistics &GetPopulationStatistics() const { return populationStatistics; }
+	const PopulationStatisticsOld &GetPopulationStatistics() const { return populationStatistics; }
 
     /// <summary>
     ///
     /// </summary>
-    PopulationStatistics &GetPopulationStatistics() { return populationStatistics; }
+    PopulationStatisticsOld &GetPopulationStatistics() { return populationStatistics; }
 
     const std::unordered_set<Entity *> &GetDeadPeopleThisMonth() const { return dead_people_this_month_; }
 
@@ -233,7 +236,7 @@ private:
     /// @return a newly formed person
     /// </summary>
 	Entity *GenerateEntity(EventParams &_eventParams, const std::string &entity_type,
-	                       PopulationParameters::AgeBucketPrevalenceInfo *_ageBucketParams, bool toTrace);
+	                       AgeBucketPrevalenceInfo *_ageBucketParams, bool toTrace);
 
     /// <summary>
 	/// processes the death of 1 person, updates statistics, removes that person from any relationships
@@ -244,7 +247,7 @@ private:
     /// <summary>
     /// 
     /// </summary>
-	void DetermineRankings(const EventParams::RolloutEligibility &criteria);
+	void DetermineRankings(const RolloutEligibility &criteria);
 
     /// <summary>
 	/// calculates the number of HIV cases for each sexually active BucketDemographicProfile and stores it in _infectionsTracker
@@ -299,6 +302,11 @@ private:
 
     void RecordInfection(const Entity *infectee, const Entity *infector, int time);
 
+    void OnRiskGroupChanged(const Entity *entity);
+
+    using ChangedRiskGroupEventHandler = std::function<void(const Entity *)>;
+    std::vector<ChangedRiskGroupEventHandler> risk_group_changed_;
+
     /// <summary>
     /// this is used to assign each New population a unique id
     /// </summary>
@@ -332,17 +340,17 @@ private:
     /// <summary>
 	/// Size by Risk
     /// </summary>
-    std::size_t currSizeRisk[Entity::ENDRiskLevel];
+    std::size_t currSizeRisk[(std::size_t)Entity::RiskLevel::Last];
 
     /// <summary>
 	/// Size of CSW's by Risk
     /// </summary>
-    std::size_t currSizeRiskCSW[Entity::ENDRiskLevel];
+    std::size_t currSizeRiskCSW[(std::size_t)Entity::RiskLevel::Last];
 
     /// <summary>
 	/// Size of CSW's by Risk and gender
     /// </summary>
-    std::size_t currSizeGenderRiskCSW[(std::size_t)DemographicProfile::Gender::Last][Entity::ENDRiskLevel];
+    std::size_t currSizeGenderRiskCSW[(std::size_t)DemographicProfile::Gender::Last][(std::size_t)Entity::RiskLevel::Last];
 
     /// <summary>
 	/// Size by gender
@@ -362,12 +370,12 @@ private:
     /// <summary>
 	/// sexually active by risk and gender
     /// </summary>
-    std::size_t currSASizeGenderRisk[(std::size_t)DemographicProfile::Gender::Last][Entity::ENDRiskLevel];
+    std::size_t currSASizeGenderRisk[(std::size_t)DemographicProfile::Gender::Last][(std::size_t)Entity::RiskLevel::Last];
 
     /// <summary>
 	/// Num Died this month by Death Cause
     /// </summary>
-    std::size_t currDeathCauses[Entity::ENDDeathStatus];
+    std::size_t currDeathCauses[(std::size_t)Entity::DeathStatus::Last];
 
     /// <summary>
 	/// Size by age range: tuple is size, minAge, maxAge
@@ -441,7 +449,7 @@ private:
     /// <summary>
     /// tallies the statistics that the population generates throughout the simulation
     /// </summary>
-    PopulationStatistics populationStatistics;
+    PopulationStatisticsOld populationStatistics;
 
     /// <summary>
     /// </summary>
@@ -475,6 +483,8 @@ private:
     static const int NumIndividualSummaries = 10000;
 
     void SaveIndividualSummaries(std::ostream &stream) const;
+
+    std::unordered_map<std::string, MonthlyStats> trace_files_;
 };
 
 } // namespace transm

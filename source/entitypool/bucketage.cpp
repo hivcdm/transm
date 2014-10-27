@@ -8,13 +8,13 @@ BucketAge::BucketAge()
 	numPersons = 0;
 	numInfected = 0;
 
-	for(int i = 0; i < Entity::ENDRiskLevel; i++)
+	for(int i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
 	{
 		numRisk[i] = 0;
 		numRiskCSW[i] = 0;
 		numInfectedRisk[i] = 0;
 
-		for(int j = 0; j < Entity::ENDHIVStatus; j++)
+		for(int j = 0; j < (std::size_t)Entity::HIVStatus::Last; j++)
 		{
 			numRiskHIVStatus[i][j] = 0;
 		}
@@ -34,13 +34,13 @@ BucketAge::BucketAge(DemographicProfile::ProfileID BinID, unsigned int popID, co
 	numPersons = 0;
 	numInfected = 0;
 
-	for(int i = 0; i < Entity::ENDRiskLevel; i++)
+	for(int i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
 	{
 		numRisk[i] = 0;
 		numRiskCSW[i] = 0;
 		numInfectedRisk[i] = 0;
 
-		for(int j = 0; j < Entity::ENDHIVStatus; j++)
+		for(int j = 0; j < (std::size_t)Entity::HIVStatus::Last; j++)
 		{
 			numRiskHIVStatus[i][j] = 0;
 		}
@@ -89,13 +89,13 @@ void BucketAge::clear()
 	numPersons = 0;
 	numInfected = 0;
 
-	for(int i = 0; i < Entity::ENDRiskLevel; i++)
+	for(int i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
 	{
 		numRisk[i] = 0;
 		numRiskCSW[i] = 0;
 		numInfectedRisk[i] = 0;
 
-		for(int j = 0; j < Entity::ENDHIVStatus; j++)
+		for(int j = 0; j < (std::size_t)Entity::HIVStatus::Last; j++)
 		{
 			numRiskHIVStatus[i][j] = 0;
 		}
@@ -129,7 +129,7 @@ unsigned long BucketAge::getNumInfected(int generation)
 
 unsigned long BucketAge::getNumInfected(Entity::RiskLevel _risk)
 {
-	return numInfectedRisk[_risk];
+	return numInfectedRisk[(std::size_t)_risk];
 }
 
 //prints every person in this index to _outStream
@@ -167,17 +167,17 @@ Entity *BucketAge::drawMember(RandomNumberGenerator &_randomNums, Entity::RiskLe
 	{
 		toDrawFrom = &(FVProbDist_random);
 	}
-	else if(_riskLevel == Entity::LOW)
+	else if(_riskLevel == Entity::RiskLevel::LOW)
 	{
 		toDrawFrom = &(FVProbDist_low);
 	}
-	else if(_riskLevel == Entity::HIGH)
+	else if(_riskLevel == Entity::RiskLevel::HIGH)
 	{
 		toDrawFrom = &(FVProbDist_high);
 	}
 	else
 	{
-		cerr << "Error: attempting to draw a member from invalid risk level: " << _riskLevel << std::endl;
+        cerr << "Error: attempting to draw a member from invalid risk level: " << (std::size_t)_riskLevel << std::endl;
 		return nullptr;
 	}
 
@@ -236,17 +236,17 @@ bool BucketAge::erase(Entity *_person)
 		if(_person->isInfected())
 		{
 			numInfected--;
-			numInfectedRisk[_person->getRiskLevel()]--;
+			numInfectedRisk[(std::size_t)_person->getRiskLevel()]--;
 		}
 
 		//Reduce count of number of people
 		numPersons--;
-		numRisk[_person->getRiskLevel()]--;
-		numRiskHIVStatus[_person->getRiskLevel()][_person->getHIVStatus()]--;
+        numRisk[(std::size_t)_person->getRiskLevel()]--;
+        numRiskHIVStatus[(std::size_t)_person->getRiskLevel()][(std::size_t)_person->getHIVStatus()]--;
 
 		if(DemographicProfile::get(_person->getCurrBucketProfileID(), DemographicProfile::Demographic::Employment) == (std::size_t)DemographicProfile::Employment::Csw)
 		{
-			numRiskCSW[_person->getRiskLevel()]--;
+            numRiskCSW[(std::size_t)_person->getRiskLevel()]--;
 		}
 
 		return ((removed[0] || removed[1] || removed[2]) && (removed[3] || removed[4]));
@@ -282,7 +282,7 @@ bool BucketAge::insert(Entity *_person)
 	int marblesInRiskFV = marbles;
 	//int marblesInRiskFV = marbles - marblesInRandomFV;
 
-	if(_person->getRiskLevel() == Entity::HIGH)
+	if(_person->getRiskLevel() == Entity::RiskLevel::HIGH)
 	{
 		FVProbDist_high.add(_person, marblesInRiskFV);
 	}
@@ -308,18 +308,18 @@ bool BucketAge::insert(Entity *_person)
 	FVNoDist.add(_person, 1);
 	//Increment number of persons and number of infected person (if necessary)
 	numPersons++;
-	numRisk[_person->getRiskLevel()]++;
-	numRiskHIVStatus[_person->getRiskLevel()][_person->getHIVStatus()]++;
+    numRisk[(std::size_t)_person->getRiskLevel()]++;
+    numRiskHIVStatus[(std::size_t)_person->getRiskLevel()][(std::size_t)_person->getHIVStatus()]++;
 
     if(_person->getDemographicProfileVal(DemographicProfile::Demographic::Employment) == (std::size_t)DemographicProfile::Employment::Csw)
 	{
-		numRiskCSW[_person->getRiskLevel()]++;
+        numRiskCSW[(std::size_t)_person->getRiskLevel()]++;
 	}
 
 	if(_person->isInfected())
 	{
 		numInfected++;
-		numInfectedRisk[_person->getRiskLevel()]++;
+        numInfectedRisk[(std::size_t)_person->getRiskLevel()]++;
 	}
 
 	return true;
@@ -361,7 +361,7 @@ unsigned long BucketAge::size()
  */
 unsigned long BucketAge::getNumRisk(Entity::RiskLevel _risk)
 {
-	return numRisk[_risk];
+    return numRisk[(std::size_t)_risk];
 }
 
 /* @function: getNumRiskCSW
@@ -369,7 +369,7 @@ unsigned long BucketAge::getNumRisk(Entity::RiskLevel _risk)
  */
 unsigned long BucketAge::getNumRiskCSW(Entity::RiskLevel _risk)
 {
-	return numRiskCSW[_risk];
+    return numRiskCSW[(std::size_t)_risk];
 }
 
 /* @function: getNumRiskHIVStatus
@@ -377,7 +377,7 @@ unsigned long BucketAge::getNumRiskCSW(Entity::RiskLevel _risk)
  */
 unsigned long BucketAge::getNumRiskHIVStatus(Entity::RiskLevel _risk, Entity::HIVStatus _hivStatus)
 {
-	return numRiskHIVStatus[_risk][_hivStatus];
+    return numRiskHIVStatus[(std::size_t)_risk][(std::size_t)_hivStatus];
 }
 
 /* @function: numHighRiskChoices
@@ -409,20 +409,20 @@ int BucketAge::numRandomRiskChoices()
 
 /* @function: numChoices
  * @returns: The integer number of (non-unique) Persons in the risk bucket associated with _risk
- * If _risk = Entity::ENDRiskLevel, returns the number of persons in the random risk bucket
+ * If _risk = (std::size_t)Entity::RiskLevel::Last, returns the number of persons in the random risk bucket
  */
 
 int BucketAge::numChoices(Entity::RiskLevel _risk)
 {
-	if(_risk == Entity::HIGH)
+    if(_risk == Entity::RiskLevel::HIGH)
 	{
 		return numHighRiskChoices();
 	}
-	else if(_risk == Entity::LOW)
+    else if(_risk == Entity::RiskLevel::LOW)
 	{
 		return numLowRiskChoices();
 	}
-	else if(_risk == Entity::ENDRiskLevel)
+	else if(_risk == Entity::RiskLevel::Last)
 	{
 		return numRandomRiskChoices();
 	}
@@ -444,7 +444,7 @@ bool BucketAge::increaseInfected(Entity *_p)
 		if(FVuninfected.exists(_p))
 		{
 			numInfected++;
-			numInfectedRisk[_p->getRiskLevel()]++;
+			numInfectedRisk[(std::size_t)_p->getRiskLevel()]++;
 			FVuninfected.remove(_p);
 			FVinfected[_p->getGenerationOfInfection()]->add(_p, 1);
 			return true;
@@ -466,8 +466,8 @@ bool BucketAge::increaseInfected(Entity *_p)
  */
 void BucketAge::changeHIVStatus(Entity *_p, Entity::HIVStatus _orig, Entity::HIVStatus _new)
 {
-	numRiskHIVStatus[_p->getRiskLevel()][_orig]--;
-	numRiskHIVStatus[_p->getRiskLevel()][_new]++;
+    numRiskHIVStatus[(std::size_t)_p->getRiskLevel()][(std::size_t)_orig]--;
+	numRiskHIVStatus[(std::size_t)_p->getRiskLevel()][(std::size_t)_new]++;
 }
 
 //Pseudo-TESTED... should use print function later on

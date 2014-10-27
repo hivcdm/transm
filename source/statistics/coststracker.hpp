@@ -56,8 +56,8 @@ public:
 private:	
 	struct Costs
 	{
-		std::array<double, Entity::ENDHIVStatus> lifeMonthsByHivStatus;
-		std::array<double, Entity::ENDHIVStatus> qalmsByHivStatus;
+		std::array<double, (std::size_t)Entity::HIVStatus::Last> lifeMonthsByHivStatus;
+		std::array<double, (std::size_t)Entity::HIVStatus::Last> qalmsByHivStatus;
 		double condomCosts;
 		double circumcisionCosts;
 		std::array<double, SimContext::COST_NUM_TYPES> medicalCosts;
@@ -66,9 +66,9 @@ private:
 		double drugCosts;
 		double toxicityCosts;
 		std::array<double, (std::size_t)DemographicProfile::Gender::Last> totalCostsByGender;
-		std::array<double, Entity::ENDHIVStatus> totalCostsByHivState;
-		std::array<double, Entity::ENDCD4Strata> totalCostsByCd4;
-		std::array<double, Entity::ENDHVLStrata + 1> totalCostsByHvl;
+		std::array<double, (std::size_t)Entity::HIVStatus::Last> totalCostsByHivState;
+        std::array<double, (std::size_t)Entity::CD4Strata::Last> totalCostsByCd4;
+        std::array<double, (std::size_t)Entity::HVLStrata::Last> totalCostsByHvl;
 	};
 
 	Costs undiscounted_;

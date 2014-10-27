@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 #include <unordered_map>
 
@@ -46,7 +48,7 @@ public:
     /// <summary>
     /// number of male and female non-csw in this bucket that are infected (at prevalence delay)
     /// </summary>
-    std::size_t numInfectedRisk[(std::size_t)DemographicProfile::Gender::Last][Entity::ENDRiskLevel];
+    std::size_t numInfectedRisk[(std::size_t)DemographicProfile::Gender::Last][(std::size_t)Entity::RiskLevel::Last];
 };
 
 } // namespace transm

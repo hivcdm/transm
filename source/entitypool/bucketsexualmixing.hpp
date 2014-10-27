@@ -141,7 +141,7 @@ public :
 
 	/*
 	 * @returns: total number of marbles in all FVs associated with _risk
-	 * across all BucketAges in this; If _risk = Entity::ENDRiskLevel,
+	 * across all BucketAges in this; If _risk = (std::size_t)Entity::RiskLevel::Last,
 	 * returns the number of persons in the random risk bucket
 	 */
 	//TESTED
@@ -149,7 +149,7 @@ public :
 
 	/*
 	 * @returns: total number of unique persons in this bucket with given risk level that is CSW
-	 * across all BucketAges in this; If _risk = Entity::ENDRiskLevel,
+	 * across all BucketAges in this; If _risk = (std::size_t)Entity::RiskLevel::Last,
 	 * returns the number of persons in the random risk bucket
 	 */
 	unsigned long sizeRiskCSW(Entity::RiskLevel _risk);

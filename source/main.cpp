@@ -3,8 +3,7 @@
 
 #include "core/batchstatus.hpp"
 #include "core/simulation.hpp"
-#include "parameters/simulationbuilderxml.hpp"
-#include "parameters/simulationreader.hpp"
+#include "parameters/simulationparameters.hpp"
 #include "statistics/transmissionsummarystats.hpp"
 #include "utility/utility.hpp"
 #include "utility/filesystem.hpp"
@@ -75,13 +74,12 @@ int run_simulation(const std::string &batch_name, std::function<void(const std::
         CepacUtil::changeDirectoryToInputs();
         std::cout << "Running File: " << task_name << std::endl;
 
-        SimulationBuilderXml builder(status);
-        SimulationReader reader(builder);
+        auto sim_filename = batches_directory / batch_name / path(task_name + ".xml");
+        auto parameters = SimulationParametersXml(sim_filename.string());
 
-        auto task_filename = batches_directory / batch_name / path(task_name + ".xml");
-        reader.ConstructSimulation(task_filename.string());
+        Simulation simulation(status);
+        simulation.Initialize(parameters);
 
-        auto &simulation = builder.GetResult();
         auto outputs = simulation.Run(message_callback);
 
         cepac_summary.addRunStats(&simulation.GetCEPACRunStats());

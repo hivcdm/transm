@@ -29,7 +29,7 @@ public:
                                                 DemographicProfile::Demographic::Employment));
         values_.push_back((std::size_t)employment);
         Entity::RiskLevel riskLevel = person.getRiskLevel();
-		values_.push_back(riskLevel);
+        values_.push_back((std::size_t)riskLevel);
         int ageGroup = -1;
         int age = person.getAge(TimeGranularity::Month);
 
@@ -44,7 +44,7 @@ public:
         assert(ageGroup != -1);
 		values_.push_back(ageGroup);
         Entity::CD4Strata cd4Stratum = person.getCd4Stratum();
-		values_.push_back(cd4Stratum);
+        values_.push_back((std::size_t)cd4Stratum);
 	}
 };
 

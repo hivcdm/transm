@@ -115,34 +115,34 @@ template<typename PointStatIDs, typename StratifiedStatIDs>
 double StatsRecord<PointStatIDs, StratifiedStatIDs>::getStat(PointStatIDs _statID)  const
 {
 	assert(validStatID(_statID));
-	return singleValStats.at(_statID);
+    return singleValStats.at((std::size_t)_statID);
 }
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
 void StatsRecord<PointStatIDs, StratifiedStatIDs>::incrStat(PointStatIDs _statID, double _value)
 {
 	assert(validStatID(_statID));
-	singleValStats.at(_statID) += _value;
+    singleValStats.at((std::size_t)_statID) += _value;
 }
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
 void StatsRecord<PointStatIDs, StratifiedStatIDs>::multStat(PointStatIDs _statID, double _value)
 {
 	assert(validStatID(_statID));
-	singleValStats.at(_statID) *= _value;
+    singleValStats.at((std::size_t)_statID) *= _value;
 }
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
 void StatsRecord<PointStatIDs, StratifiedStatIDs>::setStat(PointStatIDs _statID, double _value)
 {
 	assert(validStatID(_statID));
-	singleValStats.at(_statID) = _value;
+    singleValStats.at((std::size_t)_statID) = _value;
 }
 
 template<typename PointStatIDs, typename StratifiedStatIDs>
 bool StatsRecord<PointStatIDs, StratifiedStatIDs>::validStatID(PointStatIDs _statID) const
 {
-	return (statIDEnumCls->isValidNonWildCard(_statID));
+    return (statIDEnumCls->isValidNonWildCard((std::size_t)_statID));
 }
 
 } // namespace transm

@@ -6,6 +6,7 @@
 #include "entities/msm.hpp"
 #include "entities/transmissiontype.hpp"
 #include "statistics/coststracker.hpp"
+#include "parameters/agebucketprevalenceinfo.hpp"
 
 namespace transm {
 
@@ -42,7 +43,7 @@ public:
 	const Female::SubPopParams &GetFemaleParameters() const { return defaultFemaleParams; }
 	void SetFemaleParameters(Female::SubPopParams &params) { defaultFemaleParams = params; }
 
-	void SetTransmissionCoefficients(const std::unordered_map<TransmissionType, std::array<double, Entity::ENDHVLStrata>> &coefficients)
+	void SetTransmissionCoefficients(const std::unordered_map<TransmissionType, std::array<double, (std::size_t)Entity::HVLStrata::Last>> &coefficients)
 	{
         transmission_coefficients_ = coefficients;
 	}
@@ -149,7 +150,7 @@ private:
     /// <summary>
     /// Base FOI for different transmission types at various viral loads.
     /// </summary>
-    std::unordered_map<TransmissionType, std::array<double, Entity::ENDHVLStrata>> transmission_coefficients_;
+    std::unordered_map<TransmissionType, std::array<double, (std::size_t)Entity::HVLStrata::Last>> transmission_coefficients_;
 
     /// <summary>
     /// holds the population-level parameters for population of heterosexual males

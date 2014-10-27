@@ -11,7 +11,7 @@ namespace transm {
 
 class Entity;
 class InfectionsTracker;
-class PopulationStatistics;
+class PopulationStatisticsOld;
 
 /***
 This class represents a SexualPartnership that lasts more than 1 month
@@ -142,7 +142,7 @@ public :
 	@return returns a pointer to a person who has been newly infected. nullptr if no infection occured
 	@author schung5
 	**/
-    Entity *monthlySexualActivity(EventParams &_eventParams, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, 9UL>> &transmission_coefficients);
+    Entity *monthlySexualActivity(EventParams &_eventParams, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, 10ULL>> &transmission_coefficients);
 
 	int getTimeOfFormation()
 	{

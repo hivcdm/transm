@@ -94,9 +94,9 @@ Female::Female(EventParams &_eventParams, int _ageMths, unsigned int _population
 		activityLevel = 1;
 	}
 
-	risk = Entity::LOW;
+	risk = Entity::RiskLevel::LOW;
 
-    for(auto risk : {LOW, HIGH})
+    for(auto risk : {RiskLevel::LOW, RiskLevel::HIGH})
     {
         for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
         {
@@ -109,7 +109,7 @@ Female::~Female(void)
 {
 }
 
-double Female::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
+double Female::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
 {
     assert(_p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male);
 	Male *m = (Male *)_p;
@@ -127,7 +127,7 @@ double Female::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std
 
     assert(_p->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Male);
 
-    double base_foi = transmission_coefficients.at(TransmissionType::female_to_male)[getHVL()];
+    double base_foi = transmission_coefficients.at(TransmissionType::female_to_male)[(std::size_t)getHVL()];
     double FOI = base_foi * (1 - condomEff) * (1 - circEff);
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (trace() || _p->trace()))
@@ -185,11 +185,11 @@ void Female::rerollRiskGroup(EventParams &_eventParams)
 
 	if(_eventParams.randomNums.chance(chanceHighRisk))
 	{
-		risk = HIGH;
+		risk = RiskLevel::HIGH;
 	}
 	else
 	{
-		risk = LOW;
+		risk = RiskLevel::LOW;
 	}
 }
 

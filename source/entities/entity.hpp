@@ -55,7 +55,7 @@ public:
 	/// <summary>
 	/// every Entity's CD4 count falls in a CD4 strata - used in CEPAC
 	/// </summary>
-	enum CD4Strata
+	enum class CD4Strata
 	{
 		CD4_ZERO,
 		CD4_ONE,
@@ -63,18 +63,19 @@ public:
 		CD4_THREE,
 		CD4_FOUR,
 		CD4_FIVE,
-		ENDCD4Strata
+		Last,
+        First = CD4_ZERO
 	};
 
 	/// <summary>
 	/// every Entity's hvl level falls in an HVL stratum (values in copies/mL)
 	/// </summary>
-	enum HVLStrata
+	enum class HVLStrata
 	{
 		/// <summary>
 		/// HIV-
 		/// </summary>
-		UNINFECTED = -1,
+		UNINFECTED,
 		/// <summary>
 		/// 0-20
 		/// </summary>
@@ -111,12 +112,11 @@ public:
 		/// Final stage of disease progression
 		/// </summary>
 		HVL_LATESTAGE,
-		ENDHVLStrata,
-        Last = ENDHVLStrata,
+        Last,
         First = UNINFECTED
 	};
 
-	enum HIVStatus
+	enum class HIVStatus
 	{
 		NEGATIVE, //hiv negative
 		OBSERVED_ACUTE,
@@ -125,10 +125,11 @@ public:
 		UNOBSERVED_CHRONIC,
 		OBSERVED_LATESTAGE,//Late stage takes precedence over chronic (acute cases are never latestage)
 		UNOBSERVED_LATESTAGE,
-		ENDHIVStatus
+		Last,
+        First = NEGATIVE
 	};
 
-	enum DeathStatus
+	enum class DeathStatus
 	{
 		ALIVE, //not dead
 		DTH_OI,
@@ -137,14 +138,16 @@ public:
 		DTH_TOX_ART,
 		DTH_TOX_PROPH,
 		DTH_OTHER,
-		ENDDeathStatus
+        Last,
+        First = ALIVE
 	};
 
-	enum RiskLevel   //used for assortativeness
+	enum class RiskLevel   //used for assortativeness
 	{
 		LOW,
 		HIGH,
-		ENDRiskLevel
+		Last,
+        First = LOW
 	};
 
     virtual void SetPartnershipRejectionChance(RiskLevel risk, SexualPartnership::Type partnershipType, double chance) = 0;
@@ -155,7 +158,7 @@ public:
 
 	// we have made these stats referenceable by enum so that we can more easily create customizeable outputs or reports...
 	// we can perhaps have easier look-up of stat descriptions if we choose to write some up
-	enum Stats
+	enum class Stats
 	{
 		STAT_TOTAL_LM,							//months lived during sim.
 		STAT_HIV_NEG_LM,						//life months lived as HIV-
@@ -165,7 +168,8 @@ public:
 		STAT_AGE_AT_INFECTION_MTH,				//age when infection occurred
 		STAT_TIME_OF_INFECTION_MTH,				//calendar time of infection
 		STAT_GENERATION_OF_INFECTION,			//generation of infection: prevalent case is 0, otherwise (1+generation of infectors infection)
-		STAT_ENDStats
+		Last,
+        First = STAT_TOTAL_LM
 	};
 
 	//string representations of enum Stats
@@ -382,7 +386,7 @@ public:
 	// @param _p - partner
 	// @param _parteringType - whether this is a fling or steadyCouple */
 	virtual double getFOI(Entity *_p, 
-        const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients,
+        const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients,
         SexualPartnership::Type _partnershipType, EventParams &_eventParams) = 0;
 
 	//returns true if person is currently alive
@@ -579,7 +583,7 @@ public:
 	@return returns a pointer to the person who infected this person.
 	*/
 	Entity *allPartnerSexualActivity(EventParams &_eventParams, SexualPartnership::Type _partnershipType,
-        list<Entity *> &_newlyInfected, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients);
+        list<Entity *> &_newlyInfected, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients);
 
 	//returns whether this person could partner with Entity _p
 	//  split this by gender because there might be behaviour differences between them
@@ -610,7 +614,7 @@ public:
 	returns a pointer to a person who has been newly infected. nullptr if no infection occured
 	*/
 	Entity *sexualActivity(Entity *_p, int _numActs, SexualPartnership::Type _partnershipType, EventParams &_eventParams,
-        InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients);
+        InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients);
 
 	//gets the age of the person in desired granularity
 	int getAge(TimeGranularity _granularity) const;

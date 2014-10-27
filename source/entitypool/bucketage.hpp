@@ -119,7 +119,7 @@ public:
 
 	/* @function: numChoices
 	 * @returns: The integer number of (non-unique) Persons in the risk bucket associated with _risk
-	 * If _risk = Entity::ENDRiskLevel, returns the number of persons in the random risk bucket
+	 * If _risk = (std::size_t)Entity::RiskLevel::Last, returns the number of persons in the random risk bucket
 	 */
 
 	int numChoices(Entity::RiskLevel _risk);
@@ -163,10 +163,10 @@ private:
 	unsigned int populationID;
 	unsigned long numPersons;
 	unsigned long numInfected;
-	unsigned long numRisk[Entity::ENDRiskLevel];
-	unsigned long numRiskCSW[Entity::ENDRiskLevel]; // number of csw persons by risk bucket
-	unsigned long numInfectedRisk[Entity::ENDRiskLevel];
-	unsigned long numRiskHIVStatus[Entity::ENDRiskLevel][Entity::ENDHIVStatus];
+	unsigned long numRisk[(std::size_t)Entity::RiskLevel::Last];
+	unsigned long numRiskCSW[(std::size_t)Entity::RiskLevel::Last]; // number of csw persons by risk bucket
+	unsigned long numInfectedRisk[(std::size_t)Entity::RiskLevel::Last];
+	unsigned long numRiskHIVStatus[(std::size_t)Entity::RiskLevel::Last][(std::size_t)Entity::HIVStatus::Last];
 };
 
 } // namespace transm

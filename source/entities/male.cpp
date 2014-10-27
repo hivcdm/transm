@@ -35,7 +35,7 @@ double Male::SubPopParams::getChanceBecomeCSW() const
 
 double Male::SubPopParams::getPartnerAcqMultWithSteady(Entity::RiskLevel _risk) const
 {
-	return partnerAcqMultWithSteady[_risk];
+    return partnerAcqMultWithSteady[(std::size_t)_risk];
 }
 
 //sexual behavior params for each type as specified by SexualPartnership::Type
@@ -173,7 +173,7 @@ Male::Male(EventParams &_eventParams, int _age, bool _circumcised, unsigned int 
 
 	circumcised = _circumcised;
 	//Set this male's risk level assume everyone is low risk on creation. Risk is rerolled when they roll for become sex worker
-	risk = Entity::LOW;
+	risk = Entity::RiskLevel::LOW;
 
 	for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
 	{
@@ -225,13 +225,8 @@ double Male::getCondomProtectEff()
 	return populationSpecificParams.getCondomProtectEff();
 }
 
-bool Male::isCircumcised()
-{
-	return circumcised;
-}
-
 //in this case, the male is infected and female is uninfected
-double Male::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
+double Male::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
 {
 	//note: in the case of male->female transmission, circumcision makes no difference
 	//transmission coeff				1-	(condoms are used and succeed)
@@ -257,7 +252,7 @@ double Male::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::
 
     assert(_p->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Female);
 
-    double base_foi = transmission_coefficients.at(TransmissionType::male_to_female)[getHVL()];
+    double base_foi = transmission_coefficients.at(TransmissionType::male_to_female)[(std::size_t)getHVL()];
     double FOI = base_foi * (1 - condomEff);
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (trace() || _p->trace()))
@@ -434,11 +429,11 @@ void Male::rerollRiskGroup(EventParams &_eventParams)
 
 	if(_eventParams.randomNums.chance(chanceHighRisk))
 	{
-		risk = HIGH;
+		risk = RiskLevel::HIGH;
 	}
 	else
 	{
-		risk = LOW;
+		risk = RiskLevel::LOW;
 	}
 
 	if(oldRisk != risk)
@@ -464,7 +459,7 @@ void Male::rerollRiskGroup(EventParams &_eventParams)
 	{
         _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " % Male " << getID() << " rerolls as ";
 
-		if(risk == HIGH)
+		if(risk == RiskLevel::HIGH)
 		{
             _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "High";
 		}

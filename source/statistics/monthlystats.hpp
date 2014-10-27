@@ -1,0 +1,55 @@
+#pragma once
+
+#include <tuple>
+#include <unordered_map>
+
+#include "entities/entity.hpp"
+#include "utility/hash_tuple.hpp"
+
+namespace xlnt {
+class worksheet;
+} // namespace xlnt
+
+namespace transm {
+using DeathCauseCount = std::unordered_map<Entity::DeathStatus, std::size_t>;
+using AgeGroup = std::pair<int, int>;
+using AgeActivityGenderRiskEmpl = std::tuple<AgeGroup, DemographicProfile::SexualActivityStatus, DemographicProfile::Gender, Entity::RiskLevel, DemographicProfile::Employment>;
+} // namespace transm
+
+namespace std {
+template<>
+struct hash<transm::AgeGroup>
+{
+    size_t operator()(const transm::AgeGroup &g) const
+    {
+        size_t seed = 0;
+        hash_combine(seed, g.first);
+        hash_combine(seed, g.second);
+        return seed;
+    }
+};
+} // namespace std
+
+namespace transm {
+
+using AgeActivityGenderRiskEmplCount = std::unordered_map<AgeActivityGenderRiskEmpl, std::size_t>;
+
+class MonthlyStats
+{
+public:
+    MonthlyStats();
+    virtual ~MonthlyStats();
+
+    void SetAgeGroups(const std::vector<AgeGroup> &age_groups) { age_groups_ = age_groups; }
+
+    virtual void RecordEntity(int month, const Entity *entity);
+    virtual void RecordRiskGroupChanged(int month, const Entity *entity);
+    virtual void RecordDeath(int month, Entity::DeathStatus cause_of_death);
+
+    virtual std::vector<std::string> BuildMonthSummary(int month) const = 0;
+
+protected:
+    std::vector<AgeGroup> age_groups_;
+};
+
+} // namespace transm

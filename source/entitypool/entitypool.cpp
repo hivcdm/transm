@@ -154,8 +154,8 @@ void EntityPool::printBucketSizes(std::ostream &_outStream, const std::string &,
 
         if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
 		{
-			long bucketSizeHR = ((BucketSexualMixing *) bucket)->sizeRisk(Entity::HIGH);
-			long bucketSizeLR = ((BucketSexualMixing *) bucket)->sizeRisk(Entity::LOW);
+			long bucketSizeHR = ((BucketSexualMixing *) bucket)->sizeRisk(Entity::RiskLevel::HIGH);
+			long bucketSizeLR = ((BucketSexualMixing *) bucket)->sizeRisk(Entity::RiskLevel::LOW);
 			_outStream << bucketSizeHR << Constants::TAB << bucketSizeLR << Constants::TAB;
 		}
 

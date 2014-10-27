@@ -77,7 +77,7 @@ public:
         void SetCircucmsionProtectEfficacy(double efficacy) { circumProtectEff = efficacy; }
         void SetCondomProtectEff(double efficacy) { condomProtectEff = efficacy; }
 
-        void SetPartnerAcqMultWithSteady(Entity::RiskLevel risk, double multiplier) { partnerAcqMultWithSteady[risk] = multiplier; }
+        void SetPartnerAcqMultWithSteady(Entity::RiskLevel risk, double multiplier) { partnerAcqMultWithSteady[(std::size_t)risk] = multiplier; }
 
         void SetChanceBecomeCsw(double chance) { chanceBecomeCSW = chance; }
 
@@ -111,7 +111,7 @@ public:
         /// <summary>
         /// the rate multiplier for partner acquisition when a male has a Steady partner
         /// </summary>
-        double partnerAcqMultWithSteady[Entity::ENDRiskLevel];
+        double partnerAcqMultWithSteady[(std::size_t)Entity::RiskLevel::Last];
 
         /// <summary>
         /// sexual behavior params for each type as specified by SexualPartnership::Type
@@ -212,7 +212,7 @@ public:
 
     double getChanceBecomeCsw() const;
 
-    double getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams);
+    double getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams);
 
     double getMinPartnerSelectVal(Entity::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
     double getMaxPartnerSelectVal(Entity::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;

@@ -5,7 +5,7 @@
 #include "entity.hpp"
 #include "male.hpp"
 #include "parameters/eventparams.hpp"
-#include "statistics/populationstatistics.hpp"
+#include "statistics/populationstatisticsold.hpp"
 
 namespace transm {
 
@@ -113,7 +113,9 @@ bool SexualPartnership::isMember(Entity *_p)
 	return ((_p == partners[0]) || (_p == partners[1]));
 }
 
-Entity *SexualPartnership::monthlySexualActivity(EventParams &_eventParams, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, Entity::ENDHVLStrata>> &transmission_coefficients)
+Entity *SexualPartnership::monthlySexualActivity(EventParams &_eventParams, 
+    InfectionsTracker *infTrack, 
+    const std::unordered_map<TransmissionType, std::array<double, (std::size_t)Entity::HVLStrata::Last>> &transmission_coefficients)
 {
 	int eventsThisMonth = partners[0]->rollNumEventsPerPartner(partners[1], _eventParams.randomNums, type);
 

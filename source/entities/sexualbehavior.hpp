@@ -65,15 +65,15 @@ public :
 
 	SexualPartnership::Type getPartnershipType() const;
 
-	void setChanceCondomUsePerEvent(Entity::RiskLevel risk, BetaDist dist) { chanceCondomUsePerEvent[risk] = dist; }
+	void setChanceCondomUsePerEvent(Entity::RiskLevel risk, BetaDist dist) { chanceCondomUsePerEvent[static_cast<std::size_t>(risk)] = dist; }
 
-	void setCoitalEventsPerMonth(Entity::RiskLevel risk, double meanEvents) { coitalEventsPerMonth[risk] = meanEvents; }
+    void setCoitalEventsPerMonth(Entity::RiskLevel risk, double meanEvents) { coitalEventsPerMonth[static_cast<std::size_t>(risk)] = meanEvents; }
 
-	void setPartnershipDuration(Entity::RiskLevel risk, ShiftedLogNormalDist dist) { partnershipDurationMth[risk] = dist; }
+    void setPartnershipDuration(Entity::RiskLevel risk, ShiftedLogNormalDist dist) { partnershipDurationMth[static_cast<std::size_t>(risk)] = dist; }
 
 	void setAverageYearsYounger(NormalDist dist) { averageYearsYounger = dist; }
 
-	void setAcquisitionRatePerMonth(Entity::RiskLevel risk, LogNormalDist dist) { acquisitionRatePerMonth[risk] = dist; }
+    void setAcquisitionRatePerMonth(Entity::RiskLevel risk, LogNormalDist dist) { acquisitionRatePerMonth[static_cast<std::size_t>(risk)] = dist; }
 
     double getAssortativeness() const { return assortativeness; }
 
@@ -88,9 +88,9 @@ private:
 	SexualPartnership::Type partnershipType;
 
 	//LogNormal distribution from which the people draw a rate to acquire this type of partner
-	LogNormalDist acquisitionRatePerMonth[Entity::ENDRiskLevel];
+	LogNormalDist acquisitionRatePerMonth[(std::size_t)Entity::RiskLevel::Last];
 	//average number of partners men acquire at a time
-	//double averagePartnersAtATime[Entity::ENDRiskLevel];
+	//double averagePartnersAtATime[(std::size_t)Entity::RiskLevel::Last];
 
 	//selection criteria
 	//particular buckets that are available for this kind of sexual partnership
@@ -100,13 +100,13 @@ private:
 	NormalDist averageYearsYounger;
 
 	//avg events per month across all Couples; will be used as a mean in Poisson distribution
-	double coitalEventsPerMonth[Entity::ENDRiskLevel];
+    double coitalEventsPerMonth[(std::size_t)Entity::RiskLevel::Last];
 
 	//chance per event that this person will use a condom
-	BetaDist chanceCondomUsePerEvent[Entity::ENDRiskLevel];
+    BetaDist chanceCondomUsePerEvent[(std::size_t)Entity::RiskLevel::Last];
 
 	//avg duration if partnerships across all Couples
-	ShiftedLogNormalDist partnershipDurationMth[Entity::ENDRiskLevel];
+    ShiftedLogNormalDist partnershipDurationMth[(std::size_t)Entity::RiskLevel::Last];
 };
 
 } // namespace transm

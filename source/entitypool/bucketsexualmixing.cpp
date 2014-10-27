@@ -122,7 +122,7 @@ Entity *BucketSexualMixing::drawMember(RandomNumberGenerator &_randomNums, Sexua
 	//Use minAge and maxAge for bucket
 	//default use risk level of low
 	//Assortative param will set it to random anyhow
-	return getRandomPerson(_randomNums, minAge, maxAge, Entity::LOW, _partnershipType, _remove);
+	return getRandomPerson(_randomNums, minAge, maxAge, Entity::RiskLevel::LOW, _partnershipType, _remove);
 }
 
 /***
@@ -247,16 +247,14 @@ Entity *BucketSexualMixing::getRandomPerson(RandomNumberGenerator &_randomNums, 
 	unsigned int minIndex = std::max<unsigned int>(_ageLowerBound - minAge, 0);
 	unsigned int maxIndex = std::min<unsigned int>(_ageUpperBound - minAge,
 	                        (unsigned int)personsByAge->size() - 1);
+
 	//Use assort to determine whether to use random or _risk bin
-	Entity::RiskLevel riskToDraw;
+    //Use random by default
+    Entity::RiskLevel riskToDraw = Entity::RiskLevel::Last;
 
 	if(_randomNums.chance(assort[_partnershipType]))
 	{
 		riskToDraw = _risk;
-	}
-	else
-	{
-		riskToDraw = Entity::ENDRiskLevel;
 	}
 
 	//figure out # of eligible people
@@ -322,7 +320,7 @@ Entity *BucketSexualMixing::getRandomPerson(RandomNumberGenerator &_randomNums, 
 		if(randPick < personsByAge->at(currIndex)->numChoices(riskToDraw))
 		{
 			BucketAge *ageBucket = personsByAge->at(currIndex);
-			Entity *p = ageBucket->drawMember(_randomNums, _risk, _partnershipType, (riskToDraw == Entity::ENDRiskLevel), _remove);
+			Entity *p = ageBucket->drawMember(_randomNums, _risk, _partnershipType, (riskToDraw == Entity::RiskLevel::Last), _remove);
 
 			//we have to tell the person that they are not part of a bucket anymore
 			if(_remove && p)
@@ -474,7 +472,6 @@ unsigned long BucketSexualMixing::sizeInfectedByAge(int minMonthAge, int maxMont
  */
 unsigned long BucketSexualMixing::sizeRisk(Entity::RiskLevel _risk)
 {
-	assert(_risk <= Entity::ENDRiskLevel);
 	BucketAllAges::iterator bucketIter;
 	unsigned long total = 0;
 
@@ -493,7 +490,6 @@ unsigned long BucketSexualMixing::sizeRisk(Entity::RiskLevel _risk)
  */
 unsigned long BucketSexualMixing::sizeRiskCSW(Entity::RiskLevel _risk)
 {
-	assert(_risk <= Entity::ENDRiskLevel);
 	BucketAllAges::iterator bucketIter;
 	unsigned long total = 0;
 
@@ -511,8 +507,6 @@ unsigned long BucketSexualMixing::sizeRiskCSW(Entity::RiskLevel _risk)
  */
 unsigned long BucketSexualMixing::sizeRiskHIVStatus(Entity::RiskLevel _risk, Entity::HIVStatus _hivStatus)
 {
-	assert(_risk <= Entity::ENDRiskLevel);
-	assert(_hivStatus <= Entity::ENDHIVStatus);
 	BucketAllAges::iterator bucketIter;
 	unsigned long total = 0;
 

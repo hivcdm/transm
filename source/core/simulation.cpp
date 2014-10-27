@@ -809,7 +809,7 @@ std::size_t Simulation::SimulateMonth()
 
 	if(recordPartAcq)
 	{
-        population_.populationStatistics.selectedPartAcqStats = new PopulationStatistics::SinglePartAcqStats();
+        population_.populationStatistics.selectedPartAcqStats = new PopulationStatisticsOld::SinglePartAcqStats();
 		population_.RecordPartAcqFreq();
 
         if(parameters_.trace_files[EventParams::TraceFile::Type::PartnerAcquisition].enabled)
@@ -836,7 +836,7 @@ RunStats &Simulation::GetCEPACRunStats()
 	return *parameters_.cepacRunStats;
 }
 
-PopulationStatistics &Simulation::GetPopulationStatistics()
+PopulationStatisticsOld &Simulation::GetPopulationStatistics()
 {
     return population_.populationStatistics;
 }

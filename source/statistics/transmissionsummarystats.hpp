@@ -2,7 +2,7 @@
 
 #include <fstream>
 
-#include "populationstatistics.hpp"
+#include "populationstatisticsold.hpp"
 #include "parameters/eventparams.hpp"
 
 namespace transm {
@@ -38,7 +38,7 @@ public:
 		//TODO: Have structure for prevalence and incidence at 5 time points (maybe by default these are 1, 0.2*maxTime, 0.4*maxTime, etc?)
 		//These times have to be defined!
 		long timeToRecord[NUM_TIMES_TO_RECORD];
-		std::vector<PopulationStatistics::SingleTimeStats *> *selectedSummaryStats;
+		std::vector<PopulationStatisticsOld::SingleTimeStats *> *selectedSummaryStats;
 		double LMsAverage;
 		double HIVPosLMAverage;
 		double HIVNegLMAverage;
@@ -47,7 +47,7 @@ public:
 	};
 
 	/* addRunStats adds a new summary to the vector from a RunStats object */
-	void addPopulationStatistics(PopulationStatistics &popStats, EventParams &eventParams);
+	void addPopulationStatistics(PopulationStatisticsOld &popStats, EventParams &eventParams);
 	/* finalizeStats calculates the final cost-effectiveness ratios for each run */
 	//void finalizeStats();
 	/* writeSummariesFile appends the summary information to the popstats.out file */

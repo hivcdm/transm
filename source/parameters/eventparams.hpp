@@ -23,7 +23,47 @@ namespace transm {
 /// </authors>
 class EventParams
 {
-public :
+public:
+    struct TraceFile
+    {
+        enum class Type
+        {
+            Population,
+            Infection,
+            Partnership,
+            Survival,
+            CostEffectiveness,
+            Clinical,
+            Events,
+            Health,
+            SinglePerson,
+            LifeExpectancy,
+            PartnerAcquisition,
+            CalibrationStatistics,
+            ArtRollout,
+            ShiftedOutcomes,
+            Last,
+            First = Population
+        } type;
+
+        bool enabled;
+        std::string extension;
+        bool toss;
+        std::fstream file;
+
+        template<typename T>
+        std::ostream &operator<<(const T &to_add)
+        {
+            return file << to_add;
+        }
+
+        typedef std::ostream& (*ostream_manipulator)(std::ostream&);
+        std::ostream& operator<<(ostream_manipulator pf)
+        {
+            return file << pf;
+        }
+    };
+
 	EventParams()
 	{
 		currTime = 0;

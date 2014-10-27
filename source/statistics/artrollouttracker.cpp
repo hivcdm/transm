@@ -169,9 +169,9 @@ void ArtRolloutTracker::buildHeader()
 
 		SetHeaderCell(column, 2, "CD4 Stratum");
 
-		for(int cd4StratumIndex = 0; cd4StratumIndex < Entity::ENDCD4Strata; ++cd4StratumIndex, ++column)
+		for(auto cd4stratum : enum_iterator<Entity::CD4Strata>())
 		{
-			SetHeaderCell(column, 3, SimContext::CD4_STRATA_STRS[cd4StratumIndex]);
+			SetHeaderCell(column, 3, SimContext::CD4_STRATA_STRS[(std::size_t)cd4stratum]);
 		}
 
 		SetHeaderCell(column, 2, "Risk Group");
@@ -226,14 +226,14 @@ void ArtRolloutTracker::buildRow(int time, Population *_population)
 			}
 		}
 
-		for(Entity::CD4Strata cd4Stratum = static_cast<Entity::CD4Strata>(0); cd4Stratum < Entity::ENDCD4Strata; ++cd4Stratum)
+		for(int i = 0; i < (std::size_t)Entity::CD4Strata::Last; ++i)
 		{
-			PushElement(counter.GetCount(outcome, std::make_pair("cd4Stratum", cd4Stratum)));
+			PushElement(counter.GetCount(outcome, std::make_pair("cd4Stratum", i)));
 		}
 
 		for(auto employment : enum_iterator<DemographicProfile::Employment>())
 		{
-			for(Entity::RiskLevel riskLevel = static_cast<Entity::RiskLevel>(0); riskLevel < Entity::ENDRiskLevel; ++riskLevel)
+			for(auto riskLevel : enum_iterator<Entity::RiskLevel>())
 			{
                 for(auto gender : enum_iterator<DemographicProfile::Gender>())
 				{

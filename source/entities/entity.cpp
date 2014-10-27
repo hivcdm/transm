@@ -45,25 +45,19 @@ Entity::CD4Strata Entity::getCd4Stratum() const
 	switch(cepacPatient->getDiseaseState()->currTrueCD4Strata)
 	{
 	case SimContext::CD4_VLO:
-		return CD4_ZERO;
-
+		return CD4Strata::CD4_ZERO;
 	case SimContext::CD4__LO:
-		return CD4_ONE;
-
+        return CD4Strata::CD4_ONE;
 	case SimContext::CD4_MLO:
-		return CD4_TWO;
-
+        return CD4Strata::CD4_TWO;
 	case SimContext::CD4_MHI:
-		return CD4_THREE;
-
+        return CD4Strata::CD4_THREE;
 	case SimContext::CD4__HI:
-		return CD4_FOUR;
-
+        return CD4Strata::CD4_FOUR;
 	case SimContext::CD4_VHI:
-		return CD4_FIVE;
-
+        return CD4Strata::CD4_FIVE;
 	default:
-		return ENDCD4Strata;
+        return CD4Strata::Last;
 	}
 }
 
@@ -143,7 +137,7 @@ bool Entity::isEligibleForTreatment(const SimContext::TreatmentInputs::ARTStartP
 
 Entity *Entity::allPartnerSexualActivity(EventParams &_eventParams, SexualPartnership::Type _partnershipType,
     std::list<Entity *> &_newlyInfected, InfectionsTracker *infTrack, 
-    const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients)
+    const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients)
 {
 	assert(_partnershipType < SexualPartnership::Type::ENDType);
 	//iterate through all partnerships of SexualActivity::Type _partnershipType and have them engage in sexual activity
@@ -215,7 +209,7 @@ void Entity::addPartnership(SexualPartnership *_partnership)
 void Entity::becomeInfected(int _generationOfInfection, EventParams &_eventParams)
 {
     //hvl needs to be set even for people who are about to go through CEPAC so that isInfected() correctly returns true
-	hvl = HVL_PRIMARY;
+	hvl = HVLStrata::HVL_PRIMARY;
     //CD4 doesn't affect much in the transmission model yet... will be updated with CEPAC
 	cd4 = -1;
 	ageInfected = age;
@@ -251,9 +245,9 @@ void Entity::becomeInfected(int _generationOfInfection, EventParams &_eventParam
         }
 	}
 
-	stats.setStat(Entity::STAT_TIME_OF_INFECTION_MTH, _eventParams.currTime);
-    stats.setStat(Entity::STAT_AGE_AT_INFECTION_MTH, getAge(TimeGranularity::Month));
-	stats.setStat(Entity::STAT_GENERATION_OF_INFECTION, _generationOfInfection);
+	stats.setStat(Entity::Stats::STAT_TIME_OF_INFECTION_MTH, _eventParams.currTime);
+    stats.setStat(Entity::Stats::STAT_AGE_AT_INFECTION_MTH, getAge(TimeGranularity::Month));
+    stats.setStat(Entity::Stats::STAT_GENERATION_OF_INFECTION, _generationOfInfection);
 
 	//if a CEPAC person exists (i.e. they were created earlier and thus this is an incident case), set them to infected
 	if(wentThroughCEPAC)
@@ -265,31 +259,31 @@ void Entity::becomeInfected(int _generationOfInfection, EventParams &_eventParam
 
 		if(hvlStrata == SimContext::HVL_VLO)
 		{
-			hvl = HVL_ZERO;    //0-20
+			hvl = HVLStrata::HVL_ZERO;    //0-20
 		}
 		else if(hvlStrata == SimContext::HVL__LO)
 		{
-			hvl = HVL_ONE;    //21-500
+            hvl = HVLStrata::HVL_ONE;    //21-500
 		}
 		else if(hvlStrata == SimContext::HVL_MLO)
 		{
-			hvl = HVL_TWO;    //501-3000
+            hvl = HVLStrata::HVL_TWO;    //501-3000
 		}
 		else if(hvlStrata == SimContext::HVL_MED)
 		{
-			hvl = HVL_THREE;    //3001-10000
+            hvl = HVLStrata::HVL_THREE;    //3001-10000
 		}
 		else if(hvlStrata == SimContext::HVL_MHI)
 		{
-			hvl = HVL_FOUR;    //10001-30000
+            hvl = HVLStrata::HVL_FOUR;    //10001-30000
 		}
 		else if(hvlStrata == SimContext::HVL__HI)
 		{
-			hvl = HVL_FIVE;    //30001-100000
+            hvl = HVLStrata::HVL_FIVE;    //30001-100000
 		}
 		else if(hvlStrata == SimContext::HVL_VHI)
 		{
-			hvl = HVL_SIX;    //100000+
+            hvl = HVLStrata::HVL_SIX;    //100000+
 		}
 		else
 		{
@@ -300,15 +294,15 @@ void Entity::becomeInfected(int _generationOfInfection, EventParams &_eventParam
 
 		if(cepacPatient->getDiseaseState()->infectedHIVState == SimContext::HIV_INF_ACUTE_SYN)
 		{
-			hvl = HVL_PRIMARY;
+            hvl = HVLStrata::HVL_PRIMARY;
 
 			if(cepacPatient->getMonitoringState()->isDetectedHIVPositive)
 			{
-				hivStatus = OBSERVED_ACUTE;
+                hivStatus = HIVStatus::OBSERVED_ACUTE;
 			}
 			else
 			{
-				hivStatus = UNOBSERVED_ACUTE;
+                hivStatus = HIVStatus::UNOBSERVED_ACUTE;
 			}
 		}
 		//Late stage is defined as having failed the last ART regimen (or having no art regimens to start with) and a CD4 <= 50
@@ -316,26 +310,26 @@ void Entity::becomeInfected(int _generationOfInfection, EventParams &_eventParam
 		         (!(cepacPatient->getARTState()->isOnART) || cepacPatient->getARTState()->hasObservedFailure)) &&
 		        cepacPatient->getDiseaseState()->currTrueCD4 <= 50)
 		{
-			hvl = HVL_LATESTAGE;
+            hvl = HVLStrata::HVL_LATESTAGE;
 
 			if(cepacPatient->getMonitoringState()->isDetectedHIVPositive)
 			{
-				hivStatus = OBSERVED_LATESTAGE;
+                hivStatus = HIVStatus::OBSERVED_LATESTAGE;
 			}
 			else
 			{
-				hivStatus = UNOBSERVED_LATESTAGE;
+                hivStatus = HIVStatus::UNOBSERVED_LATESTAGE;
 			}
 		}
 		else
 		{
 			if(cepacPatient->getMonitoringState()->isDetectedHIVPositive)
 			{
-				hivStatus = OBSERVED_CHRONIC;
+                hivStatus = HIVStatus::OBSERVED_CHRONIC;
 			}
 			else
 			{
-				hivStatus = UNOBSERVED_CHRONIC;
+                hivStatus = HIVStatus::UNOBSERVED_CHRONIC;
 			}
 		}
 
@@ -396,31 +390,31 @@ void Entity::initialCEPACpatient(EventParams &_eventParams)
 
 			if(hvlStrata == SimContext::HVL_VLO)
 			{
-				hvl = HVL_ZERO;    //0-20
+				hvl = HVLStrata::HVL_ZERO;    //0-20
 			}
 			else if(hvlStrata == SimContext::HVL__LO)
 			{
-				hvl = HVL_ONE;    //21-500
+                hvl = HVLStrata::HVL_ONE;    //21-500
 			}
 			else if(hvlStrata == SimContext::HVL_MLO)
 			{
-				hvl = HVL_TWO;    //501-3000
+                hvl = HVLStrata::HVL_TWO;    //501-3000
 			}
 			else if(hvlStrata == SimContext::HVL_MED)
 			{
-				hvl = HVL_THREE;    //3001-10000
+                hvl = HVLStrata::HVL_THREE;    //3001-10000
 			}
 			else if(hvlStrata == SimContext::HVL_MHI)
 			{
-				hvl = HVL_FOUR;    //10001-30000
+                hvl = HVLStrata::HVL_FOUR;    //10001-30000
 			}
 			else if(hvlStrata == SimContext::HVL__HI)
 			{
-				hvl = HVL_FIVE;    //30001-100000
+                hvl = HVLStrata::HVL_FIVE;    //30001-100000
 			}
 			else if(hvlStrata == SimContext::HVL_VHI)
 			{
-				hvl = HVL_SIX;    //100000+
+                hvl = HVLStrata::HVL_SIX;    //100000+
 			}
 			else
 			{
@@ -431,15 +425,15 @@ void Entity::initialCEPACpatient(EventParams &_eventParams)
 
 			if(cepacPatient->getDiseaseState()->infectedHIVState == SimContext::HIV_INF_ACUTE_SYN)
 			{
-				hvl = HVL_PRIMARY;
+                hvl = HVLStrata::HVL_PRIMARY;
 
 				if(cepacPatient->getMonitoringState()->isDetectedHIVPositive)
 				{
-					hivStatus = OBSERVED_ACUTE;
+					hivStatus = HIVStatus::OBSERVED_ACUTE;
 				}
 				else
 				{
-					hivStatus = UNOBSERVED_ACUTE;
+                    hivStatus = HIVStatus::UNOBSERVED_ACUTE;
 				}
 			}
 			//Late stage is defined as having failed the last ART regimen (or having no art regimens to start with) and a CD4 <= 50
@@ -447,26 +441,26 @@ void Entity::initialCEPACpatient(EventParams &_eventParams)
 			         (!(cepacPatient->getARTState()->isOnART) || cepacPatient->getARTState()->hasObservedFailure)) &&
 			        cepacPatient->getDiseaseState()->currTrueCD4 <= 50)
 			{
-				hvl = HVL_LATESTAGE;
+                hvl = HVLStrata::HVL_LATESTAGE;
 
 				if(cepacPatient->getMonitoringState()->isDetectedHIVPositive)
 				{
-					hivStatus = OBSERVED_LATESTAGE;
+                    hivStatus = HIVStatus::OBSERVED_LATESTAGE;
 				}
 				else
 				{
-					hivStatus = UNOBSERVED_LATESTAGE;
+                    hivStatus = HIVStatus::UNOBSERVED_LATESTAGE;
 				}
 			}
 			else
 			{
 				if(cepacPatient->getMonitoringState()->isDetectedHIVPositive)
 				{
-					hivStatus = OBSERVED_CHRONIC;
+                    hivStatus = HIVStatus::OBSERVED_CHRONIC;
 				}
 				else
 				{
-					hivStatus = UNOBSERVED_CHRONIC;
+                    hivStatus = HIVStatus::UNOBSERVED_CHRONIC;
 				}
 			}
 
@@ -746,8 +740,8 @@ void Entity::print(ostream &_outStream, const std::string &_prefix) const
 	_outStream << ")";
     _outStream << Constants::TAB << "Age(mos.): " << getAge(TimeGranularity::Month);
 	_outStream <<  Constants::TAB << "CD4: " << cd4;
-	_outStream << Constants::TAB << "HVL: " << hvl;
-	_outStream << Constants::TAB << "Risk: " << ((risk == Entity::HIGH) ? "HIGH" : "LOW");
+	_outStream << Constants::TAB << "HVL: " << (std::size_t)hvl;
+	_outStream << Constants::TAB << "Risk: " << ((risk == Entity::RiskLevel::HIGH) ? "HIGH" : "LOW");
 	_outStream << Constants::TAB << "Marbles: " << activityLevel;
 	_outStream << std::endl;
 }
@@ -818,17 +812,17 @@ void Entity::saveState(ostream &_outStream, long currTime)
 
 	_outStream << "]," << std::endl;
 	_outStream << "genInf:" << generationOfInfection << "," << std::endl; //generation of infection
-	_outStream << "risk:" << risk << "," << std::endl; //risk Level
+	_outStream << "risk:" << (std::size_t)risk << "," << std::endl; //risk Level
 	_outStream << "activity:" << activityLevel << "," << std::endl; //activity Level
 	_outStream << "age:" << age << "," << std::endl; //age
 	_outStream << "initAge:" << initAge << "," << std::endl; //initial age
 	_outStream << "dead:" << death << "," << std::endl; //death
-	_outStream << "hvl:" << hvl; //hvl in transmission includes primary and late stage
+	_outStream << "hvl:" << (std::size_t)hvl; //hvl in transmission includes primary and late stage
 }
 
 bool Entity::isInfected()
 {
-	return (hvl > UNINFECTED);
+    return hvl != HVLStrata::UNINFECTED;
 }
 
 void Entity::removePartnership(SexualPartnership *_partnership)
@@ -907,7 +901,7 @@ bool Entity::rollForDeath(RandomNumberGenerator &_randomNums)
     if(getAge(TimeGranularity::Month) >= (12 * Entity::maxYrForDeathStats))
 	{
 		death = true;
-		deathStatus = DTH_OTHER;
+		deathStatus = DeathStatus::DTH_OTHER;
 	}
 	//if they have gone through CEPAC
 	else if(wentThroughCEPAC)
@@ -921,27 +915,27 @@ bool Entity::rollForDeath(RandomNumberGenerator &_randomNums)
 
 			if(causeOfDeath < SimContext::DTH_CHRAIDS)
 			{
-				deathStatus = DTH_OI;    //oi death
+                deathStatus = DeathStatus::DTH_OI;    //oi death
 			}
 			else if(causeOfDeath == SimContext::DTH_CHRAIDS)
 			{
-				deathStatus = DTH_CHRAIDS;
+                deathStatus = DeathStatus::DTH_CHRAIDS;
 			}
 			else if(causeOfDeath == SimContext::DTH_NONAIDS)
 			{
-				deathStatus = DTH_NONAIDS;
+                deathStatus = DeathStatus::DTH_NONAIDS;
 			}
 			else if(causeOfDeath == SimContext::DTH_TOX_ART)
 			{
-				deathStatus = DTH_TOX_ART;
+                deathStatus = DeathStatus::DTH_TOX_ART;
 			}
 			else if(causeOfDeath == SimContext::DTH_TOX_PROPH)
 			{
-				deathStatus = DTH_TOX_PROPH;
+                deathStatus = DeathStatus::DTH_TOX_PROPH;
 			}
 			else
 			{
-				deathStatus = DTH_OTHER;
+                deathStatus = DeathStatus::DTH_OTHER;
 			}
 		}
 	}
@@ -955,16 +949,16 @@ bool Entity::rollForDeath(RandomNumberGenerator &_randomNums)
         if(_randomNums.chance(deathRate))
 		{
             death = true;
-			deathStatus = DTH_NONAIDS;
+			deathStatus = DeathStatus::DTH_NONAIDS;
 		}
 	}
 
 	//if they died, collect statistics
 	if(death)
 	{
-        stats.setStat(STAT_TOTAL_LM, getAge(TimeGranularity::Month));
-        stats.setStat(STAT_HIV_NEG_LM, getAge(TimeGranularity::Month) - (isInfected() ? stats.getStat(STAT_TIME_OF_INFECTION_MTH) : 0));
-		stats.setStat(STAT_HIV_POS_POSTINFECT_LM, stats.getStat(STAT_TOTAL_LM) - stats.getStat(STAT_AGE_AT_INFECTION_MTH));
+        stats.setStat(Stats::STAT_TOTAL_LM, getAge(TimeGranularity::Month));
+        stats.setStat(Stats::STAT_HIV_NEG_LM, getAge(TimeGranularity::Month) - (isInfected() ? stats.getStat(Stats::STAT_TIME_OF_INFECTION_MTH) : 0));
+        stats.setStat(Stats::STAT_HIV_POS_POSTINFECT_LM, stats.getStat(Stats::STAT_TOTAL_LM) - stats.getStat(Stats::STAT_AGE_AT_INFECTION_MTH));
 	}
 
 	return death;
@@ -983,7 +977,7 @@ void Entity::setSimContext(SimContext *newSimContext)
 Entity *Entity::sexualActivity(Entity *_p, int _numActs, 
     SexualPartnership::Type _partnershipType, EventParams &_eventParams, 
     InfectionsTracker *infTrack, 
-    const std::unordered_map<TransmissionType, std::array<double, ENDHVLStrata>> &transmission_coefficients)
+    const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients)
 {
 	assert((_p != nullptr));
 	assert(_p->isAlive());
@@ -1057,11 +1051,11 @@ Entity *Entity::sexualActivity(Entity *_p, int _numActs,
 		//record who infected whom
 		if(infected == this)
 		{
-			stats.incrStat(Entity::STAT_NUM_INFECTED, 1);
+            stats.incrStat(Entity::Stats::STAT_NUM_INFECTED, 1);
 		}
 		else
 		{
-			_p->stats.incrStat(Entity::STAT_NUM_INFECTED, 1);
+            _p->stats.incrStat(Entity::Stats::STAT_NUM_INFECTED, 1);
 		}
 
 		//if they get infected, then change status of uninfected to infected and count infection
@@ -1078,7 +1072,7 @@ Entity *Entity::sexualActivity(Entity *_p, int _numActs,
 		}
 
 		//uninfected person was exposed but not infected
-		uninfected->stats.incrStat(Entity::STAT_EXPOSURES_BEFORE_INF, _numActs);
+        uninfected->stats.incrStat(Entity::Stats::STAT_EXPOSURES_BEFORE_INF, _numActs);
 	}
 
 	return nullptr;
@@ -1096,13 +1090,13 @@ Entity::HVLStrata HvlFromCepacHvl(SimContext::HVL_STRATA stratum)
 {
     switch(stratum)
     {
-    case SimContext::HVL_VLO: return Entity::HVL_ZERO;
-    case SimContext::HVL__LO: return Entity::HVL_ONE;
-    case SimContext::HVL_MLO: return Entity::HVL_TWO;
-    case SimContext::HVL_MED: return Entity::HVL_THREE;
-    case SimContext::HVL_MHI: return Entity::HVL_FOUR;
-    case SimContext::HVL__HI: return Entity::HVL_FIVE;
-    case SimContext::HVL_VHI: return Entity::HVL_SIX;
+    case SimContext::HVL_VLO: return Entity::HVLStrata::HVL_ZERO;
+    case SimContext::HVL__LO: return Entity::HVLStrata::HVL_ONE;
+    case SimContext::HVL_MLO: return Entity::HVLStrata::HVL_TWO;
+    case SimContext::HVL_MED: return Entity::HVLStrata::HVL_THREE;
+    case SimContext::HVL_MHI: return Entity::HVLStrata::HVL_FOUR;
+    case SimContext::HVL__HI: return Entity::HVLStrata::HVL_FIVE;
+    case SimContext::HVL_VHI: return Entity::HVLStrata::HVL_SIX;
     default: throw std::runtime_error("invalid hvl");
     }
 }
@@ -1111,16 +1105,16 @@ std::string to_string(Entity::HVLStrata stratum)
 {
     switch(stratum)
     {
-    case Entity::UNINFECTED: return "uninfected";
-    case Entity::HVL_ZERO: return "0-20";
-    case Entity::HVL_ONE: return "21-500";
-    case Entity::HVL_TWO: return "501-3000";
-    case Entity::HVL_THREE: return "3001-10000";
-    case Entity::HVL_FOUR: return "10001-30000";
-    case Entity::HVL_FIVE: return "30001-100000";
-    case Entity::HVL_SIX: return "100000+";
-    case Entity::HVL_PRIMARY: return "primary";
-    case Entity::HVL_LATESTAGE: return "late-stage";
+    case Entity::HVLStrata::UNINFECTED: return "uninfected";
+    case Entity::HVLStrata::HVL_ZERO: return "0-20";
+    case Entity::HVLStrata::HVL_ONE: return "21-500";
+    case Entity::HVLStrata::HVL_TWO: return "501-3000";
+    case Entity::HVLStrata::HVL_THREE: return "3001-10000";
+    case Entity::HVLStrata::HVL_FOUR: return "10001-30000";
+    case Entity::HVLStrata::HVL_FIVE: return "30001-100000";
+    case Entity::HVLStrata::HVL_SIX: return "100000+";
+    case Entity::HVLStrata::HVL_PRIMARY: return "primary";
+    case Entity::HVLStrata::HVL_LATESTAGE: return "late-stage";
     default: throw std::runtime_error("invalid hvl");
     }
 }
@@ -1129,13 +1123,13 @@ std::string to_string(Entity::HIVStatus status)
 {
     switch(status)
     {
-    case Entity::NEGATIVE: return "negative";
-    case Entity::OBSERVED_ACUTE: return "acute (observed)";
-    case Entity::OBSERVED_CHRONIC: return "chronic (observed)";
-    case Entity::OBSERVED_LATESTAGE: return "late-stage (observed)";
-    case Entity::UNOBSERVED_ACUTE: return "acute (unobserved)";
-    case Entity::UNOBSERVED_CHRONIC: return "chronic (unobserved)";
-    case Entity::UNOBSERVED_LATESTAGE: return "late-stage (unobserved)";
+    case Entity::HIVStatus::NEGATIVE: return "negative";
+    case Entity::HIVStatus::OBSERVED_ACUTE: return "acute (observed)";
+    case Entity::HIVStatus::OBSERVED_CHRONIC: return "chronic (observed)";
+    case Entity::HIVStatus::OBSERVED_LATESTAGE: return "late-stage (observed)";
+    case Entity::HIVStatus::UNOBSERVED_ACUTE: return "acute (unobserved)";
+    case Entity::HIVStatus::UNOBSERVED_CHRONIC: return "chronic (unobserved)";
+    case Entity::HIVStatus::UNOBSERVED_LATESTAGE: return "late-stage (unobserved)";
     default: throw std::runtime_error("invalid hiv status");
     }
 }
@@ -1252,15 +1246,15 @@ double Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 
 		if(cepacPatient->getDiseaseState()->infectedHIVState == SimContext::HIV_INF_ACUTE_SYN)
 		{
-			hvl = HVL_PRIMARY;
+			hvl = HVLStrata::HVL_PRIMARY;
 
 			if(cepacPatient->getMonitoringState()->isDetectedHIVPositive)
 			{
-				hivStatus = OBSERVED_ACUTE;
+                hivStatus = HIVStatus::OBSERVED_ACUTE;
 			}
 			else
 			{
-				hivStatus = UNOBSERVED_ACUTE;
+                hivStatus = HIVStatus::UNOBSERVED_ACUTE;
 			}
 		}
 		//Late stage is defined as having failed the last ART regimen (or having no art regimens to start with) and a CD4 <= 50
@@ -1268,26 +1262,26 @@ double Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 		         (!(cepacPatient->getARTState()->isOnART) || cepacPatient->getARTState()->hasObservedFailure)) &&
 		        cepacPatient->getDiseaseState()->currTrueCD4 <= 50)
 		{
-			hvl = HVL_LATESTAGE;
+            hvl = HVLStrata::HVL_LATESTAGE;
 
 			if(cepacPatient->getMonitoringState()->isDetectedHIVPositive)
 			{
-				hivStatus = OBSERVED_LATESTAGE;
+                hivStatus = HIVStatus::OBSERVED_LATESTAGE;
 			}
 			else
 			{
-				hivStatus = UNOBSERVED_LATESTAGE;
+                hivStatus = HIVStatus::UNOBSERVED_LATESTAGE;
 			}
 		}
 		else
 		{
 			if(cepacPatient->getMonitoringState()->isDetectedHIVPositive)
 			{
-				hivStatus = OBSERVED_CHRONIC;
+                hivStatus = HIVStatus::OBSERVED_CHRONIC;
 			}
 			else
 			{
-				hivStatus = UNOBSERVED_CHRONIC;
+                hivStatus = HIVStatus::UNOBSERVED_CHRONIC;
 			}
 		}
 
@@ -1622,7 +1616,7 @@ Entity::Entity(int _age, unsigned int _populationID) : sexualActivityDelay(0)
 	initAge = _age;
 	ageInfected = -1;
 	death = false;
-	deathStatus = ALIVE;
+	deathStatus = DeathStatus::ALIVE;
 	sexualActivityLevel = 1.0;
 	cepacPatient = nullptr;
 	CEPACcosts = 0;
@@ -1648,9 +1642,9 @@ Entity::Entity(int _age, unsigned int _populationID) : sexualActivityDelay(0)
     dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::Single);
 	//everyone is set as NON_CSW, but you can call becomeCSW() elsewhere if you want this person to be CSW
     dmgProfile.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::NonCsw);
-	hivStatus = NEGATIVE;
+    hivStatus = HIVStatus::NEGATIVE;
 	cd4 = -1;
-	hvl = UNINFECTED;
+	hvl = HVLStrata::UNINFECTED;
 	//dmgProfile -- default constructor sets everything to wildcards
 	//this person isn't a member of any bucket yet. this value will be changed when EntityPool adds or removes the person
 	currentBucketID = DemographicProfile::END;

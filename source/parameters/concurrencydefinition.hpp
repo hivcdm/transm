@@ -7,9 +7,9 @@
 
 #include "core/constants.hpp"
 
-namespace transm {
-
 class SimContext;
+
+namespace transm {
 
 template<typename T>
 struct Bounds
