@@ -132,7 +132,9 @@ void TargetGroup::Update(Population &population, int current_time,
             }
 
             if(target_.value.observed_hiv_status.has_value
-                && target_.value.observed_hiv_status.value != person->getHIVStatus())
+                && ((target_.value.observed_hiv_status.value == Person::ENDHIVStatus
+                     && person->getHIVStatus() == Person::NEGATIVE)
+                     || (target_.value.observed_hiv_status.value != person->getHIVStatus())))
             {
                 return false;
             }
