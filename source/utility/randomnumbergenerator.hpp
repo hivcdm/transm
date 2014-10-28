@@ -131,7 +131,7 @@ public:
 	//reset the generator w/ the current seed
 	void reset();
 	//reset the generator and use a diff seed
-	void reset(unsigned int _seed);
+	void reset(uint32_t seed);
 
 	//constructors
 	RandomNumberGenerator();

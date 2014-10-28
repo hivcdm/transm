@@ -238,10 +238,10 @@ void RandomNumberGenerator::reset()
 	reset(seed);
 }
 
-void RandomNumberGenerator::reset(unsigned int _seed)
+void RandomNumberGenerator::reset(uint32_t seed)
 {
-	seed = _seed;
-	mtRand.seed((boost::mt19937::result_type) _seed);
+	this->seed = seed;
+	mtRand.seed(seed);
 }
 
 } // namespace transm

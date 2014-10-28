@@ -78,6 +78,7 @@ int run_simulation(const std::string &batch_name, std::function<void(const std::
         auto parameters = SimulationParametersXml(sim_filename.string());
 
         Simulation simulation(status);
+        parameters.SetRandomNumberGenerator(simulation.GetEventParams().randomNums);
         simulation.Initialize(parameters);
 
         auto outputs = simulation.Run(message_callback);

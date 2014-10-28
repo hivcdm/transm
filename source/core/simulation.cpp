@@ -283,7 +283,7 @@ void TargetGroup::AddPartition(const std::string &label, bool trace, double prop
     partitions_.push_back(p);
 }
 
-void Simulation::RegisterIntervention(const Intervention &intervention)
+void Simulation::RegisterPopulationIntervention(const Intervention &intervention)
 {
     interventions_.push_back(intervention);
 }
@@ -307,19 +307,21 @@ Simulation::~Simulation()
 
 void Simulation::SetFixedSeed(int seed)
 {
-	fixedSeed_ = seed;
+    // Seed is Minnesota Twins retired numbers... yes, I am a dork (Erin, not Thomas!)
+    seed = seed == 0 ? 36291434 : seed;
 
-	CepacUtil::setRandomSeedType(seed == -1);
-
-	if(seed > -1)
+	if(seed < 0)
 	{
-		//Seed is Minnesota Twins retired numbers... yes, I am a dork
-		parameters_.randomNums.reset(seed == 0 ? 36291434 : seed);
+        CepacUtil::setRandomSeedType(true);
+        rng_seed_ = (uint32_t)time(0);
 	}
     else
     {
-        parameters_.randomNums.reset((unsigned int)time(0));
+        CepacUtil::setRandomSeedType(false);
+        rng_seed_ = seed;
     }
+
+    parameters_.randomNums.reset(rng_seed_);
 }
 
 void Simulation::FirstStep()
@@ -844,6 +846,126 @@ PopulationStatisticsOld &Simulation::GetPopulationStatistics()
 EventParams &Simulation::GetEventParams()
 {
 	return parameters_;
+}
+
+void Simulation::Initialize(SimulationParameters &parameters)
+{
+    name_ = parameters.GetName();
+    duration_ = parameters.GetDuration();
+    SetFixedSeed(parameters.GetFixedSeed());
+    parameters_.simName = name_;
+    parameters_.debugLevel = parameters.GetDebugLevel();
+    parameters_.monthOf1990 = parameters.GetMonthOf1990();
+    parameters_.calibrationInputs = parameters.GetCalibrationParameters();
+    parameters_.delayPrevalence = parameters.GetInitialInfectionDelay();
+    auto intervention_params = parameters.GetInterventionParameters();
+    parameters_.useRollout = intervention_params.intervention_type == InterventionParameters::InterventionType::Art;
+    parameters_.enableDynamicTreatmentScaling = intervention_params.dynamic_feedback_enabled;
+    parameters_.dynamicFeedbackPeriod = intervention_params.dynamic_feedback_period;
+    parameters_.rolloutEligibility = intervention_params.eligibility_criteria;
+
+    auto load_context = [](const std::string &file_name)
+    {
+        //Set the CEPAC simContext from the specified CEPAC .in file
+        auto context = new SimContext(file_name.substr(0, file_name.find(CepacUtil::FILE_EXTENSION_FOR_INPUT)));
+        //Don't trace any CEPAC patients -- the output doesn't make any sense and it just gets overly large for no reason
+        //TODO: The reason is because the CEPAC Patient number doesn't get updated until the patient dies: this should be changed!
+        context->numPatientsToTrace = 0;
+
+        //Read in the inputs
+        try
+        {
+            context->readInputs();
+        }
+        catch(std::string errorString)
+        {
+            throw std::runtime_error("error loading rollout file, " + file_name + ": " + errorString);
+        }
+
+        return context;
+    };
+
+    if(parameters_.useRollout)
+    {
+        parameters_.untreatedContext = load_context(intervention_params.default_cepac_file.filename);
+
+        for(auto &cepac_file : intervention_params.cepac_files)
+        {
+            if(cepac_file.time == 0 && cepac_file.target_population == 0) continue; // skip untreated context
+            auto context = load_context(cepac_file.filename);
+            auto rollout_context = new RolloutContext(cepac_file.time, std::unique_ptr<SimContext>(context), cepac_file.target_population);
+            parameters_.rolloutSimContexts.push_back(rollout_context);
+        }
+
+        parameters_.cepacTracer = new Tracer(name_, parameters_.untreatedContext, 1);
+        parameters_.cepacRunStats = new RunStats(name_, parameters_.untreatedContext);
+    }
+    else
+    {
+        parameters_.cepacSimContexts.push_back(load_context(intervention_params.default_cepac_file.filename));
+
+        std::size_t i = 0;
+        for(auto &cepac_file : intervention_params.cepac_files)
+        {
+            auto context = load_context(cepac_file.filename);
+            parameters_.timesToSwitchSimContext[i++] = cepac_file.time;
+            parameters_.cepacSimContexts.push_back(context);
+        }
+
+        parameters_.cepacTracer = new Tracer(name_, parameters_.cepacSimContexts[0], 1);
+        parameters_.cepacRunStats = new RunStats(name_, parameters_.cepacSimContexts[0]);
+    }
+
+    auto tracing_parameters = parameters.GetTracingParameters();
+    parameters_.tracePrevalentCases = tracing_parameters.trace_prevalent_cases;
+    parameters_.numToTrace = tracing_parameters.num_to_trace;
+    parameters_.numNewbornsTraced = 0;
+    parameters_.numNewbornsToTrace = tracing_parameters.num_newborns_to_trace;
+    parameters_.monthTraceNewborns = tracing_parameters.month_trace_newborns;
+
+    CepacUtil::changeDirectoryToResults();
+
+    for(auto trace_file : tracing_parameters.files)
+    {
+        auto string_to_type = [](const std::string &type_string)
+        {
+            if(type_string == "artRollout") return EventParams::TraceFile::Type::ArtRollout;
+            if(type_string == "calibrationStatistics") return EventParams::TraceFile::Type::CalibrationStatistics;
+            if(type_string == "clinical") return EventParams::TraceFile::Type::Clinical;
+            if(type_string == "costEffectiveness") return EventParams::TraceFile::Type::CostEffectiveness;
+            if(type_string == "events") return EventParams::TraceFile::Type::Events;
+            if(type_string == "health") return EventParams::TraceFile::Type::Health;
+            if(type_string == "infection") return EventParams::TraceFile::Type::Infection;
+            if(type_string == "lifeExpectancy") return EventParams::TraceFile::Type::LifeExpectancy;
+            if(type_string == "partnerAcquisition") return EventParams::TraceFile::Type::PartnerAcquisition;
+            if(type_string == "partnership") return EventParams::TraceFile::Type::Partnership;
+            if(type_string == "population") return EventParams::TraceFile::Type::Population;
+            if(type_string == "shiftedOutcomes") return EventParams::TraceFile::Type::ShiftedOutcomes;
+            if(type_string == "singlePerson") return EventParams::TraceFile::Type::SinglePerson;
+            if(type_string == "survival") return EventParams::TraceFile::Type::Survival;
+            throw std::runtime_error("invalid trace file name: " + type_string);
+        };
+
+        auto type = string_to_type(trace_file.first);
+        parameters_.trace_files[type].enabled = trace_file.second.enabled;
+        parameters_.trace_files[type].extension = trace_file.second.extension;
+        parameters_.trace_files[type].toss = trace_file.second.toss;
+        parameters_.trace_files[type].type = type;
+        auto file_name = name_ + "-" + trace_file.second.extension;
+        parameters_.trace_files[type].file.open(file_name.c_str());
+    }
+
+    for(auto intervention : parameters.GetPopulationInterventions())
+    {
+        RegisterPopulationIntervention(intervention);
+    }
+
+    for(auto group : parameters.GetTargetGroups())
+    {
+        RegisterTargetGroup(group.second);
+    }
+
+    population_.Initialize(parameters.GetPopulationParameters());
 }
 
 Outputs Simulation::Run(MessageCallback message_callback)

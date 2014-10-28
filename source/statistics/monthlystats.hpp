@@ -12,7 +12,12 @@ class worksheet;
 
 namespace transm {
 using DeathCauseCount = std::unordered_map<Entity::DeathStatus, std::size_t>;
-using AgeGroup = std::pair<int, int>;
+struct AgeGroup
+{
+    bool operator==(const AgeGroup &other) const { return other.lower == lower && other.upper == upper; }
+    int lower;
+    int upper;
+};
 using AgeActivityGenderRiskEmpl = std::tuple<AgeGroup, DemographicProfile::SexualActivityStatus, DemographicProfile::Gender, Entity::RiskLevel, DemographicProfile::Employment>;
 } // namespace transm
 
@@ -23,8 +28,8 @@ struct hash<transm::AgeGroup>
     size_t operator()(const transm::AgeGroup &g) const
     {
         size_t seed = 0;
-        hash_combine(seed, g.first);
-        hash_combine(seed, g.second);
+        hash_combine(seed, g.lower);
+        hash_combine(seed, g.upper);
         return seed;
     }
 };
@@ -46,7 +51,7 @@ public:
     virtual void RecordRiskGroupChanged(int month, const Entity *entity);
     virtual void RecordDeath(int month, Entity::DeathStatus cause_of_death);
 
-    virtual std::vector<std::string> BuildMonthSummary(int month) const = 0;
+    virtual std::vector<std::string> BuildMonthSummary(int month) const;
 
 protected:
     std::vector<AgeGroup> age_groups_;

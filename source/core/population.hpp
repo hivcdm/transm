@@ -57,6 +57,9 @@ public:
 
     std::unordered_set<Entity *> Find(std::function<bool(Entity *)> predicate);
 
+    PopulationParameters &GetParameters() { return popWideParams; }
+    const PopulationParameters &GetParameters() const { return popWideParams; }
+
     /// <summary>
 	/// determines which DemographicProfiles have the power to initiate relationships and determines which
 	/// relationships they can have

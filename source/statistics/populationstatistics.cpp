@@ -28,7 +28,7 @@ void PopulationStatistics::RecordEntity(int month, const Entity *entity)
 {
     auto &month_stats = GetMonthStats(month, true);
 
-    auto age_group = std::make_pair(0, 10);
+    auto age_group = AgeGroup{0, 10};
     auto sexual_activity_status = entity->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>();
     auto gender = entity->getDemographicProfileVal<DemographicProfile::Gender>();
     auto risk = entity->getRiskLevel();
@@ -172,6 +172,8 @@ std::vector<std::string> PopulationStatistics::BuildMonthSummary(int m) const
             return sum + (i.first == sexual_activity_status ? i.second : 0);
         })));
     }
+
+    return formatted;
 }
 
 } // namespace transm

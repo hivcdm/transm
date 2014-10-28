@@ -1,4 +1,6 @@
 #include "simulationparameters.hpp"
+#include "core/population.hpp"
+#include "core/simulation.hpp"
 #include "utility/cepacinputparser.hpp"
 
 namespace transm {
@@ -100,6 +102,22 @@ SimulationParametersXml::SimulationParametersXml(const std::string &filename)
 	name_ = path(filename).stem().string();
 }
 
+SimulationParametersXml::~SimulationParametersXml()
+{
+}
+
+SimulationParametersXml::InterventionsContainer SimulationParametersXml::GetPopulationInterventions() const
+{
+    InterventionsContainer interventions;
+
+    for(auto node : document_.child("simulation").child("interventions").child("populationInterventions").children())
+    {
+        interventions.push_back(GetIntervention(node, false));
+    }
+
+    return interventions;
+}
+
 Version SimulationParametersXml::GetVersion() const
 {
 	auto version_string = Attr<std::string>(document_.child("simulation"), "version");
@@ -172,16 +190,23 @@ SimulationParameters::TracingParameters SimulationParametersXml::GetTracingParam
     for(auto trace_file_node : trace_files_node.children())
     {
         std::string name = trace_file_node.name();
-        parameters[name].enabled = Attr<bool>(trace_file_node, "enabled");
-        parameters[name].extension = Text<std::string>(trace_file_node.child("extension"));
-        parameters[name].toss = Attr<bool>(trace_file_node, "tossIfCalibFail");
+        parameters.files[name].enabled = Attr<bool>(trace_file_node, "enabled");
+        parameters.files[name].extension = Text<std::string>(trace_file_node.child("extension"));
+        parameters.files[name].toss = Attr<bool>(trace_file_node, "tossIfCalibFail");
     }
-    /*
-    parameters.numToTrace = Text<int>(simulation_node.child("traceFiles").child("singlePerson").child("numberToTracePerAgeRange"));
-    parameters.numNewbornsToTrace = Text<int>(simulation_node.child("traceFiles").child("singlePerson").child("numberNewbornsToTrace"));
-    parameters.monthTraceNewborns = Text<int>(simulation_node.child("traceFiles").child("singlePerson").child("monthTraceNewborns"));
-    parameters.tracePrevalentCases = Text<bool>(simulation_node.child("traceFiles").child("singlePerson").child("tracePrevalentCases"));
-    */
+    
+    parameters.num_to_trace = Text<int>(simulation_node.child("traceFiles").child("singlePerson").child("numberToTracePerAgeRange"));
+    parameters.num_newborns_to_trace = Text<int>(simulation_node.child("traceFiles").child("singlePerson").child("numberNewbornsToTrace"));
+    parameters.month_trace_newborns = Text<int>(simulation_node.child("traceFiles").child("singlePerson").child("monthTraceNewborns"));
+    parameters.trace_prevalent_cases = Text<bool>(simulation_node.child("traceFiles").child("singlePerson").child("tracePrevalentCases"));
+
+    parameters.life_expectancy_ci = Text<double>(simulation_node.child("traceFiles").child("lifeExpectancy").child("medianConfidenceInterval"));
+
+    for(auto time_node : simulation_node.child("traceFiles").child("lifeExpectancy").children("time"))
+    {
+        parameters.life_expectancy_record_times.push_back(Text<int>(time_node));
+    }
+    
     return parameters;
 }
 
@@ -249,7 +274,6 @@ InterventionParameters SimulationParametersXml::GetInterventionParameters() cons
         parameters.intervention_type = InterventionParameters::InterventionType::Cepac;
     }
 
-    /*
     if(parameters.intervention_type == InterventionParameters::InterventionType::Art)
     {
         auto scaling_node = interventions_node.child("artRolloutIntervention").child("dynamicTreatmentScaling");
@@ -270,28 +294,17 @@ InterventionParameters SimulationParametersXml::GetInterventionParameters() cons
                 //Make sure the number of CEPAC input files from the .xml file is not greater than the number expected by the code!
                 assert(file_number < Constants::NUMBER_OF_ROLLOUT_FILES);
 
-                //Set the CEPAC simContext from the specified CEPAC .in file
-                auto contextToAdd = std::make_unique<SimContext>(file_name.substr(0, file_name.find(CepacUtil::FILE_EXTENSION_FOR_INPUT)));
-                parameters.in_files[time] = file_name;
+                InterventionParameters::CepacFile file;
+                file.target_population = target_population;
+                file.filename = file_name;
+                file.time = time;
 
-                //Don't trace any CEPAC patients -- the output doesn't make any sense and it just gets overly large for no reason
-                //TODO: The reason is because the CEPAC Patient number doesn't get updated until the patient dies: this should be changed!
-                //parameters.cepacSimContext->numPatientsToTrace = 0;
-                parameters.rolloutSimContexts.at(file_number)->rolloutSimContext->numPatientsToTrace = 0;
-
-                //Read in the inputs
-                try
-                {
-                    parameters.rolloutSimContexts.back()->rolloutSimContext->readInputs();
-                }
-                catch(std::string errorString)
-                {
-                    throw std::runtime_error("error loading rollout file, " + file_name + ": " + errorString);
-                }
+                parameters.cepac_files.push_back(file);
 
                 //From the first file only, get the death tables for non-AIDS death
                 if(file_number == 0)
                 {
+                    parameters.default_cepac_file = file;
                     CepacInputParser cepacInput(file_name);
                     auto probabilities = cepacInput.parseNonAidsDeathProbabilities();
                     Entity::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Male] = probabilities[0];
@@ -300,16 +313,13 @@ InterventionParameters SimulationParametersXml::GetInterventionParameters() cons
             }
         }
 
-        parameters.rolloutEligibility = ReadRolloutEligibility();
+        parameters.eligibility_criteria = GetRolloutEligibility();
 
         for(auto target : interventions_node.select_nodes("artRolloutIntervention/targetRolloutProportions/target"))
         {
             auto year = Attr<int>(target.node(), "year");
-            parameters.targetYearlyRolloutProportions[year] = Text<double>(target.node());
+            parameters.target_yearly_rollout_proportions.push_back({year, Text<double>(target.node())});
         }
-
-        parameters.cepacTracer = new Tracer(parameters.simName, parameters.rolloutSimContexts[0]->rolloutSimContext.get(), 1);
-        parameters.cepacRunStats = new RunStats(parameters.simName, parameters.rolloutSimContexts[0]->rolloutSimContext.get());
     }
     else
     {
@@ -322,25 +332,15 @@ InterventionParameters SimulationParametersXml::GetInterventionParameters() cons
                 std::string file_name = treatment_file_node.node().child("fileName").text().as_string();
                 int file_number = treatment_file_node.node().child("fileNumber").text().as_int();
 
-                parameters.timesToSwitchSimContext[file_number] = time;
+                InterventionParameters::CepacFile file;
+                file.target_population = 0;
+                file.filename = file_name;
+                file.time = time;
 
                 //Make sure the number of CEPAC input files from the .xml file is not greater than the number expected by the code!
                 assert(file_number < Constants::NUMBER_OF_CEPAC_FILES);
-
-                //Set the CEPAC simContext from the specified CEPAC .in file
-                auto contextToAdd = new SimContext(file_name.substr(0, file_name.find(CepacUtil::FILE_EXTENSION_FOR_INPUT)));
-                contextToAdd->numPatientsToTrace = 0;
-                parameters.cepacSimContexts.push_back(contextToAdd);
-
-                //Read in the inputs
-                try
-                {
-                    contextToAdd->readInputs();
-                }
-                catch(std::string errorString)
-                {
-                    throw std::runtime_error("error loading rollout file, " + file_name + ": " + errorString);
-                }
+                
+                parameters.cepac_files.push_back(file);
 
                 //From the first file only, get the death tables for non-AIDS death
                 if(file_number == 0)
@@ -352,36 +352,10 @@ InterventionParameters SimulationParametersXml::GetInterventionParameters() cons
                 }
             }
         }
-
-        parameters.cepacTracer = new Tracer(parameters.simName, parameters.cepacSimContexts[0], 1);
-        parameters.cepacRunStats = new RunStats(parameters.simName, parameters.cepacSimContexts[0]);
     }
-
-    auto population_interventions_node = simulation_node.child("interventions").child("populationInterventions");
-    for(auto intervention : ParseInterventions(population_interventions_node, false))
-    {
-        simulation_.RegisterIntervention(intervention);
-    }
-
-    for(auto group : ReadGroups())
-    {
-        simulation_.RegisterTargetGroup(group.second);
-    }
-    */
 
     return parameters;
 }
-
-/*
-void a()
-{
-    simulation_.SetLifeExpectancyConfidenceInterval(Text<double>(simulation_node.child("traceFiles").child("lifeExpectancy").child("medianConfidenceInterval")));
-	for(auto time_node : simulation_node.child("traceFiles").child("lifeExpectancy").children("time"))
-	{
-		simulation_.AddLifeExpectancyRecordTime(Text<int>(time_node));
-	}
-}
-*/
 
 std::unordered_map<TransmissionType, std::array<double, (std::size_t)Entity::HVLStrata::Last>> SimulationParametersXml::GetTransmissionCoefficients() const
 {
@@ -394,6 +368,8 @@ std::unordered_map<TransmissionType, std::array<double, (std::size_t)Entity::HVL
 
         for(auto hvl : enum_iterator<Entity::HVLStrata>())
         {
+            if(hvl == Entity::HVLStrata::UNINFECTED) continue;
+
             switch(hvl)
             {
             case Entity::HVLStrata::UNINFECTED:
@@ -405,7 +381,7 @@ std::unordered_map<TransmissionType, std::array<double, (std::size_t)Entity::HVL
                 value = node.child("lateStage").text().as_double();
                 break;
             default: 
-                value = node.child(("hvl" + std::to_string((int)hvl)).c_str()).text().as_double();
+                value = node.child(("hvl" + std::to_string(((int)hvl) - 1)).c_str()).text().as_double();
                 break;
             }
 
@@ -853,15 +829,15 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
 		}
 
     auto births_node = population_node.child("births");
-	parameters.setBirthRate(Text<double>(births_node.child("rate")));
+	parameters.SetBirthRate(Text<double>(births_node.child("rate")));
 
     for(const auto &dist : GetEntityDistributions(births_node.child("entityDistributions")))
     {
-        parameters.setBirthProportion(dist.first, dist.second);
+        parameters.SetBirthProportion(dist.first, dist.second);
     }
 
-	parameters.setProportionCircumcised(Text<double>(population_node.child("proportionMaleCircumcised")));
-	parameters.setAgeOfMajority(Text<int>(population_node.child("ageOfMajority")), TimeGranularity::Year);
+	parameters.SetProportionCircumcised(Text<double>(population_node.child("proportionMaleCircumcised")));
+	parameters.SetAgeOfMajority(Text<int>(population_node.child("ageOfMajority")), TimeGranularity::Year);
 
 	auto defaultMaleParams = GetMaleSubPopParams();
 	parameters.SetMaleParameters(defaultMaleParams);
@@ -892,6 +868,8 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
     //Costs
     parameters.SetCondomCost(Text<double>(costs_node.child("condomCost")));
     parameters.SetCircumcisionCost(Text<double>(costs_node.child("circumcisionCost")));
+
+    return parameters;
 }
 
 Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node criteria_node)
@@ -1367,7 +1345,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto dist = GetLogNormalDist(node);
             intervention.SetIndividualCallback(
                 [=](Entity *person) { 
-                    person->SetAcquisitionRatePerMonth(risk, partnership_type, dist, simulation_.GetEventParams().randomNums); });
+                    person->SetAcquisitionRatePerMonth(risk, partnership_type, dist, GetRandomNumberGenerator()); });
             break;
         }
         case KnownIntervention::CoitalEventsPerMonth:
@@ -1387,7 +1365,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto dist = GetBetaDist(node);
             intervention.SetIndividualCallback(
                 [=](Entity *person) {
-                    person->SetChanceCondomUsePerEvent(risk, partnership_type, dist, simulation_.GetEventParams().randomNums); });
+                    person->SetChanceCondomUsePerEvent(risk, partnership_type, dist, GetRandomNumberGenerator()); });
             break;
         }
         case KnownIntervention::PartnershipDuration:
@@ -1435,7 +1413,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto value = Text<double>(node);
             intervention.SetPopulationCallback(
                 [=](Population &p) { 
-                    p.popWideParams.setBirthRate(value); });
+                p.GetParameters().SetBirthRate(value); });
             break;
         }
         case KnownIntervention::ProportionMale:
@@ -1443,7 +1421,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto value = Text<double>(node);
             intervention.SetPopulationCallback(
                 [=](Population &p) { 
-                    p.popWideParams.setBirthProportion("male", value); });
+                p.GetParameters().SetBirthProportion("male", value); });
             break;
         }
         case KnownIntervention::ProportionCircumcised:
@@ -1451,7 +1429,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto value = Text<double>(node);
             intervention.SetPopulationCallback(
                 [=](Population &p) {
-                    p.popWideParams.setProportionCircumcised(value); });
+                p.GetParameters().SetProportionCircumcised(value); });
             break;
         }
         case KnownIntervention::ChanceBecomeSexWorker:
@@ -1459,7 +1437,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto gender = Attr<DemographicProfile::Gender>(node, "gender");
             auto chance = Text<double>(node);
             intervention.SetPopulationCallback(
-                [=](Population &p) { p.popWideParams.SetChanceBecomeCsw(gender, chance); });
+                [=](Population &p) { p.GetParameters().SetChanceBecomeCsw(gender, chance); });
             intervention.SetIndividualCallback([=](Entity *person)
             {
                 if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == gender)
@@ -1473,7 +1451,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         {
             auto months = Text<int>(node);
             intervention.SetPopulationCallback(
-                [=](Population &p) { p.popWideParams.SetSexualActivityDelay(months); });
+                [=](Population &p) { p.GetParameters().SetSexualActivityDelay(months); });
             intervention.SetIndividualCallback(
                 [=](Entity *person) { person->SetSexualActivityDelay(months); });
             break;
@@ -1503,7 +1481,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto employment = Attr<DemographicProfile::Employment>(node, "employment");
             auto proportion = Text<double>(node);
             intervention.SetPopulationCallback(
-                [=](Population &p) { p.popWideParams.SetProportionHighRisk(gender, employment, proportion); });
+                [=](Population &p) { p.GetParameters().SetProportionHighRisk(gender, employment, proportion); });
             intervention.SetIndividualCallback([=](Entity *person)
             {
                 if(gender == (DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender))
@@ -1518,7 +1496,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = GetNormalDist(node);
             intervention.SetPopulationCallback(
-                [=](Population &p) { p.popWideParams.SetAverageYearsYounger(partnership_type, dist); });
+                [=](Population &p) { p.GetParameters().SetAverageYearsYounger(partnership_type, dist); });
             intervention.SetIndividualCallback([=](Entity *person) 
             { 
                 if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == DemographicProfile::Gender::Male)
@@ -1534,12 +1512,12 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = GetLogNormalDist(node);
             intervention.SetPopulationCallback(
-                [=](Population &p) { p.popWideParams.SetAcquisitionRatePerMonth(risk, partnership_type, dist); });
+                [=](Population &p) { p.GetParameters().SetAcquisitionRatePerMonth(risk, partnership_type, dist); });
             intervention.SetIndividualCallback([=](Entity *person)
             {
                 if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == DemographicProfile::Gender::Male)
                 {
-                    person->SetAcquisitionRatePerMonth(risk, partnership_type, dist, simulation_.GetEventParams().randomNums);
+                    person->SetAcquisitionRatePerMonth(risk, partnership_type, dist, GetRandomNumberGenerator());
                 }
             });
             break;
@@ -1550,7 +1528,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = Text<double>(node.child("distribution").child("mean"));
             intervention.SetPopulationCallback(
-                [=](Population &p) { p.popWideParams.SetCoitalEventsPerMonth(risk, partnership_type, dist); });
+                [=](Population &p) { p.GetParameters().SetCoitalEventsPerMonth(risk, partnership_type, dist); });
             intervention.SetIndividualCallback([=](Entity *person)
             {
                 if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == DemographicProfile::Gender::Male)
@@ -1566,12 +1544,12 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = GetBetaDist(node);
             intervention.SetPopulationCallback(
-                [=](Population &p) { p.popWideParams.SetChanceCondomUsePerEvent(risk, partnership_type, dist); });
+                [=](Population &p) { p.GetParameters().SetChanceCondomUsePerEvent(risk, partnership_type, dist); });
             intervention.SetIndividualCallback([=](Entity *person)
             {
                 if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == DemographicProfile::Gender::Male)
                 {
-                    person->SetChanceCondomUsePerEvent(risk, partnership_type, dist, simulation_.GetEventParams().randomNums);
+                    person->SetChanceCondomUsePerEvent(risk, partnership_type, dist, GetRandomNumberGenerator());
                 }
             });
             break;
@@ -1582,7 +1560,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = GetShiftedLogNormalDist(node);
             intervention.SetPopulationCallback(
-                [=](Population &p) { p.popWideParams.SetPartnershipDuration(risk, partnership_type, dist); });
+                [=](Population &p) { p.GetParameters().SetPartnershipDuration(risk, partnership_type, dist); });
             intervention.SetIndividualCallback([=](Entity *person) 
             { 
                 if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == DemographicProfile::Gender::Male)
@@ -1603,18 +1581,18 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
                 if(parameter_name == "rank")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.parameters_.rolloutEligibility.oiHistRank = new_value; });
+                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.oiHistRank = new_value; });
                 }
                 else if(parameter_name.substr(0, 2) == "OI")
                 {
                     int oi_number = std::stoi(parameter_name.substr(2));
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.parameters_.rolloutEligibility.oiHistOIs[oi_number] = new_value != 0; });
+                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.oiHistOIs[oi_number] = new_value != 0; });
                 }
                 else if(parameter_name == "numOIToStart")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.parameters_.rolloutEligibility.oiHistNumToStart = new_value; });
+                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.oiHistNumToStart = new_value; });
                 }
                 else
                 {
@@ -1626,17 +1604,17 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
                 if(parameter_name == "rank")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4Rank = new_value; });
+                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.cd4Rank = new_value; });
                 }
                 else if(parameter_name == "CD4Lwr")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4Bounds.lower = new_value; });
+                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.cd4Bounds.lower = new_value; });
                 }
                 else if(parameter_name == "CD4Upp")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4Bounds.upper = new_value; });
+                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.cd4Bounds.upper = new_value; });
                 }
                 else
                 {
@@ -1648,23 +1626,23 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
                 if(parameter_name == "rank")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4OiHistRank = new_value; });
+                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.cd4OiHistRank = new_value; });
                 }
                 else if(parameter_name == "CD4Lwr")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4OiHistCd4Bounds.lower = new_value; });
+                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.cd4OiHistCd4Bounds.lower = new_value; });
                 }
                 else if(parameter_name == "CD4Upp")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4OiHistCd4Bounds.upper = new_value; });
+                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.cd4OiHistCd4Bounds.upper = new_value; });
                 }
                 else if(parameter_name.substr(0, 2) == "OI")
                 {
                     int oi_number = std::stoi(parameter_name.substr(2));
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4OiHistOIs[oi_number] = new_value != 0; });
+                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.cd4OiHistOIs[oi_number] = new_value != 0; });
                 }
                 else
                 {
@@ -1676,17 +1654,17 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
                 if(parameter_name == "rank")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.parameters_.rolloutEligibility.hvlRank = new_value; });
+                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.hvlRank = new_value; });
                 }
                 else if(parameter_name == "HVLLwr")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.parameters_.rolloutEligibility.hvlBounds.lower = new_value; });
+                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.hvlBounds.lower = new_value; });
                 }
                 else if(parameter_name == "HVLUpp")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.parameters_.rolloutEligibility.hvlBounds.upper = new_value; });
+                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.hvlBounds.upper = new_value; });
                 }
                 else
                 {
@@ -1698,28 +1676,28 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
                 if(parameter_name == "rank")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4HvlRank = new_value; });
+                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.cd4HvlRank = new_value; });
                 }
                 else if(parameter_name == "CD4Lwr")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4HvlCd4Bounds.lower = new_value; });
+                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.cd4HvlCd4Bounds.lower = new_value; });
                 }
                 else if(parameter_name == "CD4Upp")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4HvlCd4Bounds.upper = new_value; });
+                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.cd4HvlCd4Bounds.upper = new_value; });
                 }
                 else if(parameter_name == "HVLLwr")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.parameters_.rolloutEligibility.cd4HvlHvlBounds.lower = new_value; });
+                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.cd4HvlHvlBounds.lower = new_value; });
                 }
                 else if(parameter_name == "HVLUpp")
                 {
                     intervention.SetSimulationCallback(
                         [=](Simulation &s) { 
-                            s.parameters_.rolloutEligibility.cd4HvlHvlBounds.upper = new_value; });
+                        s.GetEventParams().rolloutEligibility.cd4HvlHvlBounds.upper = new_value; });
                 }
                 else
                 {

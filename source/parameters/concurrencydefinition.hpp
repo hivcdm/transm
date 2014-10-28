@@ -131,11 +131,58 @@ struct InterventionParameters
         Cepac,
         Art
     } intervention_type;
-    std::string default_in_file;
-    std::unordered_map<int, std::string> in_files;
+
+    struct CepacFile
+    {
+        int time = 0;
+        int target_population = 0;
+        std::string filename = "";
+    };
+
+    InterventionParameters() :
+        intervention_type(InterventionType::Cepac),
+        dynamic_feedback_enabled(false),
+        dynamic_feedback_period(0)
+    {
+    }
+
+    InterventionParameters(const InterventionParameters &other) :
+        intervention_type(other.intervention_type),
+        default_cepac_file(other.default_cepac_file),
+        cepac_files(other.cepac_files),
+        eligibility_criteria(other.eligibility_criteria),
+        dynamic_feedback_enabled(other.dynamic_feedback_enabled),
+        dynamic_feedback_period(other.dynamic_feedback_period),
+        target_yearly_rollout_proportions(other.target_yearly_rollout_proportions)
+    {
+    }
+
+    ~InterventionParameters()
+    {
+    }
+
+    InterventionParameters &operator=(InterventionParameters other)
+    {
+        swap(other);
+    }
+
+    void swap(InterventionParameters &other)
+    {
+        using std::swap;
+        swap(default_cepac_file, other.default_cepac_file);
+        swap(cepac_files, other.cepac_files);
+        swap(eligibility_criteria, other.eligibility_criteria);
+        swap(dynamic_feedback_enabled, other.dynamic_feedback_enabled);
+        swap(dynamic_feedback_period, other.dynamic_feedback_period);
+        swap(target_yearly_rollout_proportions, other.target_yearly_rollout_proportions);
+    }
+
+    CepacFile default_cepac_file;
+    std::vector<CepacFile> cepac_files;
     RolloutEligibility eligibility_criteria;
     bool dynamic_feedback_enabled;
     int dynamic_feedback_period;
+    std::vector<std::pair<int, double>> target_yearly_rollout_proportions;
 };
 
 } // namespace transm

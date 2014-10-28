@@ -49,7 +49,7 @@ public:
         bool enabled;
         std::string extension;
         bool toss;
-        std::fstream file;
+        std::ofstream file;
 
         template<typename T>
         std::ostream &operator<<(const T &to_add)
@@ -74,6 +74,8 @@ public:
 		treatedContext = nullptr;
         cepacRunStats = nullptr;
         cepacTracer = nullptr;
+        numNewbornsTraced = 0;
+        numNewbornsToTrace = 0;
 	}
 
     /// <summary>

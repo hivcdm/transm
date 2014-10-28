@@ -1,5 +1,6 @@
 #include "female.hpp"
 #include "male.hpp"
+#include "msmw.hpp"
 #include "core/constants.hpp"
 #include "utility/utility.hpp"
 
@@ -112,18 +113,38 @@ Female::~Female(void)
 double Female::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
 {
     assert(_p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male);
-	Male *m = (Male *)_p;
-	//transmission coeff				  (1 - (condoms are used and succeed)) * (1 - (male is circumcised))
-	double circEff = m->getCircumProtectEff();
-	//Determine if a condom was used and record
-	condomUsedLastFOICalculation = _eventParams.randomNums.chance(m->getCondomUseProb(this, _partnershipType));
-	//Determine the condom efficacy --> 0 if no condom was used
-	double condomEff = 0;
 
-	if(condomUsedLastFOICalculation)
-	{
-		condomEff = m->getCondomProtectEff();
-	}
+    // FOI = transmission coeff * (1 - (condoms are used and succeed)) * (1 - (male is circumcised))
+
+    double circEff = 0;
+    double condomUseProb = 0;
+    double condomProtectEff = 0;
+    bool circumcised = false;
+
+    if(_p->getEntityType() == "male")
+    {
+        circEff = ((Male *)_p)->getCircumProtectEff();
+        condomUseProb = ((Male *)_p)->getCondomUseProb(this, _partnershipType);
+        condomProtectEff = ((Male *)_p)->getCondomProtectEff();
+        circumcised = ((Male *)_p)->IsCircumcised();
+    }
+    else if(_p->getEntityType() == "msmw")
+    {
+        circEff = ((Msmw *)_p)->getCircumProtectEff();
+        condomUseProb = ((Msmw *)_p)->getCondomUseProb(this, _partnershipType);
+        condomProtectEff = ((Msmw *)_p)->getCondomProtectEff();
+        circumcised = ((Msmw *)_p)->IsCircumcised();
+    }
+    else
+    {
+        throw std::runtime_error("invalid partner for female: " + _p->getEntityType());
+    }
+
+	//Determine if a condom was used and record
+	condomUsedLastFOICalculation = _eventParams.randomNums.chance(condomUseProb);
+
+	//Determine the condom efficacy --> 0 if no condom was used
+    double condomEff = condomUsedLastFOICalculation ? condomProtectEff : 0;
 
     assert(_p->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Male);
 
@@ -141,11 +162,11 @@ double Female::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std
             _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "NOT ";
 		}
 
-        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "used (efficacy " << m->getCondomProtectEff();
+        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "used (efficacy " << condomProtectEff;
 
-		if(m->isCircumcised())
+		if(circumcised)
 		{
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << ");" << std::endl << " !" << m->getID() <<
+            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << ");" << std::endl << " !" << _p->getID() <<
 			        " is circumcised (efficacy " << circEff;
 		}
 

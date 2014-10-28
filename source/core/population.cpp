@@ -33,7 +33,7 @@ Population::Population(EventParams &parameters)
     : populationID(Population::idCounter++),
       parameters_(parameters)
 {
-    risk_group_changed_.push_back([&](const Entity *e) { trace_files_.at("single-person").RecordRiskGroupChanged(parameters.currTime, e); });
+    //risk_group_changed_.push_back([&](const Entity *e) { trace_files_.at("single-person").RecordRiskGroupChanged(parameters.currTime, e); });
 }
 
 void Population::Circumcise(Entity *p)
@@ -953,7 +953,7 @@ std::size_t Population::UpdateSize()
     entities->forEach([this](Entity *p)
     {
         if(p->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Male
-            && ((Male *)p)->isCircumcised())
+            && ((Male *)p)->IsCircumcised())
         {
             if(p->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::Active)
             {
@@ -3554,7 +3554,7 @@ void Population::Initialize(const PopulationParameters &parameters)
     }
 
     //create EntityPool - this will contain all Entities
-    entities.reset(new EntityPool(popWideParams.getAgeOfMajority(), GetId(), assort));
+    entities.reset(new EntityPool(popWideParams.GetAgeOfMajority(), GetId(), assort));
 
     //initialize infection trace generator print detailed info about certain ProfileID's
     // in this case, all ProfileID's w/ non-nullptr BucketDemographicProfiles
@@ -3581,9 +3581,9 @@ void Population::Initialize(const PopulationParameters &parameters)
     }
 
     // Create the people in the population 
-    auto totalNumHeteroMales = Utility::round<std::size_t>(popWideParams.GetInitialSize() * popWideParams.getBirthProportion("hetero-male"));
-    auto totalNumMsmws = Utility::round<std::size_t>(popWideParams.GetInitialSize() * popWideParams.getBirthProportion("msmw"));
-    auto totalNumMsms = Utility::round<std::size_t>(popWideParams.GetInitialSize() * popWideParams.getBirthProportion("msm"));
+    auto totalNumHeteroMales = Utility::round<std::size_t>(popWideParams.GetInitialSize() * popWideParams.GetBirthProportion("hetero-male"));
+    auto totalNumMsmws = Utility::round<std::size_t>(popWideParams.GetInitialSize() * popWideParams.GetBirthProportion("msmw"));
+    auto totalNumMsms = Utility::round<std::size_t>(popWideParams.GetInitialSize() * popWideParams.GetBirthProportion("msm"));
     auto totalNumMales = totalNumMsmws + totalNumHeteroMales + totalNumMsms;
     auto totalNumFemales = std::max<std::size_t>(popWideParams.GetInitialSize() - totalNumMales, 0);
 

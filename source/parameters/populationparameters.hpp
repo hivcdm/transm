@@ -16,17 +16,17 @@ public:
 	PopulationParameters();
 	~PopulationParameters();
 
-	double getBirthRate() const;
-	void setBirthRate(double birth_rate) { birthRate = birth_rate; }
+	double GetBirthRate() const;
+	void SetBirthRate(double birth_rate) { birthRate = birth_rate; }
 
-	double getProportionCircumcised() const { return proportionCircumcised; }
-	void setProportionCircumcised(double value) { proportionCircumcised = value; }
+	double GetProportionCircumcised() const { return proportionCircumcised; }
+	void SetProportionCircumcised(double value) { proportionCircumcised = value; }
 
-    double getBirthProportion(const std::string &entity_type) const { return birthProportions.at(entity_type); }
-    void setBirthProportion(const std::string &entity_type, double proportion) { birthProportions[entity_type] = proportion; }
+    double GetBirthProportion(const std::string &entity_type) const { return birthProportions.at(entity_type); }
+    void SetBirthProportion(const std::string &entity_type, double proportion) { birthProportions[entity_type] = proportion; }
 
-	int getAgeOfMajority() const { return ageOfMajority; }
-    void setAgeOfMajority(int ageOfMajority, TimeGranularity granularity = TimeGranularity::Year) 
+	int GetAgeOfMajority() const { return ageOfMajority; }
+    void SetAgeOfMajority(int ageOfMajority, TimeGranularity granularity = TimeGranularity::Year) 
     { 
         this->ageOfMajority = Utility::convert_time(granularity, TimeGranularity::Month, ageOfMajority); 
     }
@@ -108,11 +108,6 @@ protected:
 
 private:
 	friend class SimulationBuilder;
-
-    /// <summary>
-	/// this will be set as the Simulation::eventParams.debugLevel
-    /// </summary>
-	DebugLevel debugLevel;
 
 	long initSize;
 

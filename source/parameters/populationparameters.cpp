@@ -10,7 +10,6 @@ namespace transm {
 PopulationParameters::PopulationParameters()
 {
 	//set default values of fields
-    debugLevel = DebugLevel::One;
 	initSize = 10000;
 	birthRate = 0.0038;
 	ageOfMajority = 180;
@@ -24,7 +23,7 @@ PopulationParameters::~PopulationParameters()
 {
 }
 
-double PopulationParameters::getBirthRate() const
+double PopulationParameters::GetBirthRate() const
 {
 	return birthRate;
 }

@@ -44,8 +44,6 @@ public:
 
 	double GetIncidence() { return incidence_; }
 
-	int GetTotalTime() { return totalTime_; }
-
 	int GetTime() { return time_; }
 
 	void RegisterTargetGroup(const TargetGroup &group);
@@ -68,7 +66,7 @@ public:
 
     void SetLifeExpectancyConfidenceInterval(double ci) { population_.populationStatistics.setMedianLECI(ci); }
 
-    void RegisterIntervention(const Intervention &intervention);
+    void RegisterPopulationIntervention(const Intervention &intervention);
 
 private:
 	friend class SimulationBuilderXml;
@@ -125,9 +123,7 @@ private:
 
 	int monthOfFirstMonthCalibPrev_;
 
-	int totalTime_;
-
-	int fixedSeed_;
+	uint32_t rng_seed_;
 
 	double incidence_;
 

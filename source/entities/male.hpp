@@ -211,8 +211,6 @@ public:
 	double getCondomProtectEff();
 	//gets the efficacy of circumcision on preventing the spread of HIV
 	double getCircumProtectEff();
-	//returns true if this male is circumcised
-	bool isCircumcised();
 	/** End: functions for Males only **/
 
     void SetPartnershipRejectionChance(RiskLevel, SexualPartnership::Type, double) { throw std::runtime_error("not allowed for males"); };

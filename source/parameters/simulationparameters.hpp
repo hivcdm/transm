@@ -18,10 +18,24 @@ public:
     using TransmissionCoefficientsMap = std::unordered_map<TransmissionType, TransmissionCoefficients>;
     using InterventionsContainer = std::vector<Intervention>;
     using ConcurrencyDefinition = std::array<ConcurrencyDef, Constants::NUMBER_CONCURRENCY_DEFS>;
-    using TracingParameters = std::unordered_map<std::string, TraceFileParameters>;
 
-    SimulationParameters();
-    virtual ~SimulationParameters();
+    struct TracingParameters
+    {
+        using FilesContainer = std::unordered_map<std::string, TraceFileParameters>;
+        FilesContainer files;
+        bool trace_prevalent_cases = false;
+        int num_to_trace = 0;
+        int num_newborns_to_trace = 0;
+        int month_trace_newborns = 0;
+        double life_expectancy_ci = 0;
+        std::vector<int> life_expectancy_record_times;
+    };
+
+    SimulationParameters() : rng_(nullptr) { }
+    virtual ~SimulationParameters() { }
+
+    void SetRandomNumberGenerator(RandomNumberGenerator &rng) { rng_ = &rng; }
+    RandomNumberGenerator &GetRandomNumberGenerator() const { assert(rng_ != nullptr); return *rng_; }
 
     virtual std::string GetName() const = 0;
     virtual Version GetVersion() const = 0;
@@ -42,6 +56,9 @@ public:
     virtual Msm::SubPopParams GetMsmSubPopParams() const = 0;
     virtual Msmw::SubPopParams GetMsmwSubPopParams() const = 0;
     virtual InterventionsContainer GetPopulationInterventions() const = 0;
+
+private:
+    RandomNumberGenerator *rng_;
 };
 
 class SimulationParametersFactory;
@@ -52,7 +69,7 @@ public:
     SimulationParametersXml(const std::string &filename);
     virtual ~SimulationParametersXml();
 
-    /*virtual*/ std::string GetName() const;
+    /*virtual*/ std::string GetName() const { return name_; }
     /*virtual*/ Version GetVersion() const;
     /*virtual*/ std::uint32_t GetFixedSeed() const;
     /*virtual*/ int GetDuration() const;
