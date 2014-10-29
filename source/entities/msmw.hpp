@@ -186,6 +186,8 @@ private:
     /// </summary>
     NormalDist averageYearsYounger[(int)SexualPartnership::Type::ENDType];
 
+    std::size_t times_selected_;
+
 public:
     /// <summary>
     /// this constructor creates an Msm that can be simulated
@@ -262,6 +264,9 @@ public:
     double GetPartnershipRejectionChance(RiskLevel, SexualPartnership::Type) const { return 0; };
     void SetOverrideChanceCondomUse(double) { throw std::runtime_error("not allowed for males"); };
     double GetOverrideChanceCondomUse() const { return -1; };
+
+    void IncrementTimesSelected() { times_selected_++; }
+    void ResetTimesSelected() { times_selected_ = 0; }
 
     ~Msmw();
 };

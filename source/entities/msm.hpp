@@ -155,6 +155,9 @@ private:
 
     // The distribution the males will draw from to determine how many years younger their partner should be (resulting difference may be negative for older women)
     NormalDist averageYearsYounger[(int)SexualPartnership::Type::ENDType];
+
+    std::size_t times_selected_;
+
 public:
     /**
     this constructor creates an Msm that can be simulated
@@ -215,6 +218,9 @@ public:
     double GetPartnershipRejectionChance(RiskLevel, SexualPartnership::Type) const { return 0; /* throw std::runtime_error("not allowed for males"); */ };
     void SetOverrideChanceCondomUse(double) { throw std::runtime_error("not allowed for males"); };
     double GetOverrideChanceCondomUse() const { return -1; /* throw std::runtime_error("not allowed for males");*/ };
+
+    void IncrementTimesSelected() { times_selected_++; }
+    void ResetTimesSelected() { times_selected_ = 0; }
 
     ~Msm();
 };

@@ -284,9 +284,9 @@ void CostsTracker::BuildRow(int time)
 			PushElement(costs.totalCostsByCd4[i]);
 		}
 
-		for(std::size_t i = -1; i < (std::size_t)Entity::HVLStrata::Last; i++)
+		for(std::size_t i = 0; i < (std::size_t)Entity::HVLStrata::Last; i++)
 		{
-			PushElement(costs.totalCostsByHvl[i + 1]);
+			PushElement(costs.totalCostsByHvl[i]);
 		}
 	}
 }

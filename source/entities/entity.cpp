@@ -1,6 +1,8 @@
 #include "entity.hpp"
 #include "male.hpp"
 #include "female.hpp"
+#include "msm.hpp"
+#include "msmw.hpp"
 #include "sexualpartnership.hpp"
 #include "core/constants.hpp"
 #include "parameters/eventparams.hpp"
@@ -1003,6 +1005,15 @@ Entity *Entity::sexualActivity(Entity *_p, int _numActs,
                 << " " << getID() << std::endl;
 		}
 	}
+
+    if(_p->getEntityType() == "msm")
+    {
+        ((Msm *)_p)->IncrementTimesSelected();
+    }
+    else if(_p->getEntityType() == "msmw")
+    {
+        ((Msmw *)_p)->IncrementTimesSelected();
+    }
 
 	//increment numacts for this person and partner
 	incrementNumActsThisMonth(_numActs);
