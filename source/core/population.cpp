@@ -840,6 +840,16 @@ void Population::SaveIndividualSummaries(std::ostream &stream) const
 }
 */
 
+std::vector<AgeRange> Population::GetAgeRanges() const
+{
+    std::vector<AgeRange> age_ranges;
+    for(const auto &age_range : currSizeByEntityTypeAgeRange.at("female"))
+    {
+        age_ranges.push_back(age_range.first);
+    }
+    return age_ranges;
+}
+
 /**
 Iterates through current entities in the population and returns a total number of people
 ***/
@@ -849,13 +859,13 @@ std::size_t Population::UpdateSize()
 	//Also update size of non-sexually active
 	currNASize = entities->sizeNotSexuallyActive();
 
-    for(auto gender : enum_iterator<DemographicProfile::Gender>())
+    for(auto entity_type : {"male", "msmw", "msm", "female"})
 	{
-		currNASizeByGender[(std::size_t)gender] = entities->sizeNotSexuallyActive(gender);
+		currNASizeByEntityType[entity_type] = entities->sizeNotSexuallyActive(entity_type);
 
 		for(std::size_t j = 0; j < (std::size_t)Entity::RiskLevel::Last; j++)
 		{
-			currSASizeGenderRisk[(std::size_t)gender][j] = entities->sizeSexuallyActive(gender, (Entity::RiskLevel) j);
+			currSASizeEntityTypeRisk[entity_type][j] = entities->sizeSexuallyActive(entity_type, (Entity::RiskLevel) j);
 		}
 	}
 
@@ -866,20 +876,12 @@ std::size_t Population::UpdateSize()
 	//First tally the men
     GenderProfile.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
     currSizeGender[(std::size_t)DemographicProfile::Gender::Male] = 0;
+    GenderProfileIDs.clear();
+    GenderProfile.selectProfileIDs(GenderProfileIDs, nullptr);
 
-    for(auto orientation : {DemographicProfile::SexualOrientation::Heterosexual, DemographicProfile::SexualOrientation::Homosexual})
+    for(std::size_t i = 0; i < GenderProfileIDs.size(); i++)
     {
-        GenderProfile.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)orientation);
-        GenderProfileIDs.clear();
-        GenderProfile.selectProfileIDs(GenderProfileIDs, nullptr);
-
-        currSizeGenderOrientation[(std::size_t)DemographicProfile::Gender::Male][(std::size_t)orientation] = 0;
-
-        for(std::size_t i = 0; i < GenderProfileIDs.size(); i++)
-        {
-            currSizeGender[(std::size_t)DemographicProfile::Gender::Male] += entities->size(GenderProfileIDs[i]);
-            currSizeGenderOrientation[(std::size_t)DemographicProfile::Gender::Male][(std::size_t)orientation] += entities->size(GenderProfileIDs[i]);
-        }
+        currSizeGender[(std::size_t)DemographicProfile::Gender::Male] += entities->size(GenderProfileIDs[i]);
     }
 
 	//Next tally the women
@@ -912,58 +914,30 @@ std::size_t Population::UpdateSize()
 		currSizeRisk[risk] = 0;
 		currSizeRiskCSW[risk] = 0;
 
-        for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
+        for(auto entity_type : {"male", "msmw", "msm", "female"})
 		{
-			currSizeGenderRiskCSW[j][risk] = 0;
-		}
-
-		//loop through all buckets
-		BucketDemographicProfile *currBucket = nullptr;
-		DemographicProfile::ProfileID currProfileID = DemographicProfile::MIN;
-
-		//iterate through all buckets
-		while(currProfileID <= DemographicProfile::MAX)
-		{
-			currBucket = entities->getBucket(currProfileID);
-
-			//if people of this particular profile don't exist in the population, move on.
-			if((currBucket == nullptr) || (currBucket->size() == 0))
-			{
-				currProfileID++;
-				continue;
-			}
-
-            if(DemographicProfile::get(currBucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
-			{
-				//Add all people in bucket of particular risk group
-				currSizeRisk[risk] += ((BucketSexualMixing *)(currBucket))->sizeRisk((Entity::RiskLevel) risk);
-
-                if(DemographicProfile::get(currBucket->getProfileID(), DemographicProfile::Demographic::Employment) == (std::size_t)DemographicProfile::Employment::Csw)
-				{
-					currSizeRiskCSW[risk] += ((BucketSexualMixing *)(currBucket))->sizeRiskCSW((Entity::RiskLevel)risk);
-					currSizeGenderRiskCSW[DemographicProfile::get(currBucket->getProfileID(),
-					                            DemographicProfile::Demographic::Gender)][risk] += ((BucketSexualMixing *)(currBucket))->sizeRiskCSW((Entity::RiskLevel)risk);
-				}
-			}
-
-			currProfileID++;
+			currSizeEntityTypeRiskCSW[entity_type][risk] = 0;
 		}
 	}
 
-	for(auto &ageRangeSizePair : currSizeByAgeRange)
-	{
-		ageRangeSizePair.second = entities->sizeSexuallyActiveByAge(ageRangeSizePair.first.lower, ageRangeSizePair.first.upper);
-	}
+    entities->forEach([&](Entity *e)
+    {
+        currSizeEntityType[e->getEntityType()]++;
+        currSizeRisk[(std::size_t)e->getRiskLevel()]++;
+        if(e->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::Csw)
+        {
+            currSizeRiskCSW[(std::size_t)e->getRiskLevel()]++;
+            currSizeEntityTypeRiskCSW[e->getEntityType()][(std::size_t)e->getRiskLevel()]++;
+        }
+    });
 
-	for(auto &ageRangeSizePair : currSizeByAgeRangeMale)
-	{
-		ageRangeSizePair.second = entities->sizeSexuallyActiveByAge(ageRangeSizePair.first.lower, ageRangeSizePair.first.upper, DemographicProfile::Gender::Male);
-	}
-
-	for(auto &ageRangeSizePair : currSizeByAgeRangeFemale)
-	{
-		ageRangeSizePair.second = entities->sizeSexuallyActiveByAge(ageRangeSizePair.first.lower, ageRangeSizePair.first.upper, DemographicProfile::Gender::Female);
-	}
+    for(auto entity_type : {"male", "msmw", "msm", "female"})
+    {
+        for(auto age_range_size_pair : currSizeByEntityTypeAgeRange[entity_type])
+        {
+            age_range_size_pair.second = entities->sizeSexuallyActiveByAge(age_range_size_pair.first.lower, age_range_size_pair.first.upper, entity_type);
+        }
+    }
 
     num_circumcised_na = 0;
     num_circumcised_sa = 0;
@@ -2505,19 +2479,19 @@ std::size_t Population::GetSize(DemographicProfile::Gender gender)
     return currSizeGender[(std::size_t)gender];
 }
 
-std::size_t Population::GetSize(DemographicProfile::Gender gender, DemographicProfile::SexualOrientation sexual_orientation)
+std::size_t Population::GetSize(const std::string &entity_type)
 {
-    return currSizeGenderOrientation[(std::size_t)gender][(std::size_t)sexual_orientation];
+    return currSizeEntityType.at(entity_type);
 }
 
-std::size_t Population::GetSASize(DemographicProfile::Gender _gender, Entity::RiskLevel _risk)
+std::size_t Population::GetSASize(const std::string &entity_type, Entity::RiskLevel _risk)
 {
-    return currSASizeGenderRisk[(std::size_t)_gender][(std::size_t)_risk];
+    return currSASizeEntityTypeRisk[entity_type][(std::size_t)_risk];
 }
 
-std::size_t Population::GetCSWSize(DemographicProfile::Gender _gender, Entity::RiskLevel _risk)
+std::size_t Population::GetCSWSize(const std::string &entity_type, Entity::RiskLevel _risk)
 {
-    return currSizeGenderRiskCSW[(std::size_t)_gender][(std::size_t)_risk];
+    return currSizeEntityTypeRiskCSW[entity_type][(std::size_t)_risk];
 }
 
 void Population::PrintMethodResults(EventParams &parameters_, const std::string &_methodName, const std::string &_eventLabel,
@@ -2621,92 +2595,35 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 		secondRow << Constants::TAB;
 		thirdRow << "Month" << Constants::TAB;
 		//Partnership Headers
-		//Steady Partnerships
-		firstRow << "Individuals by Partnership" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		secondRow << "Steady" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB;
 
-        for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
-		{
-            for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
-			{
-				for(int m = (int)Entity::RiskLevel::HIGH; m >= 0; m--)
-				{
-					thirdRow << genderLabels[j] << Constants::SPACE << "Non-Single" << Constants::SPACE << employmentLabels[l] <<
-					         Constants::SPACE << riskLabels[m] << Constants::TAB;
-				}
-			}
-		}
+        for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
+        {
+            firstRow << (i == 0 ? "Individuals by Partnership" : Constants::TAB);
+            firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+                Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+                Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+            secondRow << partnershipLabels[i];
+            secondRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+                Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+                Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 
-		//Regular Partnerships
-		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		secondRow << "Regular" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+            for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
+            {
+                for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
+                {
+                    for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
+                    {
+                        for(int m = (int)Entity::RiskLevel::HIGH; m >= 0; m--)
+                        {
+                            thirdRow << genderLabels[j] << Constants::SPACE << relationshipLabels[k] << Constants::SPACE << employmentLabels[l] <<
+                                Constants::SPACE << riskLabels[m] << Constants::TAB;
+                        }
+                    }
+                }
+            }
+        }
 
-        for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
-		{
-            for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
-			{
-                for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
-				{
-					for(int m = (int)Entity::RiskLevel::HIGH; m >= 0; m--)
-					{
-						thirdRow << genderLabels[j] << Constants::SPACE << relationshipLabels[k] << Constants::SPACE << employmentLabels[l] <<
-						         Constants::SPACE << riskLabels[m] << Constants::TAB;
-					}
-				}
-			}
-		}
-
-		//Casual Partnerships
-		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		secondRow << "Casual" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-
-        for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
-		{
-            for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
-			{
-                for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
-				{
-					for(int m = (int)Entity::RiskLevel::HIGH; m >= 0; m--)
-					{
-						thirdRow << genderLabels[j] << Constants::SPACE << relationshipLabels[k] << Constants::SPACE << employmentLabels[l] <<
-						         Constants::SPACE << riskLabels[m] << Constants::TAB;
-					}
-				}
-			}
-		}
-
-		//CSW Partnerships
-		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		secondRow << "CSW" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-
-        for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
-		{
-		  for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
-			{
-                for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
-				{
-					for(int m = (int)Entity::RiskLevel::HIGH; m >= 0; m--)
-					{
-						thirdRow << genderLabels[j] << Constants::SPACE << relationshipLabels[k] << Constants::SPACE << employmentLabels[l] <<
-						         Constants::SPACE << riskLabels[m] << Constants::TAB;
-					}
-				}
-			}
-		}
+        firstRow << Constants::TAB;
 
 		//Concurrent Partnerships
 		//CSW
@@ -2909,12 +2826,12 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 			//e.g. if person has partnerships steady and casual concurrent will equal 8+2=10
 			int concurrent = 0;
 
-			for(int i = 0; i < 4; i++)
+			for(int i = 0; i < (int)SexualPartnership::Type::Last; i++)
 			{
 				concurrent = (concurrent << 1) + (hasType[i] ? 1 : 0);
 			}
 
-			concurrent = 15 - concurrent;
+            concurrent = Constants::NUMBER_CONCURRENCY_DEFS - 1 - concurrent;
 			assert(concurrent <= Constants::NUMBER_CONCURRENCY_DEFS);
 
 			if(parameters_.concurrencyDef[concurrent].useDefinition
@@ -2978,62 +2895,22 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 
     std_dev_times_selected = std::sqrt(std_dev_times_selected);
 
-	//steady
-    for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
-	{
-        for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
-		{
-			for(int m = (int)Entity::RiskLevel::HIGH; m >= 0; m--)
-			{
-                _outStream << numInPartnership[(int)SexualPartnership::Type::Steady][j][(std::size_t)DemographicProfile::RelationshipStatus::NonSingle][l][m] << Constants::TAB;
-			}
-		}
-	}
-
-	//regular
-    for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
-	{
-        for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
-		{
-            for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
-			{
-				for(int m = (int)Entity::RiskLevel::HIGH; m >= 0; m--)
-				{
-					_outStream << numInPartnership[(int)SexualPartnership::Type::Regular][j][k][l][m] << Constants::TAB;
-				}
-			}
-		}
-	}
-
-	//casual
-    for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
-	{
-        for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
-		{
-            for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
-			{
-				for(int m = (int)Entity::RiskLevel::HIGH; m >= 0; m--)
-				{
-					_outStream << numInPartnership[(int)SexualPartnership::Type::Casual][j][k][l][m] << Constants::TAB;
-				}
-			}
-		}
-	}
-
-	//CSW
-    for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
-	{
-        for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
-		{
-            for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
-			{
-				for(int m = (int)Entity::RiskLevel::HIGH; m >= 0; m--)
-				{
-					_outStream << numInPartnership[(int)SexualPartnership::Type::Csw][j][k][l][m] << Constants::TAB;
-				}
-			}
-		}
-	}
+    for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
+    {
+        for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
+        {
+            for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
+            {
+                for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
+                {
+                    for(int m = (int)Entity::RiskLevel::HIGH; m >= 0; m--)
+                    {
+                        _outStream << numInPartnership[i][j][k][l][m] << Constants::TAB;
+                    }
+                }
+            }
+        }
+    }
 
 	//Concurrent Partnerships
 	//CSW
@@ -3044,7 +2921,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 	{
 		numInConcurrentCSW[k] = 0;
 
-		for(int m = 0; m < 4; m++)
+        for(int m = 0; m < 4; m++)
 		{
 			numInMultipleCSW[k][m] = 0;
 		}
@@ -3056,7 +2933,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 		{
             numInConcurrentCSW[k] += numInConcurrent[i][(std::size_t)DemographicProfile::Employment::Csw][k];
 
-			for(int m = 0; m < 4; m++)
+            for(int m = 0; m < 4; m++)
 			{
                 numInMultipleCSW[k][m] += numInMultiple[i][(std::size_t)DemographicProfile::Employment::Csw][k][m];
 			}
@@ -3067,7 +2944,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 	{
 		_outStream << numInConcurrentCSW[k] << Constants::TAB;
 
-		for(int m = 0; m < 4; m++)
+        for(int m = 0; m < 4; m++)
 		{
 			_outStream << numInMultipleCSW[k][m] << Constants::TAB;
 		}
@@ -3076,7 +2953,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 	//High Risk Males Non CSW
     _outStream << numInConcurrent[(std::size_t)DemographicProfile::Gender::Male][(std::size_t)DemographicProfile::Employment::NonCsw][(std::size_t)Entity::RiskLevel::HIGH] << Constants::TAB;
 
-	for(int m = 0; m < 4; m++)
+    for(int m = 0; m < 4; m++)
 	{
         _outStream << numInMultiple[(std::size_t)DemographicProfile::Gender::Male][(std::size_t)DemographicProfile::Employment::NonCsw][(std::size_t)Entity::RiskLevel::HIGH][m] << Constants::TAB;
 	}
@@ -3084,7 +2961,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 	//High Risk Females Non CSW
     _outStream << numInConcurrent[(std::size_t)DemographicProfile::Gender::Female][(std::size_t)DemographicProfile::Employment::NonCsw][(std::size_t)Entity::RiskLevel::HIGH] << Constants::TAB;
 
-	for(int m = 0; m < 4; m++)
+    for(int m = 0; m < 4; m++)
 	{
         _outStream << numInMultiple[(std::size_t)DemographicProfile::Gender::Female][(std::size_t)DemographicProfile::Employment::NonCsw][(std::size_t)Entity::RiskLevel::HIGH][m] << Constants::TAB;
 	}
@@ -3092,7 +2969,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 	//Low Risk Males Non CSW
     _outStream << numInConcurrent[(std::size_t)DemographicProfile::Gender::Male][(std::size_t)DemographicProfile::Employment::NonCsw][(std::size_t)Entity::RiskLevel::LOW] << Constants::TAB;
 
-	for(int m = 0; m < 4; m++)
+    for(int m = 0; m < 4; m++)
 	{
         _outStream << numInMultiple[(std::size_t)DemographicProfile::Gender::Male][(std::size_t)DemographicProfile::Employment::NonCsw][(std::size_t)Entity::RiskLevel::LOW][m] << Constants::TAB;
 	}
@@ -3100,7 +2977,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 	//Low Risk Females Non CSW
     _outStream << numInConcurrent[(std::size_t)DemographicProfile::Gender::Female][(std::size_t)DemographicProfile::Employment::NonCsw][(std::size_t)Entity::RiskLevel::LOW] << Constants::TAB;
 
-	for(int m = 0; m < 4; m++)
+    for(int m = 0; m < 4; m++)
 	{
         _outStream << numInMultiple[(std::size_t)DemographicProfile::Gender::Female][(std::size_t)DemographicProfile::Employment::NonCsw][(std::size_t)Entity::RiskLevel::LOW][m] << Constants::TAB;
 	}
@@ -3405,8 +3282,11 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 {
 	assert(_time >= 0);
 	//total # of age ranges to print out
-	auto &currSizeByAgeRange = GetSizeByAgeRange();
-	int numAgeRanges = (int)currSizeByAgeRange.size();
+    std::vector<AgeRange> age_ranges;
+    for(auto age_range_size_pair : currSizeByEntityTypeAgeRange["female"])
+    {
+        age_ranges.push_back(age_range_size_pair.first);
+    }
 
 	//write headers for infections sheet
 	if(_time == 0)
@@ -3426,23 +3306,34 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 		          "ART Toxicity" << Constants::TAB << "Proph Toxicity" << Constants::TAB << "Other" << Constants::TAB << "Total" <<
 		          Constants::TAB;
 		firstRow << "Gender" << Constants::TAB;
-		secondRow << "Males (Heterosexual)" << Constants::TAB;
-        secondRow << "Males (Homosexual)" << Constants::TAB;
+		secondRow << "Males" << Constants::TAB;
+        secondRow << "Male:Hetero" << Constants::TAB;
+        secondRow << "Male:Msmw" << Constants::TAB;
+        secondRow << "Male:Msm" << Constants::TAB;
 		firstRow << Constants::TAB;
+        firstRow << Constants::TAB;
         firstRow << Constants::TAB;
         firstRow << Constants::TAB;
 		secondRow << "Females" << Constants::TAB;
 		firstRow << "Risk Group (SA Pop)" << Constants::TAB << Constants::TAB;
 		secondRow << "CSW HR" << Constants::TAB << "CSW LR" << Constants::TAB;
 		firstRow << Constants::TAB << Constants::TAB;
-		secondRow << "Non-CSW High Risk Male" << Constants::TAB << "Non-CSW High Risk Female" << Constants::TAB;
+        firstRow << Constants::TAB << Constants::TAB;
+        secondRow << "Non-CSW High Risk Male:Hetero" << Constants::TAB;
+        secondRow << "Non-CSW High Risk Male:Msmw" << Constants::TAB;
+        secondRow << "Non-CSW High Risk Male:Msm" << Constants::TAB;
+        secondRow << "Non-CSW High Risk Female" << Constants::TAB;
 		firstRow << Constants::TAB << Constants::TAB;
-		secondRow << "Non-CSW Low Risk Male" << Constants::TAB << "Non-CSW Low Risk Female" << Constants::TAB;
+        firstRow << Constants::TAB << Constants::TAB;
+        secondRow << "Non-CSW Low Risk Male:Hetero" << Constants::TAB;
+        secondRow << "Non-CSW Low Risk Male:Msmw" << Constants::TAB;
+        secondRow << "Non-CSW Low Risk Male:Msm" << Constants::TAB;
+        secondRow << "Non-CSW Low Risk Female" << Constants::TAB;
 		//write out headers for population by age
 		firstRow << "Non-SA Pop (All Ages)" << Constants::TAB;
 		secondRow << "All ages" << Constants::TAB;
 
-		for(int i = 0; i < numAgeRanges; i++)
+		for(std::size_t i = 0; i < age_ranges.size(); i++)
 		{
 			if(i == 0)
 			{
@@ -3450,13 +3341,13 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 			}
 
 			firstRow << Constants::TAB;
-			secondRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
+            secondRow << age_ranges.at(i).lower << "-" << age_ranges.at(i).upper << Constants::TAB;
 		}
 
 		firstRow << "Male (By Age)" << Constants::TAB;
 		secondRow << "Non-SA" << Constants::TAB;
 
-		for(int i = 0; i < numAgeRanges; i++)
+        for(std::size_t i = 0; i < age_ranges.size(); i++)
 		{
 			if(i == 0)
 			{
@@ -3464,13 +3355,55 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 			}
 
 			firstRow << Constants::TAB;
-			secondRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
+            secondRow << age_ranges.at(i).lower << "-" << age_ranges.at(i).upper << Constants::TAB;
 		}
+
+        firstRow << "Male:Hetero (By Age)" << Constants::TAB;
+        secondRow << "Non-SA" << Constants::TAB;
+
+        for(std::size_t i = 0; i < age_ranges.size(); i++)
+        {
+            if(i == 0)
+            {
+                firstRow << "SA Pop (Age Months)";
+            }
+
+            firstRow << Constants::TAB;
+            secondRow << age_ranges.at(i).lower << "-" << age_ranges.at(i).upper << Constants::TAB;
+        }
+
+        firstRow << "Male:Msmw (By Age)" << Constants::TAB;
+        secondRow << "Non-SA" << Constants::TAB;
+
+        for(std::size_t i = 0; i < age_ranges.size(); i++)
+        {
+            if(i == 0)
+            {
+                firstRow << "SA Pop (Age Months)";
+            }
+
+            firstRow << Constants::TAB;
+            secondRow << age_ranges.at(i).lower << "-" << age_ranges.at(i).upper << Constants::TAB;
+        }
+
+        firstRow << "Male:Msm (By Age)" << Constants::TAB;
+        secondRow << "Non-SA" << Constants::TAB;
+
+        for(std::size_t i = 0; i < age_ranges.size(); i++)
+        {
+            if(i == 0)
+            {
+                firstRow << "SA Pop (Age Months)";
+            }
+
+            firstRow << Constants::TAB;
+            secondRow << age_ranges.at(i).lower << "-" << age_ranges.at(i).upper << Constants::TAB;
+        }
 
 		firstRow << "Female (By Age)" << Constants::TAB;
 		secondRow << "Non-SA" << Constants::TAB;
 
-		for(int i = 0; i < numAgeRanges; i++)
+        for(std::size_t i = 0; i < age_ranges.size(); i++)
 		{
 			if(i == 0)
 			{
@@ -3478,7 +3411,7 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 			}
 
 			firstRow << Constants::TAB;
-			secondRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
+            secondRow << age_ranges.at(i).lower << "-" << age_ranges.at(i).upper << Constants::TAB;
 		}
 
 		//write out string buffers to trace file
@@ -3523,9 +3456,10 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 
 	_outStream << totalDeaths << Constants::TAB;
 	//output size of male and female populations
-    for(auto orientation : {DemographicProfile::SexualOrientation::Heterosexual, DemographicProfile::SexualOrientation::Homosexual})
+    _outStream << GetSize(DemographicProfile::Gender::Male) << Constants::TAB;
+    for(auto entity_type : {"male", "msmw", "msm"})
     {
-        _outStream << GetSize(DemographicProfile::Gender::Male, orientation) << Constants::TAB;
+        _outStream << GetSize(entity_type) << Constants::TAB;
     }
 	_outStream << GetSize(DemographicProfile::Gender::Female) << Constants::TAB;
 	//output size by risk
@@ -3534,37 +3468,64 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
         << currSizeRiskCSW[(std::size_t)Entity::RiskLevel::LOW] 
         << Constants::TAB;
 
-	for(int i = (int)Entity::RiskLevel::HIGH; i >= 0; i--)
+    for(auto risk : {Entity::RiskLevel::HIGH, Entity::RiskLevel::LOW})
 	{
-        for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
+        for(auto entity_type : {"male", "msmw", "msm", "female"})
         {
-            _outStream << GetSASize((DemographicProfile::Gender) j,
-                (Entity::RiskLevel) i) - currSizeGenderRiskCSW[j][i] << Constants::TAB;
+            _outStream << GetSASize(entity_type, risk) - currSizeEntityTypeRiskCSW[entity_type][(std::size_t)risk] << Constants::TAB;
         }
 	}
 
-	//output size by age
-	_outStream << GetNASize() << Constants::TAB;
-
-	for(auto &ageRangeSize : currSizeByAgeRange)
-	{
-		_outStream << ageRangeSize.second << Constants::TAB;
-	}
-
 	//output size by age and gender
-	_outStream << currNASizeByGender[0] << Constants::TAB;
+    std::size_t total_na = currNASizeByEntityType["female"];
+    std::size_t total_na_male = 0;
+    auto size_by_age_range = currSizeByEntityTypeAgeRange["female"];
+    AgeRangeSizeContainer size_by_age_range_male;
 
-	for(auto &ageRangeSize : currSizeByAgeRangeMale)
-	{
-		_outStream << ageRangeSize.second << Constants::TAB;
-	}
+    for(auto entity_type : {"male", "msmw", "msm"})
+    {
+        total_na += currNASizeByEntityType[entity_type];
+        total_na_male += currNASizeByEntityType[entity_type];
 
-	_outStream << currNASizeByGender[1] << Constants::TAB;
+        std::size_t i = 0;
+        for(auto age_range : currSizeByEntityTypeAgeRange[entity_type])
+        {
+            size_by_age_range[i].second += age_range.second;
+            if(size_by_age_range_male.size() < currSizeByEntityTypeAgeRange[entity_type].size())
+            {
+                size_by_age_range_male.push_back(age_range);
+            }
+            else
+            {
+                size_by_age_range_male[i].second += age_range.second;
+            }
+            i++;
+        }
+    }
 
-	for(auto &ageRangeSize : currSizeByAgeRangeFemale)
-	{
-		_outStream << ageRangeSize.second << Constants::TAB;
-	}
+    _outStream << total_na << Constants::TAB;
+
+    for(auto &ageRangeSize : size_by_age_range)
+    {
+        _outStream << ageRangeSize.second << Constants::TAB;
+    }
+
+    _outStream << total_na_male << Constants::TAB;
+
+    for(auto &ageRangeSize : size_by_age_range_male)
+    {
+        _outStream << ageRangeSize.second << Constants::TAB;
+    }
+
+    for(auto entity_type : {"male", "msmw", "msm", "female"})
+    {
+        _outStream << currNASizeByEntityType[entity_type] << Constants::TAB;
+
+        for(auto &ageRangeSize : currSizeByEntityTypeAgeRange[entity_type])
+        {
+            _outStream << ageRangeSize.second << Constants::TAB;
+        }
+    }
 
     _outStream << num_circumcised_na << Constants::TAB;
     _outStream << num_circumcised_sa << Constants::TAB;
@@ -3775,9 +3736,11 @@ void Population::Initialize(const PopulationParameters &parameters)
 
         //Add a tuple to the currSizeByAgeRange vector along with the initial size of the age range
         ageRanges.push_back(ageRange);
-        currSizeByAgeRange.push_back(ageRangeSize);
-        currSizeByAgeRangeMale.push_back(std::make_pair(ageRange, numHeteroMalesInCurrentBucket));
-        currSizeByAgeRangeFemale.push_back(std::make_pair(ageRange, numFemalesInCurrentBucket));
+        
+        currSizeByEntityTypeAgeRange["male"].push_back({ageRange, numHeteroMalesInCurrentBucket});
+        currSizeByEntityTypeAgeRange["msmw"].push_back({ageRange, numMsmwsInCurrentBucket});
+        currSizeByEntityTypeAgeRange["msm"].push_back({ageRange, numMsmsInCurrentBucket});
+        currSizeByEntityTypeAgeRange["female"].push_back({ageRange, numFemalesInCurrentBucket});
     }
 
     populationStatistics.artTracker.SetAgeRanges(ageRanges);

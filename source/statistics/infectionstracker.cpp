@@ -433,7 +433,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
     std::size_t currPopSize = _population->GetSize();
     std::size_t currSAPopSize = currPopSize - _population->GetNASize();
 	//total # of age ranges to print out
-	auto currSizeByAgeRange = _population->GetSizeByAgeRange();
+    auto currSizeByAgeRange = _population->GetAgeRanges();
 	int numAgeRanges = (int)currSizeByAgeRange.size();
 
 	//write headers for infections sheet
@@ -481,7 +481,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 			firstRow << Constants::TAB;
 			secondRow << Constants::TAB;
-			thirdRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
+			thirdRow << currSizeByAgeRange.at(i).lower << "-" << currSizeByAgeRange.at(i).upper << Constants::TAB;
 		}
 
 		//write out headers for population by gender
@@ -565,7 +565,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 			firstRow << Constants::TAB;
 			secondRow << Constants::TAB;
-			thirdRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
+			thirdRow << currSizeByAgeRange.at(i).lower << "-" << currSizeByAgeRange.at(i).upper << Constants::TAB;
 		}
 
 		firstRow << "Incident Cases" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB
@@ -586,7 +586,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 			firstRow << Constants::TAB;
 			secondRow << Constants::TAB;
-			thirdRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
+			thirdRow << currSizeByAgeRange.at(i).lower << "-" << currSizeByAgeRange.at(i).upper << Constants::TAB;
 		}
 
 		for(int i = 0; i < numAgeRanges; i++)
@@ -599,7 +599,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 			firstRow << Constants::TAB;
 			secondRow << Constants::TAB;
-			thirdRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
+			thirdRow << currSizeByAgeRange.at(i).lower << "-" << currSizeByAgeRange.at(i).upper << Constants::TAB;
 		}
 
 		firstRow << Constants::TAB;
@@ -657,7 +657,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 			firstRow << Constants::TAB;
 			secondRow << Constants::TAB;
-			thirdRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
+			thirdRow << currSizeByAgeRange.at(i).lower << "-" << currSizeByAgeRange.at(i).upper << Constants::TAB;
 		}
 
 		firstRow << "Total Infected in History (Prevalent Cases Excluded)" << Constants::TAB << Constants::TAB;

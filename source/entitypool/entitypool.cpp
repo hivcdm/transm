@@ -341,71 +341,19 @@ unsigned long EntityPool::sizeNotSexuallyActive()
 }
 
 //calculate the current number of persons that are not sexually active in the entity pool with a given demographic
-unsigned long EntityPool::sizeNotSexuallyActive(DemographicProfile::Gender _gender)
+std::size_t EntityPool::sizeNotSexuallyActive(const std::string &entity_type)
 {
-	BucketDemographicProfile *bucket = nullptr;
-	unsigned long size = 0;		//total of the zie
-	size_t currBucketIndex = 0;
-
-	//iterate through all buckets
-	while(currBucketIndex < entityBuckets.size())
-	{
-		bucket = entityBuckets.at(currBucketIndex);
-
-		//if bucket == nullptr, that means we are not using this particular DemographicProfile during this sim
-		if(bucket == nullptr)
-		{
-			currBucketIndex++;
-			continue;
-		}
-
-		//Only add the sizes of non-sexually active buckets that match demographic profile
-        if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
-		{
-			if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::Gender) == static_cast<BaseEnumCls::Enum>(_gender))
-			{
-				size += entityBuckets.at(currBucketIndex)->size();
-			}
-		}
-
-		currBucketIndex++;
-	}
-
-	return size;
+    std::size_t count = 0;
+    forEach([&](Entity *e) { if(e->getEntityType() == entity_type) count++; });
+    return count;
 }
 
 //calculate the current number of persons that are sexually active in the entity pool with a given demographic
-unsigned long EntityPool::sizeSexuallyActive(DemographicProfile::Gender _gender, Entity::RiskLevel _risk)
+std::size_t EntityPool::sizeSexuallyActive(const std::string &entity_type, Entity::RiskLevel _risk)
 {
-	BucketDemographicProfile *bucket = nullptr;
-	unsigned long size = 0;		//total of the zie
-	size_t currBucketIndex = 0;
-
-	//iterate through all buckets
-	while(currBucketIndex < entityBuckets.size())
-	{
-		bucket = entityBuckets.at(currBucketIndex);
-
-		//if bucket == nullptr, that means we are not using this particular DemographicProfile during this sim
-		if(bucket == nullptr)
-		{
-			currBucketIndex++;
-			continue;
-		}
-
-		//Only add the sizes of sexually active buckets that match demographic profile
-        if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
-		{
-			if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::Gender) == static_cast<BaseEnumCls::Enum>(_gender))
-			{
-				size += ((BucketSexualMixing *)(entityBuckets.at(currBucketIndex)))->sizeRisk(_risk);
-			}
-		}
-
-		currBucketIndex++;
-	}
-
-	return size;
+    std::size_t count = 0;
+    forEach([&](Entity *e) { if(e->getEntityType() == entity_type && _risk == e->getRiskLevel()) count++; });
+    return count;
 }
 //calculate the current number of sexually active persons within the specified age range
 unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths)
@@ -439,37 +387,11 @@ unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMo
 }
 
 //calculate the current number of sexually active persons within the specified age range and gender
-unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths, DemographicProfile::Gender _gender)
+std::size_t EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths, const std::string &entity_type)
 {
-	BucketDemographicProfile *bucket = nullptr;
-	unsigned long size = 0;		//total of the zie
-	size_t currBucketIndex = 0;
-
-	//iterate through all buckets
-	while(currBucketIndex < entityBuckets.size())
-	{
-		bucket = entityBuckets.at(currBucketIndex);
-
-		//if bucket == nullptr, that means we are not using this particular DemographicProfile during this sim
-		if(bucket == nullptr)
-		{
-			currBucketIndex++;
-			continue;
-		}
-
-		//Only add the sizes of sexually active buckets
-        if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
-		{
-			if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::Gender) == static_cast<BaseEnumCls::Enum>(_gender))
-			{
-				size += ((BucketSexualMixing *)(entityBuckets.at(currBucketIndex)))->sizeByAge(minAgeMonths, maxAgeMonths);
-			}
-		}
-
-		currBucketIndex++;
-	}
-
-	return size;
+    std::size_t count = 0;
+    forEach([&](Entity *e) { if(e->getEntityType() == entity_type && e->getAge(TimeGranularity::Month) >= minAgeMonths && e->getAge(TimeGranularity::Month) <= maxAgeMonths) count++; });
+    return count;
 }
 
 /*

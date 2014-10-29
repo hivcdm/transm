@@ -98,12 +98,12 @@ public:
 	/// <summary>
 	/// calculate the current number of sexually active persons by risk and gender
 	/// </summary>
-	unsigned long sizeSexuallyActive(DemographicProfile::Gender _gender, Entity::RiskLevel risk);
+	std::size_t sizeSexuallyActive(const std::string &entity_type, Entity::RiskLevel risk);
 
 	/// <summary>
 	/// calculate the current number of persons that are not sexually active in the entity pool with a given gender
 	/// </summary>
-	unsigned long sizeNotSexuallyActive(DemographicProfile::Gender _gender);
+	std::size_t sizeNotSexuallyActive(const std::string &entity_type);
 
 	/// <summary>
 	/// calculate the current number of sexually active persons within the specified age range
@@ -113,7 +113,7 @@ public:
 	/// <summary>
 	/// calculate the current number of sexually active persons within the specified age range and gender
 	/// </summary>
-	unsigned long sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths, DemographicProfile::Gender _gender);
+	std::size_t sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths, const std::string &entity_type);
 
 	/// <summary>
 	/// adds Person to BucketDemographicProfile AND allMales or allFemales depending on gender

@@ -36,6 +36,8 @@ public:
     /// </summary>
     using BucketAllAges = boost::circular_buffer_space_optimized<BucketAge *>;
 
+    using RiskArray = std::array<std::size_t, (std::size_t)Entity::RiskLevel::Last>;
+
 	/// <summary>
     /// Creates a new population object given an XML input subtree which contains the parameters
     /// </summary>
@@ -132,6 +134,8 @@ public:
     /// </summary>
 	std::size_t UpdateSize();
 
+    std::vector<AgeRange> GetAgeRanges() const;
+
     /// <summary>
     /// resets the monthly statistics
     /// </summary>
@@ -170,22 +174,17 @@ public:
     /// <summary>
     /// returns internal count of how big the current population is
     /// </summary>
-    std::size_t GetSize(DemographicProfile::Gender gender, DemographicProfile::SexualOrientation sexual_orientation);
+    std::size_t GetSize(const std::string &entity_type);
 
     /// <summary>
     /// returns internal count of how big the current population is
     /// </summary>
-    std::size_t GetSASize(DemographicProfile::Gender _gender, Entity::RiskLevel _risk);
+    std::size_t GetSASize(const std::string &entity_type, Entity::RiskLevel _risk);
 
     /// <summary>
     /// returns internal count of how big the current population is
     /// </summary>
-    std::size_t GetCSWSize(DemographicProfile::Gender _gender, Entity::RiskLevel _risk);
-
-    /// <summary>
-    ///
-    /// </summary>
-	const AgeRangeSizeContainer &GetSizeByAgeRange() const { return currSizeByAgeRange; }
+    std::size_t GetCSWSize(const std::string &entity_type, Entity::RiskLevel _risk);
 
     /// <summary>
     ///
@@ -343,7 +342,7 @@ private:
     /// <summary>
 	/// Size by Risk
     /// </summary>
-    std::size_t currSizeRisk[(std::size_t)Entity::RiskLevel::Last];
+    RiskArray currSizeRisk;
 
     /// <summary>
 	/// Size of CSW's by Risk
@@ -353,7 +352,7 @@ private:
     /// <summary>
 	/// Size of CSW's by Risk and gender
     /// </summary>
-    std::size_t currSizeGenderRiskCSW[(std::size_t)DemographicProfile::Gender::Last][(std::size_t)Entity::RiskLevel::Last];
+    std::unordered_map<std::string, RiskArray> currSizeEntityTypeRiskCSW;
 
     /// <summary>
 	/// Size by gender
@@ -361,19 +360,19 @@ private:
     std::size_t currSizeGender[(std::size_t)DemographicProfile::Gender::Last];
 
     /// <summary>
-    /// Size by gender and orientation
+    /// Size by entity type.
     /// </summary>
-    std::size_t currSizeGenderOrientation[(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::SexualOrientation::Last];
+    std::unordered_map<std::string, std::size_t> currSizeEntityType;
 
     /// <summary>
 	/// non-sexually active by gender
     /// </summary>
-    std::size_t currNASizeByGender[(std::size_t)DemographicProfile::Gender::Last];
+    std::unordered_map<std::string, std::size_t> currNASizeByEntityType;
 
     /// <summary>
 	/// sexually active by risk and gender
     /// </summary>
-    std::size_t currSASizeGenderRisk[(std::size_t)DemographicProfile::Gender::Last][(std::size_t)Entity::RiskLevel::Last];
+    std::unordered_map<std::string, RiskArray> currSASizeEntityTypeRisk;
 
     /// <summary>
 	/// Num Died this month by Death Cause
@@ -381,21 +380,8 @@ private:
     std::size_t currDeathCauses[(std::size_t)Entity::DeathStatus::Last];
 
     /// <summary>
-	/// Size by age range: tuple is size, minAge, maxAge
-	/// These only include those who are sexually active
     /// </summary>
-    /// <remarks>
-	/// There is an enum for labeling the indices of the above tuple in the Public parameters
-	/// </remarks>
-	AgeRangeSizeContainer currSizeByAgeRange;
-
-    /// <summary>
-    /// </summary>
-	AgeRangeSizeContainer currSizeByAgeRangeMale;
-
-    /// <summary>
-    /// </summary>
-	AgeRangeSizeContainer currSizeByAgeRangeFemale;
+	std::unordered_map<std::string, AgeRangeSizeContainer> currSizeByEntityTypeAgeRange;
 
     /// <summary>
 	/// The people who are infected but still untreated (Only used for rollout)
