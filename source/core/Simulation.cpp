@@ -1,6 +1,7 @@
 #include <iostream>
 #include <numeric>
 #include <set>
+#include <random>
 #include <boost/filesystem.hpp>
 #include <include.h>
 
@@ -177,84 +178,39 @@ void TargetGroup::Update(Population &population, int current_time,
         {
             return;
         }
+        
+        std::vector<int> assignments;
+        std::size_t partition_index = 0;
+        std::size_t assigned = 0;
 
-        if(partitions_.size() == 1 && partitions_.front().GetProportion() == 1)
+        for(auto &partition : partitions_)
         {
-            std::for_each(people.begin(), people.end(), [&](Person *p) { AssignToPartition(population, p, 0); });
+            auto proportion = partition.GetProportion();
+            auto number = (int)(proportion * people.size());
+            // lump rounding errors into the last partition
+            if(partition_index == partitions_.size() - 1)
+            {
+                number = people.size() - assigned;
+            }
+            std::fill_n(std::back_inserter(assignments), number, (int)partition_index);
+            assigned += number;
+            partition_index++;
         }
-        else
+
+        std::default_random_engine generator(rng.randInt());
+        std::uniform_real_distribution<> dist(0, 1);
+
+        auto generate_rand = [&](int i) 
+        { 
+            auto rand_01 = dist(generator);
+            return static_cast<int>(rand_01 * i);
+        };
+
+        std::random_shuffle(assignments.begin(), assignments.end(), generate_rand);
+
+        for(std::size_t i = 0; i < people.size(); i++)
         {
-            auto generate_rand = [&](int i) { return rng.randInt() % i; };
-            std::random_shuffle(people.begin(), people.end(), generate_rand);
-
-            std::vector<std::pair<std::size_t, std::size_t>> partition_allocations;
-
-            std::size_t num_allocated = 0;
-            double sum_proportion = 0;
-
-            for(int i = 0; i < (int)partitions_.size(); i++)
-            {
-                sum_proportion += partitions_[i].GetProportion();
-                auto partition_allocation = (std::size_t)(partitions_[i].GetProportion() * people.size());
-
-                if(partition_allocation != 0)
-                {
-                    partition_allocations.push_back(std::make_pair(i, partition_allocation));
-                    num_allocated += partition_allocation;
-                }
-            }
-
-            while(num_allocated < people.size())
-            {
-                double rand = rng.rand();
-                std::size_t random_allocation_index = 0;
-
-                for(auto &partition : partitions_)
-                {
-                    rand -= partition.GetProportion();
-
-                    if(rand < 0)
-                    {
-                        break;
-                    }
-
-                    random_allocation_index++;
-                }
-
-                auto partition_allocations_iter = std::find_if(partition_allocations.begin(), partition_allocations.end(),
-                    [=](const std::pair<std::size_t, std::size_t> &p) { return p.first == random_allocation_index; });
-
-                if(partition_allocations_iter == partition_allocations.end())
-                {
-                    partition_allocations.push_back(std::make_pair(random_allocation_index, 1));
-                }
-                else
-                {
-                    partition_allocations_iter->second++;
-                }
-
-                num_allocated++;
-            }
-
-            auto person_iter = people.begin();
-
-            while(!partition_allocations.empty())
-            {
-                int allocations_index = (int)(rng.randInt() % partition_allocations.size());
-                auto partition_index = partition_allocations[allocations_index].first;
-
-                if(partition_index < partitions_.size())
-                {
-                    AssignToPartition(population, *person_iter, (int)partition_index);
-                }
-
-                if(--partition_allocations[allocations_index].second == 0)
-                {
-                    partition_allocations.erase(partition_allocations.begin() + allocations_index);
-                }
-
-                person_iter++;
-            }
+            AssignToPartition(population, people[i], assignments[i]);
         }
     }
 }
