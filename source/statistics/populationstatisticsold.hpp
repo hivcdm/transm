@@ -135,10 +135,10 @@ private:
 	int monthOf1990;
 	bool calculateShiftedOutcomes;
 	int relativeYear;
-	int yearStartPrevalentInfections;
-	int yearStartSexuallyActivePopSize;
-	int yearlyCumulativeSexuallyActivePopSize;
-	int yearlyIncidentInfections;
+    std::unordered_map<std::string, std::size_t> yearStartPrevalentInfections;
+    std::unordered_map<std::string, std::size_t> yearStartSexuallyActivePopSize;
+    std::unordered_map<std::string, std::size_t> yearlyCumulativeSexuallyActivePopSize;
+    std::unordered_map<std::string, std::size_t> yearlyIncidentInfections;
 	int yearlyTests;
 	std::set<Entity *> uniqueYearlyEligibleForTreatmentAccess;
 	std::set<Entity *> uniqueYearlyAccessingTreatment;
@@ -198,8 +198,7 @@ public:
 	//returns true if currTime is in timeToRecordPartAcq
 	bool isTimeToRecordPartAcq(long currTime);
 
-	void recordPrevalenceAndIncidence(long currTime, double _prevalence, double _SAprevalence, double _incidence,
-	                                  int saPopSize, int monthlyIncident, int monthlyPrevalent);
+    void recordEntity(int time, Entity *e);
 
 	void enableShiftedOutcomes(int monthOf1990);
 	void resetYear(int newYear);

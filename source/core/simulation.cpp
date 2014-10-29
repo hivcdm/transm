@@ -388,6 +388,11 @@ void Simulation::FirstStep()
 		}
 	}
 
+    for(auto entity : population_.Find([](Entity *) { return true; }))
+    {
+        population_.GetPopulationStatistics().recordEntity(time_, entity);
+    }
+
     if(parameters_.trace_files[EventParams::TraceFile::Type::Infection].enabled)
 	{
         population_.populationStatistics.infectionsTracker.printInfections(parameters_, time_, parameters_.trace_files[EventParams::TraceFile::Type::Infection].file, &population_);
@@ -462,6 +467,11 @@ void Simulation::Step()
 
 	//print out new infection stats
 	population_.CalcPrevalentPopulation(time_);
+
+    for(auto entity : population_.Find([](Entity *) { return true; }))
+    {
+        population_.GetPopulationStatistics().recordEntity(time_, entity);
+    }
 
     if(parameters_.trace_files[EventParams::TraceFile::Type::Infection].enabled)
 	{

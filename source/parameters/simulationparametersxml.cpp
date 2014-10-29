@@ -345,6 +345,7 @@ InterventionParameters SimulationParametersXml::GetInterventionParameters() cons
                 //From the first file only, get the death tables for non-AIDS death
                 if(file_number == 0)
                 {
+                    parameters.default_cepac_file = file;
                     CepacInputParser cepacInput(file_name);
                     auto probabilities = cepacInput.parseNonAidsDeathProbabilities();
                     Entity::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Male] = probabilities[0];
