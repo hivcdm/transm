@@ -627,7 +627,7 @@ Msm::SubPopParams SimulationParametersXml::GetMsmSubPopParams() const
 
 Msmw::SubPopParams SimulationParametersXml::GetMsmwSubPopParams() const
 {
-    auto node = document_.select_single_node("/simulation/population/entities/entity[@type='Msmw']").node();
+    auto node = document_.select_single_node("/simulation/population/entities/entity[@type='msmw']").node();
 
     Msmw::SubPopParams result;
 

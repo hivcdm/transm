@@ -2603,6 +2603,15 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 	std::string partnershipLabels[] = { "Steady", "Regular", "Casual", "CSW", "SteadyMSM", "RegularMSM", "CasualMSM", "CSWMSM" };
 	std::string riskLabels2[] = { "HR", "Mix", "LR" };
 
+    std::size_t min_times_selected = std::numeric_limits<std::size_t>::max();
+    std::size_t max_times_selected = 0;
+    double mean_times_selected = 0;
+    double std_dev_times_selected = 0;
+    double median_times_selected = 0;
+    std::size_t mode_times_selected = 0;
+    std::size_t msm_count = 0;
+    std::unordered_map<std::size_t, std::size_t> mode_times_selected_map;
+
 	if(_time == 0)
 	{
 		std::ostringstream firstRow;
@@ -2740,6 +2749,8 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 		         Constants::TAB << Constants::TAB;
 		secondRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
 		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+        secondRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+            Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 
 		for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
 		{
@@ -2748,6 +2759,9 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 				thirdRow << partnershipLabels[i] << Constants::SPACE << riskLabels2[j] << Constants::TAB;
 			}
 		}
+
+        secondRow << "MSM Selection Statistics";
+        thirdRow << "Min" << Constants::TAB << "Max" << Constants::TAB << "Mean" << Constants::TAB << "Std. Dev." << Constants::TAB << "Median" << Constants::TAB << "Mode";
 
 		//write out string buffers to trace file
 		_outStream << firstRow.str() << std::endl;
@@ -2816,6 +2830,40 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 
 		while(p_Iter != entities->end(gender))
 		{
+            auto person = *p_Iter;
+
+            bool msm = false;
+            std::size_t times = 0;
+
+            if(person->getEntityType() == "msm")
+            {
+                times = ((Msm *)person)->GetTimesSelected();
+                msm = true;
+            }
+            else if(person->getEntityType() == "msmw")
+            {
+                times = ((Msmw *)person)->GetTimesSelected();
+                msm = true;
+            }
+
+            if(msm)
+            {
+                msm_count++;
+
+                if(times < min_times_selected)
+                {
+                    min_times_selected = times;
+                }
+
+                if(times > max_times_selected)
+                {
+                    max_times_selected = times;
+                }
+
+                mode_times_selected_map[times]++;
+                mean_times_selected += times;
+            }
+
 			int numPartners[(int)SexualPartnership::Type::ENDType];
 			bool hasType[(int)SexualPartnership::Type::ENDType];
 			int totalNumPartners = 0;
@@ -2879,6 +2927,56 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 			p_Iter++;
 		}
 	}
+
+    if(msm_count > 0)
+    {
+        mean_times_selected /= msm_count;
+    }
+
+    std::set<std::size_t> median_set;
+    std::size_t most_common = 0;
+    for(auto p : mode_times_selected_map)
+    {
+        for(std::size_t i = 0; i < p.second; i++)
+        {
+            median_set.insert(p.first);
+        }
+
+        if(p.second > most_common)
+        {
+            mode_times_selected = p.first;
+            most_common = p.second;
+        }
+    }
+
+    std::size_t i = 0;
+    for(auto times : median_set)
+    {
+        if(msm_count > 0)
+        {
+            auto d = times - mean_times_selected;
+            d *= d;
+
+            std_dev_times_selected += d / msm_count;
+        }
+
+        if(i == median_set.size() / 2)
+        {
+            if(median_set.size() % 2 == 0)
+            {
+                median_times_selected = (double)times;
+                break;
+            }
+            else
+            {
+                median_times_selected += times / 2.0;
+            }
+        }
+
+        i++;
+    }
+
+    std_dev_times_selected = std::sqrt(std_dev_times_selected);
 
 	//steady
     for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
@@ -3008,7 +3106,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 	}
 
 	//Partnerships by type
-	for(int i = 0; i < 4; i++)
+	for(int i = 0; i < (std::size_t)SexualPartnership::Type::Last; i++)
 	{
 		for(int j = 0; j < 3; j++)
 		{
@@ -3016,6 +3114,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 		}
 	}
 
+    _outStream << min_times_selected << Constants::TAB << max_times_selected << Constants::TAB << mean_times_selected << Constants::TAB << std_dev_times_selected << Constants::TAB << median_times_selected << Constants::TAB << mode_times_selected;
 	_outStream << std::endl;
 }
 

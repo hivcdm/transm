@@ -219,6 +219,7 @@ public:
     void SetOverrideChanceCondomUse(double) { throw std::runtime_error("not allowed for males"); };
     double GetOverrideChanceCondomUse() const { return -1; /* throw std::runtime_error("not allowed for males");*/ };
 
+    std::size_t GetTimesSelected() const { return times_selected_; }
     void IncrementTimesSelected() { times_selected_++; }
     void ResetTimesSelected() { times_selected_ = 0; }
 

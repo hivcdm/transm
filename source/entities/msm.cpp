@@ -128,7 +128,8 @@ void Msm::Circumcise()
 
 Msm::Msm(EventParams &_eventParams, int _age, bool _circumcised, unsigned int _populationID, const Msm::SubPopParams &params)
     : Entity(_age, _populationID),
-    populationSpecificParams(params)
+    populationSpecificParams(params),
+    times_selected_(0)
 {
     //If age is out of range, set it at the closest boundary.
     if(!Utility::within_range<int>(_age, 0, Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Entity::maxYrForDeathStats)))
