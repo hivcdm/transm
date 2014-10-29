@@ -18,13 +18,16 @@ solution "transm"
     configuration "not windows"
         buildoptions {
             "-std=c++11",
-            "-Wno-unknown-pragmas",
-	    "-Wno-unused-local-typedefs"
+            "-Wno-unknown-pragmas"
         }
 	links {
 	    "boost_system",
 	    "boost_filesystem"
-	}	
+	}
+    configuration "linux"
+        buildoptions {
+	    "-Wno-unused-local-typedefs"
+	}
 
 project "transm.cli"
     kind "ConsoleApp"
