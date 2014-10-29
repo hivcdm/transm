@@ -9,9 +9,9 @@ namespace transm {
 
 PopulationStatistics::MonthStats &PopulationStatistics::GetMonthStats(int month, bool create)
 {
-    if(month >= stats_.size())
+    if(month >= (int)stats_.size())
     {
-        if(create && month == stats_.size())
+        if(create && month == (int)stats_.size())
         {
             stats_.push_back(MonthStats());
         }

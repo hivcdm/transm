@@ -74,7 +74,7 @@ PopulationStatisticsOld::SurvivalStats::SurvivalStats()
 
     for(std::size_t i = 0; i < (std::size_t)DemographicProfile::Employment::Last; i++)
 	{
-		for(int j = 0; j < (std::size_t)Entity::RiskLevel::Last; j++)
+	    for(std::size_t j = 0; j < (std::size_t)Entity::RiskLevel::Last; j++)
 		{
 			numDeathEmplRisk[i][j] = 0;
 			timeToDeathEmplRiskSum[i][j] = 0;
@@ -315,7 +315,7 @@ void PopulationStatisticsOld::printSurvivalStats(std::ostream &_outStream)
 		fifthRow << "N/A" << Constants::TAB;
 	}
 
-	for(int j = 0; j < (std::size_t)Entity::RiskLevel::Last; j++)
+	for(std::size_t j = 0; j < (std::size_t)Entity::RiskLevel::Last; j++)
 	{
         if(survivalStats->numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::NonCsw][j] != 0)
 		{
@@ -394,7 +394,7 @@ void PopulationStatisticsOld::printSurvivalStats(std::ostream &_outStream)
 		fifthRow << "N/A" << Constants::TAB;
 	}
 
-	for(int j = 0; j < (std::size_t)Entity::RiskLevel::Last; j++)
+	for(std::size_t j = 0; j < (std::size_t)Entity::RiskLevel::Last; j++)
 	{
         if(survivalStats->numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::NonCsw][j] != 0)
 		{
@@ -495,7 +495,7 @@ void PopulationStatisticsOld::printSurvivalStats(std::ostream &_outStream)
 		fifthRow << "N/A" << Constants::TAB;
 	}
 
-	for(int j = 0; j < (std::size_t)Entity::RiskLevel::Last; j++)
+	for(std::size_t j = 0; j < (std::size_t)Entity::RiskLevel::Last; j++)
 	{
         if(survivalStats->numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::NonCsw][j] != 0)
 		{

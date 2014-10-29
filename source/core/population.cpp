@@ -835,7 +835,7 @@ std::size_t Population::UpdateSize()
 	{
 		currNASizeByGender[(std::size_t)gender] = entities->sizeNotSexuallyActive(gender);
 
-		for(int j = 0; j < (std::size_t)Entity::RiskLevel::Last; j++)
+		for(std::size_t j = 0; j < (std::size_t)Entity::RiskLevel::Last; j++)
 		{
 			currSASizeGenderRisk[(std::size_t)gender][j] = entities->sizeSexuallyActive(gender, (Entity::RiskLevel) j);
 		}
@@ -1730,7 +1730,7 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 		numSexuallyActive[i] = 0;
 		numActsMonth[i] = 0;
 
-		for(int j = 0; j < (std::size_t)Entity::RiskLevel::Last; j++)
+		for(std::size_t j = 0; j < (std::size_t)Entity::RiskLevel::Last; j++)
 		{
 			numActsMonthRisk[i][j] = 0;
 			numSexuallyActiveRisk[i][j] = 0;
@@ -2346,17 +2346,17 @@ long Population::CalcPrevalentPopulation(long _time)
 	}
 
 	//initialize prevalence tallies to 0
-	for(int i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
+	for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
 	{
-	  for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
+	    for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
+	    {
+		for(int k = 0; k < (int)DemographicProfile::Employment::Last; k++)
 		{
-            for(int k = 0; k < (int)DemographicProfile::Employment::Last; k++)
-			{
-				prevalenceByRiskGenderEmployment[i][j][k] = 0;
-			}
+		    prevalenceByRiskGenderEmployment[i][j][k] = 0;
 		}
+	    }
 	}
-
+	
 	DemographicProfile::ProfileID currProfileID = DemographicProfile::MIN;
 
 	while(currProfileID <= DemographicProfile::MAX)
@@ -2394,31 +2394,31 @@ long Population::CalcPrevalentPopulation(long _time)
 		}
 
 		//add the sizes of sexually active buckets
-        if(DemographicProfile::get(currBucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
+		if(DemographicProfile::get(currBucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
 		{
-			//Update size by risk
-			for(int i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
-			{
-				prevalenceByRiskGenderEmployment[i][DemographicProfile::get(currBucket->getProfileID(),
-				                                    DemographicProfile::Demographic::Gender)][DemographicProfile::get(currBucket->getProfileID(),
-				                                            DemographicProfile::Demographic::Employment)] += ((BucketSexualMixing *)currBucket)->getNumInfected((Entity::RiskLevel) i);
-			}
-
-			//Update size by age range
-            bool isMale = DemographicProfile::get(currBucket->getProfileID(), DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male;
-			auto &associatedAgeRangePrevalenceContainer = isMale ? prevalenceByAgeMale : prevalenceByAgeFemale;
-			auto currentSexualMixingBucket = static_cast<BucketSexualMixing *>(currBucket);
-
-			for(auto &ageRangeSize : associatedAgeRangePrevalenceContainer)
-			{
-				auto prevalentInAgeGroup = currentSexualMixingBucket->sizeInfectedByAge(ageRangeSize.first.lower, ageRangeSize.first.upper);
-				ageRangeSize.second += prevalentInAgeGroup;
-			}
+		    //Update size by risk
+		    for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
+		    {
+			prevalenceByRiskGenderEmployment[i][DemographicProfile::get(currBucket->getProfileID(),
+										    DemographicProfile::Demographic::Gender)][DemographicProfile::get(currBucket->getProfileID(),
+																		      DemographicProfile::Demographic::Employment)] += ((BucketSexualMixing *)currBucket)->getNumInfected((Entity::RiskLevel) i);
+		    }
+		    
+		    //Update size by age range
+		    bool isMale = DemographicProfile::get(currBucket->getProfileID(), DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male;
+		    auto &associatedAgeRangePrevalenceContainer = isMale ? prevalenceByAgeMale : prevalenceByAgeFemale;
+		    auto currentSexualMixingBucket = static_cast<BucketSexualMixing *>(currBucket);
+		    
+		    for(auto &ageRangeSize : associatedAgeRangePrevalenceContainer)
+		    {
+			auto prevalentInAgeGroup = currentSexualMixingBucket->sizeInfectedByAge(ageRangeSize.first.lower, ageRangeSize.first.upper);
+			ageRangeSize.second += prevalentInAgeGroup;
+		    }
 		}
-
+		
 		currProfileID++;
 	}
-
+	
 	//save the prevalent infections by bucket in the PopulationStatistics
 	populationStatistics.infectionsTracker.setPrevalentInfections(_time, prevalenceByBucket, prevalenceByAgeMale, prevalenceByAgeFemale, prevalenceByRiskGenderEmployment);
 
@@ -2754,7 +2754,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 			{
                 for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
 				{
-					for(int m = 0; m < (std::size_t)Entity::RiskLevel::Last; m++)
+				    for(std::size_t m = 0; m < (std::size_t)Entity::RiskLevel::Last; m++)
 					{
 						numInPartnership[i][j][k][l][m] = 0;
 					}
@@ -2772,7 +2772,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 	{
         for(int j = 0; j < (int)DemographicProfile::Employment::Last; j++)
 		{
-			for(int k = 0; k < (std::size_t)Entity::RiskLevel::Last; k++)
+		    for(std::size_t k = 0; k < (std::size_t)Entity::RiskLevel::Last; k++)
 			{
 				numInConcurrent[i][j][k] = 0;
 
@@ -2916,7 +2916,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 	unsigned long numInConcurrentCSW[(std::size_t)Entity::RiskLevel::Last];
 	unsigned long numInMultipleCSW[(std::size_t)Entity::RiskLevel::Last][4];
 
-	for(int k = 0; k < (std::size_t)Entity::RiskLevel::Last; k++)
+	for(std::size_t k = 0; k < (std::size_t)Entity::RiskLevel::Last; k++)
 	{
 		numInConcurrentCSW[k] = 0;
 
@@ -2928,7 +2928,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 
     for(int i = 0; i < (int)DemographicProfile::Gender::Last; i++)
 	{
-		for(int k = 0; k < (std::size_t)Entity::RiskLevel::Last; k++)
+	    for(std::size_t k = 0; k < (std::size_t)Entity::RiskLevel::Last; k++)
 		{
             numInConcurrentCSW[k] += numInConcurrent[i][(std::size_t)DemographicProfile::Employment::Csw][k];
 
@@ -3107,13 +3107,13 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 	unsigned long
         numWithHIVStatus[(std::size_t)Entity::RiskLevel::Last][(std::size_t)DemographicProfile::Employment::Last][(std::size_t)DemographicProfile::Gender::Last][(std::size_t)Entity::HIVStatus::Last];
 
-	for(int i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
+	for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
 	{
         for(int j = 0; j < (int)DemographicProfile::Employment::Last; j++)
 		{
             for(int k = 0; k < (int)DemographicProfile::Gender::Last; k++)
 			{
-				for(int m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
+			    for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
 				{
 					numWithHIVStatus[i][j][k][m] = 0;
 				}
@@ -3140,9 +3140,9 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 		//accumulate all SA buckets
         if(DemographicProfile::get(currBucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
 		{
-			for(int i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
+		    for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
 			{
-                for(int m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
+			    for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
                 {
                     numWithHIVStatus[i][DemographicProfile::get(currBucket->getProfileID(),
                         DemographicProfile::Demographic::Employment)][DemographicProfile::get(currBucket->getProfileID(),
@@ -3158,18 +3158,18 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 	//HIV Status of entire SA population
 	unsigned long hivStatusSA[(std::size_t)Entity::HIVStatus::Last];
 
-	for(int m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
+	for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
 	{
 		hivStatusSA[m] = 0;
 	}
 
-	for(int i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
+	for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
 	{
         for(int j = 0; j < (int)DemographicProfile::Employment::Last; j++)
 		{
             for(int k = 0; k < (int)DemographicProfile::Gender::Last; k++)
 			{
-				for(int m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
+			    for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
 				{
 					hivStatusSA[m] += numWithHIVStatus[i][j][k][m];
 				}
@@ -3177,7 +3177,7 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 		}
 	}
 
-	for(int m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
+	for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
 	{
 		_outStream << hivStatusSA[m] << Constants::TAB;
 	}
@@ -3185,23 +3185,23 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 	//HIV Status of CSW SA population
 	unsigned long hivStatusCSW[(std::size_t)Entity::HIVStatus::Last];
 
-	for(int m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
+	for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
 	{
 		hivStatusCSW[m] = 0;
 	}
 
-	for(int i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
+	for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
 	{
         for(int k = 0; k < (int)DemographicProfile::Gender::Last; k++)
 		{
-			for(int m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
+		    for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
 			{
                 hivStatusCSW[m] += numWithHIVStatus[i][(std::size_t)DemographicProfile::Employment::Csw][k][m];
 			}
 		}
 	}
 
-	for(int m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
+	for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
 	{
 		_outStream << hivStatusCSW[m] << Constants::TAB;
 	}
@@ -3211,20 +3211,20 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 	{
 		unsigned long hivStatusRisk[(std::size_t)Entity::HIVStatus::Last];
 
-		for(int m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
+		for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
 		{
 			hivStatusRisk[m] = 0;
 		}
 
         for(int k = 0; k < (int)DemographicProfile::Gender::Last; k++)
 		{
-			for(int m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
+		    for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
 			{
                 hivStatusRisk[m] += numWithHIVStatus[i][(std::size_t)DemographicProfile::Employment::NonCsw][k][m];
 			}
 		}
 
-		for(int m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
+	for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
 		{
 			_outStream << hivStatusRisk[m] << Constants::TAB;
 		}
@@ -3236,21 +3236,21 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 		unsigned long hivStatusGender[(std::size_t)Entity::HIVStatus::Last];
 		unsigned long hivStatusGenderRisk[(std::size_t)Entity::RiskLevel::Last][(std::size_t)Entity::HIVStatus::Last];
 
-		for(int m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
+		for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
 		{
 			hivStatusGender[m] = 0;
 
-			for(int i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
+			for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
 			{
 				hivStatusGenderRisk[i][m] = 0;
 			}
 		}
 
-		for(int i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
+		for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
 		{
             for(int j = 0; j < (int)DemographicProfile::Employment::Last; j++)
 			{
-				for(int m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
+			    for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
 				{
 					hivStatusGender[m] += numWithHIVStatus[i][j][k][m];
 					hivStatusGenderRisk[i][m] += numWithHIVStatus[i][j][k][m];
@@ -3258,14 +3258,14 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 			}
 		}
 
-		for(int m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
+		for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
 		{
 			_outStream << hivStatusGender[m] << Constants::TAB;
 		}
 
 		for(int i = (int)Entity::RiskLevel::HIGH; i >= 0; i--)
 		{
-			for(int m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
+		    for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
 			{
 				_outStream << hivStatusGenderRisk[i][m] << Constants::TAB;
 			}

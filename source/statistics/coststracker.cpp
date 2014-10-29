@@ -209,27 +209,27 @@ void CostsTracker::BuildRow(int time)
 		double totalQalms = 0;
 		double cepacTotalCost = 0;
 
-		for(int i = 0; i < (std::size_t)Entity::HIVStatus::Last; i++)
+		for(std::size_t i = 0; i < (std::size_t)Entity::HIVStatus::Last; i++)
 		{
 			totalLifeMonths += costs.lifeMonthsByHivStatus[i];
 			totalQalms += costs.qalmsByHivStatus[i];
 		}
 
-		for(int i = 0; i < (std::size_t)Entity::CD4Strata::Last; i++)
+		for(std::size_t i = 0; i < (std::size_t)Entity::CD4Strata::Last; i++)
 		{
 			cepacTotalCost += costs.totalCostsByCd4[i];
 		}
 
 		PushElement(totalLifeMonths);
 
-		for(int i = 0; i < (std::size_t)Entity::HIVStatus::Last; i++)
+		for(std::size_t i = 0; i < (std::size_t)Entity::HIVStatus::Last; i++)
 		{
 			PushElement(costs.lifeMonthsByHivStatus[i]);
 		}
 
 		PushElement(totalQalms);
 
-		for(int i = 0; i < (std::size_t)Entity::HIVStatus::Last; i++)
+		for(std::size_t i = 0; i < (std::size_t)Entity::HIVStatus::Last; i++)
 		{
 			PushElement(costs.qalmsByHivStatus[i]);
 		}
@@ -274,17 +274,17 @@ void CostsTracker::BuildRow(int time)
 			PushElement(costs.totalCostsByGender[i]);
 		}
 
-		for(int i = 0; i < (std::size_t)Entity::HIVStatus::Last; i++)
+		for(std::size_t i = 0; i < (std::size_t)Entity::HIVStatus::Last; i++)
 		{
 			PushElement(costs.totalCostsByHivState[i]);
 		}
 
-		for(int i = 0; i < (std::size_t)Entity::CD4Strata::Last; i++)
+		for(std::size_t i = 0; i < (std::size_t)Entity::CD4Strata::Last; i++)
 		{
 			PushElement(costs.totalCostsByCd4[i]);
 		}
 
-		for(int i = -1; i < (std::size_t)Entity::HVLStrata::Last; i++)
+		for(std::size_t i = -1; i < (std::size_t)Entity::HVLStrata::Last; i++)
 		{
 			PushElement(costs.totalCostsByHvl[i + 1]);
 		}

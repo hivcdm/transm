@@ -226,7 +226,7 @@ void ArtRolloutTracker::buildRow(int time, Population *_population)
 			}
 		}
 
-		for(int i = 0; i < (std::size_t)Entity::CD4Strata::Last; ++i)
+	for(std::size_t i = 0; i < (std::size_t)Entity::CD4Strata::Last; ++i)
 		{
 			PushElement(counter.GetCount(outcome, std::make_pair("cd4Stratum", i)));
 		}

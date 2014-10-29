@@ -75,7 +75,7 @@ int run_simulation(const std::string &batch_name, std::function<void(const std::
         std::cout << "Running File: " << task_name << std::endl;
 
         auto sim_filename = batches_directory / batch_name / path(task_name + ".xml");
-        auto parameters = SimulationParametersXml(sim_filename.string());
+        SimulationParametersXml parameters(sim_filename.string());
 
         Simulation simulation(status);
         parameters.SetRandomNumberGenerator(simulation.GetEventParams().randomNums);

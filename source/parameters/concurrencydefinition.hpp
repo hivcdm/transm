@@ -164,6 +164,7 @@ struct InterventionParameters
     InterventionParameters &operator=(InterventionParameters other)
     {
         swap(other);
+	return *this;
     }
 
     void swap(InterventionParameters &other)

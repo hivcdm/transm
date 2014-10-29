@@ -26,7 +26,7 @@ InfectionsTracker::InfectionsTracker()
 		}
 	}
 
-	for(int i = 0; i < (std::size_t)Entity::HVLStrata::Last; ++i)
+	for(std::size_t i = 0; i < (std::size_t)Entity::HVLStrata::Last; ++i)
 	{
 		totalIncidentInfections[i] = 0;
 		totalExposures[i] = 0;
@@ -34,7 +34,7 @@ InfectionsTracker::InfectionsTracker()
 		currTimeExposures[i] = 0;
 	}
 
-	for(int i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
+	for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
 	{
         for(std::size_t j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
 		{
@@ -58,13 +58,13 @@ InfectionsTracker::InfectionsTracker()
 		currTimeStepAgeInfectionSumSqGender[i] = 0;
 	}
 
-	for(int i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
+    for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
 	{
 		totalIncidentInfsRiskCSW[i] = 0;
 		totalIncidentInfsRisk[i] = 0;
 	}
 
-	for(int i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
+    for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
 	{
         for(std::size_t j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
 		{
@@ -85,7 +85,7 @@ unsigned long InfectionsTracker::getCurrTimeStepIncidentInfsTotal()
 {
 	unsigned long infections = 0;
 
-	for(int i = 0; i < (std::size_t)Entity::HVLStrata::Last; ++i)
+	for(std::size_t i = 0; i < (std::size_t)Entity::HVLStrata::Last; ++i)
 	{
 		infections += currTimeStepIncidentInfs[i];
 	}
@@ -116,7 +116,7 @@ unsigned long InfectionsTracker::getNumIncidentInfections()
 {
 	unsigned long infections = 0;
 
-	for(int i = 0; i < (std::size_t)Entity::HVLStrata::Last; i++)
+	for(std::size_t i = 0; i < (std::size_t)Entity::HVLStrata::Last; i++)
 	{
 		infections += totalIncidentInfections[i];
 	}
@@ -207,13 +207,13 @@ double InfectionsTracker::getSAPrev(Population &_population)
 void InfectionsTracker::resetIncidentInfections(long _time)
 {
 	/** Reset counter for incident infections and exposures for current timestep*/
-	for(int i = 0; i < (std::size_t)Entity::HVLStrata::Last; i++)
+    for(std::size_t i = 0; i < (std::size_t)Entity::HVLStrata::Last; i++)
 	{
 		currTimeStepIncidentInfs[i] = 0;
 		currTimeExposures[i] = 0;
 	}
 
-	for(int i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
+    for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
 	{
         for(std::size_t j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
 		{
@@ -235,7 +235,7 @@ void InfectionsTracker::resetIncidentInfections(long _time)
 		currTimeStepNumInfectedGender[i] = 0;
 	}
 
-	for(int i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
+    for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
 	{
         for(std::size_t j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
 		{
@@ -409,7 +409,7 @@ void InfectionsTracker::setPrevalentInfections(long /*_time*/,
 		currProfileID++;
 	}
 
-	for(int i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
+	for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
 	{
         for(std::size_t j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
 		{
@@ -921,14 +921,14 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	/** Print out exposures and infections by viral load */
 	_outStream << Constants::TAB;
 
-	for(int i = 0; i < (std::size_t)Entity::HVLStrata::Last; i++)
+	for(std::size_t i = 0; i < (std::size_t)Entity::HVLStrata::Last; i++)
 	{
 		_outStream << currTimeExposures[i] << Constants::TAB;
 	}
 
 	_outStream << Constants::TAB;
 
-	for(int i = 0; i < (std::size_t)Entity::HVLStrata::Last; i++)
+	for(std::size_t i = 0; i < (std::size_t)Entity::HVLStrata::Last; i++)
 	{
 		_outStream << currTimeStepIncidentInfs[i] << Constants::TAB;
 	}
@@ -1054,7 +1054,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 
 	double numInfectedCSW = 0;
 
-	for(int i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
+	for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
 	{
         for(std::size_t j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
 		{
@@ -1067,7 +1067,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 		double ageSumCSW  = 0;
 		double ageSumSqCSW = 0;
 
-		for(int i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
+		for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
 		{
             for(std::size_t j = 0; j < (std::size_t)DemographicProfile::Gender::Last; j++)
 			{

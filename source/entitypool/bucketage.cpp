@@ -8,13 +8,13 @@ BucketAge::BucketAge()
 	numPersons = 0;
 	numInfected = 0;
 
-	for(int i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
+	for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
 	{
 		numRisk[i] = 0;
 		numRiskCSW[i] = 0;
 		numInfectedRisk[i] = 0;
 
-		for(int j = 0; j < (std::size_t)Entity::HIVStatus::Last; j++)
+		for(std::size_t j = 0; j < (std::size_t)Entity::HIVStatus::Last; j++)
 		{
 			numRiskHIVStatus[i][j] = 0;
 		}
@@ -34,13 +34,13 @@ BucketAge::BucketAge(DemographicProfile::ProfileID BinID, unsigned int popID, co
 	numPersons = 0;
 	numInfected = 0;
 
-	for(int i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
+	for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
 	{
 		numRisk[i] = 0;
 		numRiskCSW[i] = 0;
 		numInfectedRisk[i] = 0;
 
-		for(int j = 0; j < (std::size_t)Entity::HIVStatus::Last; j++)
+		for(std::size_t j = 0; j < (std::size_t)Entity::HIVStatus::Last; j++)
 		{
 			numRiskHIVStatus[i][j] = 0;
 		}
@@ -89,13 +89,13 @@ void BucketAge::clear()
 	numPersons = 0;
 	numInfected = 0;
 
-	for(int i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
+	for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
 	{
 		numRisk[i] = 0;
 		numRiskCSW[i] = 0;
 		numInfectedRisk[i] = 0;
 
-		for(int j = 0; j < (std::size_t)Entity::HIVStatus::Last; j++)
+		for(std::size_t j = 0; j < (std::size_t)Entity::HIVStatus::Last; j++)
 		{
 			numRiskHIVStatus[i][j] = 0;
 		}
