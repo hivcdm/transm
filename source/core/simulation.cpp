@@ -869,6 +869,10 @@ void Simulation::Initialize(SimulationParameters &parameters)
     parameters_.calibrationInputs = parameters.GetCalibrationParameters();
     parameters_.delayPrevalence = parameters.GetInitialInfectionDelay();
     auto intervention_params = parameters.GetInterventionParameters();
+    for(const auto &prop : intervention_params.target_yearly_rollout_proportions)
+    {
+        parameters_.targetYearlyRolloutProportions[prop.first] = prop.second;
+    }
     parameters_.useRollout = intervention_params.intervention_type == InterventionParameters::InterventionType::Art;
     parameters_.enableDynamicTreatmentScaling = intervention_params.dynamic_feedback_enabled;
     parameters_.dynamicFeedbackPeriod = intervention_params.dynamic_feedback_period;

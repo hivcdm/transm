@@ -10,6 +10,8 @@ std::string const Constants::TABTAB = "\t\t";
 std::string const Constants::SPACE = " ";
 std::string const Constants::UNDERSCORE = "_";
 
+    auto a = BatchStatsVariables::PREVALENCESA;
+    
 const std::map<BatchStatsVariables, std::string> Constants::BatchStatFileName = 
 {
     {BatchStatsVariables::PREVALENCE, "prevalence"},

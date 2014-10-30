@@ -1,3 +1,7 @@
+if _ACTION == "xcode4" then
+   dofile("xcode/xcode.lua")
+end
+
 solution "transm"
     configurations { "debug", "release" }
     platforms { "x64" }
@@ -45,6 +49,7 @@ project "transm"
 	files { "resources/resource.rc" }
     configuration "not windows"
         files { "../source/utility/platform/posix/**.cpp" }
+        buildoptions { "-Wno-deprecated-register" }
 
 project "third-party"
     kind "StaticLib"
@@ -58,7 +63,8 @@ project "third-party"
     }
     defines {
         "SQLITE_THREADSAFE=0",
-	"SQLITE_OMIT_LOAD_EXTENSION"
+        "SQLITE_OMIT_LOAD_EXTENSION",
+        "SQLITE_HAVE_ISNAN"
     }
     warnings "Off"
     files {
@@ -79,4 +85,4 @@ project "third-party"
         optimize "Off"
     configuration "release"
         flags { "LinkTimeOptimization" }
-	optimize "Full"
+        optimize "Full"

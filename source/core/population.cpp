@@ -3732,8 +3732,7 @@ void Population::Initialize(const PopulationParameters &parameters)
         }
 
         AgeRange ageRange = {ageBucketParams.minAgeMth, ageBucketParams.maxAgeMth};
-        AgeRangeSizePair ageRangeSize = std::make_pair(ageRange, currentBucketSize);
-
+        
         //Add a tuple to the currSizeByAgeRange vector along with the initial size of the age range
         ageRanges.push_back(ageRange);
         
