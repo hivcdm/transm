@@ -859,16 +859,6 @@ std::size_t Population::UpdateSize()
 	//Also update size of non-sexually active
 	currNASize = entities->sizeNotSexuallyActive();
 
-    for(auto entity_type : {"male", "msmw", "msm", "female"})
-	{
-		currNASizeByEntityType[entity_type] = entities->sizeNotSexuallyActive(entity_type);
-
-		for(std::size_t j = 0; j < (std::size_t)Entity::RiskLevel::Last; j++)
-		{
-			currSASizeEntityTypeRisk[entity_type][j] = entities->sizeSexuallyActive(entity_type, (Entity::RiskLevel) j);
-		}
-	}
-
 	//Size by gender
 	DemographicProfile GenderProfile;
     std::vector<DemographicProfile::ProfileID> GenderProfileIDs;
@@ -908,6 +898,9 @@ std::size_t Population::UpdateSize()
 		currCSWSize += entities->size(CSWProfileIDs[i]);
 	}
 
+    currNASizeByEntityType.clear();
+    currSASizeEntityTypeRisk.clear();
+    
 	//Update size by risk level
 	for(int risk = 0; risk < (int)Entity::RiskLevel::Last; risk++)
 	{
@@ -917,40 +910,44 @@ std::size_t Population::UpdateSize()
         for(auto entity_type : {"male", "msmw", "msm", "female"})
 		{
 			currSizeEntityTypeRiskCSW[entity_type][risk] = 0;
+            currSASizeEntityTypeRisk[entity_type][risk] = 0;
+            
+            if(risk == 0)
+            {
+                currNASizeByEntityType[entity_type] = 0;
+                currSizeEntityType[entity_type] = 0;
+            }
 		}
 	}
+    
+    num_circumcised_na = 0;
+    num_circumcised_sa = 0;
 
     entities->forEach([&](Entity *e)
     {
         currSizeEntityType[e->getEntityType()]++;
         currSizeRisk[(std::size_t)e->getRiskLevel()]++;
+        if(e->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::Active)
+        {
+            currSASizeEntityTypeRisk[e->getEntityType()][(std::size_t)e->getRiskLevel()]++;
+        }
+        else
+        {
+            currNASizeByEntityType[e->getEntityType()]++;
+        }
         if(e->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::Csw)
         {
             currSizeRiskCSW[(std::size_t)e->getRiskLevel()]++;
             currSizeEntityTypeRiskCSW[e->getEntityType()][(std::size_t)e->getRiskLevel()]++;
         }
-    });
-
-    for(auto entity_type : {"male", "msmw", "msm", "female"})
-    {
-        for(auto age_range_size_pair : currSizeByEntityTypeAgeRange[entity_type])
+        
+        if(e->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Male)
         {
-            age_range_size_pair.second = entities->sizeSexuallyActiveByAge(age_range_size_pair.first.lower, age_range_size_pair.first.upper, entity_type);
-        }
-    }
-
-    num_circumcised_na = 0;
-    num_circumcised_sa = 0;
-
-    entities->forEach([this](Entity *p)
-    {
-        if(p->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Male)
-        {
-            if((p->getEntityType() == "male" && ((Male *)p)->IsCircumcised())
-                || (p->getEntityType() == "msm" && ((Msm *)p)->IsCircumcised())
-                || (p->getEntityType() == "msmw" && ((Msmw *)p)->IsCircumcised()))
+            if((e->getEntityType() == "male" && ((Male *)e)->IsCircumcised())
+               || (e->getEntityType() == "msm" && ((Msm *)e)->IsCircumcised())
+               || (e->getEntityType() == "msmw" && ((Msmw *)e)->IsCircumcised()))
             {
-                if(p->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::Active)
+                if(e->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::Active)
                 {
                     num_circumcised_sa++;
                 }
@@ -961,6 +958,14 @@ std::size_t Population::UpdateSize()
             }
         }
     });
+
+    for(auto entity_type : {"male", "msmw", "msm", "female"})
+    {
+        for(auto &age_range_size_pair : currSizeByEntityTypeAgeRange[entity_type])
+        {
+            age_range_size_pair.second = entities->sizeSexuallyActiveByAge(age_range_size_pair.first.lower, age_range_size_pair.first.upper, entity_type);
+        }
+    }
 
 	return currSize;
 }
@@ -2481,7 +2486,12 @@ std::size_t Population::GetSize(DemographicProfile::Gender gender)
 
 std::size_t Population::GetSize(const std::string &entity_type)
 {
-    return currSizeEntityType.at(entity_type);
+    if(currSizeEntityType.find(entity_type) != currSizeEntityType.end())
+    {
+        return currSizeEntityType.at(entity_type);
+    }
+    
+    return 0;
 }
 
 std::size_t Population::GetSASize(const std::string &entity_type, Entity::RiskLevel _risk)

@@ -390,7 +390,7 @@ unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMo
 std::size_t EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths, const std::string &entity_type)
 {
     std::size_t count = 0;
-    forEach([&](Entity *e) { if(e->getEntityType() == entity_type && e->getAge(TimeGranularity::Month) >= minAgeMonths && e->getAge(TimeGranularity::Month) <= maxAgeMonths) count++; });
+    forEach([&](Entity *e) { if(e->getEntityType() == entity_type && e->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::Active && e->getAge(TimeGranularity::Month) >= minAgeMonths && e->getAge(TimeGranularity::Month) <= maxAgeMonths) count++; });
     return count;
 }
 
