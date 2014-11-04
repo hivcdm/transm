@@ -43,11 +43,16 @@ public:
                 {
                     current_row.push_back((int)std::get<2>(age_range));
                 }
-                current_row.push_back((int)summary.pop_size_na_female);
-                for(auto &age_range : summary.sa_size_by_age_range_female)
+
+                for(auto entity_type : {"male", "msmw", "msm", "female"})
                 {
-                    current_row.push_back((int)std::get<2>(age_range));
+                    current_row.push_back((int)summary.pop_size_na_entity_type[entity_type]);
+                    for(auto &age_range : summary.sa_size_by_age_range_entity_type[entity_type])
+                    {
+                        current_row.push_back((int)std::get<2>(age_range));
+                    }
                 }
+
                 for(auto &risk_group : summary.size_risk_group)
                 {
                     current_row.push_back((int)risk_group.second);
@@ -59,11 +64,16 @@ public:
                 {
                     current_row.push_back((int)std::get<2>(age_range));
                 }
-                current_row.push_back((int)summary.incident_female);
-                for(auto &age_range : summary.incident_by_age_range_female)
+
+                for(auto entity_type : {"male", "msmw", "msm", "female"})
                 {
-                    current_row.push_back((int)std::get<2>(age_range));
+                    current_row.push_back((int)summary.incident_entity_type[entity_type]);
+                    for(auto &age_range : summary.incident_by_age_range_entity_type[entity_type])
+                    {
+                        current_row.push_back((int)std::get<2>(age_range));
+                    }
                 }
+
                 for(auto &risk_group : summary.incident_risk_group)
                 {
                     current_row.push_back((int)risk_group.second);
@@ -75,11 +85,16 @@ public:
                 {
                     current_row.push_back((int)std::get<2>(age_range));
                 }
-                current_row.push_back((int)summary.prevalent_female);
-                for(auto &age_range : summary.prevalent_by_age_range_female)
+
+                for(auto entity_type : {"male", "msmw", "msm", "female"})
                 {
-                    current_row.push_back((int)std::get<2>(age_range));
+                    current_row.push_back((int)summary.prevalent_entity_type[entity_type]);
+                    for(auto &age_range : summary.prevalent_by_age_range_entity_type[entity_type])
+                    {
+                        current_row.push_back((int)std::get<2>(age_range));
+                    }
                 }
+
                 for(auto &risk_group : summary.prevalent_risk_group)
                 {
                     current_row.push_back((int)risk_group.second);
@@ -135,7 +150,7 @@ public:
         {
             for(auto partition : group.GetPartitionNames())
             {
-                file << "Population Sizes			Male Population Sizes										Female Population Sizes																Incident Cases																											Prevalent Cases																											";
+                file << "Population Sizes			Male Population Sizes										Male:Hetero Population Sizes										Male:Msmw Population Sizes										Male:Msm Population Sizes										Female Population Sizes																				Incident Cases																																																													Prevalent Cases																																																												";
             }
         }
 
@@ -146,7 +161,7 @@ public:
         {
             for(auto partition : group.GetPartitionNames())
             {
-                file << "			Non-Sexually Active Population	Sexually Active Population									Non-Sexually Active Population	Sexually Active Population									Risk Group							Male Incident Cases										Female Incident Cases										Risk Group							Male Prevalent Cases										Female Prevalent Cases										Risk Group						";
+                file << "			Non-Sexually Active Population	Sexually Active Population									Non-Sexually Active Population	Sexually Active Population									Non-Sexually Active Population	Sexually Active Population									Non-Sexually Active Population	Sexually Active Population									Non-Sexually Active Population	Sexually Active Population									Risk Group											Male Incident Cases										Male:Hetero Incident Cases										Male:Msmw Incident Cases										Male:Msm Incident Cases										Female Incident Cases										Risk Group											Male Prevalent Cases										Male:Hetero Prevalent Cases										Male:Msmw Prevalent Cases										Male:Msm Prevalent Cases										Female Prevalent Cases										Risk Group									";
             }
         }
 
@@ -157,7 +172,7 @@ public:
         {
             for(auto partition : group.GetPartitionNames())
             {
-                file << "	Total	NA Population Size	SA Population Size	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	CSW High Risk	CSW Low Risk	Non-CSW High Risk Male	Non-CSW High Risk Female	Non-CSW Low Risk Male	Non-CSW Low Risk Female	Total	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	CSW High Risk	CSW Low Risk	Non-CSW High Risk Male	Non-CSW High Risk Female	Non-CSW Low Risk Male	Non-CSW Low Risk Female	Total	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	CSW High Risk	CSW Low Risk	Non-CSW High Risk Male	Non-CSW High Risk Female	Non-CSW Low Risk Male	Non-CSW Low Risk Female";
+                file << "	Total	NA Population Size	SA Population Size	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	CSW High Risk	CSW Low Risk	Non-CSW High Risk Male	Non-CSW High Risk Msmw	Non-CSW High Risk Msm	Non-CSW High Risk Female	Non-CSW Low Risk Male	Non-CSW Low Risk Msmw	Non-CSW Low Risk Msm	Non-CSW Low Risk Female	Total	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	CSW High Risk	CSW Low Risk	Non-CSW High Risk Male	Non-CSW High Risk Msmw	Non-CSW High Risk Msm	Non-CSW High Risk Female	Non-CSW Low Risk Male	Non-CSW Low Risk Msmw	Non-CSW Low Risk Msm	Non-CSW Low Risk Female	Total	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	CSW High Risk	CSW Low Risk	Non-CSW High Risk Male	Non-CSW High Risk Msmw	Non-CSW High Risk Msm	Non-CSW High Risk Female	Non-CSW Low Risk Male	Non-CSW Low Risk Msmw	Non-CSW Low Risk Msm	Non-CSW Low Risk Female";
             }
         }
 

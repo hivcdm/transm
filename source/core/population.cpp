@@ -1679,12 +1679,18 @@ void Population::RecordShiftedOutcomes(EventParams &parameters_, std::ostream &_
 			populationStatistics.recordTestStats(numTests, numTestsByResult);
 		}
 
+        populationStatistics.UpdateIncidenceCalculations();
+
 		if(month == 11)
 		{
 			populationStatistics.printShiftedOutcomes(_outStream, year);
 			populationStatistics.resetYear(year + 1);
 		}
 	}
+    else if(parameters_.monthOf1990 == (parameters_.currTime + 1))
+    {
+        populationStatistics.resetYear(1990);
+    }
 }
 
 bool Population::PassesPartnershipCalibration(EventParams &parameters_)

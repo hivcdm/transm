@@ -622,6 +622,44 @@ void PopulationStatisticsOld::printLEStats(std::ostream &_outStream, long currTi
 	}
 }
 
+void PopulationStatisticsOld::UpdateIncidenceCalculations()
+{
+    std::size_t sum_incident = 0;
+    std::size_t sum_negative_sa = 0;
+    std::size_t sum_male_incident = 0;
+    std::size_t sum_male_negative_sa = 0;
+
+    for(auto entity_type : {"male", "msmw", "msm", "female"})
+    {
+        sum_incident += currentMonthIncident[entity_type];
+        sum_negative_sa += currentMonthSANegative[entity_type];
+
+        if(std::string(entity_type) != "female")
+        {
+            sum_male_incident += currentMonthIncident[entity_type];
+            sum_male_negative_sa += currentMonthSANegative[entity_type];
+        }
+
+        if(currentMonthSANegative[entity_type] > 0)
+        {
+            yearlyCumulativeIncidenceByEntityType[entity_type] += currentMonthIncident[entity_type] / static_cast<double>(currentMonthSANegative[entity_type]);
+        }
+    }
+
+    if(sum_negative_sa > 0)
+    {
+        yearlyCumulativeIncidence += sum_incident / static_cast<double>(sum_negative_sa);
+    }
+
+    if(sum_male_negative_sa > 0)
+    {
+        yearlyCumulativeIncidenceMale += sum_male_incident / static_cast<double>(sum_male_negative_sa);
+    }
+
+    currentMonthIncident.clear();
+    currentMonthSANegative.clear();
+}
+
 void PopulationStatisticsOld::printShiftedOutcomes(std::ostream &_outStream, int year)
 {
 	assert(calculateShiftedOutcomes);
@@ -679,26 +717,26 @@ void PopulationStatisticsOld::printShiftedOutcomes(std::ostream &_outStream, int
 		_outStream << std::endl;
 	}
 
-    std::size_t sum_sa_pop_size = 0;
+    //std::size_t sum_sa_pop_size = 0;
     std::size_t sum_incident_infections = 0;
     std::size_t sum_prevalent_infections = 0;
     std::size_t sum_year_start_sa_pop_size = 0;
 
-    std::size_t sum_sa_pop_size_male = 0;
+    //std::size_t sum_sa_pop_size_male = 0;
     std::size_t sum_incident_infections_male = 0;
     std::size_t sum_prevalent_infections_male = 0;
     std::size_t sum_year_start_sa_pop_size_male = 0;
 
     for(auto entity_type : {"male", "msmw", "msm", "female"})
     {
-        sum_sa_pop_size += yearlyCumulativeSexuallyActivePopSize[entity_type];
+        //sum_sa_pop_size += yearlyCumulativeSexuallyActivePopSize[entity_type];
         sum_year_start_sa_pop_size += yearStartSexuallyActivePopSize[entity_type];
         sum_prevalent_infections += yearStartPrevalentInfections[entity_type];
         sum_incident_infections += yearlyIncidentInfections[entity_type];
 
         if(std::string(entity_type) != "female")
         {
-            sum_sa_pop_size_male += yearlyCumulativeSexuallyActivePopSize[entity_type];
+            //sum_sa_pop_size_male += yearlyCumulativeSexuallyActivePopSize[entity_type];
             sum_year_start_sa_pop_size_male += yearStartSexuallyActivePopSize[entity_type];
             sum_prevalent_infections_male += yearStartPrevalentInfections[entity_type];
             sum_incident_infections_male += yearlyIncidentInfections[entity_type];
@@ -706,7 +744,6 @@ void PopulationStatisticsOld::printShiftedOutcomes(std::ostream &_outStream, int
     }
 
     double yearStartPrevalence = static_cast<double>(sum_prevalent_infections) / sum_year_start_sa_pop_size;
-    double yearlyIncidence = static_cast<double>(sum_incident_infections) / sum_sa_pop_size * 12;
 
 	_outStream << year;
 	_outStream << Constants::TAB;
@@ -718,17 +755,16 @@ void PopulationStatisticsOld::printShiftedOutcomes(std::ostream &_outStream, int
 	_outStream << Constants::TAB;
 	_outStream << yearStartPrevalence;
 	_outStream << Constants::TAB;
-	_outStream << yearlyIncidence;
+	_outStream << yearlyCumulativeIncidence;
 	_outStream << Constants::TAB;
 
     double yearStartPrevalenceMale = static_cast<double>(sum_prevalent_infections_male) / sum_year_start_sa_pop_size_male;
-    double yearlyIncidenceMale = static_cast<double>(sum_incident_infections_male) / sum_sa_pop_size_male * 12;
 
     _outStream << sum_year_start_sa_pop_size_male << Constants::TAB;
     _outStream << sum_incident_infections_male << Constants::TAB;
     _outStream << sum_prevalent_infections_male << Constants::TAB;
     _outStream << yearStartPrevalenceMale << Constants::TAB;
-    _outStream << yearlyIncidenceMale << Constants::TAB;
+    _outStream << yearlyCumulativeIncidenceMale << Constants::TAB;
 
     for(auto entity_type : {"male", "msmw", "msm", "female"})
     {
@@ -736,7 +772,7 @@ void PopulationStatisticsOld::printShiftedOutcomes(std::ostream &_outStream, int
         _outStream << yearlyIncidentInfections[entity_type] << Constants::TAB;
         _outStream << yearStartPrevalentInfections[entity_type] << Constants::TAB;
         _outStream << static_cast<double>(yearStartPrevalentInfections[entity_type]) / yearStartSexuallyActivePopSize[entity_type] << Constants::TAB;        
-        _outStream << static_cast<double>(yearlyIncidentInfections[entity_type]) / yearlyCumulativeSexuallyActivePopSize[entity_type] * 12 << Constants::TAB;
+        _outStream << yearlyCumulativeIncidenceByEntityType[entity_type] << Constants::TAB;
     }
 
 	_outStream << yearlyTests;
@@ -807,6 +843,9 @@ void PopulationStatisticsOld::recordIncidentInfection(EventParams &_eventParams,
         survivalStats->timeToInfOrDeathEmplRiskSum[(std::size_t)cswStatus][(std::size_t)risk] += timeToInfection;
         survivalStats->timeToInfOrDeathEmplRiskSumSquare[(std::size_t)cswStatus][(std::size_t)risk] += timeToInfection * timeToInfection;
 	}
+
+    yearlyIncidentInfections[_infected->getEntityType()]++;
+    currentMonthIncident[_infected->getEntityType()]++;
 
 	infectionsTracker.recordIncidentInfection(_time, _partnershipType, _infector, _infected, _print, _traceOutStream);
 }
@@ -892,30 +931,23 @@ void PopulationStatisticsOld::enableShiftedOutcomes(int monthOf1990)
 
 void PopulationStatisticsOld::recordEntity(int time, Entity *e)
 {
-    bool is_incident = e->ageInfected == e->getAge(TimeGranularity::Month);
-    bool is_prevalent = e->ageInfected >= 0 && !is_incident;    
-
-    if(is_incident)
+    if(e->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::Active && !e->isInfected())
     {
-        yearlyIncidentInfections[e->getEntityType()]++;
+        currentMonthSANegative[e->getEntityType()]++;
     }
 
     if(calculateShiftedOutcomes
         && time >= monthOf1990
         && (time - monthOf1990) % 12 == 0)
     {
-        yearStartSexuallyActivePopSize[e->getEntityType()]++;
-        if(is_prevalent)
+        if(e->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::Active)
+        {
+            yearStartSexuallyActivePopSize[e->getEntityType()]++;
+        }
+
+        if(e->isInfected())
         {
             yearStartPrevalentInfections[e->getEntityType()]++;
-        }
-    }
-
-    if(e->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::Active)
-    {
-        if(!is_prevalent)
-        {
-            yearlyCumulativeSexuallyActivePopSize[e->getEntityType()]++;
         }
     }
 }
@@ -984,7 +1016,9 @@ void PopulationStatisticsOld::resetYear(int newYear)
 
 	yearStartPrevalentInfections.clear();
 	yearStartSexuallyActivePopSize.clear();
-	yearlyCumulativeSexuallyActivePopSize.clear();
+	yearlyCumulativeIncidenceByEntityType.clear();
+    yearlyCumulativeIncidence = 0;
+    yearlyCumulativeIncidenceMale = 0;
 	yearlyIncidentInfections.clear();
 	yearlyTests = 0;
 

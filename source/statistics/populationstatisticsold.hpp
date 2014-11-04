@@ -137,8 +137,12 @@ private:
 	int relativeYear;
     std::unordered_map<std::string, std::size_t> yearStartPrevalentInfections;
     std::unordered_map<std::string, std::size_t> yearStartSexuallyActivePopSize;
-    std::unordered_map<std::string, std::size_t> yearlyCumulativeSexuallyActivePopSize;
+    double yearlyCumulativeIncidence;
+    double yearlyCumulativeIncidenceMale;
+    std::unordered_map<std::string, double> yearlyCumulativeIncidenceByEntityType;
     std::unordered_map<std::string, std::size_t> yearlyIncidentInfections;
+    std::unordered_map<std::string, std::size_t> currentMonthIncident;
+    std::unordered_map<std::string, std::size_t> currentMonthSANegative;
 	int yearlyTests;
 	std::set<Entity *> uniqueYearlyEligibleForTreatmentAccess;
 	std::set<Entity *> uniqueYearlyAccessingTreatment;
@@ -163,6 +167,8 @@ public:
 
 	PopulationStatisticsOld();
 	~PopulationStatisticsOld();
+
+    void UpdateIncidenceCalculations();
 
 	//processes a person's death
 	void processDeath(Entity *_p, EventParams &_eventParams);

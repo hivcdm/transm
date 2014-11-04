@@ -55,21 +55,21 @@ public:
         std::size_t incident_cases;
         std::size_t prevalent_cases;
         std::size_t pop_size_sa_male;
-        std::size_t pop_size_sa_female;
+        std::unordered_map<std::string, std::size_t> pop_size_sa_entity_type;
         std::size_t pop_size_na_male;
-        std::size_t pop_size_na_female;
+        std::unordered_map<std::string, std::size_t> pop_size_na_entity_type;
         std::vector<std::tuple<int, int, std::size_t>> sa_size_by_age_range_male;
-        std::vector<std::tuple<int, int, std::size_t>> sa_size_by_age_range_female;
+        std::unordered_map<std::string, std::vector<std::tuple<int, int, std::size_t>>> sa_size_by_age_range_entity_type;
         std::vector<std::pair<std::string, std::size_t>> size_risk_group;
         std::size_t prevalent_male;
-        std::size_t prevalent_female;
+        std::unordered_map<std::string, std::size_t> prevalent_entity_type;
         std::vector<std::tuple<int, int, std::size_t>> prevalent_by_age_range_male;
-        std::vector<std::tuple<int, int, std::size_t>> prevalent_by_age_range_female;
+        std::unordered_map<std::string, std::vector<std::tuple<int, int, std::size_t>>> prevalent_by_age_range_entity_type;
         std::vector<std::pair<std::string, std::size_t>> prevalent_risk_group;
         std::size_t incident_male;
-        std::size_t incident_female;
+        std::unordered_map<std::string, std::size_t> incident_entity_type;
         std::vector<std::tuple<int, int, std::size_t>> incident_by_age_range_male;
-        std::vector<std::tuple<int, int, std::size_t>> incident_by_age_range_female;
+        std::unordered_map<std::string, std::vector<std::tuple<int, int, std::size_t>>> incident_by_age_range_entity_type;
         std::vector<std::pair<std::string, std::size_t>> incident_risk_group;
     };
 
@@ -127,16 +127,22 @@ public:
         auto not_sexually_active = [&](const std::pair<Entity *, int> &p) { return in_partition(p) && p.first->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::NotActive; };
         auto is_prevalent = [&](const std::pair<Entity *, int> &p) { return in_partition(p) && p.first->ageInfected > -1 && p.first->ageInfected + 1 != (int)p.first->age; };
         auto is_incident = [&](const std::pair<Entity *, int> &p) { return in_partition(p) && p.first->ageInfected + 1 == (int)p.first->age; };
-	//        auto is_prevalent_sa = [&](const std::pair<Entity *, int> &p) { return in_partition(p) && is_sexually_active(p) && is_prevalent(p); };
-	//        auto is_incident_sa = [&](const std::pair<Entity *, int> &p) { return in_partition(p) && is_sexually_active(p) && is_incident(p); };
+        auto is_entity_type = [&](const std::pair<Entity *, int> &p, const std::string &entity_type) { return in_partition(p) && p.first->getEntityType() == entity_type; };
         auto is_gender = [&](const std::pair<Entity *, int> &p, DemographicProfile::Gender gender) { return in_partition(p) && p.first->getDemographicProfileVal<DemographicProfile::Gender>() == gender; };
         auto is_sa_gender = [&](const std::pair<Entity *, int> &p, DemographicProfile::Gender gender) { return in_partition(p) && is_sexually_active(p) && is_gender(p, gender); };
         auto is_na_gender = [&](const std::pair<Entity *, int> &p, DemographicProfile::Gender gender) { return in_partition(p) && !is_sexually_active(p) && is_gender(p, gender); };
         auto is_prev_gender = [&](const std::pair<Entity *, int> &p, DemographicProfile::Gender gender) { return is_prevalent(p) && is_gender(p, gender); };
         auto is_incident_gender = [&](const std::pair<Entity *, int> &p, DemographicProfile::Gender gender) { return is_incident(p) && is_gender(p, gender); };
+        auto is_sa_entity_type = [&](const std::pair<Entity *, int> &p, const std::string &entity_type) { return in_partition(p) && is_sexually_active(p) && is_entity_type(p, entity_type); };
+        auto is_na_entity_type = [&](const std::pair<Entity *, int> &p, const std::string &entity_type) { return in_partition(p) && !is_sexually_active(p) && is_entity_type(p, entity_type); };
+        auto is_prev_entity_type = [&](const std::pair<Entity *, int> &p, const std::string &entity_type) { return is_prevalent(p) && is_entity_type(p, entity_type); };
+        auto is_incident_entity_type = [&](const std::pair<Entity *, int> &p, const std::string &entity_type) { return is_incident(p) && is_entity_type(p, entity_type); };
         auto is_sa_in_age_range_gender = [&](const std::pair<Entity *, int> &p, int lower, int upper, DemographicProfile::Gender gender) { return is_sa_gender(p, gender) && p.first->getAge(TimeGranularity::Month) >= lower && p.first->getAge(TimeGranularity::Month) <= upper; };
         auto is_prev_in_age_range_gender = [&](const std::pair<Entity *, int> &p, int lower, int upper, DemographicProfile::Gender gender) { return p.first->getAge(TimeGranularity::Month) >= lower && p.first->getAge(TimeGranularity::Month) <= upper && is_prev_gender(p, gender); };
         auto is_incident_in_age_range_gender = [&](const std::pair<Entity *, int> &p, int lower, int upper, DemographicProfile::Gender gender) { return is_incident_gender(p, gender) && p.first->getAge(TimeGranularity::Month) >= lower && p.first->getAge(TimeGranularity::Month) <= upper; };
+        auto is_sa_in_age_range_entity_type = [&](const std::pair<Entity *, int> &p, int lower, int upper, const std::string &entity_type) { return is_sa_entity_type(p, entity_type) && p.first->getAge(TimeGranularity::Month) >= lower && p.first->getAge(TimeGranularity::Month) <= upper; };
+        auto is_prev_in_age_range_entity_type = [&](const std::pair<Entity *, int> &p, int lower, int upper, const std::string &entity_type) { return p.first->getAge(TimeGranularity::Month) >= lower && p.first->getAge(TimeGranularity::Month) <= upper && is_prev_entity_type(p, entity_type); };
+        auto is_incident_in_age_range_entity_type = [&](const std::pair<Entity *, int> &p, int lower, int upper, const std::string &entity_type) { return is_incident_entity_type(p, entity_type) && p.first->getAge(TimeGranularity::Month) >= lower && p.first->getAge(TimeGranularity::Month) <= upper; };
         auto is_in_risk_group = [&](const std::pair<Entity *, int> &p, const std::string &risk_string)
         {
             if(!in_partition(p)) return false;
@@ -149,17 +155,33 @@ public:
             {
                 return p.first->getRiskLevel() == Entity::RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::Csw;
             }
-            if(risk_string == "Non-CSW High Risk Male")
+            if(risk_string == "Non-CSW High Risk Male:Hetero")
             {
-                return p.first->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Male && p.first->getRiskLevel() == Entity::RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
+                return p.first->getEntityType() == "male" && p.first->getRiskLevel() == Entity::RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
+            }
+            if(risk_string == "Non-CSW High Risk Male:Msmw")
+            {
+                return p.first->getEntityType() == "msmw" && p.first->getRiskLevel() == Entity::RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
+            }
+            if(risk_string == "Non-CSW High Risk Male:Msm")
+            {
+                return p.first->getEntityType() == "msm" && p.first->getRiskLevel() == Entity::RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
             }
             if(risk_string == "Non-CSW High Risk Female")
             {
                 return p.first->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Female && p.first->getRiskLevel() == Entity::RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
             }
-            if(risk_string == "Non-CSW Low Risk Male")
+            if(risk_string == "Non-CSW Low Risk Male:Hetero")
             {
-                return p.first->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Male && p.first->getRiskLevel() == Entity::RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
+                return p.first->getEntityType() == "male" && p.first->getRiskLevel() == Entity::RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
+            }
+            if(risk_string == "Non-CSW Low Risk Male:Msmw")
+            {
+                return p.first->getEntityType() == "msmw" && p.first->getRiskLevel() == Entity::RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
+            }
+            if(risk_string == "Non-CSW Low Risk Male:Msm")
+            {
+                return p.first->getEntityType() == "msm" && p.first->getRiskLevel() == Entity::RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
             }
             if(risk_string == "Non-CSW Low Risk Female")
             {
@@ -167,7 +189,6 @@ public:
             }
             throw std::runtime_error("unknown risk group");
         };
-	//        auto is_sa_in_risk_group = [&](const std::pair<Entity *, int> &p, const std::string &risk_string) { return is_sexually_active(p) && is_in_risk_group(p, risk_string); };
         auto is_prev_in_risk_group = [&](const std::pair<Entity *, int> &p, const std::string &risk_string) { return is_prevalent(p) && is_in_risk_group(p, risk_string); };
         auto is_incident_in_risk_group = [&](const std::pair<Entity *, int> &p, const std::string &risk_string) { return is_incident(p) && is_in_risk_group(p, risk_string); };
 
@@ -184,14 +205,17 @@ public:
                 summary.prevalent_cases = std::count_if(member_partitions_.begin(), member_partitions_.end(), is_prevalent);
 
                 summary.pop_size_sa_male = std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_sa_gender, std::placeholders::_1, DemographicProfile::Gender::Male));
-                summary.pop_size_sa_female = std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_sa_gender, std::placeholders::_1, DemographicProfile::Gender::Female));
                 summary.prevalent_male = std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_prev_gender, std::placeholders::_1, DemographicProfile::Gender::Male));
-                summary.prevalent_female = std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_prev_gender, std::placeholders::_1, DemographicProfile::Gender::Female));
                 summary.incident_male = std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_incident_gender, std::placeholders::_1, DemographicProfile::Gender::Male));
-                summary.incident_female = std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_incident_gender, std::placeholders::_1, DemographicProfile::Gender::Female));
-
                 summary.pop_size_na_male = std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_na_gender, std::placeholders::_1, DemographicProfile::Gender::Male));
-                summary.pop_size_na_female = std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_na_gender, std::placeholders::_1, DemographicProfile::Gender::Female));
+
+                for(auto entity_type : {"male", "msmw", "msm", "female"})
+                {
+                    summary.pop_size_sa_entity_type[entity_type] = std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_sa_entity_type, std::placeholders::_1, entity_type));
+                    summary.prevalent_entity_type[entity_type] = std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_prev_entity_type, std::placeholders::_1, entity_type));
+                    summary.incident_entity_type[entity_type] = std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_incident_entity_type, std::placeholders::_1, entity_type));
+                    summary.pop_size_na_entity_type[entity_type] = std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_na_entity_type, std::placeholders::_1, entity_type));
+                }
 
                 std::vector<std::pair<int, int>> age_ranges = {{0, 203}, {204, 239}, {240, 299}, {300, 359}, {360, 419}, {420, 479}, {480, 539}, {540, 599}, {600, 1211}};
 
@@ -200,12 +224,16 @@ public:
                     summary.sa_size_by_age_range_male.push_back(std::make_tuple(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_sa_in_age_range_gender, std::placeholders::_1, age_range.first, age_range.second, DemographicProfile::Gender::Male))));
                     summary.prevalent_by_age_range_male.push_back(std::make_tuple(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_prev_in_age_range_gender, std::placeholders::_1, age_range.first, age_range.second, DemographicProfile::Gender::Male))));
                     summary.incident_by_age_range_male.push_back(std::make_tuple(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_incident_in_age_range_gender, std::placeholders::_1, age_range.first, age_range.second, DemographicProfile::Gender::Male))));
-                    summary.sa_size_by_age_range_female.push_back(std::make_tuple(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_sa_in_age_range_gender, std::placeholders::_1, age_range.first, age_range.second, DemographicProfile::Gender::Female))));
-                    summary.prevalent_by_age_range_female.push_back(std::make_tuple(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_prev_in_age_range_gender, std::placeholders::_1, age_range.first, age_range.second, DemographicProfile::Gender::Female))));
-                    summary.incident_by_age_range_female.push_back(std::make_tuple(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_incident_in_age_range_gender, std::placeholders::_1, age_range.first, age_range.second, DemographicProfile::Gender::Female))));
+
+                    for(auto entity_type : {"male", "msmw", "msm", "female"})
+                    {
+                        summary.sa_size_by_age_range_entity_type[entity_type].push_back(std::make_tuple(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_sa_in_age_range_entity_type, std::placeholders::_1, age_range.first, age_range.second, entity_type))));
+                        summary.prevalent_by_age_range_entity_type[entity_type].push_back(std::make_tuple(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_prev_in_age_range_entity_type, std::placeholders::_1, age_range.first, age_range.second, entity_type))));
+                        summary.incident_by_age_range_entity_type[entity_type].push_back(std::make_tuple(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_incident_in_age_range_entity_type, std::placeholders::_1, age_range.first, age_range.second, entity_type))));
+                    }
                 }
 
-                for(auto risk_group : {"CSW High Risk", "CSW Low Risk", "Non-CSW High Risk Male", "Non-CSW High Risk Female", "Non-CSW Low Risk Male", "Non-CSW Low Risk Female"})
+                for(auto risk_group : {"CSW High Risk", "CSW Low Risk", "Non-CSW High Risk Male:Hetero", "Non-CSW High Risk Male:Msmw", "Non-CSW High Risk Male:Msm", "Non-CSW High Risk Female", "Non-CSW Low Risk Male:Hetero", "Non-CSW Low Risk Male:Msmw", "Non-CSW Low Risk Male:Msm", "Non-CSW Low Risk Female"})
                 {
                     summary.size_risk_group.push_back({risk_group, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_in_risk_group, std::placeholders::_1, risk_group))});
                     summary.prevalent_risk_group.push_back({risk_group, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_prev_in_risk_group, std::placeholders::_1, risk_group))});
