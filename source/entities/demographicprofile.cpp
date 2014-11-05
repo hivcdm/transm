@@ -459,7 +459,7 @@ void DemographicProfile::initProfileIDMap()
             category >= DemographicProfile::Demographic(0); category = DemographicProfile::Demographic((std::size_t)category - 1))
 		{
 			//Don't print out SA and HETERO (for now -- too redundant)
-			if(category != DemographicProfile::Demographic::SexualActivityStatus && category != DemographicProfile::Demographic::SexualOrientation)
+			if(category != DemographicProfile::Demographic::SexualActivityStatus)
 			{
                 currEnumStr << *(DemographicProfile::DemographicEnumCls.at((std::size_t)category).toString(currDemographicProfile.get(category)));
 

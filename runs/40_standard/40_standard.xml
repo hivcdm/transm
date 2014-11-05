@@ -1,5 +1,5 @@
 <simulation version="4.0">
-  <debugLevel>0</debugLevel>
+  <debugLevel>1</debugLevel>
   <duration>1200</duration>
   <fixedSeed>0</fixedSeed>
   <monthOf1990>690</monthOf1990>
