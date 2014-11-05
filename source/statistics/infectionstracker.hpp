@@ -18,30 +18,44 @@ class Population;
 class InfectionsTracker
 {
 public:
-	/** If this number gets changed, also change it in BucketAge.h */
+    template<typename T>
+    using EntityTypeMap = std::unordered_map<std::string, T>;
+    using HVLArray = std::array<std::size_t, (std::size_t)Entity::HVLStrata::Last>;
+    using RiskEmploymentArray = std::array<std::array<std::size_t, (std::size_t)DemographicProfile::Employment::Last>, (std::size_t)Entity::RiskLevel::Last>;
+    using DemographicArray = std::array<std::size_t, DemographicProfile::TotalNumBuckets>;
+    using DemographicToDemographicArray = std::array<std::array<std::size_t, DemographicProfile::TotalNumBuckets>, DemographicProfile::TotalNumBuckets>;
+
+	/// <summary>
+    /// If this number gets changed, also change it in BucketAge.h
+    /// </summary>
 	static const int NUMBER_GENERATIONS_TO_TRACE = 6;
 
 private:
-	/** Total number of incident infections throughout the course of the model, stratified by HVL of the infector */
-    unsigned long totalIncidentInfections[(std::size_t)Entity::HVLStrata::Last];
+	/// <summary>
+    /// Total number of incident infections throughout the course of the model,
+    /// stratified by HVL of the infector.
+    /// </summary>
+    HVLArray totalIncidentInfections;
 
-	/** Total number of times an HIV infected person had sex with an HIV uninfected person, stratified by HVL of the infector
-	 *
-	 * This includes exposures that resulted in an infection
-	 **/
-    unsigned long totalExposures[(std::size_t)Entity::HVLStrata::Last];
+    /// <summary>
+    /// Total number of times an HIV infected person had sex with an HIV 
+    /// uninfected person, stratified by HVL of the infector. This includes 
+    /// exposures that resulted in an infection.
+	/// </summary>
+    HVLArray totalExposures;
 
-	/** This contains prevalent infections of all buckets in an EntityPool. Should be sync'd w/ curr timestep */
-	unsigned long currPrevalentInfections[DemographicProfile::TotalNumBuckets]
-        [NUMBER_GENERATIONS_TO_TRACE];
+	/// <summary>
+    /// This contains prevalent infections of all buckets in an EntityPool. Should be sync'd w/ curr timestep.
+    /// </summary>
+    std::array<DemographicArray, NUMBER_GENERATIONS_TO_TRACE> currPrevalentInfections;
 
-	unsigned long currPrevalentInfectionsRiskGenderEmployment[(std::size_t)Entity::RiskLevel::Last]
-        [(std::size_t)DemographicProfile::Gender::Last]
-        [(std::size_t)DemographicProfile::Employment::Last]; 
+    EntityTypeMap<RiskEmploymentArray> currPrevalentInfectionsEntityTypeRiskEmployment;
 
-	/** This contains prevalent infections of all buckets in an EntityPool stratified by age and gender. Should be sync'd w/ curr timestep */
-	AgeRangeSizeContainer currPrevalentInfectionsAgeMale;
-	AgeRangeSizeContainer currPrevalentInfectionsAgeFemale;
+	/// <summary>
+    /// This contains prevalent infections of all buckets in an EntityPool 
+    /// stratified by age and gender. Should be sync'd w/ curr timestep
+    /// </summary>
+	EntityTypeMap<AgeRangeSizeContainer> currPrevalentInfectionsEntityTypeAge;
 
     /// <summary>
 	/// This contains profileID's that we will include in our traces.
@@ -52,65 +66,82 @@ private:
 	/// This is a copy of the sim clock. We keep a copy to know when the time has advanced
 	/// and when we need to reset incidence for the timestep.
     /// </summary>
-	unsigned int currTimeStep;
+	int currTimeStep;
 
-	/** Infections in the current time step, stratified by HVL of the infector */
-	unsigned long currTimeStepIncidentInfs[(std::size_t)Entity::HVLStrata::Last];
-	/** Infections in the current time step, stratified by risk and CSW status */
-	unsigned long
-        currTimeStepIncidentInfsRiskGenderEmployment[(std::size_t)Entity::RiskLevel::Last][(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::Employment::Last];
-	/** Infections in the current time step stratified by Age and Gender*/
-	AgeRangeSizeContainer currTimeStepIncidentInfsAgeMale;
-	AgeRangeSizeContainer currTimeStepIncidentInfsAgeFemale;
+	/// <summary>
+    /// Infections in the current time step, stratified by HVL of the infector.
+    /// </summary>
+	HVLArray currTimeStepIncidentInfs;
 
-	/** sum of age of infection and diagnosis for incident infections in current time step*/
-    unsigned long currTimeStepAgeInfectionSumGender[(std::size_t)DemographicProfile::Gender::Last];
-    unsigned long currTimeStepAgeInfectionSumSqGender[(std::size_t)DemographicProfile::Gender::Last];
-    unsigned int currTimeStepNumInfectedGender[(std::size_t)DemographicProfile::Gender::Last];
+	/// <summary>
+    /// Infections in the current time step, stratified by risk and CSW status
+    /// </summary>
+    EntityTypeMap<RiskEmploymentArray> currTimeStepIncidentInfsEntityTypeRiskEmployment;
 
-	unsigned long
-        currTimeStepAgeInfectionSumRiskGenderEmployment[(std::size_t)Entity::RiskLevel::Last][(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::Employment::Last];
-	unsigned long
-        currTimeStepAgeInfectionSumSqRiskGenderEmployment[(std::size_t)Entity::RiskLevel::Last][(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::Employment::Last];
-	unsigned int
-        currTimeStepNumInfectedRiskGenderEmployment[(std::size_t)Entity::RiskLevel::Last][(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::Employment::Last];
+    /// <summary>
+	/// Infections in the current time step stratified by Age and Gender
+    /// </summary>
+    EntityTypeMap<AgeRangeSizeContainer> currTimeStepIncidentInfsEntityTypeAge;
 
-	/** sum of cd4 at transmission for incident infection in current time step*/
+    /// <summary>
+	/// sum of age of infection and diagnosis for incident infections in current time step
+    /// </summary>
+    EntityTypeMap<std::size_t> currTimeStepAgeInfectionSumEntityType;
+    EntityTypeMap<std::size_t> currTimeStepAgeInfectionSumSqEntityType;
+    EntityTypeMap<std::size_t> currTimeStepNumInfectedEntityType;
+
+    EntityTypeMap<RiskEmploymentArray> currTimeStepAgeInfectionSumEntityTypeRiskEmployment;
+    EntityTypeMap<RiskEmploymentArray> currTimeStepAgeInfectionSumSqEntityTypeRiskEmployment;
+    EntityTypeMap<RiskEmploymentArray> currTimeStepNumInfectedEntityTypeRiskEmployment;
+
+    /// <summary>
+    /// sum of cd4 at transmission for incident infection in current time step
+    /// </summary>
 	double currTimeStepCD4InfectionSum;
 	double currTimeStepCD4InfectionSumSq;
-	unsigned int currTimeStepNumInfected;
+	std::size_t currTimeStepNumInfected;
 
-	/** Total Infections in History*/
+    /// <summary>
+	/// Total Infections in History
+    /// </summary>
 	AgeRangeSizeContainer totalIncidentInfsAge;
-    unsigned long totalIncidentInfsGender[(std::size_t)DemographicProfile::Gender::Last];
-	unsigned long
-        totalIncidentInfsRiskGenderEmployment[(std::size_t)Entity::RiskLevel::Last][(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::Employment::Last];
-	unsigned long totalIncidentInfsRiskCSW[(std::size_t)Entity::RiskLevel::Last];
-	unsigned long totalIncidentInfsRisk[(std::size_t)Entity::RiskLevel::Last];
-	/** Exposures in the current time step, stratified by HVL of the infector
-	 *
-	 * This includes exposures that resulted in an infection
-	 **/
-	unsigned long currTimeExposures[(std::size_t)Entity::HVLStrata::Last];
 
-	/** A deque of the last twelve incidence rates, used to generate a yearly incidence */
-	deque<double> lastTwelveIncidenceRates;
+    EntityTypeMap<std::size_t> totalIncidentInfsEntityType;
+    EntityTypeMap<RiskEmploymentArray> totalIncidentInfsEntityTypeRiskEmployment;
 
-	/** Calculates the current annual incidence based on the sum of the last twelve monthly incidence rates */
+    std::array<std::size_t, (std::size_t)Entity::RiskLevel::Last> totalIncidentInfsRiskCSW;
+    std::array<std::size_t, (std::size_t)Entity::RiskLevel::Last> totalIncidentInfsRisk;
+
+    /// <summary>
+	/// Exposures in the current time step, stratified by HVL of the infector. 
+    /// This includes exposures that resulted in an infection.
+	/// </summary>
+	HVLArray currTimeExposures;
+
+	/// <summary>
+    /// A queue of the last twelve incidence rates, used to generate a yearly incidence
+    /// </summary>
+	std::deque<double> lastTwelveIncidenceRates;
+
+    /// <summary>
+	/// Calculates the current annual incidence based on the sum of the last twelve monthly incidence rates
+    /// </summary>
 	double calculateAnnualIncidence();
 
-	/** keeps track of infections that happened as a result of sexual activity-
-	//  the first dimension represents type of partnerships
-	//	the second dimension represents demographic profiles of infectors
-	//  the third dimension represents demographic profiles of people who were infected
-	//so you can use this to track infection patterns. e.g. how many SINGLE_MALEs were infected by CSW_FEMALE */
-	unsigned long incidentInfections[(int)SexualPartnership::Type::ENDType][DemographicProfile::TotalNumBuckets][DemographicProfile::TotalNumBuckets];
+    /// <summary>
+	/// keeps track of infections that happened as a result of sexual activity-
+	///  the first dimension represents type of partnerships
+	///	the second dimension represents demographic profiles of infectors
+	///  the third dimension represents demographic profiles of people who were infected
+	/// so you can use this to track infection patterns. e.g. how many SINGLE_MALEs were infected by CSW_FEMALE
+    /// </summary>
+    std::array<DemographicToDemographicArray, (std::size_t)SexualPartnership::Type::ENDType> incidentInfections;
 
 public :
 
-	/**
-	@param _profileIDsToPrint this determines which ProfileID's will be printed in traces. If a ProfileID is not in this vector, then no infections involving them will be printed in traces
-	**/
+    /// <summary>
+	/// @param _profileIDsToPrint this determines which ProfileID's will be printed in traces. If a ProfileID is not in this vector, then no infections involving them will be printed in traces
+    /// </summary>
 	InfectionsTracker();
 
 	/**
@@ -144,12 +175,12 @@ public :
 	records a New infection and also prints the infection out to a trace
 	**/
 	void recordIncidentInfection(long _time, SexualPartnership::Type _partnershipType, const Entity *_infector,
-	                             const Entity *_infected, bool _print, ostream &_traceOutStream);
+	                             const Entity *_infected, bool _print, std::ostream &_traceOutStream);
 
 	/**
 	records the cd4 at transmission (requested by clinical out stream)
 	**/
-	void recordCD4AtTransmission(ostream &_outStream);
+	void recordCD4AtTransmission(std::ostream &_outStream);
 
 	/**
 	resets counting of incident infections for time step
@@ -163,12 +194,10 @@ public :
 		const AgeRangeSizeContainer &_incFemale, const AgeRangeSizeContainer &_totalIncAge);
 
 	//takes values of _prevalence and copies into internal prevalence representation BucketDemographicProfile (keyed by _classifierVal)
-	void setPrevalentInfections(long _time,
-	                            unsigned long _prevalenceByBucket[DemographicProfile::TotalNumBuckets][NUMBER_GENERATIONS_TO_TRACE],
-								const AgeRangeSizeContainer &_prevalenceByAgeMale,
-								const AgeRangeSizeContainer &_prevalenceByAgeFemale,
-	                            unsigned long
-                                _PrevalenceByRiskGenderEmployment[(std::size_t)Entity::RiskLevel::Last][(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::Employment::Last]);
+	void setPrevalentInfections(int time,
+	                            std::array<DemographicArray, NUMBER_GENERATIONS_TO_TRACE> _prevalenceByBucket,
+								const EntityTypeMap<AgeRangeSizeContainer> &_prevalenceByEntityTypeAge,
+	                            EntityTypeMap<RiskEmploymentArray> _PrevalenceByRiskGenderEmployment);
 
 	//prints both flings and couple infections (who infected whom) 1 row = 1 month
 	/**
