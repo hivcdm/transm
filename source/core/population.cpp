@@ -3063,22 +3063,54 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 		thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
 		         "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
 		         << "Unobserved Latestage" << Constants::TAB;
-		//Male High Risk
-		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB;
-		secondRow << "HIV Status Among High Risk Male SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-		         "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-		         << "Unobserved Latestage" << Constants::TAB;
-		//Male Low Risk
-		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB;
-		secondRow << "HIV Status Among Low Risk Male SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-		         "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-		         << "Unobserved Latestage" << Constants::TAB;
+        //Male(hetero) High Risk
+        firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+            Constants::TAB;
+        secondRow << "HIV Status Among High Risk Male:Hetero SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
+            Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+        thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
+            "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
+            << "Unobserved Latestage" << Constants::TAB;
+        //Male(hetero) Low Risk
+        firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+            Constants::TAB;
+        secondRow << "HIV Status Among Low Risk Male:Hetero SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
+            Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+        thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
+            "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
+            << "Unobserved Latestage" << Constants::TAB;
+        //Msmw High Risk
+        firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+            Constants::TAB;
+        secondRow << "HIV Status Among High Risk Male:Msmw SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
+            Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+        thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
+            "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
+            << "Unobserved Latestage" << Constants::TAB;
+        //Msmw Low Risk
+        firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+            Constants::TAB;
+        secondRow << "HIV Status Among Low Risk Male:Msmw SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
+            Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+        thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
+            "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
+            << "Unobserved Latestage" << Constants::TAB;
+        //Msm High Risk
+        firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+            Constants::TAB;
+        secondRow << "HIV Status Among High Risk Male:Msm SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
+            Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+        thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
+            "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
+            << "Unobserved Latestage" << Constants::TAB;
+        //Msm Low Risk
+        firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+            Constants::TAB;
+        secondRow << "HIV Status Among Low Risk Male:Msm SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
+            Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+        thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
+            "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
+            << "Unobserved Latestage" << Constants::TAB;
 		//Female
 		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
 		         Constants::TAB;
@@ -3122,56 +3154,26 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 		_outStream << _time << Constants::TAB;
 	}
 
-	unsigned long
-        numWithHIVStatus[(std::size_t)Entity::RiskLevel::Last][(std::size_t)DemographicProfile::Employment::Last][(std::size_t)DemographicProfile::Gender::Last][(std::size_t)Entity::HIVStatus::Last];
+    std::unordered_map<std::string, std::array<std::array<std::array<unsigned long, (std::size_t)Entity::HIVStatus::Last>, (std::size_t)DemographicProfile::Employment::Last>, (std::size_t)Entity::RiskLevel::Last>> numWithHIVStatus;
 
-	for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
-	{
-        for(int j = 0; j < (int)DemographicProfile::Employment::Last; j++)
-		{
-            for(int k = 0; k < (int)DemographicProfile::Gender::Last; k++)
-			{
-			    for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
-				{
-					numWithHIVStatus[i][j][k][m] = 0;
-				}
-			}
-		}
-	}
-
-	//iterate through bucket
-	//holds a pointer to the current bucket we are looking at
-	BucketDemographicProfile *currBucket = nullptr;
-	DemographicProfile::ProfileID currProfileID = DemographicProfile::MIN;
-
-	while(currProfileID <= DemographicProfile::MAX)
-	{
-		currBucket = entities->getBucket(currProfileID);
-
-		//if people of this particular profile don't exist in the population, move on.
-		if((currBucket == nullptr) || (currBucket->size() == 0))
-		{
-			currProfileID++;
-			continue;
-		}
-
-		//accumulate all SA buckets
-        if(DemographicProfile::get(currBucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
-		{
-		    for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
-			{
-			    for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
+    for(auto entity_type : {"male", "msmw", "msm", "female"})
+    {
+        for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
+        {
+            for(int j = 0; j < (int)DemographicProfile::Employment::Last; j++)
+            {
+                for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
                 {
-                    numWithHIVStatus[i][DemographicProfile::get(currBucket->getProfileID(),
-                        DemographicProfile::Demographic::Employment)][DemographicProfile::get(currBucket->getProfileID(),
-                        DemographicProfile::Demographic::Gender)][m] += ((BucketSexualMixing *)currBucket)->sizeRiskHIVStatus((Entity::RiskLevel) i,
-                        (Entity::HIVStatus) m);
+                    numWithHIVStatus[entity_type][i][j][m] = 0;
                 }
-			}
-		}
+            }
+        }
+    }
 
-		currProfileID++;
-	}
+    entities->forEach([&](Entity *e)
+    {
+        numWithHIVStatus[e->getEntityType()][(std::size_t)e->getRiskLevel()][(std::size_t)e->getDemographicProfileVal<DemographicProfile::Employment>()][(std::size_t)e->getHIVStatus()]++;
+    });
 
 	//HIV Status of entire SA population
 	unsigned long hivStatusSA[(std::size_t)Entity::HIVStatus::Last];
@@ -3181,19 +3183,19 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 		hivStatusSA[m] = 0;
 	}
 
-	for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
-	{
-        for(int j = 0; j < (int)DemographicProfile::Employment::Last; j++)
-		{
-            for(int k = 0; k < (int)DemographicProfile::Gender::Last; k++)
-			{
-			    for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
-				{
-					hivStatusSA[m] += numWithHIVStatus[i][j][k][m];
-				}
-			}
-		}
-	}
+    for(auto entity_type : {"male", "msmw", "msm", "female"})
+    {
+        for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
+        {
+            for(int j = 0; j < (int)DemographicProfile::Employment::Last; j++)
+            {
+                for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
+                {
+                    hivStatusSA[m] += numWithHIVStatus[entity_type][i][j][m];
+                }
+            }
+        }
+    }
 
 	for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
 	{
@@ -3208,16 +3210,16 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 		hivStatusCSW[m] = 0;
 	}
 
-	for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
-	{
-        for(int k = 0; k < (int)DemographicProfile::Gender::Last; k++)
-		{
-		    for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
-			{
-                hivStatusCSW[m] += numWithHIVStatus[i][(std::size_t)DemographicProfile::Employment::Csw][k][m];
-			}
-		}
-	}
+    for(auto entity_type : {"male", "msmw", "msm", "female"})
+    {
+        for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
+        {
+            for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
+            {
+                hivStatusCSW[m] += numWithHIVStatus[entity_type][i][(std::size_t)DemographicProfile::Employment::Csw][m];
+            }
+        }
+    }
 
 	for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
 	{
@@ -3234,11 +3236,11 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 			hivStatusRisk[m] = 0;
 		}
 
-        for(int k = 0; k < (int)DemographicProfile::Gender::Last; k++)
-		{
+        for(auto entity_type : {"male", "msmw", "msm", "female"})
+        {
 		    for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
 			{
-                hivStatusRisk[m] += numWithHIVStatus[i][(std::size_t)DemographicProfile::Employment::NonCsw][k][m];
+                hivStatusRisk[m] += numWithHIVStatus[entity_type][i][(std::size_t)DemographicProfile::Employment::NonCsw][m];
 			}
 		}
 
@@ -3248,8 +3250,32 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 		}
 	}
 
+    //HIV Status of Risk Non CSW SA Male population
+    unsigned long hivStatusMale[(std::size_t)Entity::HIVStatus::Last];
+
+    for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
+    {
+        hivStatusMale[m] = 0;
+    }
+
+    for(int i = (int)Entity::RiskLevel::HIGH; i >= 0; i--)
+    {
+        for(auto entity_type : {"male", "msmw", "msm"})
+        {
+            for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
+            {
+                hivStatusMale[m] += numWithHIVStatus[entity_type][i][(std::size_t)DemographicProfile::Employment::NonCsw][m];
+            }
+        }
+    }
+
+    for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
+    {
+        _outStream << hivStatusMale[m] << Constants::TAB;
+    }
+
 	//HIV Status of SA population by Gender and Risk
-    for(int k = 0; k < (int)DemographicProfile::Gender::Last; k++)
+    for(auto entity_type : {"male", "msmw", "msm", "female"})
 	{
 		unsigned long hivStatusGender[(std::size_t)Entity::HIVStatus::Last];
 		unsigned long hivStatusGenderRisk[(std::size_t)Entity::RiskLevel::Last][(std::size_t)Entity::HIVStatus::Last];
@@ -3270,16 +3296,19 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 			{
 			    for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
 				{
-					hivStatusGender[m] += numWithHIVStatus[i][j][k][m];
-					hivStatusGenderRisk[i][m] += numWithHIVStatus[i][j][k][m];
+					hivStatusGender[m] += numWithHIVStatus[entity_type][i][j][m];
+					hivStatusGenderRisk[i][m] += numWithHIVStatus[entity_type][i][j][m];
 				}
 			}
 		}
 
-		for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
-		{
-			_outStream << hivStatusGender[m] << Constants::TAB;
-		}
+        if(std::string(entity_type) == "female")
+        {
+            for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
+            {
+                _outStream << hivStatusGender[m] << Constants::TAB;
+            }
+        }
 
 		for(int i = (int)Entity::RiskLevel::HIGH; i >= 0; i--)
 		{
