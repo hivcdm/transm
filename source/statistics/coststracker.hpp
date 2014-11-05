@@ -44,7 +44,7 @@ public:
 
 	void RecordTreatmentCosts(const std::array<double, 3> &costsUndiscounted, const std::array<double, 3> &costsDiscounted, int artLine);
 
-	void RecordCepacCosts(double costsUndiscounted, double costsDiscounted, DemographicProfile::Gender gender, Entity::CD4Strata cd4,
+	void RecordCepacCosts(double costsUndiscounted, double costsDiscounted, const std::string &entityType, Entity::CD4Strata cd4,
 		Entity::HVLStrata hvl, Entity::HIVStatus status);
 
 	void RecordLifeMonth(double qualityOfLife, double discountFactor, Entity::HIVStatus status);
@@ -65,7 +65,7 @@ private:
 		std::array<double, NumArtLinesToRecord> artCosts;
 		double drugCosts;
 		double toxicityCosts;
-		std::array<double, (std::size_t)DemographicProfile::Gender::Last> totalCostsByGender;
+		std::unordered_map<std::string, double> totalCostsByEntityType;
 		std::array<double, (std::size_t)Entity::HIVStatus::Last> totalCostsByHivState;
         std::array<double, (std::size_t)Entity::CD4Strata::Last> totalCostsByCd4;
         std::array<double, (std::size_t)Entity::HVLStrata::Last> totalCostsByHvl;

@@ -46,14 +46,14 @@ void CostsTracker::RecordCircumcision(double costUndiscounted, double costDiscou
 }
 
 void CostsTracker::RecordCepacCosts(double costUndiscounted, double costDiscounted, 
-    DemographicProfile::Gender gender, Entity::CD4Strata cd4, 
+    const std::string &entityType, Entity::CD4Strata cd4,
 	Entity::HVLStrata hvl, Entity::HIVStatus status)
 {
     undiscounted_.totalCostsByHivState[(std::size_t)status] += costUndiscounted;
     discounted_.totalCostsByHivState[(std::size_t)status] += costDiscounted;
 
-    undiscounted_.totalCostsByGender[(std::size_t)gender] += costUndiscounted;
-    discounted_.totalCostsByGender[(std::size_t)gender] += costDiscounted;
+    undiscounted_.totalCostsByEntityType[entityType] += costUndiscounted;
+    discounted_.totalCostsByEntityType[entityType] += costDiscounted;
 
 	if(status != Entity::HIVStatus::NEGATIVE)
 	{
@@ -159,8 +159,11 @@ void CostsTracker::BuildHeader()
 		SetHeaderCell(column++, 4, "Toxicity");
 
 		SetHeaderCell(column, 3, "Gender");
-		SetHeaderCell(column++, 4, "Male");
-		SetHeaderCell(column++, 4, "Female");
+        SetHeaderCell(column++, 4, "Male");
+		SetHeaderCell(column++, 4, "Male:Hetero");
+		SetHeaderCell(column++, 4, "Male:Msmw");
+        SetHeaderCell(column++, 4, "Male:Msm");
+        SetHeaderCell(column++, 4, "Female");
 
 		SetHeaderCell(column, 3, "HIV Status");
 
@@ -269,9 +272,28 @@ void CostsTracker::BuildRow(int time)
 		PushElement(costs.drugCosts);
 		PushElement(costs.toxicityCosts);
 
-		for(std::size_t i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
+        double sum_male_costs = 0;
+
+        for(auto entity_type : {"male", "msmw", "msm"})
+        {
+            if(costs.totalCostsByEntityType.find(entity_type) != costs.totalCostsByEntityType.end())
+            {
+                sum_male_costs += costs.totalCostsByEntityType.at(entity_type);
+            }
+        }
+
+        PushElement(sum_male_costs);
+
+        for(auto entity_type : {"male", "msmw", "msm", "female"})
 		{
-			PushElement(costs.totalCostsByGender[i]);
+            if(costs.totalCostsByEntityType.find(entity_type) != costs.totalCostsByEntityType.end())
+            {
+                PushElement(costs.totalCostsByEntityType.at(entity_type));
+            }
+            else
+            {
+                PushElement(0);
+            }
 		}
 
 		for(std::size_t i = 0; i < (std::size_t)Entity::HIVStatus::Last; i++)
@@ -293,8 +315,23 @@ void CostsTracker::BuildRow(int time)
 
 void CostsTracker::Reset()
 {
-	discounted_ = Costs();
-	undiscounted_ = Costs();
+    for(int i = 0; i < 2; i++)
+    {
+        auto &costs = (i == 0) ? discounted_ : undiscounted_;
+        costs.artCosts.fill(0);
+        costs.circumcisionCosts = 0;
+        costs.clinicalCosts.fill(0);
+        costs.condomCosts = 0;
+        costs.drugCosts = 0;
+        costs.lifeMonthsByHivStatus.fill(0);
+        costs.medicalCosts.fill(0);
+        costs.qalmsByHivStatus.fill(0);
+        costs.totalCostsByCd4.fill(0);
+        costs.totalCostsByEntityType.clear();
+        costs.totalCostsByHivState.fill(0);
+        costs.totalCostsByHvl.fill(0);
+        costs.toxicityCosts = 0;
+    }
 }
 
 } // namespace transm

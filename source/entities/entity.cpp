@@ -1207,7 +1207,7 @@ double Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 	if(costThisMonthUndiscounted > 0)
 	{
 		costsTracker->RecordCepacCosts(costThisMonthUndiscounted, costThisMonthDiscounted,
-			static_cast<DemographicProfile::Gender>(getDemographicProfileVal(DemographicProfile::Demographic::Gender)), getCd4Stratum(), 
+			getEntityType(), getCd4Stratum(), 
 			getHVL(), getHIVStatus());
 
 		std::array<double, SimContext::COST_NUM_TYPES> medicalCostsUndiscounted;

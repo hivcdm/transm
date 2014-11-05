@@ -45,6 +45,11 @@ public:
 		values_.push_back(ageGroup);
         Entity::CD4Strata cd4Stratum = person.getCd4Stratum();
         values_.push_back((std::size_t)cd4Stratum);
+
+        if(person.getEntityType() == "male") values_.push_back(0);
+        else if(person.getEntityType() == "msmw") values_.push_back(1);
+        else if(person.getEntityType() == "msm") values_.push_back(2);
+        else if(person.getEntityType() == "female") values_.push_back(3);
 	}
 };
 

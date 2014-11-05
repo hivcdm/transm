@@ -9,9 +9,13 @@ namespace transm {
 
 const std::string ArtRolloutTracker::RISK_GROUP_NAMES[] =
 {
-	"Non-CSW Low-Risk Male",
+	"Non-CSW Low-Risk Male:Hetero",
+    "Non-CSW Low-Risk Male:Msmw",
+    "Non-CSW Low-Risk Male:Msm",
 	"Non-CSW Low-Risk Female",
-	"Non-CSW High-Risk Male",
+	"Non-CSW High-Risk Male:Hetero",
+    "Non-CSW High-Risk Male:Msmw",
+    "Non-CSW High-Risk Male:Msm",
 	"Non-CSW High-Risk Female",
 	"CSW Low-Risk Female",
 	"CSW High-Risk Female"
@@ -19,7 +23,7 @@ const std::string ArtRolloutTracker::RISK_GROUP_NAMES[] =
 
 const std::string ArtRolloutTracker::TRACKED_OUTCOMES[] =
 {
-"test_result", "eligible_for_access", "accessing_treatment", "eligible_for_treatment", "treated"
+    "test_result", "eligible_for_access", "accessing_treatment", "eligible_for_treatment", "treated"
 };
 
 const std::string BUCKETS[] =
@@ -31,7 +35,8 @@ const std::string BUCKETS[] =
 	"employment",
 	"riskLevel",
 	"ageGroup",
-	"cd4Stratum"
+	"cd4Stratum",
+    "entityType"
 };
 
 ArtRolloutTracker::ArtRolloutTracker() :
@@ -124,7 +129,7 @@ void ArtRolloutTracker::buildHeader()
 	SetHeaderCell(4, 3, "Accepted");
 	SetHeaderCell(5, 3, "Returned For Results");
 
-	int column = 60;
+	int column = 6;
 
 	for(auto outcome : TRACKED_OUTCOMES)
 	{
@@ -149,9 +154,12 @@ void ArtRolloutTracker::buildHeader()
 		SetHeaderCell(column, 1, section_header);
 		SetHeaderCell(column, 2, "Gender");
 		SetHeaderCell(column++, 3, "Males");
+        SetHeaderCell(column++, 3, "Males:Hetero");
+        SetHeaderCell(column++, 3, "Males:Msmw");
+        SetHeaderCell(column++, 3, "Males:Msm");
 		SetHeaderCell(column++, 3, "Females");
 
-		for(auto gender : {"Males", "Females"})
+		for(auto gender : {"Males", "Males:Hetero", "Males:Msmw", "Males:Msm", "Females"})
 		{
 			SetHeaderCell(column, 1, gender);
 			SetHeaderCell(column, 2, "Non-Sexually Active Population");
@@ -159,11 +167,11 @@ void ArtRolloutTracker::buildHeader()
 			SetHeaderCell(column + 1, 2, "Sexually Active Population");
 			column++;
 
-			for(size_t i = 0; i < ageRanges.size(); ++i, ++column)
+			for(const auto &age_range : ageRanges)
 			{
 				std::stringstream rangeString;
-				rangeString << ageRanges[i].lower << "-" << ageRanges[i].upper;
-				SetHeaderCell(column + 1 + (int)i, 3, rangeString.str());
+				rangeString << age_range.lower << "-" << age_range.upper;
+				SetHeaderCell(column++, 3, rangeString.str());
 			}
 		}
 
@@ -171,12 +179,12 @@ void ArtRolloutTracker::buildHeader()
 
 		for(auto cd4stratum : enum_iterator<Entity::CD4Strata>())
 		{
-			SetHeaderCell(column, 3, SimContext::CD4_STRATA_STRS[(std::size_t)cd4stratum]);
+			SetHeaderCell(column++, 3, SimContext::CD4_STRATA_STRS[(std::size_t)cd4stratum]);
 		}
 
 		SetHeaderCell(column, 2, "Risk Group");
 
-		for(int riskGroupIndex = 0; riskGroupIndex < 6; ++riskGroupIndex, ++column)
+		for(int riskGroupIndex = 0; riskGroupIndex < sizeof(RISK_GROUP_NAMES) / sizeof(RISK_GROUP_NAMES[0]); ++riskGroupIndex, ++column)
 		{
 			SetHeaderCell(column, 3, RISK_GROUP_NAMES[riskGroupIndex]);
 		}
@@ -211,22 +219,31 @@ void ArtRolloutTracker::buildRow(int time, Population *_population)
 
 	for(auto outcome : TRACKED_OUTCOMES)
 	{
-		for(auto gender : enum_iterator<DemographicProfile::Gender>())
+        PushElement(counter.GetCount(outcome, std::make_pair("gender", (int)DemographicProfile::Gender::Male)));
+
+        for(auto entity_type : {0, 1, 2, 3})
 		{
-            PushElement(counter.GetCount(outcome, std::make_pair("gender", (int)gender)));
+            PushElement(counter.GetCount(outcome, std::make_pair("entityType", entity_type)));
 		}
 
-        for(auto gender : enum_iterator<DemographicProfile::Gender>())
+        PushElement(counter.GetCount(outcome, std::make_pair("gender", (int)DemographicProfile::Gender::Male), std::make_pair("sexualActivityStatus", (int)DemographicProfile::SexualActivityStatus::NotActive)));
+
+        for(std::size_t ageGroup = 0; ageGroup < ageRanges.size(); ++ageGroup)
+        {
+            PushElement(counter.GetCount(outcome, std::make_pair("gender", (int)DemographicProfile::Gender::Male), std::make_pair("sexualActivityStatus", (int)DemographicProfile::SexualActivityStatus::Active), std::make_pair("ageGroup", (int)ageGroup)));
+        }
+
+        for(auto entity_type : {0, 1, 2, 3})
 		{
-            PushElement(counter.GetCount(outcome, std::make_pair("gender", (int)gender), std::make_pair("sexualActivityStatus", (int)DemographicProfile::SexualActivityStatus::NotActive)));
+            PushElement(counter.GetCount(outcome, std::make_pair("entityType", entity_type), std::make_pair("sexualActivityStatus", (int)DemographicProfile::SexualActivityStatus::NotActive)));
 
 			for(std::size_t ageGroup = 0; ageGroup < ageRanges.size(); ++ageGroup)
 			{
-                PushElement(counter.GetCount(outcome, std::make_pair("gender", (int)gender), std::make_pair("sexualActivityStatus", (int)DemographicProfile::SexualActivityStatus::Active), std::make_pair("ageGroup", (int)ageGroup)));
+                PushElement(counter.GetCount(outcome, std::make_pair("entityType", entity_type), std::make_pair("sexualActivityStatus", (int)DemographicProfile::SexualActivityStatus::Active), std::make_pair("ageGroup", (int)ageGroup)));
 			}
 		}
 
-	for(std::size_t i = 0; i < (std::size_t)Entity::CD4Strata::Last; ++i)
+        for(std::size_t i = 0; i < (std::size_t)Entity::CD4Strata::Last; ++i)
 		{
 			PushElement(counter.GetCount(outcome, std::make_pair("cd4Stratum", (int)i)));
 		}
@@ -235,15 +252,15 @@ void ArtRolloutTracker::buildRow(int time, Population *_population)
 		{
 			for(auto riskLevel : enum_iterator<Entity::RiskLevel>())
 			{
-                for(auto gender : enum_iterator<DemographicProfile::Gender>())
+                for(auto entity_type : {0, 1, 2, 3})
 				{
 					// We don't include Male CSWs for now
-					if(gender == DemographicProfile::Gender::Male && employment == DemographicProfile::Employment::Csw)
+					if(entity_type != 3 && employment == DemographicProfile::Employment::Csw)
 					{
 						continue;
 					}
 
-                    PushElement(counter.GetCount(outcome, std::make_pair("gender", (int)gender), std::make_pair("employment", (int)employment), std::make_pair("riskLevel", (int)riskLevel)));
+                    PushElement(counter.GetCount(outcome, std::make_pair("entityType", entity_type), std::make_pair("employment", (int)employment), std::make_pair("riskLevel", (int)riskLevel)));
 				}
 			}
 		}
