@@ -92,22 +92,13 @@ public:
         First = NonCsw
     };
 
-    /*
-    enum class Location {
-    Urban,
-    Rural,
-    Last,
-    First = Urban
-    };
-    */
-
 	static Demographic MaxDemographic;
 	//we have to statically define this here, b/c we  use this value elsewhere to statically declare arrays...
-    static const unsigned int TotalNumBuckets = (unsigned int)SexualActivityStatus::Last
-        * (unsigned int)Gender::Last
-        * (unsigned int)SexualOrientation::Last
-        * (unsigned int)RelationshipStatus::Last
-        * (unsigned int)Employment::Last;
+    static const std::size_t TotalNumBuckets = (std::size_t)SexualActivityStatus::Last
+        * (std::size_t)Gender::Last
+        * (std::size_t)SexualOrientation::Last
+        * (std::size_t)RelationshipStatus::Last
+        * (std::size_t)Employment::Last;
 
 	//each unique profile has a unique integer value assigned to it.
 	// tuples that have wildcard values do not have a profileID

@@ -254,7 +254,7 @@ private:
     /// <summary>
 	/// calculates the number of HIV cases for each sexually active BucketDemographicProfile and stores it in _infectionsTracker
     /// </summary>
-	long CalcPrevalentPopulation(long _time);
+	std::size_t CalcPrevalentPopulation(int time);
 
     /// <summary>
 	/// this is called at the end of each method that affects the population members

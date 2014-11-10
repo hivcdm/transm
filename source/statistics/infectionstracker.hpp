@@ -58,6 +58,12 @@ private:
 	EntityTypeMap<AgeRangeSizeContainer> currPrevalentInfectionsEntityTypeAge;
 
     /// <summary>
+    /// This contains prevalent infections of all buckets in an EntityPool 
+    /// stratified by entity type. Should be sync'd w/ curr timestep
+    /// </summary>
+    EntityTypeMap<std::size_t> currPrevalentInfectionsEntityType;
+
+    /// <summary>
 	/// This contains profileID's that we will include in our traces.
     /// </summary>
 	std::list<DemographicProfile::ProfileID> profileIDsForDetailedTrace;
@@ -135,7 +141,9 @@ private:
 	///  the third dimension represents demographic profiles of people who were infected
 	/// so you can use this to track infection patterns. e.g. how many SINGLE_MALEs were infected by CSW_FEMALE
     /// </summary>
-    std::array<DemographicToDemographicArray, (std::size_t)SexualPartnership::Type::ENDType> incidentInfections;
+    std::array<DemographicToDemographicArray, (std::size_t)SexualPartnership::Type::ENDType> incidentInfectionsByDemographic;
+
+    std::array<std::array<std::array<std::size_t, 4>, 4>, (std::size_t)SexualPartnership::Type::ENDType> incidentInfectionsByEntityType;
 
 public :
 
@@ -151,51 +159,50 @@ public :
 	**/
 	void addToDetailedTrace(DemographicProfile::ProfileID _profileID);
 
-	/**
-	@return total number of incident infections throughout this simulation
-	**/
-	unsigned long getNumIncidentInfections();
+	/// <summary>
+	/// Return total number of incident infections throughout this simulation.
+	/// </summary>
+	std::size_t getNumIncidentInfections();
 
-	//see how many of 1 type of person infected another
-	unsigned long getNumIncidentInfections(DemographicProfile::ProfileID _infectors, DemographicProfile::ProfileID _infecteds);
-
-	//see how many of 1 type of person infected another in the context of a particular partnership type
-	unsigned long getNumIncidentInfections(SexualPartnership::Type _partnershipType, DemographicProfile::ProfileID _infectors,
-	                                       DemographicProfile::ProfileID _infecteds);
+    /// <summary>
+	/// See how many of 1 type of person infected another.
+    /// </summary>
+	std::size_t getNumIncidentInfections(DemographicProfile::ProfileID _infectors, 
+        DemographicProfile::ProfileID _infecteds);
 
 	//returns the prevalence rate among sexually active pop
 	double getSAPrev(Population &_population);
 
-	/**
-	 * Records a new exposure regardless of whether an infection happened or not
-	 */
-	void recordExposure(long _time, const Entity *_infector);
+	/// <summary>
+	/// Records a new exposure regardless of whether an infection happened or not.
+    /// </summary>
+	void recordExposure(int time, const Entity *_infector);
 
 	/**
 	records a New infection and also prints the infection out to a trace
 	**/
-	void recordIncidentInfection(long _time, SexualPartnership::Type _partnershipType, const Entity *_infector,
-	                             const Entity *_infected, bool _print, std::ostream &_traceOutStream);
+	void recordIncidentInfection(int time, SexualPartnership::Type _partnershipType, const Entity *_infector,
+	                             const Entity *_infected, bool _print, std::ostream &stream);
 
 	/**
 	records the cd4 at transmission (requested by clinical out stream)
 	**/
-	void recordCD4AtTransmission(std::ostream &_outStream);
+	void recordCD4AtTransmission(std::ostream &stream);
 
 	/**
 	resets counting of incident infections for time step
 	**/
-	void resetIncidentInfections(long _time);
+	void resetIncidentInfections(int time);
 
 	/**
 	initializes the counters for incident infections by age and gender
 	**/
-	void initializeIncidentInfectionsByAge(const AgeRangeSizeContainer &_incMale, 
-		const AgeRangeSizeContainer &_incFemale, const AgeRangeSizeContainer &_totalIncAge);
+    void initializeIncidentInfectionsByAge(
+        const std::unordered_map<std::string, AgeRangeSizeContainer> &incident_by_entity_type_age,
+        const AgeRangeSizeContainer &incident_by_age);
 
 	//takes values of _prevalence and copies into internal prevalence representation BucketDemographicProfile (keyed by _classifierVal)
-	void setPrevalentInfections(int time,
-	                            std::array<DemographicArray, NUMBER_GENERATIONS_TO_TRACE> _prevalenceByBucket,
+	void setPrevalentInfections(std::array<DemographicArray, NUMBER_GENERATIONS_TO_TRACE> _prevalenceByBucket,
 								const EntityTypeMap<AgeRangeSizeContainer> &_prevalenceByEntityTypeAge,
 	                            EntityTypeMap<RiskEmploymentArray> _PrevalenceByRiskGenderEmployment);
 
@@ -205,10 +212,13 @@ public :
 	@param _outStream the stream to print
 	@returns the current prevalence (for GUI purposes)
 	**/
-	int printInfections(EventParams &_eventParams, long _time, std::ostream &_outStream, Population *_population);
+	int printInfections(EventParams &_eventParams, int time, std::ostream &_outStream, Population *_population);
 
-    /** Returns total number of incident infections that have occurred during current timestep */
-    unsigned long getCurrTimeStepIncidentInfsTotal();
+    /// <summary>
+    /// Returns total number of incident infections that have occurred during 
+    /// current timestep.
+    /// </summary>
+    std::size_t getCurrTimeStepIncidentInfsTotal();
 };
 
 } // namespace transm

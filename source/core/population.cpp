@@ -1192,17 +1192,20 @@ void Population::OnRiskGroupChanged(const Entity *entity)
 */
 void Population::InitIncidentInfectionsByAge()
 {
-	AgeRangeSizeContainer incidentInfsAgeMale, incidentInfsAgeFemale, totalIncidentInfsAge;
+    std::unordered_map<std::string, AgeRangeSizeContainer> incident_by_entity_type_age;
+	AgeRangeSizeContainer totalIncidentInfsAge;
 
 	for(auto ageBucketParams : popWideParams.initialAgeBuckets)
 	{
 		AgeRange ageRange = {ageBucketParams.minAgeMth, ageBucketParams.maxAgeMth};
-		incidentInfsAgeMale.push_back({ageRange, 0});
-		incidentInfsAgeFemale.push_back({ageRange, 0});
-		totalIncidentInfsAge.push_back({ageRange, 0});
+        totalIncidentInfsAge.push_back({ageRange, 0});
+        for(auto entity_type : {"male", "msmw", "msm", "female"})
+        {
+            incident_by_entity_type_age[entity_type].push_back({ageRange, 0});
+        }
 	}
 
-	populationStatistics.infectionsTracker.initializeIncidentInfectionsByAge(incidentInfsAgeMale, incidentInfsAgeFemale, totalIncidentInfsAge);
+    populationStatistics.infectionsTracker.initializeIncidentInfectionsByAge(incident_by_entity_type_age, totalIncidentInfsAge);
 }
 
 void Population::ApplyIncidentPrevalence(EventParams &parameters_)
@@ -2336,36 +2339,37 @@ void Population::ProcessDeath(EventParams &parameters_, Entity *_p, bool calcula
 	delete _p;
 }
 
-long Population::CalcPrevalentPopulation(long _time)
+std::size_t Population::CalcPrevalentPopulation(int time)
 {
-	assert(_time >= 0);
-	int totalInfected = 0;		//total infected in the while population
-	//holds a pointer to the current bucket we are looking at
-	BucketDemographicProfile *currBucket = nullptr;
+	assert(time >= 0);
+	std::size_t totalInfected = 0;		//total infected in the while population
+	
 	//holds number of prevalent infections
-	unsigned long prevalenceByBucket[DemographicProfile::TotalNumBuckets][InfectionsTracker::NUMBER_GENERATIONS_TO_TRACE];
-    unsigned long prevalenceByRiskGenderEmployment[(std::size_t)Entity::RiskLevel::Last][(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::Employment::Last];
+	std::array<std::array<std::size_t, DemographicProfile::TotalNumBuckets>, InfectionsTracker::NUMBER_GENERATIONS_TO_TRACE> prevalenceByBucket;
+    std::unordered_map<std::string, std::array<std::array<std::size_t, (std::size_t)DemographicProfile::Employment::Last>, (std::size_t)Entity::RiskLevel::Last>> prevalenceByEntityTypeRiskEmployment;
 
-	AgeRangeSizeContainer prevalenceByAgeMale, prevalenceByAgeFemale;
+    std::unordered_map<std::string, AgeRangeSizeContainer> prevalenceByEntityTypeAge;
 
 	//initialize prevalent infections by age
 	for(auto ageBucketParams : popWideParams.initialAgeBuckets)
 	{
 		AgeRange range = {ageBucketParams.minAgeMth, ageBucketParams.maxAgeMth};
-		prevalenceByAgeMale.push_back({range, 0});
-		prevalenceByAgeFemale.push_back({range, 0});
+        for(auto entity_type : {"male", "msmw", "msm", "female"})
+        {
+            prevalenceByEntityTypeAge[entity_type].push_back({range, 0});
+        }
 	}
 
 	//initialize prevalence tallies to 0
 	for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
 	{
-	    for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
-	    {
-		for(int k = 0; k < (int)DemographicProfile::Employment::Last; k++)
-		{
-		    prevalenceByRiskGenderEmployment[i][j][k] = 0;
-		}
-	    }
+        for(auto entity_type : {"male", "msmw", "msm", "female"})
+        {
+            for(int k = 0; k < (int)DemographicProfile::Employment::Last; k++)
+            {
+                prevalenceByEntityTypeRiskEmployment[entity_type][i][k] = 0;
+            }
+        }
 	}
 	
 	DemographicProfile::ProfileID currProfileID = DemographicProfile::MIN;
@@ -2374,64 +2378,41 @@ long Population::CalcPrevalentPopulation(long _time)
 	{
 		for(int i = 0; i < populationStatistics.infectionsTracker.NUMBER_GENERATIONS_TO_TRACE; i++)
 		{
-			prevalenceByBucket[currProfileID][i] = 0;
+			prevalenceByBucket[i][currProfileID] = 0;
 		}
 
 		currProfileID++;
 	}
 
-	//check if there is another bucket of entities to check
-	//if there is a bucket, then iterate through people in bucket
-	currProfileID = DemographicProfile::MIN;
+    auto get_age_bucket = [this](int age)
+    {
+        std::size_t i = 0;
 
-	while(currProfileID <= DemographicProfile::MAX)
-	{
-		currBucket = entities->getBucket(currProfileID);
+        for(auto ageBucketParams : popWideParams.initialAgeBuckets)
+        {
+            if(age >= ageBucketParams.minAgeMth && age <= ageBucketParams.maxAgeMth)
+            {
+                break;
+            }
 
-		//if people of this particular profile don't exist in the population, move on.
-		if((currBucket == nullptr) || (currBucket->size() == 0))
-		{
-			currProfileID++;
-			continue;
-		}
+            i++;
+        }
 
-		for(int generation = Constants::PREVALENT_INFECTION;
-		        generation < populationStatistics.infectionsTracker.NUMBER_GENERATIONS_TO_TRACE; generation++)
-		{
-			//count number of infected in bucket
-			prevalenceByBucket[currProfileID][generation] = currBucket->getNumInfected(generation);
-			//count total # of infected people
-			totalInfected += prevalenceByBucket[currProfileID][generation];
-		}
+        return i;
+    };
 
-		//add the sizes of sexually active buckets
-		if(DemographicProfile::get(currBucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
-		{
-		    //Update size by risk
-		    for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
-		    {
-			prevalenceByRiskGenderEmployment[i][DemographicProfile::get(currBucket->getProfileID(),
-										    DemographicProfile::Demographic::Gender)][DemographicProfile::get(currBucket->getProfileID(),
-																		      DemographicProfile::Demographic::Employment)] += ((BucketSexualMixing *)currBucket)->getNumInfected((Entity::RiskLevel) i);
-		    }
-		    
-		    //Update size by age range
-		    bool isMale = DemographicProfile::get(currBucket->getProfileID(), DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male;
-		    auto &associatedAgeRangePrevalenceContainer = isMale ? prevalenceByAgeMale : prevalenceByAgeFemale;
-		    auto currentSexualMixingBucket = static_cast<BucketSexualMixing *>(currBucket);
-		    
-		    for(auto &ageRangeSize : associatedAgeRangePrevalenceContainer)
-		    {
-			auto prevalentInAgeGroup = currentSexualMixingBucket->sizeInfectedByAge(ageRangeSize.first.lower, ageRangeSize.first.upper);
-			ageRangeSize.second += prevalentInAgeGroup;
-		    }
-		}
-		
-		currProfileID++;
-	}
-	
+    entities->forEach([&](Entity *e)
+    {
+        if(e->isInfected())
+        {
+            prevalenceByBucket[e->getDemographicProfile()->getProfileID()][e->getGenerationOfInfection()]++;            
+            prevalenceByEntityTypeAge[e->getEntityType()][get_age_bucket(e->age)].second++;
+            prevalenceByEntityTypeRiskEmployment[e->getEntityType()][(std::size_t)e->getRiskLevel()][(std::size_t)e->getDemographicProfileVal<DemographicProfile::Employment>()]++;
+        }
+    });
+
 	//save the prevalent infections by bucket in the PopulationStatistics
-	populationStatistics.infectionsTracker.setPrevalentInfections(_time, prevalenceByBucket, prevalenceByAgeMale, prevalenceByAgeFemale, prevalenceByRiskGenderEmployment);
+	populationStatistics.infectionsTracker.setPrevalentInfections(prevalenceByBucket, prevalenceByEntityTypeAge, prevalenceByEntityTypeRiskEmployment);
 
 	return totalInfected;
 }
