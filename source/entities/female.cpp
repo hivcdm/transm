@@ -84,7 +84,8 @@ NormalDist Female::SubPopParams::GetActivityLevel() const
 Female::Female(EventParams &_eventParams, int _ageMths, unsigned int _populationID, const Female::SubPopParams &params)
 	: Entity(_ageMths, _populationID),
 	populationSpecificParams(params),
-    overrideChanceCondomUse_(-1)
+    overrideChanceCondomUse_(-1),
+	times_selected_(0)
 {
     dmgProfile.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Female);
 	activityLevel = _eventParams.randomNums.randNorm_NaturalNum(populationSpecificParams.GetActivityLevel());

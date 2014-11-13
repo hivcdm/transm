@@ -1006,15 +1006,6 @@ Entity *Entity::sexualActivity(Entity *_p, int _numActs,
 		}
 	}
 
-    if(_p->getEntityType() == "msm")
-    {
-        ((Msm *)_p)->IncrementTimesSelected();
-    }
-    else if(_p->getEntityType() == "msmw")
-    {
-        ((Msmw *)_p)->IncrementTimesSelected();
-    }
-
 	//increment numacts for this person and partner
 	incrementNumActsThisMonth(_numActs);
 	_p->incrementNumActsThisMonth(_numActs);

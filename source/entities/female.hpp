@@ -101,10 +101,15 @@ public:
     void SetOverrideChanceCondomUse(double chance) { overrideChanceCondomUse_ = chance; }
     double GetOverrideChanceCondomUse() const { return overrideChanceCondomUse_; }
 
+	std::size_t GetTimesSelected() const { return times_selected_; }
+	void IncrementTimesSelected() { times_selected_++; }
+	void ResetTimesSelected() { times_selected_ = 0; }
+
 private:
 	SubPopParams populationSpecificParams;
     double overrideChanceCondomUse_;
     std::map<RiskLevel, std::map<SexualPartnership::Type, double>> partnershipRejectionChance_;
+	std::size_t times_selected_;
 };
 
 } // namespace transm
