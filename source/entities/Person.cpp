@@ -1221,8 +1221,9 @@ double Person::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 
 	if(costThisMonthUndiscounted > 0)
 	{
+		add_cepac_cost(costThisMonthUndiscounted, costThisMonthDiscounted);
 		costsTracker->RecordCepacCosts(costThisMonthUndiscounted, costThisMonthDiscounted,
-			static_cast<DemographicProfile::Gender>(getDemographicProfileVal(DemographicProfile::Demographic::Gender)), getCd4Stratum(), 
+			getDemographicProfileVal<DemographicProfile::Gender>(), getCd4Stratum(),
 			getHVL(), getHIVStatus());
 
 		std::array<double, SimContext::COST_NUM_TYPES> medicalCostsUndiscounted;
@@ -1679,7 +1680,12 @@ Person::Person()
 */
 
 //this constructor is used by the Male and Female classes
-Person::Person(int _age, unsigned int _populationID) : sexualActivityDelay(0)
+Person::Person(int _age, unsigned int _populationID) : 
+	sexualActivityDelay(0),
+	monthly_cepac_costs_undiscounted_(0),
+	monthly_cepac_costs_discounted_(0),
+	monthly_cdm_costs_undiscounted_(0),
+	monthly_cdm_costs_discounted_(0)
 {
 	id = Person::idCounter++;
 	populationID = _populationID;

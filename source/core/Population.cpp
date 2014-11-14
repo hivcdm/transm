@@ -38,6 +38,7 @@ void Population::Circumcise(Person *p)
     {
         p->Circumcise();
         populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * p->getCepacDiscountFactor());
+		p->add_cdm_cost(popWideParams.circumcisionCost, popWideParams.circumcisionCost * p->getCepacDiscountFactor());
     }
 }
 
@@ -463,6 +464,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 	for(p_Iter = entities->begin(DemographicProfile::Gender::Male); p_Iter != entities->end(DemographicProfile::Gender::Male); p_Iter++)
 	{
 		Person *person = (*p_Iter);
+		person->reset_costs();
 		Male *initiator = (Male *)person; //We're dealing with this dude
 		(*p_Iter)->resetNumActs();
 		std::list<SexualPartnership *> partnershipsToEnd;	//list of all partnerships due to end
@@ -490,6 +492,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 	for(p_Iter = entities->begin(DemographicProfile::Gender::Female); p_Iter != entities->end(DemographicProfile::Gender::Female); p_Iter++)
 	{
 		(*p_Iter)->resetNumActs();
+		(*p_Iter)->reset_costs();
 	}
 
 	//Second pass: Form new partnerships and have sex
@@ -587,6 +590,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 
 		//Add the cost of condom usage
 		auto totalCondomCostUndiscounted = initiator->getCondomsUsedThisMonth() * popWideParams.condomCost;
+		initiator->add_cdm_cost(totalCondomCostUndiscounted, totalCondomCostUndiscounted * initiator->getCepacDiscountFactor());
 		populationStatistics.costsTracker.RecordCondomUse(totalCondomCostUndiscounted, totalCondomCostUndiscounted * initiator->getCepacDiscountFactor());
 	} //for (p_Iter = entities->begin(DemographicProfile::Gender::Male); p_Iter != entities->end(DemographicProfile::Gender::Male); p_Iter++)
 
@@ -1068,6 +1072,7 @@ Person *Population::GeneratePerson(EventParams &parameters_, DemographicProfile:
 		if(m->isCircumcised())
 		{
 			populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * m->getCepacDiscountFactor());
+			toReturn->add_cdm_cost(popWideParams.circumcisionCost, popWideParams.circumcisionCost * m->getCepacDiscountFactor());
 		}
 	}
 

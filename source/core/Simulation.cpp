@@ -190,7 +190,7 @@ void TargetGroup::Update(Population &population, int current_time,
             // lump rounding errors into the last partition
             if(partition_index == partitions_.size() - 1)
             {
-                number = people.size() - assigned;
+                number = static_cast<int>(people.size() - assigned);
             }
             std::fill_n(std::back_inserter(assignments), number, (int)partition_index);
             assigned += number;

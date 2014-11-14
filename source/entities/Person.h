@@ -685,7 +685,35 @@ public:
 
 	};
 
+	void reset_costs() 
+	{  
+		monthly_cepac_costs_discounted_ = 0; 
+		monthly_cepac_costs_undiscounted_ = 0;
+		monthly_cdm_costs_discounted_ = 0; 
+		monthly_cdm_costs_undiscounted_ = 0;
+	}
+
+	void add_cepac_cost(double cost_undiscounted, double cost_discounted) 
+	{
+		monthly_cepac_costs_undiscounted_ += cost_undiscounted; 
+		monthly_cepac_costs_discounted_ += cost_discounted;
+	}
+	double get_monthly_cepac_costs_undiscounted() const { return monthly_cepac_costs_undiscounted_; }
+	double get_monthly_cepac_costs_discounted() const { return monthly_cepac_costs_discounted_; }
+	void add_cdm_cost(double cost_undiscounted, double cost_discounted) 
+	{ 
+		monthly_cdm_costs_undiscounted_ += cost_undiscounted; 
+		monthly_cdm_costs_discounted_ += cost_discounted;
+	}
+	double get_monthly_cdm_costs_undiscounted() const { return monthly_cdm_costs_undiscounted_; }
+	double get_monthly_cdm_costs_discounted() const { return monthly_cdm_costs_discounted_; }
+
 private:
 	//Return the current index of which SimContext should be used to update the health of a patient
 	int getCEPACSimContextIndex(EventParams &_eventParams);
+
+	double monthly_cepac_costs_undiscounted_;
+	double monthly_cepac_costs_discounted_;
+	double monthly_cdm_costs_undiscounted_;
+	double monthly_cdm_costs_discounted_;
 };

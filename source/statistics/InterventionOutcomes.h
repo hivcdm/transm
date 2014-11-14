@@ -24,7 +24,7 @@ public:
 
     void Update(int current_month)
     {
-        std::vector<int> current_row;
+        std::vector<double> current_row;
 
         for(auto &group : *group_container_)
         {
@@ -82,6 +82,13 @@ public:
                 {
                     current_row.push_back((int)risk_group.second);
                 }
+
+				current_row.push_back(summary.life_months_undiscounted);
+				current_row.push_back(summary.cdm_costs_undiscounted);
+				current_row.push_back(summary.cepac_costs_undiscounted);
+				current_row.push_back(summary.life_months_discounted);
+				current_row.push_back(summary.cdm_costs_discounted);
+				current_row.push_back(summary.cepac_costs_discounted);
             }
         }
 
@@ -104,7 +111,7 @@ public:
         {
             file << "\t" << group.GetLabel();
 
-            for(std::size_t i = 0; i < group.GetPartitionNames().size() * 84; i++)
+            for(std::size_t i = 0; i < group.GetPartitionNames().size() * 90; i++)
             {
                 file << "\t";
             }
@@ -119,7 +126,7 @@ public:
             {
                 file << partition;
 
-                for(int i = 0; i < 83; i++)
+                for(int i = 0; i < 89; i++)
                 {
                     file << "\t";
                 }
@@ -133,7 +140,7 @@ public:
         {
             for(auto partition : group.GetPartitionNames())
             {
-                file << "Population Sizes			Male Population Sizes										Female Population Sizes																Incident Cases																											Prevalent Cases																											";
+                file << "Population Sizes			Male Population Sizes										Female Population Sizes																Incident Cases																											Prevalent Cases																											Costs/LMs						";
             }
         }
 
@@ -144,7 +151,7 @@ public:
         {
             for(auto partition : group.GetPartitionNames())
             {
-                file << "			Non-Sexually Active Population	Sexually Active Population									Non-Sexually Active Population	Sexually Active Population									Risk Group							Male Incident Cases										Female Incident Cases										Risk Group							Male Prevalent Cases										Female Prevalent Cases										Risk Group						";
+                file << "			Non-Sexually Active Population	Sexually Active Population									Non-Sexually Active Population	Sexually Active Population									Risk Group							Male Incident Cases										Female Incident Cases										Risk Group							Male Prevalent Cases										Female Prevalent Cases										Risk Group						Undiscounted			Discounted			";
             }
         }
 
@@ -156,6 +163,8 @@ public:
             for(auto partition : group.GetPartitionNames())
             {
                 file << "	Total	NA Population Size	SA Population Size	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	CSW High Risk	CSW Low Risk	Non-CSW High Risk Male	Non-CSW High Risk Female	Non-CSW Low Risk Male	Non-CSW Low Risk Female	Total	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	CSW High Risk	CSW Low Risk	Non-CSW High Risk Male	Non-CSW High Risk Female	Non-CSW Low Risk Male	Non-CSW Low Risk Female	Total	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	All ages	0-203	204-239	240-299	300-359	360-419	420-479	480-539	540-599	600-1211	CSW High Risk	CSW Low Risk	Non-CSW High Risk Male	Non-CSW High Risk Female	Non-CSW Low Risk Male	Non-CSW Low Risk Female";
+				file << "\t" << "Life Months" << "\t" << "CDM" << "\t" << "CEPAC";
+				file << "\t" << "Life Months" << "\t" << "CDM" << "\t" << "CEPAC";
             }
         }
 
@@ -181,6 +190,6 @@ public:
     }
 
 private:
-    std::vector<std::vector<int>> rows_;
+    std::vector<std::vector<double>> rows_;
     const std::vector<TargetGroup> *group_container_;
 };
