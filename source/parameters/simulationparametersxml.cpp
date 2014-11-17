@@ -959,6 +959,10 @@ Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node cri
             {
                 target.value.observed_hiv_status.value = Entity::HIVStatus::UNOBSERVED_LATESTAGE;
             }
+			else if (value == "positive")
+			{
+				target.value.observed_hiv_status.value = Entity::HIVStatus::Last;
+			}
             else
             {
                 throw std::runtime_error("invalid group target value for " + name + ": " + value);
