@@ -873,6 +873,7 @@ void Simulation::Initialize(SimulationParameters &parameters)
     {
         parameters_.targetYearlyRolloutProportions[prop.first] = prop.second;
     }
+	parameters_.concurrencyDef = parameters.GetConcurrencyDefinition();
     parameters_.useRollout = intervention_params.intervention_type == InterventionParameters::InterventionType::Art;
     parameters_.enableDynamicTreatmentScaling = intervention_params.dynamic_feedback_enabled;
     parameters_.dynamicFeedbackPeriod = intervention_params.dynamic_feedback_period;

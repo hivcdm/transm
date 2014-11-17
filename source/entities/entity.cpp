@@ -79,6 +79,12 @@ Entity::CD4Strata Entity::getCd4Stratum() const
         return (DemographicProfile::Employment)getDemographicProfileVal(DemographicProfile::Demographic::Employment);
     }
 
+	template<>
+	DemographicProfile::RelationshipStatus Entity::getDemographicProfileVal() const
+	{
+		return (DemographicProfile::RelationshipStatus)getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus);
+	}
+
 bool Entity::isEligibleForTreatment(const SimContext::TreatmentInputs::ARTStartPolicy &artStartPolicy)
 {
 	// Evaluate the CD4 only criteria

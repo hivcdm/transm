@@ -2582,11 +2582,11 @@ void Population::PrintMethodResults(EventParams &parameters_, const std::string 
 void Population::PrintPartnerships(EventParams &parameters_, long _time, std::ostream &_outStream)
 {
 	assert(_time >= 0);
-	std::string genderLabels[] = { "Male", "Female" };
 	std::string employmentLabels[] = { "Non-CSW", "CSW" };
 	std::string riskLabels[] = { "LR", "HR" };
 	std::string relationshipLabels[] = { "Non-Single", "Single" };
-	std::string partnershipLabels[] = { "Steady", "Regular", "Casual", "CSW", "SteadyMSM", "RegularMSM", "CasualMSM", "CSWMSM" };
+	std::string partnershipLabelsHetero[] = { "Steady", "Regular", "Casual", "CSW" };
+	std::string partnershipLabelsMsm[] = { "SteadyMSM", "RegularMSM", "CasualMSM", "CSWMSM" };
 	std::string riskLabels2[] = { "HR", "Mix", "LR" };
 
 	if(_time == 0)
@@ -2599,84 +2599,85 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 		thirdRow << "Month" << Constants::TAB;
 		//Partnership Headers
 
-        for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
-        {
-            firstRow << (i == 0 ? "Individuals by Partnership" : Constants::TAB);
-            firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-                Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-                Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-            secondRow << partnershipLabels[i];
-            secondRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-                Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-                Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+		for (auto hetero : { true, false })
+		{
+			for (int i = 0; i < 4; i++)
+			{
+				firstRow << "Individuals by Partnership";
+				std::string label = hetero ? partnershipLabelsHetero[i] : partnershipLabelsMsm[i];
+				secondRow << label;
 
-            for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
-            {
-                for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
-                {
-                    for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
-                    {
-                        for(int m = (int)Entity::RiskLevel::HIGH; m >= 0; m--)
-                        {
-                            thirdRow << genderLabels[j] << Constants::SPACE << relationshipLabels[k] << Constants::SPACE << employmentLabels[l] <<
-                                Constants::SPACE << riskLabels[m] << Constants::TAB;
-                        }
-                    }
-                }
-            }
-        }
+				std::vector<std::string> entity_types;
 
-        firstRow << Constants::TAB;
+				if (hetero)
+				{
+					entity_types.push_back("Male:Hetero");
+					entity_types.push_back("Male:MSMW");
+					entity_types.push_back("Female");
+				}
+				else
+				{
+					entity_types.push_back("Male:MSMW");
+					entity_types.push_back("Male:MSM");
+				}
+
+				for (int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
+				{
+					for (int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
+					{
+						for (auto entity_type : entity_types)
+						{
+							for (int m = (int)Entity::RiskLevel::HIGH; m >= 0; m--)
+							{
+								firstRow << Constants::TAB;
+								secondRow << Constants::TAB;
+								thirdRow << entity_type << Constants::SPACE << relationshipLabels[k] << Constants::SPACE << employmentLabels[l] <<
+									Constants::SPACE << riskLabels[m] << Constants::TAB;
+							}
+						}
+					}
+				}
+			}
+		}
 
 		//Concurrent Partnerships
-		//CSW
-		firstRow << "Individuals by Concurrent Partnerships" << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB << Constants::TAB;
-		secondRow << "CSW HR" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		thirdRow << "Concurrent" << Constants::TAB << "2 Partners" << Constants::TAB << "3 Partners" << Constants::TAB <<
-		         "4 Partners" << Constants::TAB << "5+ Partners" << Constants::TAB;
-		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		secondRow << "CSW LR" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		thirdRow << "Concurrent" << Constants::TAB << "2 Partners" << Constants::TAB << "3 Partners" << Constants::TAB <<
-		         "4 Partners" << Constants::TAB << "5+ Partners" << Constants::TAB;
-		//High Risk Male Non-CSW
-		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		secondRow << "Male High Risk Non-CSW" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB;;
-		thirdRow << "Concurrent" << Constants::TAB << "2 Partners" << Constants::TAB << "3 Partners" << Constants::TAB <<
-		         "4 Partners" << Constants::TAB << "5+ Partners" << Constants::TAB;
-		//High Risk Female Non-CSW
-		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		secondRow << "Female High Risk Non-CSW" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB;;
-		thirdRow << "Concurrent" << Constants::TAB << "2 Partners" << Constants::TAB << "3 Partners" << Constants::TAB <<
-		         "4 Partners" << Constants::TAB << "5+ Partners" << Constants::TAB;
-		//Low Risk Male Non-CSW
-		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		secondRow << "Male Low Risk Non-CSW" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB;;
-		thirdRow << "Concurrent" << Constants::TAB << "2 Partners" << Constants::TAB << "3 Partners" << Constants::TAB <<
-		         "4 Partners" << Constants::TAB << "5+ Partners" << Constants::TAB;
-		//Low Risk Female Non-CSW
-		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		secondRow << "Female Low Risk Non-CSW" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB;;
-		thirdRow << "Concurrent" << Constants::TAB << "2 Partners" << Constants::TAB << "3 Partners" << Constants::TAB <<
-		         "4 Partners" << Constants::TAB << "5+ Partners" << Constants::TAB;
-		//Partnerships by partnership type
-		firstRow << "Partnerships by Partnership Type" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB
-		         << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB << Constants::TAB;
-		secondRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-        secondRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-            Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+		firstRow << "Individuals by Concurrent Partnerships";
 
-		for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
+		// Concurrent by <entity-type> <risk> Non-CSW
+		for (std::string entity_type : { "Male:Hetero", "Male:MSMW", "Male:MSM", "Female" })
 		{
-			for(int j = 0; j < 3; j++)
+			for (std::string risk : { "High", "Low" })
 			{
-				thirdRow << partnershipLabels[i] << Constants::SPACE << riskLabels2[j] << Constants::TAB;
+				for (std::string csw : { "Non-CSW", "CSW" })
+				{
+					if (csw == "CSW" && entity_type == "Male:Hetero") continue;
+
+					firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+					secondRow << entity_type << " " << risk << " Risk " << csw << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+						Constants::TAB;;
+					thirdRow << "Concurrent" << Constants::TAB << "2 Partners" << Constants::TAB << "3 Partners" << Constants::TAB <<
+						"4 Partners" << Constants::TAB << "5+ Partners" << Constants::TAB;
+				}
+			}
+		}
+
+		//Partnerships by partnership type
+		firstRow << "Partnerships by Partnership Type";
+
+		for (std::string partnership_type : { "Male+Female", "MSMW+Female", "MSMW+MSM", "MSM+MSM" })
+		{
+			auto hetero = partnership_type == "Male+Female" || partnership_type == "MSMW+Female";
+			secondRow << partnership_type;
+
+			for (int i = 0; i < 4; i++)
+			{
+				for (int j = 0; j < 3; j++)
+				{
+					std::string label = hetero ? partnershipLabelsHetero[i] : partnershipLabelsMsm[i];
+					firstRow << Constants::TAB;
+					secondRow << Constants::TAB;
+					thirdRow << label << Constants::SPACE << riskLabels2[j] << Constants::TAB;
+				}
 			}
 		}
 
@@ -2702,231 +2703,172 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 		_outStream << _time << Constants::TAB;
 	}
 
-	//Partnerships
-	unsigned long
-        numInPartnership[(int)SexualPartnership::Type::ENDType][(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::RelationshipStatus::Last][(std::size_t)DemographicProfile::Employment::Last][(std::size_t)Entity::RiskLevel::Last];
-    unsigned long numInConcurrent[(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::Employment::Last][(std::size_t)Entity::RiskLevel::Last];
-    unsigned long numInMultiple[(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::Employment::Last][(std::size_t)Entity::RiskLevel::Last][4];
-	unsigned long doubleNumPartnerships[(int)SexualPartnership::Type::ENDType][3];
+	std::unordered_map<std::string, descriptive_stats_container<std::size_t>> times_selected_stats;
+	using EmploymentRiskArray = std::array<std::array<std::size_t, (std::size_t)Entity::RiskLevel::Last>, (std::size_t)DemographicProfile::Employment::Last>;
+	using RelationshipEmploymentRiskArray = std::array<EmploymentRiskArray, (std::size_t)DemographicProfile::RelationshipStatus::Last>;
+	std::array<std::unordered_map<std::string, RelationshipEmploymentRiskArray>, (std::size_t)SexualPartnership::Type::Last> num_in_partnership;
+	using ConcurrentCountArray = std::array<EmploymentRiskArray, 5>;
+	std::unordered_map<std::string, ConcurrentCountArray> num_in_concurrent;
+	std::unordered_map<std::string, std::array<std::array<std::size_t, (std::size_t)SexualPartnership::Type::Last>, 3>> double_num_partnerships;
 
-    for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
+	entities->forEach([&](Entity *e)
 	{
-        for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
+		auto entity_type = e->getEntityType();
+
+		if (entity_type == "female")
 		{
-            for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
+			times_selected_stats[entity_type].insert(((Female *)e)->GetTimesSelected());
+		}
+		else if (entity_type == "msmw")
+		{
+			times_selected_stats[entity_type].insert(((Msmw *)e)->GetTimesSelected());
+		}
+		else if (entity_type == "msm")
+		{
+			times_selected_stats[entity_type].insert(((Msm *)e)->GetTimesSelected());
+		}
+
+		int concurrent = 0;
+		std::size_t num_partners = 0;
+
+		auto risk_index = (std::size_t)e->getRiskLevel();
+		auto relationship_status_index = (std::size_t)e->getDemographicProfileVal<DemographicProfile::RelationshipStatus>();
+		auto employment_index = (std::size_t)e->getDemographicProfileVal<DemographicProfile::Employment>();
+
+		for (auto partnership_type : enum_iterator<SexualPartnership::Type>())
+		{
+			auto num_partners_type = static_cast<std::size_t>(e->getNumPartners(partnership_type));
+			num_partners += num_partners_type;
+
+			if ((int)partnership_type < 4)
 			{
-                for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
+				concurrent <<= 1;
+			}
+
+			if (num_partners_type > 0)
+			{
+				if ((int)partnership_type < 4)
 				{
-				    for(std::size_t m = 0; m < (std::size_t)Entity::RiskLevel::Last; m++)
+					concurrent++;
+				}
+				num_in_partnership[(std::size_t)partnership_type][entity_type][relationship_status_index][employment_index][risk_index]++;
+			}
+
+			auto j = e->getRiskLevel() == Entity::RiskLevel::HIGH ? 0 : 2;
+
+			double_num_partnerships[entity_type][1][(std::size_t)partnership_type] += static_cast<std::size_t>(e->getNumPartners(partnership_type, false));
+			double_num_partnerships[entity_type][j][(std::size_t)partnership_type] += static_cast<std::size_t>(e->getNumPartners(partnership_type, true));
+		}
+
+		if (num_partners >= 2)
+		{
+			auto index = std::min(5ULL, num_partners) - 1;
+			num_in_concurrent[entity_type][index][employment_index][risk_index]++;
+		}
+
+		concurrent = 15 - concurrent;
+		assert(concurrent >= 0 && concurrent < Constants::NUMBER_CONCURRENCY_DEFS);
+
+		if (parameters_.concurrencyDef[concurrent].useDefinition
+			&& num_partners >= parameters_.concurrencyDef[concurrent].minPartnershipsNeeded)
+		{
+			num_in_concurrent[entity_type][0][employment_index][risk_index]++;
+		}
+	});
+
+	for (auto hetero : { true, false })
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			std::vector<std::string> entity_types;
+
+			if (hetero)
+			{
+				entity_types.push_back("male");
+				entity_types.push_back("msmw");
+				entity_types.push_back("female");
+			}
+			else
+			{
+				entity_types.push_back("msmw");
+				entity_types.push_back("msm");
+			}
+
+			for (int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
+			{
+				for (int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
+				{
+					for (auto entity_type : entity_types)
 					{
-						numInPartnership[i][j][k][l][m] = 0;
+						for (int m = (int)Entity::RiskLevel::HIGH; m >= 0; m--)
+						{
+							_outStream << num_in_partnership[hetero ? i : i + 4][entity_type][k][l][m] << Constants::TAB;
+						}
 					}
 				}
 			}
 		}
-
-		for(int j = 0; j < 3; j++)
-		{
-			doubleNumPartnerships[i][j] = 0;
-		}
 	}
 
-    for(int i = 0; i < (int)DemographicProfile::Gender::Last; i++)
+	for (std::string entity_type : { "male", "msmw", "msm", "female" })
 	{
-        for(int j = 0; j < (int)DemographicProfile::Employment::Last; j++)
+		for (int risk = (int)Entity::RiskLevel::HIGH; risk >= 0; risk--)
 		{
-		    for(std::size_t k = 0; k < (std::size_t)Entity::RiskLevel::Last; k++)
+			for (int csw = 0; csw < (int)DemographicProfile::Employment::Last; csw++)
 			{
-				numInConcurrent[i][j][k] = 0;
+				if (csw == (int)DemographicProfile::Employment::Csw && entity_type == "male") continue;
 
-				for(int m = 0; m < 4; m++)
+				for (int i = 0; i < 5; i++)
 				{
-					numInMultiple[i][j][k][m] = 0;
+					_outStream << num_in_concurrent[entity_type][i][csw][risk] << Constants::TAB;
 				}
 			}
 		}
 	}
 
-	std::unordered_map<std::string, descriptive_stats_container<std::size_t>> times_selected_stats;
-
-    for(auto gender : enum_iterator<DemographicProfile::Gender>())
+	for (std::string partnership_type : { "Male+Female", "MSMW+Female", "MSMW+MSM", "MSM+MSM" })
 	{
-		std::list<Entity *>::iterator p_Iter = entities->begin(gender);
+		auto hetero = partnership_type == "Male+Female" || partnership_type == "MSMW+Female";
 
-		while(p_Iter != entities->end(gender))
+		std::string partner1;
+		std::string partner2;
+
+		if (partnership_type == "Male+Female")
 		{
-            auto person = *p_Iter;
+			partner1 = "male";
+			partner2 = "female";
+		}
+		else if (partnership_type == "MSMW+Female")
+		{
+			partner1 = "msmw";
+			partner2 = "female";
+		}
+		else if (partnership_type == "MSMW+MSM")
+		{
+			partner1 = "msmw";
+			partner2 = "msm";
+		}
+		else if (partnership_type == "MSM+MSM")
+		{
+			partner1 = "msm";
+			partner2 = "msm";
+		}
 
-            if(person->getEntityType() == "msm")
-            {
-                times_selected_stats["msm"].insert(((Msm *)person)->GetTimesSelected());
-            }
-            else if(person->getEntityType() == "msmw")
-            {
-				times_selected_stats["msmw"].insert(((Msmw *)person)->GetTimesSelected());
-            }
-			else if (person->getEntityType() == "female")
+		for (int i = 0; i < 4; i++)
+		{
+			for (int j = 0; j < 3; j++)
 			{
-				times_selected_stats["female"].insert(((Female *)person)->GetTimesSelected());
-			}
-
-			int numPartners[(int)SexualPartnership::Type::ENDType];
-			bool hasType[(int)SexualPartnership::Type::ENDType];
-			int totalNumPartners = 0;
-			Entity::RiskLevel risk = (*p_Iter)->getRiskLevel();
-
-			for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
-			{
-				numPartners[i] = (*p_Iter)->getNumPartners((SexualPartnership::Type)i);
-				hasType[i] = (numPartners[i] != 0);
-				int j = 0;
-
-				if(risk == Entity::RiskLevel::LOW)
+				if (double_num_partnerships[partner1][j][hetero ? i : i + 4] == 0
+					|| double_num_partnerships[partner2][j][hetero ? i : i + 4] == 0)
 				{
-					j = 2;
+					_outStream << 0 << Constants::TAB;
+					continue;
 				}
 
-				doubleNumPartnerships[i][1] += (*p_Iter)->getNumPartners((SexualPartnership::Type) i, false);
-				doubleNumPartnerships[i][j] += (*p_Iter)->getNumPartners((SexualPartnership::Type) i, true);
-				totalNumPartners += numPartners[i];
+				auto count = (double_num_partnerships[partner1][j][hetero ? i : i + 4] 
+					+ double_num_partnerships[partner2][j][hetero ? i : i + 4]) / 2;
+				_outStream << count << Constants::TAB;
 			}
-
-			if(totalNumPartners >= 2 && totalNumPartners <= 4)
-			{
-                numInMultiple[(std::size_t)gender][(*p_Iter)->getDemographicProfileVal(DemographicProfile::Demographic::Employment)][(std::size_t)(*p_Iter)->getRiskLevel()][totalNumPartners -
-				        2]++;
-			}
-			else if(totalNumPartners >= 5)
-			{
-                numInMultiple[(std::size_t)gender][(*p_Iter)->getDemographicProfileVal(DemographicProfile::Demographic::Employment)][(std::size_t)(*p_Iter)->getRiskLevel()][3]++;
-			}
-
-			for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
-			{
-				if(numPartners[i] != 0)
-				{
-                    numInPartnership[i][(std::size_t)gender][(*p_Iter)->getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus)][(*p_Iter)->getDemographicProfileVal(
-                        DemographicProfile::Demographic::Employment)][(std::size_t)(*p_Iter)->getRiskLevel()]++;
-				}
-			}
-
-			//tally concurrent partners
-			//create a number between 0 and 15 representing the combination of partnership types person has
-			//e.g. if person has partnerships steady and casual concurrent will equal 8+2=10
-			int concurrent = 0;
-
-			for(int i = 0; i < (int)SexualPartnership::Type::Last; i++)
-			{
-				concurrent = (concurrent << 1) + (hasType[i] ? 1 : 0);
-			}
-
-            concurrent = Constants::NUMBER_CONCURRENCY_DEFS - 1 - concurrent;
-			assert(concurrent <= Constants::NUMBER_CONCURRENCY_DEFS);
-
-			if(parameters_.concurrencyDef[concurrent].useDefinition
-			        && totalNumPartners >= parameters_.concurrencyDef[concurrent].minPartnershipsNeeded)
-			{
-				//count as concurrent partnership
-                numInConcurrent[(std::size_t)gender][(*p_Iter)->getDemographicProfileVal(DemographicProfile::Demographic::Employment)][(std::size_t)(*p_Iter)->getRiskLevel()]++;
-			}
-
-			p_Iter++;
-		}
-	}
-
-    for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
-    {
-        for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
-        {
-            for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
-            {
-                for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
-                {
-                    for(int m = (int)Entity::RiskLevel::HIGH; m >= 0; m--)
-                    {
-                        _outStream << numInPartnership[i][j][k][l][m] << Constants::TAB;
-                    }
-                }
-            }
-        }
-    }
-
-	//Concurrent Partnerships
-	//CSW
-	unsigned long numInConcurrentCSW[(std::size_t)Entity::RiskLevel::Last];
-	unsigned long numInMultipleCSW[(std::size_t)Entity::RiskLevel::Last][4];
-
-	for(std::size_t k = 0; k < (std::size_t)Entity::RiskLevel::Last; k++)
-	{
-		numInConcurrentCSW[k] = 0;
-
-        for(int m = 0; m < 4; m++)
-		{
-			numInMultipleCSW[k][m] = 0;
-		}
-	}
-
-    for(int i = 0; i < (int)DemographicProfile::Gender::Last; i++)
-	{
-	    for(std::size_t k = 0; k < (std::size_t)Entity::RiskLevel::Last; k++)
-		{
-            numInConcurrentCSW[k] += numInConcurrent[i][(std::size_t)DemographicProfile::Employment::Csw][k];
-
-            for(int m = 0; m < 4; m++)
-			{
-                numInMultipleCSW[k][m] += numInMultiple[i][(std::size_t)DemographicProfile::Employment::Csw][k][m];
-			}
-		}
-	}
-
-	for(int k = (int)Entity::RiskLevel::HIGH; k >= 0; k--)
-	{
-		_outStream << numInConcurrentCSW[k] << Constants::TAB;
-
-        for(int m = 0; m < 4; m++)
-		{
-			_outStream << numInMultipleCSW[k][m] << Constants::TAB;
-		}
-	}
-
-	//High Risk Males Non CSW
-    _outStream << numInConcurrent[(std::size_t)DemographicProfile::Gender::Male][(std::size_t)DemographicProfile::Employment::NonCsw][(std::size_t)Entity::RiskLevel::HIGH] << Constants::TAB;
-
-    for(int m = 0; m < 4; m++)
-	{
-        _outStream << numInMultiple[(std::size_t)DemographicProfile::Gender::Male][(std::size_t)DemographicProfile::Employment::NonCsw][(std::size_t)Entity::RiskLevel::HIGH][m] << Constants::TAB;
-	}
-
-	//High Risk Females Non CSW
-    _outStream << numInConcurrent[(std::size_t)DemographicProfile::Gender::Female][(std::size_t)DemographicProfile::Employment::NonCsw][(std::size_t)Entity::RiskLevel::HIGH] << Constants::TAB;
-
-    for(int m = 0; m < 4; m++)
-	{
-        _outStream << numInMultiple[(std::size_t)DemographicProfile::Gender::Female][(std::size_t)DemographicProfile::Employment::NonCsw][(std::size_t)Entity::RiskLevel::HIGH][m] << Constants::TAB;
-	}
-
-	//Low Risk Males Non CSW
-    _outStream << numInConcurrent[(std::size_t)DemographicProfile::Gender::Male][(std::size_t)DemographicProfile::Employment::NonCsw][(std::size_t)Entity::RiskLevel::LOW] << Constants::TAB;
-
-    for(int m = 0; m < 4; m++)
-	{
-        _outStream << numInMultiple[(std::size_t)DemographicProfile::Gender::Male][(std::size_t)DemographicProfile::Employment::NonCsw][(std::size_t)Entity::RiskLevel::LOW][m] << Constants::TAB;
-	}
-
-	//Low Risk Females Non CSW
-    _outStream << numInConcurrent[(std::size_t)DemographicProfile::Gender::Female][(std::size_t)DemographicProfile::Employment::NonCsw][(std::size_t)Entity::RiskLevel::LOW] << Constants::TAB;
-
-    for(int m = 0; m < 4; m++)
-	{
-        _outStream << numInMultiple[(std::size_t)DemographicProfile::Gender::Female][(std::size_t)DemographicProfile::Employment::NonCsw][(std::size_t)Entity::RiskLevel::LOW][m] << Constants::TAB;
-	}
-
-	//Partnerships by type
-	for(int i = 0; i < (std::size_t)SexualPartnership::Type::Last; i++)
-	{
-		for(int j = 0; j < 3; j++)
-		{
-			_outStream << doubleNumPartnerships[i][j] / 2 << Constants::TAB;
 		}
 	}
 

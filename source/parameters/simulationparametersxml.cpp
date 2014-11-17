@@ -169,12 +169,21 @@ SimulationParameters::ConcurrencyDefinition SimulationParametersXml::GetConcurre
     auto simulation_node = document_.child("simulation");
     auto concurrency_node = simulation_node.child("concurrencyDefinition");
 
-    for(int i = 0; i < 16; i++)
+    for(int i = 0; i < Constants::NUMBER_CONCURRENCY_DEFS; i++)
     {
         auto definition_node = concurrency_node.find_child_by_attribute("definition", "id", std::to_string(i).c_str());
         auto &definition = definitions[i];
-        definition.minPartnershipsNeeded = Text<int>(definition_node.child("minNeeded"));
-        definition.useDefinition = Text<bool>(definition_node.child("allow"));
+
+		if (definition_node == nullptr)
+		{
+			definition.minPartnershipsNeeded = 2;
+			definition.useDefinition = false;
+		}
+		else
+		{
+			definition.minPartnershipsNeeded = Text<int>(definition_node.child("minNeeded"));
+			definition.useDefinition = Text<bool>(definition_node.child("allow"));
+		}
     }
 
     return definitions;
