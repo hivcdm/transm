@@ -315,7 +315,10 @@ public:
 
 	double getQualityOfLife() const { return cepacPatient != nullptr ? cepacPatient->getGeneralState()->QOLMultiplier : 1; }
 
-	double getCepacDiscountFactor() const { return cepacPatient != nullptr ? cepacPatient->getGeneralState()->discountFactor : 1; }
+	double getCepacDiscountFactor(int month, double discount_rate) const 
+	{ 
+		return 1 / std::pow(discount_rate, month); 
+	}
 
 	/**
 	* returns the number of partners in history

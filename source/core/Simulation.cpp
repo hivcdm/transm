@@ -661,7 +661,7 @@ void Simulation::UpdateInterventions(const std::unordered_set<Person *> &dead_pe
         group.Update(population_, time_, parameters_.randomNums, dead_people);
     }
 
-    outputs_.intervention_outcomes.Update(time_);
+    outputs_.intervention_outcomes.Update(parameters_);
 }
 
 void Simulation::RegisterTargetGroup(const TargetGroup &group)

@@ -372,11 +372,6 @@ void Person::initialCEPACpatient(EventParams &_eventParams)
 			cepacGender = SimContext::GENDER_MALE;
 		}
 
-		//MULTIRUN
-		/*if (_eventParams.currTime > 20){
-			cepacPatient = new Patient(_eventParams.cepacSimContext2, _eventParams.cepacRunStats, _eventParams.cepacTracer,
-					true, getAge(MONTH), cepacGender, (_generationOfInfection > 0));
-		} else {*/
 		//TODO: Switch to multiple input sheets!
 		SimContext *simContextToUse;
 
@@ -393,7 +388,9 @@ void Person::initialCEPACpatient(EventParams &_eventParams)
 		cepacPatient = new Patient(simContextToUse, _eventParams.cepacRunStats, _eventParams.cepacTracer,
             true, getAge(TimeGranularity::Month), cepacGender, setAsIncidentCase, _eventParams.currTime);
 
-		//}
+		auto discount_factor = getCepacDiscountFactor(_eventParams.currTime, simContextToUse->getRunSpecsInputs()->discountFactor);
+		const_cast<Patient::GeneralState *>(cepacPatient->getGeneralState())->discountFactor = discount_factor;
+
 		//Only update hvl and cd4 if the patient is infected
 		//update HVL and CD4  and infection status for this Person if they are infected
 		if(isInfected())

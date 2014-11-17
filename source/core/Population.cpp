@@ -37,8 +37,8 @@ void Population::Circumcise(Person *p)
     if(!p->IsCircumcised())
     {
         p->Circumcise();
-        populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * p->getCepacDiscountFactor());
-		p->add_cdm_cost(popWideParams.circumcisionCost, popWideParams.circumcisionCost * p->getCepacDiscountFactor());
+		populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * p->getCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor));
+		p->add_cdm_cost(popWideParams.circumcisionCost, popWideParams.circumcisionCost * p->getCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor));
     }
 }
 
@@ -411,7 +411,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 				}
 			}
 
-			populationStatistics.costsTracker.RecordLifeMonth(p->getQualityOfLife(), p->getCepacDiscountFactor(), p->getHIVStatus());
+			populationStatistics.costsTracker.RecordLifeMonth(p->getQualityOfLife(), p->getCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor), p->getHIVStatus());
 
 			p_Iter++;
 		}
@@ -590,8 +590,8 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 
 		//Add the cost of condom usage
 		auto totalCondomCostUndiscounted = initiator->getCondomsUsedThisMonth() * popWideParams.condomCost;
-		initiator->add_cdm_cost(totalCondomCostUndiscounted, totalCondomCostUndiscounted * initiator->getCepacDiscountFactor());
-		populationStatistics.costsTracker.RecordCondomUse(totalCondomCostUndiscounted, totalCondomCostUndiscounted * initiator->getCepacDiscountFactor());
+		initiator->add_cdm_cost(totalCondomCostUndiscounted, totalCondomCostUndiscounted * initiator->getCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor));
+		populationStatistics.costsTracker.RecordCondomUse(totalCondomCostUndiscounted, totalCondomCostUndiscounted * initiator->getCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor));
 	} //for (p_Iter = entities->begin(DemographicProfile::Gender::Male); p_Iter != entities->end(DemographicProfile::Gender::Male); p_Iter++)
 
 	//Ends the second pass through (i.e. the sex acts pass through)
@@ -1071,8 +1071,8 @@ Person *Population::GeneratePerson(EventParams &parameters_, DemographicProfile:
 
 		if(m->isCircumcised())
 		{
-			populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * m->getCepacDiscountFactor());
-			toReturn->add_cdm_cost(popWideParams.circumcisionCost, popWideParams.circumcisionCost * m->getCepacDiscountFactor());
+			populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * m->getCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor));
+			toReturn->add_cdm_cost(popWideParams.circumcisionCost, popWideParams.circumcisionCost * m->getCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor));
 		}
 	}
 

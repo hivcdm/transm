@@ -22,7 +22,7 @@ public:
         group_container_ = &group;
     }
 
-    void Update(int current_month)
+    void Update(EventParams &parameters)
     {
         std::vector<double> current_row;
 
@@ -30,7 +30,7 @@ public:
         {
             for(auto partition : group.GetPartitionNames())
             {
-                auto summary = group.GetPartitionSummary(partition, false);
+                auto summary = group.GetPartitionSummary(partition, parameters);
 
                 current_row.push_back((int)summary.population_size);
                 current_row.push_back((int)summary.population_size_na);
@@ -94,7 +94,7 @@ public:
 
         rows_.push_back(current_row);
 
-        if(current_month + 1 != (int)rows_.size())
+        if(parameters.currTime + 1 != (int)rows_.size())
         {
             throw std::runtime_error("missed month");
         }
