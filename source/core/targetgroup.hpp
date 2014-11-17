@@ -71,6 +71,12 @@ public:
         std::vector<std::tuple<int, int, std::size_t>> incident_by_age_range_male;
         std::unordered_map<std::string, std::vector<std::tuple<int, int, std::size_t>>> incident_by_age_range_entity_type;
         std::vector<std::pair<std::string, std::size_t>> incident_risk_group;
+		double life_months_undiscounted;
+		double life_months_discounted;
+		double cdm_costs_undiscounted;
+		double cdm_costs_discounted;
+		double cepac_costs_undiscounted;
+		double cepac_costs_discounted;
     };
 
     TargetGroup(const std::string &label, int start, int end, bool open, bool permanent, Nullable<PopulationTarget> target);
@@ -103,7 +109,7 @@ public:
     }
 
     PartitionSummary GetPartitionSummary(const std::string &partition_name,
-        bool /*include_non_sexually_active*/ = true) const
+        EventParams &parameters) const
     {
         std::size_t partition_index = 0;
 
@@ -189,6 +195,7 @@ public:
             }
             throw std::runtime_error("unknown risk group");
         };
+
         auto is_prev_in_risk_group = [&](const std::pair<Entity *, int> &p, const std::string &risk_string) { return is_prevalent(p) && is_in_risk_group(p, risk_string); };
         auto is_incident_in_risk_group = [&](const std::pair<Entity *, int> &p, const std::string &risk_string) { return is_incident(p) && is_in_risk_group(p, risk_string); };
 
@@ -239,6 +246,26 @@ public:
                     summary.prevalent_risk_group.push_back({risk_group, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_prev_in_risk_group, std::placeholders::_1, risk_group))});
                     summary.incident_risk_group.push_back({risk_group, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_incident_in_risk_group, std::placeholders::_1, risk_group))});
                 }
+
+				summary.life_months_undiscounted = 0;
+				summary.life_months_discounted = 0;
+				summary.cepac_costs_undiscounted = 0;
+				summary.cepac_costs_discounted = 0;
+				summary.cdm_costs_undiscounted = 0;
+				summary.cdm_costs_discounted = 0;
+
+				for (auto person : member_partitions_)
+				{
+					if (person.second == partition_index)
+					{
+						summary.life_months_undiscounted++;
+						summary.life_months_discounted += person.first->getCepacDiscountFactor(parameters);
+						summary.cepac_costs_undiscounted += person.first->get_monthly_cepac_costs_undiscounted();
+						summary.cepac_costs_discounted += person.first->get_monthly_cepac_costs_discounted();
+						summary.cdm_costs_undiscounted += person.first->get_monthly_cdm_costs_undiscounted();
+						summary.cdm_costs_discounted += person.first->get_monthly_cdm_costs_discounted();
+					}
+				}
 
                 return summary;
             }

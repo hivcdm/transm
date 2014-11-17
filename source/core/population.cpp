@@ -42,7 +42,11 @@ void Population::Circumcise(Entity *p)
     if(!p->IsCircumcised())
     {
         p->Circumcise();
-        populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * p->getCepacDiscountFactor());
+        populationStatistics.costsTracker.RecordCircumcision(
+			popWideParams.circumcisionCost, 
+			popWideParams.circumcisionCost * p->getCepacDiscountFactor(parameters_));
+		p->add_cdm_cost(popWideParams.circumcisionCost, 
+			popWideParams.circumcisionCost * p->getCepacDiscountFactor(parameters_));
     }
 }
 
@@ -448,7 +452,8 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 				}
 			}
 
-			populationStatistics.costsTracker.RecordLifeMonth(p->getQualityOfLife(), p->getCepacDiscountFactor(), p->getHIVStatus());
+			populationStatistics.costsTracker.RecordLifeMonth(p->getQualityOfLife(), 
+				p->getCepacDiscountFactor(parameters_), p->getHIVStatus());
 
 			p_Iter++;
 		}
@@ -502,6 +507,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 	{
 		auto person = *p_Iter;
 		person->resetNumActs();
+		person->reset_costs();
         std::list<SexualPartnership *> partnershipsToEnd;
 
 		//Decide who needs to split up
@@ -548,6 +554,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 	{
 		(*p_Iter)->resetNumActs();
 		((Female *)(*p_Iter))->ResetTimesSelected();
+		(*p_Iter)->reset_costs();
 	}
 
 	//Second pass: Form new partnerships and have sex
@@ -641,9 +648,12 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 			}
 		}
 
-		//Add the cost of condom usage
-		auto totalCondomCostUndiscounted = person->getCondomsUsedThisMonth() * popWideParams.condomCost;
-		populationStatistics.costsTracker.RecordCondomUse(totalCondomCostUndiscounted, totalCondomCostUndiscounted * person->getCepacDiscountFactor());
+		auto totalCondomCostUndiscounted = person->getCondomsUsedThisMonth() 
+			* popWideParams.condomCost;
+		populationStatistics.costsTracker.RecordCondomUse(totalCondomCostUndiscounted,
+			totalCondomCostUndiscounted * person->getCepacDiscountFactor(parameters_));
+		person->add_cdm_cost(totalCondomCostUndiscounted, 
+			totalCondomCostUndiscounted * person->getCepacDiscountFactor(parameters_));
 	}
 
 	//Ends the second pass through (i.e. the sex acts pass through)
@@ -1121,8 +1131,12 @@ Entity *Population::GenerateEntity(EventParams &parameters_, const std::string &
 
         if(circumcised)
         {
-            populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, 
-                popWideParams.circumcisionCost * toReturn->getCepacDiscountFactor());
+            populationStatistics.costsTracker.RecordCircumcision(
+				popWideParams.circumcisionCost, 
+                popWideParams.circumcisionCost 
+				* toReturn->getCepacDiscountFactor(parameters_));
+			toReturn->add_cdm_cost(popWideParams.circumcisionCost, 
+				popWideParams.circumcisionCost * toReturn->getCepacDiscountFactor(parameters_));
         }
 	}
 	else

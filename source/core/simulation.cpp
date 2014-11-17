@@ -185,11 +185,14 @@ void TargetGroup::Update(Population &population, int current_time,
 		{
 			auto proportion = partition.GetProportion();
 			auto number = (int)(proportion * people.size());
+
 			// lump rounding errors into the last partition
+			//XXX: is this really what we want to do?
 			if (partition_index == partitions_.size() - 1)
 			{
-				number = people.size() - assigned;
+				number = static_cast<int>(people.size() - assigned);
 			}
+
 			std::fill_n(std::back_inserter(assignments), number, (int)partition_index);
 			assigned += number;
 			partition_index++;
@@ -672,7 +675,7 @@ void Simulation::UpdateInterventions(const std::unordered_set<Entity *> &dead_pe
         group.Update(population_, time_, parameters_.randomNums, dead_people);
     }
 
-    outputs_.intervention_outcomes.Update(time_);
+    outputs_.intervention_outcomes.Update(parameters_);
 }
 
 void Simulation::RegisterTargetGroup(const TargetGroup &group)

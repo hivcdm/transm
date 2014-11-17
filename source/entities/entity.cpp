@@ -1203,6 +1203,7 @@ double Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 
 	if(costThisMonthUndiscounted > 0)
 	{
+		add_cepac_cost(costThisMonthUndiscounted, costThisMonthDiscounted);
 		costsTracker->RecordCepacCosts(costThisMonthUndiscounted, costThisMonthDiscounted,
 			getEntityType(), getCd4Stratum(), 
 			getHVL(), getHIVStatus());
@@ -1609,7 +1610,12 @@ int Entity::getSexualActivity()
 }
 
 //this constructor is used by the Male and Female classes
-Entity::Entity(int _age, unsigned int _populationID) : sexualActivityDelay(0)
+Entity::Entity(int _age, unsigned int _populationID) : 
+	sexualActivityDelay(0),
+	monthly_cepac_costs_undiscounted_(0),
+	monthly_cepac_costs_discounted_(0),
+	monthly_cdm_costs_undiscounted_(0),
+	monthly_cdm_costs_discounted_(0)
 {
 	id = Entity::idCounter++;
 	populationID = _populationID;
