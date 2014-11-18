@@ -128,7 +128,7 @@ public:
         {
             file << "\t" << group.GetLabel();
 
-            for(std::size_t i = 0; i < group.GetPartitionNames().size() * 90; i++)
+            for(std::size_t i = 0; i < group.GetPartitionNames().size() * 190; i++)
             {
                 file << "\t";
             }
@@ -143,7 +143,7 @@ public:
             {
                 file << partition;
 
-                for(int i = 0; i < 89; i++)
+                for(int i = 0; i < 191; i++)
                 {
                     file << "\t";
                 }
@@ -157,7 +157,7 @@ public:
         {
             for(auto partition : group.GetPartitionNames())
             {
-				file << "Population Sizes			Male Population Sizes										Female Population Sizes																Incident Cases																											Prevalent Cases																											Costs/LMs						";
+				file << "Population Sizes			Male Population Sizes										Male : Hetero Population Sizes										Male : Msmw Population Sizes										Male : Msm Population Sizes										Female Population Sizes																				Incident Cases																																																													Prevalent Cases																																																													Costs/LMs						";
             }
         }
 
@@ -168,7 +168,7 @@ public:
         {
             for(auto partition : group.GetPartitionNames())
             {
-				file << "			Non-Sexually Active Population	Sexually Active Population									Non-Sexually Active Population	Sexually Active Population									Risk Group							Male Incident Cases										Female Incident Cases										Risk Group							Male Prevalent Cases										Female Prevalent Cases										Risk Group						Undiscounted			Discounted			";
+				file << "			Non-Sexually Active Population	Sexually Active Population									Non-Sexually Active Population	Sexually Active Population									Non-Sexually Active Population	Sexually Active Population									Non-Sexually Active Population	Sexually Active Population									Non-Sexually Active Population	Sexually Active Population									Risk Group											Male Incident Cases										Male:Hetero Incident Cases										Male:Msmw Incident Cases										Male:Msm Incident Cases										Female Incident Cases										Risk Group											Male Prevalent Cases										Male:Hetero Prevalent Cases										Male:Msmw Prevalent Cases										Male:Msm Prevalent Cases										Female Prevalent Cases										Risk Group										Undiscounted			Discounted			";
             }
         }
 
