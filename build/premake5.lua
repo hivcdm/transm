@@ -122,6 +122,9 @@ project "transm.gui"
 	}
         files { "../source/util/HighResolutionTimerWindows.cpp" }
 	targetsuffix ("-win-v" .. os.outputof("cat ../VERSION"))
+	includedirs {
+	   "../third-party/wxWidgets/include/msvc"
+	}
     configuration "not windows"
         files { "../source/util/HighResolutionTimerPosix.cpp" }
     configuration "vs*"
