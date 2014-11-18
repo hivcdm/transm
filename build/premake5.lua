@@ -67,6 +67,7 @@ project "transm.cli"
         files { "../source/util/HighResolutionTimerWindows.cpp" }
     configuration "not windows"
         files { "../source/util/HighResolutionTimerPosix.cpp" }
+	buildoptions { "-Wno-deprecated-register" }
     configuration "vs*"
         defines { "_SCL_SECURE_NO_WARNINGS" }
     targetsuffix ("-v" .. os.outputof("cat ../VERSION"))
@@ -93,9 +94,7 @@ project "transm.gui"
        "../source/statistics/**.cpp",
        "../source/statistics/**.h",
        "../source/util/**.cpp",
-       "../source/util/**.h",
-       "../build/resources/resource.h",
-       "../build/resources/resource.rc"
+       "../source/util/**.h"
     }
     excludes {
        "../source/util/HighResolutionTimer*.cpp"
@@ -127,6 +126,10 @@ project "transm.gui"
 	}
     configuration "not windows"
         files { "../source/util/HighResolutionTimerPosix.cpp" }
+	buildoptions { "-Wno-deprecated-register" }
+	includedirs {
+	   "../third-party/wxWidgets/include/osx"
+	}
     configuration "vs*"
         defines { "_CRT_SECURE_NO_WARNINGS" }
         defines { "_SCL_SECURE_NO_WARNINGS" }
