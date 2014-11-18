@@ -256,7 +256,7 @@ public:
 
 				for (auto person : member_partitions_)
 				{
-					if (person.second == partition_index)
+					if (person.second == static_cast<int>(partition_index))
 					{
 						summary.life_months_undiscounted++;
 						summary.life_months_discounted += person.first->getCepacDiscountFactor(parameters);
