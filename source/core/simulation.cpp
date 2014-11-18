@@ -426,10 +426,10 @@ void Simulation::Step()
 	//print out new infection stats
 	population_.CalcPrevalentPopulation(time_);
 
-    for(auto entity : population_.Find([](Entity *) { return true; }))
+	population_.entities->forEach([&](Entity *e)
     {
-        population_.GetPopulationStatistics().recordEntity(time_, entity);
-    }
+        population_.GetPopulationStatistics().recordEntity(time_, e);
+	});
 
     if(parameters_.trace_files[EventParams::TraceFile::Type::Infection].enabled)
 	{
