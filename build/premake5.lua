@@ -49,6 +49,8 @@ project "transm"
 	files { "resources/resource.rc" }
     configuration "not windows"
         files { "../source/utility/platform/posix/**.cpp" }
+	buildoptions { "-Wno-unknown-pragmas" }
+    configuration "macosx"
         buildoptions { "-Wno-deprecated-register" }
 
 project "third-party"

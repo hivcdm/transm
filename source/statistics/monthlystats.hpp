@@ -10,6 +10,53 @@ namespace xlnt {
 class worksheet;
 } // namespace xlnt
 
+namespace std {
+template<>
+struct hash<transm::Entity::DeathStatus>
+{
+    size_t operator()(const transm::Entity::DeathStatus &g) const
+    {
+      return hash<std::size_t>()(static_cast<std::size_t>(g));
+    }
+};
+
+template<>
+struct hash<transm::DemographicProfile::SexualActivityStatus>
+{
+  size_t operator()(const transm::DemographicProfile::SexualActivityStatus &g) const
+    {
+      return hash<std::size_t>()(static_cast<std::size_t>(g));
+    }
+};
+
+template<>
+struct hash<transm::DemographicProfile::Gender>
+{
+  size_t operator()(const transm::DemographicProfile::Gender &g) const
+    {
+      return hash<std::size_t>()(static_cast<std::size_t>(g));
+    }
+};
+
+template<>
+struct hash<transm::DemographicProfile::Employment>
+{
+  size_t operator()(const transm::DemographicProfile::Employment &g) const
+    {
+      return hash<std::size_t>()(static_cast<std::size_t>(g));
+    }
+};
+
+template<>
+struct hash<transm::Entity::RiskLevel>
+{
+  size_t operator()(const transm::Entity::RiskLevel &g) const
+    {
+      return hash<std::size_t>()(static_cast<std::size_t>(g));
+    }
+};
+} // namespace std
+
 namespace transm {
 using DeathCauseCount = std::unordered_map<Entity::DeathStatus, std::size_t>;
 struct AgeGroup

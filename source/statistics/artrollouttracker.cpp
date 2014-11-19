@@ -184,7 +184,8 @@ void ArtRolloutTracker::buildHeader()
 
 		SetHeaderCell(column, 2, "Risk Group");
 
-		for(int riskGroupIndex = 0; riskGroupIndex < sizeof(RISK_GROUP_NAMES) / sizeof(RISK_GROUP_NAMES[0]); ++riskGroupIndex, ++column)
+		std::size_t num_risk_group_names = sizeof(RISK_GROUP_NAMES) / sizeof(RISK_GROUP_NAMES[0]);
+		for(std::size_t riskGroupIndex = 0; riskGroupIndex < num_risk_group_names; ++riskGroupIndex, ++column)
 		{
 			SetHeaderCell(column, 3, RISK_GROUP_NAMES[riskGroupIndex]);
 		}

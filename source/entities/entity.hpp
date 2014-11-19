@@ -179,7 +179,7 @@ public:
 	static EnumCls<Stats> StatsEnum;
 
 	//this is a type declaration of a class that keeps track of statistics defined in enum Stats
-	using StatsRecord = StatsRecord<Stats, BaseEnumCls::NULL_ENUM>;
+	using EntityStatsRecord = StatsRecord<Stats, BaseEnumCls::NULL_ENUM>;
 
 	//the CEPAC death table has stats for 0-100 years old.
 	//  people automatically die at this age in the dynamic model
@@ -257,7 +257,7 @@ protected:
 	int activityLevel;
 
 	//statistical information from this individual
-	StatsRecord stats;
+	EntityStatsRecord stats;
 
 	//True if this person should be followed in singlePersonTrace file
 	bool traceMe;
@@ -632,7 +632,7 @@ public:
 	//sets traceMe to true
 	void setToBeTraced();
 
-	const Entity::StatsRecord *getStats();
+	const EntityStatsRecord *getStats();
 
 	//prints out person's id information
     void print(std::ostream &_outStream, const std::string &_prefix) const;

@@ -684,7 +684,7 @@ void Entity::setToBeTraced()
 	traceMe = true;
 }
 
-const Entity::StatsRecord *Entity::getStats()
+const Entity::EntityStatsRecord *Entity::getStats()
 {
 	return &stats;
 }

@@ -157,7 +157,7 @@ void PopulationStatisticsOld::processDeath(Entity *_p, EventParams &_eventParams
 		}
 	}
 
-	const Entity::StatsRecord *stats = _p->getStats();
+	const auto stats = _p->getStats();
 
 	if(_p->isInfected())
 	{
@@ -183,7 +183,7 @@ void PopulationStatisticsOld::processPostMaxTimeDeath(Entity *_p)
 	assert((_p != nullptr));
 	//assert((!_p->isAlive()));
 	//assert(!(_p->cepacPatient->isAlive()));
-	const Entity::StatsRecord *stats = _p->getStats();
+	const auto stats = _p->getStats();
 
 	if(_p->isInfected())
 	{

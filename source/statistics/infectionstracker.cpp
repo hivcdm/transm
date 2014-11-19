@@ -9,8 +9,8 @@
 namespace transm {
 
 InfectionsTracker::InfectionsTracker() : 
-    lastTwelveIncidenceRates(12, 0.0),
-    currTimeStep(0)
+  currTimeStep(0),
+  lastTwelveIncidenceRates(12, 0.0)
 {
 	//zero out all infection tallies
 	for(int i = 0; i < (int)SexualPartnership::Type::ENDType; ++i)
@@ -467,7 +467,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, int time, std:
             secondRow << "Non-Sexually Active Population" << Constants::TAB;
             thirdRow << "All Ages" << Constants::TAB;
 
-            for(int i = 0; i < numAgeRanges; i++)
+            for(std::size_t i = 0; i < numAgeRanges; i++)
             {
                 if(i == 0)
                 {
@@ -527,7 +527,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, int time, std:
 		         Constants::TAB;
 
 		//write out headers for number of infections by Age and gender
-		for(int i = 0; i < numAgeRanges; i++)
+		for(std::size_t i = 0; i < numAgeRanges; i++)
 		{
 			if(i == 0)
 			{
@@ -573,7 +573,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, int time, std:
 
         for(auto entity_type : {"Male:Hetero", "Male:Msmw", "Male:Msm", "Female"})
         {
-            for(int i = 0; i < numAgeRanges; i++)
+	  for(std::size_t i = 0; i < numAgeRanges; i++)
             {
                 if(i == 0)
                 {
@@ -841,7 +841,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, int time, std:
     std::unordered_map<std::string, std::size_t> totalInfectedSAEntityType;
 	DemographicProfile GenderProfile;
 
-	for(int i = 0; i < numAgeRanges; i++)
+	for(std::size_t i = 0; i < numAgeRanges; i++)
 	{
         for(auto entity_type : {"male", "msmw", "msm", "female"})
         {
@@ -860,7 +860,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, int time, std:
     {
         _outStream << totalInfectedEntityType[entity_type] - totalInfectedSAEntityType[entity_type] << Constants::TAB;
 
-        for(int i = 0; i < numAgeRanges; i++)
+        for(std::size_t i = 0; i < numAgeRanges; i++)
         {
             _outStream << currPrevalentInfectionsEntityTypeAge[entity_type].at(i).second << Constants::TAB;
         }
