@@ -2787,7 +2787,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 
 		if (num_partners >= 2)
 		{
-			auto index = std::min(5ULL, num_partners) - 1;
+			auto index = std::min((std::size_t)5, num_partners) - 1;
 			num_in_concurrent[entity_type][index][employment_index][risk_index]++;
 		}
 
@@ -2795,7 +2795,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 		assert(concurrent >= 0 && concurrent < Constants::NUMBER_CONCURRENCY_DEFS);
 
 		if (parameters_.concurrencyDef[concurrent].useDefinition
-			&& num_partners >= parameters_.concurrencyDef[concurrent].minPartnershipsNeeded)
+		    && num_partners >= static_cast<std::size_t>(parameters_.concurrencyDef[concurrent].minPartnershipsNeeded))
 		{
 			num_in_concurrent[entity_type][0][employment_index][risk_index]++;
 		}
