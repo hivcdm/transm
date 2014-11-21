@@ -167,32 +167,39 @@ void DisplayBox::Simulate()
 		//Run simulation on selected file
 		*(this->textctrl) << wxT("Running simulation...\n");
 
-		SimulationBuilderXml builder;
-		auto name = boost::filesystem::path(filename).stem().string();
-		SimulationReader reader(builder);
-		reader.ConstructSimulation(filename);
-		auto &simulation = builder.GetResult();
-
-        simulation.Run([this, &simulation](const std::string &s)
-        {
-            textctrl->AppendText(s);
-
-            wxYield();
-            UpdateWindowUI();
-            Update();
-
-            currPrev = 100 * simulation.GetPrevalence();
-            currentIncidence = 1000 * simulation.GetIncidence();
-            currentRunProgress = (100.0 * simulation.GetTime()) / simulation.GetTotalTime() + 0.5;
-
-            prevalenceWidget->Refresh();
-            prevalenceWidget->Update();
-            incidenceWidget->Refresh();
-            incidenceWidget->Update();
-
-            textctrl->Refresh();
-            textctrl->Update();
-        });
+		try 
+		{
+		    SimulationBuilderXml builder;
+		    auto name = boost::filesystem::path(filename).stem().string();
+		    SimulationReader reader(builder);
+		    reader.ConstructSimulation(filename);
+		    auto &simulation = builder.GetResult();
+		    
+		    simulation.Run([this, &simulation](const std::string &s)
+				   {
+				       textctrl->AppendText(s);
+				       
+				       wxYield();
+				       UpdateWindowUI();
+				       Update();
+				       
+				       currPrev = 100 * simulation.GetPrevalence();
+				       currentIncidence = 1000 * simulation.GetIncidence();
+				       currentRunProgress = (100.0 * simulation.GetTime()) / simulation.GetTotalTime() + 0.5;
+				       
+				       prevalenceWidget->Refresh();
+				       prevalenceWidget->Update();
+				       incidenceWidget->Refresh();
+				       incidenceWidget->Update();
+				       
+				       textctrl->Refresh();
+				       textctrl->Update();
+				   });
+		}
+		catch(std::exception &e)
+		{
+		    *(this->textctrl) << e.what() << "\n";
+		}
 
 		*(this->textctrl) << wxT("Done!\n");
 		this->percentCompleted = (100 * (i++ + 1)) / filesToRun.size() + 0.5;
