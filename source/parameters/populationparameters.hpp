@@ -13,8 +13,49 @@ namespace transm {
 class PopulationParameters
 {
 public:
+	struct PopulationTarget
+	{
+		template<typename T>
+		using Optional = std::pair<bool, T>;
+
+		Optional<DemographicProfile> profile;
+		Optional<int> min_age;
+		Optional<int> max_age;
+		Optional<Entity::RiskLevel> risk;
+
+		bool match(const Entity *e)
+		{
+			if (profile.first && !e->getDemographicProfile()->match(profile.second))
+			{
+				return false;
+			}
+
+			if (min_age.first && e->getAge(TimeGranularity::Month) < min_age.second)
+			{
+				return false;
+			}
+
+			if (max_age.first && e->getAge(TimeGranularity::Month) > max_age.second)
+			{
+				return false;
+			}
+
+			if (risk.first && e->getRiskLevel() != risk.second)
+			{
+				return false;
+			}
+
+			return true;
+		}
+	};
+
 	PopulationParameters();
 	~PopulationParameters();
+
+	void AddInfectionTarget(const PopulationTarget &target, std::size_t number)
+	{
+		initial_infection_targets_.push_back({ target, number });
+	}
 
 	double GetBirthRate() const;
 	void SetBirthRate(double birth_rate) { birthRate = birth_rate; }
@@ -107,8 +148,6 @@ protected:
 	friend class Population;
 
 private:
-	friend class SimulationBuilder;
-
 	long initSize;
 
     /// <summary>
@@ -182,6 +221,8 @@ private:
     /// cost per circumcision in dollars
     /// </summary>
 	double circumcisionCost;
+
+	std::vector<std::pair<PopulationTarget, std::size_t>> initial_infection_targets_;
 };
 
 } // namespace transm

@@ -2,6 +2,7 @@
 
 namespace transm {
 
+#if OLD_STYLE_PREVALENCE
 AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(int _minAgeMth, int _maxAgeMth,
     const std::unordered_map<std::string, double> &entity_proportions,
     std::size_t _numInfectedCSWMale, std::size_t _numInfectedCSWFemale,
@@ -19,5 +20,15 @@ AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(int _minAgeMth, int _maxAgeMth,
     numInfectedRisk[(std::size_t)DemographicProfile::Gender::Female][(std::size_t)Entity::RiskLevel::LOW] = _numInfectedNonCSWFemalesLowRisk;
     numInfectedRisk[(std::size_t)DemographicProfile::Gender::Female][(std::size_t)Entity::RiskLevel::HIGH] = _numInfectedNonCSWFemalesHighRisk;
 }
+#else
+	AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(int _minAgeMth, int _maxAgeMth,
+		const std::unordered_map<std::string, double> &entity_proportions) :
+		minAgeMth(_minAgeMth),
+		maxAgeMth(_maxAgeMth),
+		entityProportions(entity_proportions)
+	{
+		assert((_minAgeMth >= 0) && (_maxAgeMth > 0) && (_maxAgeMth > _minAgeMth));
+	}
+#endif
 
 } // namespace transm

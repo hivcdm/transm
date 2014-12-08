@@ -751,6 +751,51 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
     PopulationParameters parameters;
 	parameters.SetInitialSize(Text<int>(initial_state_node.child("size")));
 
+#if !OLD_STYLE_PREVALENCE
+	for (auto infection_target_node : initial_infections_node.children("profile"))
+	{
+		PopulationParameters::PopulationTarget target;
+
+		if (infection_target_node.attribute("bucket") != nullptr)
+		{
+			DemographicProfile profile;
+			profile.parse(infection_target_node.attribute("bucket").as_string());
+			target.profile = { true, profile };
+		}
+
+		if (infection_target_node.attribute("age-range") != nullptr)
+		{
+			std::string range_string(infection_target_node.attribute("age-range").as_string());
+			auto hyphen_index = range_string.find('-');
+
+			assert(hyphen_index != std::string::npos);
+
+			std::string min_string = range_string.substr(0, hyphen_index);
+
+			if (!min_string.empty())
+			{
+				target.min_age = { true, std::stoi(min_string) };
+			}
+
+			std::string max_string = range_string.substr(hyphen_index + 1);
+
+			if (!max_string.empty())
+			{
+				target.max_age = { true, std::stoi(max_string) };
+			}
+		}
+
+		if (infection_target_node.attribute("risk") != nullptr)
+		{
+			std::string risk_string = infection_target_node.attribute("risk").as_string();
+			assert(risk_string == "high" || risk_string == "low");
+			target.risk = { true, risk_string == "high" ? Entity::RiskLevel::HIGH : Entity::RiskLevel::LOW };
+		}
+
+		parameters.AddInfectionTarget(target, infection_target_node.text().as_int());
+	}
+#endif
+
 	//get initial age distribution
 	for(auto age_bucket_node : initial_state_node.child("entityDistributions").children("ageRange"))
 	{
@@ -758,6 +803,7 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
 
         auto bucket_age_range = std::string(age_bucket_node.attribute("lower").as_string()) + "-" + age_bucket_node.attribute("upper").as_string();
 
+#if OLD_STYLE_PREVALENCE
         std::size_t numInfectedCSWMale = 0, numInfectedCSWFemale = 0,
             numInfectedNonCSWMalesLowRisk = 0, numInfectedNonCSWFemalesLowRisk = 0,
             numInfectedNonCSWMalesHighRisk = 0, numInfectedNonCSWFemalesHighRisk = 0;
@@ -810,6 +856,12 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
             numInfectedCSWMale,  numInfectedCSWFemale,
             numInfectedNonCSWMalesLowRisk, numInfectedNonCSWFemalesLowRisk,
             numInfectedNonCSWMalesHighRisk, numInfectedNonCSWFemalesHighRisk);
+#else
+		parameters.GetInitialAgeBuckets().emplace_back(
+			Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Attr<int>(age_bucket_node, "lower")),
+			Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Attr<int>(age_bucket_node, "upper")) + 11,
+			dist);
+#endif
 	}
 
 	//normalize %population values for each age bucket

@@ -1247,6 +1247,9 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 	        males_iter != entities->end(DemographicProfile::Gender::Male); males_iter++)
 	{
 		Entity *p = *(males_iter);
+		bool isPrevalent = false;
+
+#if OLD_STYLE_PREVALENCE
 		int ageBucketIndex = GetAgeBucketIndex(p);
 		auto _ageBucketParams = popWideParams.initialAgeBuckets.at(ageBucketIndex);
 		DemographicProfile::Gender _gender = DemographicProfile::Gender::Male;
@@ -1256,7 +1259,6 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
         bool isCSW = p->getDemographicProfileVal(DemographicProfile::Demographic::Employment) == (std::size_t)DemographicProfile::Employment::Csw;
 		Entity::RiskLevel risk = p->getRiskLevel();
 		//apply prevalence if we have not yet reached the quoto of infected people for that bucket
-		bool isPrevalent = false;
 
 		if(isCSW)
 		{
@@ -1285,6 +1287,17 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 				}
 			}
 		}
+#else
+		for (auto &target : popWideParams.initial_infection_targets_)
+		{
+			if (target.second > 0 && target.first.match(p))
+			{
+				target.second--;
+				isPrevalent = true;
+				break;
+			}
+		}
+#endif
 
 		if(isPrevalent)
 		{
@@ -1329,6 +1342,9 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 	        females_iter != entities->end(DemographicProfile::Gender::Female); females_iter++)
 	{
 		Entity *p = *(females_iter);
+		bool isPrevalent = false;
+
+#if OLD_STYLE_PREVALENCE
 		int ageBucketIndex = GetAgeBucketIndex(p);
 		auto &_ageBucketParams = popWideParams.initialAgeBuckets.at(ageBucketIndex);
 		DemographicProfile::Gender _gender = DemographicProfile::Gender::Female;
@@ -1337,7 +1353,6 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 
         bool isCSW = p->getDemographicProfileVal(DemographicProfile::Demographic::Employment) == (std::size_t)DemographicProfile::Employment::Csw;
 		Entity::RiskLevel risk = p->getRiskLevel();
-		bool isPrevalent = false;
 
 		if(isCSW)
 		{
@@ -1366,6 +1381,17 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 				}
 			}
 		}
+#else
+		for (auto &target : popWideParams.initial_infection_targets_)
+		{
+			if (target.second > 0 && target.first.match(p))
+			{
+				target.second--;
+				isPrevalent = true;
+				break;
+			}
+		}
+#endif
 
 		if(isPrevalent)
 		{

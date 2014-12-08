@@ -355,7 +355,8 @@ public:
 
 	double getCepacDiscountFactor(EventParams &parameters) const 
 	{ 
-		return std::pow(parameters.untreatedContext->getRunSpecsInputs()->discountFactor, parameters.currTime);
+		auto context = parameters.useRollout ? parameters.untreatedContext : parameters.cepacSimContexts[0];
+		return std::pow(context->getRunSpecsInputs()->discountFactor, parameters.currTime);
 	}
 
 	/**
