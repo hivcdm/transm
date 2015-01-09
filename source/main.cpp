@@ -1,3 +1,4 @@
+#include <chrono>
 #include <unordered_set>
 #include <tclap/CmdLine.h>
 
@@ -47,7 +48,6 @@ int run_simulation(const std::string &batch_name, std::function<void(const std::
     CepacUtil::changeDirectoryToInputs();
     //Call this so that relative directories can be used as input (i.e. "../")
     CepacUtil::useCurrentDirectoryForInputs();
-
     CepacUtil::createResultsDirectory();
 
     SummaryStats cepac_summary("cepacPopstats.out");
@@ -60,16 +60,6 @@ int run_simulation(const std::string &batch_name, std::function<void(const std::
 
     for(auto task_name : task_names)
     {
-        /*
-        SimStatus current_task_status(task_name, status);
-        Simulation s(current_task_status, message_callback);
-
-        auto task_filename = batches_directory / batch_name / path(task_name);
-        s.load_inputs(task_filename.string());
-
-        s.run();
-        */
-
         //Changing back to the input directory because over the course of Sim->run, the directory gets changed to results
         CepacUtil::changeDirectoryToInputs();
         std::cout << "Running File: " << task_name << std::endl;

@@ -13,6 +13,7 @@
 #include "core/constants.hpp"
 #include "entitypool/fullvector.hpp"
 #include "statistics/statsrecord.hpp"
+#include "utility/time.hpp"
 #include "utility/utility.hpp"
 
 namespace transm {
@@ -44,9 +45,9 @@ public:
 
 	virtual void Circumcise() = 0;
 
-    void SetSexualActivityDelay(int delay) { sexualActivityDelay = delay; }
+    void SetSexualActivityDelay(TimeSpan delay) { sexualActivityDelay = delay; }
 
-    int GetSexualActivityDelay() const { return sexualActivityDelay; }
+    TimeSpan GetSexualActivityDelay() const { return sexualActivityDelay; }
 
     virtual bool IsCircumcised() const = 0;
 
@@ -216,10 +217,10 @@ protected:
 	int numPartnersInHistory[(int)SexualPartnership::Type::ENDType];
 
 	//array of month of their farthest current partnership dissolution time for each partnership type.  initialized to zero
-	int monthOfLatestPartnershipDissolution[(int)SexualPartnership::Type::ENDType];
+	Time monthOfLatestPartnershipDissolution[(int)SexualPartnership::Type::ENDType];
 
 	//array of month of latest concurrent relationship for each partnership type. Only updated for 12 months before calibration
-	int monthOfLatestConcurrent;
+	Time monthOfLatestConcurrent;
 
 	// Contains the number of partnerships the person tried to form over time, but didn't
 	// (usually due to no partners available or re-hooking up with a current partner)
@@ -265,7 +266,7 @@ protected:
 	//The indices which point to the person in their assigned FullVector
 	std::map<FullVector *, std::vector<unsigned int>> FVindices;
 
-    int sexualActivityDelay;
+    TimeSpan sexualActivityDelay;
 
 public:
 
@@ -274,18 +275,18 @@ public:
 
 	//this constructor creates an actual person that can be simulated. It is generally called by Male and Female
 	// we pass in _eventParams because becomeInfected() needs it...
-	Entity(int _age, unsigned int _populationID);
+	Entity(Age age, unsigned int _populationID);
 
 	virtual ~Entity();
 
     //age of Entity (in months)
-    unsigned int age;
+    Age age;
 
     //age of Entity on model init (in months)
-	unsigned int initAge;
+	Age initAge;
 
     //age of Entity when they got infected (-1 for uninfected)
-	int ageInfected;
+	Age ageInfected;
 
     //whether this person is dead or not
 	bool death;
@@ -306,7 +307,7 @@ public:
     bool isObserved;
 
     //OI HIstory
-    bool oiHistory[Constants::NUMBER_OF_OIS];
+    bool oiHistory[Constants::NumberOfOIs];
 
 	DeathStatus deathStatus;
 
@@ -356,7 +357,7 @@ public:
 	double getCepacDiscountFactor(EventParams &parameters) const 
 	{ 
 		auto context = parameters.useRollout ? parameters.untreatedContext : parameters.cepacSimContexts[0];
-		return std::pow(context->getRunSpecsInputs()->discountFactor, parameters.currTime);
+		return std::pow(context->getRunSpecsInputs()->discountFactor, parameters.currTime.get_total_months());
 	}
 
 	/**
@@ -372,11 +373,11 @@ public:
 	/**
 	* returns month of latest partnership dissolution (may be in the future) for given partner type
 	*/
-	int getMonthOfLatestPartnershipDissolution(SexualPartnership::Type);
+	Time getMonthOfLatestPartnershipDissolution(SexualPartnership::Type);
 
 	//gets and sets month of latest concurrent
-	void setMonthOfLatestConcurrent(int);
-	int getMonthOfLatestConcurrent();
+	void setTimeOfLatestConcurrent(Time time);
+	Time getTimeOfLatestConcurrent();
 
 	/**
 	 * @return hvl
@@ -578,7 +579,7 @@ public:
 	@param _partnershipsToEnd when method is complete, _partnershipsToEnd will contain partnerships that should end.
 	@return number of partnerships ended
 	*/
-	long getPartnershipsToEnd(long _currTime, SexualPartnership::Type _partnershipType,
+	long getPartnershipsToEnd(Time currTime, SexualPartnership::Type _partnershipType,
 	                          list<SexualPartnership *> &_partnershipsToEnd, bool _fromDeath);
 
 	/*
@@ -620,8 +621,8 @@ public:
 	Entity *sexualActivity(Entity *_p, int _numActs, SexualPartnership::Type _partnershipType, EventParams &_eventParams,
         InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients);
 
-	//gets the age of the person in desired granularity
-	int getAge(TimeGranularity _granularity) const;
+	//gets the age of the person
+	Age getAge() const;
 
 	//returns the unique id number of this person
 	unsigned long getID() const;
@@ -634,14 +635,6 @@ public:
 	void setToBeTraced();
 
 	const EntityStatsRecord *getStats();
-
-	//prints out person's id information
-    void print(std::ostream &_outStream, const std::string &_prefix) const;
-
-    void printCurrentPartners(std::ostream &_outStream, const std::string &_prefix);
-
-	//Writes the state of the patient to file.  This state can be reloaded on a different run.
-	virtual void saveState(std::ostream &_outStream, long currTime);
 
 	//Unformed partnership tallies getters and setters -- the total should never be reset, only the "latest" (i.e. current time step)
 	int getTotalUnformedPartnerships(SexualPartnership::Type type);
@@ -681,7 +674,7 @@ public:
 		{
 			switch(_PSC)
 			{
-			case AGE: return (_KeyValType)_p->age;
+			case AGE: return (_KeyValType)(static_cast<unsigned long>(_p->age.get_total_months()));
 			case SEXUAL_ACTIVITY_LEVEL: return (_KeyValType)_p->sexualActivityLevel;
 			case ID: return (_KeyValType)_p->id;
 			}

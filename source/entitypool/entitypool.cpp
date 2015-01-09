@@ -35,33 +35,6 @@ BucketDemographicProfile *EntityPool::getBucket(DemographicProfile::ProfileID _p
 	return entityBuckets.at(_profileID);
 }
 
-void EntityPool::print(ostream &_outStream)
-{
-	BucketDemographicProfile *bucket = nullptr;
-	//iterate through all buckets
-	size_t currBucketIndex = 0;
-
-	while(currBucketIndex < entityBuckets.size())
-	{
-		bucket = entityBuckets.at(currBucketIndex);
-
-		//if bucket == nullptr, that means we are not using this particular DemographicProfile during this simulation
-		if(bucket == nullptr)
-		{
-			currBucketIndex++;
-			continue;
-		}
-
-		_outStream << *(bucket->getLabel()) << Constants::COLON << Constants::TAB << Constants::TAB << "Gender" <<
-		           Constants::TAB << "ID" << Constants::TAB << "Profile" << Constants::TAB << "Age" << Constants::TAB << "cd4" <<
-		           Constants::TAB << "hvl" << std::endl;
-		//print out all members
-		bucket->print(_outStream, Constants::TABTAB);
-		_outStream << std::endl;
-		currBucketIndex++;
-	}
-}
-
 //print out all the labels of all the Buckets in the EntityPool. separate each by TAB
 //if _printPropInfected == true, then include a column for #infected for each BucketDemographicProfile
 void EntityPool::printBucketLabels(ostream &_outStream, bool _printPropInfected)
@@ -83,15 +56,15 @@ void EntityPool::printBucketLabels(ostream &_outStream, bool _printPropInfected)
 
 		if(_printPropInfected)
 		{
-			_outStream << *(bucket->getLabel()) << " (Infected)" << Constants::TAB;
+			_outStream << *(bucket->getLabel()) << " (Infected)" << Constants::Tab;
 		}
 
-		_outStream << (*bucket->getLabel()) << " (Total)" << Constants::TAB;
+		_outStream << (*bucket->getLabel()) << " (Total)" << Constants::Tab;
 
         if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
 		{
-			_outStream << (*bucket->getLabel()) << " (HR)" << Constants::TAB;
-			_outStream << (*bucket->getLabel()) << " (LR)" << Constants::TAB;
+			_outStream << (*bucket->getLabel()) << " (HR)" << Constants::Tab;
+			_outStream << (*bucket->getLabel()) << " (LR)" << Constants::Tab;
 		}
 
 		currBucketIndex++;
@@ -144,19 +117,19 @@ void EntityPool::printBucketSizes(std::ostream &_outStream, const std::string &,
 			}
 			else
 			{
-				_outStream << Constants::TAB;
+				_outStream << Constants::Tab;
 			}
 		}
 
 		//print out # people in current BucketDemographicProfile
 		long bucketSize = bucket->size();
-		_outStream << bucketSize << Constants::TAB;
+		_outStream << bucketSize << Constants::Tab;
 
         if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
 		{
 			long bucketSizeHR = ((BucketSexualMixing *) bucket)->sizeRisk(Entity::RiskLevel::HIGH);
 			long bucketSizeLR = ((BucketSexualMixing *) bucket)->sizeRisk(Entity::RiskLevel::LOW);
-			_outStream << bucketSizeHR << Constants::TAB << bucketSizeLR << Constants::TAB;
+			_outStream << bucketSizeHR << Constants::Tab << bucketSizeLR << Constants::Tab;
 		}
 
 		_totalSize += bucketSize;
@@ -223,13 +196,14 @@ bool EntityPool::removeEntity(Entity *_person)
 			auto bucket = getBucket(personProfID);
 			removed = bucket->erase(_person);
 		}
-		catch(std::out_of_range &e)
+		catch(std::out_of_range &)
 		{
-			std::cerr << "Trying to remove person from DMG Profile Bucket resulted in an out of range exception: " << e.what() <<
-			          "\n";
-			std::cerr << "If this person is of maximum age, they were probably already removed and you can disregard this message."
-			          << std::endl;
-			_person->print(cerr, "Person attempted to remove: ");
+			throw 1;
+//			std::cerr << "Trying to remove person from DMG Profile Bucket resulted in an out of range exception: " << e.what() <<
+			          //"\n";
+			//std::cerr << "If this person is of maximum age, they were probably already removed and you can disregard this message."
+			          //<< std::endl;
+			//_person->print(cerr, "Person attempted to remove: ");
 		}
 		catch(std::exception &e)
 		{
@@ -356,7 +330,7 @@ std::size_t EntityPool::sizeSexuallyActive(const std::string &entity_type, Entit
     return count;
 }
 //calculate the current number of sexually active persons within the specified age range
-unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths)
+unsigned long EntityPool::sizeSexuallyActiveByAge(Age minAgeMonths, Age maxAgeMonths)
 {
 	BucketDemographicProfile *bucket = nullptr;
 	unsigned long size = 0;		//total of the zie
@@ -387,10 +361,17 @@ unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMo
 }
 
 //calculate the current number of sexually active persons within the specified age range and gender
-std::size_t EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths, const std::string &entity_type)
+std::size_t EntityPool::sizeSexuallyActiveByAge(Age minAgeMonths, Age maxAgeMonths, const std::string &entity_type)
 {
     std::size_t count = 0;
-    forEach([&](Entity *e) { if(e->getEntityType() == entity_type && e->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::Active && e->getAge(TimeGranularity::Month) >= minAgeMonths && e->getAge(TimeGranularity::Month) <= maxAgeMonths) count++; });
+    forEach([&](Entity *e) 
+	{ 
+		if(e->getEntityType() == entity_type 
+			&& e->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::Active 
+			&& e->getAge() >= minAgeMonths 
+			&& e->getAge() <= maxAgeMonths) 
+			count++; 
+	});
     return count;
 }
 
@@ -431,8 +412,9 @@ std::list<Entity *>::iterator EntityPool::removeEntityFromAll(std::list<Entity *
 	}
 	else
 	{
-		(*_pIter)->print(cerr, "Not removing person of indiscriminate gender: ");
-		toReturn = _pIter;
+		throw 1;
+		//(*_pIter)->print(cerr, "Not removing person of indiscriminate gender: ");
+		//toReturn = _pIter;
 	}
 
 	return toReturn;
@@ -471,7 +453,7 @@ list<Entity *>::iterator EntityPool::end(DemographicProfile::Gender _gender)
 
 //creates a New EntityPool
 // @param _SAEntAgeMths age of sexual debut
-EntityPool::EntityPool(int ageOfMajority, unsigned int _popID, const std::map<SexualPartnership::Type, double> &_assort)
+EntityPool::EntityPool(Age ageOfMajority, unsigned int _popID, const std::map<SexualPartnership::Type, double> &_assort)
 {
 	//allocate space for Buckets and set to nullptr
 	entityBuckets = std::vector<BucketDemographicProfile *>(DemographicProfile::TotalNumBuckets, nullptr);
@@ -516,13 +498,13 @@ EntityPool::EntityPool(int ageOfMajority, unsigned int _popID, const std::map<Se
 			if(!invalidCombo)
 			{
 				entityBuckets.at(currBucketID) = new BucketSexualMixing(currBucketID, DemographicProfile::toString(currBucketID), _popID,
-                    ageOfMajority, 12 * Entity::maxYrForDeathStats + 1, TimeGranularity::Month, _assort);
+                    ageOfMajority, Age::from_months(12 * Entity::maxYrForDeathStats + 1), _assort);
 			}
 		}
 	}
 }
 
-EntityPool::~EntityPool(void)
+EntityPool::~EntityPool()
 {
 	//Delete all people in allFemales and allMales in order to prevent memory leaks
 	std::list<Entity *>::iterator p_Iter;

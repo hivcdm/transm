@@ -49,15 +49,15 @@ public:
         double getCircumProtectEff() const;
         double getCondomProtectEff() const;
 
-        int getPartneringDiscStartAgeYrs() const;
-        double getPartneringAcqDiscMult(int _ageYrs) const;
-        double getPartneringActsDiscMult(int _ageYrs) const;
-        void setAgeDiscounting(int startAgeYrs, double partneringAcqDisc, double partneringActsDisc)
+        Age getPartneringDiscStartAgeYrs() const;
+        double getPartneringAcqDiscMult(Age _ageYrs) const;
+        double getPartneringActsDiscMult(Age _ageYrs) const;
+        void setAgeDiscounting(Age startAgeYrs, double partneringAcqDisc, double partneringActsDisc)
         {
             partneringDiscStartAgeYrs = startAgeYrs;
             partneringAcqDiscPerYr = partneringAcqDisc;
             partneringActsDiscPerYr = partneringActsDisc;
-            int numMults = Entity::maxYrForDeathStats - partneringDiscStartAgeYrs + 1;
+			int numMults = Entity::maxYrForDeathStats - partneringDiscStartAgeYrs.get_year() + 1;
             double acqMult = 1 - partneringAcqDiscPerYr;
             double actsMult = 1 - partneringActsDiscPerYr;
 
@@ -98,11 +98,11 @@ public:
         int GetMaxPartnershipRejections() const { return maxPartnershipRejections; }
         void SetMaxPartnershipRejections(int rejections) { maxPartnershipRejections = rejections; }
 
-        void SetCswEndAge(int end_age) { cswEndAge = end_age; }
-        int GetCswEndAge() const { return cswEndAge; }
+        void SetCswEndAge(Age end_age) { cswEndAge = end_age; }
+        Age GetCswEndAge() const { return cswEndAge; }
 
     private:
-        int cswEndAge; // in months
+        Age cswEndAge;
         /// <summary>
         /// chance that a male will become a CSW
         /// </summary>
@@ -116,7 +116,7 @@ public:
         /// <summary>
         /// sexual behavior params for each type as specified by SexualPartnership::Type
         /// </summary>
-      std::unordered_map<SexualPartnership::Type, SexualBehavior> sexualBehaviorParams;
+		std::unordered_map<SexualPartnership::Type, SexualBehavior> sexualBehaviorParams;
 
         //proportion of male population that is in the "high risk" lists based on csw status
         double proportionHighRisk[(std::size_t)DemographicProfile::Employment::Last];
@@ -125,7 +125,7 @@ public:
         NormalDist activityLevel;
 
         //the age that partnering discount will start
-        int partneringDiscStartAgeYrs;
+        Age partneringDiscStartAgeYrs;
         //partnering acquisition rates get discounted every year
         double partneringAcqDiscPerYr;
         //coital acts/month get discounted every year
@@ -193,7 +193,7 @@ public:
     /// this constructor creates an Msm that can be simulated
     /// constructor should set the CD4, HVL, and HVLsetpoint from age and gender
     /// </summary>
-    Msmw(EventParams &_eventParams, int _age, bool _circumcised, unsigned int _populationID, const Msmw::SubPopParams &params);
+    Msmw(EventParams &_eventParams, Age age, bool _circumcised, unsigned int _populationID, const Msmw::SubPopParams &params);
 
     Entity *choosePartner(RandomNumberGenerator &_randomNums, EntityPool *_availableEntities,
         SexualPartnership::Type _partnershipType, bool _remove);
@@ -236,7 +236,7 @@ public:
     /// <summary>
     /// writes state of person to file
     /// </summary>
-    void saveState(ostream &_outStream, long currTime);
+    void saveState(ostream &_outStream, Time currTime);
 
     int getMaxPartnershipRejections() const { return populationSpecificParams.GetMaxPartnershipRejections(); }
 

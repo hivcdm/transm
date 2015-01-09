@@ -79,9 +79,9 @@ public:
 		double cepac_costs_discounted;
     };
 
-    TargetGroup(const std::string &label, int start, int end, bool open, bool permanent, Nullable<PopulationTarget> target);
+    TargetGroup(const std::string &label, Time start, Time end, bool open, bool permanent, Nullable<PopulationTarget> target);
 
-    void Update(Population &p, int simulation_time, RandomNumberGenerator &rng, 
+    void Update(Population &p, Time simulation_time, RandomNumberGenerator &rng, 
         const std::unordered_set<Entity *> &dead_people);
 
     void AddPartition(const std::string &label, bool trace, double proportion,
@@ -131,8 +131,8 @@ public:
         auto in_partition = [=](const std::pair<Entity *, int> &p) { return p.second == (int)partition_index; };
         auto is_sexually_active = [&](const std::pair<Entity *, int> &p) { return in_partition(p) && p.first->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::Active; };
         auto not_sexually_active = [&](const std::pair<Entity *, int> &p) { return in_partition(p) && p.first->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::NotActive; };
-        auto is_prevalent = [&](const std::pair<Entity *, int> &p) { return in_partition(p) && p.first->ageInfected > -1 && p.first->ageInfected + 1 != (int)p.first->age; };
-        auto is_incident = [&](const std::pair<Entity *, int> &p) { return in_partition(p) && p.first->ageInfected + 1 == (int)p.first->age; };
+        auto is_prevalent = [&](const std::pair<Entity *, int> &p) { return in_partition(p) && p.first->ageInfected.get_total_months() > -1 && p.first->ageInfected + TimeSpan::Month != p.first->age; };
+        auto is_incident = [&](const std::pair<Entity *, int> &p) { return in_partition(p) && p.first->ageInfected + TimeSpan::Month == p.first->age; };
         auto is_entity_type = [&](const std::pair<Entity *, int> &p, const std::string &entity_type) { return in_partition(p) && p.first->getEntityType() == entity_type; };
         auto is_gender = [&](const std::pair<Entity *, int> &p, DemographicProfile::Gender gender) { return in_partition(p) && p.first->getDemographicProfileVal<DemographicProfile::Gender>() == gender; };
         auto is_sa_gender = [&](const std::pair<Entity *, int> &p, DemographicProfile::Gender gender) { return in_partition(p) && is_sexually_active(p) && is_gender(p, gender); };
@@ -143,12 +143,12 @@ public:
         auto is_na_entity_type = [&](const std::pair<Entity *, int> &p, const std::string &entity_type) { return in_partition(p) && !is_sexually_active(p) && is_entity_type(p, entity_type); };
         auto is_prev_entity_type = [&](const std::pair<Entity *, int> &p, const std::string &entity_type) { return is_prevalent(p) && is_entity_type(p, entity_type); };
         auto is_incident_entity_type = [&](const std::pair<Entity *, int> &p, const std::string &entity_type) { return is_incident(p) && is_entity_type(p, entity_type); };
-        auto is_sa_in_age_range_gender = [&](const std::pair<Entity *, int> &p, int lower, int upper, DemographicProfile::Gender gender) { return is_sa_gender(p, gender) && p.first->getAge(TimeGranularity::Month) >= lower && p.first->getAge(TimeGranularity::Month) <= upper; };
-        auto is_prev_in_age_range_gender = [&](const std::pair<Entity *, int> &p, int lower, int upper, DemographicProfile::Gender gender) { return p.first->getAge(TimeGranularity::Month) >= lower && p.first->getAge(TimeGranularity::Month) <= upper && is_prev_gender(p, gender); };
-        auto is_incident_in_age_range_gender = [&](const std::pair<Entity *, int> &p, int lower, int upper, DemographicProfile::Gender gender) { return is_incident_gender(p, gender) && p.first->getAge(TimeGranularity::Month) >= lower && p.first->getAge(TimeGranularity::Month) <= upper; };
-        auto is_sa_in_age_range_entity_type = [&](const std::pair<Entity *, int> &p, int lower, int upper, const std::string &entity_type) { return is_sa_entity_type(p, entity_type) && p.first->getAge(TimeGranularity::Month) >= lower && p.first->getAge(TimeGranularity::Month) <= upper; };
-        auto is_prev_in_age_range_entity_type = [&](const std::pair<Entity *, int> &p, int lower, int upper, const std::string &entity_type) { return p.first->getAge(TimeGranularity::Month) >= lower && p.first->getAge(TimeGranularity::Month) <= upper && is_prev_entity_type(p, entity_type); };
-        auto is_incident_in_age_range_entity_type = [&](const std::pair<Entity *, int> &p, int lower, int upper, const std::string &entity_type) { return is_incident_entity_type(p, entity_type) && p.first->getAge(TimeGranularity::Month) >= lower && p.first->getAge(TimeGranularity::Month) <= upper; };
+		auto is_sa_in_age_range_gender = [&](const std::pair<Entity *, int> &p, int lower, int upper, DemographicProfile::Gender gender) { return is_sa_gender(p, gender) && p.first->getAge().get_total_months() >= lower && p.first->getAge().get_total_months() <= upper; };
+		auto is_prev_in_age_range_gender = [&](const std::pair<Entity *, int> &p, int lower, int upper, DemographicProfile::Gender gender) { return p.first->getAge().get_total_months() >= lower && p.first->getAge().get_total_months() <= upper && is_prev_gender(p, gender); };
+		auto is_incident_in_age_range_gender = [&](const std::pair<Entity *, int> &p, int lower, int upper, DemographicProfile::Gender gender) { return is_incident_gender(p, gender) && p.first->getAge().get_total_months() >= lower && p.first->getAge().get_total_months() <= upper; };
+		auto is_sa_in_age_range_entity_type = [&](const std::pair<Entity *, int> &p, int lower, int upper, const std::string &entity_type) { return is_sa_entity_type(p, entity_type) && p.first->getAge().get_total_months() >= lower && p.first->getAge().get_total_months() <= upper; };
+		auto is_prev_in_age_range_entity_type = [&](const std::pair<Entity *, int> &p, int lower, int upper, const std::string &entity_type) { return p.first->getAge().get_total_months() >= lower && p.first->getAge().get_total_months() <= upper && is_prev_entity_type(p, entity_type); };
+		auto is_incident_in_age_range_entity_type = [&](const std::pair<Entity *, int> &p, int lower, int upper, const std::string &entity_type) { return is_incident_entity_type(p, entity_type) && p.first->getAge().get_total_months() >= lower && p.first->getAge().get_total_months() <= upper; };
         auto is_in_risk_group = [&](const std::pair<Entity *, int> &p, const std::string &risk_string)
         {
             if(!in_partition(p)) return false;
@@ -281,8 +281,8 @@ public:
 private:
     struct
     {
-        int start;
-        int end;
+        Time start;
+        Time end;
     } enrollment_period_;
 
     bool open_;

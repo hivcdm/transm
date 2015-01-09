@@ -26,7 +26,7 @@ public:
         std::size_t _numInfectedNonCSWMalesLowRisk, std::size_t _numInfectedNonCSWFemalesLowRisk,
         std::size_t _numInfectedNonCSWMalesHighRisk, std::size_t _numInfectedNonCSWFemalesHighRisk);
 #else
-	AgeBucketPrevalenceInfo(int min_age, int max_age,
+	AgeBucketPrevalenceInfo(Age min_age, Age max_age,
 		const std::unordered_map<std::string, double> &entity_proportions);
 #endif
 
@@ -35,12 +35,12 @@ public:
     /// <summary>
     /// the min age that this bucket represents
     /// </summary>
-    int minAgeMth;
+    Age minAgeMth;
 
     /// <summary>
     /// the max age that this bucket represents
     /// </summary>
-    int maxAgeMth;
+    Age maxAgeMth;
 
     /// <summary>
     /// determines size as proportion of the population

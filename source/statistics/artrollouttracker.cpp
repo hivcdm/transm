@@ -105,9 +105,9 @@ void ArtRolloutTracker::recordTreatment(Entity *person)
 	counter.Increment(PersonBucket(*person, ageRanges), "treated");
 }
 
-void ArtRolloutTracker::printArtRolloutOutcomes(int time, std::ostream &_outStream, Population *_population)
+void ArtRolloutTracker::printArtRolloutOutcomes(Time time, std::ostream &_outStream, Population *_population)
 {
-	if(time == 0)
+	if(time == Time::Zero)
 	{
 		buildHeader();
 		PrintHeader(_outStream);
@@ -170,7 +170,7 @@ void ArtRolloutTracker::buildHeader()
 			for(const auto &age_range : ageRanges)
 			{
 				std::stringstream rangeString;
-				rangeString << age_range.lower << "-" << age_range.upper;
+				rangeString << age_range;
 				SetHeaderCell(column++, 3, rangeString.str());
 			}
 		}
@@ -202,15 +202,15 @@ void ArtRolloutTracker::buildHeader()
 	}
 }
 
-void ArtRolloutTracker::buildRow(int time, Population *_population)
+void ArtRolloutTracker::buildRow(Time time, Population *_population)
 {
-	if(time == 0)
+	if(time == Time::Zero)
 	{
 		PushElement("init");
 	}
 	else
 	{
-		PushElement(time);
+		PushElement(time.get_total_months());
 	}
 
 	PushElement(static_cast<int>(_population->GetSize()));

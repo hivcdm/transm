@@ -111,7 +111,7 @@ public:
 
         rows_.push_back(current_row);
 
-        if(parameters.currTime + 1 != (int)rows_.size())
+        if((parameters.currTime + TimeSpan::Month).get_total_months() != (double)rows_.size())
         {
             throw std::runtime_error("missed month");
         }

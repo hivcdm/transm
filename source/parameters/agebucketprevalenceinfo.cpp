@@ -3,7 +3,7 @@
 namespace transm {
 
 #if OLD_STYLE_PREVALENCE
-AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(int _minAgeMth, int _maxAgeMth,
+AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(Months _minAgeMth, Months _maxAgeMth,
     const std::unordered_map<std::string, double> &entity_proportions,
     std::size_t _numInfectedCSWMale, std::size_t _numInfectedCSWFemale,
     std::size_t _numInfectedNonCSWMalesLowRisk, std::size_t _numInfectedNonCSWFemalesLowRisk,
@@ -21,13 +21,16 @@ AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(int _minAgeMth, int _maxAgeMth,
     numInfectedRisk[(std::size_t)DemographicProfile::Gender::Female][(std::size_t)Entity::RiskLevel::HIGH] = _numInfectedNonCSWFemalesHighRisk;
 }
 #else
-	AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(int _minAgeMth, int _maxAgeMth,
+	AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(Age _minAgeMth, 
+		Age _maxAgeMth,
 		const std::unordered_map<std::string, double> &entity_proportions) :
 		minAgeMth(_minAgeMth),
 		maxAgeMth(_maxAgeMth),
 		entityProportions(entity_proportions)
 	{
-		assert((_minAgeMth >= 0) && (_maxAgeMth > 0) && (_maxAgeMth > _minAgeMth));
+		assert(_minAgeMth.get_total_months() >= 0);
+		assert(_maxAgeMth.get_total_months() > 0);
+		assert(_maxAgeMth > _minAgeMth);
 	}
 #endif
 

@@ -38,9 +38,8 @@ The # of buckets depend on the timestep granularity used in the simulation
 class BucketSexualMixing : public BucketDemographicProfile
 {
 	//min and max age that this BucketDemographicProfile holds
-	unsigned int minAge;
-	unsigned int maxAge;
-	TimeGranularity timeGranularity;
+	Age minAge;
+	Age maxAge;
 
 	//TODO:Put into BucketDemographicProfile??
 	unsigned int popID;
@@ -62,15 +61,16 @@ private :
     std::map<SexualPartnership::Type, double> assort;
 
 public :
-
 	/**
 	@param _id bucket ID associated with this BucketDemographicProfile
 	@param _minAgeInYrs min age that of people found in this bucket (in years)
 	@param _maxAgeInYrs age of people found in this bucket (in years)
 	@param _timeGranularity people will be bucketed by either MONTH or YEAR of age. This determines performance of selection when the behavior is heterogeneous vs. homogeneous
 	**/
-	BucketSexualMixing(DemographicProfile::ProfileID _id, const string *_bucketLabel, unsigned int _popID, int _minAge, int _maxAge,
-        TimeGranularity _timeGranularity, const std::map<SexualPartnership::Type, double> &_assort);
+	BucketSexualMixing(DemographicProfile::ProfileID _id, 
+		const std::string *_bucketLabel, unsigned int _popID, Age minAge, 
+		Age maxAge, const std::map<SexualPartnership::Type, double> &_assort);
+
 	virtual ~BucketSexualMixing();
 
     /// <summary>
@@ -131,13 +131,13 @@ public :
 	 * @params: minMonthAge, maxMonthAge
 	 * @returns: total number of persons in this with age between minMonthAge and maxMonthAge
 	 */
-	unsigned long sizeByAge(int minMonthAge, int maxMonthAge);
+	unsigned long sizeByAge(Age minAge, Age maxAge);
 
 	/*
 	 * @params: minMonthAge, maxMonthAge
 	 * @returns: total number of inftected persons in this with age between minMonthAge and maxMonthAge
 	 */
-	unsigned long sizeInfectedByAge(int minMonthAge, int maxMonthAge);
+	unsigned long sizeInfectedByAge(Age minAge, Age maxAge);
 
 	/*
 	 * @returns: total number of marbles in all FVs associated with _risk
@@ -202,7 +202,7 @@ private :
 
 	//gets a random person with age in [_ageLowerBound,_ageUpperBound]
 	//TESTED
-	Entity *getRandomPerson(RandomNumberGenerator &_randomNums, unsigned int _ageLowerBound, unsigned int _ageUpperBound,
+	Entity *getRandomPerson(RandomNumberGenerator &_randomNums, Age _ageLowerBound, Age _ageUpperBound,
 	                        Entity::RiskLevel _risk, SexualPartnership::Type _partnershipType, bool _remove);
 
 	//Returns AgeBucket of oldest persons

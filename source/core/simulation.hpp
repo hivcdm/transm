@@ -44,14 +44,14 @@ public:
 
 	double GetIncidence() { return incidence_; }
 
-	int GetTime() { return time_; }
+	Time GetTime() { return time_; }
 
 	void RegisterTargetGroup(const TargetGroup &group);
 
 	Population &GetPopulation() { return population_; }
     const Population &GetPopulation() const { return population_; }
 
-	void SetDuration(int duration) { duration_ = duration; }
+	void SetDuration(TimeSpan duration) { duration_ = duration; }
 
 	void SetFixedSeed(int seed);
 
@@ -62,7 +62,7 @@ public:
         batch_status_.set_state(name_, SimState::queued);
     }
 
-	void AddLifeExpectancyRecordTime(int time) { population_.populationStatistics.addLifeExpectancyRecordTime(time); }
+	void AddLifeExpectancyRecordTime(Time time) { population_.populationStatistics.addLifeExpectancyRecordTime(time); }
 
     void SetLifeExpectancyConfidenceInterval(double ci) { population_.populationStatistics.setMedianLECI(ci); }
 
@@ -76,12 +76,11 @@ private:
 	{
 		std::string file_name;
 		int file_number;
-		int time;
+		Time time;
 		int target_population;
 	};
 
-    using CepacTreatmentFiles = std::array<TreatmentFile, Constants::NUMBER_OF_CEPAC_FILES>;
-    using RolloutTreatmentFiles = std::array<TreatmentFile, Constants::NUMBER_OF_ROLLOUT_FILES>;
+    using TreatmentFiles = std::vector<TreatmentFile>;
 
 	void FirstStep();
 
@@ -90,10 +89,10 @@ private:
 	void Step();
 
 	/** Returns true if all simContexts loaded correctly */
-	bool LoadCepacSimContexts(const CepacTreatmentFiles &treatment_files);
+	bool LoadCepacSimContexts(const TreatmentFiles &treatment_files);
 
 	/** */
-	bool LoadRolloutSimContexts(const RolloutTreatmentFiles &treatment_files);
+	bool LoadRolloutSimContexts(const TreatmentFiles &treatment_files);
 
 	/** Sets the Non aids death from a cepac simcontext */
 	void SetNonAidsDeathFromCepac(SimContext &context, std::vector<double> &male, std::vector<double> &female);
@@ -106,10 +105,10 @@ private:
 	std::string name_;
 
 	/** current time in the simulation */
-	int time_;
+	Time time_;
 
 	/** number of months to run this file in a sequence*/
-	int duration_;
+	TimeSpan duration_;
 
 	/** housekeeping parameters that are universal to each event in the simulation */
 	EventParams parameters_;
@@ -121,7 +120,7 @@ private:
 
 	bool hasPassedFirstMonthCalibPrev_;
 
-	int monthOfFirstMonthCalibPrev_;
+	Time monthOfFirstMonthCalibPrev_;
 
 	uint32_t rng_seed_;
 
@@ -133,9 +132,9 @@ private:
 
 	Outputs outputs_;
 
-	CepacTreatmentFiles cepac_treatment_files_;
+	TreatmentFiles cepac_treatment_files_;
 
-	RolloutTreatmentFiles rollout_treatment_files_;
+	TreatmentFiles rollout_treatment_files_;
 
     std::vector<TargetGroup> groups_;
 

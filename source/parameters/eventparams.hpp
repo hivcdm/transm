@@ -11,6 +11,7 @@
 #include "core/constants.hpp"
 #include "utility/enum_iterator.hpp"
 #include "utility/randomnumbergenerator.hpp"
+#include "utility/time.hpp"
 
 namespace transm {
 
@@ -18,9 +19,6 @@ namespace transm {
 /// this data structure contains some important simulation level parameters or variables
 /// that are associated with each Population-level event
 /// <summary>
-/// <authors>
-/// schung5, errhode
-/// </authors>
 class EventParams
 {
 public:
@@ -66,7 +64,6 @@ public:
 
 	EventParams()
 	{
-		currTime = 0;
 		enableDynamicTreatmentScaling = false;
 		dynamicFeedbackPeriod = 12;
 		useRollout = false;
@@ -81,14 +78,14 @@ public:
     /// <summary>
 	/// current internal clock for a particular Population
     /// </summary>
-	int currTime;
+	Time currTime;
 
     /// <summary>
 	/// Sim name -- primarily used for generating names of GraphViz files and CEPAC output files; will be name of input sheet minus .xml
     /// </summary>
 	std::string simName;
 
-	int monthOf1990;
+	Time monthOf1990;
 
 	//CEPAC related simContext (input)
 	std::vector<SimContext *> cepacSimContexts;
@@ -104,7 +101,7 @@ public:
 	bool useRollout;
 
 	//timesToSwitchSimContext[0] should always be 0 by default (?)
-	int timesToSwitchSimContext[Constants::NUMBER_OF_CEPAC_FILES];
+	std::vector<Time> timesToSwitchSimContext;
 
 	inline bool itIsTimeToSwitchSimContext()
 	{
@@ -113,10 +110,10 @@ public:
 			return false;
 		}
 
-		for(int i = 0; i < Constants::NUMBER_OF_CEPAC_FILES; i++)
+		for (auto time : timesToSwitchSimContext)
 		{
 			//Switching doesn't occur until 1 month later
-			if(currTime == timesToSwitchSimContext[i] + 1)
+			if(currTime == time + TimeSpan::Month)
 			{
 				return true;
 			}
@@ -133,38 +130,27 @@ public:
 	//calibration inputs
 	CalibrationInputs calibrationInputs;
 	//prevalence delay time
-	int delayPrevalence;
+	Time delayPrevalence;
 
     std::map<TraceFile::Type, TraceFile> trace_files;
 
-	//Saves state of population to file
-	std::fstream popStateStream[Constants::NUMBER_TIME_POINTS_SAVE_STATE];
 	//number of patients per initial age range to be followed
 	int numToTrace;
 	//number of newborns to trace after specified month
 	int numNewbornsToTrace;
-	int monthTraceNewborns;
+	Time monthTraceNewborns;
 	//keeps track of how many newborns have been traced
 	int numNewbornsTraced;
 
 	bool tracePrevalentCases;
 
 	//Concurrency Definitions
-	std::array<ConcurrencyDef, Constants::NUMBER_CONCURRENCY_DEFS> concurrencyDef;
-
-	//prints BatchStats files for each of up to five variables as determined by user input
-    std::map<BatchStatsVariables, std::fstream> BatchStatsStream;
+	std::array<ConcurrencyDef, Constants::NumberConcurrencyDefs> concurrencyDef;
 
 	std::map<int, double> targetYearlyRolloutProportions;
 
-	inline void displayOut(const std::string &message)
-	{
-		messageCallback(message);
-	}
-
-	std::function<void(const std::string &)> messageCallback;
-	DebugLevel debugLevel;		//determines how much output is printed to the traces
-	RandomNumberGenerator randomNums;		//random number generator that is used throughout the simulation
+	//random number generator that is used throughout the simulation
+	RandomNumberGenerator randomNums;
 
 	bool enableDynamicTreatmentScaling;
 	int dynamicFeedbackPeriod;
@@ -172,22 +158,6 @@ public:
 	//closes all the trace files
 	~EventParams()
 	{
-		for(int i = 0; i < Constants::NUMBER_TIME_POINTS_SAVE_STATE; i++)
-		{
-			popStateStream[i].close();
-		}
-
-		//For batchStats and summaryStats, print a new line character (all stats are on one line in these files)
-        for(auto batchstat : enum_iterator<BatchStatsVariables>())
-		{
-			if(BatchStatsStream[batchstat].is_open())
-			{
-				BatchStatsStream[batchstat] << std::endl;
-			}
-
-			BatchStatsStream[batchstat].close();
-		}
-
 		delete cepacRunStats;
 
 		while(cepacSimContexts.size() > 0)

@@ -51,17 +51,15 @@ protected :
 	//identifies the type of sexual relationship this is
 	Type type;
 
-	long timePartnerFormation;				//the time that this couple was formed
-	long timePartnerDissolution;			//time that this partnership will dissolve
+	//the time that this couple was formed
+	Time timePartnerFormation;
+	//time that this partnership will dissolve
+	Time timePartnerDissolution;
 
-	Entity *partners[2];			//this contains copies of pointers of partners
+	//this contains copies of pointers of partners
+	Entity *partners[2];
 
 public :
-
-	/**
-	dummy constructor
-	@author schung5
-	**/
 	SexualPartnership();
 
 	/**
@@ -89,7 +87,7 @@ public :
 	@returns true if _currTime >= timePartnerDissolution
 	@author schung5
 	**/
-	bool checkTimeForSplit(long _currTime);
+	bool checkTimeForSplit(Time current_time);
 
 	/**
 	Gets the pointer to partner 1. Should be male if this couple is heterosexual
@@ -117,25 +115,10 @@ public :
 	Type getType();
 
 	/**
-	Get time of dissolution
-	**/
-	int getDissolutionTime();
-
-	/**
 	returns true if _p is a member of this partnership
 	@author schung5
 	**/
 	bool isMember(Entity *_p);
-
-	/**
-	@author schung5
-	**/
-    void printPartners(ostream &_outStream, const std::string &_prefix);
-
-	/**
-	* Saves state of this partnership to file
-	**/
-	void saveState(ostream &_outStream, int personID, long currTime);
 
 	/**
 	//models sexual activity in a couple.
@@ -144,11 +127,12 @@ public :
 	**/
     Entity *monthlySexualActivity(EventParams &_eventParams, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, 10ULL>> &transmission_coefficients);
 
-	int getTimeOfFormation()
+	Time getTimeOfFormation()
 	{
 		return timePartnerFormation;
 	}
-	int getTimeOfDissolution()
+
+	Time getTimeOfDissolution()
 	{
 		return timePartnerDissolution;
 	}

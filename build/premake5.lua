@@ -10,7 +10,6 @@ solution "transm"
 project "transm"
     kind "ConsoleApp"
     language "C++"
-    targetdir "../bin"
     targetname "transm"
     targetsuffix ("-v" .. os.outputof("cat ../VERSION"))
     links { "third-party" }
@@ -34,15 +33,16 @@ project "transm"
        "../third-party/cepac/src",
        "../third-party/pugixml/src",
        "../third-party/sqlite",
-       "../third-party/tclap/include",
-       "../third-party/xlnt/include"
+       "../third-party/tclap/include"
     }
     configuration "debug"
         flags { "FatalWarnings" }
 	optimize "Off"
+	targetdir "../bin/debug"
     configuration "release"
         flags { "LinkTimeOptimization" }
 	optimize "Full"
+	targetdir "../bin/release"
     configuration "windows"
         files { "../source/utility/platform/windows/**.cpp" }
         defines { "_SCL_SECURE_NO_WARNINGS" }
@@ -72,19 +72,17 @@ project "third-party"
     files {
        "../third-party/sqlite/sqlite3.c",
        "../third-party/pugixml/src/pugixml.cpp",
-       "../third-party/cepac/src/*.cpp",
-       "../third-party/xlnt/source/**.hpp",
-       "../third-party/xlnt/source/**.cpp",
-       "../third-party/xlnt/third-party/miniz/miniz.c"
+       "../third-party/cepac/src/*.cpp"
     }
     includedirs {
        "../third-party/pugixml/src",
        "../third-party/sqlite",
-       "../third-party/tclap/include",
-       "../third-party/xlnt/include"
+       "../third-party/tclap/include"
     }
     configuration "debug"
         optimize "Off"
+	targetdir "../bin/debug"
     configuration "release"
         flags { "LinkTimeOptimization" }
         optimize "Full"
+	targetdir "../bin/release"

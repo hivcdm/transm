@@ -54,9 +54,9 @@ void Intervention::Apply(Entity *person)
     }
 }
 
-bool Intervention::IsActive(int current_time) const
+bool Intervention::IsActive(Time current_time) const
 {
-    if(duration_ == -1)
+    if(duration_ == TimeSpan(0, -1))
     {
         return current_time >= time_;
     }
@@ -64,17 +64,17 @@ bool Intervention::IsActive(int current_time) const
     return current_time >= time_ && current_time <= time_ + duration_;
 }
 
-bool Intervention::IsFirstMonth(int current_time) const
+bool Intervention::IsFirstMonth(Time current_time) const
 {
     return current_time == time_;
 }
 
-bool Intervention::IsCompleted(int current_time) const
+bool Intervention::IsCompleted(Time current_time) const
 {
     return current_time > time_ + duration_;
 }
 
-void TargetGroup::Update(Population &population, int current_time, 
+void TargetGroup::Update(Population &population, Time current_time, 
     RandomNumberGenerator &rng, const std::unordered_set<Entity *> &dead_people)
 {
     if(enrollment_period_.start > current_time)
@@ -122,13 +122,13 @@ void TargetGroup::Update(Population &population, int current_time,
             }
 
             if(target_.value.age_lower.has_value
-                && target_.value.age_lower.value > person->getAge(TimeGranularity::Month))
+				&& target_.value.age_lower.value > person->getAge().get_total_months())
             {
                 return false;
             }
 
             if(target_.value.age_upper.has_value
-                && target_.value.age_upper.value < person->getAge(TimeGranularity::Month))
+                && target_.value.age_upper.value < person->getAge().get_total_months())
             {
                 return false;
             }
@@ -216,11 +216,11 @@ void TargetGroup::Update(Population &population, int current_time,
 	}
 }
 
-Intervention::Intervention(int time, int duration) : time_(time), duration_(duration)
+Intervention::Intervention(Time time, TimeSpan duration) : time_(time), duration_(duration)
 {
 }
 
-TargetGroup::TargetGroup(const std::string &label, int start, int end, bool open, bool permanent, Nullable<PopulationTarget> target)
+TargetGroup::TargetGroup(const std::string &label, Time start, Time end, bool open, bool permanent, Nullable<PopulationTarget> target)
     : enrollment_period_({start, end}),
       open_(open),
       permanent_effect_(permanent),
@@ -247,12 +247,10 @@ void Simulation::RegisterPopulationIntervention(const Intervention &intervention
 }
 
 Simulation::Simulation(BatchStatus &batch_status)
-    : time_(0),
-      parameters_(),
+	: parameters_(),
       population_(parameters_),
       failedCalibration_(false),
       hasPassedFirstMonthCalibPrev_(false),
-      monthOfFirstMonthCalibPrev_(0),
       incidence_(0),
       prevalence_(0),
       batch_status_(batch_status)
@@ -289,31 +287,15 @@ void Simulation::FirstStep()
 	//No longer creating a CEPAC trace file, but we still need to change over to the results folder before creating any other output files
 	CepacUtil::changeDirectoryToResults();
 
-	if(parameters_.calibrationInputs.useCalibration)
-	{
-		for(int i = 0; i < Constants::NUMBER_TIME_POINTS_SAVE_STATE; i++)
-		{
-			std::string fileName = parameters_.simName;
-			fileName.append("-popState" + boost::lexical_cast<std::string>(i)+".pop");
-			parameters_.popStateStream[i].open(fileName.c_str(), ios::out);
-		}
-	}
-
-	for(auto batchstat : enum_iterator<BatchStatsVariables>())
-	{
-        auto filename = "batchstats-" + Constants::BatchStatFileName.at(batchstat) + ".out";
-		parameters_.BatchStatsStream[batchstat].open(filename, ios::out | ios::app);
-	}
-
 	//output seed used for this run
 	if(parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
 	{
 		parameters_.trace_files[EventParams::TraceFile::Type::Events] << "Seed = " << parameters_.randomNums.getSeed() << std::endl;
-		parameters_.trace_files[EventParams::TraceFile::Type::Events] << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-			Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << "Sexually Active Population"
-			<< Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-			Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-			Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+		parameters_.trace_files[EventParams::TraceFile::Type::Events] << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
+			Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << "Sexually Active Population"
+			<< Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
+			Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
+			Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
 			"Non Sexually Active Population" << std::endl;
 	}
 
@@ -329,22 +311,13 @@ void Simulation::FirstStep()
 	//initialize incident infections by age
 	population_.InitIncidentInfectionsByAge();
 
-	if(parameters_.delayPrevalence == 0)
+	if(parameters_.delayPrevalence == Time::Zero)
 	{
 		population_.ApplyIncidentPrevalence(parameters_);
 	}
 
 	//print out prevalent infection stats & headers for rest of infection stats
-	population_.CalcPrevalentPopulation(0);
-
-	//Print out run name for first column of BatchStats files (if streams are open)
-    for(auto batchstat : enum_iterator<BatchStatsVariables>())
-	{
-		if(parameters_.BatchStatsStream[batchstat].is_open())
-		{
-			parameters_.BatchStatsStream[batchstat] << parameters_.simName << Constants::TAB;
-		}
-	}
+	population_.CalcPrevalentPopulation(Time::Zero);
 
     for(auto entity : population_.Find([](Entity *) { return true; }))
     {
@@ -379,11 +352,6 @@ void Simulation::FirstStep()
     if(parameters_.trace_files[EventParams::TraceFile::Type::CostEffectiveness].enabled)
 	{
         population_.populationStatistics.costsTracker.PrintCosts(parameters_.currTime, parameters_.trace_files[EventParams::TraceFile::Type::CostEffectiveness].file);
-	}
-
-	if(parameters_.debugLevel == DebugLevel::One)
-	{
-		population_.PrintMethodResults(parameters_, "--", "initialization", 0, "--", true);
 	}
 }
 
@@ -488,21 +456,14 @@ void Simulation::Step()
 				monthOfFirstMonthCalibPrev_ = parameters_.currTime;
 			}
 		}
-
-		for(int i = 0; i < Constants::NUMBER_TIME_POINTS_SAVE_STATE; i++)
-		{
-			if(hasPassedFirstMonthCalibPrev_ && parameters_.currTime == monthOfFirstMonthCalibPrev_ + parameters_.calibrationInputs.saveStateTimePoints[i])
-			{
-				population_.SaveState(parameters_.popStateStream[i], parameters_.currTime);
-			}
-		}
 	}
 
 	population_.ResetMonthlyStats();
 
-    if(time_ > 5)
+    if(time_ > Time(0, 5))
     {
-        run_time_predictor_.Update(std::make_pair(time_, timer_.GetTime() - start_time_));
+		/*
+        run_time_predictor_.Update(std::make_pair((int)time_.get_total_months(), timer_.GetTime() - start_time_));
         int seconds_remaining = (int)run_time_predictor_.GetEstimatedTimeRemaining();
         int hours_remaining = seconds_remaining / 3600;
         seconds_remaining -= hours_remaining * 3600;
@@ -511,15 +472,14 @@ void Simulation::Step()
         parameters_.displayOut(run_time_predictor_.MakeProgressBar(40) + " " +
             std::to_string(time_) + " " + std::to_string(hours_remaining) + ":" +
             std::to_string(minutes_remaining) + ":" + std::to_string(seconds_remaining) + "\n");
+			*/
     }
     else
     {
-        if(time_ > 1)
+        if(time_ > Time(0, 1))
         {
-            run_time_predictor_.Update(std::make_pair(time_, timer_.GetTime() - start_time_));
+            //run_time_predictor_.Update(std::make_pair(time_, timer_.GetTime() - start_time_));
         }
-
-        parameters_.displayOut("Estimating time remaining...\n");
     }
 
     start_time_ = timer_.GetTime();
@@ -539,13 +499,13 @@ void Simulation::LastStep()
 	//Run every infected person left through CEPAC until they die
 	if(failedCalibration_)
 	{
-		parameters_.displayOut("Partnership Calibration Failed...Deleting specified trace files...\n");
+		//parameters_.displayOut("Partnership Calibration Failed...Deleting specified trace files...\n");
 	}
 	else
 	{
-		parameters_.displayOut("Running all remaining persons through CEPAC until they die...\n");
+		//parameters_.displayOut("Running all remaining persons through CEPAC until they die...\n");
 		population_.UpdateFinalPhysicalState(parameters_);
-		parameters_.displayOut("Done!\n");
+		//parameters_.displayOut("Done!\n");
 	}
 
     if(parameters_.trace_files[EventParams::TraceFile::Type::Infection].enabled)
@@ -564,7 +524,8 @@ void Simulation::LastStep()
 	}
 	catch(std::string errorString)
 	{
-		parameters_.displayOut(errorString);
+		std::cout << errorString;
+		//parameters_.displayOut(errorString);
 	}
 
 	//if failed partnership calibration toss unneeded files
@@ -580,13 +541,6 @@ void Simulation::LastStep()
                 remove(fileName.c_str());
             }
         }
-
-		for(int i = 0; i < Constants::NUMBER_TIME_POINTS_SAVE_STATE; i++)
-		{
-			std::string fileName = parameters_.simName;
-			fileName.append("-popState" + boost::lexical_cast<std::string>(i)+".pop");
-			remove(fileName.c_str());
-		}
 	}
 
     outputs_.intervention_outcomes.Write(parameters_.simName + "-InterventionOutcomes.xls");
@@ -599,15 +553,10 @@ void Simulation::LastStep()
 * This function records all of the SimContext files to be used by the CEPAC disease model throughout the run of the transmission model
 */
 
-bool Simulation::LoadCepacSimContexts(const CepacTreatmentFiles &treatment_files)
+bool Simulation::LoadCepacSimContexts(const TreatmentFiles &treatment_files)
 {
-	parameters_.displayOut("CEPAC Files: \n");
-
 	for(const auto &treatment_file : treatment_files)
 	{
-		parameters_.displayOut("\t" + std::to_string(treatment_file.file_number) + ": " 
-			+ treatment_file.file_name + "\n");
-
 		//Set the CEPAC simContext from the specified CEPAC .in file
 		auto stem = path(treatment_file.file_name).stem().string();
 		parameters_.cepacSimContexts.push_back(new SimContext(stem));
@@ -622,12 +571,6 @@ bool Simulation::LoadCepacSimContexts(const CepacTreatmentFiles &treatment_files
 		}
 		catch(std::string errorString)
 		{
-			//if we can't find it and we wanted to use CEPAC, display error
-			parameters_.displayOut("*****************************************\n");
-			parameters_.displayOut("WARNING!\n");
-			parameters_.displayOut("*****************************************\n");
-			parameters_.displayOut("File '" + treatment_file.file_name + "' generates error:\n");
-			parameters_.displayOut("\t" + errorString + "\n");
 			return false;
 		}
 
@@ -639,13 +582,8 @@ bool Simulation::LoadCepacSimContexts(const CepacTreatmentFiles &treatment_files
 			Entity::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Male] = probabilities[0];
             Entity::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Female] = probabilities[1];
 		}
-	}
 
-	for(int i = 0; i < Constants::NUMBER_OF_CEPAC_FILES; i++)
-	{
-		//By default, the first "time to switch" should be 0 (i.e. the first CEPAC .in file applies at time 0)
-		parameters_.timesToSwitchSimContext[i] = 
-			i == 0 ? 0 : cepac_treatment_files_[i].time;
+		parameters_.timesToSwitchSimContext.push_back(treatment_file.time);
 	}
 
 	return true;
@@ -712,17 +650,6 @@ std::size_t Simulation::SimulateMonth()
         SetNonAidsDeathFromCepac(*parameters_.cepacSimContexts[simIndex], 
             Entity::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Male],
             Entity::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Female]);
-	}
-
-	//output the current timestep of the simulation
-    if(parameters_.debugLevel > DebugLevel::One && parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
-	{
-		parameters_.trace_files[EventParams::TraceFile::Type::Events] << "T:" << time_ << " : Start of Timestep" << std::endl;
-	}
-
-    if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled)
-	{
-		parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << std::endl << "** Time " << time_ << ": " << std::endl;
 	}
 
 	bool recordLE = false;
@@ -792,7 +719,7 @@ std::size_t Simulation::SimulateMonth()
 	}
 
 	//apply incident prevalence
-	if(parameters_.delayPrevalence != 0 && parameters_.delayPrevalence == time_)
+	if(parameters_.delayPrevalence != Time::Zero && parameters_.delayPrevalence == time_)
 	{
 		population_.ApplyIncidentPrevalence(parameters_);
 	}
@@ -819,13 +746,12 @@ EventParams &Simulation::GetEventParams()
 void Simulation::Initialize(SimulationParameters &parameters)
 {
     name_ = parameters.GetName();
-    duration_ = parameters.GetDuration();
+    duration_ = TimeSpan(0, parameters.GetDuration());
     SetFixedSeed(parameters.GetFixedSeed());
     parameters_.simName = name_;
-    parameters_.debugLevel = parameters.GetDebugLevel();
-    parameters_.monthOf1990 = parameters.GetMonthOf1990();
+    parameters_.monthOf1990 = Time::from_months(parameters.GetMonthOf1990());
     parameters_.calibrationInputs = parameters.GetCalibrationParameters();
-    parameters_.delayPrevalence = parameters.GetInitialInfectionDelay();
+    parameters_.delayPrevalence = Time::from_months(parameters.GetInitialInfectionDelay());
     auto intervention_params = parameters.GetInterventionParameters();
     for(const auto &prop : intervention_params.target_yearly_rollout_proportions)
     {
@@ -864,7 +790,7 @@ void Simulation::Initialize(SimulationParameters &parameters)
 
         for(auto &cepac_file : intervention_params.cepac_files)
         {
-            if(cepac_file.time == 0 && cepac_file.target_population == 0) continue; // skip untreated context
+            if(cepac_file.time == Time::Zero && cepac_file.target_population == 0) continue; // skip untreated context
             auto context = load_context(cepac_file.filename);
             auto rollout_context = new RolloutContext(cepac_file.time, std::unique_ptr<SimContext>(context), cepac_file.target_population);
             parameters_.rolloutSimContexts.push_back(rollout_context);
@@ -946,23 +872,19 @@ Outputs Simulation::Run(MessageCallback message_callback)
     batch_status_.set_state(name_, SimState::running);
     batch_status_.set_process_id(name_, Utility::get_current_process_id());
 
-	MessageCallback old = parameters_.messageCallback;
-	parameters_.messageCallback = message_callback;
-
-	if(time_ == 0)
+	if(time_ == Time::Zero)
 	{
 		FirstStep();
 	}
 
-	while(time_ < duration_)
+	while(time_ - duration_ > Time::Zero)
 	{
 		Step();
-        batch_status_.set_percent_complete(name_, static_cast<int>(100.0 * time_ / duration_));
+		auto percent = static_cast<int>(100.0 * time_.get_total_months() / duration_.get_total_months());
+        batch_status_.set_percent_complete(name_, percent);
 	}
 
 	LastStep();
-
-	parameters_.messageCallback = old;
     batch_status_.set_state(name_, SimState::completed);
 
 	return outputs_;

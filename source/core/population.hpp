@@ -91,7 +91,7 @@ public:
     /// <summary>
 	/// Checks to see if there is a new cepac input file to apply to certain portions of the population if rollout is being used
     /// </summary>
-	void ApplyRolloutContext(EventParams &_eventParams, int time);
+	void ApplyRolloutContext(EventParams &_eventParams, Time time);
 
 	void StartTreatment(Entity *person, SimContext *treatedContext);
 
@@ -254,7 +254,7 @@ private:
     /// <summary>
 	/// calculates the number of HIV cases for each sexually active BucketDemographicProfile and stores it in _infectionsTracker
     /// </summary>
-	std::size_t CalcPrevalentPopulation(int time);
+	std::size_t CalcPrevalentPopulation(Time time);
 
     /// <summary>
 	/// this is called at the end of each method that affects the population members
@@ -270,24 +270,24 @@ private:
     /// <summary>
 	/// this saves the state of the population and writes to file
     /// </summary>
-	void SaveState(std::ostream &_outStream, long currTime);
+	void SaveState(std::ostream &_outStream, Time currTime);
 
     /// <summary>
 	/// this is called at the end of each month to print the statistics about each population to the Population.out file
 	/// @param _time the current time in the simulation
 	/// @param _outStream the stream to print
     /// </summary>
-	void PrintPopulation(EventParams &_eventParams, long _time, std::ostream &_outStream);
+	void PrintPopulation(EventParams &_eventParams, Time _time, std::ostream &_outStream);
 
     /// <summary>
     /// this is called at end of each month to print statistics about the behavior of the population to the Behavior.out file
     /// </summary>
-	void PrintPartnerships(EventParams &_eventParams, long _time, std::ostream &_outStream);
+	void PrintPartnerships(EventParams &_eventParams, Time _time, std::ostream &_outStream);
 
     /// <summary>
 	/// this is called at end of each month to print statistics about the clinical status of the population to the Clinical.out file
     /// </summary>
-	void PrintClinical(EventParams &_eventParams, long _time, std::ostream &_outStream);
+	void PrintClinical(EventParams &_eventParams, Time _time, std::ostream &_outStream);
 
     /// <summary>
     /// </summary>
@@ -302,7 +302,7 @@ private:
     /// </summary>
 	void RecordShiftedOutcomes(EventParams &_eventParams, std::ostream &_outStream);
 
-    void RecordInfection(const Entity *infectee, const Entity *infector, int time);
+    void RecordInfection(const Entity *infectee, const Entity *infector, Time infection_time);
 
     void OnRiskGroupChanged(const Entity *entity);
 
@@ -456,12 +456,12 @@ private:
     struct EntitySummary
     {
         unsigned long person_id;
-        int time_infected;
+        Time time_infected;
         int infection_number;
         int generation_number;
         int infected_by;
-        int age_at_infection;
-        int time_of_death;
+        Age age_at_infection;
+        Time time_of_death;
         DemographicProfile profile;
         Entity::RiskLevel risk_group;
     };

@@ -19,7 +19,6 @@ std::string Msm::getEntityType() const
 //(we only have 1 population for now so the size of the vector will default to 1
 
 Msm::SubPopParams::SubPopParams() :
-  cswEndAge(0),
   maxPartnershipRejections(0)
 {
 }
@@ -70,21 +69,21 @@ double Msm::SubPopParams::getCondomProtectEff()  const
     return condomProtectEff;
 }
 
-int Msm::SubPopParams::getPartneringDiscStartAgeYrs() const
+Age Msm::SubPopParams::getPartneringDiscStartAge() const
 {
     return partneringDiscStartAgeYrs;
 }
 
-double Msm::SubPopParams::getPartneringAcqDiscMult(int _ageYrs) const
+double Msm::SubPopParams::getPartneringAcqDiscMult(Age age) const
 {
-    assert(Utility::within_range(_ageYrs, 0, Entity::maxYrForDeathStats));
-    return partneringAcqDiscMult.at(_ageYrs - partneringDiscStartAgeYrs);
+	assert(age >= Time::Zero && age.get_total_years() <= Entity::maxYrForDeathStats);
+	return partneringAcqDiscMult.at((std::size_t)(age - partneringDiscStartAgeYrs).get_total_months());
 }
 
-double Msm::SubPopParams::getPartneringActsDiscMult(int _ageYrs) const
+double Msm::SubPopParams::getPartneringActsDiscMult(Age age) const
 {
-    assert(Utility::within_range(_ageYrs, 0, Entity::maxYrForDeathStats));
-    return partneringActsDiscMult.at(_ageYrs - partneringDiscStartAgeYrs);
+	assert(age >= Time::Zero && age.get_total_years() <= Entity::maxYrForDeathStats);
+	return partneringActsDiscMult.at((std::size_t)(age - partneringDiscStartAgeYrs).get_total_months());
 }
 
 void Msm::SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng)
@@ -126,22 +125,19 @@ void Msm::Circumcise()
     circumcised = true;
 }
 
-Msm::Msm(EventParams &_eventParams, int _age, bool _circumcised, unsigned int _populationID, const Msm::SubPopParams &params)
+Msm::Msm(EventParams &_eventParams, Age _age, bool _circumcised, unsigned int _populationID, const Msm::SubPopParams &params)
     : Entity(_age, _populationID),
     populationSpecificParams(params),
     times_selected_(0)
 {
     //If age is out of range, set it at the closest boundary.
-    if(!Utility::within_range<int>(_age, 0, Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Entity::maxYrForDeathStats)))
+    if(_age < Time::Zero)
     {
-        if(_age < 0)
-        {
-            _age = 0;
-        }
-        else
-        {
-            _age = Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Entity::maxYrForDeathStats);
-        }
+        _age = Time::Zero;
+    }
+	else if (_age > Time(Entity::maxYrForDeathStats, 0))
+    {
+        _age = Age(Entity::maxYrForDeathStats, 0);
     }
 
     dmgProfile.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
@@ -261,9 +257,9 @@ double Msm::getMinPartnerSelectVal(Entity::SelectingCriteria _PSC, SexualPartner
     {
     case Entity::AGE:
     {
-        if(getAge(TimeGranularity::Month) - (12 * averageYearsYounger[(int)_partnershipType].mean + 6) > 0)
+        if(getAge().get_total_months() - (12 * averageYearsYounger[(int)_partnershipType].mean + 6) > 0)
         {
-            return getAge(TimeGranularity::Month) - (12 * averageYearsYounger[(int)_partnershipType].mean + 6);
+            return getAge().get_total_months() - (12 * averageYearsYounger[(int)_partnershipType].mean + 6);
             break;
         }
         else
@@ -291,9 +287,9 @@ double Msm::getMaxPartnerSelectVal(Entity::SelectingCriteria _PSC, SexualPartner
     {
     case Entity::AGE:
     {
-        if(getAge(TimeGranularity::Month) - (12 * averageYearsYounger[(int)_partnershipType].mean - 6) > 0)
+		if (getAge().get_total_months() - (12 * averageYearsYounger[(int)_partnershipType].mean - 6) > 0)
         {
-            return getAge(TimeGranularity::Month) - (12 * averageYearsYounger[(int)_partnershipType].mean - 6);
+			return getAge().get_total_months() - (12 * averageYearsYounger[(int)_partnershipType].mean - 6);
             break;
         }
         else
@@ -324,9 +320,9 @@ bool Msm::possibleMatch(SexualPartnership::Type _partnershipType, Entity *_p)
     assert(_p->isAlive());
     assert(_partnershipType < SexualPartnership::Type::ENDType);
     assert(false);  // check if we are using years instead of Month
-    int minAge = static_cast<int>(getMinPartnerSelectVal(Entity::AGE, _partnershipType));
-    int maxAge = static_cast<int>(getMaxPartnerSelectVal(Entity::AGE, _partnershipType));
-    return Utility::within_range(_p->getAge(TimeGranularity::Month), minAge, maxAge);
+    auto minAge = Age(0, static_cast<int>(getMinPartnerSelectVal(Entity::AGE, _partnershipType)));
+    auto maxAge = Age(0, static_cast<int>(getMaxPartnerSelectVal(Entity::AGE, _partnershipType)));
+    return _p->getAge() >= minAge && _p->getAge() <= maxAge;
 }
 
 int Msm::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType)
@@ -353,9 +349,9 @@ int Msm::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnershi
     }
 
     //if person is over the age of partnering discounting, then discount acquisition rate
-    int ageYrs = getAge(TimeGranularity::Year);
+    auto ageYrs = getAge();
 
-    if(ageYrs >= populationSpecificParams.getPartneringDiscStartAgeYrs())
+    if(ageYrs >= populationSpecificParams.getPartneringDiscStartAge())
     {
         partnerRate *= populationSpecificParams.getPartneringAcqDiscMult(ageYrs);
     }
@@ -363,7 +359,7 @@ int Msm::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnershi
     /** To get the number of partners to draw this month, draw from a Poisson distribution */
     int numPartners = _randomNums.randPoisson(partnerRate);
     //if we are rolling for STEADY, make sure we have max of 1
-    return (_partnershipType != SexualPartnership::Type::SteadyMsm) ? numPartners : min(1, numPartners);
+    return (_partnershipType != SexualPartnership::Type::SteadyMsm) ? numPartners : std::min(1, numPartners);
 }
 
 int Msm::rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType)
@@ -374,9 +370,9 @@ int Msm::rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums,
     double meanCoitalEvents = numActsPerMonth[(int)_partnershipType];
 
     //if person is over the age of partnering discounting, then discount #acts
-    int ageYrs = getAge(TimeGranularity::Year);
+    auto ageYrs = getAge();
 
-    if(ageYrs >= populationSpecificParams.getPartneringDiscStartAgeYrs())
+    if(ageYrs >= populationSpecificParams.getPartneringDiscStartAge())
     {
         meanCoitalEvents *= populationSpecificParams.getPartneringActsDiscMult(ageYrs);
     }
@@ -451,61 +447,6 @@ void Msm::rerollRiskGroup(EventParams &_eventParams)
 
         _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " risk" << std::endl;
     }
-}
-
-void Msm::saveState(ostream &_outStream, long currTime)
-{
-    _outStream << "gend:m," << std::endl;
-    Entity::saveState(_outStream, currTime);
-    _outStream << "," << std::endl << "circ:" << circumcised << "," << std::endl;
-    //partner acquisition rates
-    bool firstInSequence = true;
-    _outStream << "partAcqR:[";
-
-    for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
-    {
-        if(!firstInSequence)
-        {
-            _outStream << ",";
-        }
-
-        firstInSequence = false;
-        _outStream << partnerAcqRates[(int)partnership_type];
-    }
-
-    _outStream << "]," << std::endl;
-    //Acts per month
-    firstInSequence = true;
-    _outStream << "actsPerMth:[";
-
-    for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
-    {
-        if(!firstInSequence)
-        {
-            _outStream << ",";
-        }
-
-        firstInSequence = false;
-        _outStream << numActsPerMonth[(int)partnership_type];
-    }
-
-    _outStream << "]," << std::endl;
-    //Acts per month
-    firstInSequence = true;
-    _outStream << "probCndm:[";
-
-    for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
-    {
-        if(!firstInSequence)
-        {
-            _outStream << ",";
-        }
-
-        firstInSequence = false;
-        _outStream << chanceCondomUsePerEvent[(int)partnership_type];
-    }
-
-    _outStream << "]";
 }
 
 } // namespace transm

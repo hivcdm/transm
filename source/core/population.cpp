@@ -192,19 +192,9 @@ void Population::Births(EventParams &parameters_)
 
 		auto p = GenerateEntity(parameters_, entity_type, nullptr, toTrace);
 
-        if(parameters_.debugLevel > DebugLevel::One && parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
-		{
-            p->print(parameters_.trace_files[EventParams::TraceFile::Type::Events].file, Constants::TABTAB);
-		}
-
 		//add the newborn to the EntityPool
 		//Use addEntityToAll here (initial entrance into population)
 		entities->addEntityToAll(p);
-	}
-
-    if(parameters_.debugLevel > DebugLevel::Zero)
-	{
-		PrintMethodResults(parameters_, "Births", "People Born", numBorn, "total born", true);
 	}
 }
 
@@ -225,9 +215,9 @@ void Population::UpdateAgeBucketsLE()
 			assert(p != nullptr);
 			//calculate life expectancy
 			assert((populationStatistics.selectedLEStats != nullptr));
-            assert(p->getAge(TimeGranularity::Year) >= 0);
-            assert(p->getAge(TimeGranularity::Year) < Entity::maxYrForDeathStats);
-            populationStatistics.selectedLEStats->popByAge[p->getAge(TimeGranularity::Year)]++;
+            assert(p->getAge() >= Age::from_months(0));
+            assert(p->getAge() < Age(Entity::maxYrForDeathStats, 0));
+            populationStatistics.selectedLEStats->popByAge[(long)p->getAge().get_total_months()]++;
 			p_Iter++;
 		}
 	}
@@ -280,7 +270,8 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 			}
 			else
 			{
-				(*p_Iter)->print(cerr, "THIS PERSON WOULDN'T DIE!");
+				throw 1;
+				//(*p_Iter)->print(cerr, "THIS PERSON WOULDN'T DIE!");
 			}
 		}
 
@@ -380,7 +371,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 
 			//if this person wasn't sexually active but is now old enough to
             if((p->getDemographicProfileVal(DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::Active)
-                && (p->getAge(TimeGranularity::Month) >= popWideParams.ageOfMajority))
+                && (p->getAge() >= popWideParams.ageOfMajority))
 			{
 				// set them as SA and potentially CSWs
 				if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && p->trace())
@@ -413,7 +404,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 					}
 				}
 
-                if(p->getAge(TimeGranularity::Month) < popWideParams.CSWEndAgeMth[p->getEntityType()])
+                if(p->getAge() < popWideParams.CSWEndAge[p->getEntityType()])
 				{
 					p->rollForBecomeSexWorker(parameters_, false);
 				}
@@ -433,7 +424,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 
 			//Check for age to stop becoming CSW
             if(p->getDemographicProfileVal(DemographicProfile::Demographic::Employment) == (std::size_t)DemographicProfile::Employment::Csw
-                && p->getAge(TimeGranularity::Month) >= popWideParams.CSWEndAgeMth[p->getEntityType()])
+                && p->getAge() >= popWideParams.CSWEndAge[p->getEntityType()])
 			{
 				p->quitSexWork(parameters_);
 				entities->refreshBucketDemographicProfile(p, &p_Iter);
@@ -457,11 +448,6 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 
 			p_Iter++;
 		}
-	}
-
-    if(parameters_.debugLevel > DebugLevel::Zero)
-	{
-		PrintMethodResults(parameters_, "UpdatePhysicalState", "People Died", totalDied, "total died", true);
 	}
 }
 
@@ -572,7 +558,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 		//(The non-initiators (i.e. women) will never have their condom count reset... I don't think we care?)
 		assert(person != nullptr);
 
-        if(person->getAge(TimeGranularity::Month) < popWideParams.ageOfMajority + person->GetSexualActivityDelay())
+        if(person->getAge() < popWideParams.ageOfMajority + person->GetSexualActivityDelay())
         {
             continue;
         }
@@ -634,16 +620,6 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 					rolloutUntreatedPool.push_back(wasUninfected);
 				}
 
-				if(parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
-				{
-                    populationStatistics.recordIncidentInfection(parameters_, parameters_.currTime,
-                        SexualPartnership::Type(type),
-                        wasInfected,
-                        wasUninfected,
-                        (parameters_.debugLevel > DebugLevel::One),
-                        parameters_.trace_files[EventParams::TraceFile::Type::Events].file);
-				}
-
 				newlyInfectedIter++;
 			}
 		}
@@ -658,35 +634,8 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 
 	//Ends the second pass through (i.e. the sex acts pass through)
 
-	//print out results to traces
-	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
-	{
-        if(parameters_.debugLevel > DebugLevel::Zero)
-		{
-			//print out how many partnerships were attempted
-			std::ostringstream attemptedLabel;
-			attemptedLabel << SexualPartnership::TypeStrings.at(SexualPartnership::Type(type)) << " Attempted";
-			PrintMethodResults(parameters_, "updatePartnerships(...)", attemptedLabel.str(), attemptedPartnershipCount[type],
-				"Attempted" + SexualPartnership::TypeStrings.at(SexualPartnership::Type(type)), true);
-			//print out how many partnerships were formed
-			std::ostringstream formedLabel;
-			formedLabel << SexualPartnership::TypeStrings.at(SexualPartnership::Type(type)) << " Formed";
-			PrintMethodResults(parameters_, "updatePartnerships(...)", formedLabel.str(), newPartnershipCount[type],
-				"New " + SexualPartnership::TypeStrings.at(SexualPartnership::Type(type)), true);
-
-			//if these partnerships have a duration beyond the month, print out how many were ended
-            if(popWideParams.partnershipsHaveDuration[(std::size_t)DemographicProfile::Gender::Male][type])
-			{
-				std::ostringstream endedLabel;
-				endedLabel << SexualPartnership::TypeStrings.at(SexualPartnership::Type(type)) << " Ended";
-				PrintMethodResults(parameters_, "updatePartnerships(...)", endedLabel.str(), endedPartnershipCount[type],
-				                         "Number Ended", true);
-			}
-		}
-	}
-
 	if(parameters_.calibrationInputs.useCalibration
-	        && parameters_.currTime > (parameters_.calibrationInputs.monthOfCalibration - 12)
+	        && parameters_.currTime > (parameters_.calibrationInputs.monthOfCalibration - TimeSpan::Year)
 	        && parameters_.currTime <= parameters_.calibrationInputs.monthOfCalibration)
 	{
 		//update concurrency status
@@ -711,13 +660,13 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 				}
 
 				concurrent = 15 - concurrent;
-				assert(concurrent <= Constants::NUMBER_CONCURRENCY_DEFS);
+				assert(concurrent <= Constants::NumberConcurrencyDefs);
 
 				if(parameters_.concurrencyDef[concurrent].useDefinition
 				        && totalNumPartners >= parameters_.concurrencyDef[concurrent].minPartnershipsNeeded)
 				{
 					//count as concurrent partnership
-					(*p_Iter)->setMonthOfLatestConcurrent(parameters_.currTime);
+					(*p_Iter)->setTimeOfLatestConcurrent(parameters_.currTime);
 				}
 
 				p_Iter++;
@@ -755,10 +704,10 @@ void Population::SaveIndividualSummaries(std::ostream &stream) const
         stream << ",\"relationship_status\"" << ":";
         stream << (summary.profile.get(DemographicProfile::Demographic::RelationshipStatus) == 0 ? "\"non-single\"" : "\"single\"");
         stream << ",\"risk_group\"" << ":" << (summary.risk_group == Entity::RiskLevel::HIGH ? "\"high\"" : "\"low\"");
-        stream << ",\"age_at_infection\"" << ":" << summary.age_at_infection;
+        stream << ",\"age_at_infection\"" << ":" << summary.age_at_infection.get_total_months();
         stream << ",\"generation_number\"" << ":" << summary.generation_number;
         stream << ",\"infection_number\"" << ":" << summary.infection_number;
-        stream << ",\"time_infected\"" << ":" << summary.time_infected;
+        stream << ",\"time_infected\"" << ":" << summary.time_infected.get_total_months();
         stream << ",\"infected_by\"" << ":" << summary.infected_by;
         stream << ",\"group\":1";
         stream << "}";
@@ -791,66 +740,6 @@ void Population::SaveIndividualSummaries(std::ostream &stream) const
     stream << "]" << std::endl;
     stream << "}" << std::endl;
 }
-
-/*
-void WritePerson(std::ostream &stream, const std::map<int, std::vector<int>> &infected, int person_id, const std::unordered_map<unsigned long, Population::PersonSummary> &summaries)
-{
-    if(person_id == -1)
-    {
-        stream << "{\"id\"" << ":" << "initial prevalent case";
-    }
-    else
-    {
-        auto &summary = summaries.at(person_id);
-
-        stream << "{\"id\"" << ":" << summary.person_id;
-        stream << ",\"gender\"" << ":";
-        stream << (summary.profile.get(DemographicProfile::Demographic::Gender) == 0 ? "\"male\"" : "\"female\"");
-        stream << ",\"employment\"" << ":";
-        stream << (summary.profile.get(DemographicProfile::Demographic::Employment) == 0 ? "\"non-csw\"" : "\"csw\"");
-        stream << ",\"sexual_activity_status\"" << ":";
-        stream << (summary.profile.get(DemographicProfile::Demographic::SexualActivityStatus) == 0 ? "\"sexually active\"" : "\"not active\"");
-        stream << ",\"sexual_orientation\"" << ":";
-        stream << (summary.profile.get(DemographicProfile::Demographic::SexualOrientation) == 0 ? "\"hetero\"" : "\"homo\"");
-        stream << ",\"relationship_status\"" << ":";
-        stream << (summary.profile.get(DemographicProfile::Demographic::RelationshipStatus) == 0 ? "\"non-single\"" : "\"single\"");
-        stream << ",\"risk_group\"" << ":" << (summary.risk_group == Entity::RiskLevel::HIGH ? "\"high\"" : "\"low\"");
-        stream << ",\"age_at_infection\"" << ":" << summary.age_at_infection;
-        stream << ",\"generation_number\"" << ":" << summary.generation_number;
-        stream << ",\"infection_number\"" << ":" << summary.infection_number;
-        stream << ",\"time_infected\"" << ":" << summary.time_infected;
-    }
-
-    if(infected.find(person_id) != infected.end())
-    {
-        stream << ",\"infected\"" << ":[" << std::endl;
-        for(auto id : infected.at(person_id))
-        {
-            WritePerson(stream, infected, id, summaries);
-            if(id != infected.at(person_id).back())
-            {
-                stream << ",";
-            }
-            stream << std::endl;
-        }
-        stream << "]" << std::endl;
-    }
-
-    stream << "}";
-}
-
-void Population::SaveIndividualSummaries(std::ostream &stream) const
-{
-    std::map<int, std::vector<int>> infected;
-
-    for(auto summary : individual_summaries_)
-    {
-        infected[summary.second.infected_by].push_back((int)summary.second.person_id);
-    }
-
-    WritePerson(stream, infected, -1, individual_summaries_);
-}
-*/
 
 std::vector<AgeRange> Population::GetAgeRanges() const
 {
@@ -965,7 +854,7 @@ std::size_t Population::UpdateSize()
 
 		for (auto &age_range_size_pair : currSizeByEntityTypeAgeRange[e->getEntityType()])
 		{
-			if (age_range_size_pair.first.lower <= (int)e->age && age_range_size_pair.first.upper >= (int)e->age)
+			if (age_range_size_pair.first.lower <= e->age && age_range_size_pair.first.upper >= e->age)
 			{
 				age_range_size_pair.second++;
 				break;
@@ -1041,13 +930,6 @@ void Population::DissolveSexualPartnerships(EventParams &parameters_, Entity *_i
 	{
 		Entity *partner = (*partnerIter)->getOtherPartner(_initiator);
 
-		//print the couple that is getting divorced
-        if(parameters_.debugLevel > DebugLevel::One && parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
-		{
-            (*partnerIter)->printPartners(parameters_.trace_files[EventParams::TraceFile::Type::Events].file,
-                "This couple is splitting up: " + Constants::TABTAB);
-		}
-
 		if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (_initiator->trace() || partner->trace()))
 		{
 			if(_initiator->trace())
@@ -1112,8 +994,8 @@ Entity *Population::GenerateEntity(EventParams &parameters_, const std::string &
 	Entity *toReturn = nullptr;	//pointer to the person that was just generated
 	//determine age of current person. If we have no age _ageBucketParams, then this is a newborn.
 	//Otherwise, generate an age from a uniform distribution bounded by _ageBucketParams
-	int ageMth = (_ageBucketParams == nullptr) ? 0 : parameters_.randomNums.randInt(_ageBucketParams->minAgeMth,
-	             _ageBucketParams->maxAgeMth);
+	auto age = Age::from_months((_ageBucketParams == nullptr) ? 0 : parameters_.randomNums.randInt(_ageBucketParams->minAgeMth.get_total_months(),
+	             _ageBucketParams->maxAgeMth.get_total_months()));
 
 	//create the person
 	if(entity_type != "female")
@@ -1122,17 +1004,17 @@ Entity *Population::GenerateEntity(EventParams &parameters_, const std::string &
         
         if(entity_type == "male")
         {
-            toReturn = new Male(parameters_, ageMth, circumcised,
+            toReturn = new Male(parameters_, age, circumcised,
                 populationID, popWideParams.defaultMaleParams);
         }
         else if(entity_type == "msm")
         {
-            toReturn = new Msm(parameters_, ageMth, circumcised,
+            toReturn = new Msm(parameters_, age, circumcised,
                 populationID, popWideParams.defaultMsmParams);
         }
         else if(entity_type == "msmw")
         {
-            toReturn = new Msmw(parameters_, ageMth, circumcised,
+            toReturn = new Msmw(parameters_, age, circumcised,
                 populationID, popWideParams.defaultMsmwParams);
         }
         else
@@ -1152,7 +1034,7 @@ Entity *Population::GenerateEntity(EventParams &parameters_, const std::string &
 	}
 	else
 	{
-		toReturn = new Female(parameters_, ageMth, populationID, popWideParams.defaultFemaleParams);
+		toReturn = new Female(parameters_, age, populationID, popWideParams.defaultFemaleParams);
 	}
 
     toReturn->SetSexualActivityDelay(popWideParams.sexualActivityDelay);
@@ -1165,10 +1047,10 @@ Entity *Population::GenerateEntity(EventParams &parameters_, const std::string &
 
 	//if person is of sexually active age, roll and see if they are a CSW
 	//DO NOT SET THEM AS SEXUALLY ACTIVE UNTIL AFTER DETERMINING IF THEY ARE A PREVALENT CASE BECAUSE THE CEPAC PERSON IS CREATED HERE!
-	if(ageMth >= popWideParams.ageOfMajority)
+	if(age >= popWideParams.ageOfMajority)
 	{
 		//see if they will be a CSW
-        if(ageMth < popWideParams.CSWEndAgeMth[entity_type])
+        if(age < popWideParams.CSWEndAge[entity_type])
 		{
             toReturn->rollForBecomeSexWorker(parameters_, true, popWideParams.initProbCSW[entity_type]);
 		}
@@ -1194,14 +1076,6 @@ Entity *Population::GenerateEntity(EventParams &parameters_, const std::string &
 				((BucketSexualMixing *) entities->getBucket(toReturn->getDemographicProfile()->getProfileID()))->changeHIVStatus(toReturn,
 				        oldStatus, toReturn->hivStatus);
 			}
-		}
-	}
-
-	if(toTrace)
-	{
-        if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled)
-		{
-			toReturn->print(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].file, "Tracing the following patient: ");
 		}
 	}
 
@@ -1237,7 +1111,6 @@ void Population::InitIncidentInfectionsByAge()
 
 void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 {
-	parameters_.displayOut("Applying incident prevalence data\n");
 	//counter for number of people in each age bucket who are infected (used to initialize prevalence) (CSW, High risk, Low risk)
 	std::vector<std::array<std::size_t, 3>> numInfectedByAgeBucketMale(popWideParams.initialAgeBuckets.size());
 	std::vector<std::array<std::size_t, 3>> numInfectedByAgeBucketFemale(popWideParams.initialAgeBuckets.size());
@@ -1310,13 +1183,8 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 				p->setToBeTraced();
 			}
 
-			p->becomeInfected(Constants::PREVALENT_INFECTION, parameters_);
+			p->becomeInfected(Constants::InitialInfection, parameters_);
             RecordInfection(p, nullptr, parameters_.currTime);
-
-            if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled)
-            {
-                p->printCurrentPartners(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].file, "Current partners for newly infected prevalent case:");
-            }
 
 			if(oldStatus != p->hivStatus)
 			{
@@ -1404,7 +1272,7 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 				p->setToBeTraced();
 			}
 
-			p->becomeInfected(Constants::PREVALENT_INFECTION, parameters_);
+			p->becomeInfected(Constants::InitialInfection, parameters_);
             RecordInfection(p, nullptr, parameters_.currTime);
 
 			if(oldStatus != p->hivStatus)
@@ -1426,7 +1294,7 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 	}
 }
 
-void Population::RecordInfection(const Entity *infectee, const Entity *infector, int time)
+void Population::RecordInfection(const Entity *infectee, const Entity *infector, Time time)
 {
     if(individual_summaries_.size() >= NumIndividualSummaries)
     {
@@ -1441,8 +1309,8 @@ void Population::RecordInfection(const Entity *infectee, const Entity *infector,
     summary.infection_number = (int)individual_summaries_.size();
     summary.profile = *infectee->getDemographicProfile();
     summary.time_infected = time;
-    summary.time_of_death = -1;
-    summary.age_at_infection = infectee->getAge(TimeGranularity::Month);
+    summary.time_of_death = Time::from_months(-1);
+    summary.age_at_infection = infectee->getAge();
     summary.risk_group = infectee->getRiskLevel();
 
     if(individual_summaries_.find(infectee->getID()) != individual_summaries_.end())
@@ -1456,7 +1324,7 @@ void Population::RecordInfection(const Entity *infectee, const Entity *infector,
 /**
 * Sets the untreated and treated cepac files if using ART Rollout
 */
-void Population::ApplyRolloutContext(EventParams &parameters_, int time)
+void Population::ApplyRolloutContext(EventParams &parameters_, Time time)
 {
 	for(auto rolloutContext : parameters_.rolloutSimContexts)
 	{
@@ -1528,7 +1396,7 @@ void Population::DetermineRankings(const RolloutEligibility &criteria)
 				{
 					int numMatchingOIs = 0;
 
-					for(int oiNum = 0; oiNum < Constants::NUMBER_OF_OIS; oiNum++)
+					for(int oiNum = 0; oiNum < Constants::NumberOfOIs; oiNum++)
 					{
 						if(criteria.oiHistOIs[oiNum] && untPerson->oiHistory[oiNum])
 						{
@@ -1554,7 +1422,7 @@ void Population::DetermineRankings(const RolloutEligibility &criteria)
 				{
 					int numMatchingOIs = 0;
 
-					for(int oiNum = 0; oiNum < Constants::NUMBER_OF_OIS; oiNum++)
+					for(int oiNum = 0; oiNum < Constants::NumberOfOIs; oiNum++)
 					{
 						if(criteria.cd4OiHistOIs[oiNum] && untPerson->oiHistory[oiNum])
 						{
@@ -1613,11 +1481,12 @@ void Population::StartTreatment(Entity *person, SimContext *treatedContext)
 	person->setSimContext(treatedContext);
 }
 
-double InterpolateProportion(const std::map<int, double> &yearly_proportions, int month, int monthOf1990)
+double InterpolateProportion(const std::map<int, double> &yearly_proportions, Time month, Time monthOf1990)
 {
 	if(month >= monthOf1990)
 	{
-		int relative_year = 1990 + (month - monthOf1990) / 12;
+		auto relative_time = Time(1990, 0) + (month - monthOf1990);
+		int relative_year = relative_time.get_year();
 
 		if(relative_year >= yearly_proportions.begin()->first)
 		{
@@ -1626,7 +1495,8 @@ double InterpolateProportion(const std::map<int, double> &yearly_proportions, in
 			{
 				double currentYearTargetProportion = yearly_proportions.at(relative_year);
 				double nextYearTargetProportion = yearly_proportions.at(relative_year + 1);
-				double x = ((month - monthOf1990) % 12) / 12.0;
+				//TODO: there's a better way to do this
+				double x = ((int)(month - monthOf1990).get_total_months() % 12) / 12.0;
 				return currentYearTargetProportion + (nextYearTargetProportion - currentYearTargetProportion) * x;
 			}
 			else
@@ -1646,7 +1516,7 @@ int Population::UpdateTreatmentSlots(double rolloutProportion)
 
 	if(parameters_.enableDynamicTreatmentScaling)
 	{
-		int position = (parameters_.currTime - parameters_.monthOf1990) % parameters_.dynamicFeedbackPeriod;
+		int position = (int)(parameters_.currTime - parameters_.monthOf1990).get_total_months() % parameters_.dynamicFeedbackPeriod;
 
 		if(position == 0)
 		{
@@ -1718,8 +1588,7 @@ void Population::RecordShiftedOutcomes(EventParams &parameters_, std::ostream &_
 {
 	if(parameters_.monthOf1990 <= parameters_.currTime)
 	{
-		int year = 1990 + (parameters_.currTime - parameters_.monthOf1990) / 12;
-		int month = (parameters_.currTime - parameters_.monthOf1990) % 12;
+		auto relative_time = Time(1990, 0) + (parameters_.currTime - parameters_.monthOf1990);
 		int numTests = parameters_.cepacRunStats->getHIVScreening()->numAcceptTest;
 		std::vector<int> numTestsByResult(SimContext::TEST_RESULT_NUM, 0);
 
@@ -1737,15 +1606,15 @@ void Population::RecordShiftedOutcomes(EventParams &parameters_, std::ostream &_
 
         populationStatistics.UpdateIncidenceCalculations();
 
-		if(month == 11)
+		if(relative_time.get_month() == 11)
 		{
-			populationStatistics.printShiftedOutcomes(_outStream, year);
-			populationStatistics.resetYear(year + 1);
+			populationStatistics.printShiftedOutcomes(_outStream, relative_time);
+			populationStatistics.resetYear(relative_time + TimeSpan::Year);
 		}
 	}
-    else if(parameters_.monthOf1990 == (parameters_.currTime + 1))
+    else if(parameters_.monthOf1990 == (parameters_.currTime + TimeSpan::Month))
     {
-        populationStatistics.resetYear(1990);
+        populationStatistics.resetYear(Time(1990, 0));
     }
 }
 
@@ -1770,14 +1639,14 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 	std::ostringstream firstRow;
 	std::ostringstream secondRow;
 	std::ostringstream thirdRow;
-	secondRow << "Steady Partnership Prevalence" << Constants::TAB << "Casual Partnership Prevalence" << Constants::TAB <<
-	          "CSW Partnership Prevalence" << Constants::TAB << "Prop in Concurrent" << Constants::TAB <<
-	          "Num Acts (per person per month)" << Constants::TAB << "Casual Partnership Prev Ratio (FtM)" << Constants::TAB <<
-	          "Prop in Concurrent Ratio (FtM)" << Constants::TAB << "Avg Num Acts Ratio (LR to HR Females)" << Constants::TAB <<
-	          "Steady Partnership Prev" << Constants::TAB << "Casual Partnership Prevalence" << Constants::TAB <<
-	          "CSW Partnership Prevalence" << Constants::TAB << "Prop In Concurrent" << Constants::TAB << "Num Acts" << Constants::TAB
-	          << "Casual Partnership Prev Ratio (FtM)" << Constants::TAB << "Prop in Concurrent Ratio (FtM)" << Constants::TAB <<
-	          "Avg Num Acts Ratio (LR to HR Females)" << Constants::TAB;
+	secondRow << "Steady Partnership Prevalence" << Constants::Tab << "Casual Partnership Prevalence" << Constants::Tab <<
+	          "CSW Partnership Prevalence" << Constants::Tab << "Prop in Concurrent" << Constants::Tab <<
+	          "Num Acts (per person per month)" << Constants::Tab << "Casual Partnership Prev Ratio (FtM)" << Constants::Tab <<
+	          "Prop in Concurrent Ratio (FtM)" << Constants::Tab << "Avg Num Acts Ratio (LR to HR Females)" << Constants::Tab <<
+	          "Steady Partnership Prev" << Constants::Tab << "Casual Partnership Prevalence" << Constants::Tab <<
+	          "CSW Partnership Prevalence" << Constants::Tab << "Prop In Concurrent" << Constants::Tab << "Num Acts" << Constants::Tab
+	          << "Casual Partnership Prev Ratio (FtM)" << Constants::Tab << "Prop in Concurrent Ratio (FtM)" << Constants::Tab <<
+	          "Avg Num Acts Ratio (LR to HR Females)" << Constants::Tab;
 
     for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
 	{
@@ -1820,14 +1689,13 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 
 			for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
 			{
-				if((*p_Iter)->getMonthOfLatestPartnershipDissolution((SexualPartnership::Type) i) > max<int>((
-				            parameters_.currTime - 12), 0))
+				if((*p_Iter)->getMonthOfLatestPartnershipDissolution((SexualPartnership::Type) i) > max(parameters_.currTime - TimeSpan::Year, Time::Zero))
 				{
                     numInPartnership[i][(std::size_t)gender]++;
 				}
 			}
 
-			if((*p_Iter)->getMonthOfLatestConcurrent() > max<int>((parameters_.currTime - 12), 0))
+			if((*p_Iter)->getTimeOfLatestConcurrent() > max(parameters_.currTime - TimeSpan::Year, Time::Zero))
 			{
                 numInConcurrent[(std::size_t)gender]++;
 			}
@@ -1845,7 +1713,7 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 
 	if(parameters_.calibrationInputs.steadyPrevPopulation == 0)
 	{
-		firstRow << "Entire SA Pop" << Constants::TAB;
+		firstRow << "Entire SA Pop" << Constants::Tab;
         numInSteady = numInPartnership[(int)SexualPartnership::Type::Steady][(std::size_t)DemographicProfile::Gender::Male] +
             numInPartnership[(int)SexualPartnership::Type::Steady][(std::size_t)DemographicProfile::Gender::Female]; //entire SA pop
 
@@ -1867,7 +1735,7 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 	}
 	else
 	{
-		firstRow << "Male SA Pop" << Constants::TAB;
+		firstRow << "Male SA Pop" << Constants::Tab;
         numInSteady = numInPartnership[(int)SexualPartnership::Type::Steady][(std::size_t)DemographicProfile::Gender::Male]; //only male SA
 
 		if(maleSA != 0)
@@ -1889,7 +1757,7 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 
 	if(parameters_.calibrationInputs.casualPrevPopulation == 0)
 	{
-		firstRow << "Entire SA Pop" << Constants::TAB;
+		firstRow << "Entire SA Pop" << Constants::Tab;
         numInCasual = numInPartnership[(int)SexualPartnership::Type::Casual][(std::size_t)DemographicProfile::Gender::Male] +
             numInPartnership[(int)SexualPartnership::Type::Casual][(std::size_t)DemographicProfile::Gender::Female]; //entire SA pop
 
@@ -1911,7 +1779,7 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 	}
 	else
 	{
-		firstRow << "Male SA Pop" << Constants::TAB;
+		firstRow << "Male SA Pop" << Constants::Tab;
         numInCasual = numInPartnership[(int)SexualPartnership::Type::Casual][(std::size_t)DemographicProfile::Gender::Male]; //only male SA
 
 		if(maleSA != 0)
@@ -1933,7 +1801,7 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 
 	if(parameters_.calibrationInputs.CSWPrevPopulation == 0)
 	{
-		firstRow << "Entire SA Pop" << Constants::TAB;
+		firstRow << "Entire SA Pop" << Constants::Tab;
         numInCSW = numInPartnership[(int)SexualPartnership::Type::Csw][(std::size_t)DemographicProfile::Gender::Male] +
             numInPartnership[(int)SexualPartnership::Type::Csw][(std::size_t)DemographicProfile::Gender::Female]; //entire SA pop
 
@@ -1955,7 +1823,7 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 	}
 	else
 	{
-		firstRow << "Male SA Pop" << Constants::TAB;
+		firstRow << "Male SA Pop" << Constants::Tab;
         numInCSW = numInPartnership[(int)SexualPartnership::Type::Csw][(std::size_t)DemographicProfile::Gender::Male]; //only male SA
 
 		if(maleSA != 0)
@@ -1977,7 +1845,7 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 
 	if(parameters_.calibrationInputs.propInConcurrentPopulation == 0)
 	{
-		firstRow << "Entire SA Pop" << Constants::TAB;
+		firstRow << "Entire SA Pop" << Constants::Tab;
         concurrentNum = numInConcurrent[(std::size_t)DemographicProfile::Gender::Male] + numInConcurrent[(std::size_t)DemographicProfile::Gender::Female]; //entire SA pop
 
 		if(totalSA != 0)
@@ -1998,7 +1866,7 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 	}
 	else
 	{
-		firstRow << "Male SA Pop" << Constants::TAB;
+		firstRow << "Male SA Pop" << Constants::Tab;
         concurrentNum = numInConcurrent[(std::size_t)DemographicProfile::Gender::Male]; //only male SA
 
 		if(maleSA != 0)
@@ -2020,7 +1888,7 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 
 	if(parameters_.calibrationInputs.numActsPopulation == 0)
 	{
-		firstRow << "Entire SA Pop" << Constants::TAB;
+		firstRow << "Entire SA Pop" << Constants::Tab;
         numActs = numActsMonth[(std::size_t)DemographicProfile::Gender::Male] + numActsMonth[(std::size_t)DemographicProfile::Gender::Female]; //entire SA pop
 
 		if(totalSA != 0)
@@ -2041,7 +1909,7 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 	}
 	else
 	{
-		firstRow << "Male SA Pop" << Constants::TAB;
+		firstRow << "Male SA Pop" << Constants::Tab;
         numActs = numActsMonth[(std::size_t)DemographicProfile::Gender::Male]; //only male SA
 
 		if(maleSA != 0)
@@ -2065,7 +1933,7 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
     unsigned long numInCasualMale = numInPartnership[(int)SexualPartnership::Type::Casual][(std::size_t)DemographicProfile::Gender::Male];
     unsigned long numInCasualFemale = numInPartnership[(int)SexualPartnership::Type::Casual][(std::size_t)DemographicProfile::Gender::Female];
 	double casualPartPrevRatio = -1;
-	firstRow << Constants::TAB;
+	firstRow << Constants::Tab;
 
 	if(maleSA != 0 && femaleSA != 0)
 	{
@@ -2087,7 +1955,7 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
     unsigned long numInConcurrentMale = numInConcurrent[(std::size_t)DemographicProfile::Gender::Male];
     unsigned long numInConcurrentFemale = numInConcurrent[(std::size_t)DemographicProfile::Gender::Female];
 	double propConcurrentRatio = -1;
-	firstRow << Constants::TAB;
+	firstRow << Constants::Tab;
 
 	if(maleSA != 0 && femaleSA != 0)
 	{
@@ -2109,7 +1977,7 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
     unsigned long numSAFemaleHR = numSexuallyActiveRisk[(std::size_t)DemographicProfile::Gender::Female][(std::size_t)Entity::RiskLevel::HIGH];
     unsigned long numSAFemaleLR = numSexuallyActiveRisk[(std::size_t)DemographicProfile::Gender::Female][(std::size_t)Entity::RiskLevel::LOW];
 	double numActsFemaleLRtoHRRatio = -1;
-	firstRow << Constants::TAB;
+	firstRow << Constants::Tab;
 
 	if(numSAFemaleHR != 0 && numSAFemaleLR != 0)
 	{
@@ -2129,13 +1997,13 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 	}
 
 	firstRow << "Violation of Constraint (1=Condition Met, 0=Not Met)";
-	thirdRow << steadyPrev << Constants::TAB << casualPrev << Constants::TAB << CSWPrev << Constants::TAB <<
-	         propInConcurrent << Constants::TAB << numActsAvg << Constants::TAB << casualPartPrevRatio << Constants::TAB <<
-	         propConcurrentRatio << Constants::TAB << numActsFemaleLRtoHRRatio << Constants::TAB;
-	thirdRow << (int)passesSteadyPrev << Constants::TAB << (int)passesCasualPrev << Constants::TAB <<
-	         (int)passesCSWPrev << Constants::TAB << (int)passesPropInConcurrent << Constants::TAB <<
-	         (int)passesNumActs << Constants::TAB << (int)passesCasualPartPrevRatio << Constants::TAB <<
-	         (int)passesPropConcRatio << Constants::TAB << (int)passesNumActsLRtoHRRatio << Constants::TAB;
+	thirdRow << steadyPrev << Constants::Tab << casualPrev << Constants::Tab << CSWPrev << Constants::Tab <<
+	         propInConcurrent << Constants::Tab << numActsAvg << Constants::Tab << casualPartPrevRatio << Constants::Tab <<
+	         propConcurrentRatio << Constants::Tab << numActsFemaleLRtoHRRatio << Constants::Tab;
+	thirdRow << (int)passesSteadyPrev << Constants::Tab << (int)passesCasualPrev << Constants::Tab <<
+	         (int)passesCSWPrev << Constants::Tab << (int)passesPropInConcurrent << Constants::Tab <<
+	         (int)passesNumActs << Constants::Tab << (int)passesCasualPartPrevRatio << Constants::Tab <<
+	         (int)passesPropConcRatio << Constants::Tab << (int)passesNumActsLRtoHRRatio << Constants::Tab;
 
 	if(parameters_.trace_files[EventParams::TraceFile::Type::CalibrationStatistics].enabled)
 	{
@@ -2231,14 +2099,6 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Entity *_
             //if we tried to draw someone we are already seeing, then redraw until we pick someone new
             if(_initiator->isPartneredWith(partner))
             {
-                if(parameters_.debugLevel > DebugLevel::One)
-                {
-                    _initiator->print(cerr, "");
-                    cerr << _initiator->getID() << " Attempted repeat partnership with " << partner->getID() << ", " <<
-                        (SexualPartnership::TypeStrings.at(_partnershipType)) << std::endl;
-                    _initiator->printCurrentPartners(cerr, "");
-                }
-
                 if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (_initiator->trace() || partner->trace()))
                 {
                     if(_initiator->trace())
@@ -2273,7 +2133,7 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Entity *_
                     parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "   x Repeat partnership not formed!" << std::endl;
                 }
             }
-            else if(partner != _initiator && popWideParams.ageOfMajority + partner->GetSexualActivityDelay() <= partner->getAge(TimeGranularity::Month))
+            else if(partner != _initiator && popWideParams.ageOfMajority + partner->GetSexualActivityDelay() <= partner->getAge())
             {
                 auto rejectionChance = partner->GetPartnershipRejectionChance(_initiator->getRiskLevel(), _partnershipType);
 
@@ -2311,11 +2171,11 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Entity *_
         {
             parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "  + Male " << _initiator->getID() << " (";
             _initiator->getDemographicProfile()->print(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].file, "");
-            parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " age " << _initiator->getAge(TimeGranularity::Month) << ", "
+            parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " age " << _initiator->getAge().get_total_months() << ", "
                 << chosenPartner->getSexualActivity() << " marbles, " << ((chosenPartner->getRiskLevel() == Entity::RiskLevel::HIGH) ? "HIGH" : "LOW") << " risk) forms " <<
                 (SexualPartnership::TypeStrings.at(_partnershipType)) << " with female " << chosenPartner->getID() << " (";
             chosenPartner->getDemographicProfile()->print(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].file, "");
-            parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " age " << chosenPartner->getAge(TimeGranularity::Month)
+			parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " age " << chosenPartner->getAge().get_total_months()
                 << ", " << chosenPartner->getSexualActivity() << " marbles, " << ((chosenPartner->getRiskLevel() == Entity::RiskLevel::HIGH) ? "HIGH" : "LOW") << " risk)";
         }
 
@@ -2372,20 +2232,9 @@ void Population::ProcessDeath(EventParams &parameters_, Entity *_p, bool calcula
 	if(calculateLE)
 	{
 		assert((populationStatistics.selectedLEStats != nullptr));
-        assert(_p->getAge(TimeGranularity::Year) >= 0);
-        assert(_p->getAge(TimeGranularity::Year) <= Entity::maxYrForDeathStats);
-        populationStatistics.selectedLEStats->deathsByAge[_p->getAge(TimeGranularity::Year)]++;
-	}
-
-	//print out this info to the trace
-    if(parameters_.debugLevel > DebugLevel::One && parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
-	{
-		_p->print(parameters_.trace_files[EventParams::TraceFile::Type::Events].file, "Someone died: " + Constants::TAB);
-	}
-
-    if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && _p->trace())
-	{
-		_p->print(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].file, ">> Today we mourn: ");
+        assert(_p->getAge() >= Age::Zero);
+        assert(_p->getAge() <= Time(Entity::maxYrForDeathStats, 0));
+        populationStatistics.selectedLEStats->deathsByAge[(std::size_t)_p->getAge().get_total_years()]++;
 	}
 
 	//holds any former steady partners that are widowed after a partner's death
@@ -2405,10 +2254,12 @@ void Population::ProcessDeath(EventParams &parameters_, Entity *_p, bool calcula
 	delete _p;
 }
 
-std::size_t Population::CalcPrevalentPopulation(int time)
+std::size_t Population::CalcPrevalentPopulation(Time time)
 {
-	assert(time >= 0);
-	std::size_t totalInfected = 0;		//total infected in the while population
+	assert(time >= Time::Zero);
+
+	//total infected in the while population
+	std::size_t totalInfected = 0;
 	
 	//holds number of prevalent infections
 	std::array<std::array<std::size_t, DemographicProfile::TotalNumBuckets>, InfectionsTracker::NUMBER_GENERATIONS_TO_TRACE> prevalenceByBucket;
@@ -2450,7 +2301,7 @@ std::size_t Population::CalcPrevalentPopulation(int time)
 		currProfileID++;
 	}
 
-    auto get_age_bucket = [this](int age)
+    auto get_age_bucket = [this](Age age)
     {
         std::size_t i = 0;
 
@@ -2485,7 +2336,7 @@ std::size_t Population::CalcPrevalentPopulation(int time)
 
 AgeBucketPrevalenceInfo &Population::GetAgeBucket(Entity *p)
 {
-    int age = p->getAge(TimeGranularity::Month);
+    auto age = p->getAge();
 
 	for(unsigned int ageBucket = 0; ageBucket < popWideParams.initialAgeBuckets.size(); ageBucket++)
 	{
@@ -2504,7 +2355,7 @@ AgeBucketPrevalenceInfo &Population::GetAgeBucket(Entity *p)
 
 int Population::GetAgeBucketIndex(Entity *p)
 {
-    int age = p->getAge(TimeGranularity::Month);
+    auto age = p->getAge();
 	unsigned int ageBucket;
 
 	for(ageBucket = 0; ageBucket < popWideParams.initialAgeBuckets.size(); ageBucket++)
@@ -2557,82 +2408,9 @@ std::size_t Population::GetCSWSize(const std::string &entity_type, Entity::RiskL
     return currSizeEntityTypeRiskCSW[entity_type][(std::size_t)_risk];
 }
 
-void Population::PrintMethodResults(EventParams &parameters_, const std::string &_methodName, const std::string &_eventLabel,
-    long _totalAffected, const std::string &_totalAffectedLabel, bool _showInfections)
+void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::ostream &_outStream)
 {
-	unsigned long totalInfected = 0;
-	unsigned long totalPopSize = 0;
-	unsigned long totalInSteady = 0;
-	unsigned long totalInRegular = 0;
-	unsigned long totalSexuallyActive = 0;
-	_showInfections = false;
-
-    if(parameters_.debugLevel > DebugLevel::Zero && parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
-	{
-		//if we are at time 0, then print out headers
-        if((parameters_.currTime == 0) && (parameters_.debugLevel == DebugLevel::One))
-		{
-			//print out headers for DEBUG level 1 in the BucketDemographicProfile size trace
-			parameters_.trace_files[EventParams::TraceFile::Type::Events] << "Time\t" << "EventLabel\tNumAffected\t";
-			parameters_.trace_files[EventParams::TraceFile::Type::Events] << "Currently Infected" << Constants::TAB;
-			parameters_.trace_files[EventParams::TraceFile::Type::Events] << "Current Population Size" << Constants::TAB;
-			parameters_.trace_files[EventParams::TraceFile::Type::Events] << "Sexually Active Population" << Constants::TAB;
-			parameters_.trace_files[EventParams::TraceFile::Type::Events] << "Steady Partnership Population" << Constants::TAB;
-			parameters_.trace_files[EventParams::TraceFile::Type::Events] << "Regular Partnership Population" << Constants::TAB;
-			parameters_.trace_files[EventParams::TraceFile::Type::Events] << Constants::TAB;
-			entities->printBucketLabels(parameters_.trace_files[EventParams::TraceFile::Type::Events].file, _showInfections);
-			parameters_.trace_files[EventParams::TraceFile::Type::Events] << std::endl;
-		}
-
-		//print out the sizes of the buckets to a string stream
-		std::ostringstream bucketTotalsStr;
-		entities->printBucketSizes(bucketTotalsStr, Constants::TAB, _showInfections, totalInfected, totalPopSize,
-            totalSexuallyActive, totalInSteady, totalInRegular, (parameters_.debugLevel > DebugLevel::One));
-
-		//if debug level > 1, then print trace format in verbose form and include labels
-        if(parameters_.debugLevel > DebugLevel::One)
-		{
-			parameters_.trace_files[EventParams::TraceFile::Type::Events] << "T: " << parameters_.currTime << " -- " << _methodName << ": " <<
-			        endl;
-			parameters_.trace_files[EventParams::TraceFile::Type::Events] << Constants::TAB << _eventLabel;
-			parameters_.trace_files[EventParams::TraceFile::Type::Events] << Constants::TAB;
-			parameters_.trace_files[EventParams::TraceFile::Type::Events] << _totalAffectedLabel << "= " << _totalAffected << std::endl;
-			parameters_.trace_files[EventParams::TraceFile::Type::Events] << "Current Person Pool Sizes:\t";
-		}
-		else
-		{
-			parameters_.trace_files[EventParams::TraceFile::Type::Events] << parameters_.currTime << Constants::TAB << _eventLabel <<
-			        Constants::TAB;
-			parameters_.trace_files[EventParams::TraceFile::Type::Events] << _totalAffected << Constants::TAB;
-			parameters_.trace_files[EventParams::TraceFile::Type::Events] << totalInfected << Constants::TAB;
-			parameters_.trace_files[EventParams::TraceFile::Type::Events] << totalPopSize << Constants::TAB;
-			parameters_.trace_files[EventParams::TraceFile::Type::Events] << totalSexuallyActive << Constants::TAB;
-			parameters_.trace_files[EventParams::TraceFile::Type::Events] << totalInSteady << Constants::TAB;
-			parameters_.trace_files[EventParams::TraceFile::Type::Events] << totalInRegular << Constants::TAB;
-			parameters_.trace_files[EventParams::TraceFile::Type::Events] << Constants::TAB;
-		}
-
-		parameters_.trace_files[EventParams::TraceFile::Type::Events] << bucketTotalsStr.str();
-
-        if(parameters_.debugLevel > DebugLevel::One)
-		{
-			parameters_.trace_files[EventParams::TraceFile::Type::Events] << std::endl;
-		}
-
-		//print out all people in the population
-        if(parameters_.debugLevel > DebugLevel::Two)
-		{
-			parameters_.trace_files[EventParams::TraceFile::Type::Events] << std::endl;
-			entities->print(parameters_.trace_files[EventParams::TraceFile::Type::Events].file);
-		}
-
-		parameters_.trace_files[EventParams::TraceFile::Type::Events] << std::endl;
-	}
-}
-
-void Population::PrintPartnerships(EventParams &parameters_, long _time, std::ostream &_outStream)
-{
-	assert(_time >= 0);
+	assert(_time >= Time::Zero);
 	std::string employmentLabels[] = { "Non-CSW", "CSW" };
 	std::string riskLabels[] = { "LR", "HR" };
 	std::string relationshipLabels[] = { "Non-Single", "Single" };
@@ -2640,14 +2418,14 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 	std::string partnershipLabelsMsm[] = { "SteadyMSM", "RegularMSM", "CasualMSM", "CSWMSM" };
 	std::string riskLabels2[] = { "HR", "Mix", "LR" };
 
-	if(_time == 0)
+	if(_time == Time::Zero)
 	{
 		std::ostringstream firstRow;
 		std::ostringstream secondRow;
 		std::ostringstream thirdRow;
-		firstRow << Constants::TAB;
-		secondRow << Constants::TAB;
-		thirdRow << "Month" << Constants::TAB;
+		firstRow << Constants::Tab;
+		secondRow << Constants::Tab;
+		thirdRow << "Month" << Constants::Tab;
 		//Partnership Headers
 
 		for (auto hetero : { true, false })
@@ -2680,10 +2458,10 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 						{
 							for (int m = (int)Entity::RiskLevel::HIGH; m >= 0; m--)
 							{
-								firstRow << Constants::TAB;
-								secondRow << Constants::TAB;
-								thirdRow << entity_type << Constants::SPACE << relationshipLabels[k] << Constants::SPACE << employmentLabels[l] <<
-									Constants::SPACE << riskLabels[m] << Constants::TAB;
+								firstRow << Constants::Tab;
+								secondRow << Constants::Tab;
+								thirdRow << entity_type << Constants::Space << relationshipLabels[k] << Constants::Space << employmentLabels[l] <<
+									Constants::Space << riskLabels[m] << Constants::Tab;
 							}
 						}
 					}
@@ -2703,11 +2481,11 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 				{
 					if (csw == "CSW" && entity_type == "Male:Hetero") continue;
 
-					firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-					secondRow << entity_type << " " << risk << " Risk " << csw << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-						Constants::TAB;;
-					thirdRow << "Concurrent" << Constants::TAB << "2 Partners" << Constants::TAB << "3 Partners" << Constants::TAB <<
-						"4 Partners" << Constants::TAB << "5+ Partners" << Constants::TAB;
+					firstRow << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
+					secondRow << entity_type << " " << risk << " Risk " << csw << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
+						Constants::Tab;;
+					thirdRow << "Concurrent" << Constants::Tab << "2 Partners" << Constants::Tab << "3 Partners" << Constants::Tab <<
+						"4 Partners" << Constants::Tab << "5+ Partners" << Constants::Tab;
 				}
 			}
 		}
@@ -2725,17 +2503,17 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 				for (int j = 0; j < 3; j++)
 				{
 					std::string label = hetero ? partnershipLabelsHetero[i] : partnershipLabelsMsm[i];
-					firstRow << Constants::TAB;
-					secondRow << Constants::TAB;
-					thirdRow << label << Constants::SPACE << riskLabels2[j] << Constants::TAB;
+					firstRow << Constants::Tab;
+					secondRow << Constants::Tab;
+					thirdRow << label << Constants::Space << riskLabels2[j] << Constants::Tab;
 				}
 			}
 		}
 
 		for (auto entity_type : { "MSMW", "MSM", "Female" })
 		{
-			secondRow << entity_type << " Selection Statistics" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-			thirdRow << "Min" << Constants::TAB << "Max" << Constants::TAB << "Mean" << Constants::TAB << "Std. Dev." << Constants::TAB << "Median" << Constants::TAB << "Mode" << Constants::TAB;
+			secondRow << entity_type << " Selection Statistics" << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
+			thirdRow << "Min" << Constants::Tab << "Max" << Constants::Tab << "Mean" << Constants::Tab << "Std. Dev." << Constants::Tab << "Median" << Constants::Tab << "Mode" << Constants::Tab;
 		}
 
 		//write out string buffers to trace file
@@ -2745,13 +2523,13 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 	}
 
 	//Month
-	if(_time == 0)
+	if(_time == Time::Zero)
 	{
-		_outStream << "Init" << Constants::TAB;
+		_outStream << "Init" << Constants::Tab;
 	}
 	else
 	{
-		_outStream << _time << Constants::TAB;
+		_outStream << _time.get_total_months() << Constants::Tab;
 	}
 
 	std::unordered_map<std::string, descriptive_stats_container<std::size_t>> times_selected_stats;
@@ -2818,7 +2596,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 		}
 
 		concurrent = 15 - concurrent;
-		assert(concurrent >= 0 && concurrent < Constants::NUMBER_CONCURRENCY_DEFS);
+		assert(concurrent >= 0 && concurrent < Constants::NumberConcurrencyDefs);
 
 		if (parameters_.concurrencyDef[concurrent].useDefinition
 		    && num_partners >= static_cast<std::size_t>(parameters_.concurrencyDef[concurrent].minPartnershipsNeeded))
@@ -2853,7 +2631,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 					{
 						for (int m = (int)Entity::RiskLevel::HIGH; m >= 0; m--)
 						{
-							_outStream << num_in_partnership[hetero ? i : i + 4][entity_type][k][l][m] << Constants::TAB;
+							_outStream << num_in_partnership[hetero ? i : i + 4][entity_type][k][l][m] << Constants::Tab;
 						}
 					}
 				}
@@ -2871,7 +2649,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 
 				for (int i = 0; i < 5; i++)
 				{
-					_outStream << num_in_concurrent[entity_type][i][csw][risk] << Constants::TAB;
+					_outStream << num_in_concurrent[entity_type][i][csw][risk] << Constants::Tab;
 				}
 			}
 		}
@@ -2912,13 +2690,13 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 				if (double_num_partnerships[partner1][j][hetero ? i : i + 4] == 0
 					|| double_num_partnerships[partner2][j][hetero ? i : i + 4] == 0)
 				{
-					_outStream << 0 << Constants::TAB;
+					_outStream << 0 << Constants::Tab;
 					continue;
 				}
 
 				auto count = (double_num_partnerships[partner1][j][hetero ? i : i + 4] 
 					+ double_num_partnerships[partner2][j][hetero ? i : i + 4]) / 2;
-				_outStream << count << Constants::TAB;
+				_outStream << count << Constants::Tab;
 			}
 		}
 	}
@@ -2927,163 +2705,163 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 	{
 		if (times_selected_stats[entity_type].get_num_samples() > 0)
 		{
-			_outStream << times_selected_stats[entity_type].get_min() << Constants::TAB;
-			_outStream << times_selected_stats[entity_type].get_max() << Constants::TAB;
-			_outStream << times_selected_stats[entity_type].get_mean() << Constants::TAB;
-			_outStream << times_selected_stats[entity_type].get_stddev() << Constants::TAB;
-			_outStream << times_selected_stats[entity_type].get_median() << Constants::TAB;
-			_outStream << times_selected_stats[entity_type].get_mode() << Constants::TAB;
+			_outStream << times_selected_stats[entity_type].get_min() << Constants::Tab;
+			_outStream << times_selected_stats[entity_type].get_max() << Constants::Tab;
+			_outStream << times_selected_stats[entity_type].get_mean() << Constants::Tab;
+			_outStream << times_selected_stats[entity_type].get_stddev() << Constants::Tab;
+			_outStream << times_selected_stats[entity_type].get_median() << Constants::Tab;
+			_outStream << times_selected_stats[entity_type].get_mode() << Constants::Tab;
 		}
 		else
 		{
-			_outStream << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+			_outStream << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
 		}
 	}
 
 	_outStream << std::endl;
 }
 
-void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::ostream &_outStream)
+void Population::PrintClinical(EventParams &/*parameters_*/, Time _time, std::ostream &_outStream)
 {
-	assert(_time >= 0);
+	assert(_time >= Time::Zero);
 
-	if(_time == 0)
+	if(_time == Time::Zero)
 	{
 		std::ostringstream firstRow;
 		std::ostringstream secondRow;
 		std::ostringstream thirdRow;
-		firstRow << Constants::TAB;
-		secondRow << Constants::TAB;
-		thirdRow << "Month" << Constants::TAB;
+		firstRow << Constants::Tab;
+		secondRow << Constants::Tab;
+		thirdRow << "Month" << Constants::Tab;
 		//HIV Status among all SA pop
-		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB;
-		secondRow << "HIV Status Among Sexually Active Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-		         "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-		         << "Unobserved Latestage" << Constants::TAB;
+		firstRow << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
+		         Constants::Tab;
+		secondRow << "HIV Status Among Sexually Active Population" << Constants::Tab << Constants::Tab << Constants::Tab <<
+		          Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
+		thirdRow << "HIV-" << Constants::Tab << "Observed Acute" << Constants::Tab << "Unobserved Acute" << Constants::Tab <<
+		         "Observed Chronic" << Constants::Tab << "Unobserved Chronic" << Constants::Tab << "Observed Latestage" << Constants::Tab
+		         << "Unobserved Latestage" << Constants::Tab;
 		//CSW
-		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB;
-		secondRow << "HIV Status Among CSW SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-		         "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-		         << "Unobserved Latestage" << Constants::TAB;
+		firstRow << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
+		         Constants::Tab;
+		secondRow << "HIV Status Among CSW SA Population" << Constants::Tab << Constants::Tab << Constants::Tab <<
+		          Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
+		thirdRow << "HIV-" << Constants::Tab << "Observed Acute" << Constants::Tab << "Unobserved Acute" << Constants::Tab <<
+		         "Observed Chronic" << Constants::Tab << "Unobserved Chronic" << Constants::Tab << "Observed Latestage" << Constants::Tab
+		         << "Unobserved Latestage" << Constants::Tab;
 		//High Risk
-		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB;
-		secondRow << "HIV Status Among High Risk Non-CSW SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-		         "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-		         << "Unobserved Latestage" << Constants::TAB;
+		firstRow << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
+		         Constants::Tab;
+		secondRow << "HIV Status Among High Risk Non-CSW SA Population" << Constants::Tab << Constants::Tab << Constants::Tab <<
+		          Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
+		thirdRow << "HIV-" << Constants::Tab << "Observed Acute" << Constants::Tab << "Unobserved Acute" << Constants::Tab <<
+		         "Observed Chronic" << Constants::Tab << "Unobserved Chronic" << Constants::Tab << "Observed Latestage" << Constants::Tab
+		         << "Unobserved Latestage" << Constants::Tab;
 		//Low Risk
-		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB;
-		secondRow << "HIV Status Among Low Risk Non-CSW SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-		         "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-		         << "Unobserved Latestage" << Constants::TAB;
+		firstRow << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
+		         Constants::Tab;
+		secondRow << "HIV Status Among Low Risk Non-CSW SA Population" << Constants::Tab << Constants::Tab << Constants::Tab <<
+		          Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
+		thirdRow << "HIV-" << Constants::Tab << "Observed Acute" << Constants::Tab << "Unobserved Acute" << Constants::Tab <<
+		         "Observed Chronic" << Constants::Tab << "Unobserved Chronic" << Constants::Tab << "Observed Latestage" << Constants::Tab
+		         << "Unobserved Latestage" << Constants::Tab;
 		//Male
-		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB;
-		secondRow << "HIV Status Among Male SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-		         "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-		         << "Unobserved Latestage" << Constants::TAB;
+		firstRow << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
+		         Constants::Tab;
+		secondRow << "HIV Status Among Male SA Population" << Constants::Tab << Constants::Tab << Constants::Tab <<
+		          Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
+		thirdRow << "HIV-" << Constants::Tab << "Observed Acute" << Constants::Tab << "Unobserved Acute" << Constants::Tab <<
+		         "Observed Chronic" << Constants::Tab << "Unobserved Chronic" << Constants::Tab << "Observed Latestage" << Constants::Tab
+		         << "Unobserved Latestage" << Constants::Tab;
         //Male(hetero) High Risk
-        firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-            Constants::TAB;
-        secondRow << "HIV Status Among High Risk Male:Hetero SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-            Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-        thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-            "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-            << "Unobserved Latestage" << Constants::TAB;
+        firstRow << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
+            Constants::Tab;
+        secondRow << "HIV Status Among High Risk Male:Hetero SA Population" << Constants::Tab << Constants::Tab << Constants::Tab <<
+            Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
+        thirdRow << "HIV-" << Constants::Tab << "Observed Acute" << Constants::Tab << "Unobserved Acute" << Constants::Tab <<
+            "Observed Chronic" << Constants::Tab << "Unobserved Chronic" << Constants::Tab << "Observed Latestage" << Constants::Tab
+            << "Unobserved Latestage" << Constants::Tab;
         //Male(hetero) Low Risk
-        firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-            Constants::TAB;
-        secondRow << "HIV Status Among Low Risk Male:Hetero SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-            Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-        thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-            "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-            << "Unobserved Latestage" << Constants::TAB;
+        firstRow << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
+            Constants::Tab;
+        secondRow << "HIV Status Among Low Risk Male:Hetero SA Population" << Constants::Tab << Constants::Tab << Constants::Tab <<
+            Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
+        thirdRow << "HIV-" << Constants::Tab << "Observed Acute" << Constants::Tab << "Unobserved Acute" << Constants::Tab <<
+            "Observed Chronic" << Constants::Tab << "Unobserved Chronic" << Constants::Tab << "Observed Latestage" << Constants::Tab
+            << "Unobserved Latestage" << Constants::Tab;
         //Msmw High Risk
-        firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-            Constants::TAB;
-        secondRow << "HIV Status Among High Risk Male:Msmw SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-            Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-        thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-            "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-            << "Unobserved Latestage" << Constants::TAB;
+        firstRow << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
+            Constants::Tab;
+        secondRow << "HIV Status Among High Risk Male:Msmw SA Population" << Constants::Tab << Constants::Tab << Constants::Tab <<
+            Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
+        thirdRow << "HIV-" << Constants::Tab << "Observed Acute" << Constants::Tab << "Unobserved Acute" << Constants::Tab <<
+            "Observed Chronic" << Constants::Tab << "Unobserved Chronic" << Constants::Tab << "Observed Latestage" << Constants::Tab
+            << "Unobserved Latestage" << Constants::Tab;
         //Msmw Low Risk
-        firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-            Constants::TAB;
-        secondRow << "HIV Status Among Low Risk Male:Msmw SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-            Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-        thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-            "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-            << "Unobserved Latestage" << Constants::TAB;
+        firstRow << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
+            Constants::Tab;
+        secondRow << "HIV Status Among Low Risk Male:Msmw SA Population" << Constants::Tab << Constants::Tab << Constants::Tab <<
+            Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
+        thirdRow << "HIV-" << Constants::Tab << "Observed Acute" << Constants::Tab << "Unobserved Acute" << Constants::Tab <<
+            "Observed Chronic" << Constants::Tab << "Unobserved Chronic" << Constants::Tab << "Observed Latestage" << Constants::Tab
+            << "Unobserved Latestage" << Constants::Tab;
         //Msm High Risk
-        firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-            Constants::TAB;
-        secondRow << "HIV Status Among High Risk Male:Msm SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-            Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-        thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-            "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-            << "Unobserved Latestage" << Constants::TAB;
+        firstRow << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
+            Constants::Tab;
+        secondRow << "HIV Status Among High Risk Male:Msm SA Population" << Constants::Tab << Constants::Tab << Constants::Tab <<
+            Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
+        thirdRow << "HIV-" << Constants::Tab << "Observed Acute" << Constants::Tab << "Unobserved Acute" << Constants::Tab <<
+            "Observed Chronic" << Constants::Tab << "Unobserved Chronic" << Constants::Tab << "Observed Latestage" << Constants::Tab
+            << "Unobserved Latestage" << Constants::Tab;
         //Msm Low Risk
-        firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-            Constants::TAB;
-        secondRow << "HIV Status Among Low Risk Male:Msm SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-            Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-        thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-            "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-            << "Unobserved Latestage" << Constants::TAB;
+        firstRow << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
+            Constants::Tab;
+        secondRow << "HIV Status Among Low Risk Male:Msm SA Population" << Constants::Tab << Constants::Tab << Constants::Tab <<
+            Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
+        thirdRow << "HIV-" << Constants::Tab << "Observed Acute" << Constants::Tab << "Unobserved Acute" << Constants::Tab <<
+            "Observed Chronic" << Constants::Tab << "Unobserved Chronic" << Constants::Tab << "Observed Latestage" << Constants::Tab
+            << "Unobserved Latestage" << Constants::Tab;
 		//Female
-		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB;
-		secondRow << "HIV Status Among Female SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-		         "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-		         << "Unobserved Latestage" << Constants::TAB;
+		firstRow << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
+		         Constants::Tab;
+		secondRow << "HIV Status Among Female SA Population" << Constants::Tab << Constants::Tab << Constants::Tab <<
+		          Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
+		thirdRow << "HIV-" << Constants::Tab << "Observed Acute" << Constants::Tab << "Unobserved Acute" << Constants::Tab <<
+		         "Observed Chronic" << Constants::Tab << "Unobserved Chronic" << Constants::Tab << "Observed Latestage" << Constants::Tab
+		         << "Unobserved Latestage" << Constants::Tab;
 		//Female High Risk
-		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB;
-		secondRow << "HIV Status Among High Risk Female SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-		         "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-		         << "Unobserved Latestage" << Constants::TAB;
+		firstRow << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
+		         Constants::Tab;
+		secondRow << "HIV Status Among High Risk Female SA Population" << Constants::Tab << Constants::Tab << Constants::Tab <<
+		          Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
+		thirdRow << "HIV-" << Constants::Tab << "Observed Acute" << Constants::Tab << "Unobserved Acute" << Constants::Tab <<
+		         "Observed Chronic" << Constants::Tab << "Unobserved Chronic" << Constants::Tab << "Observed Latestage" << Constants::Tab
+		         << "Unobserved Latestage" << Constants::Tab;
 		//Female Low Risk
-		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB;
-		secondRow << "HIV Status Among Low Risk Female SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-		         "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-		         << "Unobserved Latestage" << Constants::TAB;
+		firstRow << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
+		         Constants::Tab;
+		secondRow << "HIV Status Among Low Risk Female SA Population" << Constants::Tab << Constants::Tab << Constants::Tab <<
+		          Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
+		thirdRow << "HIV-" << Constants::Tab << "Observed Acute" << Constants::Tab << "Unobserved Acute" << Constants::Tab <<
+		         "Observed Chronic" << Constants::Tab << "Unobserved Chronic" << Constants::Tab << "Observed Latestage" << Constants::Tab
+		         << "Unobserved Latestage" << Constants::Tab;
 		//CD4 At Transmission
-		firstRow << Constants::TAB << Constants::TAB << Constants::TAB;
-		secondRow << "CD4 At Transmission" << Constants::TAB << Constants::TAB << Constants::TAB;
-		thirdRow << "Num Transmissions" << Constants::TAB << "Mean CD4" << Constants::TAB << "SD CD4" << Constants::TAB;
+		firstRow << Constants::Tab << Constants::Tab << Constants::Tab;
+		secondRow << "CD4 At Transmission" << Constants::Tab << Constants::Tab << Constants::Tab;
+		thirdRow << "Num Transmissions" << Constants::Tab << "Mean CD4" << Constants::Tab << "SD CD4" << Constants::Tab;
 		_outStream << firstRow.str() << std::endl;
 		_outStream << secondRow.str() << std::endl;
 		_outStream << thirdRow.str() << std::endl;
 	}
 
 	//Month
-	if(_time == 0)
+	if(_time == Time::Zero)
 	{
-		_outStream << "Init" << Constants::TAB;
+		_outStream << "Init" << Constants::Tab;
 	}
 	else
 	{
-		_outStream << _time << Constants::TAB;
+		_outStream << _time.get_total_months() << Constants::Tab;
 	}
 
     std::unordered_map<std::string, std::array<std::array<std::array<unsigned long, (std::size_t)Entity::HIVStatus::Last>, (std::size_t)DemographicProfile::Employment::Last>, (std::size_t)Entity::RiskLevel::Last>> numWithHIVStatus;
@@ -3131,7 +2909,7 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 
 	for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
 	{
-		_outStream << hivStatusSA[m] << Constants::TAB;
+		_outStream << hivStatusSA[m] << Constants::Tab;
 	}
 
 	//HIV Status of CSW SA population
@@ -3155,7 +2933,7 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 
 	for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
 	{
-		_outStream << hivStatusCSW[m] << Constants::TAB;
+		_outStream << hivStatusCSW[m] << Constants::Tab;
 	}
 
 	//HIV Status of Risk Non CSW SA population
@@ -3178,7 +2956,7 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 
 	for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
 		{
-			_outStream << hivStatusRisk[m] << Constants::TAB;
+			_outStream << hivStatusRisk[m] << Constants::Tab;
 		}
 	}
 
@@ -3203,7 +2981,7 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 
     for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
     {
-        _outStream << hivStatusMale[m] << Constants::TAB;
+        _outStream << hivStatusMale[m] << Constants::Tab;
     }
 
 	//HIV Status of SA population by Gender and Risk
@@ -3238,7 +3016,7 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
         {
             for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
             {
-                _outStream << hivStatusGender[m] << Constants::TAB;
+                _outStream << hivStatusGender[m] << Constants::Tab;
             }
         }
 
@@ -3246,7 +3024,7 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 		{
 		    for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
 			{
-				_outStream << hivStatusGenderRisk[i][m] << Constants::TAB;
+				_outStream << hivStatusGenderRisk[i][m] << Constants::Tab;
 			}
 		}
 	}
@@ -3255,9 +3033,10 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 	_outStream << std::endl;
 }
 
-void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::ostream &_outStream)
+void Population::PrintPopulation(EventParams &/*parameters_*/, Time _time, std::ostream &_outStream)
 {
-	assert(_time >= 0);
+	assert(_time >= Time::Zero);
+
 	//total # of age ranges to print out
     std::vector<AgeRange> age_ranges;
     for(auto age_range_size_pair : currSizeByEntityTypeAgeRange["female"])
@@ -3266,49 +3045,49 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
     }
 
 	//write headers for infections sheet
-	if(_time == 0)
+	if(_time == Time::Zero)
 	{
 		std::ostringstream firstRow;
 		std::ostringstream secondRow;
 		//incidence-related headers
-		firstRow << Constants::TAB;
-		secondRow << "Month" << Constants::TAB;
-		firstRow << Constants::TAB;
-		secondRow << "Pop Size" << Constants::TAB;
-		firstRow << Constants::TAB;
-		secondRow << "SA Pop Size" << Constants::TAB;
-		firstRow << "Deaths" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB << Constants::TAB;
-		secondRow << "Any OI" << Constants::TAB << "Chronic AIDS" << Constants::TAB << "Non-AIDS" << Constants::TAB <<
-		          "ART Toxicity" << Constants::TAB << "Proph Toxicity" << Constants::TAB << "Other" << Constants::TAB << "Total" <<
-		          Constants::TAB;
-		firstRow << "Gender" << Constants::TAB;
-		secondRow << "Males" << Constants::TAB;
-        secondRow << "Male:Hetero" << Constants::TAB;
-        secondRow << "Male:Msmw" << Constants::TAB;
-        secondRow << "Male:Msm" << Constants::TAB;
-		firstRow << Constants::TAB;
-        firstRow << Constants::TAB;
-        firstRow << Constants::TAB;
-        firstRow << Constants::TAB;
-		secondRow << "Females" << Constants::TAB;
-		firstRow << "Risk Group (SA Pop)" << Constants::TAB << Constants::TAB;
-		secondRow << "CSW HR" << Constants::TAB << "CSW LR" << Constants::TAB;
-		firstRow << Constants::TAB << Constants::TAB;
-        firstRow << Constants::TAB << Constants::TAB;
-        secondRow << "Non-CSW High Risk Male:Hetero" << Constants::TAB;
-        secondRow << "Non-CSW High Risk Male:Msmw" << Constants::TAB;
-        secondRow << "Non-CSW High Risk Male:Msm" << Constants::TAB;
-        secondRow << "Non-CSW High Risk Female" << Constants::TAB;
-		firstRow << Constants::TAB << Constants::TAB;
-        firstRow << Constants::TAB << Constants::TAB;
-        secondRow << "Non-CSW Low Risk Male:Hetero" << Constants::TAB;
-        secondRow << "Non-CSW Low Risk Male:Msmw" << Constants::TAB;
-        secondRow << "Non-CSW Low Risk Male:Msm" << Constants::TAB;
-        secondRow << "Non-CSW Low Risk Female" << Constants::TAB;
+		firstRow << Constants::Tab;
+		secondRow << "Month" << Constants::Tab;
+		firstRow << Constants::Tab;
+		secondRow << "Pop Size" << Constants::Tab;
+		firstRow << Constants::Tab;
+		secondRow << "SA Pop Size" << Constants::Tab;
+		firstRow << "Deaths" << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
+		         Constants::Tab << Constants::Tab;
+		secondRow << "Any OI" << Constants::Tab << "Chronic AIDS" << Constants::Tab << "Non-AIDS" << Constants::Tab <<
+		          "ART Toxicity" << Constants::Tab << "Proph Toxicity" << Constants::Tab << "Other" << Constants::Tab << "Total" <<
+		          Constants::Tab;
+		firstRow << "Gender" << Constants::Tab;
+		secondRow << "Males" << Constants::Tab;
+        secondRow << "Male:Hetero" << Constants::Tab;
+        secondRow << "Male:Msmw" << Constants::Tab;
+        secondRow << "Male:Msm" << Constants::Tab;
+		firstRow << Constants::Tab;
+        firstRow << Constants::Tab;
+        firstRow << Constants::Tab;
+        firstRow << Constants::Tab;
+		secondRow << "Females" << Constants::Tab;
+		firstRow << "Risk Group (SA Pop)" << Constants::Tab << Constants::Tab;
+		secondRow << "CSW HR" << Constants::Tab << "CSW LR" << Constants::Tab;
+		firstRow << Constants::Tab << Constants::Tab;
+        firstRow << Constants::Tab << Constants::Tab;
+        secondRow << "Non-CSW High Risk Male:Hetero" << Constants::Tab;
+        secondRow << "Non-CSW High Risk Male:Msmw" << Constants::Tab;
+        secondRow << "Non-CSW High Risk Male:Msm" << Constants::Tab;
+        secondRow << "Non-CSW High Risk Female" << Constants::Tab;
+		firstRow << Constants::Tab << Constants::Tab;
+        firstRow << Constants::Tab << Constants::Tab;
+        secondRow << "Non-CSW Low Risk Male:Hetero" << Constants::Tab;
+        secondRow << "Non-CSW Low Risk Male:Msmw" << Constants::Tab;
+        secondRow << "Non-CSW Low Risk Male:Msm" << Constants::Tab;
+        secondRow << "Non-CSW Low Risk Female" << Constants::Tab;
 		//write out headers for population by age
-		firstRow << "Non-SA Pop (All Ages)" << Constants::TAB;
-		secondRow << "All ages" << Constants::TAB;
+		firstRow << "Non-SA Pop (All Ages)" << Constants::Tab;
+		secondRow << "All ages" << Constants::Tab;
 
 		for(std::size_t i = 0; i < age_ranges.size(); i++)
 		{
@@ -3317,12 +3096,12 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 				firstRow << "SA Pop (Age Months)";
 			}
 
-			firstRow << Constants::TAB;
-            secondRow << age_ranges.at(i).lower << "-" << age_ranges.at(i).upper << Constants::TAB;
+			firstRow << Constants::Tab;
+            secondRow << age_ranges.at(i) << Constants::Tab;
 		}
 
-		firstRow << "Male (By Age)" << Constants::TAB;
-		secondRow << "Non-SA" << Constants::TAB;
+		firstRow << "Male (By Age)" << Constants::Tab;
+		secondRow << "Non-SA" << Constants::Tab;
 
         for(std::size_t i = 0; i < age_ranges.size(); i++)
 		{
@@ -3331,12 +3110,12 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 				firstRow << "SA Pop (Age Months)";
 			}
 
-			firstRow << Constants::TAB;
-            secondRow << age_ranges.at(i).lower << "-" << age_ranges.at(i).upper << Constants::TAB;
+			firstRow << Constants::Tab;
+            secondRow << age_ranges.at(i) << Constants::Tab;
 		}
 
-        firstRow << "Male:Hetero (By Age)" << Constants::TAB;
-        secondRow << "Non-SA" << Constants::TAB;
+        firstRow << "Male:Hetero (By Age)" << Constants::Tab;
+        secondRow << "Non-SA" << Constants::Tab;
 
         for(std::size_t i = 0; i < age_ranges.size(); i++)
         {
@@ -3345,12 +3124,12 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
                 firstRow << "SA Pop (Age Months)";
             }
 
-            firstRow << Constants::TAB;
-            secondRow << age_ranges.at(i).lower << "-" << age_ranges.at(i).upper << Constants::TAB;
+            firstRow << Constants::Tab;
+            secondRow << age_ranges.at(i) << Constants::Tab;
         }
 
-        firstRow << "Male:Msmw (By Age)" << Constants::TAB;
-        secondRow << "Non-SA" << Constants::TAB;
+        firstRow << "Male:Msmw (By Age)" << Constants::Tab;
+        secondRow << "Non-SA" << Constants::Tab;
 
         for(std::size_t i = 0; i < age_ranges.size(); i++)
         {
@@ -3359,12 +3138,12 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
                 firstRow << "SA Pop (Age Months)";
             }
 
-            firstRow << Constants::TAB;
-            secondRow << age_ranges.at(i).lower << "-" << age_ranges.at(i).upper << Constants::TAB;
+            firstRow << Constants::Tab;
+            secondRow << age_ranges.at(i) << Constants::Tab;
         }
 
-        firstRow << "Male:Msm (By Age)" << Constants::TAB;
-        secondRow << "Non-SA" << Constants::TAB;
+        firstRow << "Male:Msm (By Age)" << Constants::Tab;
+        secondRow << "Non-SA" << Constants::Tab;
 
         for(std::size_t i = 0; i < age_ranges.size(); i++)
         {
@@ -3373,12 +3152,12 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
                 firstRow << "SA Pop (Age Months)";
             }
 
-            firstRow << Constants::TAB;
-            secondRow << age_ranges.at(i).lower << "-" << age_ranges.at(i).upper << Constants::TAB;
+            firstRow << Constants::Tab;
+            secondRow << age_ranges.at(i) << Constants::Tab;
         }
 
-		firstRow << "Female (By Age)" << Constants::TAB;
-		secondRow << "Non-SA" << Constants::TAB;
+		firstRow << "Female (By Age)" << Constants::Tab;
+		secondRow << "Non-SA" << Constants::Tab;
 
         for(std::size_t i = 0; i < age_ranges.size(); i++)
 		{
@@ -3387,42 +3166,42 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 				firstRow << "SA Pop (Age Months)";
 			}
 
-			firstRow << Constants::TAB;
-            secondRow << age_ranges.at(i).lower << "-" << age_ranges.at(i).upper << Constants::TAB;
+			firstRow << Constants::Tab;
+            secondRow << age_ranges.at(i) << Constants::Tab;
 		}
 
 		//write out string buffers to trace file
 		_outStream << firstRow.str() << "Number circumcised" << std::endl;
-		_outStream << secondRow.str() << "NA" << Constants::TAB << "SA" << std::endl;
+		_outStream << secondRow.str() << "NA" << Constants::Tab << "SA" << std::endl;
 	}
 
 	//Month
-	if(_time == 0)
+	if(_time == Time::Zero)
 	{
-		_outStream << "init" << Constants::TAB;
+		_outStream << "init" << Constants::Tab;
 	}
 	else
 	{
-		_outStream << _time << Constants::TAB;
+		_outStream << _time.get_total_months() << Constants::Tab;
 	}
 
 	//output population size and SA pop size
-	_outStream << GetSize() << Constants::TAB;
-	_outStream << GetSize() - GetNASize() << Constants::TAB;
+	_outStream << GetSize() << Constants::Tab;
+	_outStream << GetSize() - GetNASize() << Constants::Tab;
 
 	//output deaths by causes
     _outStream << currDeathCauses[(std::size_t)Entity::DeathStatus::DTH_OI] 
-        << Constants::TAB 
+        << Constants::Tab 
         << currDeathCauses[(std::size_t)Entity::DeathStatus::DTH_CHRAIDS] 
-        << Constants::TAB 
+        << Constants::Tab 
         << currDeathCauses[(std::size_t)Entity::DeathStatus::DTH_NONAIDS] 
-        << Constants::TAB 
+        << Constants::Tab 
         << currDeathCauses[(std::size_t)Entity::DeathStatus::DTH_TOX_ART] 
-        << Constants::TAB 
+        << Constants::Tab 
         << currDeathCauses[(std::size_t)Entity::DeathStatus::DTH_TOX_PROPH] 
-        << Constants::TAB 
+        << Constants::Tab 
         << currDeathCauses[(std::size_t)Entity::DeathStatus::DTH_OTHER] 
-        << Constants::TAB;
+        << Constants::Tab;
 
     std::size_t totalDeaths = 0;
 
@@ -3431,25 +3210,25 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 		totalDeaths += currDeathCauses[i];
 	}
 
-	_outStream << totalDeaths << Constants::TAB;
+	_outStream << totalDeaths << Constants::Tab;
 	//output size of male and female populations
-    _outStream << GetSize(DemographicProfile::Gender::Male) << Constants::TAB;
+    _outStream << GetSize(DemographicProfile::Gender::Male) << Constants::Tab;
     for(auto entity_type : {"male", "msmw", "msm"})
     {
-        _outStream << GetSize(entity_type) << Constants::TAB;
+        _outStream << GetSize(entity_type) << Constants::Tab;
     }
-	_outStream << GetSize(DemographicProfile::Gender::Female) << Constants::TAB;
+	_outStream << GetSize(DemographicProfile::Gender::Female) << Constants::Tab;
 	//output size by risk
     _outStream << currSizeRiskCSW[(std::size_t)Entity::RiskLevel::HIGH] 
-        << Constants::TAB 
+        << Constants::Tab 
         << currSizeRiskCSW[(std::size_t)Entity::RiskLevel::LOW] 
-        << Constants::TAB;
+        << Constants::Tab;
 
     for(auto risk : {Entity::RiskLevel::HIGH, Entity::RiskLevel::LOW})
 	{
         for(auto entity_type : {"male", "msmw", "msm", "female"})
         {
-            _outStream << GetSASize(entity_type, risk) - currSizeEntityTypeRiskCSW[entity_type][(std::size_t)risk] << Constants::TAB;
+            _outStream << GetSASize(entity_type, risk) - currSizeEntityTypeRiskCSW[entity_type][(std::size_t)risk] << Constants::Tab;
         }
 	}
 
@@ -3480,65 +3259,34 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
         }
     }
 
-    _outStream << total_na << Constants::TAB;
+    _outStream << total_na << Constants::Tab;
 
     for(auto &ageRangeSize : size_by_age_range)
     {
-        _outStream << ageRangeSize.second << Constants::TAB;
+        _outStream << ageRangeSize.second << Constants::Tab;
     }
 
-    _outStream << total_na_male << Constants::TAB;
+    _outStream << total_na_male << Constants::Tab;
 
     for(auto &ageRangeSize : size_by_age_range_male)
     {
-        _outStream << ageRangeSize.second << Constants::TAB;
+        _outStream << ageRangeSize.second << Constants::Tab;
     }
 
     for(auto entity_type : {"male", "msmw", "msm", "female"})
     {
-        _outStream << currNASizeByEntityType[entity_type] << Constants::TAB;
+        _outStream << currNASizeByEntityType[entity_type] << Constants::Tab;
 
         for(auto &ageRangeSize : currSizeByEntityTypeAgeRange[entity_type])
         {
-            _outStream << ageRangeSize.second << Constants::TAB;
+            _outStream << ageRangeSize.second << Constants::Tab;
         }
     }
 
-    _outStream << num_circumcised_na << Constants::TAB;
-    _outStream << num_circumcised_sa << Constants::TAB;
+    _outStream << num_circumcised_na << Constants::Tab;
+    _outStream << num_circumcised_sa << Constants::Tab;
 
 	_outStream << std::endl;
-}
-
-void Population::SaveState(std::ostream &_outStream, long currTime)
-{
-	//Used to iterate through persons
-	std::list<Entity *>::iterator p_Iter;
-	bool isFirst = true;
-
-	//Double loop: first iterate through the men, then the women
-    for(auto gender : enum_iterator<DemographicProfile::Gender>())
-	{
-		p_Iter = entities->begin(gender);
-
-		while(p_Iter != entities->end(gender))
-		{
-			Entity *p = (*p_Iter);
-			assert(p != nullptr);
-
-			if(!isFirst)
-			{
-				_outStream << "," << std::endl << std::endl;
-			}
-
-			isFirst = false;
-			_outStream << "{";
-			//save the state of each person
-			p->saveState(_outStream, currTime);
-			_outStream << "}";
-			p_Iter++;
-		}
-	}
 }
 
 void Population::PrintARTRolloutOutcomes(EventParams &parameters_, std::ostream &_outStream)
@@ -3640,7 +3388,7 @@ void Population::Initialize(const PopulationParameters &parameters)
 
     if(parameters_.useRollout)
     {
-        ApplyRolloutContext(parameters_, 0);
+        ApplyRolloutContext(parameters_, Time::Zero);
     }
 
     // Create the people in the population 

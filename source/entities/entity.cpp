@@ -203,7 +203,7 @@ void Entity::addPartnership(SexualPartnership *_partnership)
 	numPartnersInHistory[(int)_partnership->getType()]++;
 
 	monthOfLatestPartnershipDissolution[(int)_partnership->getType()] =
-		max(monthOfLatestPartnershipDissolution[(int)_partnership->getType()], _partnership->getDissolutionTime());
+		max(monthOfLatestPartnershipDissolution[(int)_partnership->getType()], _partnership->getTimeOfDissolution());
 
 	//if a STEADY partnership was added && we are SINGLE, the we need to change or RELATIONSHIP_STATUS
 	if((_partnership->getType() == SexualPartnership::Type::Steady) &&
@@ -246,15 +246,10 @@ void Entity::becomeInfected(int _generationOfInfection, EventParams &_eventParam
 		}
 
         _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "!" << std::endl;
-
-        if(_generationOfInfection == 0)
-        {
-            print(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].file, "Demographic info for person:");
-        }
 	}
 
-	stats.setStat(Entity::Stats::STAT_TIME_OF_INFECTION_MTH, _eventParams.currTime);
-    stats.setStat(Entity::Stats::STAT_AGE_AT_INFECTION_MTH, getAge(TimeGranularity::Month));
+	stats.setStat(Entity::Stats::STAT_TIME_OF_INFECTION_MTH, _eventParams.currTime.get_total_months());
+    stats.setStat(Entity::Stats::STAT_AGE_AT_INFECTION_MTH, getAge().get_total_months());
     stats.setStat(Entity::Stats::STAT_GENERATION_OF_INFECTION, _generationOfInfection);
 
 	//if a CEPAC person exists (i.e. they were created earlier and thus this is an incident case), set them to infected
@@ -342,7 +337,7 @@ void Entity::becomeInfected(int _generationOfInfection, EventParams &_eventParam
 		}
 
 		//Update OI History
-		for(int i = 0; i < Constants::NUMBER_OF_OIS; i++)
+		for(int i = 0; i < Constants::NumberOfOIs; i++)
 		{
 			oiHistory[i] = cepacPatient->getDiseaseState()->hasTrueOIHistory[i];
 		}
@@ -386,7 +381,7 @@ void Entity::initialCEPACpatient(EventParams &_eventParams)
 		}
 
 		cepacPatient = new Patient(simContextToUse, _eventParams.cepacRunStats, _eventParams.cepacTracer,
-            true, getAge(TimeGranularity::Month), cepacGender, setAsIncidentCase, _eventParams.currTime);
+			true, (int)getAge().get_total_months(), cepacGender, setAsIncidentCase, (int)_eventParams.currTime.get_total_months());
 
 		//Only update hvl and cd4 if the patient is infected
 		//update HVL and CD4  and infection status for this Entity if they are infected
@@ -473,7 +468,7 @@ void Entity::initialCEPACpatient(EventParams &_eventParams)
 			}
 
 			//Update OI History
-			for(int i = 0; i < Constants::NUMBER_OF_OIS; i++)
+			for(int i = 0; i < Constants::NumberOfOIs; i++)
 			{
 				oiHistory[i] = cepacPatient->getDiseaseState()->hasTrueOIHistory[i];
 			}
@@ -545,15 +540,15 @@ int Entity::getNumPartnersInHistory()
 
 	return total;
 }
-int Entity::getMonthOfLatestPartnershipDissolution(SexualPartnership::Type _type)
+Time Entity::getMonthOfLatestPartnershipDissolution(SexualPartnership::Type _type)
 {
 	return monthOfLatestPartnershipDissolution[(int)_type];
 }
-int Entity::getMonthOfLatestConcurrent()
+Time Entity::getTimeOfLatestConcurrent()
 {
 	return monthOfLatestConcurrent;
 }
-void Entity::setMonthOfLatestConcurrent(int _month)
+void Entity::setTimeOfLatestConcurrent(Time _month)
 {
 	monthOfLatestConcurrent = _month;
 }
@@ -578,16 +573,9 @@ void Entity::becomeSexuallyActive(EventParams &_eventParams)
 	}
 }
 
-int Entity::getAge(TimeGranularity _granularity) const
+Time Entity::getAge() const
 {
-    if(_granularity == TimeGranularity::Month)
-	{
-		return age;
-	}
-	else
-	{
-        return Utility::convert_time(TimeGranularity::Month, _granularity, age);
-	}
+	return age;
 }
 
 
@@ -611,11 +599,11 @@ unsigned long Entity::getID() const
 	return id;
 }
 
-long Entity::getPartnershipsToEnd(long _currTime, SexualPartnership::Type _partnershipType,
+long Entity::getPartnershipsToEnd(Time _currTime, SexualPartnership::Type _partnershipType,
                                   std::list<SexualPartnership *> &_partnershipsToEnd, bool _fromDeath)
 {
 	assert(_partnershipType < SexualPartnership::Type::ENDType);
-	assert((_currTime >= 0) || _fromDeath);
+	assert((_currTime >= Time::Zero) || _fromDeath);
 
 	if(partners[(int)_partnershipType].size() == 0)
 	{
@@ -738,95 +726,6 @@ bool Entity::hasPartnership(SexualPartnership::Type partnershipType)
 
 	return false;
 }
-void Entity::print(ostream &_outStream, const std::string &_prefix) const
-{
-	_outStream << _prefix << std::endl;
-    _outStream << ((getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male) ? "Male" : "Female") << Constants::TAB;
-	_outStream << "ID: " << id << Constants::TAB;
-	_outStream << "(";
-	getDemographicProfile()->print(_outStream, "");
-	_outStream << ")";
-    _outStream << Constants::TAB << "Age(mos.): " << getAge(TimeGranularity::Month);
-	_outStream <<  Constants::TAB << "CD4: " << cd4;
-	_outStream << Constants::TAB << "HVL: " << (std::size_t)hvl;
-	_outStream << Constants::TAB << "Risk: " << ((risk == Entity::RiskLevel::HIGH) ? "HIGH" : "LOW");
-	_outStream << Constants::TAB << "Marbles: " << activityLevel;
-	_outStream << std::endl;
-}
-
-void Entity::printCurrentPartners(ostream &_outStream, const std::string &prefix)
-{
-    _outStream << prefix << std::endl;
-	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
-	{
-		std::list<SexualPartnership *>::iterator iter = partners[(int)type].begin();
-		std::list<SexualPartnership *>::iterator iterEnd = partners[(int)type].end();
-
-		if(iter != iterEnd)
-		{
-			_outStream << (SexualPartnership::TypeStrings.at(SexualPartnership::Type(type))) << Constants::COLON << std::endl;
-		}
-
-        int i = 0;
-		while(iter != iterEnd)
-		{
-			Entity *partner = (*iter)->getOtherPartner(this);
-			partner->print(_outStream, "Partner " + std::to_string(i++));
-			iter++;
-		}
-	}
-}
-/**
-*This function saves the state of the patient to file
-*Uses Json like notation
-*/
-void Entity::saveState(ostream &_outStream, long currTime)
-{
-	_outStream << "id:" << id << "," << std::endl; //id
-	dmgProfile.saveState(_outStream); //dmg profile
-	_outStream << "curBktID:" << currentBucketID << "," << std::endl; //bucket id (contains same information as dmgprofile)
-	//save all the sexual partnerships
-	_outStream << "partners:[";
-	bool firstPartner = true;
-
-	for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)  //loop through partnership types
-	{
-		for(std::list<SexualPartnership *>::iterator it = partners[i].begin(); it != partners[i].end(); it++) //loop through all partners
-		{
-			if(!firstPartner)
-			{
-				_outStream << ",";
-			}
-
-			firstPartner = false;
-			(*it)->saveState(_outStream, id, currTime);
-		}
-	}
-
-	_outStream << "]," << std::endl;
-	_outStream << "partnerHist:[";
-	firstPartner = true;
-
-	for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)  //loop through partnership types
-	{
-		if(!firstPartner)
-		{
-			_outStream << ",";
-		}
-
-		firstPartner = false;
-		_outStream << numPartnersInHistory[i];
-	}
-
-	_outStream << "]," << std::endl;
-	_outStream << "genInf:" << generationOfInfection << "," << std::endl; //generation of infection
-	_outStream << "risk:" << (std::size_t)risk << "," << std::endl; //risk Level
-	_outStream << "activity:" << activityLevel << "," << std::endl; //activity Level
-	_outStream << "age:" << age << "," << std::endl; //age
-	_outStream << "initAge:" << initAge << "," << std::endl; //initial age
-	_outStream << "dead:" << death << "," << std::endl; //death
-	_outStream << "hvl:" << (std::size_t)hvl; //hvl in transmission includes primary and late stage
-}
 
 bool Entity::isInfected()
 {
@@ -906,7 +805,7 @@ bool Entity::rollForDeath(RandomNumberGenerator &_randomNums)
 	assert(death == false);
 
 	//if person is too old, then they automatically die
-    if(getAge(TimeGranularity::Month) >= (12 * Entity::maxYrForDeathStats))
+    if(getAge().get_total_years() >= Entity::maxYrForDeathStats)
 	{
 		death = true;
 		deathStatus = DeathStatus::DTH_OTHER;
@@ -951,8 +850,8 @@ bool Entity::rollForDeath(RandomNumberGenerator &_randomNums)
 	else
 	{
         auto gender = getDemographicProfileVal<DemographicProfile::Gender>();
-        auto age = getAge(TimeGranularity::Year);
-        double deathRate = probDeathNatCauses[(std::size_t)gender].at(age);
+        auto age = getAge();
+        double deathRate = probDeathNatCauses[(std::size_t)gender].at((std::size_t)age.get_total_months());
 
         if(_randomNums.chance(deathRate))
 		{
@@ -964,8 +863,8 @@ bool Entity::rollForDeath(RandomNumberGenerator &_randomNums)
 	//if they died, collect statistics
 	if(death)
 	{
-        stats.setStat(Stats::STAT_TOTAL_LM, getAge(TimeGranularity::Month));
-        stats.setStat(Stats::STAT_HIV_NEG_LM, getAge(TimeGranularity::Month) - (isInfected() ? stats.getStat(Stats::STAT_TIME_OF_INFECTION_MTH) : 0));
+        stats.setStat(Stats::STAT_TOTAL_LM, getAge().get_total_months());
+        stats.setStat(Stats::STAT_HIV_NEG_LM, getAge().get_total_months() - (isInfected() ? stats.getStat(Stats::STAT_TIME_OF_INFECTION_MTH) : 0));
         stats.setStat(Stats::STAT_HIV_POS_POSTINFECT_LM, stats.getStat(Stats::STAT_TOTAL_LM) - stats.getStat(Stats::STAT_AGE_AT_INFECTION_MTH));
 	}
 
@@ -1307,7 +1206,7 @@ double Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
         }
 
 		//Update OI History
-		for(int i = 0; i < Constants::NUMBER_OF_OIS; i++)
+		for(int i = 0; i < Constants::NumberOfOIs; i++)
 		{
 			oiHistory[i] = cepacPatient->getDiseaseState()->hasTrueOIHistory[i];
 		}
@@ -1610,8 +1509,7 @@ int Entity::getSexualActivity()
 }
 
 //this constructor is used by the Male and Female classes
-Entity::Entity(int _age, unsigned int _populationID) : 
-	sexualActivityDelay(0),
+Entity::Entity(Age _age, unsigned int _populationID) : 
 	monthly_cepac_costs_undiscounted_(0),
 	monthly_cepac_costs_discounted_(0),
 	monthly_cdm_costs_undiscounted_(0),
@@ -1620,15 +1518,14 @@ Entity::Entity(int _age, unsigned int _populationID) :
 	id = Entity::idCounter++;
 	populationID = _populationID;
 
-    auto max_age = Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Entity::maxYrForDeathStats);
-    if(!Utility::within_range<int>(_age, 0, max_age))
+	if (_age < Time::Zero || _age > Time(Entity::maxYrForDeathStats, 0))
 	{
         throw std::runtime_error("invalid age");
 	}
 
 	age = _age;
 	initAge = _age;
-	ageInfected = -1;
+	ageInfected = Age(0, -1);
 	death = false;
 	deathStatus = DeathStatus::ALIVE;
 	sexualActivityLevel = 1.0;
@@ -1644,10 +1541,10 @@ Entity::Entity(int _age, unsigned int _populationID) :
 		unformedPartnershipsLatestTime[type] = 0;
 		unformedPartnershipsTotal[type] = 0;
 		numPartnersInHistory[type] = 0;
-		monthOfLatestPartnershipDissolution[type] = 0;
+		monthOfLatestPartnershipDissolution[type] = Time::Zero;
 	}
 
-	monthOfLatestConcurrent = 0;
+	monthOfLatestConcurrent = Time::Zero;
 	resetNumActs();
 	//set the person's initial demographic profile. gender is set within the Male/Female constructors
 	//everyone is set as NA, but you can call becomeSexuallyActive(_eventParams) elsewhere if you want this person to be SA

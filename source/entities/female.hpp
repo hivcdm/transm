@@ -29,13 +29,13 @@ public:
 		void SetChanceBecomeCsw(double chance) { chanceBecomeCSW = chance; }
         void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) { proportionHighRisk[(std::size_t)employment] = proportion; }
 
-        void SetCswEndAge(int end_age) { cswEndAge = end_age; }
-        int GetCswEndAge() const { return cswEndAge; }
+        void SetCswEndAge(Age end_age) { cswEndAge = end_age; }
+        Age GetCswEndAge() const { return cswEndAge; }
 
 	private:
 		friend class SimulationBuilder;
 
-        int cswEndAge; // in months
+        Age cswEndAge;
         //chance that a female will become a CSW
 		double chanceBecomeCSW;
         //proportion of female population that is in the "high risk" lists
@@ -50,7 +50,7 @@ public:
 	//the parameters match the ones in Person(...)
 	@author schung5
 	**/
-	Female(EventParams &_eventParams, int _ageMths, unsigned int _populationID, const Female::SubPopParams &params);
+	Female(EventParams &_eventParams, Age age, unsigned int _populationID, const Female::SubPopParams &params);
 	~Female(void);
 
     bool IsCircumcised() const { return false; }
@@ -86,8 +86,6 @@ public:
 	void Circumcise();
 
 	void rerollRiskGroup(EventParams &_eventParams);
-	//writes state of person to file
-	void saveState(ostream &_outStream, long currTime);
 
 	double getChanceBecomeCsw() const;
 

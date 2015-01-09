@@ -31,7 +31,7 @@ public:
 	void recordTreatmentEligiblity(Entity *person);
 	void recordTreatment(Entity *person);
 
-	void printArtRolloutOutcomes(int time, std::ostream &_outStream, Population *_population);
+	void printArtRolloutOutcomes(Time time, std::ostream &_outStream, Population *_population);
 
 private:
 	static const std::string RISK_GROUP_NAMES[];
@@ -47,7 +47,7 @@ private:
 
 	void buildHeader();
 
-	void buildRow(int time, Population *_population);
+	void buildRow(Time time, Population *_population);
 
 	void Reset();
 };

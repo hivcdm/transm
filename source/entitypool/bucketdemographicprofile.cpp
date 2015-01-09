@@ -111,12 +111,6 @@ bool BucketDemographicProfile::insert(Entity *_person)
 	return true;
 }
 
-void BucketDemographicProfile::print(std::ostream &_outStream, const std::string &_prefix)
-{
-	assert(simpleEntityIndex != nullptr);
-	simpleEntityIndex->print(_outStream, _prefix);
-}
-
 unsigned long BucketDemographicProfile::size()
 {
 	assert(simpleEntityIndex != nullptr);

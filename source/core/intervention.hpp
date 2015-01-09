@@ -4,6 +4,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "utility/time.hpp"
+
 namespace transm {
 
 class Simulation;
@@ -13,7 +15,7 @@ class Entity;
 class Intervention
 {
 public:
-    Intervention(int time, int duration = -1);
+    Intervention(Time time, TimeSpan duration = TimeSpan(0, -1));
 
     void SetSimulationCallback(std::function<void(Simulation &)> callback) { simulation_intervention_ = callback; }
     bool AffectsSimulation() const { return (bool)simulation_intervention_; }
@@ -31,13 +33,13 @@ public:
     bool AffectsIndividual() const { return (bool)individual_intervention_; }
     void Apply(Entity *person);
 
-    bool IsActive(int current_time) const;
-    bool IsFirstMonth(int current_time) const;
-    bool IsCompleted(int current_time) const;
+    bool IsActive(Time current_time) const;
+    bool IsFirstMonth(Time current_time) const;
+    bool IsCompleted(Time current_time) const;
 
 private:
-    int time_;
-    int duration_;
+    Time time_;
+    TimeSpan duration_;
     std::function<void(Simulation &)> simulation_intervention_;
     std::function<void(Population &)> population_intervention_;
     std::function<void(Population &, Entity *)> population_individual_intervention_;

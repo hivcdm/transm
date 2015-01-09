@@ -35,9 +35,6 @@ public:
 	unsigned long getNumInfected(int generation);
 	unsigned long getNumInfected(Entity::RiskLevel _risk);
 
-	//prints every person in this index to _outStream
-    void print(ostream &_outStream, const std::string &_prefix);
-
 	/*
 	 * Uses the random number generator (_randomNums) to randomly draw a person
 	 * -- Either draws from the FV related to _riskLevel or the random FV if _use_random == true

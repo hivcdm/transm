@@ -10,7 +10,6 @@ public:
     RunTimePredictor() 
         : a_(0),
         b_(0),
-        total_months_(0),
         estimated_percent_complete_(0),
         elapsed_time_(0),
         sx2y_(0),
@@ -24,7 +23,7 @@ public:
 
     RunTimePredictor &operator=(const RunTimePredictor &) = delete;
 
-    void SetTotalMonths(int months)
+    void SetTotalMonths(TimeSpan months)
     {
         total_months_ = months;
     }
@@ -60,7 +59,7 @@ public:
         auto f = [=](double x) { return a_ * std::exp(b_ * x); };
         auto integral = [=](double a, double b) { return f(b) - f(a); };
         double current_area = integral(1, observation.first);
-        double total_area = integral(1, total_months_);
+        double total_area = integral(1, total_months_.get_total_months());
         estimated_percent_complete_ = current_area / total_area;
     }
 
@@ -109,7 +108,7 @@ public:
 private:
     double a_;
     double b_;
-    int total_months_;
+    TimeSpan total_months_;
     double estimated_percent_complete_;
     double elapsed_time_;
     std::deque<std::pair<int, double>> previous_;

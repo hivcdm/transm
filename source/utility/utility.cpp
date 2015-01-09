@@ -18,19 +18,6 @@
 
 namespace transm {
 
-namespace {
-std::string to_string(TimeGranularity granularity)
-{
-	switch(granularity)
-	{
-	case TimeGranularity::Day: return "day";
-	case TimeGranularity::Month: return "month";
-	case TimeGranularity::Year: return "year";
-	default: throw std::runtime_error("bad granularity");
-	}
-}
-}
-
 Version Version::from_string(const std::string &version_string)
 {
 	Version v;
@@ -240,56 +227,6 @@ path Utility::get_batches_directory()
 {
     static auto config = load_config();
     return config.at("batches_directory");
-}
-
-//convert _val from one TimeGranularity to another
-unsigned int Utility::convert_time(TimeGranularity _from, TimeGranularity _to, double _val)
-{
-	assert(_val >= 0);
-	unsigned int converted_value = 0;
-
-    if(_from == TimeGranularity::Day && _to == TimeGranularity::Day)
-	{
-		converted_value = (int)_val;
-	}
-    else if(_from == TimeGranularity::Day && _to == TimeGranularity::Month)
-	{
-		converted_value = (int)floor(_val * Utility::day_to_month_multiplier);
-	}
-    else if(_from == TimeGranularity::Day && _to == TimeGranularity::Year)
-	{
-		converted_value = (int)floor(_val * Utility::day_to_year_multiplier);
-	}
-    else if(_from == TimeGranularity::Month && _to == TimeGranularity::Day)
-	{
-		converted_value = (int)_val * 30;
-	}
-    else if(_from == TimeGranularity::Month && _to == TimeGranularity::Month)
-	{
-		converted_value = (int)_val;
-	}
-    else if(_from == TimeGranularity::Month && _to == TimeGranularity::Year)
-	{
-		converted_value = (int)floor(_val * Utility::month_to_year_multiplier);
-	}
-    else if(_from == TimeGranularity::Year && _to == TimeGranularity::Day)
-	{
-		converted_value = (int)_val * 365;
-	}
-    else if(_from == TimeGranularity::Year && _to == TimeGranularity::Month)
-	{
-		converted_value = (int)_val * 12;
-	}
-    else if(_from == TimeGranularity::Year && _to == TimeGranularity::Year)
-	{
-		converted_value = (int)_val;
-	}
-	else
-	{
-		throw std::runtime_error("convertToTime - invalid time granularity..." + to_string(_from) + " or " + to_string(_to));
-	}
-
-	return converted_value;
 }
 
 bool Utility::is_norm_dist_zero(const NormalDist &dist)

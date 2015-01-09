@@ -220,7 +220,7 @@ void DemographicProfile::parse(string _tupleStr)
 
 	//we want to tokenize a string representatino of a tuple
 	//currently allowed delimiters are: "_"
-	auto tokens = Utility::tokenize(_tupleStr, Constants::COLON);
+	auto tokens = Utility::tokenize(_tupleStr, Constants::Colon);
 
 	//make sure we have correct amount of tokens
     if(tokens.size() != (std::size_t)DemographicProfile::Demographic::Last)
@@ -465,7 +465,7 @@ void DemographicProfile::initProfileIDMap()
 
 				if(category > DemographicProfile::Demographic(1))
 				{
-					currEnumStr << Constants::COLON;
+					currEnumStr << Constants::Colon;
 				}
 			}
 		}

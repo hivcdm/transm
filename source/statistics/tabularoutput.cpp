@@ -31,7 +31,7 @@ void TabularOutput::PrintHeader(std::ostream &outStream)
 
 			if(column < numColumns)
 			{
-				outStream << Constants::TAB;
+				outStream << Constants::Tab;
 			}
 		}
 
@@ -49,7 +49,7 @@ void TabularOutput::PrintRow(std::ostream &outStream, bool clearAfterWriting)
 
 		if(i < numColumns - 1)
 		{
-			outStream << Constants::TAB;
+			outStream << Constants::Tab;
 		}
 	}
 

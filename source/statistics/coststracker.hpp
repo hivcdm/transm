@@ -49,7 +49,7 @@ public:
 
 	void RecordLifeMonth(double qualityOfLife, double discountFactor, Entity::HIVStatus status);
 
-	void PrintCosts(int time, std::ostream &_outStream);
+	void PrintCosts(Time time, std::ostream &_outStream);
 
 	static const int NumArtLinesToRecord = 4;
 
@@ -77,7 +77,7 @@ private:
 
 	void BuildHeader();
 
-	void BuildRow(int time);
+	void BuildRow(Time time);
 
 	void Reset();
 };

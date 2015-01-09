@@ -2,24 +2,11 @@
 
 namespace transm {
 
-std::string const Constants::ASTERISK = "*";
-std::string const Constants::BLANK = "";
-std::string const Constants::COLON = ":";
-std::string const Constants::TAB = "\t";
-std::string const Constants::TABTAB = "\t\t";
-std::string const Constants::SPACE = " ";
-std::string const Constants::UNDERSCORE = "_";
-
-    auto a = BatchStatsVariables::PREVALENCESA;
-    
-const std::map<BatchStatsVariables, std::string> Constants::BatchStatFileName = 
-{
-    {BatchStatsVariables::PREVALENCE, "prevalence"},
-    {BatchStatsVariables::PREVALENCESA, "SAprevalence"},
-    {BatchStatsVariables::INCIDENCE, "incidence"},
-    {BatchStatsVariables::POPULATION, "populationSize"},
-    {BatchStatsVariables::CURRENTLYINFECTED, "numberInfected"},
-    {BatchStatsVariables::NEWINFECTIONS, "newInfections"}
-};
+std::string const Constants::Asterisk = "*";
+std::string const Constants::Blank = "";
+std::string const Constants::Colon = ":";
+std::string const Constants::Tab = "\t";
+std::string const Constants::Space = " ";
+std::string const Constants::Underscore = "_";
 
 } // namespace transm

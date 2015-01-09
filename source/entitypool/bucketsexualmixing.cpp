@@ -18,25 +18,26 @@ void BucketSexualMixing::forEach(std::function<void(Entity *)> callback)
     }
 }
 
-BucketSexualMixing::BucketSexualMixing(DemographicProfile::ProfileID _id, const string *_bucketLabel, unsigned int _popID,
-    int _minAge, int _maxAge, TimeGranularity _timeGranularity, const std::map<SexualPartnership::Type, double> &_assort) :
+BucketSexualMixing::BucketSexualMixing(DemographicProfile::ProfileID _id, 
+	const string *_bucketLabel, unsigned int _popID, Age _minAge, Age _maxAge, 
+	const std::map<SexualPartnership::Type, double> &_assort) :
 	BucketDemographicProfile(_id, _bucketLabel, false),
     assort(_assort)
 {
-    assert((_timeGranularity == TimeGranularity::Month) || (_timeGranularity == TimeGranularity::Year));
-	assert((_minAge >= 0) && (_maxAge >= _minAge));
-	timeGranularity = _timeGranularity;
+	assert(_minAge.get_total_months() >= 0);
+	assert(_maxAge >= _minAge);
+
 	minAge = _minAge;
 	maxAge = _maxAge;
 	popID = _popID;
 
 	//ERINWASHERE
 	//set capacity of circular buffer
-	unsigned int numAgeBuckets = maxAge - minAge + 1;
+	unsigned int numAgeBuckets = (maxAge - minAge).get_months() + 1;
 	personsByAge = new BucketAllAges(numAgeBuckets);
 	//personsByAge = new BucketAllAges();
 	//initialize all the BucketAges in the BucketSexualMixing, a circular buffer will hold all people of a certain age
-	unsigned int currAge = minAge;
+	auto currAge = minAge;
 
 	while(currAge <= maxAge)
 	{
@@ -72,32 +73,15 @@ BucketSexualMixing::~BucketSexualMixing()
 unsigned int BucketSexualMixing::getCorrectBufferIndex(Entity *_p)
 {
 	//get person's age in right time granularity
-	unsigned int pAge = _p->getAge(timeGranularity);
+	auto pAge = _p->getAge();
 
-	if(!Utility::within_range<unsigned int>(pAge, minAge, maxAge))
+	if(pAge < minAge || pAge > maxAge)
 	{
-        cout << "Age is " << _p->getAge(TimeGranularity::Month) << " but minAge is " << minAge << " and max age is " << maxAge <<
-		     endl;
+		throw std::runtime_error("Age is " + std::to_string(pAge.get_month()) + " but minAge is "
+			+ std::to_string(minAge.get_month()) + " and max age is " + std::to_string(maxAge.get_month()));
 	}
 
-	assert(Utility::within_range(pAge, minAge, maxAge));
-
-	/*//if this person's DemographicProfile doesn't match DemographicProfile, return -1
-	if (getProfileID() != _p->getDemographicProfile()->getProfileID()){
-		cout << "WRONG PROFILE" << std::endl;
-		return (unsigned int)personsByAge->size();
-	}*/
-
-	//age determines place in the circular buffer
-	if(!Utility::within_range<unsigned int>(pAge, minAge, maxAge))
-	{
-		//If person is out of range of this buffer, return -1 which is an invalid entry
-		return (unsigned int)personsByAge->size();
-	}
-	else
-	{
-		return (pAge - minAge);
-	}
+	return static_cast<unsigned int>((pAge - minAge).get_months());
 }
 
 //clears all elements from this index without deleting members
@@ -131,22 +115,22 @@ Entity *BucketSexualMixing::drawMember(RandomNumberGenerator &_randomNums, Sexua
 Entity *BucketSexualMixing::drawMember(RandomNumberGenerator &_randomNums, Entity *_chooser, SexualPartnership::Type _partnershipType, bool _remove)
 {
 	//these determine the bounds of which ages we will consider
-	int minDesired = 0;
-	int maxDesired = INT_MAX;
+	auto minDesired = Age::from_months(0);
+	auto maxDesired = Age::from_months(INT_MAX);
 
 	if(_chooser)
 	{
 		double ageYoungerYears = _chooser->rollForAgeDifference(_partnershipType, _randomNums);
-		int ageYoungerMonths = (int)(12 * ageYoungerYears + 0.5);
+		TimeSpan ageDifference(0, (int)(12 * ageYoungerYears + 0.5));
 		//AgeYoungerMonths can be negative so we need to make sure the range stays between both the min and the max age
-        minDesired = min(_chooser->getAge(TimeGranularity::Month) - (ageYoungerMonths + 6), (int)(maxAge));
-        maxDesired = max(_chooser->getAge(TimeGranularity::Month) - (ageYoungerMonths - 6), (int)(minAge));
+        minDesired = min(_chooser->getAge() - (ageDifference + TimeSpan(0, 6)), maxAge);
+		maxDesired = max(_chooser->getAge() - (ageDifference - TimeSpan(0, 6)), minAge);
 		assert(minDesired <= maxDesired);
 	}
 
 	//min and max age of Entitys that _chooser can pick from this Person container
-	int minAgeDesired = max((int)(minAge), minDesired);
-	int maxAgeDesired = min((int)(maxAge), maxDesired);
+	auto minAgeDesired = max(minAge, minDesired);
+	auto maxAgeDesired = min(maxAge, maxDesired);
 	return getRandomPerson(_randomNums, minAgeDesired, maxAgeDesired, _chooser->getRiskLevel(), _partnershipType, _remove);
 }
 
@@ -234,8 +218,8 @@ unsigned long BucketSexualMixing::getNumInfected(Entity::RiskLevel _risk)
 	return totalInfected;
 }
 
-Entity *BucketSexualMixing::getRandomPerson(RandomNumberGenerator &_randomNums, unsigned int _ageLowerBound,
-        unsigned int _ageUpperBound, Entity::RiskLevel _risk, SexualPartnership::Type _partnershipType, bool _remove)
+Entity *BucketSexualMixing::getRandomPerson(RandomNumberGenerator &_randomNums, Age _ageLowerBound,
+        Age _ageUpperBound, Entity::RiskLevel _risk, SexualPartnership::Type _partnershipType, bool _remove)
 {
 	if(_ageLowerBound < minAge)
 	{
@@ -244,9 +228,8 @@ Entity *BucketSexualMixing::getRandomPerson(RandomNumberGenerator &_randomNums, 
 	}
 
 	//get the age buckets that we will search within
-	unsigned int minIndex = std::max<unsigned int>(_ageLowerBound - minAge, 0);
-	unsigned int maxIndex = std::min<unsigned int>(_ageUpperBound - minAge,
-	                        (unsigned int)personsByAge->size() - 1);
+	auto minIndex = max(_ageLowerBound - minAge, TimeSpan(0, 0));
+	auto maxIndex = min(_ageUpperBound - minAge, TimeSpan(0, (int)personsByAge->size() - 1));
 
 	//Use assort to determine whether to use random or _risk bin
     //Use random by default
@@ -258,12 +241,12 @@ Entity *BucketSexualMixing::getRandomPerson(RandomNumberGenerator &_randomNums, 
 	}
 
 	//figure out # of eligible people
-	unsigned int currIndex = minIndex;
+	auto currIndex = minIndex;
 	unsigned long numMarbles = 0;
 
 	while(currIndex <= maxIndex)
 	{
-		numMarbles += personsByAge->at(currIndex)->numChoices(riskToDraw);
+		numMarbles += personsByAge->at((std::size_t)currIndex.get_months())->numChoices(riskToDraw);
 		currIndex++;
 	}
 
@@ -274,29 +257,29 @@ Entity *BucketSexualMixing::getRandomPerson(RandomNumberGenerator &_randomNums, 
 		//Only recurse if there are partners available in this bucket to save time
 		numMarbles = 0;
 
-		for(currIndex = 0; currIndex < personsByAge->size(); currIndex++)
+		for(currIndex = TimeSpan(0, 0); currIndex.get_months() < (int)personsByAge->size(); currIndex++)
 		{
-			numMarbles += personsByAge->at(currIndex)->numChoices(riskToDraw);
+			numMarbles += personsByAge->at((std::size_t)currIndex.get_total_months())->numChoices(riskToDraw);
 		}
 
 		if(numMarbles > 0)
 		{
 			//Check first that minIndex > 0 and maxIndex < personsByAge->size() - 1
-			if(minIndex > 0 || maxIndex < personsByAge->size() - 1)
+			if(minIndex.get_total_months() > 0 || maxIndex.get_total_months() < (int)personsByAge->size() - 1)
 			{
-				unsigned int newAgeLowerBound = _ageLowerBound;
+				auto newAgeLowerBound = _ageLowerBound;
 
 				//Make sure the ageLowerBound being recursively passed in is non-negative to avoid those pesky unsigned int issues
-				if(newAgeLowerBound < 6)
+				if(newAgeLowerBound < Time::from_months(6))
 				{
-					newAgeLowerBound = 0;
+					newAgeLowerBound = Time::from_months(0);
 				}
 				else
 				{
-					newAgeLowerBound = _ageLowerBound - 6;
+					newAgeLowerBound = _ageLowerBound - TimeSpan(0, 6);
 				}
 
-				return getRandomPerson(_randomNums, newAgeLowerBound, _ageUpperBound + 6, _risk, _partnershipType, _remove);
+				return getRandomPerson(_randomNums, newAgeLowerBound, _ageUpperBound + TimeSpan(0, 6), _risk, _partnershipType, _remove);
 			}
 			else
 			{
@@ -317,9 +300,9 @@ Entity *BucketSexualMixing::getRandomPerson(RandomNumberGenerator &_randomNums, 
 	while(currIndex <= maxIndex)
 	{
 		//if we're at the right AgeBucket
-		if(randPick < personsByAge->at(currIndex)->numChoices(riskToDraw))
+		if(randPick < personsByAge->at((std::size_t)currIndex.get_total_months())->numChoices(riskToDraw))
 		{
-			BucketAge *ageBucket = personsByAge->at(currIndex);
+			BucketAge *ageBucket = personsByAge->at((std::size_t)currIndex.get_total_months());
 			Entity *p = ageBucket->drawMember(_randomNums, _risk, _partnershipType, (riskToDraw == Entity::RiskLevel::Last), _remove);
 
 			//we have to tell the person that they are not part of a bucket anymore
@@ -331,7 +314,7 @@ Entity *BucketSexualMixing::getRandomPerson(RandomNumberGenerator &_randomNums, 
 			return p;
 		}
 
-		randPick -= personsByAge->at(currIndex)->numChoices(riskToDraw);
+		randPick -= personsByAge->at((std::size_t)currIndex.get_total_months())->numChoices(riskToDraw);
 		currIndex++;
 	}
 
@@ -369,23 +352,12 @@ bool BucketSexualMixing::insert(Entity *_person)
 	}
 	else
 	{
-		cerr << "Trying to insert person with invalid age (" << _person->getAge(timeGranularity) << " " << ((
-            timeGranularity == TimeGranularity::Month) ? "months" : "years") << ")" << std::endl;
-		cerr << "Valid ages are between " << minAge << " and " <<  maxAge << " inclusive" << std::endl;
-		cerr << "If age is valid, person may have an invalid DemographicProfile";
-		_person->print(cerr, "");
-		return false;
-	}
-}
-
-void BucketSexualMixing::print(ostream &_outStream, const std::string &_prefix)
-{
-	//The iterator of the BucketAges in the circular buffer
-	BucketAllAges::iterator bucketIter;
-
-	for(bucketIter = begin(); bucketIter != end(); bucketIter++)
-	{
-		(*bucketIter)->print(_outStream, _prefix);
+		throw 1;
+//		cerr << "Trying to insert person with invalid age (" << _person->getAge().get_total_months() << " months)" << std::endl;
+///		cerr << "Valid ages are between " << minAge.get_total_months() << " and " <<  maxAge.get_total_months() << " inclusive" << std::endl;
+//		cerr << "If age is valid, person may have an invalid DemographicProfile";
+		//_person->print(cerr, "");
+//		return false;
 	}
 }
 
@@ -427,18 +399,17 @@ BucketAge *BucketSexualMixing::getYoungest()
 /*
  * @returns: total number of persons in this with age between minMonthAge and maxMonthAge
  */
-unsigned long BucketSexualMixing::sizeByAge(int minMonthAge, int maxMonthAge)
+unsigned long BucketSexualMixing::sizeByAge(Age minMonthAge, Age maxMonthAge)
 {
 	//get the age buckets that we will count within
-	unsigned int minIndex = std::max<unsigned int>(minMonthAge - minAge, 0);
-	unsigned int maxIndex = std::min<unsigned int>(maxMonthAge - minAge,
-	                        (unsigned int)personsByAge->size() - 1);
-	unsigned int currIndex = minIndex;
+	auto minIndex = max(minMonthAge - minAge, TimeSpan(0, 0));
+	auto maxIndex = min(maxMonthAge - minAge, TimeSpan(0, (int)personsByAge->size() - 1));
+	auto currIndex = minIndex;
 	unsigned long total = 0;
 
 	while(currIndex <= maxIndex)
 	{
-		total += personsByAge->at(currIndex)->size();
+		total += personsByAge->at((std::size_t)currIndex.get_total_months())->size();
 		currIndex++;
 	}
 
@@ -448,18 +419,17 @@ unsigned long BucketSexualMixing::sizeByAge(int minMonthAge, int maxMonthAge)
 /*
  * @returns: total number of infected persons in this with age between minMonthAge and maxMonthAge
  */
-unsigned long BucketSexualMixing::sizeInfectedByAge(int minMonthAge, int maxMonthAge)
+unsigned long BucketSexualMixing::sizeInfectedByAge(Age minMonthAge, Age maxMonthAge)
 {
 	//get the age buckets that we will count within
-	unsigned int minIndex = std::max<unsigned int>(minMonthAge - minAge, 0);
-	unsigned int maxIndex = std::min<unsigned int>(maxMonthAge - minAge,
-	                        (unsigned int)personsByAge->size() - 1);
-	unsigned int currIndex = minIndex;
+	auto minIndex = max(minMonthAge - minAge, TimeSpan(0, 0));
+	auto maxIndex = min(maxMonthAge - minAge, TimeSpan(0, (int)personsByAge->size() - 1));
+	auto currIndex = minIndex;
 	unsigned long total = 0;
 
 	while(currIndex <= maxIndex)
 	{
-		total += personsByAge->at(currIndex)->getNumInfected();
+		total += personsByAge->at((std::size_t)currIndex.get_total_months())->getNumInfected();
 		currIndex++;
 	}
 
@@ -616,7 +586,7 @@ list<Entity *> BucketSexualMixing::ageOneTimeStep()
 	//Delete the OldestPersons bucket
 	//personsByAge->pop_back();
 	delete oldestPersons;
-	assert(personsByAge->size() <= maxAge - minAge + 1);
+	assert(TimeSpan(0, (int)personsByAge->size()) <= maxAge - minAge + TimeSpan::Month);
 	//Iterate through and age everyone
 	BucketAllAges::iterator bucketIter;
 

@@ -72,7 +72,7 @@ private:
 	/// This is a copy of the sim clock. We keep a copy to know when the time has advanced
 	/// and when we need to reset incidence for the timestep.
     /// </summary>
-	int currTimeStep;
+	Time currTimeStep;
 
 	/// <summary>
     /// Infections in the current time step, stratified by HVL of the infector.
@@ -176,13 +176,13 @@ public :
 	/// <summary>
 	/// Records a new exposure regardless of whether an infection happened or not.
     /// </summary>
-	void recordExposure(int time, const Entity *_infector);
+	void recordExposure(Time time, const Entity *_infector);
 
 	/**
 	records a New infection and also prints the infection out to a trace
 	**/
-	void recordIncidentInfection(int time, SexualPartnership::Type _partnershipType, const Entity *_infector,
-	                             const Entity *_infected, bool _print, std::ostream &stream);
+	void recordIncidentInfection(Time time, SexualPartnership::Type _partnershipType, const Entity *_infector,
+	                             const Entity *_infected);
 
 	/**
 	records the cd4 at transmission (requested by clinical out stream)
@@ -192,7 +192,7 @@ public :
 	/**
 	resets counting of incident infections for time step
 	**/
-	void resetIncidentInfections(int time);
+	void resetIncidentInfections(Time time);
 
 	/**
 	initializes the counters for incident infections by age and gender
@@ -212,7 +212,7 @@ public :
 	@param _outStream the stream to print
 	@returns the current prevalence (for GUI purposes)
 	**/
-	int printInfections(EventParams &_eventParams, int time, std::ostream &_outStream, Population *_population);
+	int printInfections(EventParams &_eventParams, Time time, std::ostream &_outStream, Population *_population);
 
     /// <summary>
     /// Returns total number of incident infections that have occurred during 

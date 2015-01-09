@@ -25,7 +25,7 @@ public:
 	/// <summary>
 	/// Creates a new EntityPool
 	/// </summary>
-	EntityPool(int ageOfMajority, unsigned int _popID, const std::map<SexualPartnership::Type, double> &_assort);
+	EntityPool(Age ageOfMajority, unsigned int _popID, const std::map<SexualPartnership::Type, double> &_assort);
 
 	~EntityPool();
 
@@ -108,12 +108,12 @@ public:
 	/// <summary>
 	/// calculate the current number of sexually active persons within the specified age range
 	/// </summary>
-	unsigned long sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths);
+	unsigned long sizeSexuallyActiveByAge(Age minAge, Age maxAge);
 
 	/// <summary>
 	/// calculate the current number of sexually active persons within the specified age range and gender
 	/// </summary>
-	std::size_t sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths, const std::string &entity_type);
+	std::size_t sizeSexuallyActiveByAge(Age minAge, Age maxAge, const std::string &entity_type);
 
 	/// <summary>
 	/// adds Person to BucketDemographicProfile AND allMales or allFemales depending on gender

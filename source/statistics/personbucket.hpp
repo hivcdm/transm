@@ -31,7 +31,7 @@ public:
         Entity::RiskLevel riskLevel = person.getRiskLevel();
         values_.push_back((std::size_t)riskLevel);
         int ageGroup = -1;
-        int age = person.getAge(TimeGranularity::Month);
+		auto age = person.getAge();
 
         for(size_t i = 0; i < ageGroups.size(); ++i)
         {

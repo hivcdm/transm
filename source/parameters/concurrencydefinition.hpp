@@ -6,6 +6,7 @@
 #include <unordered_map>
 
 #include "core/constants.hpp"
+#include "utility/time.hpp"
 
 class SimContext;
 
@@ -39,11 +40,11 @@ this structure gives information about the rollout file to use and when to apply
 class RolloutContext
 {
 public:
-    int timeToApply;
+    Time timeToApply;
     std::unique_ptr<SimContext> rolloutSimContext;
     //who to apply to 0=All Untreated 1=All Treated 2=Untreated Getting New ART -1=None
     int popOfInterest;
-    RolloutContext(int t, std::unique_ptr<SimContext> context, int pop) : rolloutSimContext(std::move(context))
+    RolloutContext(Time t, std::unique_ptr<SimContext> context, int pop) : rolloutSimContext(std::move(context))
     {
         timeToApply = t;
         popOfInterest = pop;
@@ -75,7 +76,7 @@ class RolloutEligibility
 {
 public:
     int oiHistRank;
-    bool oiHistOIs[Constants::NUMBER_OF_OIS];
+    bool oiHistOIs[Constants::NumberOfOIs];
     int oiHistNumToStart;
 
     int cd4Rank;
@@ -83,7 +84,7 @@ public:
 
     int cd4OiHistRank;
     Bounds<int> cd4OiHistCd4Bounds;
-    bool cd4OiHistOIs[Constants::NUMBER_OF_OIS];
+    bool cd4OiHistOIs[Constants::NumberOfOIs];
 
     int hvlRank;
     Bounds<int> hvlBounds;
@@ -100,7 +101,7 @@ class CalibrationInputs
 {
 public:
     bool useCalibration;
-    int monthOfCalibration;
+    Time monthOfCalibration;
 
     //outcomes used for the cutoff
     //The partnership prevalence is for a year duration
@@ -119,8 +120,7 @@ public:
     double femaleNumActsLRtoHRRatio;
 
     //The calendar prevalence values
-    double calendarPrevs[Constants::NUMBER_CALIBRATION_PREVS];
-    int saveStateTimePoints[Constants::NUMBER_TIME_POINTS_SAVE_STATE];
+    double calendarPrevs[Constants::NumberCalibrationPrevs];
     double thresholdPrevMult;
 };
 
@@ -134,7 +134,7 @@ struct InterventionParameters
 
     struct CepacFile
     {
-        int time = 0;
+        Time time;
         int target_population = 0;
         std::string filename = "";
     };

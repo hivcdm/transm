@@ -95,11 +95,6 @@ public :
     /// </summary>
 	unsigned int size();
 
-    /// <summary>
-	/// prints every person in this index to _outStream
-    /// </summary>
-    void print(ostream &_outStream, const std::string &_prefix);
-
 	typename std::multimap<_KeyValType, Entity *>::iterator begin();
 	typename std::multimap<_KeyValType, Entity *>::iterator end();
 private:
@@ -506,29 +501,6 @@ unsigned int EntityIndex<_PSC, _KeyValType>::size()
 {
 	assert(numPeople == personMultiMap.size());
 	return numPeople;
-}
-
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-void EntityIndex<_PSC, _KeyValType>::print(std::ostream &_outStream, const std::string &_prefix)
-{
-	//iterates through all elements
-	CPPIterator iter = personMultiMap.begin();
-
-	while(iter != personMultiMap.end())
-	{
-		(iter->second)->print(_outStream, _prefix);
-		_outStream << "PARTNERS ARE: ";
-		(iter->second)->printCurrentPartners(_outStream, "");
-		int i;
-
-		for(i = 0; i < 8; i++)
-		{
-			_outStream << "-------------------------------------------------" << Constants::TAB;
-		}
-
-		_outStream << std::endl;
-		iter++;
-	}
 }
 
 template <Entity::SelectingCriteria _PSC, class _KeyValType>

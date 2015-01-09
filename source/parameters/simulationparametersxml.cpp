@@ -143,12 +143,6 @@ int SimulationParametersXml::GetDuration() const
     return Text<int>(simulation_node.child("duration"));
 }
 
-DebugLevel SimulationParametersXml::GetDebugLevel() const
-{
-    auto simulation_node = document_.child("simulation");
-    return static_cast<DebugLevel>(Text<int>(simulation_node.child("debugLevel")));
-}
-
 int SimulationParametersXml::GetMonthOf1990() const
 {
     auto simulation_node = document_.child("simulation");
@@ -169,7 +163,7 @@ SimulationParameters::ConcurrencyDefinition SimulationParametersXml::GetConcurre
     auto simulation_node = document_.child("simulation");
     auto concurrency_node = simulation_node.child("concurrencyDefinition");
 
-    for(int i = 0; i < Constants::NUMBER_CONCURRENCY_DEFS; i++)
+    for(int i = 0; i < Constants::NumberConcurrencyDefs; i++)
     {
         auto definition_node = concurrency_node.find_child_by_attribute("definition", "id", std::to_string(i).c_str());
         auto &definition = definitions[i];
@@ -206,7 +200,7 @@ SimulationParameters::TracingParameters SimulationParametersXml::GetTracingParam
     
     parameters.num_to_trace = Text<int>(simulation_node.child("traceFiles").child("singlePerson").child("numberToTracePerAgeRange"));
     parameters.num_newborns_to_trace = Text<int>(simulation_node.child("traceFiles").child("singlePerson").child("numberNewbornsToTrace"));
-    parameters.month_trace_newborns = Text<int>(simulation_node.child("traceFiles").child("singlePerson").child("monthTraceNewborns"));
+    parameters.month_trace_newborns = Time::from_months(Text<int>(simulation_node.child("traceFiles").child("singlePerson").child("monthTraceNewborns")));
     parameters.trace_prevalent_cases = Text<bool>(simulation_node.child("traceFiles").child("singlePerson").child("tracePrevalentCases"));
 
     parameters.life_expectancy_ci = Text<double>(simulation_node.child("traceFiles").child("lifeExpectancy").child("medianConfidenceInterval"));
@@ -229,7 +223,7 @@ CalibrationInputs SimulationParametersXml::GetCalibrationParameters() const
 
     if(calib.useCalibration)
     {
-        calib.monthOfCalibration = Text<int>(calibration_node.child("monthOfCalibration"));
+        calib.monthOfCalibration = Time::from_months(Text<int>(calibration_node.child("monthOfCalibration")));
         calib.steadyPrevPopulation = Text<int>(calibration_node.child("monthOfCalibration"));
         calib.steadyPrevBounds.lower = Text<double>(calibration_node.child("monthOfCalibration"));
         calib.steadyPrevBounds.upper = Text<double>(calibration_node.child("monthOfCalibration"));
@@ -249,16 +243,10 @@ CalibrationInputs SimulationParametersXml::GetCalibrationParameters() const
         calib.femalePropInConcurrentRatio = Text<double>(calibration_node.child("monthOfCalibration"));
         calib.femaleNumActsLRtoHRRatio = Text<double>(calibration_node.child("monthOfCalibration"));
 
-        for(int i = 0; i < Constants::NUMBER_CALIBRATION_PREVS; i++)
+        for(int i = 0; i < Constants::NumberCalibrationPrevs; i++)
         {
             auto name = "time" + std::to_string(i);
             calib.calendarPrevs[i] = Text<double>(calibration_node.child("calendarPrevalence").child(name.c_str()));
-        }
-
-        for(int i = 0; i < Constants::NUMBER_TIME_POINTS_SAVE_STATE; i++)
-        {
-            auto name = "storePoint" + std::to_string(i) + "Mth";
-            calib.saveStateTimePoints[i] = Text<int>(calibration_node.child(name.c_str()));
         }
 
         calib.thresholdPrevMult = Text<double>(calibration_node.child("thresholdMultiplier"));
@@ -292,16 +280,13 @@ InterventionParameters SimulationParametersXml::GetInterventionParameters() cons
 
         for(auto treatment_file_node : interventions_node.select_nodes("artRolloutIntervention/rolloutTreatmentFiles/rolloutFile"))
         {
-            int time = treatment_file_node.node().child("time").text().as_int();
+			auto time = Time::from_months(treatment_file_node.node().child("time").text().as_int());
 
-            if(time > -1)
+            if(time >= Time::Zero)
             {
                 std::string file_name = treatment_file_node.node().child("fileName").text().as_string();
                 int file_number = treatment_file_node.node().child("fileNumber").text().as_int();
                 int target_population = treatment_file_node.node().child("popToApply").text().as_int();
-
-                //Make sure the number of CEPAC input files from the .xml file is not greater than the number expected by the code!
-                assert(file_number < Constants::NUMBER_OF_ROLLOUT_FILES);
 
                 InterventionParameters::CepacFile file;
                 file.target_population = target_population;
@@ -334,9 +319,9 @@ InterventionParameters SimulationParametersXml::GetInterventionParameters() cons
     {
         for(auto treatment_file_node : interventions_node.select_nodes("cepacIntervention/cepacTreatmentFiles/treatmentFile"))
         {
-            int time = treatment_file_node.node().child("time").text().as_int();
+            auto time = Time::from_months(treatment_file_node.node().child("time").text().as_int());
 
-            if(time > -1)
+            if(time >= Time::Zero)
             {
                 std::string file_name = treatment_file_node.node().child("fileName").text().as_string();
                 int file_number = treatment_file_node.node().child("fileNumber").text().as_int();
@@ -345,9 +330,6 @@ InterventionParameters SimulationParametersXml::GetInterventionParameters() cons
                 file.target_population = 0;
                 file.filename = file_name;
                 file.time = time;
-
-                //Make sure the number of CEPAC input files from the .xml file is not greater than the number expected by the code!
-                assert(file_number < Constants::NUMBER_OF_CEPAC_FILES);
                 
                 parameters.cepac_files.push_back(file);
 
@@ -500,7 +482,7 @@ Male::SubPopParams SimulationParametersXml::GetMaleSubPopParams() const
 	Male::SubPopParams result;
 
 	auto behavior_node = node.child("behavior");
-    result.SetCswEndAge(Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Text<double>(behavior_node.child("cswEndAge"))));
+    result.SetCswEndAge(Age(Text<int>(behavior_node.child("cswEndAge")), 0));
     result.SetChanceBecomeCsw(Text<double>(behavior_node.child("chanceBecomeSexWorker")));
 	result.SetPartnerAcqMultWithSteady(Entity::RiskLevel::HIGH, Text<double>(behavior_node.child("partnerAcqMultWithSteadyHighRisk")));
 	result.SetPartnerAcqMultWithSteady(Entity::RiskLevel::LOW, Text<double>(behavior_node.child("partnerAcqMultWithSteadyLowRisk")));
@@ -550,7 +532,7 @@ Male::SubPopParams SimulationParametersXml::GetMaleSubPopParams() const
 	auto discountingStartAgeYrs = Text<int>(behavior_node.child("ageDiscounting").child("startAgeYrs"));
 	auto acquisitionDiscByYr = Text<double>(behavior_node.child("ageDiscounting").child("acquisitionDiscByYr"));
 	auto coitalActsDiscByYr = Text<double>(behavior_node.child("ageDiscounting").child("coitalActsDiscByYr"));
-	result.setAgeDiscounting(discountingStartAgeYrs, acquisitionDiscByYr, coitalActsDiscByYr);
+	result.setAgeDiscounting(Age(discountingStartAgeYrs, 0), acquisitionDiscByYr, coitalActsDiscByYr);
 
 	auto health_node = node.child("health");
 	result.SetCircucmsionProtectEfficacy(Text<double>(health_node.child("circumcisionProtectEfficacy")));
@@ -574,7 +556,7 @@ Msm::SubPopParams SimulationParametersXml::GetMsmSubPopParams() const
     }
 
     auto behavior_node = node.child("behavior");
-    result.SetCswEndAge(Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Text<double>(behavior_node.child("cswEndAge"))));
+    result.SetCswEndAge(Age(Text<int>(behavior_node.child("cswEndAge")), 0));
     result.SetChanceBecomeCsw(Text<double>(behavior_node.child("chanceBecomeSexWorker")));
     result.SetPartnerAcqMultWithSteady(Entity::RiskLevel::HIGH, Text<double>(behavior_node.child("partnerAcqMultWithSteadyHighRisk")));
     result.SetPartnerAcqMultWithSteady(Entity::RiskLevel::LOW, Text<double>(behavior_node.child("partnerAcqMultWithSteadyLowRisk")));
@@ -624,7 +606,7 @@ Msm::SubPopParams SimulationParametersXml::GetMsmSubPopParams() const
     auto discountingStartAgeYrs = Text<int>(behavior_node.child("ageDiscounting").child("startAgeYrs"));
     auto acquisitionDiscByYr = Text<double>(behavior_node.child("ageDiscounting").child("acquisitionDiscByYr"));
     auto coitalActsDiscByYr = Text<double>(behavior_node.child("ageDiscounting").child("coitalActsDiscByYr"));
-    result.setAgeDiscounting(discountingStartAgeYrs, acquisitionDiscByYr, coitalActsDiscByYr);
+    result.setAgeDiscounting(Age(discountingStartAgeYrs, 0), acquisitionDiscByYr, coitalActsDiscByYr);
 
     auto health_node = node.child("health");
     result.SetCircucmsionProtectEfficacy(Text<double>(health_node.child("circumcisionProtectEfficacy")));
@@ -648,7 +630,7 @@ Msmw::SubPopParams SimulationParametersXml::GetMsmwSubPopParams() const
     }
 
     auto behavior_node = node.child("behavior");
-    result.SetCswEndAge(Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Text<double>(behavior_node.child("cswEndAge"))));
+    result.SetCswEndAge(Age(Text<int>(behavior_node.child("cswEndAge")), 0));
     result.SetChanceBecomeCsw(Text<double>(behavior_node.child("chanceBecomeSexWorker")));
     result.SetPartnerAcqMultWithSteady(Entity::RiskLevel::HIGH, Text<double>(behavior_node.child("partnerAcqMultWithSteadyHighRisk")));
     result.SetPartnerAcqMultWithSteady(Entity::RiskLevel::LOW, Text<double>(behavior_node.child("partnerAcqMultWithSteadyLowRisk")));
@@ -698,7 +680,7 @@ Msmw::SubPopParams SimulationParametersXml::GetMsmwSubPopParams() const
     auto discountingStartAgeYrs = Text<int>(behavior_node.child("ageDiscounting").child("startAgeYrs"));
     auto acquisitionDiscByYr = Text<double>(behavior_node.child("ageDiscounting").child("acquisitionDiscByYr"));
     auto coitalActsDiscByYr = Text<double>(behavior_node.child("ageDiscounting").child("coitalActsDiscByYr"));
-    result.setAgeDiscounting(discountingStartAgeYrs, acquisitionDiscByYr, coitalActsDiscByYr);
+    result.setAgeDiscounting(Age(discountingStartAgeYrs, 0), acquisitionDiscByYr, coitalActsDiscByYr);
 
     auto health_node = node.child("health");
     result.SetCircucmsionProtectEfficacy(Text<double>(health_node.child("circumcisionProtectEfficacy")));
@@ -716,7 +698,7 @@ Female::SubPopParams SimulationParametersXml::GetFemaleSubPopParams() const
 	Female::SubPopParams result;
 
 	auto behavior_node = node.child("behavior");
-    result.SetCswEndAge(Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Text<double>(behavior_node.child("cswEndAge"))));
+    result.SetCswEndAge(Age(Text<int>(behavior_node.child("cswEndAge")), 0));
 	result.SetChanceBecomeCsw(Text<double>(behavior_node.child("chanceBecomeSexWorker")));
 	result.SetProportionHighRisk(DemographicProfile::Employment::NonCsw, Text<double>(behavior_node.child("proportionHighRiskNonCsw")));
 	result.SetProportionHighRisk(DemographicProfile::Employment::Csw, Text<double>(behavior_node.child("proportionHighRiskCsw")));
@@ -858,8 +840,8 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
             numInfectedNonCSWMalesHighRisk, numInfectedNonCSWFemalesHighRisk);
 #else
 		parameters.GetInitialAgeBuckets().emplace_back(
-			Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Attr<int>(age_bucket_node, "lower")),
-			Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Attr<int>(age_bucket_node, "upper")) + 11,
+			Age::from_months(Attr<int>(age_bucket_node, "lower")),
+			Age::from_months(Attr<int>(age_bucket_node, "upper") + 11),
 			dist);
 #endif
 	}
@@ -899,7 +881,7 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
     }
 
 	parameters.SetProportionCircumcised(Text<double>(population_node.child("proportionMaleCircumcised")));
-	parameters.SetAgeOfMajority(Text<int>(population_node.child("ageOfMajority")), TimeGranularity::Year);
+	parameters.SetAgeOfMajority(Age(Text<int>(population_node.child("ageOfMajority")), 0));
 
 	auto defaultMaleParams = GetMaleSubPopParams();
 	parameters.SetMaleParameters(defaultMaleParams);
@@ -1206,8 +1188,8 @@ std::unordered_map<std::string, TargetGroup> SimulationParametersXml::GetTargetG
         bool open = Text<bool>(group_node.child("open-enrollment"));
         auto target = ParseGroupEligibility(group_node.child("eligibility-criteria"));
 
-        TargetGroup group(label, enrollment_period.first, enrollment_period.second, 
-            open, permanent, target);
+        TargetGroup group(label, Time::from_months(enrollment_period.first), 
+			Time::from_months(enrollment_period.second), open, permanent, target);
 
         for(auto partition_node : group_node.child("partitions").children("partition"))
         {
@@ -1352,7 +1334,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
     int time = node.attribute("time") != nullptr ? Attr<int>(node, "time") : -1;
     int duration = node.attribute("duration") != nullptr ? Attr<int>(node, "duration") : -1;
 
-    Intervention intervention(time, duration);
+    Intervention intervention(Time(0, time), TimeSpan(0, duration));
 
     auto intervention_type = from_string<KnownIntervention>(node.name());
 
@@ -1380,7 +1362,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto months = Text<int>(node);
             intervention.SetIndividualCallback(
                 [=](Entity *person) { 
-                    person->SetSexualActivityDelay(months); });
+                    person->SetSexualActivityDelay(TimeSpan(0, months)); });
             break;
         }
         case KnownIntervention::TransmissionCoefficient:
@@ -1517,9 +1499,9 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         {
             auto months = Text<int>(node);
             intervention.SetPopulationCallback(
-                [=](Population &p) { p.GetParameters().SetSexualActivityDelay(months); });
+				[=](Population &p) { p.GetParameters().SetSexualActivityDelay(TimeSpan(0, months)); });
             intervention.SetIndividualCallback(
-                [=](Entity *person) { person->SetSexualActivityDelay(months); });
+                [=](Entity *person) { person->SetSexualActivityDelay(TimeSpan(0, months)); });
             break;
         }
         case KnownIntervention::TransmissionCoefficient:

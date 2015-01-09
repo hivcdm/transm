@@ -47,7 +47,7 @@ public:
 
 	struct SingleTimeStats
 	{
-		long timeOfStats;
+		Time timeOfStats;
 		double prevalence;
 		double SAprevalence; 	//Prevalence of sexually active population only
 		double incidence; 		//TODO: Incidence will be an average over the 12 months leading up to the given time point
@@ -122,19 +122,19 @@ public:
 
 	};
 private:
-	std::vector<int> timesToRecord;
+	std::vector<Time> timesToRecord;
 
-	std::vector<int> timesToRecordLE;
+	std::vector<Time> timesToRecordLE;
 	double medianLECI;
 
-	std::vector<int> timesToRecordPartAcq;
+	std::vector<Time> timesToRecordPartAcq;
 	bool printHeaderPartAcq;
 
 	std::vector<SingleTimeStats *> selectedSummaryStats;
 
-	int monthOf1990;
+	Time monthOf1990;
 	bool calculateShiftedOutcomes;
-	int relativeYear;
+	Time relativeTime;
     std::unordered_map<std::string, std::size_t> yearStartPrevalentInfections;
     std::unordered_map<std::string, std::size_t> yearStartSexuallyActivePopSize;
     double yearlyCumulativeIncidence;
@@ -178,36 +178,36 @@ public:
 
 	void printLMStats(std::ostream &_outStream);
 
-	void printLEStats(std::ostream &_outStream, long currTime);
+	void printLEStats(std::ostream &_outStream, Time currTime);
 
-	void printPartAcqStats(std::ostream &_outStream, long currTime);
+	void printPartAcqStats(std::ostream &_outStream, Time currTime);
 
 	void printSurvivalStats(std::ostream &_outStream);
 
-	void printShiftedOutcomes(std::ostream &_outStream, int currTime);
+	void printShiftedOutcomes(std::ostream &_outStream, Time currTime);
 
 	//records an incident infection (calls InfectionTracker's method)
-	void recordIncidentInfection(EventParams &_eventParams, long _time, SexualPartnership::Type _partnershipType,
-	                             const Entity *_infector, const Entity *_infected, bool _print, ostream &_traceOutStream);
+	void recordIncidentInfection(EventParams &_eventParams, Time infection_time, SexualPartnership::Type _partnershipType,
+	                             const Entity *_infector, const Entity *_infected);
 
 	//returns the next time greater than or equal to currTime in the list
-	long getNextTimeToRecord(long currTime);
+	Time getNextTimeToRecord(Time currTime);
 
 	//returns true if currTime is in timeToRecord[NUM_TIMES_TO_RECORD]
-	bool isTimeToRecord(long currTime);
+	bool isTimeToRecord(Time currTime);
 
 	//returns true if currTime is in timeToRecordLE
-	bool isTimeToRecordLE(long currTime);
-	bool isFirstMonthToRecordLE(long currTime);
-	bool isTimeToPrintLE(long currTime);
+	bool isTimeToRecordLE(Time currTime);
+	bool isFirstMonthToRecordLE(Time currTime);
+	bool isTimeToPrintLE(Time currTime);
 
 	//returns true if currTime is in timeToRecordPartAcq
-	bool isTimeToRecordPartAcq(long currTime);
+	bool isTimeToRecordPartAcq(Time currTime);
 
-    void recordEntity(int time, Entity *e);
+    void recordEntity(Time time, Entity *e);
 
-	void enableShiftedOutcomes(int monthOf1990);
-	void resetYear(int newYear);
+	void enableShiftedOutcomes(Time monthOf1990);
+	void resetYear(Time newYear);
 	void recordYearStartStats(int sexuallyActivePopSize, int prevalentCases);
 	void recordTestStats(int numTests, const std::vector<int> &numTestsByResult);
 	void recordTreatmentAccessEligiblity(Entity *person);
@@ -215,7 +215,7 @@ public:
 	void recordTreatmentEligiblity(Entity *person);
 	void recordTreatment(Entity *person);
 
-	void addLifeExpectancyRecordTime(int time) { timesToRecordLE.push_back(time); }
+	void addLifeExpectancyRecordTime(Time time) { timesToRecordLE.push_back(time); }
     void setMedianLECI(double ci) { medianLECI = ci; }
 
 	std::vector<PopulationStatisticsOld::SingleTimeStats *> *getSelectedSummaryStats();

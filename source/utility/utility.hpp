@@ -63,12 +63,6 @@ public:
     /// </summary>
     static path get_batches_directory();
 
-    // TODO: can we use types to replace this method? e.g. TimeDays, TimeMonths, etc.
-    /// <summary>
-	/// Convert val from "from" TimeGranularity to "to" TimeGranularity
-    /// </summary>
-	static unsigned int convert_time(TimeGranularity from, TimeGranularity to, double val);
-
 	// TODO: replace with standard library functions like std::stod
 	/// <summary>
     /// Converts a string value to another datatype.

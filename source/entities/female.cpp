@@ -63,7 +63,7 @@ double Female::rollForAgeDifference(SexualPartnership::Type /*_partnershipType*/
 
 //each index of the array contains parameters for a different population
 //(as of 9/8/08, we only have 1 population for now so the size of the vector will default to 1
-Female::SubPopParams::SubPopParams() : cswEndAge(0)
+Female::SubPopParams::SubPopParams()
 {
 }
 
@@ -81,7 +81,7 @@ NormalDist Female::SubPopParams::GetActivityLevel() const
 	return activityLevel;
 }
 
-Female::Female(EventParams &_eventParams, int _ageMths, unsigned int _populationID, const Female::SubPopParams &params)
+Female::Female(EventParams &_eventParams, Age _ageMths, unsigned int _populationID, const Female::SubPopParams &params)
 	: Entity(_ageMths, _populationID),
 	populationSpecificParams(params),
     overrideChanceCondomUse_(-1),
@@ -213,12 +213,6 @@ void Female::rerollRiskGroup(EventParams &_eventParams)
 	{
 		risk = RiskLevel::LOW;
 	}
-}
-
-void Female::saveState(ostream &_outStream, long currTime)
-{
-	_outStream << "gend:f," << std::endl;
-	Entity::saveState(_outStream, currTime);
 }
 
 } // namespace transm

@@ -50,10 +50,10 @@ void TransmissionSummaryStats::addPopulationStatistics(PopulationStatisticsOld &
 	//summary->runTime = popSummary->runTime;
 	//summary->numCohorts = popSummary->numCohorts;
 	summary->selectedSummaryStats = new std::vector<PopulationStatisticsOld::SingleTimeStats *>();
-	int time = popStats.getNextTimeToRecord(0);
+	auto time = popStats.getNextTimeToRecord(Time::Zero);
 	std::vector<PopulationStatisticsOld::SingleTimeStats *>::iterator statsIterator = popStats.getSelectedSummaryStats()->begin();
 
-	while(time > 0 && statsIterator != popStats.getSelectedSummaryStats()->end())
+	while(time > Time::Zero && statsIterator != popStats.getSelectedSummaryStats()->end())
 	{
 		while(statsIterator != popStats.getSelectedSummaryStats()->end() && (*statsIterator)->timeOfStats < time)
 		{
@@ -64,7 +64,7 @@ void TransmissionSummaryStats::addPopulationStatistics(PopulationStatisticsOld &
 		{
 			summary->timeToRecord[summary->selectedSummaryStats->size()] = time;
 			summary->selectedSummaryStats->push_back(*statsIterator);
-			time = popStats.getNextTimeToRecord(time + 1);
+			time = popStats.getNextTimeToRecord(time + TimeSpan::Month);
 		}
 	}
 
@@ -104,7 +104,7 @@ void TransmissionSummaryStats::writeSummariesFile()
 		for(size_t j = 0; j < summary->selectedSummaryStats->size(); j++)
 		{
 			PopulationStatisticsOld::SingleTimeStats *singleTimeStat = summary->selectedSummaryStats->at(j);
-			summaryStatsStream << singleTimeStat->timeOfStats << "\t";
+			summaryStatsStream << singleTimeStat->timeOfStats.get_total_months() << "\t";
 			summaryStatsStream << singleTimeStat->prevalence << "\t";
 			summaryStatsStream << singleTimeStat->SAprevalence << "\t";
 			summaryStatsStream << singleTimeStat->incidence << "\t";

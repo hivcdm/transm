@@ -11,9 +11,9 @@ CostsTracker::~CostsTracker()
 {
 }
 
-void CostsTracker::PrintCosts(int time, std::ostream &_outStream)
+void CostsTracker::PrintCosts(Time time, std::ostream &_outStream)
 {
-	if(time == 0)
+	if(time == Time::Zero)
 	{
 		BuildHeader();
 		PrintHeader(_outStream);
@@ -195,15 +195,15 @@ void CostsTracker::BuildHeader()
 	}
 }
 
-void CostsTracker::BuildRow(int time)
+void CostsTracker::BuildRow(Time time)
 {
-	if(time == 0)
+	if(time == Time::Zero)
 	{
 		PushElement("init");
 	}
 	else
 	{
-		PushElement(time);
+		PushElement((int)time.get_total_months());
 	}
 
 	for(const auto &costs : {undiscounted_, discounted_})

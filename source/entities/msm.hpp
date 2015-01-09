@@ -47,15 +47,15 @@ public:
         double getCircumProtectEff() const;
         double getCondomProtectEff() const;
 
-        int getPartneringDiscStartAgeYrs() const;
-        double getPartneringAcqDiscMult(int _ageYrs) const;
-        double getPartneringActsDiscMult(int _ageYrs) const;
-        void setAgeDiscounting(int startAgeYrs, double partneringAcqDisc, double partneringActsDisc)
+        Age getPartneringDiscStartAge() const;
+        double getPartneringAcqDiscMult(Age age) const;
+        double getPartneringActsDiscMult(Age age) const;
+        void setAgeDiscounting(Age startAgeYrs, double partneringAcqDisc, double partneringActsDisc)
         {
             partneringDiscStartAgeYrs = startAgeYrs;
             partneringAcqDiscPerYr = partneringAcqDisc;
             partneringActsDiscPerYr = partneringActsDisc;
-            int numMults = Entity::maxYrForDeathStats - partneringDiscStartAgeYrs + 1;
+			int numMults = Entity::maxYrForDeathStats - partneringDiscStartAgeYrs.get_year() + 1;
             double acqMult = 1 - partneringAcqDiscPerYr;
             double actsMult = 1 - partneringActsDiscPerYr;
 
@@ -96,11 +96,11 @@ public:
         int GetMaxPartnershipRejections() const { return maxPartnershipRejections; }
         void SetMaxPartnershipRejections(int rejections) { maxPartnershipRejections = rejections; }
 
-        void SetCswEndAge(int end_age) { cswEndAge = end_age; }
-        int GetCswEndAge() const { return cswEndAge; }
+        void SetCswEndAge(Age end_age) { cswEndAge = end_age; }
+        Age GetCswEndAge() const { return cswEndAge; }
 
     private:
-        int cswEndAge; // in months
+        Age cswEndAge; // in months
         double chanceBecomeCSW;		//chance that a male will become a CSW
         double partnerAcqMultWithSteady[(std::size_t)Entity::RiskLevel::Last];  //the rate multiplier for partner acquisition when a male has a Steady partner
 
@@ -110,7 +110,7 @@ public:
         NormalDist activityLevel; //Distribution of activity level (i.e. marbles)
 
         //the age that partnering discount will start
-        int partneringDiscStartAgeYrs;
+        Age partneringDiscStartAgeYrs;
         //partnering acquisition rates get discounted every year
         double partneringAcqDiscPerYr;
         //coital acts/month get discounted every year
@@ -162,7 +162,7 @@ public:
     /**
     this constructor creates an Msm that can be simulated
     constructor should set the CD4, HVL, and HVLsetpoint from age and gender **/
-    Msm(EventParams &_eventParams, int _age, bool _circumcised, unsigned int _populationID, const Msm::SubPopParams &params);
+    Msm(EventParams &_eventParams, Age age, bool _circumcised, unsigned int _populationID, const Msm::SubPopParams &params);
 
     /** Start: Inherited from Person, comments found there **/
 
@@ -199,7 +199,7 @@ public:
 
     void rerollRiskGroup(EventParams &_eventParams);
     //writes state of person to file
-    void saveState(ostream &_outStream, long currTime);
+    void saveState(ostream &_outStream, Time currTime);
     /** End: Inherited from Entity **/
 
     /** Start: functions for Males only **/

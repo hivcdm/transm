@@ -24,8 +24,7 @@ const int NUM_LE_CAT = 12; //number of life expectancy categories
 const char *lifeExpectancyStrs[NUM_LE_CAT] = {"Age(yr)", "raw deaths", "raw pop", "n", "deaths", "death rate", "midpoint survivorship", "total remaining time", "life expectancy", "median LE", "median LE Standard Error", "median LE Confidence Bounds"};
 
 PopulationStatisticsOld::PopulationStatisticsOld() 
-	: monthOf1990(0),
-	  calculateShiftedOutcomes(false),
+	: calculateShiftedOutcomes(false),
 	  yearlyTestsByResult(4)
 {
 	assert(PopulationStatisticsOld::LifeStatsStr.size() == PopulationStatisticsOld::ENDLifeStats);
@@ -33,7 +32,7 @@ PopulationStatisticsOld::PopulationStatisticsOld()
 	lifeStats = new StatsRecord<PopulationStatisticsOld::LifeStats, BaseEnumCls::NULL_ENUM>(enumClass);
 	survivalStats = new SurvivalStats();
 	//Set up the timeToRecord vector... by default, record at every 1/4 of the maxTime
-	timesToRecord.push_back(1);
+	timesToRecord.push_back(Time(0, 1));
 	selectedLEStats = nullptr;
 	selectedPartAcqStats = nullptr;
 
@@ -110,12 +109,12 @@ void PopulationStatisticsOld::processDeath(Entity *_p, EventParams &_eventParams
 	DemographicProfile::Gender gend = (DemographicProfile::Gender) _p->getDemographicProfileVal(DemographicProfile::Demographic::Gender);
 	DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) _p->getDemographicProfileVal(DemographicProfile::Demographic::Employment);
 	Entity::RiskLevel risk = _p->getRiskLevel();
-	int prevDelay = _eventParams.delayPrevalence;
+	auto prevDelay = _eventParams.delayPrevalence;
 
 	if(_eventParams.currTime > prevDelay)
 	{
 		//time spent in model after prev delay until death
-		int timeToDeath = min<int>(_p->age - _p->initAge, _eventParams.currTime - prevDelay);
+		auto timeToDeath = (int)min(_p->age - _p->initAge, _eventParams.currTime - prevDelay).get_total_months();
 		survivalStats->numDeathGender[(std::size_t)gend]++;
         survivalStats->timeToDeathGenderSum[(std::size_t)gend] += timeToDeath;
         survivalStats->timeToDeathGenderSumSquare[(std::size_t)gend] += timeToDeath * timeToDeath;
@@ -123,7 +122,7 @@ void PopulationStatisticsOld::processDeath(Entity *_p, EventParams &_eventParams
         survivalStats->timeToDeathEmplRiskSum[(std::size_t)cswStatus][(std::size_t)risk] += timeToDeath;
         survivalStats->timeToDeathEmplRiskSumSquare[(std::size_t)cswStatus][(std::size_t)risk] += timeToDeath * timeToDeath;
 
-		if(_p->getGenerationOfInfection() == Constants::PREVALENT_INFECTION)  //initial prev case
+		if(_p->getGenerationOfInfection() == Constants::InitialInfection)  //initial prev case
 		{
 			survivalStats->numDeathHIVStatus[PREVALENT]++;
 			survivalStats->timeToDeathHIVStatusSum[PREVALENT] += timeToDeath;
@@ -147,7 +146,7 @@ void PopulationStatisticsOld::processDeath(Entity *_p, EventParams &_eventParams
 		}
 		else
 		{
-			int timeFromInfToDeath = _p->age - _p->ageInfected;
+			int timeFromInfToDeath = (int)(_p->age - _p->ageInfected).get_total_months();
             survivalStats->numInfDeathGender[(std::size_t)gend]++;
             survivalStats->timeFromInfToDeathGenderSum[(std::size_t)gend] += timeFromInfToDeath;
             survivalStats->timeFromInfToDeathGenderSumSquare[(std::size_t)gend] += timeFromInfToDeath * timeFromInfToDeath;
@@ -247,16 +246,16 @@ void PopulationStatisticsOld::printSurvivalStats(std::ostream &_outStream)
     std::ostringstream fourthRow;
     std::ostringstream fifthRow;
 
-	firstRow <<  "Survival Outputs" << Constants::TAB << Constants::TAB;
-	secondRow << Constants::TAB << Constants::TAB;
-	thirdRow << "Overall" << Constants::TAB << Constants::TAB;
-	fourthRow << Constants::TAB << "Mean" << Constants::TAB;
-	fifthRow << Constants::TAB << "SD" << Constants::TAB;
+	firstRow <<  "Survival Outputs" << Constants::Tab << Constants::Tab;
+	secondRow << Constants::Tab << Constants::Tab;
+	thirdRow << "Overall" << Constants::Tab << Constants::Tab;
+	fourthRow << Constants::Tab << "Mean" << Constants::Tab;
+	fifthRow << Constants::Tab << "SD" << Constants::Tab;
 	//Time to Infection or Death
-	firstRow << "Time to Infection or Death (initial HIV- population)" << Constants::TAB << Constants::TAB <<
-	         Constants::TAB;
-	secondRow << Constants::TAB << "Gender" << Constants::TAB << Constants::TAB;
-	thirdRow << "Total" << Constants::TAB << "Male" << Constants::TAB << "Female" << Constants::TAB;
+	firstRow << "Time to Infection or Death (initial HIV- population)" << Constants::Tab << Constants::Tab <<
+	         Constants::Tab;
+	secondRow << Constants::Tab << "Gender" << Constants::Tab << Constants::Tab;
+	thirdRow << "Total" << Constants::Tab << "Male" << Constants::Tab << "Female" << Constants::Tab;
     unsigned int numTotal = survivalStats->numInfOrDeathGender[(std::size_t)DemographicProfile::Gender::Male] +
         survivalStats->numInfOrDeathGender[(std::size_t)DemographicProfile::Gender::Female];
 
@@ -266,13 +265,13 @@ void PopulationStatisticsOld::printSurvivalStats(std::ostream &_outStream)
             survivalStats->timeToInfOrDeathGenderSum[(std::size_t)DemographicProfile::Gender::Female]) / (double)numTotal;
         double timeSD = sqrt((survivalStats->timeToInfOrDeathGenderSumSquare[(std::size_t)DemographicProfile::Gender::Male] +
             survivalStats->timeToInfOrDeathGenderSumSquare[(std::size_t)DemographicProfile::Gender::Female]) / (double)numTotal - timeMean * timeMean);
-		fourthRow << timeMean << Constants::TAB;
-		fifthRow << timeSD << Constants::TAB;
+		fourthRow << timeMean << Constants::Tab;
+		fifthRow << timeSD << Constants::Tab;
 	}
 	else
 	{
-		fourthRow << "N/A" << Constants::TAB;
-		fifthRow << "N/A" << Constants::TAB;
+		fourthRow << "N/A" << Constants::Tab;
+		fifthRow << "N/A" << Constants::Tab;
 	}
 
     for(std::size_t i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
@@ -283,19 +282,19 @@ void PopulationStatisticsOld::printSurvivalStats(std::ostream &_outStream)
 			                  survivalStats->numInfOrDeathGender[i];
 			double timeSD = sqrt(survivalStats->timeToInfOrDeathGenderSumSquare[i] / (double)
 			                     survivalStats->numInfOrDeathGender[i] - timeMean * timeMean);
-			fourthRow << timeMean << Constants::TAB;
-			fifthRow << timeSD << Constants::TAB;
+			fourthRow << timeMean << Constants::Tab;
+			fifthRow << timeSD << Constants::Tab;
 		}
 		else
 		{
-			fourthRow << "N/A" << Constants::TAB;
-			fifthRow << "N/A" << Constants::TAB;
+			fourthRow << "N/A" << Constants::Tab;
+			fifthRow << "N/A" << Constants::Tab;
 		}
 	}
 
-	firstRow << Constants::TAB << Constants::TAB << Constants::TAB;
-	secondRow << "Risk Group" << Constants::TAB << "Non-CSW" << Constants::TAB << "Non-CSW" << Constants::TAB;
-	thirdRow << "CSW" << Constants::TAB << "High Risk" << Constants::TAB << "Low Risk" << Constants::TAB;
+	firstRow << Constants::Tab << Constants::Tab << Constants::Tab;
+	secondRow << "Risk Group" << Constants::Tab << "Non-CSW" << Constants::Tab << "Non-CSW" << Constants::Tab;
+	thirdRow << "CSW" << Constants::Tab << "High Risk" << Constants::Tab << "Low Risk" << Constants::Tab;
     unsigned int numCSW = survivalStats->numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::HIGH] +
         survivalStats->numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::LOW];
 
@@ -306,13 +305,13 @@ void PopulationStatisticsOld::printSurvivalStats(std::ostream &_outStream)
         double timeSD = sqrt((survivalStats->timeToInfOrDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::HIGH] +
             survivalStats->timeToInfOrDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::LOW]) /
 		                     (double) numCSW - timeMean * timeMean);
-		fourthRow << timeMean << Constants::TAB;
-		fifthRow << timeSD << Constants::TAB;
+		fourthRow << timeMean << Constants::Tab;
+		fifthRow << timeSD << Constants::Tab;
 	}
 	else
 	{
-		fourthRow << "N/A" << Constants::TAB;
-		fifthRow << "N/A" << Constants::TAB;
+		fourthRow << "N/A" << Constants::Tab;
+		fifthRow << "N/A" << Constants::Tab;
 	}
 
 	for(std::size_t j = 0; j < (std::size_t)Entity::RiskLevel::Last; j++)
@@ -323,20 +322,20 @@ void PopulationStatisticsOld::printSurvivalStats(std::ostream &_outStream)
                 (double)survivalStats->numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::NonCsw][j];
             double timeSD = sqrt(survivalStats->timeToInfOrDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::NonCsw][j] /
                 (double)survivalStats->numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::NonCsw][j] - timeMean * timeMean);
-			fourthRow << timeMean << Constants::TAB;
-			fifthRow << timeSD << Constants::TAB;
+			fourthRow << timeMean << Constants::Tab;
+			fifthRow << timeSD << Constants::Tab;
 		}
 		else
 		{
-			fourthRow << "N/A" << Constants::TAB;
-			fifthRow << "N/A" << Constants::TAB;
+			fourthRow << "N/A" << Constants::Tab;
+			fifthRow << "N/A" << Constants::Tab;
 		}
 	}
 
 	//Time to Death
-	firstRow << "Time to Death" << Constants::TAB << Constants::TAB << Constants::TAB;
-	secondRow << Constants::TAB << "Gender" << Constants::TAB << Constants::TAB;
-	thirdRow << "Total" << Constants::TAB << "Male" << Constants::TAB << "Female" << Constants::TAB;
+	firstRow << "Time to Death" << Constants::Tab << Constants::Tab << Constants::Tab;
+	secondRow << Constants::Tab << "Gender" << Constants::Tab << Constants::Tab;
+	thirdRow << "Total" << Constants::Tab << "Male" << Constants::Tab << "Female" << Constants::Tab;
     numTotal = survivalStats->numDeathGender[(std::size_t)DemographicProfile::Gender::Male] +
         survivalStats->numDeathGender[(std::size_t)DemographicProfile::Gender::Female];
 
@@ -346,13 +345,13 @@ void PopulationStatisticsOld::printSurvivalStats(std::ostream &_outStream)
             survivalStats->timeToDeathGenderSum[(std::size_t)DemographicProfile::Gender::Female]) / (double)numTotal;
         double timeSD = sqrt((survivalStats->timeToDeathGenderSumSquare[(std::size_t)DemographicProfile::Gender::Male] +
             survivalStats->timeToDeathGenderSumSquare[(std::size_t)DemographicProfile::Gender::Female]) / (double)numTotal - timeMean * timeMean);
-		fourthRow << timeMean << Constants::TAB;
-		fifthRow << timeSD << Constants::TAB;
+		fourthRow << timeMean << Constants::Tab;
+		fifthRow << timeSD << Constants::Tab;
 	}
 	else
 	{
-		fourthRow << "N/A" << Constants::TAB;
-		fifthRow << "N/A" << Constants::TAB;
+		fourthRow << "N/A" << Constants::Tab;
+		fifthRow << "N/A" << Constants::Tab;
 	}
 
     for(std::size_t i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
@@ -362,19 +361,19 @@ void PopulationStatisticsOld::printSurvivalStats(std::ostream &_outStream)
 			double timeMean = survivalStats->timeToDeathGenderSum[i] / (double) survivalStats->numDeathGender[i];
 			double timeSD = sqrt(survivalStats->timeToDeathGenderSumSquare[i] / (double)
 			                     survivalStats->numDeathGender[i] - timeMean * timeMean);
-			fourthRow << timeMean << Constants::TAB;
-			fifthRow << timeSD << Constants::TAB;
+			fourthRow << timeMean << Constants::Tab;
+			fifthRow << timeSD << Constants::Tab;
 		}
 		else
 		{
-			fourthRow << "N/A" << Constants::TAB;
-			fifthRow << "N/A" << Constants::TAB;
+			fourthRow << "N/A" << Constants::Tab;
+			fifthRow << "N/A" << Constants::Tab;
 		}
 	}
 
-	firstRow << Constants::TAB << Constants::TAB << Constants::TAB;
-	secondRow << "Risk Group" << Constants::TAB << "Non-CSW" << Constants::TAB << "Non-CSW" << Constants::TAB;
-	thirdRow << "CSW" << Constants::TAB << "High Risk" << Constants::TAB << "Low Risk" << Constants::TAB;
+	firstRow << Constants::Tab << Constants::Tab << Constants::Tab;
+	secondRow << "Risk Group" << Constants::Tab << "Non-CSW" << Constants::Tab << "Non-CSW" << Constants::Tab;
+	thirdRow << "CSW" << Constants::Tab << "High Risk" << Constants::Tab << "Low Risk" << Constants::Tab;
     numCSW = survivalStats->numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::HIGH] +
         survivalStats->numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::LOW];
 
@@ -385,13 +384,13 @@ void PopulationStatisticsOld::printSurvivalStats(std::ostream &_outStream)
         double timeSD = sqrt((survivalStats->timeToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::HIGH] +
             survivalStats->timeToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::LOW]) / (double)numCSW - timeMean *
 		                     timeMean);
-		fourthRow << timeMean << Constants::TAB;
-		fifthRow << timeSD << Constants::TAB;
+		fourthRow << timeMean << Constants::Tab;
+		fifthRow << timeSD << Constants::Tab;
 	}
 	else
 	{
-		fourthRow << "N/A" << Constants::TAB;
-		fifthRow << "N/A" << Constants::TAB;
+		fourthRow << "N/A" << Constants::Tab;
+		fifthRow << "N/A" << Constants::Tab;
 	}
 
 	for(std::size_t j = 0; j < (std::size_t)Entity::RiskLevel::Last; j++)
@@ -402,19 +401,19 @@ void PopulationStatisticsOld::printSurvivalStats(std::ostream &_outStream)
                 (double)survivalStats->numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::NonCsw][j];
             double timeSD = sqrt(survivalStats->timeToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::NonCsw][j] /
                 (double)survivalStats->numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::NonCsw][j] - timeMean * timeMean);
-			fourthRow << timeMean << Constants::TAB;
-			fifthRow << timeSD << Constants::TAB;
+			fourthRow << timeMean << Constants::Tab;
+			fifthRow << timeSD << Constants::Tab;
 		}
 		else
 		{
-			fourthRow << "N/A" << Constants::TAB;
-			fifthRow << "N/A" << Constants::TAB;
+			fourthRow << "N/A" << Constants::Tab;
+			fifthRow << "N/A" << Constants::Tab;
 		}
 	}
 
-	firstRow << Constants::TAB << Constants::TAB;
-	secondRow << "Init HIV Status" << Constants::TAB << Constants::TAB;
-	thirdRow << "HIV+ (Initial)" << Constants::TAB << "HIV- (Initial)" << Constants::TAB;
+	firstRow << Constants::Tab << Constants::Tab;
+	secondRow << "Init HIV Status" << Constants::Tab << Constants::Tab;
+	thirdRow << "HIV+ (Initial)" << Constants::Tab << "HIV- (Initial)" << Constants::Tab;
 
 	for(int i = 0; i < ENDInitHIVStatus; i++)
 	{
@@ -423,20 +422,20 @@ void PopulationStatisticsOld::printSurvivalStats(std::ostream &_outStream)
 			double timeMean = survivalStats->timeToDeathHIVStatusSum[i] / (double) survivalStats->numDeathHIVStatus[i];
 			double timeSD = sqrt(survivalStats->timeToDeathHIVStatusSumSquare[i] / (double)
 			                     survivalStats->numDeathHIVStatus[i] - timeMean * timeMean);
-			fourthRow << timeMean << Constants::TAB;
-			fifthRow << timeSD << Constants::TAB;
+			fourthRow << timeMean << Constants::Tab;
+			fifthRow << timeSD << Constants::Tab;
 		}
 		else
 		{
-			fourthRow << "N/A" << Constants::TAB;
-			fifthRow << "N/A" << Constants::TAB;
+			fourthRow << "N/A" << Constants::Tab;
+			fifthRow << "N/A" << Constants::Tab;
 		}
 	}
 
 	//Time From Infection to Death
-	firstRow << "Time from Infection to Death" << Constants::TAB << Constants::TAB << Constants::TAB;
-	secondRow << Constants::TAB << "Gender" << Constants::TAB << Constants::TAB;
-	thirdRow << "Total" << Constants::TAB << "Male" << Constants::TAB << "Female" << Constants::TAB;
+	firstRow << "Time from Infection to Death" << Constants::Tab << Constants::Tab << Constants::Tab;
+	secondRow << Constants::Tab << "Gender" << Constants::Tab << Constants::Tab;
+	thirdRow << "Total" << Constants::Tab << "Male" << Constants::Tab << "Female" << Constants::Tab;
     numTotal = survivalStats->numInfDeathGender[(std::size_t)DemographicProfile::Gender::Male] +
         survivalStats->numInfDeathGender[(std::size_t)DemographicProfile::Gender::Female];
 
@@ -446,13 +445,13 @@ void PopulationStatisticsOld::printSurvivalStats(std::ostream &_outStream)
             survivalStats->timeFromInfToDeathGenderSum[(std::size_t)DemographicProfile::Gender::Female]) / (double)numTotal;
         double timeSD = sqrt((survivalStats->timeFromInfToDeathGenderSumSquare[(std::size_t)DemographicProfile::Gender::Male] +
             survivalStats->timeFromInfToDeathGenderSumSquare[(std::size_t)DemographicProfile::Gender::Female]) / (double)numTotal - timeMean * timeMean);
-		fourthRow << timeMean << Constants::TAB;
-		fifthRow << timeSD << Constants::TAB;
+		fourthRow << timeMean << Constants::Tab;
+		fifthRow << timeSD << Constants::Tab;
 	}
 	else
 	{
-		fourthRow << "N/A" << Constants::TAB;
-		fifthRow << "N/A" << Constants::TAB;
+		fourthRow << "N/A" << Constants::Tab;
+		fifthRow << "N/A" << Constants::Tab;
 	}
 
     for(std::size_t i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
@@ -463,19 +462,19 @@ void PopulationStatisticsOld::printSurvivalStats(std::ostream &_outStream)
 			                  survivalStats->numInfDeathGender[i];
 			double timeSD = sqrt(survivalStats->timeFromInfToDeathGenderSumSquare[i] / (double)
 			                     survivalStats->numInfDeathGender[i] - timeMean * timeMean);
-			fourthRow << timeMean << Constants::TAB;
-			fifthRow << timeSD << Constants::TAB;
+			fourthRow << timeMean << Constants::Tab;
+			fifthRow << timeSD << Constants::Tab;
 		}
 		else
 		{
-			fourthRow << "N/A" << Constants::TAB;
-			fifthRow << "N/A" << Constants::TAB;
+			fourthRow << "N/A" << Constants::Tab;
+			fifthRow << "N/A" << Constants::Tab;
 		}
 	}
 
-	firstRow << Constants::TAB << Constants::TAB << Constants::TAB;
-	secondRow << "Risk Group" << Constants::TAB << "Non-CSW" << Constants::TAB << "Non-CSW" << Constants::TAB;
-	thirdRow << "CSW" << Constants::TAB << "High Risk" << Constants::TAB << "Low Risk" << Constants::TAB;
+	firstRow << Constants::Tab << Constants::Tab << Constants::Tab;
+	secondRow << "Risk Group" << Constants::Tab << "Non-CSW" << Constants::Tab << "Non-CSW" << Constants::Tab;
+	thirdRow << "CSW" << Constants::Tab << "High Risk" << Constants::Tab << "Low Risk" << Constants::Tab;
     numCSW = survivalStats->numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::HIGH] +
         survivalStats->numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::LOW];
 
@@ -486,13 +485,13 @@ void PopulationStatisticsOld::printSurvivalStats(std::ostream &_outStream)
         double timeSD = sqrt((survivalStats->timeFromInfToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::HIGH] +
             survivalStats->timeFromInfToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::LOW]) /
 		                     (double) numCSW - timeMean * timeMean);
-		fourthRow << timeMean << Constants::TAB;
-		fifthRow << timeSD << Constants::TAB;
+		fourthRow << timeMean << Constants::Tab;
+		fifthRow << timeSD << Constants::Tab;
 	}
 	else
 	{
-		fourthRow << "N/A" << Constants::TAB;
-		fifthRow << "N/A" << Constants::TAB;
+		fourthRow << "N/A" << Constants::Tab;
+		fifthRow << "N/A" << Constants::Tab;
 	}
 
 	for(std::size_t j = 0; j < (std::size_t)Entity::RiskLevel::Last; j++)
@@ -503,13 +502,13 @@ void PopulationStatisticsOld::printSurvivalStats(std::ostream &_outStream)
                 (double)survivalStats->numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::NonCsw][j];
             double timeSD = sqrt(survivalStats->timeFromInfToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::NonCsw][j] /
                 (double)survivalStats->numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::NonCsw][j] - timeMean * timeMean);
-			fourthRow << timeMean << Constants::TAB;
-			fifthRow << timeSD << Constants::TAB;
+			fourthRow << timeMean << Constants::Tab;
+			fifthRow << timeSD << Constants::Tab;
 		}
 		else
 		{
-			fourthRow << "N/A" << Constants::TAB;
-			fifthRow << "N/A" << Constants::TAB;
+			fourthRow << "N/A" << Constants::Tab;
+			fifthRow << "N/A" << Constants::Tab;
 		}
 	}
 
@@ -520,7 +519,7 @@ void PopulationStatisticsOld::printSurvivalStats(std::ostream &_outStream)
     _outStream << fourthRow.str() << std::endl;
     _outStream << fifthRow.str() << std::endl;
 }
-void PopulationStatisticsOld::printLEStats(std::ostream &_outStream, long currTime)
+void PopulationStatisticsOld::printLEStats(std::ostream &_outStream, Time currTime)
 {
 	assert((selectedLEStats != nullptr));
 	double proportionalDeathRate[Entity::maxYrForDeathStats];//proportionaldeathrate=number of deaths/total number of people for each age bucket
@@ -598,7 +597,7 @@ void PopulationStatisticsOld::printLEStats(std::ostream &_outStream, long currTi
 	medianDensity = survivalFunction[medianLELowerIndex] * proportionalDeathRate[medianLELowerIndex];
 	medianSE = 1 / (2 * medianDensity * sqrt(lifeTablePop[0]));
 	medianCIBound = medianSE * sqrt(2.0) * boost::math::erf_inv(medianLECI);
-	_outStream << "LIFE EXPECTANCY FOR TIME " << currTime << std::endl;
+	_outStream << "LIFE EXPECTANCY FOR TIME " << currTime.get_total_months() << std::endl;
 
 	for(int i = 0; i < NUM_LE_CAT; i++)
 	{
@@ -660,59 +659,59 @@ void PopulationStatisticsOld::UpdateIncidenceCalculations()
     currentMonthSANegative.clear();
 }
 
-void PopulationStatisticsOld::printShiftedOutcomes(std::ostream &_outStream, int year)
+void PopulationStatisticsOld::printShiftedOutcomes(std::ostream &_outStream, Time year)
 {
 	assert(calculateShiftedOutcomes);
 	std::string testTypes[] = {"True Positive", "False Positive", "True Negative", "False Negative"};
 
-	if(year == 1990)
+	if(year.get_year() == 1990)
 	{
 		_outStream << "Shifted Outcomes" << std::endl;
-		_outStream << Constants::TAB;
+		_outStream << Constants::Tab;
 		
         for(auto entity_type : {"", "Male", "Male:Hetero", "Male:Msmw", "Male:Msm", "Female"})
         {
             _outStream << entity_type;
-            _outStream << Constants::TAB;
-            _outStream << Constants::TAB;
-            _outStream << Constants::TAB;
-            _outStream << Constants::TAB;
-            _outStream << Constants::TAB;
+            _outStream << Constants::Tab;
+            _outStream << Constants::Tab;
+            _outStream << Constants::Tab;
+            _outStream << Constants::Tab;
+            _outStream << Constants::Tab;
         }
 		_outStream << "Screening Results";
 		_outStream << std::endl;
 		_outStream << "Year";
-		_outStream << Constants::TAB;
+		_outStream << Constants::Tab;
 
         for(std::size_t i = 0; i < 6; i++)
         {
             _outStream << "SA Pop Size";
-            _outStream << Constants::TAB;
+            _outStream << Constants::Tab;
             _outStream << "Incident";
-            _outStream << Constants::TAB;
+            _outStream << Constants::Tab;
             _outStream << "Prevalent";
-            _outStream << Constants::TAB;
+            _outStream << Constants::Tab;
             _outStream << "SA Prevalence";
-            _outStream << Constants::TAB;
+            _outStream << Constants::Tab;
             _outStream << "Annual Incidence";
-            _outStream << Constants::TAB;
+            _outStream << Constants::Tab;
         }
 
 		_outStream << "Total Tests";
-		_outStream << Constants::TAB;
+		_outStream << Constants::Tab;
 
 		for(int i = 0; i < SimContext::TEST_RESULT_NUM; i++)
 		{
 			_outStream << testTypes[i];
-			_outStream << Constants::TAB;
+			_outStream << Constants::Tab;
 		}
 
 		_outStream << "Number Eligible for Access to Treatment";
-		_outStream << Constants::TAB;
+		_outStream << Constants::Tab;
 		_outStream << "Number Acessing Treatment";
-		_outStream << Constants::TAB;
+		_outStream << Constants::Tab;
 		_outStream << "Number Eligible for ART";
-		_outStream << Constants::TAB;
+		_outStream << Constants::Tab;
 		_outStream << "Number Receiving ART";
 		_outStream << std::endl;
 	}
@@ -745,97 +744,97 @@ void PopulationStatisticsOld::printShiftedOutcomes(std::ostream &_outStream, int
 
     double yearStartPrevalence = static_cast<double>(sum_prevalent_infections) / sum_year_start_sa_pop_size;
 
-	_outStream << year;
-	_outStream << Constants::TAB;
+	_outStream << year.get_year();
+	_outStream << Constants::Tab;
 	_outStream << sum_year_start_sa_pop_size;
-	_outStream << Constants::TAB;
+	_outStream << Constants::Tab;
 	_outStream << sum_incident_infections;
-	_outStream << Constants::TAB;
+	_outStream << Constants::Tab;
 	_outStream << sum_prevalent_infections;
-	_outStream << Constants::TAB;
+	_outStream << Constants::Tab;
 	_outStream << yearStartPrevalence;
-	_outStream << Constants::TAB;
+	_outStream << Constants::Tab;
 	_outStream << yearlyCumulativeIncidence;
-	_outStream << Constants::TAB;
+	_outStream << Constants::Tab;
 
     double yearStartPrevalenceMale = static_cast<double>(sum_prevalent_infections_male) / sum_year_start_sa_pop_size_male;
 
-    _outStream << sum_year_start_sa_pop_size_male << Constants::TAB;
-    _outStream << sum_incident_infections_male << Constants::TAB;
-    _outStream << sum_prevalent_infections_male << Constants::TAB;
-    _outStream << yearStartPrevalenceMale << Constants::TAB;
-    _outStream << yearlyCumulativeIncidenceMale << Constants::TAB;
+    _outStream << sum_year_start_sa_pop_size_male << Constants::Tab;
+    _outStream << sum_incident_infections_male << Constants::Tab;
+    _outStream << sum_prevalent_infections_male << Constants::Tab;
+    _outStream << yearStartPrevalenceMale << Constants::Tab;
+    _outStream << yearlyCumulativeIncidenceMale << Constants::Tab;
 
     for(auto entity_type : {"male", "msmw", "msm", "female"})
     {
-        _outStream << yearStartSexuallyActivePopSize[entity_type] << Constants::TAB;
-        _outStream << yearlyIncidentInfections[entity_type] << Constants::TAB;
-        _outStream << yearStartPrevalentInfections[entity_type] << Constants::TAB;
-        _outStream << static_cast<double>(yearStartPrevalentInfections[entity_type]) / yearStartSexuallyActivePopSize[entity_type] << Constants::TAB;        
-        _outStream << yearlyCumulativeIncidenceByEntityType[entity_type] << Constants::TAB;
+        _outStream << yearStartSexuallyActivePopSize[entity_type] << Constants::Tab;
+        _outStream << yearlyIncidentInfections[entity_type] << Constants::Tab;
+        _outStream << yearStartPrevalentInfections[entity_type] << Constants::Tab;
+        _outStream << static_cast<double>(yearStartPrevalentInfections[entity_type]) / yearStartSexuallyActivePopSize[entity_type] << Constants::Tab;        
+        _outStream << yearlyCumulativeIncidenceByEntityType[entity_type] << Constants::Tab;
     }
 
 	_outStream << yearlyTests;
-	_outStream << Constants::TAB;
+	_outStream << Constants::Tab;
 
 	for(int i = 0; i < SimContext::TEST_RESULT_NUM; i++)
 	{
 		_outStream << yearlyTestsByResult[i];
-		_outStream << Constants::TAB;
+		_outStream << Constants::Tab;
 	}
 
 	_outStream << uniqueYearlyEligibleForTreatmentAccess.size();
-	_outStream << Constants::TAB;
+	_outStream << Constants::Tab;
 	_outStream << uniqueYearlyAccessingTreatment.size();
-	_outStream << Constants::TAB;
+	_outStream << Constants::Tab;
 	_outStream << uniqueYearlyEligibleForTreatment.size();
-	_outStream << Constants::TAB;
+	_outStream << Constants::Tab;
 	_outStream << uniqueYearlyTreated.size();
 	_outStream << std::endl;
 }
 
-void PopulationStatisticsOld::printPartAcqStats(std::ostream &_outStream, long currTime)
+void PopulationStatisticsOld::printPartAcqStats(std::ostream &_outStream, Time currTime)
 {
 	assert(selectedPartAcqStats != nullptr);
 
 	if(printHeaderPartAcq)
 	{
-		_outStream << Constants::TAB << "Frequency of Number of Partners In History" << std::endl;
+		_outStream << Constants::Tab << "Frequency of Number of Partners In History" << std::endl;
 		_outStream << "Time";
 
 		for(int i = 0; i < PopulationStatisticsOld::SinglePartAcqStats::NUM_PARTNER_BINS; i++)
 		{
-			_outStream << Constants::TAB << i;
+			_outStream << Constants::Tab << i;
 		}
 
 		_outStream << "+" << std::endl;
 		printHeaderPartAcq = false;
 	}
 
-	_outStream << "month " << currTime;
+	_outStream << "month " << currTime.get_total_months();
 
 	for(int i = 0; i < PopulationStatisticsOld::SinglePartAcqStats::NUM_PARTNER_BINS; i++)
 	{
-		_outStream << Constants::TAB << selectedPartAcqStats->partnerFreq[i];
+		_outStream << Constants::Tab << selectedPartAcqStats->partnerFreq[i];
 	}
 
 	_outStream << std::endl;
 }
-void PopulationStatisticsOld::recordIncidentInfection(EventParams &_eventParams, long _time, SexualPartnership::Type _partnershipType,
-                                       const  Entity *_infector, const Entity *_infected, bool _print, ostream &_traceOutStream)
+void PopulationStatisticsOld::recordIncidentInfection(EventParams &_eventParams, Time _time, SexualPartnership::Type _partnershipType,
+                                       const  Entity *_infector, const Entity *_infected)
 {
 	assert((_infector != nullptr) && (_infector->isAlive()));
 	assert((_infected != nullptr) && (_infected->isAlive()));
-	assert(_time >= 0);
+	assert(_time.get_total_months() >= 0);
 	DemographicProfile::Gender gend = (DemographicProfile::Gender) _infected->getDemographicProfileVal(DemographicProfile::Demographic::Gender);
 	DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) _infected->getDemographicProfileVal(DemographicProfile::Demographic::Employment);
 	Entity::RiskLevel risk = _infected->getRiskLevel();
-	int prevDelay = _eventParams.delayPrevalence;
+	auto prevDelay = _eventParams.delayPrevalence;
 
 	if(_eventParams.currTime > prevDelay)
 	{
 		//time spent in model after prev delay until death
-		int timeToInfection = min<int>(_infected->age - _infected->initAge, _eventParams.currTime - prevDelay);
+		auto timeToInfection = min(_infected->age - _infected->initAge, _eventParams.currTime - prevDelay).get_total_months();
         survivalStats->numInfOrDeathGender[(std::size_t)gend]++;
         survivalStats->timeToInfOrDeathGenderSum[(std::size_t)gend] += timeToInfection;
         survivalStats->timeToInfOrDeathGenderSumSquare[(std::size_t)gend] += timeToInfection * timeToInfection;
@@ -847,12 +846,12 @@ void PopulationStatisticsOld::recordIncidentInfection(EventParams &_eventParams,
     yearlyIncidentInfections[_infected->getEntityType()]++;
     currentMonthIncident[_infected->getEntityType()]++;
 
-	infectionsTracker.recordIncidentInfection(_time, _partnershipType, _infector, _infected, _print, _traceOutStream);
+	infectionsTracker.recordIncidentInfection(_time, _partnershipType, _infector, _infected);
 }
 
-long PopulationStatisticsOld::getNextTimeToRecord(long currTime)
+Time PopulationStatisticsOld::getNextTimeToRecord(Time currTime)
 {
-	int nextTime = std::numeric_limits<int>().max();
+	auto nextTime = Time::from_months(std::numeric_limits<int>().max());
 
 	for(auto record_time : timesToRecord)
 	{
@@ -865,12 +864,12 @@ long PopulationStatisticsOld::getNextTimeToRecord(long currTime)
 	return nextTime;
 }
 
-bool PopulationStatisticsOld::isTimeToRecord(long currTime)
+bool PopulationStatisticsOld::isTimeToRecord(Time currTime)
 {
 	return std::find(timesToRecord.begin(), timesToRecord.end(), currTime) != timesToRecord.end();
 }
 
-bool PopulationStatisticsOld::isTimeToRecordLE(long currTime)
+bool PopulationStatisticsOld::isTimeToRecordLE(Time currTime)
 {
 	for(auto le_time : timesToRecordLE)
 	{
@@ -883,7 +882,7 @@ bool PopulationStatisticsOld::isTimeToRecordLE(long currTime)
 	return false;
 }
 
-bool PopulationStatisticsOld::isTimeToRecordPartAcq(long currTime)
+bool PopulationStatisticsOld::isTimeToRecordPartAcq(Time currTime)
 {
 	for(auto part_acq_time : timesToRecordPartAcq)
 	{
@@ -896,7 +895,7 @@ bool PopulationStatisticsOld::isTimeToRecordPartAcq(long currTime)
 	return false;
 }
 
-bool PopulationStatisticsOld::isFirstMonthToRecordLE(long currTime)
+bool PopulationStatisticsOld::isFirstMonthToRecordLE(Time currTime)
 {
 	for(auto le_time : timesToRecordLE)
 	{
@@ -909,11 +908,11 @@ bool PopulationStatisticsOld::isFirstMonthToRecordLE(long currTime)
 	return false;
 }
 
-bool PopulationStatisticsOld::isTimeToPrintLE(long currTime)
+bool PopulationStatisticsOld::isTimeToPrintLE(Time currTime)
 {
 	for(auto le_time : timesToRecordLE)
 	{
-		if((le_time + 11) == currTime)
+		if((le_time + TimeSpan(0, 11)) == currTime)
 		{
 			return true;
 		}
@@ -922,14 +921,14 @@ bool PopulationStatisticsOld::isTimeToPrintLE(long currTime)
 	return false;
 }
 
-void PopulationStatisticsOld::enableShiftedOutcomes(int monthOf1990)
+void PopulationStatisticsOld::enableShiftedOutcomes(Time monthOf1990)
 {
 	calculateShiftedOutcomes = true;
 	this->monthOf1990 = monthOf1990;
-	resetYear(1990);
+	resetYear(Time(1990, 0));
 }
 
-void PopulationStatisticsOld::recordEntity(int time, Entity *e)
+void PopulationStatisticsOld::recordEntity(Time time, Entity *e)
 {
     if(e->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::Active && !e->isInfected())
     {
@@ -938,7 +937,7 @@ void PopulationStatisticsOld::recordEntity(int time, Entity *e)
 
     if(calculateShiftedOutcomes
         && time >= monthOf1990
-        && (time - monthOf1990) % 12 == 0)
+        && (int)(time - monthOf1990).get_total_months() % 12 == 0)
     {
         if(e->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::Active)
         {
@@ -1010,9 +1009,9 @@ void PopulationStatisticsOld::recordTreatment(Entity *person)
 	artTracker.recordTreatment(person);
 }
 
-void PopulationStatisticsOld::resetYear(int newYear)
+void PopulationStatisticsOld::resetYear(Time newYear)
 {
-	relativeYear = newYear;
+	relativeTime = newYear;
 
 	yearStartPrevalentInfections.clear();
 	yearStartSexuallyActivePopSize.clear();

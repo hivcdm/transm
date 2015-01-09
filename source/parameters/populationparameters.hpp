@@ -7,6 +7,7 @@
 #include "entities/transmissiontype.hpp"
 #include "statistics/coststracker.hpp"
 #include "parameters/agebucketprevalenceinfo.hpp"
+#include "utility/time.hpp"
 
 namespace transm {
 
@@ -30,12 +31,12 @@ public:
 				return false;
 			}
 
-			if (min_age.first && e->getAge(TimeGranularity::Month) < min_age.second)
+			if (min_age.first && e->getAge() < Age::from_months(min_age.second))
 			{
 				return false;
 			}
 
-			if (max_age.first && e->getAge(TimeGranularity::Month) > max_age.second)
+			if (max_age.first && e->getAge() > Age::from_months(max_age.second))
 			{
 				return false;
 			}
@@ -66,10 +67,10 @@ public:
     double GetBirthProportion(const std::string &entity_type) const { return birthProportions.at(entity_type); }
     void SetBirthProportion(const std::string &entity_type, double proportion) { birthProportions[entity_type] = proportion; }
 
-	int GetAgeOfMajority() const { return ageOfMajority; }
-    void SetAgeOfMajority(int ageOfMajority, TimeGranularity granularity = TimeGranularity::Year) 
+	Age GetAgeOfMajority() const { return ageOfMajority; }
+    void SetAgeOfMajority(Age age) 
     { 
-        this->ageOfMajority = Utility::convert_time(granularity, TimeGranularity::Month, ageOfMajority); 
+		ageOfMajority = age;
     }
 
     void SetPartnershipHasDuration(DemographicProfile::Gender gender, SexualPartnership::Type type, bool has_duration) 
@@ -89,8 +90,8 @@ public:
         transmission_coefficients_ = coefficients;
 	}
 
-    void SetSexualActivityDelay(int delay) { sexualActivityDelay = delay; }
-    int GetSexualActivityDelay() const { return sexualActivityDelay; }
+    void SetSexualActivityDelay(TimeSpan delay) { sexualActivityDelay = delay; }
+    TimeSpan GetSexualActivityDelay() const { return sexualActivityDelay; }
 
     void SetAssortativeness(SexualPartnership::Type partnership_type, double assortativeness) { defaultMaleParams.getSexualBehavior(partnership_type).setAssortativeness(assortativeness); }
 
@@ -101,7 +102,7 @@ public:
 	std::vector<AgeBucketPrevalenceInfo> &GetInitialAgeBuckets() { return initialAgeBuckets; }
 
     void SetInitialCswProportion(const std::string &entity_type, double proportion) { initProbCSW[entity_type] = proportion; }
-    void SetCswEndAge(const std::string &entity_type, int age_months) { CSWEndAgeMth[entity_type] = age_months; }
+    void SetCswEndAge(const std::string &entity_type, Age age) { CSWEndAge[entity_type] = age; }
 
 	void SetChanceBecomeCsw(DemographicProfile::Gender gender, double chance)
 	{
@@ -156,11 +157,11 @@ private:
 	double birthRate;
 
     /// <summary>
-    /// age in months
+    /// Age that entities roll to change risk.
     /// </summary>
-	int ageOfMajority;
+	Age ageOfMajority;
 
-    int sexualActivityDelay;
+    TimeSpan sexualActivityDelay;
 
     std::unordered_map<std::string, double> birthProportions;
 
@@ -174,7 +175,7 @@ private:
     /// <summary>
     /// max age of csw in months
     /// </summary>
-    std::unordered_map<std::string, int> CSWEndAgeMth;
+    std::unordered_map<std::string, Age> CSWEndAge;
 
     /// <summary>
     /// prevalence parameters stratified by age.

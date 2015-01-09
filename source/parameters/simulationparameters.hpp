@@ -17,7 +17,7 @@ public:
     using TransmissionCoefficients = std::array<double, (std::size_t)Entity::HVLStrata::Last>;
     using TransmissionCoefficientsMap = std::unordered_map<TransmissionType, TransmissionCoefficients>;
     using InterventionsContainer = std::vector<Intervention>;
-    using ConcurrencyDefinition = std::array<ConcurrencyDef, Constants::NUMBER_CONCURRENCY_DEFS>;
+    using ConcurrencyDefinition = std::array<ConcurrencyDef, Constants::NumberConcurrencyDefs>;
 
     struct TracingParameters
     {
@@ -26,7 +26,7 @@ public:
         bool trace_prevalent_cases = false;
         int num_to_trace = 0;
         int num_newborns_to_trace = 0;
-        int month_trace_newborns = 0;
+        Time month_trace_newborns;
         double life_expectancy_ci = 0;
         std::vector<int> life_expectancy_record_times;
     };
@@ -41,7 +41,6 @@ public:
     virtual Version GetVersion() const = 0;
     virtual std::uint32_t GetFixedSeed() const = 0;
     virtual int GetDuration() const = 0;
-    virtual DebugLevel GetDebugLevel() const = 0;
     virtual int GetMonthOf1990() const = 0;
     virtual int GetInitialInfectionDelay() const = 0;
     virtual ConcurrencyDefinition GetConcurrencyDefinition() const = 0;
@@ -73,7 +72,6 @@ public:
     /*virtual*/ Version GetVersion() const;
     /*virtual*/ std::uint32_t GetFixedSeed() const;
     /*virtual*/ int GetDuration() const;
-    /*virtual*/ DebugLevel GetDebugLevel() const;
     /*virtual*/ int GetMonthOf1990() const;
     /*virtual*/ int GetInitialInfectionDelay() const;
     /*virtual*/ ConcurrencyDefinition GetConcurrencyDefinition() const;

@@ -132,18 +132,6 @@ unsigned long BucketAge::getNumInfected(Entity::RiskLevel _risk)
 	return numInfectedRisk[(std::size_t)_risk];
 }
 
-//prints every person in this index to _outStream
-void BucketAge::print(ostream &_outStream, const std::string &_prefix)
-{
-	std::vector<Entity *>::iterator PersonIter = begin();
-
-	while(PersonIter != end())
-	{
-		(*PersonIter)->print(_outStream, _prefix);
-		PersonIter++;
-	}
-}
-
 //draw any member from this pool, this function has a speed optimization
 //this function is used by class BucketSexualMixing
 //  draw a particular key first to narrow down potentials

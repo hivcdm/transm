@@ -1,6 +1,5 @@
 #include <numeric>
 #include <set>
-#include <xlnt/xlnt.hpp>
 
 #include "populationstatistics.hpp"
 #include "entities/male.hpp"

@@ -29,30 +29,30 @@ SexualPartnership::SexualPartnership(Entity *_person1, Entity *_person2, EventPa
 	//save time of partnership formation
 	timePartnerFormation = _eventParams.currTime;
 	//calculate when this partnership will dissolve. determined by _person1
-	int maxDuration =  _person1->rollForNewPartnershipDuration(_partnershipType, _eventParams.randomNums, _person2);
+	auto maxDuration =  TimeSpan(0, _person1->rollForNewPartnershipDuration(_partnershipType, _eventParams.randomNums, _person2));
 
-	if(maxDuration < 1)
+	if(maxDuration < TimeSpan::Month)
 	{
-		maxDuration = 0;
+		maxDuration = TimeSpan(0, 0);
 	}
 
 	//if this is true, than this Couple is part of the prevalent population.
-	if(_eventParams.currTime == 0)
+	if(_eventParams.currTime.get_total_months() == 0)
 	{
-		if(maxDuration >= 1)
+		if(maxDuration >= TimeSpan::Month)
 		{
-			maxDuration = _eventParams.randomNums.randInt(1, maxDuration);
+			maxDuration = TimeSpan(0, (int)_eventParams.randomNums.randInt(1, (std::uint32_t)maxDuration.get_total_months()));
 		}
 		else
 		{
 			//Must be at least 1 so that it will be dissolved in time 1
-			maxDuration = 1;
+			maxDuration = TimeSpan::Month;
 		}
 	}
 
     if((_person1->trace() || _person2->trace()) && _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled)
 	{
-        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " of duration " << maxDuration << std::endl;
+        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " of duration " << maxDuration.get_total_months() << std::endl;
 	}
 
 	//set time for partnership to dissolve
@@ -67,12 +67,12 @@ SexualPartnership::SexualPartnership(Entity *_person1, Entity *_person2, EventPa
 	//   partnerships that person was involved in
 	partners[0]->addPartnership(this);
 	partners[1]->addPartnership(this);
-	assert(timePartnerDissolution >= 0);
+	assert(timePartnerDissolution.get_total_months() >= 0);
 }
 
-bool SexualPartnership::checkTimeForSplit(long _currTime)
+bool SexualPartnership::checkTimeForSplit(Time current_time)
 {
-	return (_currTime >= timePartnerDissolution);
+	return current_time >= timePartnerDissolution;
 }
 
 Entity *SexualPartnership::getPartner1()
@@ -104,10 +104,6 @@ SexualPartnership::Type SexualPartnership::getType()
 	return type;
 }
 
-int SexualPartnership::getDissolutionTime()
-{
-	return timePartnerDissolution;
-}
 bool SexualPartnership::isMember(Entity *_p)
 {
 	return ((_p == partners[0]) || (_p == partners[1]));
@@ -127,20 +123,6 @@ Entity *SexualPartnership::monthlySexualActivity(EventParams &_eventParams,
 	return partners[0]->sexualActivity(partners[1], eventsThisMonth, type, _eventParams, infTrack, transmission_coefficients);
 }
 
-void SexualPartnership::printPartners(std::ostream &_outStream, const std::string &_prefix)
-{
-	_outStream << _prefix << "Sexual Relationship(" << TypeStrings.at(type) << ")" << std::endl;
-	partners[0]->print(_outStream, Constants::TAB);
-	_outStream << std::endl;
-	partners[1]->print(_outStream, Constants::TAB);
-}
-
-void SexualPartnership::saveState(std::ostream &_outStream, int personID, long currTime)
-{
-	//Saves the type of partnership, the id of partner, and months left in partnership
-	auto partnerID = static_cast<int>(partners[0]->getID()) == personID ? partners[1]->getID() : partners[0]->getID();
-	_outStream << "{type:" << (int)type << ", partID:" << partnerID << ",tLeft:" << timePartnerDissolution - currTime << "}";
-}
 SexualPartnership::~SexualPartnership()
 {
 	partners[0]->removePartnership(this);

@@ -35,12 +35,12 @@ std::array<std::vector<double>, 2> CepacInputParser::parseNonAidsDeathProbabilit
 		} while(currLine.find("NonAIDSDthProb_Male", 0) == std::string::npos);
 
 		//currLine should now contain row for male non AIDS death probabilities
-		auto male_values = Utility::tokenize(currLine, Constants::TAB);
+		auto male_values = Utility::tokenize(currLine, Constants::Tab);
 
 		std::getline(inputStream_, currLine);
 
 		//currLine should now contain row for female non AIDS death probabilities
-		auto female_values = Utility::tokenize(currLine, Constants::TAB);
+		auto female_values = Utility::tokenize(currLine, Constants::Tab);
 
 		//generate the non-aids death probabilitiy
 		//we start the loop at 1 instead of 0 b/c first token contains a text label of the row. the probabilities start at index 1
