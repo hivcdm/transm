@@ -76,14 +76,14 @@ Age Msmw::SubPopParams::getPartneringDiscStartAgeYrs() const
 
 double Msmw::SubPopParams::getPartneringAcqDiscMult(Age _ageYrs) const
 {
-	assert(Utility::within_range((int)_ageYrs.get_total_years(), 0, Entity::maxYrForDeathStats));
-    return partneringAcqDiscMult.at((std::size_t)(_ageYrs - partneringDiscStartAgeYrs).get_total_months());
+	assert(Utility::within_range(_ageYrs, Age::Zero, Age(Entity::maxYrForDeathStats, 0)));
+	return partneringAcqDiscMult.at((_ageYrs - partneringDiscStartAgeYrs).years_as_index());
 }
 
 double Msmw::SubPopParams::getPartneringActsDiscMult(Age _ageYrs) const
 {
-    assert(Utility::within_range((int)_ageYrs.get_total_years(), 0, Entity::maxYrForDeathStats));
-	return partneringActsDiscMult.at((std::size_t)(_ageYrs - partneringDiscStartAgeYrs).get_total_months());
+	assert(Utility::within_range(_ageYrs, Age::Zero, Age(Entity::maxYrForDeathStats, 0)));
+	return partneringActsDiscMult.at((_ageYrs - partneringDiscStartAgeYrs).years_as_index());
 }
 
 void Msmw::SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng)
@@ -130,19 +130,9 @@ Msmw::Msmw(EventParams &_eventParams, Age _age, bool _circumcised, unsigned int 
     populationSpecificParams(params),
     times_selected_(0)
 {
-    //If age is out of range, set it at the closest boundary.
-    if(_age.get_total_months() < 0)
-    {
-        _age = Age::Zero;
-    }
-	else if (_age.get_total_years() > Entity::maxYrForDeathStats)
-    {
-		_age = Age(Entity::maxYrForDeathStats, 0);
-    }
-
+	_age = max(min(Age(Entity::maxYrForDeathStats, 0), _age), Age::Zero);
     dmgProfile.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
     dmgProfile.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Homosexual);
-
     circumcised = _circumcised;
     //Set this male's risk level assume everyone is low risk on creation. Risk is rerolled when they roll for become sex worker
     risk = Entity::RiskLevel::LOW;
@@ -266,9 +256,9 @@ double Msmw::getMinPartnerSelectVal(Entity::SelectingCriteria _PSC, SexualPartne
     {
     case Entity::AGE:
     {
-        if(getAge().get_total_months() - (12 * averageYearsYounger[(int)_partnershipType].mean + 6) > 0)
+        if(getAge().in_months() - (12 * averageYearsYounger[(int)_partnershipType].mean + 6) > 0)
         {
-            return (getAge().get_total_months() - (12 * averageYearsYounger[(int)_partnershipType].mean + 6));
+            return (getAge().in_months() - (12 * averageYearsYounger[(int)_partnershipType].mean + 6));
             break;
         }
         else
@@ -296,9 +286,9 @@ double Msmw::getMaxPartnerSelectVal(Entity::SelectingCriteria _PSC, SexualPartne
     {
     case Entity::AGE:
     {
-        if(getAge().get_total_months() - (12 * averageYearsYounger[(int)_partnershipType].mean - 6) > 0)
+        if(getAge().in_months() - (12 * averageYearsYounger[(int)_partnershipType].mean - 6) > 0)
         {
-            return (getAge().get_total_months() - (12 * averageYearsYounger[(int)_partnershipType].mean - 6));
+            return (getAge().in_months() - (12 * averageYearsYounger[(int)_partnershipType].mean - 6));
             break;
         }
         else

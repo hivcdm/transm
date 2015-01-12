@@ -832,8 +832,8 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
         }
 
         parameters.GetInitialAgeBuckets().emplace_back(
-            Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Attr<int>(age_bucket_node, "lower")),
-            Utility::convert_time(TimeGranularity::Year, TimeGranularity::Month, Attr<int>(age_bucket_node, "upper")) + 11,
+            Age(Attr<int>(age_bucket_node, "lower"), 0),
+            Age(Attr<int>(age_bucket_node, "upper"), 11),
             dist,
             numInfectedCSWMale,  numInfectedCSWFemale,
             numInfectedNonCSWMalesLowRisk, numInfectedNonCSWFemalesLowRisk,

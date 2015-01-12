@@ -122,13 +122,13 @@ void TargetGroup::Update(Population &population, Time current_time,
             }
 
             if(target_.value.age_lower.has_value
-				&& target_.value.age_lower.value > person->getAge().get_total_months())
+				&& target_.value.age_lower.value > person->getAge().in_months())
             {
                 return false;
             }
 
             if(target_.value.age_upper.has_value
-                && target_.value.age_upper.value < person->getAge().get_total_months())
+                && target_.value.age_upper.value < person->getAge().in_months())
             {
                 return false;
             }
@@ -463,7 +463,7 @@ void Simulation::Step()
     if(time_ > Time(0, 5))
     {
 		/*
-        run_time_predictor_.Update(std::make_pair((int)time_.get_total_months(), timer_.GetTime() - start_time_));
+        run_time_predictor_.Update(std::make_pair((int)time_.in_months(), timer_.GetTime() - start_time_));
         int seconds_remaining = (int)run_time_predictor_.GetEstimatedTimeRemaining();
         int hours_remaining = seconds_remaining / 3600;
         seconds_remaining -= hours_remaining * 3600;
@@ -719,7 +719,7 @@ std::size_t Simulation::SimulateMonth()
 	}
 
 	//apply incident prevalence
-	if(parameters_.delayPrevalence != Time::Zero && parameters_.delayPrevalence == time_)
+	if(parameters_.delayPrevalence == time_)
 	{
 		population_.ApplyIncidentPrevalence(parameters_);
 	}
@@ -877,10 +877,12 @@ Outputs Simulation::Run(MessageCallback message_callback)
 		FirstStep();
 	}
 
-	while(time_ - duration_ > Time::Zero)
+	auto end_time = Time::Zero + duration_;
+
+	while(time_ < end_time)
 	{
 		Step();
-		auto percent = static_cast<int>(100.0 * time_.get_total_months() / duration_.get_total_months());
+		auto percent = static_cast<int>(100.0 * time_.in_months() / duration_.in_months());
         batch_status_.set_percent_complete(name_, percent);
 	}
 

@@ -248,8 +248,8 @@ void Entity::becomeInfected(int _generationOfInfection, EventParams &_eventParam
         _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "!" << std::endl;
 	}
 
-	stats.setStat(Entity::Stats::STAT_TIME_OF_INFECTION_MTH, _eventParams.currTime.get_total_months());
-    stats.setStat(Entity::Stats::STAT_AGE_AT_INFECTION_MTH, getAge().get_total_months());
+	stats.setStat(Entity::Stats::STAT_TIME_OF_INFECTION_MTH, _eventParams.currTime.in_months());
+    stats.setStat(Entity::Stats::STAT_AGE_AT_INFECTION_MTH, getAge().in_months());
     stats.setStat(Entity::Stats::STAT_GENERATION_OF_INFECTION, _generationOfInfection);
 
 	//if a CEPAC person exists (i.e. they were created earlier and thus this is an incident case), set them to infected
@@ -381,7 +381,7 @@ void Entity::initialCEPACpatient(EventParams &_eventParams)
 		}
 
 		cepacPatient = new Patient(simContextToUse, _eventParams.cepacRunStats, _eventParams.cepacTracer,
-			true, (int)getAge().get_total_months(), cepacGender, setAsIncidentCase, (int)_eventParams.currTime.get_total_months());
+			true, (int)getAge().in_months(), cepacGender, setAsIncidentCase, (int)_eventParams.currTime.in_months());
 
 		//Only update hvl and cd4 if the patient is infected
 		//update HVL and CD4  and infection status for this Entity if they are infected
@@ -805,7 +805,7 @@ bool Entity::rollForDeath(RandomNumberGenerator &_randomNums)
 	assert(death == false);
 
 	//if person is too old, then they automatically die
-    if(getAge().get_total_years() >= Entity::maxYrForDeathStats)
+    if(getAge().get_year() >= Entity::maxYrForDeathStats)
 	{
 		death = true;
 		deathStatus = DeathStatus::DTH_OTHER;
@@ -851,7 +851,7 @@ bool Entity::rollForDeath(RandomNumberGenerator &_randomNums)
 	{
         auto gender = getDemographicProfileVal<DemographicProfile::Gender>();
         auto age = getAge();
-        double deathRate = probDeathNatCauses[(std::size_t)gender].at((std::size_t)age.get_total_months());
+        double deathRate = probDeathNatCauses[(std::size_t)gender].at(age.year_as_index());
 
         if(_randomNums.chance(deathRate))
 		{
@@ -863,8 +863,8 @@ bool Entity::rollForDeath(RandomNumberGenerator &_randomNums)
 	//if they died, collect statistics
 	if(death)
 	{
-        stats.setStat(Stats::STAT_TOTAL_LM, getAge().get_total_months());
-        stats.setStat(Stats::STAT_HIV_NEG_LM, getAge().get_total_months() - (isInfected() ? stats.getStat(Stats::STAT_TIME_OF_INFECTION_MTH) : 0));
+        stats.setStat(Stats::STAT_TOTAL_LM, getAge().in_months());
+        stats.setStat(Stats::STAT_HIV_NEG_LM, getAge().in_months() - (isInfected() ? stats.getStat(Stats::STAT_TIME_OF_INFECTION_MTH) : 0));
         stats.setStat(Stats::STAT_HIV_POS_POSTINFECT_LM, stats.getStat(Stats::STAT_TOTAL_LM) - stats.getStat(Stats::STAT_AGE_AT_INFECTION_MTH));
 	}
 

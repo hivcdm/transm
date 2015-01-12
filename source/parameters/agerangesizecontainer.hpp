@@ -15,9 +15,9 @@ struct AgeRange
 
 inline std::ostream &operator<<(std::ostream &stream, const AgeRange &range)
 {
-	stream << range.lower.get_total_months();
+	stream << range.lower.in_months();
 	stream << "-";
-	stream << range.upper.get_total_months();
+	stream << range.upper.in_months();
 	return stream;
 }
 

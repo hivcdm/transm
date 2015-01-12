@@ -104,7 +104,7 @@ void TransmissionSummaryStats::writeSummariesFile()
 		for(size_t j = 0; j < summary->selectedSummaryStats->size(); j++)
 		{
 			PopulationStatisticsOld::SingleTimeStats *singleTimeStat = summary->selectedSummaryStats->at(j);
-			summaryStatsStream << singleTimeStat->timeOfStats.get_total_months() << "\t";
+			summaryStatsStream << singleTimeStat->timeOfStats.in_months() << "\t";
 			summaryStatsStream << singleTimeStat->prevalence << "\t";
 			summaryStatsStream << singleTimeStat->SAprevalence << "\t";
 			summaryStatsStream << singleTimeStat->incidence << "\t";

@@ -210,7 +210,7 @@ void ArtRolloutTracker::buildRow(Time time, Population *_population)
 	}
 	else
 	{
-		PushElement(time.get_total_months());
+		PushElement(time.in_months());
 	}
 
 	PushElement(static_cast<int>(_population->GetSize()));

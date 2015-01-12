@@ -3,7 +3,7 @@
 namespace transm {
 
 #if OLD_STYLE_PREVALENCE
-AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(Months _minAgeMth, Months _maxAgeMth,
+AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(Age _minAgeMth, Age _maxAgeMth,
     const std::unordered_map<std::string, double> &entity_proportions,
     std::size_t _numInfectedCSWMale, std::size_t _numInfectedCSWFemale,
     std::size_t _numInfectedNonCSWMalesLowRisk, std::size_t _numInfectedNonCSWFemalesLowRisk,
@@ -12,7 +12,7 @@ AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(Months _minAgeMth, Months _maxA
     maxAgeMth(_maxAgeMth),
     entityProportions(entity_proportions)
 {
-    assert((_minAgeMth >= 0) && (_maxAgeMth > 0) && (_maxAgeMth > _minAgeMth));
+    assert((_minAgeMth >= Time::Zero) && (_maxAgeMth > Time::Zero) && (_maxAgeMth > _minAgeMth));
     numInfectedCSW[(std::size_t)DemographicProfile::Gender::Male] = _numInfectedCSWMale;
     numInfectedCSW[(std::size_t)DemographicProfile::Gender::Female] = _numInfectedCSWFemale;
     numInfectedRisk[(std::size_t)DemographicProfile::Gender::Male][(std::size_t)Entity::RiskLevel::LOW] = _numInfectedNonCSWMalesLowRisk;
@@ -28,8 +28,8 @@ AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(Months _minAgeMth, Months _maxA
 		maxAgeMth(_maxAgeMth),
 		entityProportions(entity_proportions)
 	{
-		assert(_minAgeMth.get_total_months() >= 0);
-		assert(_maxAgeMth.get_total_months() > 0);
+		assert(_minAgeMth.in_months() >= 0);
+		assert(_maxAgeMth.in_months() > 0);
 		assert(_maxAgeMth > _minAgeMth);
 	}
 #endif

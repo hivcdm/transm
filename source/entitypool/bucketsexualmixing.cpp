@@ -24,7 +24,7 @@ BucketSexualMixing::BucketSexualMixing(DemographicProfile::ProfileID _id,
 	BucketDemographicProfile(_id, _bucketLabel, false),
     assort(_assort)
 {
-	assert(_minAge.get_total_months() >= 0);
+	assert(_minAge.in_months() >= 0);
 	assert(_maxAge >= _minAge);
 
 	minAge = _minAge;
@@ -33,7 +33,7 @@ BucketSexualMixing::BucketSexualMixing(DemographicProfile::ProfileID _id,
 
 	//ERINWASHERE
 	//set capacity of circular buffer
-	unsigned int numAgeBuckets = (maxAge - minAge).get_months() + 1;
+	unsigned int numAgeBuckets = (int)(maxAge - minAge).in_months() + 1;
 	personsByAge = new BucketAllAges(numAgeBuckets);
 	//personsByAge = new BucketAllAges();
 	//initialize all the BucketAges in the BucketSexualMixing, a circular buffer will hold all people of a certain age
@@ -81,7 +81,7 @@ unsigned int BucketSexualMixing::getCorrectBufferIndex(Entity *_p)
 			+ std::to_string(minAge.get_month()) + " and max age is " + std::to_string(maxAge.get_month()));
 	}
 
-	return static_cast<unsigned int>((pAge - minAge).get_months());
+	return static_cast<unsigned int>((pAge - minAge).in_months());
 }
 
 //clears all elements from this index without deleting members
@@ -246,7 +246,7 @@ Entity *BucketSexualMixing::getRandomPerson(RandomNumberGenerator &_randomNums, 
 
 	while(currIndex <= maxIndex)
 	{
-		numMarbles += personsByAge->at((std::size_t)currIndex.get_months())->numChoices(riskToDraw);
+		numMarbles += personsByAge->at((std::size_t)currIndex.in_months())->numChoices(riskToDraw);
 		currIndex++;
 	}
 
@@ -257,15 +257,15 @@ Entity *BucketSexualMixing::getRandomPerson(RandomNumberGenerator &_randomNums, 
 		//Only recurse if there are partners available in this bucket to save time
 		numMarbles = 0;
 
-		for(currIndex = TimeSpan(0, 0); currIndex.get_months() < (int)personsByAge->size(); currIndex++)
+		for(currIndex = TimeSpan(0, 0); currIndex.in_months() < (double)personsByAge->size(); currIndex++)
 		{
-			numMarbles += personsByAge->at((std::size_t)currIndex.get_total_months())->numChoices(riskToDraw);
+			numMarbles += personsByAge->at((std::size_t)currIndex.in_months())->numChoices(riskToDraw);
 		}
 
 		if(numMarbles > 0)
 		{
 			//Check first that minIndex > 0 and maxIndex < personsByAge->size() - 1
-			if(minIndex.get_total_months() > 0 || maxIndex.get_total_months() < (int)personsByAge->size() - 1)
+			if(minIndex.in_months() > 0 || maxIndex.in_months() < (int)personsByAge->size() - 1)
 			{
 				auto newAgeLowerBound = _ageLowerBound;
 
@@ -300,9 +300,9 @@ Entity *BucketSexualMixing::getRandomPerson(RandomNumberGenerator &_randomNums, 
 	while(currIndex <= maxIndex)
 	{
 		//if we're at the right AgeBucket
-		if(randPick < personsByAge->at((std::size_t)currIndex.get_total_months())->numChoices(riskToDraw))
+		if(randPick < personsByAge->at((std::size_t)currIndex.in_months())->numChoices(riskToDraw))
 		{
-			BucketAge *ageBucket = personsByAge->at((std::size_t)currIndex.get_total_months());
+			BucketAge *ageBucket = personsByAge->at((std::size_t)currIndex.in_months());
 			Entity *p = ageBucket->drawMember(_randomNums, _risk, _partnershipType, (riskToDraw == Entity::RiskLevel::Last), _remove);
 
 			//we have to tell the person that they are not part of a bucket anymore
@@ -314,7 +314,7 @@ Entity *BucketSexualMixing::getRandomPerson(RandomNumberGenerator &_randomNums, 
 			return p;
 		}
 
-		randPick -= personsByAge->at((std::size_t)currIndex.get_total_months())->numChoices(riskToDraw);
+		randPick -= personsByAge->at((std::size_t)currIndex.in_months())->numChoices(riskToDraw);
 		currIndex++;
 	}
 
@@ -353,8 +353,8 @@ bool BucketSexualMixing::insert(Entity *_person)
 	else
 	{
 		throw 1;
-//		cerr << "Trying to insert person with invalid age (" << _person->getAge().get_total_months() << " months)" << std::endl;
-///		cerr << "Valid ages are between " << minAge.get_total_months() << " and " <<  maxAge.get_total_months() << " inclusive" << std::endl;
+//		cerr << "Trying to insert person with invalid age (" << _person->getAge().in_months() << " months)" << std::endl;
+///		cerr << "Valid ages are between " << minAge.in_months() << " and " <<  maxAge.in_months() << " inclusive" << std::endl;
 //		cerr << "If age is valid, person may have an invalid DemographicProfile";
 		//_person->print(cerr, "");
 //		return false;
@@ -409,7 +409,7 @@ unsigned long BucketSexualMixing::sizeByAge(Age minMonthAge, Age maxMonthAge)
 
 	while(currIndex <= maxIndex)
 	{
-		total += personsByAge->at((std::size_t)currIndex.get_total_months())->size();
+		total += personsByAge->at((std::size_t)currIndex.in_months())->size();
 		currIndex++;
 	}
 
@@ -429,7 +429,7 @@ unsigned long BucketSexualMixing::sizeInfectedByAge(Age minMonthAge, Age maxMont
 
 	while(currIndex <= maxIndex)
 	{
-		total += personsByAge->at((std::size_t)currIndex.get_total_months())->getNumInfected();
+		total += personsByAge->at((std::size_t)currIndex.in_months())->getNumInfected();
 		currIndex++;
 	}
 

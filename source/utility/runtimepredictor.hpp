@@ -59,7 +59,7 @@ public:
         auto f = [=](double x) { return a_ * std::exp(b_ * x); };
         auto integral = [=](double a, double b) { return f(b) - f(a); };
         double current_area = integral(1, observation.first);
-        double total_area = integral(1, total_months_.get_total_months());
+        double total_area = integral(1, total_months_.in_months());
         estimated_percent_complete_ = current_area / total_area;
     }
 

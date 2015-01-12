@@ -357,7 +357,7 @@ public:
 	double getCepacDiscountFactor(EventParams &parameters) const 
 	{ 
 		auto context = parameters.useRollout ? parameters.untreatedContext : parameters.cepacSimContexts[0];
-		return std::pow(context->getRunSpecsInputs()->discountFactor, parameters.currTime.get_total_months());
+		return std::pow(context->getRunSpecsInputs()->discountFactor, parameters.currTime.in_months());
 	}
 
 	/**
@@ -674,7 +674,7 @@ public:
 		{
 			switch(_PSC)
 			{
-			case AGE: return (_KeyValType)(static_cast<unsigned long>(_p->age.get_total_months()));
+			case AGE: return (_KeyValType)(static_cast<unsigned long>(_p->age.in_months()));
 			case SEXUAL_ACTIVITY_LEVEL: return (_KeyValType)_p->sexualActivityLevel;
 			case ID: return (_KeyValType)_p->id;
 			}

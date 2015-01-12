@@ -114,7 +114,7 @@ void PopulationStatisticsOld::processDeath(Entity *_p, EventParams &_eventParams
 	if(_eventParams.currTime > prevDelay)
 	{
 		//time spent in model after prev delay until death
-		auto timeToDeath = (int)min(_p->age - _p->initAge, _eventParams.currTime - prevDelay).get_total_months();
+		auto timeToDeath = (int)min(_p->age - _p->initAge, _eventParams.currTime - prevDelay).in_months();
 		survivalStats->numDeathGender[(std::size_t)gend]++;
         survivalStats->timeToDeathGenderSum[(std::size_t)gend] += timeToDeath;
         survivalStats->timeToDeathGenderSumSquare[(std::size_t)gend] += timeToDeath * timeToDeath;
@@ -146,7 +146,7 @@ void PopulationStatisticsOld::processDeath(Entity *_p, EventParams &_eventParams
 		}
 		else
 		{
-			int timeFromInfToDeath = (int)(_p->age - _p->ageInfected).get_total_months();
+			int timeFromInfToDeath = (int)(_p->age - _p->ageInfected).in_months();
             survivalStats->numInfDeathGender[(std::size_t)gend]++;
             survivalStats->timeFromInfToDeathGenderSum[(std::size_t)gend] += timeFromInfToDeath;
             survivalStats->timeFromInfToDeathGenderSumSquare[(std::size_t)gend] += timeFromInfToDeath * timeFromInfToDeath;
@@ -597,7 +597,7 @@ void PopulationStatisticsOld::printLEStats(std::ostream &_outStream, Time currTi
 	medianDensity = survivalFunction[medianLELowerIndex] * proportionalDeathRate[medianLELowerIndex];
 	medianSE = 1 / (2 * medianDensity * sqrt(lifeTablePop[0]));
 	medianCIBound = medianSE * sqrt(2.0) * boost::math::erf_inv(medianLECI);
-	_outStream << "LIFE EXPECTANCY FOR TIME " << currTime.get_total_months() << std::endl;
+	_outStream << "LIFE EXPECTANCY FOR TIME " << currTime.in_months() << std::endl;
 
 	for(int i = 0; i < NUM_LE_CAT; i++)
 	{
@@ -811,7 +811,7 @@ void PopulationStatisticsOld::printPartAcqStats(std::ostream &_outStream, Time c
 		printHeaderPartAcq = false;
 	}
 
-	_outStream << "month " << currTime.get_total_months();
+	_outStream << "month " << currTime.in_months();
 
 	for(int i = 0; i < PopulationStatisticsOld::SinglePartAcqStats::NUM_PARTNER_BINS; i++)
 	{
@@ -825,7 +825,7 @@ void PopulationStatisticsOld::recordIncidentInfection(EventParams &_eventParams,
 {
 	assert((_infector != nullptr) && (_infector->isAlive()));
 	assert((_infected != nullptr) && (_infected->isAlive()));
-	assert(_time.get_total_months() >= 0);
+	assert(_time.in_months() >= 0);
 	DemographicProfile::Gender gend = (DemographicProfile::Gender) _infected->getDemographicProfileVal(DemographicProfile::Demographic::Gender);
 	DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) _infected->getDemographicProfileVal(DemographicProfile::Demographic::Employment);
 	Entity::RiskLevel risk = _infected->getRiskLevel();
@@ -834,7 +834,7 @@ void PopulationStatisticsOld::recordIncidentInfection(EventParams &_eventParams,
 	if(_eventParams.currTime > prevDelay)
 	{
 		//time spent in model after prev delay until death
-		auto timeToInfection = min(_infected->age - _infected->initAge, _eventParams.currTime - prevDelay).get_total_months();
+		auto timeToInfection = min(_infected->age - _infected->initAge, _eventParams.currTime - prevDelay).in_months();
         survivalStats->numInfOrDeathGender[(std::size_t)gend]++;
         survivalStats->timeToInfOrDeathGenderSum[(std::size_t)gend] += timeToInfection;
         survivalStats->timeToInfOrDeathGenderSumSquare[(std::size_t)gend] += timeToInfection * timeToInfection;
@@ -937,7 +937,7 @@ void PopulationStatisticsOld::recordEntity(Time time, Entity *e)
 
     if(calculateShiftedOutcomes
         && time >= monthOf1990
-        && (int)(time - monthOf1990).get_total_months() % 12 == 0)
+        && (int)(time - monthOf1990).in_months() % 12 == 0)
     {
         if(e->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::Active)
         {

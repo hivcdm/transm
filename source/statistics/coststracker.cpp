@@ -203,7 +203,7 @@ void CostsTracker::BuildRow(Time time)
 	}
 	else
 	{
-		PushElement((int)time.get_total_months());
+		PushElement((int)time.in_months());
 	}
 
 	for(const auto &costs : {undiscounted_, discounted_})

@@ -5,7 +5,7 @@
 
 #include "entities/entity.hpp"
 
-#define OLD_STYLE_PREVALENCE 0
+#define OLD_STYLE_PREVALENCE 1
 
 namespace transm {
 
@@ -20,7 +20,7 @@ public:
     AgeBucketPrevalenceInfo();
 
 #if OLD_STYLE_PREVALENCE
-    AgeBucketPrevalenceInfo(int _minAgeMth, int _maxAgeMth,
+    AgeBucketPrevalenceInfo(Age _minAgeMth, Age _maxAgeMth,
         const std::unordered_map<std::string, double> &entity_proportions,
         std::size_t _numInfectedCSWMale, std::size_t _numInfectedCSWFemale,
         std::size_t _numInfectedNonCSWMalesLowRisk, std::size_t _numInfectedNonCSWFemalesLowRisk,

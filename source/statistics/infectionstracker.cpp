@@ -254,7 +254,7 @@ void InfectionsTracker::recordIncidentInfection(Time time,
     SexualPartnership::Type _partnershipType, const Entity *_infector,
     const Entity *_infected)
 {
-    assert(time.get_total_months() >= 0);
+    assert(time.in_months() >= 0);
     //check to see if the people are valid: not null, not dead, in a valid bucket
     assert((_infector != nullptr) && (_infector->isAlive())
         && (Utility::within_range(_infector->getDemographicProfile()->getProfileID(), DemographicProfile::MIN, DemographicProfile::MAX)));
@@ -295,11 +295,11 @@ void InfectionsTracker::recordIncidentInfection(Time time,
 	currTimeStepCD4InfectionSum += infectorCD4;
 	currTimeStepCD4InfectionSumSq += infectorCD4 * infectorCD4;
     currTimeStepNumInfectedEntityType[_infected->getEntityType()]++;
-	currTimeStepAgeInfectionSumEntityType[_infected->getEntityType()] += (std::size_t)infectedAge.get_total_months();
-	currTimeStepAgeInfectionSumSqEntityType[_infected->getEntityType()] += (std::size_t)square(infectedAge.get_total_months());
+	currTimeStepAgeInfectionSumEntityType[_infected->getEntityType()] += (std::size_t)infectedAge.in_months();
+	currTimeStepAgeInfectionSumSqEntityType[_infected->getEntityType()] += (std::size_t)square(infectedAge.in_months());
     currTimeStepNumInfectedEntityTypeRiskEmployment[_infected->getEntityType()][(std::size_t)infectedRisk][_infected->getDemographicProfileVal(DemographicProfile::Demographic::Employment)]++;
-	currTimeStepAgeInfectionSumEntityTypeRiskEmployment[_infected->getEntityType()][(std::size_t)infectedRisk][_infected->getDemographicProfileVal(DemographicProfile::Demographic::Employment)] += (std::size_t)infectedAge.get_total_months();
-	currTimeStepAgeInfectionSumSqEntityTypeRiskEmployment[_infected->getEntityType()][(std::size_t)infectedRisk][_infected->getDemographicProfileVal(DemographicProfile::Demographic::Employment)] += (std::size_t)square(infectedAge.get_total_months());
+	currTimeStepAgeInfectionSumEntityTypeRiskEmployment[_infected->getEntityType()][(std::size_t)infectedRisk][_infected->getDemographicProfileVal(DemographicProfile::Demographic::Employment)] += (std::size_t)infectedAge.in_months();
+	currTimeStepAgeInfectionSumSqEntityTypeRiskEmployment[_infected->getEntityType()][(std::size_t)infectedRisk][_infected->getDemographicProfileVal(DemographicProfile::Demographic::Employment)] += (std::size_t)square(infectedAge.in_months());
 
     if(_infected->getDemographicProfileVal(DemographicProfile::Demographic::Employment) == (std::size_t)DemographicProfile::Employment::Csw)
 	{
@@ -384,7 +384,7 @@ void InfectionsTracker::setPrevalentInfections(
 
 int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time, std::ostream &_outStream, Population *_population)
 {
-	assert(time.get_total_months() >= 0);
+	assert(time.in_months() >= 0);
 	//total # infections this month
 	std::size_t totalInfected = 0;
 	//current population size
@@ -395,7 +395,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 	auto numAgeRanges = currSizeByAgeRange.size();
 
 	//write headers for infections sheet
-	if(time.get_total_months() == 0)
+	if(time.in_months() == 0)
 	{
 		std::ostringstream firstRow;
         std::ostringstream secondRow;
@@ -711,13 +711,13 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 
 	//get current total infections
 	//Month
-	if(time.get_total_months() == 0)
+	if(time.in_months() == 0)
 	{
 		_outStream << "init" << Constants::Tab;
 	}
 	else
 	{
-		_outStream << time.get_total_months() << Constants::Tab;
+		_outStream << time.in_months() << Constants::Tab;
 	}
 
 	//New Infections

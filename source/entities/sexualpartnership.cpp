@@ -37,11 +37,11 @@ SexualPartnership::SexualPartnership(Entity *_person1, Entity *_person2, EventPa
 	}
 
 	//if this is true, than this Couple is part of the prevalent population.
-	if(_eventParams.currTime.get_total_months() == 0)
+	if(_eventParams.currTime.in_months() == 0)
 	{
 		if(maxDuration >= TimeSpan::Month)
 		{
-			maxDuration = TimeSpan(0, (int)_eventParams.randomNums.randInt(1, (std::uint32_t)maxDuration.get_total_months()));
+			maxDuration = TimeSpan(0, (int)_eventParams.randomNums.randInt(1, (std::uint32_t)maxDuration.in_months()));
 		}
 		else
 		{
@@ -52,7 +52,7 @@ SexualPartnership::SexualPartnership(Entity *_person1, Entity *_person2, EventPa
 
     if((_person1->trace() || _person2->trace()) && _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled)
 	{
-        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " of duration " << maxDuration.get_total_months() << std::endl;
+        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " of duration " << maxDuration.in_months() << std::endl;
 	}
 
 	//set time for partnership to dissolve
@@ -67,7 +67,7 @@ SexualPartnership::SexualPartnership(Entity *_person1, Entity *_person2, EventPa
 	//   partnerships that person was involved in
 	partners[0]->addPartnership(this);
 	partners[1]->addPartnership(this);
-	assert(timePartnerDissolution.get_total_months() >= 0);
+	assert(timePartnerDissolution.in_months() >= 0);
 }
 
 bool SexualPartnership::checkTimeForSplit(Time current_time)

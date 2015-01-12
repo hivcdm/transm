@@ -217,7 +217,7 @@ void Population::UpdateAgeBucketsLE()
 			assert((populationStatistics.selectedLEStats != nullptr));
             assert(p->getAge() >= Age::from_months(0));
             assert(p->getAge() < Age(Entity::maxYrForDeathStats, 0));
-            populationStatistics.selectedLEStats->popByAge[(long)p->getAge().get_total_months()]++;
+            populationStatistics.selectedLEStats->popByAge[(long)p->getAge().in_months()]++;
 			p_Iter++;
 		}
 	}
@@ -270,7 +270,8 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 			}
 			else
 			{
-				throw 1;
+				std::cout << "person didn't die" << std::endl;
+				//throw 1;
 				//(*p_Iter)->print(cerr, "THIS PERSON WOULDN'T DIE!");
 			}
 		}
@@ -704,10 +705,10 @@ void Population::SaveIndividualSummaries(std::ostream &stream) const
         stream << ",\"relationship_status\"" << ":";
         stream << (summary.profile.get(DemographicProfile::Demographic::RelationshipStatus) == 0 ? "\"non-single\"" : "\"single\"");
         stream << ",\"risk_group\"" << ":" << (summary.risk_group == Entity::RiskLevel::HIGH ? "\"high\"" : "\"low\"");
-        stream << ",\"age_at_infection\"" << ":" << summary.age_at_infection.get_total_months();
+        stream << ",\"age_at_infection\"" << ":" << summary.age_at_infection.in_months();
         stream << ",\"generation_number\"" << ":" << summary.generation_number;
         stream << ",\"infection_number\"" << ":" << summary.infection_number;
-        stream << ",\"time_infected\"" << ":" << summary.time_infected.get_total_months();
+        stream << ",\"time_infected\"" << ":" << summary.time_infected.in_months();
         stream << ",\"infected_by\"" << ":" << summary.infected_by;
         stream << ",\"group\":1";
         stream << "}";
@@ -994,8 +995,8 @@ Entity *Population::GenerateEntity(EventParams &parameters_, const std::string &
 	Entity *toReturn = nullptr;	//pointer to the person that was just generated
 	//determine age of current person. If we have no age _ageBucketParams, then this is a newborn.
 	//Otherwise, generate an age from a uniform distribution bounded by _ageBucketParams
-	auto age = Age::from_months((_ageBucketParams == nullptr) ? 0 : parameters_.randomNums.randInt(_ageBucketParams->minAgeMth.get_total_months(),
-	             _ageBucketParams->maxAgeMth.get_total_months()));
+	auto age = Age::from_months((_ageBucketParams == nullptr) ? 0 : parameters_.randomNums.randInt(_ageBucketParams->minAgeMth.in_months(),
+	             _ageBucketParams->maxAgeMth.in_months()));
 
 	//create the person
 	if(entity_type != "female")
@@ -1496,7 +1497,7 @@ double InterpolateProportion(const std::map<int, double> &yearly_proportions, Ti
 				double currentYearTargetProportion = yearly_proportions.at(relative_year);
 				double nextYearTargetProportion = yearly_proportions.at(relative_year + 1);
 				//TODO: there's a better way to do this
-				double x = ((int)(month - monthOf1990).get_total_months() % 12) / 12.0;
+				double x = ((int)(month - monthOf1990).in_months() % 12) / 12.0;
 				return currentYearTargetProportion + (nextYearTargetProportion - currentYearTargetProportion) * x;
 			}
 			else
@@ -1516,7 +1517,7 @@ int Population::UpdateTreatmentSlots(double rolloutProportion)
 
 	if(parameters_.enableDynamicTreatmentScaling)
 	{
-		int position = (int)(parameters_.currTime - parameters_.monthOf1990).get_total_months() % parameters_.dynamicFeedbackPeriod;
+		int position = (int)(parameters_.currTime - parameters_.monthOf1990).in_months() % parameters_.dynamicFeedbackPeriod;
 
 		if(position == 0)
 		{
@@ -2171,11 +2172,11 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Entity *_
         {
             parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "  + Male " << _initiator->getID() << " (";
             _initiator->getDemographicProfile()->print(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].file, "");
-            parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " age " << _initiator->getAge().get_total_months() << ", "
+            parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " age " << _initiator->getAge().in_months() << ", "
                 << chosenPartner->getSexualActivity() << " marbles, " << ((chosenPartner->getRiskLevel() == Entity::RiskLevel::HIGH) ? "HIGH" : "LOW") << " risk) forms " <<
                 (SexualPartnership::TypeStrings.at(_partnershipType)) << " with female " << chosenPartner->getID() << " (";
             chosenPartner->getDemographicProfile()->print(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].file, "");
-			parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " age " << chosenPartner->getAge().get_total_months()
+			parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " age " << chosenPartner->getAge().in_months()
                 << ", " << chosenPartner->getSexualActivity() << " marbles, " << ((chosenPartner->getRiskLevel() == Entity::RiskLevel::HIGH) ? "HIGH" : "LOW") << " risk)";
         }
 
@@ -2234,7 +2235,7 @@ void Population::ProcessDeath(EventParams &parameters_, Entity *_p, bool calcula
 		assert((populationStatistics.selectedLEStats != nullptr));
         assert(_p->getAge() >= Age::Zero);
         assert(_p->getAge() <= Time(Entity::maxYrForDeathStats, 0));
-        populationStatistics.selectedLEStats->deathsByAge[(std::size_t)_p->getAge().get_total_years()]++;
+        populationStatistics.selectedLEStats->deathsByAge[_p->getAge().year_as_index()]++;
 	}
 
 	//holds any former steady partners that are widowed after a partner's death
@@ -2529,7 +2530,7 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 	}
 	else
 	{
-		_outStream << _time.get_total_months() << Constants::Tab;
+		_outStream << _time.in_months() << Constants::Tab;
 	}
 
 	std::unordered_map<std::string, descriptive_stats_container<std::size_t>> times_selected_stats;
@@ -2861,7 +2862,7 @@ void Population::PrintClinical(EventParams &/*parameters_*/, Time _time, std::os
 	}
 	else
 	{
-		_outStream << _time.get_total_months() << Constants::Tab;
+		_outStream << _time.in_months() << Constants::Tab;
 	}
 
     std::unordered_map<std::string, std::array<std::array<std::array<unsigned long, (std::size_t)Entity::HIVStatus::Last>, (std::size_t)DemographicProfile::Employment::Last>, (std::size_t)Entity::RiskLevel::Last>> numWithHIVStatus;
@@ -3182,7 +3183,7 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, Time _time, std::
 	}
 	else
 	{
-		_outStream << _time.get_total_months() << Constants::Tab;
+		_outStream << _time.in_months() << Constants::Tab;
 	}
 
 	//output population size and SA pop size
