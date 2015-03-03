@@ -27,7 +27,7 @@ BatchStatus::~BatchStatus()
 /// Insert each given simulation as a new row in the database.
 /// After this is called, the object is "initialized".
 /// </summary>
-void BatchStatus::initialize(const std::vector<std::string> &sim_names)
+void BatchStatus::initialize(const std::vector<path> &sim_names)
 {
     throw_if_not_ok(sqlite3_initialize());
 
@@ -39,7 +39,7 @@ void BatchStatus::initialize(const std::vector<std::string> &sim_names)
 
     for(auto sim : sim_names)
     {
-        insert_sim(sim);
+        insert_sim(sim.stem().string());
     }
 
     initialized_ = true;

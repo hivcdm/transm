@@ -65,7 +65,7 @@ class SimulationParametersFactory;
 class SimulationParametersXml : public SimulationParameters
 {
 public:
-    SimulationParametersXml(const std::string &filename);
+    SimulationParametersXml(const path &filename);
     virtual ~SimulationParametersXml();
 
     /*virtual*/ std::string GetName() const { return name_; }

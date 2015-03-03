@@ -96,10 +96,11 @@ ShiftedLogNormalDist SimulationParametersXml::GetShiftedLogNormalDist(const pugi
     return ShiftedLogNormalDist::FromShiftedNormal(dist, shift);
 }
 
-SimulationParametersXml::SimulationParametersXml(const std::string &filename)
+SimulationParametersXml::SimulationParametersXml(const path &filename)
 {
-	document_.load_file(filename.c_str());
-	name_ = path(filename).stem().string();
+    //XXX: verify that it's safe to give a c_str of a temporary
+	document_.load_file(filename.string().c_str());
+	name_ = filename.stem().string();
 }
 
 SimulationParametersXml::~SimulationParametersXml()

@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+#include "utility/filesystem.hpp"
+
 struct sqlite3;
 
 namespace transm {
@@ -43,7 +45,7 @@ public:
     /// Register the provided set of simulations with this batch status.
     /// This should be done before calling the set_* methods.
     /// </summary>
-    void initialize(const std::vector<std::string> &sim_names);
+    void initialize(const std::vector<path> &sim_names);
 
     /// <summary>
     /// Set the percent complete for the simulation named sim_name to percent_complete.

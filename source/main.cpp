@@ -1,4 +1,4 @@
-#include <chrono>
+#include <functional>
 #include <unordered_set>
 #include <tclap/CmdLine.h>
 
@@ -9,40 +9,51 @@
 #include "utility/utility.hpp"
 #include "utility/filesystem.hpp"
 
-using namespace transm;
+namespace { SUPRESS_INDENTATION
 
-namespace {
-
-std::vector<std::string> find_input_files(const path &batch_directory)
+/// <summary>
+/// Search batch_directory and return list of XML and JSON files.
+/// </summary>
+std::vector<transm::path> find_input_files(const transm::path &batch_directory)
 {
     static const std::unordered_set<std::string> known_extensions = {".xml", ".json"};
-    std::vector<std::string> input_files;
-
-    if(filesystem::exists(batch_directory) && filesystem::is_directory(batch_directory))
+    auto is_not_known_extension = [](const transm::path &p) -> bool
     {
-        auto all_files = filesystem::listdir(batch_directory);
-        auto new_end = std::remove_if(all_files.begin(), all_files.end(), [](const path &p)
-        {
-            return known_extensions.find(p.extension().string()) == known_extensions.end();
-        });
-        std::transform(all_files.begin(), new_end,
-            std::back_inserter(input_files), [](const path &p)
-        { return p.stem().string(); });
+        return known_extensions.find(p.extension().string()) == known_extensions.end();
+    };
+    std::vector<transm::path> input_files;
+
+    // return all files in the directory with known extensions
+    if(transm::filesystem::exists(batch_directory) 
+        && transm::filesystem::is_directory(batch_directory))
+    {
+        auto all_files = transm::filesystem::listdir(batch_directory);
+        auto new_end = std::remove_if(all_files.begin(), all_files.end(), is_not_known_extension);
+        input_files = std::vector<transm::path>(all_files.begin(), new_end);
+    }
+    // a specific file was given, return it as a singular element in a list
+    else if (transm::filesystem::exists(batch_directory)
+        && transm::filesystem::is_regular_file(batch_directory)
+        && !is_not_known_extension(batch_directory)) //double negative!
+    {
+        input_files.push_back(batch_directory);
     }
     else
     {
-        throw std::runtime_error("not a directory");
+        auto message = std::string("not a directory ") + batch_directory.string();
+        throw std::runtime_error(message);
     }
 
     return input_files;
 }
 
-int run_simulation(const std::string &batch_name, std::function<void(const std::string &)> message_callback)
+/// <sumary>
+/// Find all XML and JSON files in batch_directory. Load parameters from each
+/// file and run the model using those parameters.
+/// </summary>
+int run_simulation(const transm::path &batch_directory)
 {
-    auto workingDirectory = filesystem::current_path();
-
-    auto batches_directory = Utility::get_batches_directory();
-    auto batch_directory = batches_directory / batch_name;
+    auto workingDirectory = transm::filesystem::current_path();
 
     CepacUtil::inputsDirectory = batch_directory.string();
     CepacUtil::changeDirectoryToInputs();
@@ -51,27 +62,28 @@ int run_simulation(const std::string &batch_name, std::function<void(const std::
     CepacUtil::createResultsDirectory();
 
     SummaryStats cepac_summary("cepacPopstats.out");
-    TransmissionSummaryStats transmission_summary("summaryStats.out");
+    transm::TransmissionSummaryStats transmission_summary("summaryStats.out");
 
-    BatchStatus status(batch_name);
+    auto batch_name = batch_directory.stem().string();
+    transm::BatchStatus status(batch_name);
 
-    auto task_names = find_input_files(batch_directory);
-    status.initialize(task_names);
+    auto input_files = find_input_files(batch_directory);
+    status.initialize(input_files);
 
-    for(auto task_name : task_names)
+    for(auto input_file : input_files)
     {
         //Changing back to the input directory because over the course of Sim->run, the directory gets changed to results
         CepacUtil::changeDirectoryToInputs();
-        std::cout << "Running File: " << task_name << std::endl;
+        std::cout << "Running File: " << input_file.stem().string() << std::endl;
 
-        auto sim_filename = batches_directory / batch_name / path(task_name + ".xml");
-        SimulationParametersXml parameters(sim_filename.string());
+        transm::SimulationParametersXml parameters(input_file);
 
-        Simulation simulation(status);
+        transm::Simulation simulation(status);
+        //XXX: we shouldn't have to do this
         parameters.SetRandomNumberGenerator(simulation.GetEventParams().randomNums);
         simulation.Initialize(parameters);
 
-        auto outputs = simulation.Run(message_callback);
+        auto outputs = simulation.Run([](const std::string &s) { std::cout << s; });
 
         cepac_summary.addRunStats(&simulation.GetCEPACRunStats());
         transmission_summary.addPopulationStatistics(simulation.GetPopulationStatistics(), simulation.GetEventParams());
@@ -84,6 +96,9 @@ int run_simulation(const std::string &batch_name, std::function<void(const std::
     return 0;
 }
 
+/// <sumary>
+/// Print to standard output how this model can be used.
+/// </summary>
 void print_usage(const std::string &executable)
 {
     std::cout << "usage: " << executable;
@@ -96,17 +111,23 @@ void print_usage(const std::string &executable)
     std::cout << "   the order they are given." << std::endl;
 }
 
+/// <sumary>
+/// Print to standard output a description of this model's version.
+/// </summary>
 void print_version(const std::string &executable)
 {
-    std::cout << executable << " version " << Version::to_string(Utility::get_model_version()) << std::endl;
+    auto version_string = transm::Version::to_string(transm::Utility::get_model_version());
+    std::cout << executable << " version " << version_string << std::endl;
 }
 
-} // namespace
+} // namespace <unnamed>
 
+/// <summary>
+/// Process provided arguments and execute the simulation as specified by those arguments.
+/// </summary>
 int main(int argc, char *argv[])
 {
-    auto executable = path(argv[0]).filename().string();
-    auto message_callback = [](const std::string &message) { std::cout << message; };
+    auto executable = transm::path(argv[0]).filename().string();
 
     try
     {
@@ -115,7 +136,7 @@ int main(int argc, char *argv[])
             "see the User Guide or \"Development, Calibration and Performance "
             "of an HIV Transmission Model Incorporating Natural History and "
             "Behavioral Patterns: Application in South Africa\", PLOSone, 2014";
-        auto version_string = Version::to_string(Utility::get_model_version());
+        auto version_string = transm::Version::to_string(transm::Utility::get_model_version());
         TCLAP::CmdLine cmd(program_description, ' ', version_string, false);
         cmd.setExceptionHandling(false);
 
@@ -149,9 +170,13 @@ int main(int argc, char *argv[])
 
         for(auto batch : input_files_arg.getValue())
         {
-            if(run_simulation(batch, message_callback) != 0)
+			auto result = run_simulation(batch);
+			// added because sometimes we don't see all output if buffered
+			std::cout.flush();
+
+			// stop if any batch fails
+            if(result != 0)
             {
-                std::cout.flush();
                 return 1;
             }
         }

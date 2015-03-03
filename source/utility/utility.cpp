@@ -6,6 +6,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <ShlObj.h>
+#include <tchar.h>
 #else
 #include <unistd.h>
 #endif
@@ -111,7 +112,7 @@ path Utility::get_user_directory()
 #ifdef _WIN32
     std::array<TCHAR, MAX_PATH> path_array;
     assert(SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, path_array.data()) == S_OK);
-    path::string_type path_string(path_array.begin(), path_array.begin() + std::wcslen(path_array.data()));
+    path::string_type path_string(path_array.begin(), path_array.begin() + _tcslen(path_array.data()));
     user_directory = path_string;
 #else
     char *home_path = getenv("HOME");
