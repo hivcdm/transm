@@ -9,7 +9,7 @@
 #include "utility/utility.hpp"
 #include "utility/filesystem.hpp"
 
-namespace { SUPRESS_INDENTATION
+namespace {
 
 /// <summary>
 /// Search batch_directory and return list of XML and JSON files.
@@ -83,7 +83,7 @@ int run_simulation(const transm::path &batch_directory)
         parameters.SetRandomNumberGenerator(simulation.GetEventParams().randomNums);
         simulation.Initialize(parameters);
 
-        auto outputs = simulation.Run([](const std::string &s) { std::cout << s; });
+        auto outputs = simulation.Run();
 
         cepac_summary.addRunStats(&simulation.GetCEPACRunStats());
         transmission_summary.addPopulationStatistics(simulation.GetPopulationStatistics(), simulation.GetEventParams());

@@ -31,8 +31,9 @@ void BatchStatus::initialize(const std::vector<path> &sim_names)
 {
     throw_if_not_ok(sqlite3_initialize());
 
-    auto batches_directory = Utility::get_batches_directory();
-    auto db_path = batches_directory / batch_name_ / batch_database_filename_;
+    assert(sim_names.size() > 0);
+    auto batch_directory = sim_names.front().parent_path();
+    auto db_path = batch_directory / batch_database_filename_;
 
     throw_if_not_ok(sqlite3_open(db_path.string().c_str(), &db_));
     create_sim_table();

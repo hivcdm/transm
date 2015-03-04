@@ -22,15 +22,13 @@ class InfectionsTracker;
 class Simulation
 {
 public:
-	using MessageCallback = std::function<void(const std::string &)>;
-
 	Simulation(BatchStatus &batch_status);
 
 	~Simulation();
 
     void Initialize(SimulationParameters &parameters);
 
-	Outputs Run(MessageCallback message_callback);
+	Outputs Run();
 
 	//returns eventParams.cepacRunStats for adding to the general popstats
 	RunStats &GetCEPACRunStats();

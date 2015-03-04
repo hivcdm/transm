@@ -462,24 +462,20 @@ void Simulation::Step()
 
     if(time_ > Time(0, 5))
     {
-		/*
         run_time_predictor_.Update(std::make_pair((int)time_.in_months(), timer_.GetTime() - start_time_));
         int seconds_remaining = (int)run_time_predictor_.GetEstimatedTimeRemaining();
         int hours_remaining = seconds_remaining / 3600;
         seconds_remaining -= hours_remaining * 3600;
         int minutes_remaining = seconds_remaining / 60;
         seconds_remaining -= minutes_remaining * 60;
-        parameters_.displayOut(run_time_predictor_.MakeProgressBar(40) + " " +
-            std::to_string(time_) + " " + std::to_string(hours_remaining) + ":" +
-            std::to_string(minutes_remaining) + ":" + std::to_string(seconds_remaining) + "\n");
-			*/
+	auto message = run_time_predictor_.MakeProgressBar(40) + " " +
+	    std::to_string(time_.in_months()) + " " + std::to_string(hours_remaining) + ":" +
+	    std::to_string(minutes_remaining) + ":" + std::to_string(seconds_remaining);
+	std::cout << message << std::endl;
     }
-    else
+    else if(time_ > Time(0, 1))
     {
-        if(time_ > Time(0, 1))
-        {
-            //run_time_predictor_.Update(std::make_pair(time_, timer_.GetTime() - start_time_));
-        }
+	run_time_predictor_.Update(std::make_pair(time_.in_months(), timer_.GetTime() - start_time_));
     }
 
     start_time_ = timer_.GetTime();
@@ -867,7 +863,7 @@ void Simulation::Initialize(SimulationParameters &parameters)
     population_.Initialize(parameters.GetPopulationParameters());
 }
 
-Outputs Simulation::Run(MessageCallback message_callback)
+Outputs Simulation::Run()
 {
     batch_status_.set_state(name_, SimState::running);
     batch_status_.set_process_id(name_, Utility::get_current_process_id());
