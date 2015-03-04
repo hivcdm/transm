@@ -423,10 +423,10 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 	}
 }
 
-std::unordered_set<Person *> Population::Find(std::function<bool(Person *)> predicate)
+std::vector<Person *> Population::Find(std::function<bool(Person *)> predicate)
 {
-    std::unordered_set<Person *> matches;
-    entities->forEach([=, &matches](Person *p) { if(predicate(p)) matches.insert(p); });
+    std::vector<Person *> matches;
+    entities->forEach([=, &matches](Person *p) { if(predicate(p)) matches.push_back(p); });
     return matches;
 }
 

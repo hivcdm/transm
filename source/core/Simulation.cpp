@@ -197,7 +197,8 @@ void TargetGroup::Update(Population &population, int current_time,
             partition_index++;
         }
 
-        std::default_random_engine generator(rng.randInt());
+        auto seed = rng.randInt();
+        std::default_random_engine generator(seed);
         std::uniform_real_distribution<> dist(0, 1);
 
         auto generate_rand = [&](int i) 
