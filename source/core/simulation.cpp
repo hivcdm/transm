@@ -799,11 +799,10 @@ void Simulation::Initialize(SimulationParameters &parameters)
     {
         parameters_.cepacSimContexts.push_back(load_context(intervention_params.default_cepac_file.filename));
 
-        std::size_t i = 0;
         for(auto &cepac_file : intervention_params.cepac_files)
         {
             auto context = load_context(cepac_file.filename);
-            parameters_.timesToSwitchSimContext[i++] = cepac_file.time;
+            parameters_.timesToSwitchSimContext.push_back(cepac_file.time);
             parameters_.cepacSimContexts.push_back(context);
         }
 
