@@ -1,17 +1,17 @@
 #pragma once
 
 #include <unordered_set>
+#include <pugixml.hpp>
 
 #include "Intervention.h"
 #include "Outputs.h"
 #include "Population.h"
 #include "TargetGroup.h"
-#include "../data/EventParams.h"
-#include "../statistics/PopulationStatistics.h"
-#include "../util/HighResolutionTimer.h"
-#include "../util/Nullable.h"
-#include "../util/xml/pugixml.hpp"
-#include "../util/RunTimePredictor.h"
+#include "data/EventParams.h"
+#include "statistics/PopulationStatistics.h"
+#include "utility/HighResolutionTimer.h"
+#include "utility/Nullable.h"
+#include "utility/RunTimePredictor.h"
 
 class InfectionsTracker;
 
@@ -59,10 +59,6 @@ public:
 
     void RegisterIntervention(const Intervention &intervention);
 
-private:
-	friend class SimulationBuilderXml;
-    friend class Intervention;
-
 	struct TreatmentFile
 	{
 		std::string file_name;
@@ -70,6 +66,10 @@ private:
 		int time;
 		int target_population;
 	};
+
+private:
+	friend class SimulationBuilderXml;
+    friend class Intervention;
 
 	typedef std::array<TreatmentFile, Constants::NUMBER_OF_CEPAC_FILES> CepacTreatmentFiles;
 	typedef std::array<TreatmentFile, Constants::NUMBER_OF_ROLLOUT_FILES> RolloutTreatmentFiles;

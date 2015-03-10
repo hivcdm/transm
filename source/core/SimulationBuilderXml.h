@@ -1,12 +1,12 @@
 #pragma once
 
 #include <string>
+#include <pugixml.hpp>
 
 #include "SimulationBuilder.h"
 #include "Simulation.h"
-#include "../util/CepacInputParser.h"
-#include "../entities/behaviors/SexualBehavior.h"
-#include "../util/xml/pugixml.hpp"
+#include "utility/CepacInputParser.h"
+#include "entities/behaviors/SexualBehavior.h"
 
 class SimulationBuilderXml : public SimulationBuilder
 {

@@ -1,8 +1,7 @@
-#include <boost/filesystem.hpp>
-
 #include "SimulationBuilderXml.h"
-#include "../util/enum_iterator.h"
-#include "../util/make_unique.h"
+#include "utility/enum_iterator.h"
+#include "utility/filesystem.h"
+#include "utility/make_unique.h"
 
 namespace {
 std::string to_string(SexualPartnership::Type type)
@@ -99,7 +98,7 @@ void SimulationBuilderXml::Reset()
 void SimulationBuilderXml::SetInputFile(const std::string &filename)
 {
 	document_.load_file(filename.c_str());
-	simulation_.SetName(boost::filesystem::path(filename).stem().string());
+	simulation_.SetName(transm::path(filename).stem().string());
 }
 
 void SimulationBuilderXml::CheckVersion()
@@ -107,7 +106,7 @@ void SimulationBuilderXml::CheckVersion()
 	auto version_string = Attr<std::string>(document_.child("simulation"), "version");
 	auto version = Version::FromString(version_string);
 
-	if(Version::Compare(version, Utility::MODEL_VERSION, true) != 0)
+	if(Version::Compare(version, Utility::get_model_version(), true) != 0)
 	{
 		throw std::runtime_error("bad input version");
 	}

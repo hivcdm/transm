@@ -3,7 +3,7 @@
 
 #include "CepacInputParser.h"
 #include "../core/Constants.h"
-#include "../util/Utility.h"
+#include "utility/Utility.h"
 
 CepacInputParser::CepacInputParser(const std::string &filename)
 {

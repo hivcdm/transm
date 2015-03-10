@@ -7,8 +7,8 @@
 
 
 #include "../Person.h"
-#include "../../util/Utility.h"
-#include "../../util/rand/RandomNumberGenerator.h"
+#include "utility/Utility.h"
+#include "utility/RandomNumberGenerator.h"
 
 /// <summary>
 /// This class indexes Person objects based on numerical key values

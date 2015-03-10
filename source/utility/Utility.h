@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "rand/RandomNumberGenerator.h"
+#include "utility/RandomNumberGenerator.h"
 #include "../core/Constants.h"
 
 struct Version
@@ -27,11 +27,10 @@ class Utility
 	static double dayToYearMult;
 	static double monthToYearMult;
 public:
-	/* Constant values for transmission model version and file/directory information */
-	static const Version MODEL_VERSION;
-
-	static std::vector<std::string> transmFilesToRun;
-	static void findInputFiles(const std::string &inputDirectory, const std::string &workingDirectory);
+    /// <summary>
+    /// Return a version object that represents the version of the running model.
+    /// </summary>
+    static Version get_model_version();
 
 	//convert _val from one TimeGranularity to another
 	static unsigned int convertTime(TimeGranularity _from, TimeGranularity _to, double _val);

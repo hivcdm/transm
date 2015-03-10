@@ -3,7 +3,7 @@
 #include "../entities/Male.h"
 #include "../entities/Person.h"
 #include "../entities/behaviors/SexualBehavior.h"
-#include "../util/Utility.h"
+#include "../utility/Utility.h"
 
 //-------------< Begin AgeBucketPrevalenceInfo methods >-------------------//
 

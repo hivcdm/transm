@@ -1,7 +1,22 @@
+#include <fstream>
 #include <iostream>
-#include <boost/filesystem.hpp>
+
+#ifdef _WIN32
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <ShlObj.h>
+#include <tchar.h>
+#else
+#include <unistd.h>
+#endif
+
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#endif
 
 #include "Utility.h"
+#include "filesystem.h"
 
 namespace {
 std::string to_string(TimeGranularity granularity)
@@ -55,57 +70,53 @@ int Version::Compare(const Version &v1, const Version &v2, bool ignore_patch)
 	return 0;
 }
 
-const Version Utility::MODEL_VERSION = Version::FromString("3.6.1");
-
 double Utility::dayToMonthMult = 1.0 / 30;
 double Utility::dayToYearMult = 1.0 / 365;
 double Utility::monthToYearMult = 1.0 / 12;
 
-std::vector<std::string> Utility::transmFilesToRun;
-
-void Utility::findInputFiles(const std::string &inputDirectory, const std::string &workingDirectory)
+std::string get_executable_name()
 {
-    std::string directoryPath = inputDirectory;
+#ifdef __APPLE__
+    std::array<char, 1024> path;
+    uint32_t size = static_cast<uint32_t>(path.size());
 
-    if(boost::filesystem::path(inputDirectory).has_extension() && boost::filesystem::path(inputDirectory).extension() == ".xml" && boost::filesystem::exists(inputDirectory))
+    if (_NSGetExecutablePath(path.data(), &size) == 0)
     {
-        transmFilesToRun.push_back(inputDirectory);
-        return;
+        std::string executable_string(path.begin(), std::find(path.begin(), path.end(), '\0'));
+        class path executable_path(executable_string);
+        return executable_path.stem().string();
     }
 
-    if(boost::filesystem::path(directoryPath).is_relative())
+    throw std::runtime_error("buffer too small, " + std::to_string(path.size()) + ", should be: " + std::to_string(size));
+#elif defined(_WIN32)
+    std::array<TCHAR, MAX_PATH> buffer;
+    DWORD result = GetModuleFileName(nullptr, buffer.data(), (DWORD)buffer.size());
+
+    if (result == 0 || result == buffer.size())
     {
-        try
-        {
-            directoryPath = boost::filesystem::canonical(inputDirectory, workingDirectory).string();
-        }
-        catch(...)
-        {
-            auto combined = (boost::filesystem::path(workingDirectory) / inputDirectory).string();
-            throw std::runtime_error("directory not found: " + combined);
-        }
+        throw std::runtime_error("GetModuleFileName failed or buffer was too small");
     }
 
-	boost::filesystem::directory_iterator end_iter;
+    auto full_string = std::string(buffer.begin(), buffer.begin() + result);
+    return transm::path(full_string).stem().string();
+#else
+    char arg1[20];
+    char exepath[PATH_MAX + 1] = { 0 };
 
-    if(!boost::filesystem::exists(directoryPath))
-    {
-        throw std::runtime_error("directory not found: " + directoryPath);
-    }
-     
-    if(!boost::filesystem::is_directory(directoryPath))
-    {
-        throw std::runtime_error("given path is not a directory: " + directoryPath);
-    }
+    sprintf(arg1, "/proc/%d/exe", getpid());
+    readlink(arg1, exepath, 1024);
+    std::string full_path(exepath);
+    return full_path.substr(full_path.find_last_of('/'));
+#endif
+}
 
-	for(boost::filesystem::directory_iterator dir_iter(directoryPath); dir_iter != end_iter; ++dir_iter)
-	{
-		if(boost::filesystem::is_regular_file(dir_iter->status()) 
-            && dir_iter->path().extension() == ".xml")
-		{
-            transmFilesToRun.push_back(dir_iter->path().string());
-		}
-	}
+Version Utility::get_model_version()
+{
+    auto exe_name = get_executable_name();
+    auto hyphen_index = exe_name.find_last_of('-');
+    assert(hyphen_index != std::string::npos);
+    auto version_string = exe_name.substr(hyphen_index + 2);
+    return Version::FromString(version_string);
 }
 
 //convert _val from one TimeGranularity to another

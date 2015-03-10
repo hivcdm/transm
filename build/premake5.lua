@@ -2,137 +2,74 @@ solution "transm"
     configurations { "debug", "release" }
     platforms { "x64" }
     location ("./" .. _ACTION)
-    libdirs { 
-       "../third-party/cepac/lib",
-       "../third-party/boost/lib"
-    }
-    includedirs { 
-       "../third-party/cepac/src",
-       "../third-party/boost/include"
-    }
-    configuration "debug"
-        flags { "Symbols" }
-	optimize "Off"
-    configuration "release"
-        optimize "Full"
-    configuration "not windows"
-        buildoptions {
-            "-std=c++11",
-            "-Wno-unknown-pragmas"
-        }
-	links {
-	    "boost_system",
-	    "boost_filesystem"
-	}
-    configuration "linux"
-        buildoptions {
-	    "-Wno-unused-local-typedefs"
-	}
 
-project "transm.cli"
+project "transm"
     kind "ConsoleApp"
     language "C++"
     targetname "transm"
-    warnings "Extra"
-    targetdir "../bin"
-    flags { 
-       "Unicode",
-       "NoEditAndContinue",
-       "NoManifest",
-       "NoPCH"
-    }
-    files {
-       "../source/main.cpp",
-       "../source/core/**.cpp",
-       "../source/core/**.h",
-       "../source/data/**.cpp",
-       "../source/data/**.h",
-       "../source/entities/**.cpp",
-       "../source/entities/**.h",
-       "../source/statistics/**.cpp",
-       "../source/statistics/**.h",
-       "../source/util/**.cpp",
-       "../source/util/**.h"
-    }
-    excludes {
-       "../source/util/HighResolutionTimer*.cpp"
-    }
-    configuration "debug"
-        flags { "FatalWarnings" }
-	links { "../third-party/cepac/lib/cepacd" }
-    configuration "release"
-        flags { "LinkTimeOptimization" }
-	links { "../third-party/cepac/lib/cepac" }
-    configuration "windows"
-        files { "../source/util/HighResolutionTimerWindows.cpp" }
-    configuration "not windows"
-        files { "../source/util/HighResolutionTimerPosix.cpp" }
-	buildoptions { "-Wno-deprecated-register" }
-    configuration "vs*"
-        defines { "_SCL_SECURE_NO_WARNINGS" }
     targetsuffix ("-v" .. os.outputof("cat ../VERSION"))
-
-project "transm.gui"
-    kind "WindowedApp"
-    language "C++"
-    targetname "transm"
-    warnings "Extra"
-    targetdir "../bin"
-    includedirs {
-       "../third-party/wxWidgets/include"
+    links { "third-party" }
+    flags { 
+       "Symbols",
+       "Unicode",
+       "NoPCH"
     }
-    defines { "wxUSE_GUI=1" }
+    warnings "Extra"
     files {
-       "../source/gui/**.h",
-       "../source/gui/**.cpp",
-       "../source/core/**.cpp",
-       "../source/core/**.h",
-       "../source/data/**.cpp",
-       "../source/data/**.h",
-       "../source/entities/**.cpp",
-       "../source/entities/**.h",
-       "../source/statistics/**.cpp",
-       "../source/statistics/**.h",
-       "../source/util/**.cpp",
-       "../source/util/**.h"
+       "../source/**.h",
+       "../source/**.cpp"
     }
     excludes {
-       "../source/util/HighResolutionTimer*.cpp"
+       "../source/utility/platform/**"
     }
-    flags { 
-       "Unicode",
-       "NoEditAndContinue",
-       "NoManifest",
-       "NoPCH"
+    includedirs {
+       "../source",
+       "../third-party/boost/include",
+       "../third-party/cepac/src",
+       "../third-party/pugixml/src",
+       "../third-party/tclap/include"
     }
     configuration "debug"
         flags { "FatalWarnings" }
-	defines { "__WXDEBUG__" }
-	links { "../third-party/cepac/lib/cepacd" }
+	optimize "Off"
+	targetdir "../bin/debug"
     configuration "release"
         flags { "LinkTimeOptimization" }
-	links { "../third-party/cepac/lib/cepac" }
+	optimize "Full"
+	targetdir "../bin/release"
     configuration "windows"
-        defines { 
-	   "WINVER=0x0610",
-	   "__WXMSW__",
-	   "_WINDOWS",
-	   "WIN32"
-	}
-        files { "../source/util/HighResolutionTimerWindows.cpp" }
-	targetsuffix ("-win-v" .. os.outputof("cat ../VERSION"))
-	includedirs {
-	   "../third-party/wxWidgets/include/msvc"
-	}
-    configuration "not windows"
-        files { "../source/util/HighResolutionTimerPosix.cpp" }
-	buildoptions { "-Wno-deprecated-register" }
-	includedirs {
-	   "../third-party/wxWidgets/include/osx"
-	}
-    configuration "vs*"
-        defines { "_CRT_SECURE_NO_WARNINGS" }
+        files { "../source/utility/platform/windows/**.cpp" }
         defines { "_SCL_SECURE_NO_WARNINGS" }
-	flags { "WinMain" }
-	libdirs { "../third-party/wxWidgets/lib/vc_x64_lib" }
-    targetsuffix ("-gui-v" .. os.outputof("cat ../VERSION"))
+	files { "resources/resource.rc" }
+    configuration "not windows"
+        files { "../source/utility/platform/posix/**.cpp" }
+	buildoptions { "-Wno-unknown-pragmas" }
+    configuration "macosx"
+        buildoptions { "-Wno-deprecated-register" }
+
+project "third-party"
+    kind "StaticLib"
+    language "C++"
+    targetname "third-party"
+    targetsuffix ("-v" .. os.outputof("cat ../VERSION"))
+    flags { 
+       "Symbols",
+       "Unicode",
+       "NoPCH"
+    }
+    warnings "Off"
+    files {
+       "../third-party/pugixml/src/pugixml.cpp",
+       "../third-party/cepac/src/*.cpp"
+    }
+    includedirs {
+       "../third-party/pugixml/src",
+       "../third-party/tclap/include"
+    }
+    configuration "debug"
+        optimize "Off"
+	targetdir "../bin/debug"
+    configuration "release"
+        flags { "LinkTimeOptimization" }
+        optimize "Full"
+	targetdir "../bin/release"

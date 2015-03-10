@@ -7,9 +7,9 @@
 #include <vector>
 #include <include.h>
 
-#include "../util/enum_iterator.h"
+#include "../utility/enum_iterator.h"
 #include "../core/Constants.h"
-#include "../util/rand/RandomNumberGenerator.h"
+#include "../utility/RandomNumberGenerator.h"
 
 template<typename T>
 struct Bounds
@@ -177,6 +177,8 @@ public :
         cepacRunStats = nullptr;
         cepacTracer = nullptr;
 	}
+
+    EventParams(const EventParams &) = delete;
 
     /// <summary>
 	/// current internal clock for a particular Population

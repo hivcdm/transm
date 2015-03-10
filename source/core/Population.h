@@ -14,8 +14,8 @@
 #include "../entities/Person.h"
 #include "../entities/entitypool/EntityPool.h"
 #include "../statistics/PopulationStatistics.h"
-#include "../util/rand/RandomNumberGenerator.h"
-#include "../util/Nullable.h"
+#include "utility/RandomNumberGenerator.h"
+#include "utility/Nullable.h"
 
 /// <summary>
 /// This class contains the main simulation logic

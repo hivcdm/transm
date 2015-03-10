@@ -9,13 +9,13 @@
 #include "Population.h"
 #include "Constants.h"
 #include "Simulation.h"
-#include "../entities/Female.h"
-#include "../entities/Male.h"
-#include "../entities/behaviors/SexualBehavior.h"
-#include "../statistics/InfectionsTracker.h"
-#include "../statistics/CostsTracker.h"
-#include "../util/Utility.h"
-#include "../util/rand/RandomNumberGenerator.h"
+#include "entities/Female.h"
+#include "entities/Male.h"
+#include "entities/behaviors/SexualBehavior.h"
+#include "statistics/InfectionsTracker.h"
+#include "statistics/CostsTracker.h"
+#include "utility/Utility.h"
+#include "utility/RandomNumberGenerator.h"
 
 /***
 Data needed :

@@ -7,7 +7,7 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/poisson_distribution.hpp>
-#include "../xml/pugixml.hpp"
+#include <pugixml.hpp>
 
 struct NormalDist
 {

@@ -1,160 +1,187 @@
-#include <boost/filesystem.hpp>
-#include <include.h>
+#include <functional>
+#include <unordered_set>
+#include <tclap/CmdLine.h>
 
-#include "core/SimulationBuilderXml.h"
-#include "core/SimulationReader.h"
-#include "statistics/TransmissionSummaryStats.h"
-#include "util/Utility.h"
-
-// unreachable code in main()'s top-level for-loop for some reason
-#if defined(_MSC_VER) && _MSC_VER >= 1800
-#pragma warning ( disable : 4702 )
-#endif
+#include "core/simulation.h"
+#include "core/simulationbuilderxml.h"
+#include "core/simulationreader.h"
+#include "statistics/transmissionsummarystats.h"
+#include "utility/utility.h"
+#include "utility/filesystem.h"
 
 namespace {
 
-struct ArgumentToken
+/// <summary>
+/// Search batch_directory and return list of XML and JSON files.
+/// </summary>
+std::vector<transm::path> find_input_files(const transm::path &batch_directory)
 {
-	enum class ArgumentTokenType
-	{
-		unknown,
-		option,
-		inputDirectory
-	};
+    static const std::unordered_set<std::string> known_extensions = {".xml", ".json"};
+    auto is_not_known_extension = [](const transm::path &p) -> bool
+    {
+        return known_extensions.find(p.extension().string()) == known_extensions.end();
+    };
+    std::vector<transm::path> input_files;
 
-	ArgumentTokenType type;
-	std::string value;
+    // return all files in the directory with known extensions
+    if(transm::filesystem::exists(batch_directory) 
+        && transm::filesystem::is_directory(batch_directory))
+    {
+        auto all_files = transm::filesystem::listdir(batch_directory);
+        auto new_end = std::remove_if(all_files.begin(), all_files.end(), is_not_known_extension);
+        input_files = std::vector<transm::path>(all_files.begin(), new_end);
+    }
+    // a specific file was given, return it as a singular element in a list
+    else if (transm::filesystem::exists(batch_directory)
+        && transm::filesystem::is_regular_file(batch_directory)
+        && !is_not_known_extension(batch_directory)) //double negative!
+    {
+        input_files.push_back(batch_directory);
+    }
+    else
+    {
+        auto message = std::string("not a directory ") + batch_directory.string();
+        throw std::runtime_error(message);
+    }
 
-	static ArgumentToken FromString(const std::string &tokenString)
-	{
-		ArgumentToken token;
-
-		token.value = tokenString;
-
-		if(token.value.length() > 2 && token.value.substr(0, 1) == "-")
-		{
-			token.type = ArgumentTokenType::option;
-		}
-		else
-		{
-			token.type = ArgumentTokenType::inputDirectory;
-		}
-
-		return token;
-	}
-};
-
-std::vector<ArgumentToken> ParseArgumentTokens(int argc, char *argv[])
-{
-	std::vector<ArgumentToken> tokens;
-
-	for(int i = 1; i < argc; i++)
-	{
-		std::string tokenString = argv[i];
-
-		if(tokenString.length() > 0)
-		{
-			tokens.push_back(ArgumentToken::FromString(tokenString));
-		}
-	}
-
-	return tokens;
-};
-
-void PrintUsage()
-{
-	std::cout << "usage: transm [--version] [--help] <input_directory>" << std::endl;
+    return input_files;
 }
 
-void PrintVersion()
+/// <sumary>
+/// Find all XML and JSON files in batch_directory. Load parameters from each
+/// file and run the model using those parameters.
+/// </summary>
+int run_simulation(const transm::path &batch_directory)
 {
-	std::cout << "transm version " << Version::ToString(Utility::MODEL_VERSION) << std::endl;
+    auto workingDirectory = transm::filesystem::current_path();
+
+    CepacUtil::inputsDirectory = batch_directory.string();
+    CepacUtil::changeDirectoryToInputs();
+    //Call this so that relative directories can be used as input (i.e. "../")
+    CepacUtil::useCurrentDirectoryForInputs();
+    CepacUtil::createResultsDirectory();
+
+    SummaryStats cepac_summary("cepacPopstats.out");
+    TransmissionSummaryStats transmission_summary("summaryStats.out");
+
+    auto batch_name = batch_directory.stem().string();
+    auto input_files = find_input_files(batch_directory);
+
+    for(auto input_file : input_files)
+    {
+        //Changing back to the input directory because over the course of Sim->run, the directory gets changed to results
+        CepacUtil::changeDirectoryToInputs();
+        std::cout << "Running File: " << input_file.stem().string() << std::endl;
+
+        SimulationBuilderXml sim_builder;
+        SimulationReader sim_reader(sim_builder);
+        sim_reader.ConstructSimulation(input_file.string());
+
+        Simulation &simulation = sim_builder.GetResult();
+
+        auto outputs = simulation.Run([](const std::string &s) { std::cout << s; });
+
+        cepac_summary.addRunStats(&simulation.GetCEPACRunStats());
+        transmission_summary.addPopulationStatistics(simulation.GetPopulationStatistics(), simulation.GetEventParams());
+    }
+
+    cepac_summary.finalizeStats();
+    cepac_summary.writeSummariesFile();
+    transmission_summary.writeSummariesFile();
+
+    return 0;
 }
 
-void PrintBadOption(const std::string &option)
+/// <sumary>
+/// Print to standard output how this model can be used.
+/// </summary>
+void print_usage(const std::string &executable)
 {
-	std::cout << "Unknown option: " << option << std::endl;
-	PrintUsage();
+    std::cout << "usage: " << executable;
+    std::cout << " [--version] [--help] input [input...]" << std::endl;
+    std::cout << std::endl;
+    std::cout << "input should be a directory containing one or more JSON " << std::endl;
+    std::cout << "   files or a specific JSON file to be simulated. In the case of a " << std::endl;
+    std::cout << "   directory, input files will be simulated sequentially in an arbitrary" << std::endl;
+    std::cout << "   order. If multiple inputs are specified, they will be simulated in " << std::endl;
+    std::cout << "   the order they are given." << std::endl;
 }
 
-void Simulate(const std::string &filename, SummaryStats &cepac_summary, TransmissionSummaryStats &transmission_summary)
+/// <sumary>
+/// Print to standard output a description of this model's version.
+/// </summary>
+void print_version(const std::string &executable)
 {
-	//Changing back to the input directory because over the course of Sim->run, the directory gets changed to results
-	CepacUtil::changeDirectoryToInputs();
-	std::cout << "Running File: " << filename << std::endl;
-
-	SimulationBuilderXml builder;
-	auto name = boost::filesystem::path(filename).stem().string();
-	SimulationReader reader(builder);
-	reader.ConstructSimulation(filename);
-	auto &simulation = builder.GetResult();
-
-	auto message_callback = [](const std::string &s) { std::cout << s; };
-	auto outputs = simulation.Run(message_callback);
-
-	cepac_summary.addRunStats(&simulation.GetCEPACRunStats());
-	transmission_summary.addPopulationStatistics(simulation.GetPopulationStatistics(), simulation.GetEventParams());
+    auto version_string = Version::ToString(Utility::get_model_version());
+    std::cout << executable << " version " << version_string << std::endl;
 }
 
-int RunSimulation(const std::string &directory = "")
-{
-	auto workingDirectory = boost::filesystem::current_path();
+} // namespace <unnamed>
 
-	CepacUtil::inputsDirectory = directory;
-	CepacUtil::changeDirectoryToInputs();
-	//Call this so that relative directories can be used as input (i.e. "../")
-	CepacUtil::useCurrentDirectoryForInputs();
-
-	Utility::findInputFiles(directory, workingDirectory.string());
-	auto &input_files = Utility::transmFilesToRun;
-
-	CepacUtil::createResultsDirectory();
-
-	SummaryStats cepacSummaryStats("cepacPopstats.out");
-	TransmissionSummaryStats transSummaryStats("summaryStats.out");
-
-	std::for_each(input_files.begin(), input_files.end(), [&](const std::string &s) 
-	{ 
-		Simulate(s, cepacSummaryStats, transSummaryStats); 
-	});
-
-	//Finalize CEPAC summary stats and print the popstats file
-	cepacSummaryStats.finalizeStats();
-
-	cepacSummaryStats.writeSummariesFile();
-	transSummaryStats.writeSummariesFile();
-
-	return 0;
-}
-
-} // namespace
-
+/// <summary>
+/// Process provided arguments and execute the simulation as specified by those arguments.
+/// </summary>
 int main(int argc, char *argv[])
 {
-	for(const auto &token : ParseArgumentTokens(argc, argv))
-	{
-		if(token.type == ArgumentToken::ArgumentTokenType::option)
-		{
-			if(token.value == "--version")
-			{
-				PrintVersion();
-				return 0;
-			}
-			else if(token.value == "--help")
-			{
-				PrintUsage();
-				return 0;
-			}
-		}
-		else if(token.type == ArgumentToken::ArgumentTokenType::inputDirectory)
-		{
-			return RunSimulation(token.value);
-		}
+    auto executable = transm::path(argv[0]).filename().string();
 
-		PrintBadOption(token.value);
-		return 1;
-	}
+    try
+    {
+        std::string program_description = "CEPAC Dynamic Model is an "
+            "individual-based simulation of HIV transmission. For more info, "
+            "see the User Guide or \"Development, Calibration and Performance "
+            "of an HIV Transmission Model Incorporating Natural History and "
+            "Behavioral Patterns: Application in South Africa\", PLOSone, 2014";
+        auto version_string = Version::ToString(Utility::get_model_version());
+        TCLAP::CmdLine cmd(program_description, ' ', version_string, false);
+        cmd.setExceptionHandling(false);
 
-	PrintUsage();
-    return 0;
+        std::string help_description = "help";
+        TCLAP::SwitchArg help_switch("h", "help", help_description, false);
+        cmd.add(help_switch);
+
+        std::string version_description = "version";
+        TCLAP::SwitchArg version_switch("v", "version", version_description, false);
+        cmd.add(version_switch);
+
+        auto input_files_description = "One or more JSON files or directories "
+            "containing JSON files that will be simulated in the given order.";
+        TCLAP::UnlabeledMultiArg<std::string> input_files_arg("input",
+            input_files_description, true, "something", false, nullptr);
+        cmd.add(input_files_arg);
+
+        cmd.parse(argc, argv);
+
+        if(help_switch.getValue())
+        {
+            print_usage(executable);
+            return 0;
+        }
+
+        if(version_switch.getValue())
+        {
+            print_version(executable);
+            return 0;
+        }
+
+        for(auto batch : input_files_arg.getValue())
+        {
+			auto result = run_simulation(batch);
+			// added because sometimes we don't see all output if buffered
+			std::cout.flush();
+
+			// stop if any batch fails
+            if(result != 0)
+            {
+                return 1;
+            }
+        }
+
+        return 0;
+    }
+    catch(TCLAP::ArgException &/*e*/)
+    {
+        print_usage(executable);
+        return 1;
+    }
 }

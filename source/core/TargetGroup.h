@@ -4,7 +4,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "../util/Nullable.h"
+#include "utility/Nullable.h"
 #include "../entities/Person.h"
 #include "../entities/classifiers/DemographicProfile.h"
 

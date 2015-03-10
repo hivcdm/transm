@@ -2,13 +2,13 @@
 #include "Male.h"
 #include "Female.h"
 #include "classifiers/SexualPartnership.h"
-#include "../core/Constants.h"
-#include "../data/EventParams.h"
-#include "../util/Utility.h"
-#include "../util/rand/RandomNumberGenerator.h"
-#include "../statistics/InfectionsTracker.h"
-#include "../statistics/ArtRolloutTracker.h"
-#include "../statistics/CostsTracker.h"
+#include "core/Constants.h"
+#include "data/EventParams.h"
+#include "utility/Utility.h"
+#include "utility/RandomNumberGenerator.h"
+#include "statistics/InfectionsTracker.h"
+#include "statistics/ArtRolloutTracker.h"
+#include "statistics/CostsTracker.h"
 
 class EntityPool;
 

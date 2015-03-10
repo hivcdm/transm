@@ -6,7 +6,7 @@ This file contains the implementations for the methods of EntityPool
 
 #include "EntityPool.h"
 #include "../../core/Constants.h"
-#include "../../util/Utility.h"
+#include "../../utility/Utility.h"
 #include "../Person.h"
 #include "BucketSexualMixing.h"
 

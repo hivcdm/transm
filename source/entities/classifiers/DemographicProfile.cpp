@@ -4,8 +4,8 @@
 
 #include "DemographicProfile.h"
 #include "../Person.h"
-#include "../../util/Utility.h"
-#include "../../util/make_unique.h"
+#include "../../utility/Utility.h"
+#include "../../utility/make_unique.h"
 
 //declare strings of Enums
 const std::vector<std::string> demographicStrs = {"SEXUAL_ACTIVITY_STATUS", "GENDER", "SEXUAL_ORIENTATION", "RELATIONSHIP_STATUS", "EMPLOYMENT"};

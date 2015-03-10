@@ -1,7 +1,7 @@
 #include <ctime>
 
 #include "RandomNumberGenerator.h"
-#include "../Utility.h"
+#include "utility/Utility.h"
 
 RandomNumberGenerator::RandomNumberGenerator()
 {

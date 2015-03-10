@@ -2,18 +2,18 @@
 #include <numeric>
 #include <set>
 #include <random>
-#include <boost/filesystem.hpp>
 #include <include.h>
 
 #include "Simulation.h"
 #include "Constants.h"
 #include "Population.h"
-#include "../util/CepacInputParser.h"
-#include "../data/EventParams.h"
-#include "../entities/classifiers/DemographicProfile.h"
-#include "../entities/behaviors/SexualBehavior.h"
-#include "../util/HighResolutionTimer.h"
-#include "../util/Utility.h"
+#include "utility/CepacInputParser.h"
+#include "data/EventParams.h"
+#include "entities/classifiers/DemographicProfile.h"
+#include "entities/behaviors/SexualBehavior.h"
+#include "utility/HighResolutionTimer.h"
+#include "utility/Utility.h"
+#include "utility/filesystem.h"
 
 TargetGroup::PopulationTarget TargetGroup::PopulationTarget::Any;
 
@@ -596,7 +596,7 @@ bool Simulation::LoadCepacSimContexts(const CepacTreatmentFiles &treatment_files
 			+ treatment_file.file_name + "\n");
 
 		//Set the CEPAC simContext from the specified CEPAC .in file
-		auto stem = boost::filesystem::path(treatment_file.file_name).stem().string();
+		auto stem = transm::path(treatment_file.file_name).stem().string();
 		parameters_.cepacSimContexts.push_back(new SimContext(stem));
 		assert(parameters_.cepacSimContexts.size() == static_cast<size_t>(treatment_file.file_number) + 1);
 		//parameters_.cepacSimContext = new SimContext(cepacInputFile.substr(0, cepacInputFile.find(CepacUtility::FILE_EXTENSION_FOR_INPUT)));

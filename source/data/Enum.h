@@ -3,9 +3,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "../util/Utility.h"
 #include <assert.h>
 
+#include "utility/Utility.h"
 
 /**
 This function allows enums to use prefix add notation for enums

@@ -1,9 +1,9 @@
 #include <iostream>
 
 #include "BucketSexualMixing.h"
-#include "../../core/Simulation.h"
-#include "../../util/Utility.h"
-#include "../../util/rand/RandomNumberGenerator.h"
+#include "core/Simulation.h"
+#include "utility/Utility.h"
+#include "utility/RandomNumberGenerator.h"
 
 void BucketSexualMixing::forEach(std::function<void(Person *)> callback)
 {

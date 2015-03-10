@@ -9,9 +9,9 @@
 #include "classifiers/DemographicProfile.h"
 #include "classifiers/SexualPartnership.h"
 #include "entitypool/FullVector.h"
-#include "../core/Constants.h"
-#include "../statistics/StatsRecord.h"
-#include "../util/Utility.h"
+#include "core/Constants.h"
+#include "statistics/StatsRecord.h"
+#include "utility/Utility.h"
 
 class ArtRolloutTracker;
 class CostsTracker;

@@ -1,12 +1,12 @@
 #pragma once
 
 #include <map>
+#include <pugixml.hpp>
 
 #include "Person.h"
 #include "behaviors/SexualBehavior.h"
-#include "../data/EventParams.h"
-#include "../util/rand/RandomNumberGenerator.h"
-#include "../util/xml/pugixml.hpp"
+#include "data/EventParams.h"
+#include "utility/RandomNumberGenerator.h"
 
 /// <summary>
 /// All females in the simulation are members of this class, or a class derived from this one

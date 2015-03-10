@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../util/rand/RandomNumberGenerator.h"
-#include "../../data/Enum.h"
-#include "../../data/EventParams.h"
+#include "utility/RandomNumberGenerator.h"
+#include "data/Enum.h"
+#include "data/EventParams.h"
 
 class Person;
 class PopulationStatistics;
