@@ -94,6 +94,9 @@ public :
         int GetMaxPartnershipRejections() const { return maxPartnershipRejections; }
         void SetMaxPartnershipRejections(int rejections) { maxPartnershipRejections = rejections; }
 
+        void SetPreExposureProphylaxisEfficacy(double efficacy) { preExposureProphylaxisEfficacy_ = efficacy; }
+        double GetPreExposureProphylaxisEfficacy() const { return preExposureProphylaxisEfficacy_; }
+
 	private:
 		double chanceBecomeCSW;		//chance that a male will become a CSW
 		double partnerAcqMultWithSteady[Person::ENDRiskLevel];  //the rate multiplier for partner acquisition when a male has a Steady partner
@@ -131,6 +134,8 @@ public :
         // decreases his number of partnerships to be formed and stops looking
         // for the current partner.
         int maxPartnershipRejections;
+
+        double preExposureProphylaxisEfficacy_;
 	};
 
 private:
@@ -152,6 +157,8 @@ private:
 	NormalDist averageYearsYounger[(int)SexualPartnership::Type::ENDType];
 	//------------< End parameters for individual males >-----------------//
 
+    double preExposureProphylaxisAdherence_;
+
 public:
 	/**
 	this constructor creates a Male that can be simulated
@@ -162,6 +169,10 @@ public:
 
 	Person *choosePartner(RandomNumberGenerator &_randomNums, EntityPool *_availableEntities,
 	                      SexualPartnership::Type _partnershipType, bool _remove);
+
+    virtual void SetPreExposureProphylaxisEfficacy(double efficacy);
+
+    virtual double GetPreExposureProphylaxisEfficacy() const;
 
     void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng);
 

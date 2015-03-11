@@ -1,6 +1,7 @@
 #include <vector>
 
 #include "Male.h"
+#include "Female.h"
 #include "classifiers/SexualPartnership.h"
 #include "behaviors/SexualBehavior.h"
 #include "entitypool/EntityPool.h"
@@ -12,7 +13,8 @@
 //(we only have 1 population for now so the size of the vector will default to 1
 
 Male::SubPopParams::SubPopParams()
-    : maxPartnershipRejections(0)
+    : maxPartnershipRejections(0),
+    preExposureProphylaxisEfficacy_(0)
 {
 }
 
@@ -153,7 +155,8 @@ void Male::Circumcise()
 
 Male::Male(EventParams &_eventParams, int _age, bool _circumcised, unsigned int _populationID, const Male::SubPopParams &params)
 	: Person(_age, _populationID),
-	populationSpecificParams(params)
+	populationSpecificParams(params),
+    preExposureProphylaxisAdherence_(0)
 {
 	//If age is out of range, set it at the closest boundary.
     if(!Utility::withinRange<int>(_age, 0, Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Person::maxYrForDeathStats)))
@@ -202,6 +205,16 @@ Male::Male(EventParams &_eventParams, int _age, bool _circumcised, unsigned int 
 
 Male::~Male()
 {
+}
+
+/*virtual*/ void Male::SetPreExposureProphylaxisEfficacy(double efficacy)
+{
+    populationSpecificParams.SetPreExposureProphylaxisEfficacy(efficacy);
+}
+
+/*virtual*/ double Male::GetPreExposureProphylaxisEfficacy() const
+{
+    return populationSpecificParams.GetPreExposureProphylaxisEfficacy();
 }
 
 double Male::getCondomUseProb(Person *_p, SexualPartnership::Type _partnershipType)
@@ -258,7 +271,13 @@ double Male::getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventP
 		condomEff = getCondomProtectEff();
 	}
 
-	double FOI = getTransmissionCoeff() *	(1 - condomEff);
+    double microbicideEfficacy = 
+        ((Female *)_p)->RollForVaginalMicrobicideUse(_eventParams.randomNums) 
+        ? ((Female *)_p)->GetVaginalMicrobicideEfficacy() : 0;
+
+    double prepEfficacy = _p->UsingPrEP() ? _p->GetPreExposureProphylaxisEfficacy() : 0;
+
+	double FOI = getTransmissionCoeff() *	(1 - condomEff) * (1 - microbicideEfficacy) * (1 - prepEfficacy);
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (trace() || _p->trace()))
 	{

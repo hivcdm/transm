@@ -36,6 +36,10 @@ public:
 
 	void RecordCondomUse(double costUndiscounted, double costDiscounted);
 
+    void RecordPrEPCost(double costUndiscounted, double costDiscounted);
+
+    void RecordVaginalMicrobicideCost(double costUndiscounted, double costDiscounted);
+
 	void RecordMedicalCosts(const std::array<double, 4> &costsUndiscounted, const std::array<double, 4> &costsDiscounted);
 
 	void RecordClinicalCosts(const std::array<double, 5> &costsUndiscounted, const std::array<double, 5> &costsDiscounted);
@@ -58,6 +62,8 @@ private:
 		std::array<double, Person::ENDHIVStatus> qalmsByHivStatus;
 		double condomCosts;
 		double circumcisionCosts;
+        double prEPCosts;
+        double vaginalMicrobicideCosts;
 		std::array<double, SimContext::COST_NUM_TYPES> medicalCosts;
 		std::array<double, (size_t)ClinicalCostTypes::Last> clinicalCosts;
 		std::array<double, NumArtLinesToRecord> artCosts;

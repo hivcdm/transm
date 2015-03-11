@@ -50,6 +50,8 @@ public:
 
 	void Circumcise(Person *p);
 
+    SimContext *LoadCepacFile(const std::string &cepac_file) { return parameters_.LoadCepacContext(cepac_file); }
+
     std::vector<Person *> Find(std::function<bool(Person *)> predicate);
 
     /// <summary>

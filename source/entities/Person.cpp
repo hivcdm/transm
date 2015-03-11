@@ -1250,6 +1250,16 @@ double Person::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 		}
 	}
 
+    bool not_observed_postitive = hivStatus == HIVStatus::NEGATIVE 
+        || hivStatus == HIVStatus::UNOBSERVED_ACUTE 
+        || hivStatus == HIVStatus::UNOBSERVED_CHRONIC 
+        || hivStatus == HIVStatus::UNOBSERVED_LATESTAGE;
+
+    if (not_observed_postitive && _eventParams.randomNums.chance(preExposureProphylaxisAdherence_))
+    {
+        using_prep_this_month_ = true;
+    }
+
 	//update HVL and CD4 for this Person if they are infected
 	if(isInfected())
 	{
@@ -1682,7 +1692,10 @@ Person::Person(int _age, unsigned int _populationID) :
 	monthly_cepac_costs_undiscounted_(0),
 	monthly_cepac_costs_discounted_(0),
 	monthly_cdm_costs_undiscounted_(0),
-	monthly_cdm_costs_discounted_(0)
+	monthly_cdm_costs_discounted_(0),
+    preExposureProphylaxisAdherence_(0),
+    targetedCepacContext_(nullptr),
+    using_prep_this_month_(false)
 {
 	id = Person::idCounter++;
 	populationID = _populationID;
@@ -1762,6 +1775,11 @@ Person::~Person(void)
 			delete(*toDelete);
 		}
 	}
+}
+
+void Person::UsePreExposureProphylaxis(double adherence)
+{
+    preExposureProphylaxisAdherence_ = adherence;
 }
 
 void Person::deletePersonWithoutDeleting()

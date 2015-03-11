@@ -147,6 +147,8 @@ public:
 
     void SetCondomCost(double condom_cost) { condomCost = condom_cost; }
     void SetCircumcisionCost(double circumcision_cost) { circumcisionCost = circumcision_cost; }
+    void SetPrEPCost(double cost) { prEPCost = cost; }
+    void SetVaginalMicrobicideCost(double cost) { vaginalMicrobicideApplicationCost = cost; }
 
 protected:
 	friend class Population;
@@ -216,4 +218,8 @@ private:
     /// cost per circumcision in dollars
     /// </summary>
 	double circumcisionCost;
+
+    double prEPCost;
+
+    double vaginalMicrobicideApplicationCost;
 };
