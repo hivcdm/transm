@@ -55,7 +55,9 @@ double Female::rollForAgeDifference(SexualPartnership::Type /*_partnershipType*/
 
 //each index of the array contains parameters for a different population
 //(as of 9/8/08, we only have 1 population for now so the size of the vector will default to 1
-Female::SubPopParams::SubPopParams()
+Female::SubPopParams::SubPopParams() :
+    preExposureProphylaxisEfficacy_(0),
+    vaginalMicrobicideEfficacy_(0)
 {
 }
 
@@ -81,7 +83,10 @@ double Female::SubPopParams::GetTransmitPerEventCoeff(HVLStrata _hvl) const
 Female::Female(EventParams &_eventParams, int _ageMths, unsigned int _populationID, const Female::SubPopParams &params)
 	: Person(_ageMths, _populationID),
 	populationSpecificParams(params),
-    overrideChanceCondomUse_(-1)
+    overrideChanceCondomUse_(-1),
+    vaginalMicrobicideAdherence_(0),
+    vaginalMicrobicideApplicationsThisMonth(0),
+    vaginalMicrobicideUsedLastFOICalculation(false)
 {
     dmgProfile.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Female);
 	activityLevel = _eventParams.randomNums.randNorm_NaturalNum(populationSpecificParams.GetActivityLevel());
@@ -116,6 +121,25 @@ Female::~Female(void)
 /** These methods are inherited from Person **/
 
 
+/*virtual*/ void Female::SetPreExposureProphylaxisEfficacy(double efficacy)
+{
+    populationSpecificParams.SetPreExposureProphylaxisEfficacy(efficacy);
+}
+
+/*virtual*/ double Female::GetPreExposureProphylaxisEfficacy() const
+{
+    return populationSpecificParams.GetPreExposureProphylaxisEfficacy();
+}
+
+void Female::SetVaginalMicrobicideAdherence(double adherence)
+{
+    vaginalMicrobicideAdherence_ = adherence;
+}
+
+double Female::GetVaginalMicrobicideEfficacy() const
+{
+    return populationSpecificParams.GetVaginalMicrobicideEfficacy();
+}
 
 double Female::getFOI(Person *_p, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
 {
@@ -133,7 +157,9 @@ double Female::getFOI(Person *_p, SexualPartnership::Type _partnershipType, Even
 		condomEff = m->getCondomProtectEff();
 	}
 
-	double FOI = getTransmissionCoeff() * (1 - condomEff) * (1 - circEff);
+    double prepEfficacy = _p->GetPreExposureProphylaxisEfficacy();
+
+    double FOI = getTransmissionCoeff() * (1 - condomEff) * (1 - circEff) * (1 - prepEfficacy);
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (trace() || _p->trace()))
 	{

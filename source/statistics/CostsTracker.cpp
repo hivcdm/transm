@@ -43,6 +43,18 @@ void CostsTracker::RecordCircumcision(double costUndiscounted, double costDiscou
 	discounted_.circumcisionCosts += costDiscounted;
 }
 
+void CostsTracker::RecordVaginalMicrobicideCost(double costUndiscounted, double costDiscounted)
+{
+    undiscounted_.vaginalMicrobicideCosts += costUndiscounted;
+    discounted_.vaginalMicrobicideCosts += costDiscounted;
+}
+
+void CostsTracker::RecordPrEPCost(double costUndiscounted, double costDiscounted)
+{
+    undiscounted_.prEPCosts += costUndiscounted;
+    discounted_.prEPCosts += costDiscounted;
+}
+
 void CostsTracker::RecordCepacCosts(double costUndiscounted, double costDiscounted, DemographicProfile::Gender gender, Person::CD4Strata cd4, 
 	Person::HVLStrata hvl, Person::HIVStatus status)
 {
