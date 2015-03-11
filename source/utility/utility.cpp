@@ -141,7 +141,7 @@ std::string get_executable_name()
     {
         std::string executable_string(path.begin(), std::find(path.begin(), path.end(), '\0'));
         class path executable_path(executable_string);
-        return executable_path.stem().string();
+        return executable_path.filename().string();
     }
 
     throw std::runtime_error("buffer too small, " + std::to_string(path.size()) + ", should be: " + std::to_string(size));

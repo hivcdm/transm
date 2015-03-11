@@ -324,16 +324,7 @@ std::vector<path::string_type> path::split_path() const
     while(separator_index != string_type::npos)
     {
         auto part = pathname_.substr(previous_index, separator_index - previous_index);
-
-        if(part == path::dotdot().native())
-        {
-            parts.pop_back();
-        }
-        else
-        {
-            parts.push_back(part);
-        }
-
+	parts.push_back(part);
         previous_index = separator_index + 1;
         separator_index = find_next_separator(previous_index);
     }

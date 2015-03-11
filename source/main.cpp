@@ -103,21 +103,27 @@ void print_usage(const std::string &executable)
 {
     std::cout << "usage: " << executable;
     std::cout << " [--version] [--help] input [input...]" << std::endl;
+}
+
+void print_help(const std::string &executable)
+{
+    print_usage(executable);
     std::cout << std::endl;
-    std::cout << "input should be a directory containing one or more JSON " << std::endl;
-    std::cout << "   files or a specific JSON file to be simulated. In the case of a " << std::endl;
-    std::cout << "   directory, input files will be simulated sequentially in an arbitrary" << std::endl;
-    std::cout << "   order. If multiple inputs are specified, they will be simulated in " << std::endl;
-    std::cout << "   the order they are given." << std::endl;
+    std::cout <<
+"input should be a directory containing one or more parameter files (XML or     \n"
+"   JSON) or a specific parameter file to be simulated. In the case of a        \n"
+"   directory, input files will be simulated sequentially in an arbitrary order.\n"
+"   If multiple inputs are specified, they will be simulated in the order they  \n"
+"   are given." << std::endl;
 }
 
 /// <sumary>
 /// Print to standard output a description of this model's version.
 /// </summary>
-void print_version(const std::string &executable)
+void print_version()
 {
     auto version_string = transm::Version::to_string(transm::Utility::get_model_version());
-    std::cout << executable << " version " << version_string << std::endl;
+    std::cout << "transm version " << version_string << std::endl;
 }
 
 } // namespace <unnamed>
@@ -142,29 +148,32 @@ int main(int argc, char *argv[])
 
         std::string help_description = "help";
         TCLAP::SwitchArg help_switch("h", "help", help_description, false);
-        cmd.add(help_switch);
 
         std::string version_description = "version";
         TCLAP::SwitchArg version_switch("v", "version", version_description, false);
-        cmd.add(version_switch);
 
         auto input_files_description = "One or more JSON files or directories "
             "containing JSON files that will be simulated in the given order.";
         TCLAP::UnlabeledMultiArg<std::string> input_files_arg("input",
             input_files_description, true, "something", false, nullptr);
-        cmd.add(input_files_arg);
+
+	std::vector<TCLAP::Arg *> xor_list;
+	xor_list.push_back(&help_switch);
+        xor_list.push_back(&version_switch);
+        xor_list.push_back(&input_files_arg);
+        cmd.xorAdd(xor_list);
 
         cmd.parse(argc, argv);
 
         if(help_switch.getValue())
         {
-            print_usage(executable);
+            print_help(executable);
             return 0;
         }
 
         if(version_switch.getValue())
         {
-            print_version(executable);
+            print_version();
             return 0;
         }
 
@@ -183,7 +192,7 @@ int main(int argc, char *argv[])
 
         return 0;
     }
-    catch(TCLAP::ArgException &/*e*/)
+    catch(TCLAP::ArgException &e)
     {
         print_usage(executable);
         return 1;
