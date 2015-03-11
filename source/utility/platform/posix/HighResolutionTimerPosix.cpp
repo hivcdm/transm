@@ -1,6 +1,6 @@
 #include <sys/time.h>
 
-#include "HighResolutionTimer.h"
+#include "utility/HighResolutionTimer.h"
 
 struct HighResolutionTimerImpl
 {

@@ -83,8 +83,8 @@ std::string get_executable_name()
     if (_NSGetExecutablePath(path.data(), &size) == 0)
     {
         std::string executable_string(path.begin(), std::find(path.begin(), path.end(), '\0'));
-        class path executable_path(executable_string);
-        return executable_path.stem().string();
+	transm::path executable_path(executable_string);
+        return executable_path.filename().string();
     }
 
     throw std::runtime_error("buffer too small, " + std::to_string(path.size()) + ", should be: " + std::to_string(size));
