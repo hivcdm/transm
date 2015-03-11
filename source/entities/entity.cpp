@@ -1129,6 +1129,16 @@ double Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 		}
 	}
 
+    bool not_observed_postitive = hivStatus == HIVStatus::NEGATIVE 
+        || hivStatus == HIVStatus::UNOBSERVED_ACUTE 
+        || hivStatus == HIVStatus::UNOBSERVED_CHRONIC 
+        || hivStatus == HIVStatus::UNOBSERVED_LATESTAGE;
+
+    if (not_observed_postitive && _eventParams.randomNums.chance(preExposureProphylaxisAdherence_))
+    {
+        using_prep_this_month_ = true;
+    }
+
 	//update HVL and CD4 for this Entity if they are infected
 	if(isInfected())
 	{
@@ -1508,7 +1518,10 @@ Entity::Entity(Age _age, unsigned int _populationID) :
 	monthly_cepac_costs_undiscounted_(0),
 	monthly_cepac_costs_discounted_(0),
 	monthly_cdm_costs_undiscounted_(0),
-	monthly_cdm_costs_discounted_(0)
+	monthly_cdm_costs_discounted_(0),
+    preExposureProphylaxisAdherence_(0),
+    targetedCepacContext_(nullptr),
+    using_prep_this_month_(false)
 {
 	id = Entity::idCounter++;
 	populationID = _populationID;
@@ -1580,7 +1593,12 @@ Entity::~Entity(void)
 	}
 }
 
-void Entity::deleteEntityWithoutDeleting()
+void Person::UsePreExposureProphylaxis(double adherence)
+{
+    preExposureProphylaxisAdherence_ = adherence;
+}
+
+void Person::deleteEntityWithoutDeleting()
 {
 	//Don't delete the cepacPatient -- this causes a weird exception when you try to delete it at the close of simulation, so keep it around
 	//take person out of all current relationships

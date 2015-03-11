@@ -63,7 +63,9 @@ double Female::rollForAgeDifference(SexualPartnership::Type /*_partnershipType*/
 
 //each index of the array contains parameters for a different population
 //(as of 9/8/08, we only have 1 population for now so the size of the vector will default to 1
-Female::SubPopParams::SubPopParams()
+Female::SubPopParams::SubPopParams() :
+    preExposureProphylaxisEfficacy_(0),
+    vaginalMicrobicideEfficacy_(0)
 {
 }
 
@@ -83,9 +85,12 @@ NormalDist Female::SubPopParams::GetActivityLevel() const
 
 Female::Female(EventParams &_eventParams, Age _ageMths, unsigned int _populationID, const Female::SubPopParams &params)
 	: Entity(_ageMths, _populationID),
-	populationSpecificParams(params),
-    overrideChanceCondomUse_(-1),
-	times_selected_(0)
+	  populationSpecificParams(params),
+	  overrideChanceCondomUse_(-1),
+	  times_selected_(0),
+	  vaginalMicrobicideAdherence_(0),
+	  vaginalMicrobicideApplicationsThisMonth(0),
+	  vaginalMicrobicideUsedLastFOICalculation(false)
 {
     dmgProfile.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Female);
 	activityLevel = _eventParams.randomNums.randNorm_NaturalNum(populationSpecificParams.GetActivityLevel());
@@ -111,11 +116,33 @@ Female::~Female(void)
 {
 }
 
+
+/*virtual*/ void Female::SetPreExposureProphylaxisEfficacy(double efficacy)
+{
+    populationSpecificParams.SetPreExposureProphylaxisEfficacy(efficacy);
+}
+
+/*virtual*/ double Female::GetPreExposureProphylaxisEfficacy() const
+{
+    return populationSpecificParams.GetPreExposureProphylaxisEfficacy();
+}
+
+void Female::SetVaginalMicrobicideAdherence(double adherence)
+{
+    vaginalMicrobicideAdherence_ = adherence;
+}
+
+double Female::GetVaginalMicrobicideEfficacy() const
+{
+    return populationSpecificParams.GetVaginalMicrobicideEfficacy();
+}
+
+//in this case, this female is infected and the passed entity is an uninfected male
+// FOI = transmission coeff * (1 - (condoms are used and succeed)) * (1 - (male is circumcised))
 double Female::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
 {
     assert(_p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male);
 
-    // FOI = transmission coeff * (1 - (condoms are used and succeed)) * (1 - (male is circumcised))
 
     double circEff = 0;
     double condomUseProb = 0;
@@ -141,16 +168,17 @@ double Female::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std
         throw std::runtime_error("invalid partner for female: " + _p->getEntityType());
     }
 
-	//Determine if a condom was used and record
-	condomUsedLastFOICalculation = _eventParams.randomNums.chance(condomUseProb);
+    //Determine if a condom was used and record
+    condomUsedLastFOICalculation = _eventParams.randomNums.chance(condomUseProb);
 
-	//Determine the condom efficacy --> 0 if no condom was used
+    //Determine the condom efficacy --> 0 if no condom was used
     double condomEff = condomUsedLastFOICalculation ? condomProtectEff : 0;
 
     assert(_p->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Male);
 
+    double prepEfficacy = _p->GetPreExposureProphylaxisEfficacy();
     double base_foi = transmission_coefficients.at(TransmissionType::female_to_male)[(std::size_t)getHVL()];
-    double FOI = base_foi * (1 - condomEff) * (1 - circEff);
+    double FOI = base_foi * (1 - condomEff) * (1 - circEff) * (1 - prepEfficacy);
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (trace() || _p->trace()))
 	{

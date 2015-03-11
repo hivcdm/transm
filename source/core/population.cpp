@@ -324,6 +324,13 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 			//update their health status
 			p->updateHealthStatus(parameters_, &populationStatistics.artTracker, &populationStatistics.costsTracker);
 
+            if (p->UsingPrEP())
+             {
+                 double discountFactor = p->getCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor);
+                 populationStatistics.costsTracker.RecordPrEPCost(popWideParams.prEPCost, popWideParams.prEPCost * discountFactor);
+             }
+ 
+
 			if(oldStatus != p->hivStatus)
 			{
                 if(p->getDemographicProfile()->get(p->getDemographicProfile()->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
@@ -444,7 +451,11 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 				}
 			}
 
-			populationStatistics.costsTracker.RecordLifeMonth(p->getQualityOfLife(), 
+            auto discount = parameters_.useRollout ?
+                 parameters_.untreatedContext->getRunSpecsInputs()->discountFactor
+                 : parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor;
+ 			populationStatistics.costsTracker.RecordLifeMonth(p->getQualityOfLife(), p->getCepacDiscountFactor(parameters_.currTime, discount), p->getHIVStatus());
+  			populationStatistics.costsTracker.RecordLifeMonth(p->getQualityOfLife(), 
 				p->getCepacDiscountFactor(parameters_), p->getHIVStatus());
 
 			p_Iter++;
@@ -542,6 +553,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 		(*p_Iter)->resetNumActs();
 		((Female *)(*p_Iter))->ResetTimesSelected();
 		(*p_Iter)->reset_costs();
+		((Female *)*p_Iter)->ResetVaginalMicrobicideUsage();
 	}
 
 	//Second pass: Form new partnerships and have sex
@@ -627,7 +639,12 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 
 		auto totalCondomCostUndiscounted = person->getCondomsUsedThisMonth() 
 			* popWideParams.condomCost;
-		populationStatistics.costsTracker.RecordCondomUse(totalCondomCostUndiscounted,
+		auto discount = parameters_.useRollout ?
+            parameters_.untreatedContext->getRunSpecsInputs()->discountFactor
+            : parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor;
+		initiator->add_cdm_cost(totalCondomCostUndiscounted, totalCondomCostUndiscounted * initiator->getCepacDiscountFactor(parameters_.currTime, discount));
+		populationStatistics.costsTracker.RecordCondomUse(totalCondomCostUndiscounted, totalCondomCostUndiscounted * initiator->getCepacDiscountFactor(parameters_.currTime, discount));
+  			populationStatistics.costsTracker.RecordCondomUse(totalCondomCostUndiscounted,
 			totalCondomCostUndiscounted * person->getCepacDiscountFactor(parameters_));
 		person->add_cdm_cost(totalCondomCostUndiscounted, 
 			totalCondomCostUndiscounted * person->getCepacDiscountFactor(parameters_));
@@ -1025,7 +1042,12 @@ Entity *Population::GenerateEntity(EventParams &parameters_, const std::string &
 
         if(circumcised)
         {
-            populationStatistics.costsTracker.RecordCircumcision(
+           auto discount = parameters_.useRollout ? 
+                parameters_.untreatedContext->getRunSpecsInputs()->discountFactor 
+                : parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor;
+			populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * m->getCepacDiscountFactor(parameters_.currTime, discount));
+			toReturn->add_cdm_cost(popWideParams.circumcisionCost, popWideParams.circumcisionCost * m->getCepacDiscountFactor(parameters_.currTime, discount));
+  		            populationStatistics.costsTracker.RecordCircumcision(
 				popWideParams.circumcisionCost, 
                 popWideParams.circumcisionCost 
 				* toReturn->getCepacDiscountFactor(parameters_));
@@ -1387,7 +1409,8 @@ void Population::DetermineRankings(const RolloutEligibility &criteria)
 				bool isEligible = false;
 				Entity *untPerson = *untIter;
 
-				if(rankedPeople.find(untPerson) != rankedPeople.end())
+				if(rankedPeople.find(untPerson) != rankedPeople.end() || untPerson->HasTargetedCepacContext())
+  				{)
 				{
 					untIter++;
 					continue;

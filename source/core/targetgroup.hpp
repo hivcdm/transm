@@ -259,7 +259,11 @@ public:
 					if (person.second == static_cast<int>(partition_index))
 					{
 						summary.life_months_undiscounted++;
-						summary.life_months_discounted += person.first->getCepacDiscountFactor(parameters);
+
+                        auto discount = parameters.useRollout ?
+                            parameters.untreatedContext->getRunSpecsInputs()->discountFactor
+                            : parameters.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor;
+						summary.life_months_discounted += person.first->getCepacDiscountFactor(parameters.currTime, discount);
 						summary.cepac_costs_undiscounted += person.first->get_monthly_cepac_costs_undiscounted();
 						summary.cepac_costs_discounted += person.first->get_monthly_cepac_costs_discounted();
 						summary.cdm_costs_undiscounted += person.first->get_monthly_cdm_costs_undiscounted();

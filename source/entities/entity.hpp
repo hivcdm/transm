@@ -53,6 +53,12 @@ public:
 
     virtual void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) = 0;
 
+    void SetPreExposureProphylaxisAdherence(double adherence) { preExposureProphylaxisAdherence_ = adherence; }
+
+    virtual void SetPreExposureProphylaxisEfficacy(double efficacy) = 0;
+
+    virtual double GetPreExposureProphylaxisEfficacy() const = 0;
+
 	/// <summary>
 	/// every Entity's CD4 count falls in a CD4 strata - used in CEPAC
 	/// </summary>
@@ -194,12 +200,22 @@ public:
 
     virtual void SetAssortativeness(SexualPartnership::Type partnership_type, double assortativeness) = 0;
 
+    void UsePreExposureProphylaxis(double adherence);
+
+    void SetTargetedCepacContext(SimContext *context) { setSimContext(context); targetedCepacContext_ = context; }
+
+    bool HasTargetedCepacContext() const { return targetedCepacContext_ != nullptr; }
+
 protected:
     //keeps track of which population this Entity belongs to
 	unsigned int populationID;
 
     //person's unique id number
 	unsigned long id;
+
+    double preExposureProphylaxisAdherence_;
+
+    SimContext *targetedCepacContext_;
 
 	//person's current demographic profile - values in here depend on person's physical, relational state, and other preferences
 	DemographicProfile dmgProfile;
@@ -715,6 +731,11 @@ public:
 	double get_monthly_cdm_costs_undiscounted() const { return monthly_cdm_costs_undiscounted_; }
 	double get_monthly_cdm_costs_discounted() const { return monthly_cdm_costs_discounted_; }
 
+    bool UsingPrEP()
+    {
+        return using_prep_this_month_;
+    }
+
 private:
 	//Return the current index of which SimContext should be used to update the health of a patient
 	int getCEPACSimContextIndex(EventParams &_eventParams);
@@ -723,6 +744,8 @@ private:
 	double monthly_cepac_costs_discounted_;
 	double monthly_cdm_costs_undiscounted_;
 	double monthly_cdm_costs_discounted_;
+
+    bool using_prep_this_month_;
 };
 
 } // namespace transm

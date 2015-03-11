@@ -62,6 +62,10 @@ public:
     PopulationParameters &GetParameters() { return popWideParams; }
     const PopulationParameters &GetParameters() const { return popWideParams; }
 
+    SimContext *LoadCepacFile(const std::string &cepac_file) { return parameters_.LoadCepacContext(cepac_file); }
+
+    std::vector<Person *> Find(std::function<bool(Person *)> predicate);
+
     /// <summary>
 	/// determines which DemographicProfiles have the power to initiate relationships and determines which
 	/// relationships they can have

@@ -10,6 +10,7 @@
 #include "concurrencydefinition.hpp"
 #include "core/constants.hpp"
 #include "utility/enum_iterator.hpp"
+#include "utility/filesystem.hpp"
 #include "utility/randomnumbergenerator.hpp"
 #include "utility/time.hpp"
 
@@ -174,8 +175,40 @@ public:
 			delete sc;
 		}
 
+		for (auto cf : cepac_file_context_map_)
+		{
+		        delete cf.second;
+		}
+
 		delete cepacTracer;
 	}
+  
+     SimContext *LoadCepacContext(const std::string &cepac_file)
+     {
+         if (cepac_file_context_map_.find(cepac_file)
+             == cepac_file_context_map_.end())
+         {
+             displayOut("\tReading " + cepac_file + "\n");
+ 
+             //Set the CEPAC simContext from the specified CEPAC .in file
+             auto stem = transm::path(cepac_file).stem().string();
+             cepac_file_context_map_[cepac_file] = new SimContext(stem);
+ 
+             //Read in the inputs
+             try
+             {
+                 cepac_file_context_map_[cepac_file]->readInputs();
+             }
+             catch (std::string errorString)
+             {
+                 throw std::runtime_error(errorString);
+             }
+         }
+ 
+         return cepac_file_context_map_[cepac_file];
+     }
+ 
+     std::unordered_map<std::string, SimContext *> cepac_file_context_map_;
 };
 
 } // namespace transm

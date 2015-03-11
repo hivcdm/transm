@@ -144,6 +144,8 @@ public:
 
     void SetCondomCost(double condom_cost) { condomCost = condom_cost; }
     void SetCircumcisionCost(double circumcision_cost) { circumcisionCost = circumcision_cost; }
+    void SetPrEPCost(double cost) { prEPCost = cost; }
+    void SetVaginalMicrobicideCost(double cost) { vaginalMicrobicideApplicationCost = cost; }
 
 protected:
 	friend class Population;
@@ -224,6 +226,9 @@ private:
 	double circumcisionCost;
 
 	std::vector<std::pair<PopulationTarget, std::size_t>> initial_infection_targets_;
+    double prEPCost;
+
+    double vaginalMicrobicideApplicationCost;
 };
 
 } // namespace transm

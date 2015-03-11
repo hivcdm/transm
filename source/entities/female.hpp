@@ -28,6 +28,10 @@ public:
 		void SetActivityLevel(NormalDist &dist) { activityLevel = dist; }
 		void SetChanceBecomeCsw(double chance) { chanceBecomeCSW = chance; }
         void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) { proportionHighRisk[(std::size_t)employment] = proportion; }
+        void SetPreExposureProphylaxisEfficacy(double efficacy) { preExposureProphylaxisEfficacy_ = efficacy; }
+        double GetPreExposureProphylaxisEfficacy() const { return preExposureProphylaxisEfficacy_; }
+        void SetVaginalMicrobicideEfficacy(double efficacy) { vaginalMicrobicideEfficacy_ = efficacy; }
+        double GetVaginalMicrobicideEfficacy() const { return vaginalMicrobicideEfficacy_; }
 
         void SetCswEndAge(Age end_age) { cswEndAge = end_age; }
         Age GetCswEndAge() const { return cswEndAge; }
@@ -42,6 +46,11 @@ public:
         std::array<double, (std::size_t)DemographicProfile::Employment::Last> proportionHighRisk;
         //Distribution of activity level (i.e. marbles)
 		NormalDist activityLevel;
+
+        //chance of infection for women->men, w/o circumcision or condoms
+		std::array<double, HVLStrata::ENDHVLStrata> transmitPerEventCoeffs;
+        double preExposureProphylaxisEfficacy_;
+        double vaginalMicrobicideEfficacy_;
 	};
 
 public:
@@ -60,6 +69,39 @@ public:
     void SetChanceBecomeSexWorker(double chance) { populationSpecificParams.SetChanceBecomeCsw(chance); }
 
     void SetAssortativeness(SexualPartnership::Type /*partnership_type*/, double /*assortativeness*/) { throw std::runtime_error("not implemented for women"); }
+
+    void SetVaginalMicrobicideAdherence(double adherence);
+
+    void SetVaginalMicrobicideEfficacy(double efficacy) { populationSpecificParams.SetVaginalMicrobicideEfficacy(efficacy); }
+
+    double GetVaginalMicrobicideEfficacy() const;
+
+    virtual void SetPreExposureProphylaxisEfficacy(double efficacy);
+
+    virtual double GetPreExposureProphylaxisEfficacy() const;
+
+    bool RollForVaginalMicrobicideUse(RandomNumberGenerator &rng)
+    {
+        vaginalMicrobicideUsedLastFOICalculation = rng.chance(vaginalMicrobicideAdherence_);
+        if (vaginalMicrobicideUsedLastFOICalculation) 
+            IncrementVaginalMicrobicideApplications();
+        return vaginalMicrobicideUsedLastFOICalculation;
+    }
+
+    void ResetVaginalMicrobicideUsage()
+    {
+        vaginalMicrobicideApplicationsThisMonth = 0;
+    }
+
+    int GetVaginalMicrobicideApplicationsThisMonth()
+    {
+        return vaginalMicrobicideApplicationsThisMonth;
+    }
+
+    void IncrementVaginalMicrobicideApplications()
+    {
+        vaginalMicrobicideApplicationsThisMonth++;
+    }
 
 	/** Start: Inherited from Person, comments found there **/
 
@@ -106,6 +148,9 @@ public:
 private:
 	SubPopParams populationSpecificParams;
     double overrideChanceCondomUse_;
+    double vaginalMicrobicideAdherence_;
+    int vaginalMicrobicideApplicationsThisMonth;
+    bool vaginalMicrobicideUsedLastFOICalculation;
     std::map<RiskLevel, std::map<SexualPartnership::Type, double>> partnershipRejectionChance_;
 	std::size_t times_selected_;
 };

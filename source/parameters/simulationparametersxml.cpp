@@ -538,6 +538,7 @@ Male::SubPopParams SimulationParametersXml::GetMaleSubPopParams() const
 	auto health_node = node.child("health");
 	result.SetCircucmsionProtectEfficacy(Text<double>(health_node.child("circumcisionProtectEfficacy")));
 	result.SetCondomProtectEff(Text<double>(health_node.child("condomProtectEfficacy")));
+	result.SetPreExposureProphylaxisEfficacy(Text<double>(health_node.child("preExposureProphylaxisEfficacy")));
 
     result.SetMaxPartnershipRejections(Text<int>(behavior_node.child("maxPartnershipRejections")));
 
@@ -612,6 +613,7 @@ Msm::SubPopParams SimulationParametersXml::GetMsmSubPopParams() const
     auto health_node = node.child("health");
     result.SetCircucmsionProtectEfficacy(Text<double>(health_node.child("circumcisionProtectEfficacy")));
     result.SetCondomProtectEff(Text<double>(health_node.child("condomProtectEfficacy")));
+    result.SetPreExposureProphylaxisEfficacy(Text<double>(health_node.child("preExposureProphylaxisEfficacy")));
 
     result.SetMaxPartnershipRejections(Text<int>(behavior_node.child("maxPartnershipRejections")));
 
@@ -686,7 +688,7 @@ Msmw::SubPopParams SimulationParametersXml::GetMsmwSubPopParams() const
     auto health_node = node.child("health");
     result.SetCircucmsionProtectEfficacy(Text<double>(health_node.child("circumcisionProtectEfficacy")));
     result.SetCondomProtectEff(Text<double>(health_node.child("condomProtectEfficacy")));
-
+    result.SetPreExposureProphylaxisEfficacy(Text<double>(health_node.child("preExposureProphylaxisEfficacy")));
     result.SetMaxPartnershipRejections(Text<int>(behavior_node.child("maxPartnershipRejections")));
 
     return result;
@@ -708,6 +710,10 @@ Female::SubPopParams SimulationParametersXml::GetFemaleSubPopParams() const
 	activityLevel.mean = 1;
 	activityLevel.stddev = 0;
 	result.SetActivityLevel(activityLevel);
+
+       auto health_node = node.child("health");
+       result.SetPreExposureProphylaxisEfficacy(Text<double>(health_node.child("preExposureProphylaxisEfficacy")));
+       result.SetVaginalMicrobicideEfficacy(Text<double>(health_node.child("vaginalMicrobicideEfficacy")));
 
 	return result;
 }
@@ -913,6 +919,8 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
     //Costs
     parameters.SetCondomCost(Text<double>(costs_node.child("condomCost")));
     parameters.SetCircumcisionCost(Text<double>(costs_node.child("circumcisionCost")));
+    population_parameters.SetPrEPCost(Text<double>(costs_node.child("prEPCost")));
+    population_parameters.SetVaginalMicrobicideCost(Text<double>(costs_node.child("vaginalMicrobicideCost")));
 
     return parameters;
 }
@@ -1238,41 +1246,50 @@ enum class KnownIntervention
     PartnershipDuration,
     RolloutEligibility,
     PartnershipRejectionChance,
-    OverrideChanceCondomUse
+    OverrideChanceCondomUse,
+    CepacContext,
+    VaginalMicrobicideUse,
+    PreExposureProphylaxisUse
 };
 
 const std::map<KnownIntervention, std::string> KnownInterventionStrings =
 {
-    {KnownIntervention::Circumcise, "circumcise"},
-    {KnownIntervention::BirthRate, "birthRate"},
-    {KnownIntervention::ProportionMale, "proportionMale"},
-    {KnownIntervention::ProportionCircumcised, "proportionCircumcised"},
-    {KnownIntervention::ChanceBecomeSexWorker, "chanceBecomeSexWorker"},
-    {KnownIntervention::DelaySexualActivity, "delaySexualActivity"},
-    {KnownIntervention::TransmissionCoefficient, "transmissionCoefficient"},
-    {KnownIntervention::ProportionHighRisk, "proportionHighRisk"},
-    {KnownIntervention::AverageYearsYounger, "averageYearsYounger"},
-    {KnownIntervention::PartnerAcquisitionRate, "partnerAcquisitionRate"},
-    {KnownIntervention::CoitalEventsPerMonth, "coitalEventsPerMonth"},
-    {KnownIntervention::ChanceCondomUse, "chanceCondomUse"},
-    {KnownIntervention::PartnershipDuration, "partnershipDuration"},
-    {KnownIntervention::RolloutEligibility, "rolloutEligibility"},
-    {KnownIntervention::PartnershipRejectionChance, "partnershipRejectionChance"},
-    {KnownIntervention::OverrideChanceCondomUse, "overrideChanceCondomUse"}
+     { KnownIntervention::Circumcise, "circumcise" },
+     { KnownIntervention::BirthRate, "birthRate" },
+     { KnownIntervention::ProportionMale, "proportionMale" },
+     { KnownIntervention::ProportionCircumcised, "proportionCircumcised" },
+     { KnownIntervention::ChanceBecomeSexWorker, "chanceBecomeSexWorker" },
+     { KnownIntervention::DelaySexualActivity, "delaySexualActivity" },
+     { KnownIntervention::TransmissionCoefficient, "transmissionCoefficient" },
+     { KnownIntervention::ProportionHighRisk, "proportionHighRisk" },
+     { KnownIntervention::AverageYearsYounger, "averageYearsYounger" },
+     { KnownIntervention::PartnerAcquisitionRate, "partnerAcquisitionRate" },
+     { KnownIntervention::CoitalEventsPerMonth, "coitalEventsPerMonth" },
+     { KnownIntervention::ChanceCondomUse, "chanceCondomUse" },
+     { KnownIntervention::PartnershipDuration, "partnershipDuration" },
+     { KnownIntervention::RolloutEligibility, "rolloutEligibility" },
+     { KnownIntervention::PartnershipRejectionChance, "partnershipRejectionChance" },
+     { KnownIntervention::OverrideChanceCondomUse, "overrideChanceCondomUse" },
+     { KnownIntervention::CepacContext, "cepacContext" },
+     { KnownIntervention::VaginalMicrobicideUse, "vaginalMicrobicideAdherence" },
+     { KnownIntervention::PreExposureProphylaxisUse, "preExposureProphylaxisAdherence" }
 };
 
 template<>
 KnownIntervention SimulationParametersXml::from_string(const std::string &intervention)
 {
-    for(auto pair : KnownInterventionStrings)
-    {
-        if(pair.second == intervention)
-        {
-            return pair.first;
-        }
+    auto match = std::find_if(KnownInterventionStrings.begin(), 
+        KnownInterventionStrings.end(), 
+        [&](const std::pair<KnownIntervention, std::string> &e) 
+    { 
+        return e.second == intervention; 
+    });
+
+    if (match == KnownInterventionStrings.end()) {
+      throw std::runtime_error("unknown intervention: " + intervention);
     }
 
-    throw std::runtime_error("unknown intervention: " + intervention);
+    return match->first;
 }
 
 template<>
@@ -1445,6 +1462,53 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
                 person->SetOverrideChanceCondomUse(chance); });
             break;
         }
+        case KnownIntervention::CepacContext:
+         {
+             auto cepac_file = Text<std::string>(node);
+             intervention.SetPopulationIndividualCallback([=](Population &pop, Person *person) 
+             {
+                 if (person->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() != DemographicProfile::SexualActivityStatus::Active)
+                 {
+                     auto message = "error: attempting to apply cepac context to non-SA person";
+                     throw std::runtime_error(message);
+                 }
+ 
+                 auto context = pop.LoadCepacFile(cepac_file);
+                 person->SetTargetedCepacContext(context);
+             });
+             break;
+         }
+         case KnownIntervention::VaginalMicrobicideUse:
+         {
+             auto adherence = Text<double>(node);
+             intervention.SetIndividualCallback([=](Person *person) 
+             {
+                 if (person->getDemographicProfileVal<DemographicProfile::Gender>() != DemographicProfile::Gender::Female)
+                 {
+                     auto message = "error: attempting to apply vaginal microbicides to non-female";
+                     throw std::runtime_error(message);
+                 }
+ 
+                 auto female = static_cast<Female *>(person);
+                 female->SetVaginalMicrobicideAdherence(adherence); 
+             });
+             break;
+         }
+         case KnownIntervention::PreExposureProphylaxisUse:
+         {
+             auto adherence = Text<double>(node);
+             intervention.SetIndividualCallback([=](Person *person) 
+             {
+                 if (person->getHIVStatus() != Person::HIVStatus::NEGATIVE)
+                 {
+                     auto message = "error: attempting to apply PrEP to HIV positive";
+                     throw std::runtime_error(message);
+                 }
+ 
+                 person->UsePreExposureProphylaxis(adherence); 
+             });
+             break;
+         }
         default:
         {
             std::string message = "Intervention cannot be applied to a specific sub-population: ";
