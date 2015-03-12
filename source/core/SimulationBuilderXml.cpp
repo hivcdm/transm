@@ -862,9 +862,17 @@ Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node cri
             {
                 target.value.observed_hiv_status.value = Person::UNOBSERVED_LATESTAGE;
             }
-            else if(value == "positive")
+            else if(value == "any-positive")
             {
-                target.value.observed_hiv_status.value = Person::ENDHIVStatus;
+                target.value.observed_hiv_status.value = Person::ANY_POSITIVE;
+            }
+            else if (value == "not-observed-positive")
+            {
+                target.value.observed_hiv_status.value = Person::ANY_NOT_OBSERVED_POSITIVE;
+            }
+            else if (value == "observed-positive")
+            {
+                target.value.observed_hiv_status.value = Person::ANY_OBSERVED_POSITIVE;
             }
             else
             {
@@ -1358,9 +1366,11 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
             auto adherence = Text<double>(node);
             intervention.SetIndividualCallback([=](Person *person) 
             {
-                if (person->getHIVStatus() != Person::HIVStatus::NEGATIVE)
+                if (person->getHIVStatus() == Person::HIVStatus::OBSERVED_ACUTE
+                    || person->getHIVStatus() == Person::HIVStatus::OBSERVED_LATESTAGE
+                    || person->getHIVStatus() == Person::HIVStatus::OBSERVED_CHRONIC)
                 {
-                    auto message = "error: attempting to apply PrEP to HIV positive";
+                    auto message = "error: attempting to apply PrEP to an observed HIV positive person";
                     throw std::runtime_error(message);
                 }
 

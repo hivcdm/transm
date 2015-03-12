@@ -305,6 +305,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
             {
                 double discountFactor = p->getCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor);
                 populationStatistics.costsTracker.RecordPrEPCost(popWideParams.prEPCost, popWideParams.prEPCost * discountFactor);
+                p->add_cdm_cost(popWideParams.prEPCost, popWideParams.prEPCost * discountFactor);
             }
 
 			if(oldStatus != p->hivStatus)
@@ -609,6 +610,14 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 	} //for (p_Iter = entities->begin(DemographicProfile::Gender::Male); p_Iter != entities->end(DemographicProfile::Gender::Male); p_Iter++)
 
 	//Ends the second pass through (i.e. the sex acts pass through)
+
+    for (p_Iter = entities->begin(DemographicProfile::Gender::Female); p_Iter != entities->end(DemographicProfile::Gender::Female); p_Iter++)
+    {
+        auto p = static_cast<Female *>(*p_Iter);
+        auto cost = popWideParams.vaginalMicrobicideApplicationCost * p->GetVaginalMicrobicideApplicationsThisMonth();
+        auto discount = p->getCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor);
+        p->add_cdm_cost(cost, cost * discount);
+    }
 
 	//print out results to traces
 	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)

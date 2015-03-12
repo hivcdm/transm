@@ -132,12 +132,48 @@ void TargetGroup::Update(Population &population, int current_time,
                 return false;
             }
 
-            if(target_.value.observed_hiv_status.has_value
-                && ((target_.value.observed_hiv_status.value == Person::ENDHIVStatus
-                     && person->getHIVStatus() == Person::NEGATIVE)
-                     || (target_.value.observed_hiv_status.value != person->getHIVStatus())))
+            if (target_.value.observed_hiv_status.has_value)
             {
-                return false;
+                switch (target_.value.observed_hiv_status.value)
+                {
+                case Person::HIVStatus::ANY_POSITIVE:
+                    if (person->getHIVStatus() == Person::NEGATIVE)
+                    {
+                        return false;
+                    }
+
+                    break;
+                case Person::ANY_NOT_OBSERVED_POSITIVE:
+                {
+                    if (person->getHIVStatus() == Person::HIVStatus::OBSERVED_ACUTE
+                        || person->getHIVStatus() == Person::HIVStatus::OBSERVED_LATESTAGE
+                        || person->getHIVStatus() == Person::HIVStatus::OBSERVED_CHRONIC)
+                    {
+                        return false;
+                    }
+
+                    break;
+                }
+                case Person::ANY_OBSERVED_POSITIVE:
+                {
+                    if (person->getHIVStatus() == Person::HIVStatus::NEGATIVE
+                        || person->getHIVStatus() == Person::HIVStatus::UNOBSERVED_LATESTAGE
+                        || person->getHIVStatus() == Person::HIVStatus::UNOBSERVED_CHRONIC
+                        || person->getHIVStatus() == Person::HIVStatus::UNOBSERVED_ACUTE)
+                    {
+                        return false;
+                    }
+
+                    break;
+                }
+                default:
+                    if (target_.value.observed_hiv_status.value != person->getHIVStatus())
+                    {
+                        return false;
+                    }
+
+                    break;
+                }
             }
 
             if(target_.value.on_treatment.has_value
