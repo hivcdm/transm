@@ -1134,9 +1134,15 @@ double Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
         || hivStatus == HIVStatus::UNOBSERVED_CHRONIC 
         || hivStatus == HIVStatus::UNOBSERVED_LATESTAGE;
 
-    if (not_observed_postitive && _eventParams.randomNums.chance(preExposureProphylaxisAdherence_))
+    if (not_observed_postitive
+        && preExposureProphylaxisAdherence_ > 0
+        && _eventParams.randomNums.chance(preExposureProphylaxisAdherence_))
     {
         using_prep_this_month_ = true;
+    }
+    else
+    {
+        using_prep_this_month_ = false;
     }
 
 	//update HVL and CD4 for this Entity if they are infected

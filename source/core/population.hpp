@@ -477,6 +477,8 @@ private:
     void SaveIndividualSummaries(std::ostream &stream) const;
 
     std::unordered_map<std::string, MonthlyStats> trace_files_;
+
+    std::size_t debug_num_on_prep_;
 };
 
 } // namespace transm

@@ -143,6 +143,8 @@ void CostsTracker::BuildHeader()
 		SetHeaderCell(column++, 4, "Total");
 		SetHeaderCell(column++, 4, "Circumcision");
 		SetHeaderCell(column++, 4, "Condoms");
+        SetHeaderCell(column++, 4, "PrEP");
+        SetHeaderCell(column++, 4, "Vaginal Microbicides");
 
 		SetHeaderCell(column, 2, "CEPAC Costs");
 
@@ -249,13 +251,15 @@ void CostsTracker::BuildRow(Time time)
 			PushElement(costs.qalmsByHivStatus[i]);
 		}
 
-		double cdmTotalCost = costs.circumcisionCosts + costs.condomCosts;
+		double cdmTotalCost = costs.circumcisionCosts + costs.condomCosts + costs.prEPCosts + costs.vaginalMicrobicideCosts;
 
 		PushElement(cdmTotalCost + cepacTotalCost);
 
 		PushElement(cdmTotalCost);
 		PushElement(costs.circumcisionCosts);
 		PushElement(costs.condomCosts);
+        PushElement(costs.prEPCosts);
+        PushElement(costs.vaginalMicrobicideCosts);
 
 		PushElement(cepacTotalCost);
 		for(int i = 0; i < SimContext::COST_NUM_TYPES; i++)

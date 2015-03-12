@@ -1002,10 +1002,18 @@ Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node cri
             {
                 target.value.observed_hiv_status.value = Entity::HIVStatus::UNOBSERVED_LATESTAGE;
             }
-			else if (value == "positive")
-			{
-				target.value.observed_hiv_status.value = Entity::HIVStatus::Last;
-			}
+	    else if (value == "any-positive")
+	    {
+		target.value.observed_hiv_status.value = Entity::HIVStatus::ANY_POSITIVE;
+	    }
+	    else if (value == "not-observed-positive")
+            {
+                target.value.observed_hiv_status.value = Person::ANY_NOT_OBSERVED_POSITIVE;
+            }
+            else if (value == "observed-positive")
+            {
+                target.value.observed_hiv_status.value = Person::ANY_OBSERVED_POSITIVE;
+            }
             else
             {
                 throw std::runtime_error("invalid group target value for " + name + ": " + value);
@@ -1499,11 +1507,13 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
              auto adherence = Text<double>(node);
              intervention.SetIndividualCallback([=](Entity *person) 
              {
-                 if (person->getHIVStatus() != Entity::HIVStatus::NEGATIVE)
-                 {
-                     auto message = "error: attempting to apply PrEP to HIV positive";
+                if (person->getHIVStatus() == Person::HIVStatus::OBSERVED_ACUTE
+                    || person->getHIVStatus() == Person::HIVStatus::OBSERVED_LATESTAGE
+                    || person->getHIVStatus() == Person::HIVStatus::OBSERVED_CHRONIC)
+		{
+                     auto message = "error: attempting to apply PrEP to an observed HIV positive person";
                      throw std::runtime_error(message);
-                 }
+                }
  
                  person->UsePreExposureProphylaxis(adherence); 
              });
