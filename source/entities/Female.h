@@ -78,9 +78,15 @@ public:
 
     bool RollForVaginalMicrobicideUse(RandomNumberGenerator &rng)
     {
-        vaginalMicrobicideUsedLastFOICalculation = rng.chance(vaginalMicrobicideAdherence_);
-        if (vaginalMicrobicideUsedLastFOICalculation) 
-            IncrementVaginalMicrobicideApplications();
+        vaginalMicrobicideUsedLastFOICalculation = false;
+        if (vaginalMicrobicideAdherence_ > 0)
+        {
+            vaginalMicrobicideUsedLastFOICalculation = rng.chance(vaginalMicrobicideAdherence_);
+            if (vaginalMicrobicideUsedLastFOICalculation)
+            {
+                IncrementVaginalMicrobicideApplications();
+            }
+        }
         return vaginalMicrobicideUsedLastFOICalculation;
     }
 

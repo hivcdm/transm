@@ -465,4 +465,6 @@ private:
     static const int NumIndividualSummaries = 1000;
 
     void SaveIndividualSummaries(std::ostream &stream) const;
+
+    std::size_t debug_num_on_prep_;
 };
