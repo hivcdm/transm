@@ -198,6 +198,8 @@ public:
 
     bool HasTargetedCepacContext() const { return targetedCepacContext_ != nullptr; }
 
+    SimContext *GetTargetedCepacContext() const { return targetedCepacContext_; }
+
 protected:
 	unsigned int populationID;			//keeps track of which population this Person belongs to
 	unsigned long id;					//person's unique id number
