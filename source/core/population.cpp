@@ -438,28 +438,30 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 				p->quitSexWork(parameters_);
 				entities->refreshBucketDemographicProfile(p, &p_Iter);
 			}
-            
-			if(parameters_.useRollout && parameters_.treatedContext && p->isInfected())
-			{
-				if(p->isOnArt())
-				{
-					populationStatistics.recordTreatmentEligiblity(p); // if they're on treatment, they should be counted as eligible even if the treatment has worked
-					populationStatistics.recordTreatment(p);
-				}
-				else if(p->isEligibleForTreatment(parameters_.treatedContext->getTreatmentInputs()->startART[0]))
-				{
-					populationStatistics.recordTreatmentEligiblity(p);
-				}
-			}
 
+	    if(((parameters_.useRollout && parameters_.treatedContext) || p->HasTargetedCepacContext()) && p->isInfected())
+	    {
+                 auto context = p->HasTargetedCepacContext() ? p->GetTargetedCepacContext() : parameters_.treatedContext;
 
-			auto discount = parameters_.useRollout ?
-			    parameters_.untreatedContext->getRunSpecsInputs()->discountFactor
-			    : parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor;
- 			populationStatistics.costsTracker.RecordLifeMonth(p->getQualityOfLife(),
-		            discount, p->getHIVStatus());
+		 if(p->isOnArt())
+		 {
+		     // if they're on treatment, they should be counted as eligible even if the treatment has worked  
+		     populationStatistics.recordTreatmentEligiblity(p);
+		     populationStatistics.recordTreatment(p);
+		 }
+		 else if(p->isEligibleForTreatment(context->getTreatmentInputs()->startART[0]))
+		 {
+		     populationStatistics.recordTreatmentEligiblity(p);
+		 }
+	    }
 
-			p_Iter++;
+	    auto discount = parameters_.useRollout ?
+	      parameters_.untreatedContext->getRunSpecsInputs()->discountFactor
+	      : parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor;
+	    populationStatistics.costsTracker.RecordLifeMonth(p->getQualityOfLife(),
+							      discount, p->getHIVStatus());
+
+	    p_Iter++;
 		}
 	}
 }

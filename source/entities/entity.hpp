@@ -208,6 +208,8 @@ public:
 
     bool HasTargetedCepacContext() const { return targetedCepacContext_ != nullptr; }
 
+    SimContext *GetTargetedCepacContext() const { return targetedCepacContext_; }
+
 protected:
     //keeps track of which population this Entity belongs to
 	unsigned int populationID;
