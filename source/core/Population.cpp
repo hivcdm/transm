@@ -379,6 +379,21 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 				entities->refreshBucketDemographicProfile(p, &p_Iter);
 			}
 
+			if(((parameters_.useRollout && parameters_.treatedContext) || p->HasTargetedCepacContext()) && p->isInfected())
+			{
+                auto context = p->HasTargetedCepacContext() ? p->GetTargetedCepacContext() : parameters_.treatedContext;
+
+				if(p->isOnArt())
+				{
+					populationStatistics.recordTreatmentEligiblity(p); // if they're on treatment, they should be counted as eligible even if the treatment has worked
+					populationStatistics.recordTreatment(p);
+				}
+				else if(p->isEligibleForTreatment(context->getTreatmentInputs()->startART[0]))
+				{
+					populationStatistics.recordTreatmentEligiblity(p);
+				}
+			}
+
             auto discount = parameters_.useRollout ?
                 parameters_.untreatedContext->getRunSpecsInputs()->discountFactor
                 : parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor;
