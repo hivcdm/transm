@@ -653,15 +653,18 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 	
 	for (p_Iter = entities->begin(DemographicProfile::Gender::Female);
 	     p_Iter != entities->end(DemographicProfile::Gender::Female); p_Iter++)
-	  {
+	{
 	    auto p = static_cast<Female *>(*p_Iter);
-	    auto cost = popWideParams.vaginalMicrobicideApplicationCost *
-	      p->GetVaginalMicrobicideApplicationsThisMonth();
-	    auto discount = parameters_.useRollout ?
-	      parameters_.untreatedContext->getRunSpecsInputs()->discountFactor
-	      : parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor;
-	    p->add_cdm_cost(cost, cost * discount);
-	  }
+	    if (p->GetVaginalMicrobicideApplicationsThisMonth() > 0)
+	    {
+		auto cost = popWideParams.vaginalMicrobicideApplicationCost * p->GetVaginalMicrobicideApplicationsThisMonth();
+		auto discount = parameters_.useRollout ?
+		  parameters_.untreatedContext->getRunSpecsInputs()->discountFactor
+		  : parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor;
+		populationStatistics.costsTracker.RecordVaginalMicrobicideCost(cost, cost * discount);
+	    }
+	}
+    }
 
 	//Ends the second pass through (i.e. the sex acts pass through)
 	
