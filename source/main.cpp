@@ -2,11 +2,11 @@
 #include <unordered_set>
 #include <tclap/CmdLine.h>
 
-#include "core/simulation.h"
-#include "core/simulationbuilderxml.h"
-#include "core/simulationreader.h"
-#include "statistics/transmissionsummarystats.h"
-#include "utility/utility.h"
+#include "core/Simulation.h"
+#include "core/SimulationBuilderXml.h"
+#include "core/SimulationReader.h"
+#include "statistics/TransmissionSummaryStats.h"
+#include "utility/Utility.h"
 #include "utility/filesystem.h"
 
 namespace {
