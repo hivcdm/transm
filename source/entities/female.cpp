@@ -143,6 +143,7 @@ double Female::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std
 {
     assert(_p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male);
 
+    double prepEfficacy = _p->UsingPrEP() ? _p->GetPreExposureProphylaxisEfficacy() : 0;
 
     double circEff = 0;
     double condomUseProb = 0;

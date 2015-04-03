@@ -1521,12 +1521,13 @@ int Entity::getSexualActivity()
 
 //this constructor is used by the Male and Female classes
 Entity::Entity(Age _age, unsigned int _populationID) : 
-	monthly_cepac_costs_undiscounted_(0),
-	monthly_cepac_costs_discounted_(0),
-	monthly_cdm_costs_undiscounted_(0),
-	monthly_cdm_costs_discounted_(0),
     preExposureProphylaxisAdherence_(0),
     targetedCepacContext_(nullptr),
+    sexualActivityDelay(0),
+    monthly_cepac_costs_undiscounted_(0),
+    monthly_cepac_costs_discounted_(0),
+    monthly_cdm_costs_undiscounted_(0),
+    monthly_cdm_costs_discounted_(0),
     using_prep_this_month_(false)
 {
 	id = Entity::idCounter++;
