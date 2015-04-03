@@ -1693,14 +1693,14 @@ Person::Person()
 */
 
 //this constructor is used by the Male and Female classes
-Person::Person(int _age, unsigned int _populationID) : 
+Person::Person(int _age, unsigned int _populationID) :
+    preExposureProphylaxisAdherence_(0),
+    targetedCepacContext_(nullptr),
 	sexualActivityDelay(0),
 	monthly_cepac_costs_undiscounted_(0),
 	monthly_cepac_costs_discounted_(0),
 	monthly_cdm_costs_undiscounted_(0),
 	monthly_cdm_costs_discounted_(0),
-    preExposureProphylaxisAdherence_(0),
-    targetedCepacContext_(nullptr),
     using_prep_this_month_(false)
 {
 	id = Person::idCounter++;
