@@ -157,7 +157,7 @@ double Female::getFOI(Person *_p, SexualPartnership::Type _partnershipType, Even
 		condomEff = m->getCondomProtectEff();
 	}
 
-    double prepEfficacy = _p->GetPreExposureProphylaxisEfficacy();
+    double prepEfficacy = _p->UsingPrEP() ? _p->GetPreExposureProphylaxisEfficacy() : 0;
 
     double FOI = getTransmissionCoeff() * (1 - condomEff) * (1 - circEff) * (1 - prepEfficacy);
 
