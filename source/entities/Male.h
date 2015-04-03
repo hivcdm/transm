@@ -157,8 +157,6 @@ private:
 	NormalDist averageYearsYounger[(int)SexualPartnership::Type::ENDType];
 	//------------< End parameters for individual males >-----------------//
 
-    double preExposureProphylaxisAdherence_;
-
 public:
 	/**
 	this constructor creates a Male that can be simulated
