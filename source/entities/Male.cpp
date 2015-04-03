@@ -155,8 +155,7 @@ void Male::Circumcise()
 
 Male::Male(EventParams &_eventParams, int _age, bool _circumcised, unsigned int _populationID, const Male::SubPopParams &params)
 	: Person(_age, _populationID),
-	populationSpecificParams(params),
-    preExposureProphylaxisAdherence_(0)
+	populationSpecificParams(params)
 {
 	//If age is out of range, set it at the closest boundary.
     if(!Utility::withinRange<int>(_age, 0, Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Person::maxYrForDeathStats)))
