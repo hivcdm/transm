@@ -153,11 +153,10 @@ void Male::Circumcise()
 	circumcised = true;
 }
 
-Male::Male(EventParams &_eventParams, Age _age, bool _circumcised, unsigned int _populationID, const Male::SubPopParams &params) :
+Male::Male(EventParams &_eventParams, Age _age, bool _circumcised, unsigned int _populationID,
+    const Male::SubPopParams &params) :
 	Entity(_age, _populationID),
-	populationSpecificParams(params),
-	preExposureProphylaxisAdherence_(0)
-{
+	populationSpecificParams(params)
 	_age = max(min(Age(Entity::maxYrForDeathStats, 0), _age), Age::Zero);
     dmgProfile.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
 	circumcised = _circumcised;

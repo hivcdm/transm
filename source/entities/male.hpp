@@ -170,8 +170,6 @@ private:
 	// The distribution the males will draw from to determine how many years younger their partner should be (resulting difference may be negative for older women)
 	NormalDist averageYearsYounger[(int)SexualPartnership::Type::ENDType];
 
-    double preExposureProphylaxisAdherence_;
-
 public:
 	/**
 	this constructor creates a Male that can be simulated

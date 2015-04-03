@@ -191,8 +191,6 @@ private:
     /// </summary>
     NormalDist averageYearsYounger[(int)SexualPartnership::Type::ENDType];
 
-    double preExposureProphylaxisAdherence_;
-
     std::size_t times_selected_;
 
 public:

@@ -162,8 +162,6 @@ private:
     // The distribution the males will draw from to determine how many years younger their partner should be (resulting difference may be negative for older women)
     NormalDist averageYearsYounger[(int)SexualPartnership::Type::ENDType];
 
-    double preExposureProphylaxisAdherence_;
-
     std::size_t times_selected_;
 
 public:

@@ -130,7 +130,6 @@ void Msm::Circumcise()
 Msm::Msm(EventParams &_eventParams, Age _age, bool _circumcised, unsigned int _populationID, const Msm::SubPopParams &params)
     : Entity(_age, _populationID),
       populationSpecificParams(params),
-      preExposureProphylaxisAdherence_(0),
       times_selected_(0)
 {
 	_age = max(min(Age(Entity::maxYrForDeathStats, 0), _age), Age::Zero);
