@@ -33,27 +33,27 @@ bool Female::possibleMatch(SexualPartnership::Type /*_partnershipType*/, Entity 
 
 void Female::SetCoitalEventsPerMonth(RiskLevel, SexualPartnership::Type, double)
 {
-	throw std::runtime_error("not implemented for women");
+
 }
 
 void Female::SetPartnershipDuration(RiskLevel, SexualPartnership::Type, ShiftedLogNormalDist)
 {
-	throw std::runtime_error("not implemented for women");
+
 }
 
 void Female::SetAverageYearsYounger(SexualPartnership::Type, NormalDist)
 {
-	throw std::runtime_error("not implemented for women");
+
 }
 
 void Female::SetAcquisitionRatePerMonth(RiskLevel, SexualPartnership::Type, LogNormalDist, RandomNumberGenerator &)
 {
-	throw std::runtime_error("not implemented for women");
+
 }
 
 void Female::Circumcise()
 {
-	throw std::runtime_error("not implemented for women");
+
 }
 
 double Female::rollForAgeDifference(SexualPartnership::Type /*_partnershipType*/, RandomNumberGenerator &/*_randomNums*/)
@@ -225,7 +225,7 @@ double Female::getChanceBecomeCsw() const
 
 void Female::SetChanceCondomUsePerEvent(Entity::RiskLevel /*risk*/, SexualPartnership::Type /*partnershipType*/, BetaDist /*dist*/, RandomNumberGenerator &/*rng*/)
 {
-	throw std::runtime_error("not allowed");
+
 }
 
 void Female::rerollRiskGroup(EventParams &_eventParams)
