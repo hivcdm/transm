@@ -1353,8 +1353,7 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
                 if (person->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() !=
 		    DemographicProfile::SexualActivityStatus::Active)
                 {
-                    auto message = "error: attempting to apply cepac context to non-SA person";
-                    throw std::runtime_error(message);
+		  return;
                 }
 
                 auto context = pop.LoadCepacFile(cepac_file);
@@ -1369,8 +1368,7 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
             {
                 if (person->getDemographicProfileVal<DemographicProfile::Gender>() != DemographicProfile::Gender::Female)
                 {
-                    auto message = "error: attempting to apply vaginal microbicides to non-female";
-                    throw std::runtime_error(message);
+		  return;
                 }
 
                 auto female = static_cast<Female *>(person);
@@ -1387,8 +1385,7 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
                     || person->getHIVStatus() == Person::HIVStatus::OBSERVED_LATESTAGE
                     || person->getHIVStatus() == Person::HIVStatus::OBSERVED_CHRONIC)
                 {
-                    auto message = "error: attempting to apply PrEP to an observed HIV positive person";
-                    throw std::runtime_error(message);
+		  return;
                 }
 
                 person->UsePreExposureProphylaxis(adherence); 

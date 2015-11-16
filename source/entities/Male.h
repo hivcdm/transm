@@ -220,10 +220,10 @@ public:
 	bool isCircumcised();
 	/** End: functions for Males only **/
 
-    void SetPartnershipRejectionChance(RiskLevel, SexualPartnership::Type, double) { throw std::runtime_error("not allowed for males"); };
-    double GetPartnershipRejectionChance(RiskLevel, SexualPartnership::Type) const { throw std::runtime_error("not allowed for males"); };
-    void SetOverrideChanceCondomUse(double) { throw std::runtime_error("not allowed for males"); };
-    double GetOverrideChanceCondomUse() const { throw std::runtime_error("not allowed for males"); };
+	void SetPartnershipRejectionChance(RiskLevel, SexualPartnership::Type, double) { }
+	double GetPartnershipRejectionChance(RiskLevel, SexualPartnership::Type) const { return 0; }
+	void SetOverrideChanceCondomUse(double) { }
+	double GetOverrideChanceCondomUse() const { return -1; }
 
 	~Male();
 };
