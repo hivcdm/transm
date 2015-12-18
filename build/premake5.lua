@@ -43,7 +43,7 @@ project "transm"
 	files { "resources/resource.rc" }
     configuration "not windows"
         files { "../source/utility/platform/posix/**.cpp" }
-	buildoptions { "-Wno-unknown-pragmas" }
+	buildoptions { "-Wno-unknown-pragmas", "-std=c++14" }
     configuration "macosx"
         buildoptions { "-Wno-deprecated-register" }
 

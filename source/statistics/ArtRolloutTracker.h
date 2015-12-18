@@ -28,6 +28,7 @@ public:
 	void recordTreatmentAccess(Person *person);
 	void recordTreatmentEligiblity(Person *person);
 	void recordTreatment(Person *person);
+    void recordPrEP(Person *person);
 
 	void printArtRolloutOutcomes(int time, std::ostream &_outStream, Population *_population);
 

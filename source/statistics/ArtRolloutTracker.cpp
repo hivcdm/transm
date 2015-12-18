@@ -17,7 +17,12 @@ const std::string ArtRolloutTracker::RISK_GROUP_NAMES[] =
 
 const std::string ArtRolloutTracker::TRACKED_OUTCOMES[] =
 {
-"test_result", "eligible_for_access", "accessing_treatment", "eligible_for_treatment", "treated"
+    "test_result",
+    "eligible_for_access",
+    "accessing_treatment",
+    "eligible_for_treatment",
+    "treated",
+    "prep"
 };
 
 const std::string BUCKETS[] =
@@ -98,6 +103,11 @@ void ArtRolloutTracker::recordTreatment(Person *person)
 	counter.Increment(PersonBucket(*person, ageRanges), "treated");
 }
 
+void ArtRolloutTracker::recordPrEP(Person *person)
+{
+	counter.Increment(PersonBucket(*person, ageRanges), "prep");
+}
+
 void ArtRolloutTracker::printArtRolloutOutcomes(int time, std::ostream &_outStream, Population *_population)
 {
 	if(time == 0)
@@ -143,6 +153,10 @@ void ArtRolloutTracker::buildHeader()
 		{
 			section_header = "Number Treated";
 		}
+        else if(outcome == "prep")
+        {
+            section_header = "Number Using PrEP";
+        }
 
 		SetHeaderCell(column, 1, section_header);
 		SetHeaderCell(column, 2, "Gender");
