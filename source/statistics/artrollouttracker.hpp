@@ -25,11 +25,11 @@ public:
 	void SetAgeRanges(const std::vector<AgeRange> &ageRanges);
 
 	void recordTest(Entity *person, bool accepted, bool returned, SimContext::TEST_RESULT result);
-
 	void recordTreatmentAccessEligiblity(Entity *person);
 	void recordTreatmentAccess(Entity *person);
 	void recordTreatmentEligiblity(Entity *person);
 	void recordTreatment(Entity *person);
+        void recordPrEP(Entity *person);
 
 	void printArtRolloutOutcomes(Time time, std::ostream &_outStream, Population *_population);
 

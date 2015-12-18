@@ -1139,6 +1139,7 @@ double Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
         && _eventParams.randomNums.chance(preExposureProphylaxisAdherence_))
     {
         using_prep_this_month_ = true;
+        testTracker->recordPrEP(this);
     }
     else
     {
