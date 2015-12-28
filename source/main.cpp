@@ -1,3 +1,4 @@
+#include <fstream>
 #include <functional>
 #include <unordered_set>
 #include <tclap/CmdLine.h>
@@ -83,7 +84,14 @@ int run_simulation(const transm::path &batch_directory)
         parameters.SetRandomNumberGenerator(simulation.GetEventParams().randomNums);
         simulation.Initialize(parameters);
 
-        auto outputs = simulation.Run();
+	auto write_and_print = [](const std::string &s)
+        {
+            std::cout << s;
+            std::ofstream("log.txt", std::ios::app) << s;
+        };
+
+	Simulation &simulation = sim_builder.GetResult();
+	auto outputs = simulation.Run(write_and_print);
 
         cepac_summary.addRunStats(&simulation.GetCEPACRunStats());
         transmission_summary.addPopulationStatistics(simulation.GetPopulationStatistics(), simulation.GetEventParams());
