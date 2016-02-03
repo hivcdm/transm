@@ -684,11 +684,6 @@ bool Entity::inCorrectBucketDemographicProfile()
 
 bool Entity::isAlive() const
 {
-	if(this == nullptr)
-	{
-		return false;
-	}
-
 	return !death;
 }
 
