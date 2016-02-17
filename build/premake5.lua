@@ -1,6 +1,6 @@
 solution "transm"
     configurations { "debug", "release" }
-    platforms { "x64" }
+    platforms { "native", "x64" }
     location ("./" .. _ACTION)
 
 project "transm"
@@ -24,13 +24,12 @@ project "transm"
     }
     includedirs {
        "../source",
-       "../third-party/boost/include",
        "../third-party/cepac/src",
        "../third-party/pugixml/src",
        "../third-party/tclap/include"
     }
     configuration "debug"
-        flags { "FatalWarnings" }
+    --    flags { "FatalWarnings" }
 	optimize "Off"
 	targetdir "../bin/debug"
     configuration "release"
@@ -46,6 +45,7 @@ project "transm"
 	buildoptions { "-Wno-unknown-pragmas", "-std=c++14" }
     configuration "macosx"
         buildoptions { "-Wno-deprecated-register" }
+		includedirs { "/usr/local/include" }
 
 project "third-party"
     kind "StaticLib"
