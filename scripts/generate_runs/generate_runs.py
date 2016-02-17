@@ -26,9 +26,7 @@ ACQ_RATE_STDEV_IS_NUMBER = False
 ACQ_RATE_STDEV_IS_PERCENTAGE = True
 ACQ_RATE_STDEV_MODIFIER= 0.5
 REG_ACTS_MEAN_MULTIPLIER = 2.0
-REG_ACTS_STDEV_IS_NUMBER = True
-REG_ACTS_STDEV_IS_PERCENTAGE = False
-REG_ACTS_STDEV_MODIFIER= 0
+
 header = ['Assort', 'PropHRMale', 'PropHRFemale', 'epsilon', 'HRMult', 'CSWMult', 'RegActs', 'ChanceCSW', 'AqRateStdyLR', 'AqRateRegLR', 'AqRateCasLR', 'AqRateCSWLR', 'AqRateStdyHR', 'AqRateRegHR', 'AqRateCasHR', 'AqRateCSWHR']
 
 def read_months_of_1990():
@@ -166,7 +164,7 @@ def replace_parameters(parameters, template_tree, month_of_1990):
 
 	 # Handles intervention substitutions: set INTERVENTIONS = False at the beginning of the file to disable
 	if (INTERVENTIONS): 
-		assert (ACQ_RATE_STDEV_IS_PERCENTAGE ^ ACQ_RATE_STDEV_IS_NUMBER) and (REG_ACTS_STDEV_IS_PERCENTAGE ^ REG_ACTS_STDEV_IS_NUMBER), \
+		assert (ACQ_RATE_STDEV_IS_PERCENTAGE ^ ACQ_RATE_STDEV_IS_NUMBER), \
 		"Check intervention parameters: the standard deviation modifier needs to be set as percentage OR number."
 
 		for path in acq_rate_intervention_path_map:
@@ -185,12 +183,7 @@ def replace_parameters(parameters, template_tree, month_of_1990):
 				parameter_path = root.find(path)
 				parameter_element_mean = parameter_path.find("distribution/mean")
 				parameter_element_mean.text = str(round(float(root.find(reg_acts_intervention_path_map[path]).text) * REG_ACTS_MEAN_MULTIPLIER))
-				parameter_element_stDev = parameter_path.find("distribution/stdDev")
-				if (REG_ACTS_STDEV_IS_PERCENTAGE):
-					parameter_element_stDev.text = str(float(parameter_element_mean.text) * REG_ACTS_STDEV_MODIFIER)
-				elif (REG_ACTS_STDEV_IS_NUMBER):
-					parameter_element_stDev.text = str(REG_ACTS_STDEV_MODIFIER)
-
+				# We skip the standard deviation here because the distribution is a Poisson, thus \mu = \sigma^2 = \lambda
 	return tree
 
 def write_xml_files(parameter_sets, template, output_directory, months_of_1990, suffix=None):
