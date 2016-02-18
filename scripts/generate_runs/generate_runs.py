@@ -164,8 +164,7 @@ def replace_parameters(parameters, template_tree, month_of_1990):
 
 	 # Handles intervention substitutions: set INTERVENTIONS = False at the beginning of the file to disable
 	if (INTERVENTIONS): 
-		assert (ACQ_RATE_STDEV_IS_PERCENTAGE ^ ACQ_RATE_STDEV_IS_NUMBER), \
-		"Check intervention parameters: the standard deviation modifier needs to be set as percentage OR number."
+		assert (ACQ_RATE_STDEV_IS_PERCENTAGE ^ ACQ_RATE_STDEV_IS_NUMBER), "Check intervention parameters: the standard deviation modifier needs to be set as percentage OR number."
 
 		for path in acq_rate_intervention_path_map:
 			if root.find(path):
