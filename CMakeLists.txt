@@ -41,11 +41,11 @@ include_directories (${source_dir}/include)
 
 # This is one of the two libraries we need, good thing is it has its own CMake files
 ExternalProject_Add (
-	pugixml_project 
+	pugixml_project
 	PREFIX ${CMAKE_SOURCE_DIR}/third-party
 	GIT_REPOSITORY https://github.com/zeux/pugixml.git
 	CONFIGURE_COMMAND cmake ../pugixml_project/scripts
-    BUILD_COMMAND make pugixml COMMAND printenv COMMAND echo ${Boost_INCLUDE_DIR}
+    BUILD_COMMAND make pugixml
     INSTALL_COMMAND mv libpugixml.a ${CMAKE_SOURCE_DIR}/lib
     LOG_BUILD 1
 )
@@ -64,7 +64,7 @@ ExternalProject_Add (
 	GIT_TAG 4.4a
 	CONFIGURE_COMMAND pwd COMMAND premake5 --file=../cepac_project/build/premake5.lua gmake
 	BUILD_COMMAND make -C ../cepac_project/build/gmake cepac config=release_x64
-	INSTALL_COMMAND pwd COMMAND mv ../cepac_project/lib/libcepac.a ${CMAKE_SOURCE_DIR}/lib
+	INSTALL_COMMAND mv ../cepac_project/lib/libcepac.a ${CMAKE_SOURCE_DIR}/lib
 )
 
 ExternalProject_Get_Property (cepac_project source_dir)
@@ -76,7 +76,7 @@ add_dependencies (cepac cepac_project)
 # Now it is time to compile our own code
 
 set (CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/build)
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
+set (EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
 
 # The headers are nicely referenced with relative path
 include_directories(source) 

@@ -14,10 +14,8 @@ Makefile
 CMakeCache.txt
 cmake_install.cmake
 runs/*
-bin/*
 build/vs*/
 build/gmake/
 build/xcode*/
 CMakeFiles/
 scripts/generate_runs/*/
-third-party/
