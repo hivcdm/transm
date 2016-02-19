@@ -6,6 +6,7 @@ x64/
 *.vcxproj.user
 *.o
 *.d
+*.a
 #*#
 *~
 .DS_Store
@@ -13,7 +14,7 @@ Makefile
 CMakeCache.txt
 cmake_install.cmake
 runs/*
-bin/
+bin/*
 build/vs*/
 build/gmake/
 build/xcode*/
