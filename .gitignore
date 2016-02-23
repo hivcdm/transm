@@ -1,5 +1,7 @@
 results/
 x64/
+.project
+.cproject
 *.sdf
 *.suo
 *.opensdf
