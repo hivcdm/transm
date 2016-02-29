@@ -94,7 +94,9 @@ file(READ VERSION TRANSM_VER)
 set(CMAKE_EXECUTABLE_SUFFIX "-v${TRANSM_VER}") 
 #set_property(TARGET transm PROPERTY CXX_STANDARD 14) 
 # The one above is better, but it causes issues on CentOS 7 + CMake 2.8
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -fpermissive")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -fpermissive -DNDEBUG")
+set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-lprofiler")
+target_compile_definitions(transm PRIVATE NDEBUG=1 BAR=1)
 
 target_link_libraries (transm pugixml cepac)
 #install(TARGETS transm DESTINATION bin)

@@ -38,9 +38,9 @@ def read_months_of_1990():
 	print('done.')
 	return months
 
-def lookup_month_of_1990(starts_with, months_of_1990):
+def lookup_month_of_1990(calib_run, months_of_1990):
 	for name in months_of_1990:
-		if name.startswith(starts_with):
+		if name == calib_run:
 			return months_of_1990[name]
 	return None
 
@@ -220,7 +220,7 @@ def generate_runs(template_filename, weight_cutoff, run_set_name, batch_size):
 	rows = read_parameters(parameters_filename)
 	parameter_sets = filter_rows_by_weight(rows, weight_cutoff)
 	template = read_template(template_filename)
-
+		
 	generate_message = 'Generating XML files for the top {:g}% of parameter sets by weight ({} files)...'
 	print(generate_message.format(weight_cutoff * 100, len(parameter_sets)), end='')
 
