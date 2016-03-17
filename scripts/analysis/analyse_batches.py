@@ -201,6 +201,8 @@ class Run:
         self.xml_filename = xml_filename
         self.name = ''
         self.path = ''
+        self.is_sane = True
+        self.state_msg = str()
         
         if xml_filename != '':
             self.name = os.path.splitext(os.path.basename(xml_filename))[0]
@@ -237,9 +239,7 @@ class Run:
         #print ("The duration we found is {}".format(duration), file =sys.stderr)
         return version, duration
 
-    def is_complete(self, duration, zip_file=None):
-        run_is_sane = True
-        run_state_msg = str()
+    def sanity_checks(self, duration, zip_file=None):
         infections_filename = '{}-Infections.xls'.format(self.name)
         if zip_file:
             infections = zip_file.open('results/' + infections_filename, 'r')
@@ -248,50 +248,66 @@ class Run:
         infections_filename = os.path.join(results_dir, '{}-Infections.xls'.format(self.name))
         # Sanity checks start here
         if not os.path.isdir(results_dir): 
-            run_is_sane = False
-            run_state_msg = "MISSING RESULTS DIR"
+            self.is_sane = False
+            self.state_msg = "MISSING RESULTS DIR"
+            return
             #print ("Missing results directory for {}.".format(self.name), file = sys.stderr)
         elif not os.path.isfile(infections_filename):
-            run_is_sane = False
-            run_state_msg = "MISSING INFECTIONS FILE"
+            self.is_sane = False
+            self.state_msg = "MISSING INFECTIONS FILE"
+            return
             #print ("Missing infections file for {}.".format(self.name), file = sys.stderr)                
         else:
             try:
                 infections = open(infections_filename, 'r')
             except Exception as e:
-                run_is_sane = False
-                run_state_msg = "CANNOT OPEN INFECTIONS FILE"
+                self.is_sane = False
+                self.state_msg = "CANNOT OPEN INFECTIONS FILE"
+                return
                 #print ("Cannot open file {}: {}.".format(infections_filename, e), file = sys.stderr)
         # if file is not open we need to stop here
         run_has_begun = False
         expected_month = 0
-        for i, line in enumerate(infections):
-            if isinstance(line, bytes):
-                line = line.decode('utf8')
-            month = line.split('\t')[0]
-            if run_has_begun == True and expected_month == 0:
-                expected_month = 1
-            else:
-                if month == 'init':
-                    run_has_begun = True
-            if run_has_begun == True and expected_month > 0:
-                if run_is_sane == True and expected_month <= duration:
-                    try:
-                        if int(float(month)) == expected_month:
+        if self.is_sane == True:
+            for i, line in enumerate(infections):
+                if isinstance(line, bytes):
+                    line = line.decode('utf8')
+                month = line.split('\t')[0]
+                if run_has_begun == True and expected_month == 0:
+                    expected_month = 1
+                else:
+                    if month == 'init':
+                        run_has_begun = True
+                if run_has_begun == True and expected_month > 0 and self.is_sane == True:
+                    if expected_month <= duration:
+                        try:
+                            if int(float(month)) == expected_month:
+                                expected_month += 1
+                            else:
+                                self.is_sane = False
+                                self.state_msg = "ERROR READING INFECTIONS FILE"
+                                return
+                                #print ("Error reading file 1 {}. Please check it for consistency.".format(infections_filename))
+                                #print ("Expected month: {} Duration: {} Month: {}".format(expected_month, duration, month), file = sys.stderr)
+                        except ValueError as v:
+                            self.is_sane = False
+                            self.state_msg = "ERROR INFECTIONS FILE DURATION"
+                            return
+                            #print ("Error reading file 2 {}. Please check it for consistency (is the number of months {}?). {}".format(infections_filename, duration, v))
+                    elif expected_month == duration + 1:
+                        try:
+                            int(float(month))
+                            self.is_sane = False
+                            self.state_msg = "ERROR INFECTIONS FILE DURATION"
+                            return
+                            #print ("Error reading file 3 {}. Please check it for consistency (is the number of months {}?). {}".format(infections_filename, duration, v))
+                        except ValueError as v:
                             expected_month += 1
-                        else:
-                            run_is_sane = False
-                            run_state_msg = "ERROR READING INFECTIONS FILE"
-                            #print ("Error reading file 1 {}. Please check it for consistency.".format(infections_filename))
-                            #print ("Expected month: {} Duration: {} Month: {}".format(expected_month, duration, month), file = sys.stderr)
-                    except ValueError as v:
-                        run_is_sane = False
-                        run_state_msg = "ERROR INFECTIONS FILE DURATION"
-                        #print ("Error reading file 2 {}. Please check it for consistency (is the number of months {}?). {}".format(infections_filename, duration, v))
+
         if run_has_begun == False:
-            run_is_sane = False
-            run_state_msg = "ERROR NO init IN INFECTIONS FILE"
-        return run_is_sane, run_state_msg
+            self.is_sane = False
+            self.state_msg = "ERROR NO init IN INFECTIONS FILE"
+        return
 
     def read_results(self, start_year, end_year, month_of_1990, zip_file):
         self.start_year = start_year
@@ -313,18 +329,29 @@ class Run:
             full_path = os.path.join('results', filename)
             if zip_file == None:
                 full_path = os.path.join(os.path.dirname(self.xml_filename), full_path)
-                file = open(full_path, 'r')
+                try:
+                    file = open(full_path, 'r')
+                except Exception as e:
+                    self.is_sane = False
+                    self.state_msg = "CANNOT OPEN FILE " + full_path
+                    break
             else:
-                file = zip_file.open('results/' + filename, 'r')
+                try:
+                    file = zip_file.open('results/' + filename, 'r')
+                except Exception as e:
+                    self.is_sane = False
+                    self.state_msg = "CANNOT OPEN ZIP FILE " + filename
+                    break
             if file_type == 'cepac':
                 self.files[file_type] = CepacOutFile(file, self.end_month - 11)
             else:
                 self.files[file_type] = TabularFile(file, num_header_rows[file_type])
-
-        self.extract_infections()
-        self.extract_cascade()
-        self.extract_prevalence_and_incidence()
-        self.extract_costs_and_lms()
+        
+        if self.is_sane == True:
+            self.extract_infections()
+            self.extract_cascade()
+            self.extract_prevalence_and_incidence()
+            self.extract_costs_and_lms()
 
     def extract_infections(self):
         infections_stats = [
@@ -428,6 +455,7 @@ class RunSet:
         self.directory = directory
         self.name = os.path.basename(directory)
         self.is_sane = True
+        self.state_msg = str()
 
     def load_runs(self, year_range, get_month_of_1990):
         subdirs = [os.path.join(self.directory, i) for i in os.listdir(self.directory) if os.path.isdir(os.path.join(self.directory, i))]
@@ -437,27 +465,36 @@ class RunSet:
         for batchdir in batchdirs:
             for file in os.listdir(batchdir):
                 if os.path.splitext(file)[1] == '.xml':
+                    run = Run(os.path.join(batchdir, file))
                     zip_filename = os.path.join(batchdir, 'results.zip')
                     zip_file = None
                     if os.path.isfile(zip_filename):
-                        zip_file = zipfile.ZipFile(zip_filename)                    
-                    run = Run(os.path.join(batchdir, file))
-                    
-                    version, duration = run.read_xml()
+                        try:
+                            zip_file = zipfile.ZipFile(zip_filename)
+                        except Exception as e:
+                            run.is_sane = False
+                            run.state_msg = "ERROR OPENING ZIP FILE"
+                            continue
+                    try:
+                        version, duration = run.read_xml()
+                    except Exception as e:
+                        run.is_sane = False
+                        run.state_msg = "ERROR READING XML"
+                        continue
                     if version not in supported_versions:
-                        run_is_sane = False
-                        run_state_msg = "WRONG XML VERSION"
-                        print('Invalid version for XML {}. should be one of: {}'.format(os.path.join(batchdir, file), ', '.join(supported_versions)), file = sys.stderr)
-
+                        self.is_sane = False
+                        self.state_msg = "WRONG XML VERSION"
+                        #print('Invalid version for XML {}. should be one of: {}'.format(os.path.join(batchdir, file), ', '.join(supported_versions)), file = sys.stderr)
+                        continue
                     else: 
-                        run_is_sane, run_state_msg = run.is_complete(duration, zip_file)
-                        if run_is_sane == True:
+                        run.sanity_checks(duration, zip_file)
+                        if run.is_sane == True:
                             month_of_1990 = get_month_of_1990(run.name)
                             run.read_results(year_range[0], year_range[1], month_of_1990, zip_file)
                         else:
                             pass
                             
-                    yield run, run_is_sane, run_state_msg
+                    yield run
 
 class Summary:
     def __init__(self, directory, post_calib_filename, weight_cutoff, year_range):
@@ -637,16 +674,16 @@ class Summary:
         average.max_year = None
         total_weight = 0
         weights = []
-        processed_runs = set()
+        processed_runs = []
         skipped_runs = dict()
         
         num_runs = 0
         
-        for run, run_is_sane, run_state_msg in run_set.load_runs(self.year_range, lambda r: self.get_month_of_1990(r, False)):
-            print('\t{} (sanity checks passed: {})'.format(run.name, run_is_sane))
+        for run in run_set.load_runs(self.year_range, lambda r: self.get_month_of_1990(r, False)):
+            print('\t{} (sanity checks passed: {})'.format(run.name, run.is_sane))
             
-            if run_is_sane == False:
-                skipped_runs[run.path] = run_state_msg
+            if run.is_sane == False:
+                skipped_runs[run.path] = run.state_msg
             else:
                 weight = self.get_weight(run.name, False) 
                 total_weight += weight
@@ -654,7 +691,7 @@ class Summary:
                 weights.append(weight)
                 #print ("Run Weight: {} \t Cumulative Weight: {} \t Total Weight: {}".format(self.get_weight(run.name, False), self.cumulative_weight, total_weight), file=sys.stderr)
                 num_runs += 1
-                processed_runs.add(run.name)
+                processed_runs.append(run.name)
                 
                 if average.max_year == None:
                     average.max_year = run.max_year
@@ -765,12 +802,13 @@ class Summary:
 
         max_year = 1989
         logname = out_filename.split('.')[0] + '_error_log.txt'
-        excluded_set = []
-        processed_set = []
-        skipped_set = []
+        logname = os.path.join(self.directory, logname)
+        excluded_run_set = []
+        processed_run_set = []
+        skipped_run_set = dict()
         # We touch the file to avoid confusion with other logs
         with open(logname, 'w') as logfile:
-            pass
+            print ("THE FOLLOWING RUNS WERE SKIPPED (NAME REASON):\n", file = logfile)
 
         for run_set_directory in self.find_run_sets(self.directory):
             run_set = RunSet(run_set_directory)
@@ -778,16 +816,16 @@ class Summary:
             if run_set.name in excludes:
                 print('{} is an excluded set, skipping...'.format(run_set.name), file = sys.stderr)
                 print()
-                excluded_set.append(run_set.name)
+                excluded_run_set.append(run_set.name)
                 continue
-            
+
 ##            try:
             print('Averaging run set {}'.format(run_set.name))
             average, processed_runs, skipped_runs = self.calculate_average(run_set)
 ##            except Exception as e:
 ##                print('Skipping {}: {}'.format(run_set.name, e))
 ##                print()
-##                continue      
+##                continue
             for page_name, header in self.headers:
                 number_format = '#,0.00'
                 if 'Cost' in page_name:
@@ -809,31 +847,32 @@ class Summary:
             except TypeError as e:
                 if len(processed_runs) > 0:
                     print ("ERROR: Couldn't read max year!", file = sys.stderr)
-                    skipped_set.append(run_set.name)
                     run_set.is_sane = False
+                    run_set.state_msg = "ERROR NO MAX YEAR"
+                    skipped_run_set[run_set.name] = run_set.state_msg
                     continue
-                else: 
-                    pass
             try:
                 wb.save(out_filename)
             except PermissionError as e:
-                print('ERROR: There was a problem saving to {}. Is it open in Excel?'.format(out_filename), file = sys.stderr)
-                skipped_set.append(run_set.name)
                 run_set.is_sane = False
+                run_set.state_msg = "ERROR SAVING EXCEL OUTFILE"
+                skipped_run_set[run_set.name] = run_set.state_msg
                 continue
             #print ("length of skipped runs is: {}".format(len(skipped_runs)), file=sys.stderr)
             if len(skipped_runs) > 0:
-                skipped_set.append(run_set.name)
                 run_set.is_sane = False
-              #self.pages['Missing Runs'].add_data(skipped_runs.keys(), skipped_runs.values())
+                run_set.state_msg = "CONTAINS SKIPPED RUNS"
+                skipped_run_set[run_set.name] = run_set.state_msg
+             #self.pages['Missing Runs'].add_data(skipped_runs.keys(), skipped_runs.values())
                 with open(logname, 'a') as logfile:
                     for run_name, error in skipped_runs.items():
                         print(run_name + '\t\t' + error, file = logfile)
                     print("Summary for {}: {} processed runs, {} skipped runs.\n".format(run_set.name, len(processed_runs), len(skipped_runs), logname), file = sys.stderr)
             else:
-                processed_set.append(run_set.name)
+                processed_run_set.append(run_set.name)
                 print ("Summary for {}: All runs completed successfully.".format(run_set.name), file = sys.stderr)
             print()
+        
         print()
         
         self.write_incidence_and_prevalence_years(max_year)
@@ -842,36 +881,45 @@ class Summary:
         try:
             wb.save(out_filename)
         except PermissionError as e:
-            print('ERROR: There was a problem saving to {}. Is it open in Excel?'.format(out_filename))
+            print ("FATAL ERROR: CANNOT SAVE EXCEL OUTFILE", file = sys.stderr)
             return
-        
+        '''
+        if len (skipped_run_set) > 0:
+            with open(logname, 'a') as logfile:
+                print ("\nTHE FOLLOWING RUNSETS WERE SKIPPED (NAME  REASON):\n\n", file = logfile)
+                for run_set_name, error in skipped_run_set.items():
+                    print(run_set_name + '\t\t' + error, file = logfile)
+        '''
         print ('Done.\n')
         print ("\nRUN SETS PROCESSED SUCCESSFULLY:\n")
-        for run_set in processed_set:
+        for run_set in processed_run_set:
             print (run_set)
 
         print ("\nRUN SETS EXCLUDED:\n")
-        for run_set in excluded_set:
+        for run_set in excluded_run_set:
             print (run_set)
 
-        print ("\nRUN SETS WITH SKIPPED RUNS:\n")
-        for run_set in skipped_set:
-            print (run_set)
+        print ("\nRUN SETS SKIPPED (REASON):\n")
+        for run_set, error in skipped_run_set.items():
+            print (run_set + '\t(' + error + ')')
 
-        print ("\nFINAL SUMMARY:\n{} processed run sets \n{} excluded run sets \n{} run sets with skipped runs.\n".format(len(processed_set), len(excluded_set), len(skipped_set)))
-        if len(skipped_set) > 0:
-            print ("For details on run sets with skipped runs check {}.\n".format(logname))
+        print ("\nFINAL SUMMARY:\n{} processed run sets \n{} excluded run sets \n{} run sets skipped.\n".format(len(processed_run_set), len(excluded_run_set), len(skipped_run_set)))
+        if len(skipped_run_set) > 0:
+            print ("For details on skipped run sets check {}.\n".format(logname))
 
 def run():
     #directory = r'Z:\CEPAC - All Users\Transmission Model\Runs01_2016\PrEP_ReRuns_3.76'
     #post_calib = r'Z:\CEPAC - All Users\Transmission Model\Runs08_2015\90_90_90_Runs\30PercLRFemale_All\post calib.out'
     #out = r'Z:\CEPAC - All Users\Transmission Model\Runs01_2016\PrEP_ReRuns_3.76\analyse_batches_2030_PrEP__FINAL.xlsx'
-    directory = sys.argv[1]
+   if len(sys.argv) != 4:
+        print ("Usage: analyse_batches.py <target dir> <post calib file> <output file>", file = sys.stderr)
+        return    directory = sys.argv[1]
     post_calib = sys.argv[2]
-    out = "analyse_batches.xls"
+    out = sys.argv[3]
     weight = float(0.9)
     year_range = (2015, 2029)
-    excludes = ['80_60_50_YoungHRWom_reruns','PreP_2xSteadyActs','PreP_2xSteadyActsHR']
+    year_comparison = (2015, 2029)
+    excludes = []
     Summary(directory, post_calib, weight, year_range).summarise(out, excludes)
     
 if __name__ == '__main__':
