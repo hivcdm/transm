@@ -9,7 +9,7 @@
 # If we have no additional arguments we go for a release build
 if [[ $# -eq 0 ]]
 then
-	CMAKE_ARGS="-D NDEBUG=1 -D CMAKE_BUILD_TYPE=Release"
+	CMAKE_ARGS="-D CMAKE_BUILD_TYPE=Release"
 else
 	CMAKE_ARGS=$@
 fi
