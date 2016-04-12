@@ -2,6 +2,9 @@ results/
 x64/
 .project
 .cproject
+.externalToolBuilders/
+.pydevproject
+.settings/
 *.sdf
 *.suo
 *.opensdf
@@ -21,3 +24,5 @@ build/gmake/
 build/xcode*/
 CMakeFiles/
 scripts/generate_runs/*/
+/Default/
+tmp/
