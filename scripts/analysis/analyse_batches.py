@@ -310,10 +310,12 @@ class Run:
 							#print ("Error reading file 3 {}. Please check it for consistency (is the number of months {}?). {}".format(infections_filename, duration, v))
 						except ValueError as v:
 							expected_month += 1
-
 		if run_has_begun == False:
 			self.is_sane = False
 			self.state_msg = "ERROR NO init IN INFECTIONS FILE"
+		elif expected_month < duration:
+			self.is_sane = False
+			self.state_msg = "ERROR INFECTIONS FILE DURATION"
 		return
 
 	def read_results(self, start_year, end_year, month_of_1990, zip_file):
@@ -501,7 +503,7 @@ class RunSet:
 							month_of_1990 = get_month_of_1990(run.name)
 							run.read_results(year_range[0], year_range[1], month_of_1990, zip_file)
 						else:
-							pass
+							print("\t({})".format(run.state_msg), file = sys.stderr)
 							
 					yield run
 
@@ -741,7 +743,7 @@ class Summary:
 
 		for run in run_set.load_runs(self.year_range, lambda r: self.get_month_of_1990(r, False)):
 			if run.is_sane == False:
-				skipped_runs[run.path] = run.state_msg
+				skipped_runs[run.name] = (run.path, run.state_msg)
 			else:
 				weight = self.get_weight(run.name, False) 
 				total_weight += weight
@@ -981,49 +983,55 @@ class Summary:
 					self.pages[page_name].add_data('Q3 ' + run_set.name, stats.upper_quartile[page_name], number_format)
 				'''
 			# If this is true at this point it means we have missing runs
-			if self.num_runs != len(processed_runs):
+			if self.num_runs != (len(processed_runs) + len(skipped_runs)):
 			#	self.pages['Missing Runs'].add_data("{} ({})".format(run_set.name, self.num_runs - len(processed_runs)), list(set(self.weights.keys()) - processed_runs))
 				run_set.is_sane = False
 				processed_runs_names = set()
+				skipped_runs_names = set()
 				all_run_names = set(self.weights.keys())
 				for name in all_run_names:
 					for namepath in processed_runs:
 						if namepath.startswith(name) and namepath[len(name)] not in '0123456789':
 							processed_runs_names.add(name)
-				missing_runs = all_run_names - set(processed_runs_names)
-				run_set.state_msg = "HAS {} MISSING RUNS".format(self.num_runs - len(processed_runs))
+					for namepath in skipped_runs:
+						if namepath.startswith(name) and namepath[len(name)] not in '0123456789':
+							skipped_runs_names.add(name)
+				missing_runs_names = all_run_names - set(processed_runs_names) - set(skipped_runs_names)
+				print("Missing: {}".format(missing_runs_names))
+				print("Skipped: {}".format(skipped_runs_names))
+				print("Processed: {}".format(processed_runs_names))
+				run_set.state_msg = "HAS {} MISSING RUNS".format(len(missing_runs_names))
 				self.skipped_run_set[run_set.name] = run_set.state_msg
 				with open(logname, 'a') as logfile:
-					for run_name in missing_runs:
+					for run_name in missing_runs_names:
 						print(run_name + '\t\t' + "MISSING", file = logfile)
-				continue
-			try:
-				if stats.get_max_year() > max_year:
-					max_year = stats.get_max_year()
-			except TypeError as e:
-				if len(processed_runs) > 0:
+			if len(skipped_runs) > 0:
+				if run_set.is_sane == True:
+					run_set.is_sane = False
+					run_set.state_msg = "HAS SKIPPED RUNS"
+				self.skipped_run_set[run_set.name] = run_set.state_msg
+				with open(logname, 'a') as logfile:
+					for run_name, (path, error) in skipped_runs.items():
+						print(path + '\t\t' + error, file = logfile)
+					print("Summary for {}: {} processed runs, {} skipped runs, {} missing runs.\n".format(run_set.name, len(processed_runs), len(skipped_runs), len(missing_runs_names), logname), file = sys.stderr)
+			if run_set.is_sane == True:
+				try:
+					if stats.get_max_year() > max_year:
+						max_year = stats.get_max_year()
+				except TypeError as e:
 					print ("ERROR: Couldn't read max year!", file = sys.stderr)
 					run_set.is_sane = False
 					run_set.state_msg = "ERROR NO MAX YEAR"
 					self.skipped_run_set[run_set.name] = run_set.state_msg
 					continue
-			try:
-				wb.save(out_filename)
-			except PermissionError as e:
-				run_set.is_sane = False
-				run_set.state_msg = "ERROR SAVING EXCEL OUTFILE"
-				self.skipped_run_set[run_set.name] = run_set.state_msg
-				continue
-			#print ("length of skipped runs is: {}".format(len(skipped_runs)), file=sys.stderr)
-			if len(skipped_runs) > 0:
-				run_set.is_sane = False
-				run_set.state_msg = "HAS SKIPPED RUNS"
-				self.skipped_run_set[run_set.name] = run_set.state_msg
-				with open(logname, 'a') as logfile:
-					for run_name, error in skipped_runs.items():
-						print(run_name + '\t\t' + error, file = logfile)
-					print("Summary for {}: {} processed runs, {} skipped runs.\n".format(run_set.name, len(processed_runs), len(skipped_runs), logname), file = sys.stderr)
-			else:
+				try:
+					wb.save(out_filename)
+				except PermissionError as e:
+					run_set.is_sane = False
+					run_set.state_msg = "ERROR SAVING EXCEL OUTFILE"
+					self.skipped_run_set[run_set.name] = run_set.state_msg
+					continue
+				# If we are here we should be good
 				self.processed_run_set.append(run_set.name)
 				print ("Summary for {}: All runs completed successfully.\n".format(run_set.name), file = sys.stderr)
 
@@ -1085,10 +1093,10 @@ def run():
 	The following parameters can be manually changed by the user
 	'''
 	weight = float(0.9) # Weight cutoff for the calibration file
-	year_range = (2015, 2029) # Years of interest for our analysis
-	year_comparison = (2014, 2029) # (base year, max year) for computing the differences to rank in  quartiles 
+	year_range = (2015, 2059) # Years of interest for our analysis
+	year_comparison = (2014, 2059) # (base year, max year) for computing the differences to rank in  quartiles 
 	excludes = [] # run sets to be excluded from our analysis (useful when the script is executed on very large folders
-	status_quo = "2xHR_PartInc"#"Scen2Real"
+	status_quo = ""# "2xHR_PartInc"#"Scen2Real"
 	
 	Summary(directory, post_calib, weight, year_range, year_comparison, status_quo).summarise(out, excludes)
 	
