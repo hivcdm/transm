@@ -983,6 +983,7 @@ class Summary:
 					self.pages[page_name].add_data('Q3 ' + run_set.name, stats.upper_quartile[page_name], number_format)
 				'''
 			# If this is true at this point it means we have missing runs
+			missing_runs_names = set()
 			if self.num_runs != (len(processed_runs) + len(skipped_runs)):
 			#	self.pages['Missing Runs'].add_data("{} ({})".format(run_set.name, self.num_runs - len(processed_runs)), list(set(self.weights.keys()) - processed_runs))
 				run_set.is_sane = False
@@ -1013,8 +1014,9 @@ class Summary:
 				with open(logname, 'a') as logfile:
 					for run_name, (path, error) in skipped_runs.items():
 						print(path + '\t\t' + error, file = logfile)
-					print("Summary for {}: {} processed runs, {} skipped runs, {} missing runs.\n".format(run_set.name, len(processed_runs), len(skipped_runs), len(missing_runs_names), logname), file = sys.stderr)
-			if run_set.is_sane == True:
+			if run_set.is_sane == False:
+				print("Summary for {}: {} processed runs, {} skipped runs, {} missing runs.\n".format(run_set.name, len(processed_runs), len(skipped_runs), len(missing_runs_names), logname), file = sys.stderr)
+			else:
 				try:
 					if stats.get_max_year() > max_year:
 						max_year = stats.get_max_year()
@@ -1027,6 +1029,7 @@ class Summary:
 				try:
 					wb.save(out_filename)
 				except PermissionError as e:
+					print ("ERROR: Couldn't save excel file!", file = sys.stderr)
 					run_set.is_sane = False
 					run_set.state_msg = "ERROR SAVING EXCEL OUTFILE"
 					self.skipped_run_set[run_set.name] = run_set.state_msg
