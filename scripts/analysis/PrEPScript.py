@@ -388,10 +388,10 @@ class Run:
 						
 					cumulative_sa_total_lms += self.files['Population'].get_float(str(incidence_month), pop_column)
 					cumulative_total_infected += self.files['Infections'].get_float(str(incidence_month), incident_column)
-				   
+				
 				incidence_rate = cumulative_infections / cumulative_sa_lm * 12 if cumulative_sa_lm > 0 else 0
 				prevalence_rate = num_infected / num_people if num_people > 0 else 0
-				
+			
 				self.statistics['Stratified Outcomes'][year]['Population ' + stratification] = num_people
 				self.statistics['Stratified Outcomes'][year]['Using PrEP ' + stratification] = num_using_prep
 				self.statistics['Stratified Outcomes'][year]['Receiving ART ' + stratification] = num_on_treatment
@@ -422,13 +422,13 @@ class Run:
 				sa_total += num_people
 				infected_total += num_infected
 
-			self.statistics['Stratified Outcomes'][year]['Incidence Rate Total Males'] = cumulative_males_infected / cumulative_sa_male_lms * 12
+			self.statistics['Stratified Outcomes'][year]['Incidence Rate Total Males'] = (cumulative_males_infected / (cumulative_sa_male_lms - infected_males * 12)) * 12
 			self.statistics['Stratified Outcomes'][year]['Prevalence Total Males'] = infected_males / sa_males
 
-			self.statistics['Stratified Outcomes'][year]['Incidence Rate Total Females'] = cumulative_females_infected / cumulative_sa_female_lms * 12
+			self.statistics['Stratified Outcomes'][year]['Incidence Rate Total Females'] = (cumulative_females_infected / (cumulative_sa_female_lms - infected_females * 12)) * 12
 			self.statistics['Stratified Outcomes'][year]['Prevalence Total Females'] = infected_females / sa_females
 			
-			self.statistics['Stratified Outcomes'][year]['Incidence Rate Total'] = cumulative_total_infected / cumulative_sa_total_lms * 12
+			self.statistics['Stratified Outcomes'][year]['Incidence Rate Total'] = (cumulative_total_infected / (cumulative_sa_total_lms - infected_total * 12)) * 12
 			self.statistics['Stratified Outcomes'][year]['Prevalence Total'] = infected_total / sa_total
 
 class RunSet:
@@ -690,8 +690,8 @@ def run():
 	post_calib = sys.argv[2]
 	out = sys.argv[3]
 	weight = 0.9
-	year_range = (1990, 2029)
-	excludes = []
+	year_range = (2014, 2059)
+	excludes = ["85PerSudDecBef2016_50K", "3PerIncBef2016_50K"]
 	Summary(directory, post_calib, weight, year_range).summarise(out, excludes)
 	
 if __name__ == '__main__':

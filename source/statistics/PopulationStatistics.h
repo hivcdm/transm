@@ -137,6 +137,7 @@ private:
 	int yearStartSexuallyActivePopSize;
 	int yearlyCumulativeSexuallyActivePopSize;
 	int yearlyIncidentInfections;
+	double monthlyIncidenceSum;
 	int yearlyTests;
 	std::set<Person *> uniqueYearlyEligibleForTreatmentAccess;
 	std::set<Person *> uniqueYearlyAccessingTreatment;

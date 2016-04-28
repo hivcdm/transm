@@ -116,6 +116,11 @@ public :
 	**/
 	unsigned long getNumIncidentInfections();
 
+	/**
+	@return number of people infected in the current time step
+	**/
+	unsigned int getCurrTimeStepNumInfected();
+
 	//see how many of 1 type of person infected another
 	unsigned long getNumIncidentInfections(DemographicProfile::ProfileID _infectors, DemographicProfile::ProfileID _infecteds);
 

@@ -112,11 +112,14 @@ std::string get_executable_name()
 
 Version Utility::get_model_version()
 {
-    auto exe_name = get_executable_name();
-    auto hyphen_index = exe_name.find_last_of('-');
-    assert(hyphen_index != std::string::npos);
-    auto version_string = exe_name.substr(hyphen_index + 2);
-    return Version::FromString(version_string);
+//	I am leaving this horror here for posterity. GA
+//  auto exe_name = get_executable_name();
+//  auto hyphen_index = exe_name.find_last_of('-');
+//  assert(hyphen_index != std::string::npos);
+//  auto version_string = exe_name.substr(hyphen_index + 2);
+//  return Version::FromString(version_string);
+
+    return Version::FromString(Constants::VERSION);
 }
 
 //convert _val from one TimeGranularity to another
