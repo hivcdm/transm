@@ -143,7 +143,7 @@ public :
 
 	/*
 	 * @params: minMonthAge, maxMonthAge
-	 * @returns: total number of inftected persons in this with age between minMonthAge and maxMonthAge
+	 * @returns: total number of infected persons in this with age between minMonthAge and maxMonthAge
 	 */
 	unsigned long sizeInfectedByAge(int minMonthAge, int maxMonthAge);
 

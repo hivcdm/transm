@@ -122,6 +122,11 @@ unsigned long InfectionsTracker::getNumIncidentInfections()
 	return infections;
 }
 
+unsigned int InfectionsTracker::getCurrTimeStepNumInfected() {
+
+	return InfectionsTracker::currTimeStepNumInfected;
+}
+
 /*
 unsigned long InfectionsTracker::getNumIncidentInfections(DemographicProfile::ProfileID _infectorsProfileID,
         DemographicProfile::ProfileID _infectedsProfileID)
@@ -720,7 +725,17 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
         _eventParams.BatchStatsStream[BatchStatsVariables::NEWINFECTIONS] << getCurrTimeStepIncidentInfsTotal() << Constants::TAB;
 	}
 
-	double monthlyIncidence = 1.0 * (getCurrTimeStepIncidentInfsTotal()) / (double)currPopSize;
+	//Currently Infected
+	//total the current infections
+	for(unsigned int i = 0; i < DemographicProfile::TotalNumBuckets; i++)
+	{
+		for(int j = 0; j < NUMBER_GENERATIONS_TO_TRACE; j++)
+		{
+			totalInfected += currPrevalentInfections[i][j];
+		}
+	}
+
+	double monthlyIncidence = 1.0 * (getCurrTimeStepIncidentInfsTotal()) / (double(currSAPopSize) - totalInfected);
 	//Push the monthly incidence onto the deque
 	lastTwelveIncidenceRates.push_back(monthlyIncidence);
 	//Pop off the oldest incidence rate
@@ -738,16 +753,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	//Total Infected in History
 	_outStream << getNumIncidentInfections() << Constants::TAB;
 
-	//Currently Infected
-	//total the current infections
-	for(unsigned int i = 0; i < DemographicProfile::TotalNumBuckets; i++)
-	{
-		for(int j = 0; j < NUMBER_GENERATIONS_TO_TRACE; j++)
-		{
-			totalInfected += currPrevalentInfections[i][j];
-		}
-	}
-
+	//Now we print the current infections
 	_outStream << totalInfected << Constants::TAB;
 
 	//Print to BatchStats file if CURRENTLYINFECTED stream is open

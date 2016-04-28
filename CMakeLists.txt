@@ -114,6 +114,7 @@ add_executable(transm source/main.cpp ${TRANSM_SOURCE_FILES})
 # Read and set up the version number
 
 file(READ VERSION TRANSM_VER)
+message("Building version ${TRANSM_VER}")
 #set_property(TARGET transm PROPERTY VERSION ${TRANSM_VER}) # Better way of indicating our version number, however...
 set(CMAKE_EXECUTABLE_SUFFIX "-v${TRANSM_VER}") # ...we need to use the following for compatibility with ridiculous assert in transm code
 

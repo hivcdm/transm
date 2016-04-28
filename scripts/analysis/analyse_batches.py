@@ -228,6 +228,9 @@ class Run:
 	def get_max_year(self):
 		return self.max_year
 
+	def set_max_year(max_year):
+		self.max_year = max_year
+
 	# Don't use an XML parser here to reduce execution time.
 	# (We're going to do this a lot!)
 	def read_xml(self):
@@ -246,7 +249,7 @@ class Run:
 		#print ("The duration we found is {}".format(duration), file =sys.stderr)
 		return version, duration
 
-	def sanity_checks(self, duration, zip_file=None):
+	def sanity_checks(self, duration,  start_year, end_year, month_of_1990, zip_file=None):
 		infections_filename = '{}-Infections.xls'.format(self.name)
 		if zip_file:
 			infections = zip_file.open('results/' + infections_filename, 'r')
@@ -257,25 +260,24 @@ class Run:
 		if not os.path.isdir(results_dir): 
 			self.is_sane = False
 			self.state_msg = "MISSING RESULTS DIR"
-			return
 			#print ("Missing results directory for {}.".format(self.name), file = sys.stderr)
 		elif not os.path.isfile(infections_filename):
 			self.is_sane = False
 			self.state_msg = "MISSING INFECTIONS FILE"
-			return
 			#print ("Missing infections file for {}.".format(self.name), file = sys.stderr)
+		elif month_of_1990 + (end_year - 1990) * 12 + 11 > duration:
+			self.is_sane = False
+			self.state_msg = "END MONTH IN YEAR RANGE ({}) > THAN XML DURATION ({})".format(month_of_1990 + (end_year - 1990) * 12 + 11, duration)
 		else:
 			try:
 				infections = open(infections_filename, 'r')
 			except Exception as e:
 				self.is_sane = False
 				self.state_msg = "CANNOT OPEN INFECTIONS FILE"
-				return
 				#print ("Cannot open file {}: {}.".format(infections_filename, e), file = sys.stderr)
-		# if file is not open we need to stop here
-		run_has_begun = False
-		expected_month = 0
 		if self.is_sane == True:
+			run_has_begun = False
+			expected_month = 0
 			for i, line in enumerate(infections):
 				if isinstance(line, bytes):
 					line = line.decode('utf8')
@@ -310,10 +312,12 @@ class Run:
 							#print ("Error reading file 3 {}. Please check it for consistency (is the number of months {}?). {}".format(infections_filename, duration, v))
 						except ValueError as v:
 							expected_month += 1
-
-		if run_has_begun == False:
+		if self.is_sane == True and run_has_begun == False:
 			self.is_sane = False
 			self.state_msg = "ERROR NO init IN INFECTIONS FILE"
+		elif self.is_sane == True and expected_month < duration:
+			self.is_sane = False
+			self.state_msg = "ERROR INFECTIONS FILE DURATION"
 		return
 
 	def read_results(self, start_year, end_year, month_of_1990, zip_file):
@@ -406,14 +410,47 @@ class Run:
 		self.statistics['Cascade']['total-percent-supressed'] = percent_tested * percent_treated * percent_tested
 		
 	def extract_prevalence_and_incidence(self):
-		at_end = False
+	# This first check is to make sure we can read far enough in the files
+#		at_end = False
 		year = 1990
 		while self.files['ShiftedOutcomes'].has_row(str(year)):
-			self.statistics['Prevalence'][year] = self.files['ShiftedOutcomes'].get_float(str(year), 3)
-			self.statistics['Incidence'][year] = self.files['ShiftedOutcomes'].get_float(str(year), 4)
 			year += 1
 		self.max_year = year - 1
-		
+		sa_column = 5
+		pop_column = 3
+		currently_infected_column = 2
+		newly_infected_column = 0
+
+		for year in range(1990, min(self.end_year, self.max_year) + 1):
+#		for year in map(str, range(1990, self.end_year + 1)):
+			first_month = self.month_of_1990 + (year - 1990) * 12
+#			print("Year is {}, first month is {}, start month is {}.".format(year, first_month, self.start_month), file=sys.stderr)
+			monthly_sa = 0
+			monthly_currently_infected = 0
+			monthly_newly_infected = 0
+			yearly_incidence = 0
+			yearly_prevalence = 0
+			
+# 			yearly_newly_infected = 0
+# 			yearly_sa = 0
+# 			yearly_currently_infected = 0
+
+			for month_in_year in range(first_month, first_month + 12):
+				monthly_sa = self.files['Infections'].get_int(str(month_in_year), sa_column)
+				monthly_currently_infected = self.files['Infections'].get_int(str(month_in_year), currently_infected_column)
+				monthly_newly_infected = self.files['Infections'].get_int(str(month_in_year), newly_infected_column)
+				yearly_incidence += monthly_newly_infected / (monthly_sa - monthly_currently_infected)
+				if month_in_year == int(first_month) and monthly_sa > 0:
+					yearly_prevalence = monthly_currently_infected / monthly_sa
+# 					yearly_sa = monthly_sa
+# 					yearly_currently_infected = monthly_currently_infected		
+# 				yearly_newly_infected += monthly_newly_infected
+			self.statistics['Prevalence'][year] = yearly_prevalence
+			self.statistics['Incidence'][year] = yearly_incidence
+# 			print("Incidence for {} is:\n{} in the monthly calculations;\n{} in the 1st month calculations.\n\n".format(year, yearly_incidence, yearly_newly_infected / (yearly_sa - yearly_currently_infected)), file=sys.stderr)
+#			print("Prevalence for {} is {} in the monthly calculations, {} in the 1st month calculations.".format(year, yearly_prevalence, yearly_currently_infected / yearly_sa), file=sys.stderr)
+		return
+
 	def extract_costs_and_lms(self):
 		cost_stats = [
 			('total', 16),
@@ -465,7 +502,7 @@ class RunSet:
 		self.is_sane = True
 		self.state_msg = str()
 
-	def load_runs(self, year_range, get_month_of_1990):
+	def load_runs(self, year_range_min, year_range_max, get_month_of_1990):
 		subdirs = [os.path.join(self.directory, i) for i in os.listdir(self.directory) if os.path.isdir(os.path.join(self.directory, i))]
 		batchdirs = [i for i in subdirs if os.path.basename(i).startswith('batch')]
 		if len(batchdirs) == 0:
@@ -495,13 +532,13 @@ class RunSet:
 						#print('Invalid version for XML {}. should be one of: {}'.format(os.path.join(batchdir, file), ', '.join(supported_versions)), file = sys.stderr)
 						continue
 					else: 
-						run.sanity_checks(duration, zip_file)
+						month_of_1990 = get_month_of_1990(run.name)
+						run.sanity_checks(duration, year_range_min, year_range_max, month_of_1990, zip_file)
 						print('\t{} (sanity checks passed: {})'.format(run.name, run.is_sane))
 						if run.is_sane == True:
-							month_of_1990 = get_month_of_1990(run.name)
-							run.read_results(year_range[0], year_range[1], month_of_1990, zip_file)
+							run.read_results(year_range_min, year_range_max, month_of_1990, zip_file)
 						else:
-							pass
+							print("\t({})".format(run.state_msg), file = sys.stderr)
 							
 					yield run
 
@@ -509,8 +546,8 @@ class Summary:
 	def __init__(self, directory, post_calib_filename, weight_cutoff, year_range, year_comparison, status_quo):
 		self.directory = directory
 		self.read_calibration_data(post_calib_filename, weight_cutoff)
-		self.year_range = year_range
-		self.base_year, self.max_year = year_comparison
+		self.year_range_min, self.year_range_max = year_range
+		self.comparison_base_year = year_comparison
 		self.status_quo = status_quo
 		self.status_quo_found = 0
 		self.status_quo_is_sane = True
@@ -519,13 +556,13 @@ class Summary:
 		self.processed_run_set = []
 		self.skipped_run_set = dict()
 
-		if self.base_year > year_range[0] or self.max_year > year_range[1]:
-			print("Incorrect year comparison ({}-{}) vs year analysis ({}-{}) range. Please change the parameters and re-run the script.".format(self.base_year, self.max_year, *self.year_range)) 
+		if self.comparison_base_year < self.year_range_min or self.comparison_base_year > self.year_range_max:
+			print("Incorrect year comparison ({}) vs year analysis ({}-{}) range. Please change the parameters and re-run the script.".format(self.comparison_base_year, self.year_range_min, self.year_range_max)) 
 			exit()
 		self.headers = [
 			('Infections', [
 				[
-					'Years: {} to {}'.format(*self.year_range),
+					'Years: {} to {}'.format(self.year_range_min, self.year_range_max),
 					'Infections by HVL (of Infector)'
 				],
 				[
@@ -544,7 +581,7 @@ class Summary:
 			]),
 			('Averted', [
 				[
-					'Years: {} to {}'.format(*self.year_range),
+					'Years: {} to {}'.format(self.year_range_min, self.year_range_max),
 					'Infections by HVL (of Infector)'
 				],
 				[
@@ -564,7 +601,7 @@ class Summary:
 				]
 			]),
 			('Cascade', [
-				'Year {}'.format(self.year_range[1]),
+				'Year {}'.format(self.year_range_max),
 				'Pop Size', 'Number With HIV',
 				'Number With HIV Tested', 'Number with HIV Treated',
 				'Number With HIV Supressed',
@@ -579,7 +616,7 @@ class Summary:
 				''
 			]),
 			('Cost-Undiscounted', [
-				'Years: {} to {}'.format(*self.year_range),
+				'Years: {} to {}'.format(self.year_range_min, self.year_range_max),
 				'Total',
 				'Condoms',
 				'Circumcision',
@@ -588,7 +625,7 @@ class Summary:
 				'Treatment'
 			]),
 			('Cost-Discounted', [
-				'Years: {} to {}'.format(*self.year_range),
+				'Years: {} to {}'.format(self.year_range_min, self.year_range_max),
 				'Total',
 				'Condoms',
 				'Circumcision',
@@ -597,7 +634,7 @@ class Summary:
 				'Treatment'
 			]),
 			('LMs-Undiscounted', [
-				'Years: {} to {}'.format(*self.year_range),
+				'Years: {} to {}'.format(self.year_range_min, self.year_range_max),
 				'Total',
 				'Negative',
 				'Acute (Observed)',
@@ -608,7 +645,7 @@ class Summary:
 				'Late-Stage (Unobserved)'
 			]),
 			('LMs-Discounted', [
-				'Years: {} to {}'.format(*self.year_range),
+				'Years: {} to {}'.format(self.year_range_min, self.year_range_max),
 				'Total',
 				'Negative',
 				'Acute (Observed)',
@@ -739,9 +776,9 @@ class Summary:
 
 		num_runs = 0
 
-		for run in run_set.load_runs(self.year_range, lambda r: self.get_month_of_1990(r, False)):
+		for run in run_set.load_runs(self.year_range_min, self.year_range_max, lambda r: self.get_month_of_1990(r, False)):
 			if run.is_sane == False:
-				skipped_runs[run.path] = run.state_msg
+				skipped_runs[run.name] = (run.path, run.state_msg)
 			else:
 				weight = self.get_weight(run.name, False) 
 				total_weight += weight
@@ -752,7 +789,7 @@ class Summary:
 				processed_runs.append(run.name)
 				
 				if stats.max_year == None:
-					stats.max_year = run.max_year
+					stats.max_year = min(run.max_year, self.year_range_max)
 				else:
 					stats.max_year = min(run.max_year, stats.max_year)
 					
@@ -761,7 +798,7 @@ class Summary:
 						if stat not in stats.statistics[stat_category]:
 							stats.statistics[stat_category][stat] = 0
 							stats.series[stat_category][stat] = []
-	
+
 						run_value = run.statistics[stat_category][stat]
 						#print ("Category: {} \t Name: {} \t Run Value: {}".format(stat_category, stat, run_value), file=sys.stderr)
 						
@@ -771,7 +808,11 @@ class Summary:
 						else:
 							stats.statistics[stat_category][stat] += weight * run_value
 							stats.series[stat_category][stat].append(run_value)
- 
+
+		# If we have nothing we better just return
+		if len(processed_runs) == 0:
+			return stats, processed_runs, skipped_runs
+
 		# censor years not present in every run in the set
 		if stats.max_year != None:
 			while stats.max_year + 1 in stats.statistics['Incidence']:
@@ -791,15 +832,17 @@ class Summary:
 					stats.median[stat_category][stat], median_position = self.wquantile(stats.series[stat_category][stat], weights, 0.5)
 					stats.lower_quartile[stat_category][stat], q1_position = self.wquantile(stats.series[stat_category][stat], weights, 0.25)
 					stats.upper_quartile[stat_category][stat], q3_position = self.wquantile(stats.series[stat_category][stat], weights, 0.75)
-					#stats.differences[stat_category][stat] = numpy.asarray(stats.series[stat_category][stat]) - numpy.asarray(stats.series[stat_category][self.base_year])
+					#stats.differences[stat_category][stat] = numpy.asarray(stats.series[stat_category][stat]) - numpy.asarray(stats.series[stat_category][self.comparison_base_year])
 					#stats.median[stat_category][stat] = weighted.quantile(stats.differences[stat_category][stat], weights, 0.5)
 					#stats.lower_quartile[stat_category][stat] = weighted.quantile(stats.differences[stat_category][stat], weights, 0.25)
 					#stats.upper_quartile[stat_category][stat] = weighted.quantile(stats.differences[stat_category][stat], weights, 0.75)
 		for stat_category in stats.series:
 			if stat_category in ['Incidence', 'Prevalence']:
-				year_range = "{} to {}".format(self.max_year, self.base_year)
+				year_range = "{} to {}".format(self.year_range_min, self.year_range_max)
 				array_indices = numpy.array(range(len(weights)))
-				stats.differences[stat_category][year_range] = numpy.asarray(stats.series[stat_category][self.max_year]) - numpy.asarray(stats.series[stat_category][self.base_year])
+# 				print("Stats max year is {}".format(stats.max_year), file=sys.stderr)
+# 				print("stat category is {}, year is {}, stats max year is {}, length of array 1 is {}, length of array 2 is {}.".format(stat_category, year_range, stats.max_year, len(stats.series[stat_category]), len(stats.series[stat_category])), file=sys.stderr)
+				stats.differences[stat_category][year_range] = numpy.asarray(stats.series[stat_category][stats.max_year]) - numpy.asarray(stats.series[stat_category][self.comparison_base_year])
 				stats.statistics[stat_category][year_range] = numpy.average(stats.differences[stat_category][year_range], weights=weights)
 				stats.median[stat_category][year_range], median_position = self.wquantile(stats.differences[stat_category][year_range], weights, 0.5)
 				stats.lower_quartile[stat_category][year_range], q1_position =  self.wquantile(stats.differences[stat_category][year_range], weights, 0.25)
@@ -807,17 +850,17 @@ class Summary:
 				#median_value, median_position = self.wquantile(stats.differences[stat_category][year_range], weights, 0.5)
 				#print ("The values are: {}".format(stats.differences[stat_category]), file = sys.stderr)
 				#print ("The old median is {}. The new one is {}, its position is {}.".format(stats.median[stat_category][year_range], median_value, median_position), file = sys.stderr)
-				stats.statistics[stat_category]["%"] = stats.statistics[stat_category][year_range] / stats.statistics[stat_category][self.base_year]
-				stats.median[stat_category]["%"] = stats.median[stat_category][year_range] / stats.series[stat_category][self.base_year][median_position]
+				stats.statistics[stat_category]["%"] = stats.statistics[stat_category][year_range] / stats.statistics[stat_category][self.comparison_base_year]
+				stats.median[stat_category]["%"] = stats.median[stat_category][year_range] / stats.series[stat_category][self.comparison_base_year][median_position]
 				#print ("average is of type {} and the value is {}.".format(type(stats.statistics[stat_category]["%"]), stats.statistics[stat_category]["%"]), file = sys.stderr)
-				#print ("The divisor is of type {}, value {}".format(type (stats.series[stat_category][self.base_year]), stats.series[stat_category][self.base_year]), file = sys.stderr)
-				stats.lower_quartile[stat_category]["%"] = stats.lower_quartile[stat_category][year_range] / stats.series[stat_category][self.base_year][q1_position]
-				stats.upper_quartile[stat_category]["%"] = stats.upper_quartile[stat_category][year_range] / stats.series[stat_category][self.base_year][q3_position]
+				#print ("The divisor is of type {}, value {}".format(type (stats.series[stat_category][self.comparison_base_year]), stats.series[stat_category][self.comparison_base_year]), file = sys.stderr)
+				stats.lower_quartile[stat_category]["%"] = stats.lower_quartile[stat_category][year_range] / stats.series[stat_category][self.comparison_base_year][q1_position]
+				stats.upper_quartile[stat_category]["%"] = stats.upper_quartile[stat_category][year_range] / stats.series[stat_category][self.comparison_base_year][q3_position]
 
 		if run_set.name == self.status_quo:
 			self.status_quo_stats = stats 
 			self.status_quo_is_sane = run_set.is_sane
-		if self.status_quo_is_sane == True and len(processed_runs) == self.num_runs:
+		if self.status_quo_found == 1 and self.status_quo_is_sane == True and len(processed_runs) == self.num_runs:
 			for stat in stats.statistics['Infections']:
 				try:
 					stats.differences['Averted'][stat] = numpy.asarray(self.status_quo_stats.series['Infections'][stat]) - numpy.asarray(stats.series['Infections'][stat])
@@ -890,11 +933,10 @@ class Summary:
 				self.pages['Prevalence'].ws.cell(column=1,row=row).value = year
 				self.pages['Incidence'].ws.cell(column=1,row=row).value = year
 			last_row = 2 + max_year + 1 -1990
-			self.pages['Prevalence'].ws.cell(column=1,row=last_row).value = "{} to {}".format(self.max_year, self.base_year)
-			self.pages['Incidence'].ws.cell(column=1,row=last_row).value = "{} to {}".format(self.max_year, self.base_year)
+			self.pages['Prevalence'].ws.cell(column=1,row=last_row).value = "{} to {}".format(self.comparison_base_year, max_year)
+			self.pages['Incidence'].ws.cell(column=1,row=last_row).value = "{} to {}".format(self.comparison_base_year, max_year)
 			self.pages['Prevalence'].ws.cell(column=1,row=last_row + 1).value = "%"
 			self.pages['Incidence'].ws.cell(column=1,row=last_row + 1).value = "%"
-			
 
 	def summarise(self, out_filename, excludes):
 		out_filename = os.path.normpath(out_filename)
@@ -981,49 +1023,58 @@ class Summary:
 					self.pages[page_name].add_data('Q3 ' + run_set.name, stats.upper_quartile[page_name], number_format)
 				'''
 			# If this is true at this point it means we have missing runs
-			if self.num_runs != len(processed_runs):
+			missing_runs_names = set()
+			if self.num_runs != (len(processed_runs) + len(skipped_runs)):
 			#	self.pages['Missing Runs'].add_data("{} ({})".format(run_set.name, self.num_runs - len(processed_runs)), list(set(self.weights.keys()) - processed_runs))
 				run_set.is_sane = False
 				processed_runs_names = set()
+				skipped_runs_names = set()
 				all_run_names = set(self.weights.keys())
 				for name in all_run_names:
 					for namepath in processed_runs:
 						if namepath.startswith(name) and namepath[len(name)] not in '0123456789':
 							processed_runs_names.add(name)
-				missing_runs = all_run_names - set(processed_runs_names)
-				run_set.state_msg = "HAS {} MISSING RUNS".format(self.num_runs - len(processed_runs))
+					for namepath in skipped_runs:
+						if namepath.startswith(name) and namepath[len(name)] not in '0123456789':
+							skipped_runs_names.add(name)
+				missing_runs_names = all_run_names - set(processed_runs_names) - set(skipped_runs_names)
+				print("Missing: {}".format(missing_runs_names))
+				print("Skipped: {}".format(skipped_runs_names))
+				print("Processed: {}".format(processed_runs_names))
+				run_set.state_msg = "HAS {} MISSING RUNS".format(len(missing_runs_names))
 				self.skipped_run_set[run_set.name] = run_set.state_msg
 				with open(logname, 'a') as logfile:
-					for run_name in missing_runs:
-						print(run_name + '\t\t' + "MISSING", file = logfile)
-				continue
-			try:
-				if stats.get_max_year() > max_year:
-					max_year = stats.get_max_year()
-			except TypeError as e:
-				if len(processed_runs) > 0:
+					for run_name in missing_runs_names:
+						print(run_set.name + run_name + '\t\t' + "MISSING", file = logfile)
+			if len(skipped_runs) > 0:
+				if run_set.is_sane == True:
+					run_set.is_sane = False
+					run_set.state_msg = "HAS SKIPPED RUNS"
+				self.skipped_run_set[run_set.name] = run_set.state_msg
+				with open(logname, 'a') as logfile:
+					for run_name, (path, error) in skipped_runs.items():
+						print(path + '\t\t' + error, file = logfile)
+			if run_set.is_sane == False:
+				print("Summary for {}: {} processed runs, {} skipped runs, {} missing runs.\n".format(run_set.name, len(processed_runs), len(skipped_runs), len(missing_runs_names), logname), file = sys.stderr)
+			else:
+				try:
+					if stats.get_max_year() > max_year:
+						max_year = stats.get_max_year()
+				except TypeError as e:
 					print ("ERROR: Couldn't read max year!", file = sys.stderr)
 					run_set.is_sane = False
 					run_set.state_msg = "ERROR NO MAX YEAR"
 					self.skipped_run_set[run_set.name] = run_set.state_msg
 					continue
-			try:
-				wb.save(out_filename)
-			except PermissionError as e:
-				run_set.is_sane = False
-				run_set.state_msg = "ERROR SAVING EXCEL OUTFILE"
-				self.skipped_run_set[run_set.name] = run_set.state_msg
-				continue
-			#print ("length of skipped runs is: {}".format(len(skipped_runs)), file=sys.stderr)
-			if len(skipped_runs) > 0:
-				run_set.is_sane = False
-				run_set.state_msg = "HAS SKIPPED RUNS"
-				self.skipped_run_set[run_set.name] = run_set.state_msg
-				with open(logname, 'a') as logfile:
-					for run_name, error in skipped_runs.items():
-						print(run_name + '\t\t' + error, file = logfile)
-					print("Summary for {}: {} processed runs, {} skipped runs.\n".format(run_set.name, len(processed_runs), len(skipped_runs), logname), file = sys.stderr)
-			else:
+				try:
+					wb.save(out_filename)
+				except PermissionError as e:
+					print ("ERROR: Couldn't save excel file!", file = sys.stderr)
+					run_set.is_sane = False
+					run_set.state_msg = "ERROR SAVING EXCEL OUTFILE"
+					self.skipped_run_set[run_set.name] = run_set.state_msg
+					continue
+				# If we are here we should be good
 				self.processed_run_set.append(run_set.name)
 				print ("Summary for {}: All runs completed successfully.\n".format(run_set.name), file = sys.stderr)
 
@@ -1085,11 +1136,11 @@ def run():
 	The following parameters can be manually changed by the user
 	'''
 	weight = float(0.9) # Weight cutoff for the calibration file
-	year_range = (2015, 2029) # Years of interest for our analysis
-	year_comparison = (2014, 2029) # (base year, max year) for computing the differences to rank in  quartiles 
-	excludes = [] # run sets to be excluded from our analysis (useful when the script is executed on very large folders
-	status_quo = "2xHR_PartInc"#"Scen2Real"
-	
+	year_range = (2014, 2059) # Years of interest for our analysis
+	year_comparison = 2014 # base year for computing the differences to rank in  quartiles 
+	excludes = ["85PerSudDecBef2016_50K", "3PerIncBef2016_50K"]  # run sets to be excluded from our analysis (useful when the script is executed on very large folders
+	status_quo = ""#"BaseCase_50K"
+
 	Summary(directory, post_calib, weight, year_range, year_comparison, status_quo).summarise(out, excludes)
 	
 if __name__ == '__main__':

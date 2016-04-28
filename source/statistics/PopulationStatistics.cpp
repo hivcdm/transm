@@ -681,7 +681,8 @@ void PopulationStatistics::printShiftedOutcomes(std::ostream &_outStream, int ye
 	}
 
 	double yearStartPrevalence = static_cast<double>(yearStartPrevalentInfections) / yearStartSexuallyActivePopSize;
-	double yearlyIncidence = static_cast<double>(yearlyIncidentInfections) / yearlyCumulativeSexuallyActivePopSize * 12;
+//	double yearlyIncidence = static_cast<double>(yearlyIncidentInfections) / (yearStartSexuallyActivePopSize - yearStartPrevalentInfections);
+	double yearlyIncidence = monthlyIncidenceSum;
 	_outStream << year;
 	_outStream << Constants::TAB;
 	_outStream << yearStartSexuallyActivePopSize;
@@ -873,6 +874,7 @@ void PopulationStatistics::recordPrevalenceAndIncidence(long currTime, double _p
 
 		yearlyIncidentInfections += monthlyIncident;
 		yearlyCumulativeSexuallyActivePopSize += saPopSize;
+		monthlyIncidenceSum += (double) monthlyIncident / (saPopSize - monthlyPrevalent);
 	}
 }
 
@@ -929,6 +931,7 @@ void PopulationStatistics::resetYear(int newYear)
 	yearStartSexuallyActivePopSize = 0;
 	yearlyCumulativeSexuallyActivePopSize = 0;
 	yearlyIncidentInfections = 0;
+	monthlyIncidenceSum = 0;
 	yearlyTests = 0;
 
 	yearlyTestsByResult.assign(yearlyTestsByResult.size(), 0);

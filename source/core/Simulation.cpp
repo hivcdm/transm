@@ -548,7 +548,7 @@ void Simulation::Step()
     start_time_ = timer_.GetTime();
 
     prevalence_ = population_.GetPopulationStatistics().infectionsTracker.getSAPrev(population_);
-    incidence_ = population_.GetPopulationStatistics().infectionsTracker.getCurrTimeStepIncidentInfsTotal() / (double)population_.GetSize();
+    incidence_ = population_.GetPopulationStatistics().infectionsTracker.getCurrTimeStepIncidentInfsTotal() / ((double)(population_.GetSize()) - population_.GetNASize());
 }
 
 void Simulation::LastStep()
