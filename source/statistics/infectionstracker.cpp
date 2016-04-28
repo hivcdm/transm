@@ -119,6 +119,11 @@ void InfectionsTracker::addToDetailedTrace(DemographicProfile::ProfileID _profil
 	profileIDsForDetailedTrace.push_back(_profileID);
 }
 
+unsigned int InfectionsTracker::getCurrTimeStepNumInfected()
+{ 
+ 	return InfectionsTracker::currTimeStepNumInfected;
+}
+
 std::size_t InfectionsTracker::getNumIncidentInfections()
 {
 	std::size_t infections = 0;
@@ -723,16 +728,6 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 	//New Infections
 	_outStream << getCurrTimeStepIncidentInfsTotal() << Constants::Tab;
 
-	double monthlyIncidence = 1.0 * (getCurrTimeStepIncidentInfsTotal()) / (double)currPopSize;
-	//Push the monthly incidence onto the deque
-	lastTwelveIncidenceRates.push_back(monthlyIncidence);
-	//Pop off the oldest incidence rate
-	lastTwelveIncidenceRates.pop_front();
-	assert(lastTwelveIncidenceRates.size() == 12);
-
-	//Total Infected in History
-	_outStream << getNumIncidentInfections() << Constants::Tab;
-
 	//Currently Infected
 	//total the current infections
 	for(unsigned int i = 0; i < DemographicProfile::TotalNumBuckets; i++)
@@ -743,6 +738,18 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 		}
 	}
 
+	double monthlyIncidence = 1.0 * (getCurrTimeStepIncidentInfsTotal()) /
+	  ((double)(currPopSize - totalInfected));
+	//Push the monthly incidence onto the deque
+	lastTwelveIncidenceRates.push_back(monthlyIncidence);
+	//Pop off the oldest incidence rate
+	lastTwelveIncidenceRates.pop_front();
+	assert(lastTwelveIncidenceRates.size() == 12);
+
+	//Total Infected in History
+	_outStream << getNumIncidentInfections() << Constants::Tab;
+
+	//Print current infections
 	_outStream << totalInfected << Constants::Tab;
 
 	//Total Population Size

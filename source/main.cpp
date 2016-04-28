@@ -48,7 +48,7 @@ std::vector<transm::path> find_input_files(const transm::path &batch_directory)
     return input_files;
 }
 
-/// <sumary>
+/// <summary>
 /// Find all XML and JSON files in batch_directory. Load parameters from each
 /// file and run the model using those parameters.
 /// </summary>
@@ -96,7 +96,7 @@ int run_simulation(const transm::path &batch_directory)
     return 0;
 }
 
-/// <sumary>
+/// <summary>
 /// Print to standard output how this model can be used.
 /// </summary>
 void print_usage(const std::string &executable)
@@ -117,7 +117,7 @@ void print_help(const std::string &executable)
 "   are given." << std::endl;
 }
 
-/// <sumary>
+/// <summary>
 /// Print to standard output a description of this model's version.
 /// </summary>
 void print_version()

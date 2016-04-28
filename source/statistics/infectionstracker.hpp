@@ -159,6 +159,11 @@ public :
 	**/
 	void addToDetailedTrace(DemographicProfile::ProfileID _profileID);
 
+	/**
+ 	@return number of people infected in the current time step
+ 	**/
+ 	unsigned int getCurrTimeStepNumInfected();
+
 	/// <summary>
 	/// Return total number of incident infections throughout this simulation.
 	/// </summary>

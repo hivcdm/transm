@@ -2,6 +2,7 @@
 
 namespace transm {
 
+    std::string const Constants::Version = "4.0.3";
     std::string const Constants::Asterisk = "*";
     std::string const Constants::Blank = "";
     std::string const Constants::Colon = ":";

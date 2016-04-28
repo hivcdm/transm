@@ -752,6 +752,7 @@ void PopulationStatisticsOld::printShiftedOutcomes(std::ostream &_outStream, Tim
 	_outStream << Constants::Tab;
 	_outStream << sum_prevalent_infections;
 	_outStream << Constants::Tab;
+
 	_outStream << yearStartPrevalence;
 	_outStream << Constants::Tab;
 	_outStream << yearlyCumulativeIncidence;
@@ -1019,6 +1020,7 @@ void PopulationStatisticsOld::resetYear(Time newYear)
     yearlyCumulativeIncidence = 0;
     yearlyCumulativeIncidenceMale = 0;
 	yearlyIncidentInfections.clear();
+      
 	yearlyTests = 0;
 
 	yearlyTestsByResult.assign(yearlyTestsByResult.size(), 0);

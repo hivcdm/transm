@@ -143,6 +143,7 @@ private:
     std::unordered_map<std::string, std::size_t> yearlyIncidentInfections;
     std::unordered_map<std::string, std::size_t> currentMonthIncident;
     std::unordered_map<std::string, std::size_t> currentMonthSANegative;
+
 	int yearlyTests;
 	std::set<Entity *> uniqueYearlyEligibleForTreatmentAccess;
 	std::set<Entity *> uniqueYearlyAccessingTreatment;
