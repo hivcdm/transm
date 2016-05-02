@@ -216,15 +216,18 @@ void TargetGroup::Update(Population &population, Time current_time,
 		std::vector<int> assignments;
 		std::size_t partition_index = 0;
 		std::size_t assigned = 0;
+		double assigned_partitions = 0;
+		bool was_rounded = false;
 
 		for (auto &partition : partitions_)
 		{
 			auto proportion = partition.GetProportion();
 			auto number = (int)(proportion * people.size());
 
-			// lump rounding errors into the last partition
-			//XXX: is this really what we want to do?
-			if (partition_index == partitions_.size() - 1)
+			assigned_partitions += proportion;
+			// lump rounding errors into the last non-empty partition
+			if(was_rounded == false &&
+			   (assigned_partitions == 1.00 || partition_index == partitions_.size() - 1))
 			{
 				number = static_cast<int>(people.size() - assigned);
 			}
