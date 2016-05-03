@@ -161,12 +161,12 @@ class Page:
 	
 	# Make all cells in row bold
 	def bold_row(self, row):
-		for i in range(1, self.ws.get_highest_column() + 1):
+		for i in range(1, self.ws.max_row + 1):
 			self.ws.cell(row=row, column=i).font = self.bold_font
 
 	# Make all cells in column (should be a letter) bold	
 	def bold_column(self, column):
-		for i in range(1, self.ws.get_highest_row() + 1):
+		for i in range(1, self.ws.max_row + 1):
 			self.ws.cell(row=i, column=column).font = self.bold_font
 
 	# Make cell at given coordinate the given color
@@ -185,7 +185,7 @@ class Page:
 		self.ws.row_dimensions[row].height = height
 
 	def column_number_format(self, column, number_format):
-		for i in range(1, self.ws.get_highest_row() + 1):
+		for i in range(1, self.ws.max_row + 1):
 			self.ws.cell(row=i, column=column).number_format = number_format
 
 	def merge(self, range_string):
@@ -328,18 +328,17 @@ class Run:
 		for year in map(str, range(self.start_year, self.end_year + 1)):
 			month = str((int(year) - 1990) * 12 + self.month_of_1990)
 			
-			cumulative_sa_total_lms = 0
-			cumulative_sa_male_lms = 0
-			cumulative_sa_female_lms = 0
-			cumulative_total_infected = 0
-			cumulative_males_infected = 0
-			cumulative_females_infected = 0
 			sa_total = 0
 			sa_males = 0
 			sa_females = 0
 			infected_total = 0
 			infected_males = 0
 			infected_females = 0
+						
+			stratified_sa = collections.OrderedDict()
+			stratified_prevalent = collections.OrderedDict()
+			stratified_incident = collections.OrderedDict()
+			
 			
 			for i, stratification in enumerate(stratifications):
 				pop_column = 28 + i
@@ -372,24 +371,35 @@ class Run:
 				num_on_treatment = self.files['ARTRollout'].get_float(month, treatment_column)
 				num_infected = self.files['Infections'].get_float(month, infected_column)
 
-				cumulative_sa_lm = 0
-				cumulative_infections = 0
+				incidence_rate = 0
+				
+				female_monthly_sa = collections.deque()
+				female_monthly_prevalent = collections.deque()
+				female_monthly_incident = collections.deque()
+				male_monthly_sa = collections.deque()
+				male_monthly_prevalent = collections.deque()
+				male_monthly_incident = collections.deque()
+				
+				monthly_sa_queue = collections.deque()
+				monthly_prevalent_queue = collections.deque()
+				monthly_incident_queue = collections.deque()
 				
 				for incidence_month in range(int(month), int(month) + 12):
-					cumulative_sa_lm += self.files['Population'].get_float(str(incidence_month), pop_column)
-					cumulative_infections += self.files['Infections'].get_float(str(incidence_month), incident_column)
+					#print("Reading month {}. First month is {}, year is {}.".format(incidence_month, month, year), file=sys.stderr)
+					monthly_sa = self.files['Population'].get_float(str(incidence_month), pop_column)
+					monthly_prevalent = self.files['Infections'].get_float(str(incidence_month), infected_column)
+					monthly_incident = self.files['Infections'].get_float(str(incidence_month), incident_column)
+					monthly_incidence_rate = monthly_incident / (monthly_sa - monthly_prevalent) if monthly_sa > 0 else 0
+					incidence_rate += monthly_incidence_rate
 					
-					if stratification.startswith('Female'):
-						cumulative_sa_female_lms += self.files['Population'].get_float(str(incidence_month), pop_column)
-						cumulative_females_infected += self.files['Infections'].get_float(str(incidence_month), incident_column)
-					else:
-						cumulative_sa_male_lms += self.files['Population'].get_float(str(incidence_month), pop_column)
-						cumulative_males_infected += self.files['Infections'].get_float(str(incidence_month), incident_column)
-						
-					cumulative_sa_total_lms += self.files['Population'].get_float(str(incidence_month), pop_column)
-					cumulative_total_infected += self.files['Infections'].get_float(str(incidence_month), incident_column)
+					monthly_sa_queue.append(monthly_sa)
+					monthly_prevalent_queue.append(monthly_prevalent)
+					monthly_incident_queue.append(monthly_incident)
+					
+				stratified_sa[stratification] = monthly_sa_queue
+				stratified_prevalent[stratification] = monthly_prevalent_queue
+				stratified_incident[stratification] = monthly_incident_queue
 				
-				incidence_rate = cumulative_infections / cumulative_sa_lm * 12 if cumulative_sa_lm > 0 else 0
 				prevalence_rate = num_infected / num_people if num_people > 0 else 0
 			
 				self.statistics['Stratified Outcomes'][year]['Population ' + stratification] = num_people
@@ -422,14 +432,56 @@ class Run:
 				sa_total += num_people
 				infected_total += num_infected
 
-			self.statistics['Stratified Outcomes'][year]['Incidence Rate Total Males'] = (cumulative_males_infected / (cumulative_sa_male_lms - infected_males * 12)) * 12
+			incidence_rate_males = 0
+			incidence_rate_females = 0
+			incidence_rate_total = 0
+			
+			for month in range(0,12):
+				male_monthly_sa = 0
+				male_monthly_prevalent = 0
+				male_monthly_incident = 0
+				female_monthly_sa = 0
+				female_monthly_prevalent = 0
+				female_monthly_incident = 0
+				total_monthly_sa = 0
+				total_monthly_prevalent = 0
+				total_monthly_incident = 0
+				
+				for stratification in stratifications:
+					monthly_sa += stratified_sa[stratification].popleft()
+					monthly_prevalent += stratified_prevalent[stratification].popleft()
+					monthly_incident += stratified_incident[stratification].popleft()
+					total_monthly_sa += monthly_sa
+					total_monthly_prevalent += monthly_prevalent
+					total_monthly_incident += monthly_incident
+					
+					if stratification.startswith('Female'):
+						female_monthly_sa += monthly_sa
+						female_monthly_prevalent += monthly_prevalent
+						female_monthly_incident += monthly_incident
+					else:
+						male_monthly_sa += monthly_sa
+						male_monthly_prevalent += monthly_prevalent
+						male_monthly_incident += monthly_incident
+				
+				incidence_rate_males += male_monthly_incident / (male_monthly_sa - male_monthly_prevalent) if male_monthly_sa > 0 else 0
+				incidence_rate_females += female_monthly_incident / (female_monthly_sa - female_monthly_prevalent) if female_monthly_sa > 0 else 0
+				incidence_rate_total += total_monthly_incident / (total_monthly_sa - total_monthly_prevalent) if total_monthly_sa > 0 else 0
+# 				print("Year is {}, month is {}.".format(year, month), file=sys.stderr)
+# 				print("Total incidence is {}, male incidence is {}, female incidence is {}.".format(incidence_rate_total, incidence_rate_males, incidence_rate_females), file=sys.stderr)
+# 				print("SA male is {}, SA female is {}, SA total is {}.".format(male_monthly_sa, female_monthly_sa, total_monthly_sa), file=sys.stderr)
+# 				print("Incident male is {}, Incident female is {}, Incident total is {}.".format(male_monthly_incident, female_monthly_incident, total_monthly_incident), file=sys.stderr)
+# 				print("Prevalent male is {}, Prevalent female is {}, Prevalent total is {}.".format(male_monthly_prevalent, female_monthly_prevalent, total_monthly_prevalent), file=sys.stderr)
+			
+			self.statistics['Stratified Outcomes'][year]['Incidence Rate Total Males'] = incidence_rate_males
 			self.statistics['Stratified Outcomes'][year]['Prevalence Total Males'] = infected_males / sa_males
 
-			self.statistics['Stratified Outcomes'][year]['Incidence Rate Total Females'] = (cumulative_females_infected / (cumulative_sa_female_lms - infected_females * 12)) * 12
+			self.statistics['Stratified Outcomes'][year]['Incidence Rate Total Females'] = incidence_rate_females
 			self.statistics['Stratified Outcomes'][year]['Prevalence Total Females'] = infected_females / sa_females
 			
-			self.statistics['Stratified Outcomes'][year]['Incidence Rate Total'] = (cumulative_total_infected / (cumulative_sa_total_lms - infected_total * 12)) * 12
+			self.statistics['Stratified Outcomes'][year]['Incidence Rate Total'] = incidence_rate_total
 			self.statistics['Stratified Outcomes'][year]['Prevalence Total'] = infected_total / sa_total
+
 
 class RunSet:
 	def __init__(self, directory):

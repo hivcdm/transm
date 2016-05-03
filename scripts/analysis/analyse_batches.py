@@ -426,14 +426,14 @@ class Run:
 			first_month = self.month_of_1990 + (year - 1990) * 12
 #			print("Year is {}, first month is {}, start month is {}.".format(year, first_month, self.start_month), file=sys.stderr)
 			monthly_sa = 0
-			monthly_currently_infected = 0
-			monthly_newly_infected = 0
+			monthly_prevalent = 0
+			monthly_incident = 0
 			yearly_incidence = 0
 			yearly_prevalence = 0
 			
-			yearly_newly_infected = 0
-			yearly_sa = 0
-			yearly_currently_infected = 0
+			yearly_incident = 0
+			#yearly_sa = 0
+			#yearly_currently_infected = 0
 # 			test_inc = self.files['ShiftedOutcomes'].get_float(str(year), 4)
 # 			test_prev = self.files['ShiftedOutcomes'].get_float(str(year), 3)
 #			print("First Month is: {}, year is {}.".format(first_month, year, file=sys.stderr))
@@ -441,24 +441,24 @@ class Run:
 
 			for month_in_year in range(first_month, first_month + 12):
 				monthly_sa = self.files['Infections'].get_int(str(month_in_year), sa_column)
-				monthly_currently_infected = self.files['Infections'].get_int(str(month_in_year), currently_infected_column)
-				monthly_newly_infected = self.files['Infections'].get_int(str(month_in_year), newly_infected_column)
-				yearly_incidence += monthly_newly_infected / (monthly_sa - monthly_currently_infected)
+				monthly_prevalent = self.files['Infections'].get_int(str(month_in_year), currently_infected_column)
+				monthly_incident = self.files['Infections'].get_int(str(month_in_year), newly_infected_column)
+				yearly_incidence += monthly_incident / (monthly_sa - monthly_prevalent)
 				if month_in_year == int(first_month) and monthly_sa > 0:
-					yearly_prevalence = monthly_currently_infected / monthly_sa
-					yearly_sa = monthly_sa
-					yearly_currently_infected = monthly_currently_infected
+					yearly_prevalence = monthly_prevalent / monthly_sa
+					#yearly_sa = monthly_sa
+					#yearly_currently_infected = monthly_prevalent
 					
-				yearly_newly_infected += monthly_newly_infected
+				yearly_incident += monthly_incident
 #				print("Looking at month {}. SA pop is {}.".format(month_in_year, self.files['Infections'].get_int(str(month_in_year), sa_column)), file=sys.stderr)
 #				print("Looking at month {}. Total pop is {}.".format(month_in_year, self.files['Infections'].get_int(str(month_in_year), pop_column)), file=sys.stderr)
 #				print("Looking at month {}. Currently infected is {}.".format(month_in_year, self.files['Infections'].get_int(str(month_in_year), currently_infected_column)), file=sys.stderr)
 #				print("Looking at month {}. Newly Infected is {}.".format(month_in_year, self.files['Infections'].get_int(str(month_in_year), newly_infected_column)), file=sys.stderr)
-#				print("End of year {}. SA pop is {}, Pop is {}, currently infected is {}, newly infected is {}.".format(year, yearly_sa, yearly_pop, yearly_currently_infected, yearly_newly_infected), file=sys.stderr)
-#				print("Computing year {}: prevalence is {}, incidence is {}.".format(year, yearly_currently_infected / yearly_pop, yearly_newly_infected / (yearly_sa - yearly_currently_infected + yearly_newly_infected)), file=sys.stderr)
+#				print("End of year {}. SA pop is {}, Pop is {}, currently infected is {}, newly infected is {}.".format(year, yearly_sa, yearly_pop, yearly_currently_infected, yearly_incident), file=sys.stderr)
+#				print("Computing year {}: prevalence is {}, incidence is {}.".format(year, yearly_currently_infected / yearly_pop, yearly_incident / (yearly_sa - yearly_currently_infected + yearly_incident)), file=sys.stderr)
 			self.statistics['Prevalence'][year] = yearly_prevalence
 			self.statistics['Incidence'][year] = yearly_incidence
-			print("Incidence for {} is:\n{} in the monthly calculations;\n{} in the 1st month calculations.\n\n".format(year, yearly_incidence, yearly_newly_infected / (yearly_sa - yearly_currently_infected)), file=sys.stderr)
+			#print("Incidence for {} is:\n{} in the monthly calculations;\n{} in the 1st month calculations.\n\n".format(year, yearly_incidence, yearly_incident / (yearly_sa - yearly_currently_infected)), file=sys.stderr)
 #			print("Prevalence for {} is {} in the monthly calculations, {} in the 1st month calculations.".format(year, yearly_prevalence, yearly_currently_infected / yearly_sa), file=sys.stderr)
 		return
 
