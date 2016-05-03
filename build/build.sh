@@ -18,4 +18,4 @@ fi
 rm -f CMakeCache.txt
 
 # Then we call cmake and start compiling
-cmake $CMAKE_ARGS .. && make
+cmake ../ $CMAKE_ARGS && make
