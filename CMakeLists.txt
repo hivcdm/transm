@@ -4,11 +4,6 @@ project(transm)
 include(GNUInstallDirs)
 include(ExternalProject)
 
-# Switches for the compilation flags that we can trigger from the build script
-
-set(WGOOGLE FALSE CACHE BOOL "Link to Google Performance Tools")
-set(ALLSTATIC FALSE CACHE BOOL "All static build")
-
 #This ugly bunch of lines is a hack to compile properly on Odyssey:
 #they have an older version of Boost in /usr that causes a bug in
 #the lib paths with cmake's find_package.
@@ -19,11 +14,19 @@ set(ALLSTATIC FALSE CACHE BOOL "All static build")
 #set(BOOST_ROOT /n/sw/fasrcsw/apps/Core/boost/1.59.0-fasrc01/lib)
 #set(Boost_NO_SYSTEM_PATHS ON)
 
+# First let's see if we have what we need
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}")
 set(Boost_USE_STATIC_LIBS ON)
+
 find_package(
 	Boost 
 	COMPONENTS system filesystem
 	REQUIRED
+)
+
+find_package(
+	GooglePerfTools 
 )
 
 include_directories(${Boost_INCLUDE_DIR})
@@ -82,7 +85,7 @@ ExternalProject_Add(
 	GIT_REPOSITORY https://github.com/hsphcdm/cepac.git
 	GIT_TAG 4.4a
 	UPDATE_COMMAND ""
-	CMAKE_ARGS=-DCMAKE_BUILD_TYPE=Release
+	CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 	#CONFIGURE_COMMAND cmake ../cepac_project
 	BUILD_COMMAND make
 	INSTALL_COMMAND mv libcepac.a ${CMAKE_SOURCE_DIR}/lib
@@ -122,17 +125,16 @@ set(CMAKE_EXECUTABLE_SUFFIX "-v${TRANSM_VER}") # ...we need to use the followin
 
 #set_property(TARGET transm PROPERTY CXX_STANDARD 14) # Proper way to require c++14 compatibility, 
 #set_property(TARGET transm PROPERTY CXX_STANDARD_REQUIRED ON) # but it causes issues on CentOS 7 + CMake 2.8,
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -fpermissive") # so we just set the flag
-
-# Options that can be triggered as additional arguments of the build script
-
-if(WGPROF)
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-lprofiler") # This is to link the Google profiler
-endif(WGPROF)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -fpermissive -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free") # so we just set the flag
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native") 
 
 # We link our libraries and we are done
 
-target_link_libraries(transm cepac pugixml ${Boost_LIBRARIES})
+if(GOOGLE_PERFTOOLS_FOUND)
+	target_link_libraries(transm ${TCMALLOC_LIBRARY} ${PROFILER_LIBRARY})
+endif(GOOGLE_PERFTOOLS_FOUND)
+
+target_link_libraries(transm cepac pugixml) # ${Boost_LIBRARIES})
 
 # If the build is successful we remind the user of the location of the binary
 

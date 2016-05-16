@@ -120,7 +120,9 @@ void SimulationBuilderXml::ReadSimulationParameters()
 	simulation_.SetFixedSeed(Text<int>(simulation_node.child("fixedSeed")));
 	simulation_.SetDuration(Text<int>(simulation_node.child("duration")));
 
-	parameters.debugLevel = static_cast<DebugLevel>(Text<int>(simulation_node.child("debugLevel")));
+	//TODO: This needs to be changed, we can't let the user leave debug on, it slows things down considerably. For the time being, we force it to zero. GA
+	//parameters.debugLevel = static_cast<DebugLevel>(Text<int>(simulation_node.child("debugLevel")));
+	parameters.debugLevel = static_cast<DebugLevel>(0);
 	parameters.monthOf1990 = Text<int>(simulation_node.child("monthOf1990"));
 	parameters.delayPrevalence = Text<int>(simulation_node.child("population").child("initialState").child("delay"));
 

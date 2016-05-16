@@ -132,6 +132,7 @@ Person *BucketSexualMixing::drawMember(RandomNumberGenerator &_randomNums, Perso
 	int minDesired = 0;
 	int maxDesired = INT_MAX;
 
+	//TODO-GA: This method seems unnecessarily convoluted.
 	if(_chooser)
 	{
 		double ageYoungerYears = _chooser->rollForAgeDifference(_partnershipType, _randomNums);
