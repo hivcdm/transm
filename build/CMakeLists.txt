@@ -8,7 +8,11 @@ include(ExternalProject)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}")
 
+# First let's see if we have what we need
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}")
 set(Boost_USE_STATIC_LIBS ON)
+
 find_package(
 	Boost
 	COMPONENTS system

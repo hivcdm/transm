@@ -4,6 +4,11 @@
 #include <list>
 #include <set>
 #include <vector>
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index/member.hpp>
+#include <boost/multi_index/identity.hpp>
+#include <boost/multi_index/composite_key.hpp>
 
 #include <include.h>
 
@@ -307,6 +312,8 @@ public:
     //age of Entity on model init (in months)
 	Age initAge;
 
+    bool sexuallyActive;
+
     //age of Entity when they got infected (-1 for uninfected)
 	Age ageInfected;
 
@@ -421,6 +428,9 @@ public:
 
 	//returns true if person is currently infected
 	bool isInfected();
+
+	// Self explanatory I'd say
+	bool isSexuallyActive();
 
 	/**
 	//see whether person dies. If they went through CEPAC, use health trace. else roll against nonAIDS death probs
@@ -566,6 +576,9 @@ public:
 
 	//Return true if the person is in a relationship of the given type
 	bool hasPartnership(SexualPartnership::Type);
+
+	// Return true if person is in ANY partnership
+	bool hasPartnership();
 
 	/*******
 	These enums expose characterstics of a person for the purpose of indexing or to assist for partner selection.
@@ -752,6 +765,35 @@ private:
 	double monthly_cdm_costs_discounted_;
 
     bool using_prep_this_month_;
+
+/*    class PersonDB {
+    	typedef boost::multi_index::multi_index_container<><
+    			Person,
+				indexed_by<
+					ordered_unique<
+						composite_key<
+							Person,
+							member<Person, unsigned_int, &Person::age>,
+							identity<Person>>,
+						composite_key<
+							member<Person, HVLStrata, &Person::hvl>,
+							identity<Person>>,
+
+
+
+    	    hashed_non_unique< // indexed by quadrant coordinates
+    	      composite_key<
+    	        street_entry,
+    	        member<street_entry,int,&street_entry::x>,
+    	        member<street_entry,int,&street_entry::y>
+    	      >
+    	    >,
+    	    hashed_non_unique< // indexed by street name
+    	      member<street_entry,std::string,&street_entry::name>
+    	    >
+    	  >
+    	> street_locator;
+    };*/
 };
 
 } // namespace transm

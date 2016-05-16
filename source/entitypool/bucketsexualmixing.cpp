@@ -118,6 +118,7 @@ Entity *BucketSexualMixing::drawMember(RandomNumberGenerator &_randomNums, Entit
 	auto minDesired = Age::from_months(0);
 	auto maxDesired = Age::from_months(INT_MAX);
 
+	//TODO-GA: This method seems unnecessarily convoluted.
 	if(_chooser)
 	{
 		double ageYoungerYears = _chooser->rollForAgeDifference(_partnershipType, _randomNums);

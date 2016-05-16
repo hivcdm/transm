@@ -77,7 +77,7 @@ public:
 	void PrintSummaryStats(EventParams &_eventParams);
 
     /// <summary>
-	/// initializes the counters for incidient infections by age for infectionstracker
+	/// initializes the counters for incident infections by age for infections tracker
     /// </summary>
 	void InitIncidentInfectionsByAge();
 
@@ -410,6 +410,8 @@ private:
 	/// us access all the through a java style iterator interface 
     /// </summary>
 	std::unique_ptr<EntityPool> entities;
+
+
 
     /// <summary>
 	/// fling initiators -- use BucketSexualMixing, not BucketDemographicProfile because all persons

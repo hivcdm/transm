@@ -714,7 +714,8 @@ bool Entity::isPartneredWith(Entity *_p)
 
 bool Entity::hasPartnership(SexualPartnership::Type partnershipType)
 {
-	if(partners[(int)partnershipType].size() > 0)
+	//if(partners[(int)partnershipType].size() > 0) // With some compilers this can be O(n). GA
+	if(partners[(int)partnershipType].begin() != partners[(int)partnershipType].end())
 	{
 		return true;
 	}
@@ -722,9 +723,26 @@ bool Entity::hasPartnership(SexualPartnership::Type partnershipType)
 	return false;
 }
 
+bool Entity::hasPartnership()
+{
+	for(int partnershipType = 0; partnershipType < (int)SexualPartnership::Type::ENDType; ++partnershipType)
+	{
+		if(partners[partnershipType].begin() != partners[partnershipType].end())
+		{
+			return true;
+		}
+	}
+	return false;
+}
+ 
 bool Entity::isInfected()
 {
     return hvl != HVLStrata::UNINFECTED;
+}
+
+bool Entity::isSexuallyActive()
+{
+	return sexuallyActive;
 }
 
 void Entity::removePartnership(SexualPartnership *_partnership)
@@ -1540,6 +1558,7 @@ Entity::Entity(Age _age, unsigned int _populationID) :
 
 	age = _age;
 	initAge = _age;
+	sexuallyActive = false;
 	ageInfected = Age(0, -1);
 	death = false;
 	deathStatus = DeathStatus::ALIVE;

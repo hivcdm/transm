@@ -682,6 +682,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 				//tally concurrent partners
 				//create a number between 0 and 15 representing the combination of partnership types person has
 				//e.g. if person has partnerships steady and casual concurrent will equal 8+2=10
+				//Whoever wrote this deserves a special place in C programmer's hell. GA
 				int concurrent = 0;
 				int numPartners[(std::size_t)SexualPartnership::Type::ENDType];
 				int totalNumPartners = 0;
@@ -2084,7 +2085,7 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Entity *_
         //Decrement numPartners
         numPartners--;
         //pick the bucket that we will attempt to choose from
-        BucketDemographicProfile *bucket = potentialPartnerBuckets[_partnershipType].at(parameters_.randomNums.chooseIndex(
+		BucketSexualMixing *bucket = potentialPartnerBuckets[_partnershipType].at(parameters_.randomNums.chooseIndex(
             Population::eligibleBucketWeights[_partnershipType]));
         assert(bucket != nullptr);
         std::list<Entity *> attemptedPartners;
@@ -2100,6 +2101,7 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Entity *_
 
         //the partner that this man will have a relationship with
         //remove the partner from the pool will be added back later
+        //Why 10? Magic numbers are evil! GA
         for(int i = 0; i < 10; i++)
         {
             Entity *partner = bucket->drawMember(parameters_.randomNums, _initiator, _partnershipType, true);

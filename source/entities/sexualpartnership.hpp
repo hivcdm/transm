@@ -45,6 +45,9 @@ public :
 	};
 	
 	static const std::map<Type, std::string> TypeStrings;
+  
+	//time that this partnership will dissolve
+	Time timePartnerDissolution;
 
 protected :
 
@@ -53,8 +56,6 @@ protected :
 
 	//the time that this couple was formed
 	Time timePartnerFormation;
-	//time that this partnership will dissolve
-	Time timePartnerDissolution;
 
 	//this contains copies of pointers of partners
 	Entity *partners[2];
