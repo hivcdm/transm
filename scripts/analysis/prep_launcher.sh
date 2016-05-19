@@ -5,5 +5,5 @@ for dir in ./*; do
 	[ -d "${dir}" ] || continue
 	
 	echo "Now executing the script on $dir..."
-	(python3 PrEPScript.py $dir "$2" "$(basename $dir)-prep.xls")
+	(python3 "$1" $dir "$2" "$(basename $dir)-prep.xls")
 done

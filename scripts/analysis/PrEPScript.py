@@ -1,3 +1,8 @@
+#!/bin/bash
+''''which python3 >/dev/null 2>&1 && exec python3 "$0" "$@" # '''
+''''which python  >/dev/null 2>&1 && exec python  "$0" "$@" # '''
+''''exec echo "Error: I can't find python anywhere! :("	 # '''
+
 import collections # for OrderedDict
 import openpyxl # for creating xlsx
 import os
@@ -351,10 +356,10 @@ class Run:
 				if i > 8:
 					prep_column = 191 + (i - 9)
 
-				treatment_column = 146 + i
+				treatment_column = 147 + i
 
 				if i > 8:
-					treatment_column = 156 + (i - 9)
+					treatment_column = 157 + (i - 9)
 
 				infected_column = 20 + i
 
@@ -736,7 +741,7 @@ class Summary:
 
 def run():
 	if len(sys.argv) != 4:
-		print ("usage: analyse_batches.py target_dir post_calib_file output_file", file = sys.stderr)
+		print ("usage: PrEPScript.py target_dir post_calib_file output_file", file = sys.stderr)
 		return
 	directory = sys.argv[1]
 	post_calib = sys.argv[2]
