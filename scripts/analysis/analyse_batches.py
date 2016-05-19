@@ -223,6 +223,7 @@ class Run:
 		self.lower_quartile = collections.OrderedDict([(i, collections.OrderedDict()) for i in self.stat_names])
 		self.upper_quartile = collections.OrderedDict([(i, collections.OrderedDict()) for i in self.stat_names])
 		self.differences = collections.OrderedDict([(i, collections.OrderedDict()) for i in self.stat_names])
+		self.percentage_diff = collections.OrderedDict([(i, collections.OrderedDict()) for i in self.stat_names])
 		self.max_year = 0
 
 	def get_max_year(self):
@@ -854,19 +855,20 @@ class Summary:
 # 				print("Stats max year is {}".format(stats.max_year), file=sys.stderr)
 # 				print("stat category is {}, year is {}, stats max year is {}, length of array 1 is {}, length of array 2 is {}.".format(stat_category, year_range, stats.max_year, len(stats.series[stat_category]), len(stats.series[stat_category])), file=sys.stderr)
 				stats.differences[stat_category][year_range] = numpy.asarray(stats.series[stat_category][stats.max_year]) - numpy.asarray(stats.series[stat_category][self.comparison_base_year])
+				stats.percentage_diff[stat_category][year_range] = stats.differences[stat_category][year_range] / stats.series[stat_category][self.comparison_base_year]
 				stats.statistics[stat_category][year_range] = numpy.average(stats.differences[stat_category][year_range], weights=weights)
-				stats.median[stat_category][year_range], median_position = self.wquantile(stats.differences[stat_category][year_range], weights, 0.5)
-				stats.lower_quartile[stat_category][year_range], q1_position =  self.wquantile(stats.differences[stat_category][year_range], weights, 0.25)
-				stats.upper_quartile[stat_category][year_range], q3_position =  self.wquantile(stats.differences[stat_category][year_range], weights, 0.75)
+				stats.median[stat_category][year_range] = self.wquantile(stats.differences[stat_category][year_range], weights, 0.5)[0]
+				stats.lower_quartile[stat_category][year_range] =  self.wquantile(stats.differences[stat_category][year_range], weights, 0.25)[0]
+				stats.upper_quartile[stat_category][year_range] =  self.wquantile(stats.differences[stat_category][year_range], weights, 0.75)[0]
 				#median_value, median_position = self.wquantile(stats.differences[stat_category][year_range], weights, 0.5)
 				#print ("The values are: {}".format(stats.differences[stat_category]), file = sys.stderr)
 				#print ("The old median is {}. The new one is {}, its position is {}.".format(stats.median[stat_category][year_range], median_value, median_position), file = sys.stderr)
 				stats.statistics[stat_category]["%"] = stats.statistics[stat_category][year_range] / stats.statistics[stat_category][self.comparison_base_year]
-				stats.median[stat_category]["%"] = stats.median[stat_category][year_range] / stats.series[stat_category][self.comparison_base_year][median_position]
+				stats.median[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.5)[0]
 				#print ("average is of type {} and the value is {}.".format(type(stats.statistics[stat_category]["%"]), stats.statistics[stat_category]["%"]), file = sys.stderr)
 				#print ("The divisor is of type {}, value {}".format(type (stats.series[stat_category][self.comparison_base_year]), stats.series[stat_category][self.comparison_base_year]), file = sys.stderr)
-				stats.lower_quartile[stat_category]["%"] = stats.lower_quartile[stat_category][year_range] / stats.series[stat_category][self.comparison_base_year][q1_position]
-				stats.upper_quartile[stat_category]["%"] = stats.upper_quartile[stat_category][year_range] / stats.series[stat_category][self.comparison_base_year][q3_position]
+				stats.lower_quartile[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.25)[0]
+				stats.upper_quartile[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.75)[0]
 
 		if run_set.name == self.status_quo:
 			self.status_quo_stats = stats 
