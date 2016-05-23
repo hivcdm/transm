@@ -102,6 +102,7 @@ int SexualPartnership::getDissolutionTime()
 {
 	return timePartnerDissolution;
 }
+
 bool SexualPartnership::isMember(Person *_p)
 {
 	return ((_p == partners[0]) || (_p == partners[1]));

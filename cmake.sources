@@ -11,6 +11,7 @@ set (TRANSM_SOURCE_FILES
 	source/entities/Person.cpp
 	source/entities/behaviors/SexualBehavior.cpp
 	source/entities/classifiers/DemographicProfile.cpp
+	source/entities/classifiers/PartnershipDB.cpp
 	source/entities/classifiers/SexualPartnership.cpp
 	source/entities/entitypool/BucketAge.cpp
 	source/entities/entitypool/BucketDemographicProfile.cpp

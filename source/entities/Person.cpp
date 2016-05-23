@@ -711,11 +711,6 @@ bool Person::inCorrectBucketDemographicProfile()
 
 bool Person::isAlive() const
 {
-	if(this == nullptr)
-	{
-		return false;
-	}
-
 	return !death;
 }
 
@@ -746,13 +741,27 @@ bool Person::isPartneredWith(Person *_p)
 
 bool Person::hasPartnership(SexualPartnership::Type partnershipType)
 {
-	if(partners[(int)partnershipType].size() > 0)
+	//if(partners[(int)partnershipType].size() > 0) // With some compilers this can be O(n). GA
+	if(partners[(int)partnershipType].begin() != partners[(int)partnershipType].end())
 	{
 		return true;
 	}
 
 	return false;
 }
+
+bool Person::hasPartnership() {
+
+	for(int partnershipType = 0; partnershipType < (int)SexualPartnership::Type::ENDType; ++partnershipType)
+	{
+		if(partners[partnershipType].begin() != partners[partnershipType].end())
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 void Person::print(ostream &_outStream, const std::string &_prefix) const
 {
 	_outStream << _prefix << std::endl;
@@ -846,6 +855,11 @@ void Person::saveState(ostream &_outStream, long currTime)
 bool Person::isInfected()
 {
 	return (hvl > UNINFECTED);
+}
+
+bool Person::isSexuallyActive()
+{
+	return sexuallyActive;
 }
 
 void Person::removePartnership(SexualPartnership *_partnership)
@@ -1724,6 +1738,7 @@ Person::Person(int _age, unsigned int _populationID) :
 #endif
 	age = _age;
 	initAge = _age;
+	sexuallyActive = false;
 	ageInfected = -1;
 	death = false;
 	deathStatus = ALIVE;

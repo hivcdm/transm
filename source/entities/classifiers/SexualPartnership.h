@@ -45,13 +45,15 @@ public :
 	
 	static const std::map<Type, std::string> TypeStrings;
 
+	int timePartnerDissolution;			//time that this partnership will dissolve
+
 protected :
 
 	//identifies the type of sexual relationship this is
 	Type type;
 
-	long timePartnerFormation;				//the time that this couple was formed
-	long timePartnerDissolution;			//time that this partnership will dissolve
+	int timePartnerFormation;				//the time that this couple was formed
+//	const int timePartnerDissolution;			//time that this partnership will dissolve
 
 	Person *partners[2];			//this contains copies of pointers of partners
 
