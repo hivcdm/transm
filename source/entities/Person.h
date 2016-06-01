@@ -343,7 +343,7 @@ public:
 
 	double getCepacDiscountFactor(int month, double discount_rate) const 
 	{ 
-		return 1 / std::pow(discount_rate, month); 
+		return 1 / std::pow(discount_rate, month);
 	}
 
 	/**

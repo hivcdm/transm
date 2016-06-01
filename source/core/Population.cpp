@@ -36,9 +36,10 @@ void Population::Circumcise(Person *p)
 {
     if(!p->IsCircumcised())
     {
+    	double discount = Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor);
         p->Circumcise();
-		populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * p->getCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor));
-		p->add_cdm_cost(popWideParams.circumcisionCost, popWideParams.circumcisionCost * p->getCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor));
+		populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * discount);
+		p->add_cdm_cost(popWideParams.circumcisionCost, popWideParams.circumcisionCost * discount);
     }
 }
 
@@ -209,6 +210,15 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 {
     dead_people_this_month_.clear();
 
+	double cepacDiscountFactor = 1;
+
+	if (parameters_.useRollout) {
+		cepacDiscountFactor = Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor);
+	}
+	else {
+		cepacDiscountFactor = Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor);
+	}
+
 	int totalDied = 0;		//keeps track of deaths this timestep
 	//holds a pointer to the current bucket we are looking at
 	BucketDemographicProfile *currBucket = nullptr;
@@ -303,9 +313,8 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 
             if (p->UsingPrEP())
             {
-                double discountFactor = p->getCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor);
-                populationStatistics.costsTracker.RecordPrEPCost(popWideParams.prEPCost, popWideParams.prEPCost * discountFactor);
-                p->add_cdm_cost(popWideParams.prEPCost, popWideParams.prEPCost * discountFactor);
+                populationStatistics.costsTracker.RecordPrEPCost(popWideParams.prEPCost, popWideParams.prEPCost * cepacDiscountFactor);
+                p->add_cdm_cost(popWideParams.prEPCost, popWideParams.prEPCost * cepacDiscountFactor);
             }
 
 			if(oldStatus != p->hivStatus)
@@ -420,11 +429,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 				}
 			}
 
-            auto discount = parameters_.useRollout ?
-                parameters_.untreatedContext->getRunSpecsInputs()->discountFactor
-                : parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor;
-			populationStatistics.costsTracker.RecordLifeMonth(p->getQualityOfLife(), p->getCepacDiscountFactor(parameters_.currTime, discount), p->getHIVStatus());
-
+			populationStatistics.costsTracker.RecordLifeMonth(p->getQualityOfLife(), cepacDiscountFactor, p->getHIVStatus());
 			p_Iter++;
 		}
 	}
@@ -459,6 +464,14 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 	//Number of attemptedPartnerships may be higher than the actual partnerships formed if there weren't enough females/males tried to repartner with current partners
 	int attemptedPartnershipCount[(std::size_t)SexualPartnership::Type::ENDType];
 	int	endedPartnershipCount[(std::size_t)SexualPartnership::Type::ENDType];
+	double cepacDiscountFactor = 1;
+
+	if (parameters_.useRollout) {
+		cepacDiscountFactor = Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor);
+	}
+	else {
+		cepacDiscountFactor = Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor);
+	}
 
 	//initialize counters
 	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
@@ -604,11 +617,9 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 
 		//Add the cost of condom usage
 		auto totalCondomCostUndiscounted = initiator->getCondomsUsedThisMonth() * popWideParams.condomCost;
-        auto discount = parameters_.useRollout ?
-            parameters_.untreatedContext->getRunSpecsInputs()->discountFactor
-            : parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor;
-		initiator->add_cdm_cost(totalCondomCostUndiscounted, totalCondomCostUndiscounted * initiator->getCepacDiscountFactor(parameters_.currTime, discount));
-		populationStatistics.costsTracker.RecordCondomUse(totalCondomCostUndiscounted, totalCondomCostUndiscounted * initiator->getCepacDiscountFactor(parameters_.currTime, discount));
+        initiator->add_cdm_cost(totalCondomCostUndiscounted, totalCondomCostUndiscounted * cepacDiscountFactor);
+		populationStatistics.costsTracker.RecordCondomUse(totalCondomCostUndiscounted, totalCondomCostUndiscounted * cepacDiscountFactor);
+
 	} //for (p_Iter = entities->begin(DemographicProfile::Gender::Male); p_Iter != entities->end(DemographicProfile::Gender::Male); p_Iter++)
 
 	//Ends the second pass through (i.e. the sex acts pass through)
@@ -619,9 +630,8 @@ void Population::UpdatePartnerships(EventParams &parameters_)
         if (p->GetVaginalMicrobicideApplicationsThisMonth() > 0)
         {
             auto cost = popWideParams.vaginalMicrobicideApplicationCost * p->GetVaginalMicrobicideApplicationsThisMonth();
-            auto discount = p->getCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor);
-            populationStatistics.costsTracker.RecordVaginalMicrobicideCost(cost, cost * discount);
-            p->add_cdm_cost(cost, cost * discount);
+            populationStatistics.costsTracker.RecordVaginalMicrobicideCost(cost, cost * cepacDiscountFactor);
+            p->add_cdm_cost(cost, cost * cepacDiscountFactor);
         }
     }
 
@@ -1102,10 +1112,10 @@ Person *Population::GeneratePerson(EventParams &parameters_, DemographicProfile:
 		if(m->isCircumcised())
 		{
             auto discount = parameters_.useRollout ? 
-                parameters_.untreatedContext->getRunSpecsInputs()->discountFactor 
-                : parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor;
-			populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * m->getCepacDiscountFactor(parameters_.currTime, discount));
-			toReturn->add_cdm_cost(popWideParams.circumcisionCost, popWideParams.circumcisionCost * m->getCepacDiscountFactor(parameters_.currTime, discount));
+                Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor)
+                : Utility::computeCepacDiscountFactor(parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor, parameters_.currTime);
+			populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * discount);
+			toReturn->add_cdm_cost(popWideParams.circumcisionCost, popWideParams.circumcisionCost * discount);
 		}
 	}
 
