@@ -388,7 +388,7 @@ void Person::initialCEPACpatient(EventParams &_eventParams)
 		cepacPatient = new Patient(simContextToUse, _eventParams.cepacRunStats, _eventParams.cepacTracer,
             true, getAge(TimeGranularity::Month), cepacGender, setAsIncidentCase, _eventParams.currTime);
 
-		auto discount_factor = getCepacDiscountFactor(_eventParams.currTime, simContextToUse->getRunSpecsInputs()->discountFactor);
+		auto discount_factor = Utility::computeCepacDiscountFactor(_eventParams.currTime, simContextToUse->getRunSpecsInputs()->discountFactor);
 		const_cast<Patient::GeneralState *>(cepacPatient->getGeneralState())->discountFactor = discount_factor;
 
 		//Only update hvl and cd4 if the patient is infected
