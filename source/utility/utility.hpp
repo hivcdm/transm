@@ -125,6 +125,11 @@ public:
 	static bool valid_probability(double prob);
 
     /// <summary>
+	/// Returns 1/pow(discount_rate, month)
+    /// </summary>
+	static double computeCepacDiscountFactor(int month, double discount_rate);
+
+    /// <summary>
     /// Return the set of tokens resulting form splitting str on provided delimiters.
     /// </summary>
 	static std::vector<std::string> tokenize(const std::string &str, const std::string &delimiters);

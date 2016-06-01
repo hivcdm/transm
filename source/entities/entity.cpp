@@ -380,7 +380,8 @@ void Entity::initializeCEPACpatient(EventParams &_eventParams)
 	_eventParams.cepacRunStats, _eventParams.cepacCostStats, _eventParams.cepacTracer,
 	true, (int)getAge().in_months(), cepacGender, setAsIncidentCase, (int)_eventParams.currTime.in_months());
 
-    const auto discount_factor = cepacPatient->getGeneralState()->discountFactor;
+    const auto discount_factor = Utility::computeCepacDiscountFactor(
+	_eventParams.currTime.in_months(), simContextToUse->getRunSpecsInputs()->discountFactor);
     const_cast<Patient::GeneralState *>(
 	cepacPatient->getGeneralState())->discountFactor = discount_factor;
 
@@ -1557,7 +1558,7 @@ void Entity::deleteEntityWithoutDeleting()
 	}
 }
 
-int Entity::getCEPACSimContextIndex(EventParams &_eventParams)
+int Entity::getCEPACSimContextIndex(EventParams &_eventParams) const
 {
 	int returnValue = 0;
 

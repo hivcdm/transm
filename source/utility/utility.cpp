@@ -264,6 +264,11 @@ double Utility::rate_to_prob(double _rate)
 	return 1 - exp(-_rate);
 }
 
+double Utility::computeCepacDiscountFactor(int month, double discount_rate)
+{
+	return 1 / std::pow(discount_rate, month);
+}
+
 //this implementation was taken from
 // http://www.oopweb.com/CPP/Documents/CPPHOWTO/Volume/C++Programming-HOWTO-7.html
 std::vector<std::string> Utility::tokenize(const std::string &str,

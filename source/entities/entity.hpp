@@ -389,10 +389,12 @@ public:
 
 	double getQualityOfLife() const { return cepacPatient != nullptr ? cepacPatient->getGeneralState()->QOLMultiplier : 1; }
 
-	double getCepacDiscountFactor(EventParams &parameters) const 
-	{ 
-		auto context = parameters.useRollout ? parameters.untreatedContext : parameters.cepacSimContexts[0];
-		return std::pow(context->getRunSpecsInputs()->discountFactor, parameters.currTime.in_months());
+	double getCepacDiscountFactor(EventParams &parameters) const
+	{
+		auto context = parameters.useRollout ? parameters.untreatedContext :
+		    parameters.cepacSimContexts[getCEPACSimContextIndex(parameters)];
+		return Utility::computeCepacDiscountFactor(context->getRunSpecsInputs()->discountFactor,
+		    parameters.currTime.in_months());
 	}
 
 	/**
@@ -775,7 +777,7 @@ public:
 private:
     //Return the current index of which SimContext should be used to update the
     //health of a patient
-    int getCEPACSimContextIndex(EventParams &_eventParams);
+    int getCEPACSimContextIndex(EventParams &_eventParams) const;
 
     double updateHealthCosts(EventParams &_eventParams,
 			     CostsTracker *costsTracker,
