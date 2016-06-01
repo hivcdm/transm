@@ -878,35 +878,24 @@ class Summary:
 				try:
 					stats.differences['Averted'][stat] = numpy.asarray(self.status_quo_stats.series['Infections'][stat]) - numpy.asarray(stats.series['Infections'][stat])
 					stats.statistics['Averted'][stat] = numpy.average(stats.differences['Averted'][stat], weights=weights)
+					stats.percentage_diff['Averted'][stat] = stats.differences['Averted'][stat] / self.status_quo_stats.series['Infections'][stat]
 					stats.median['Averted'][stat], median_position = self.wquantile(stats.differences['Averted'][stat], weights, 0.5)
 					stats.lower_quartile['Averted'][stat], q1_position = self.wquantile(stats.differences['Averted'][stat], weights, 0.25)
 					stats.upper_quartile['Averted'][stat], q3_position = self.wquantile(stats.differences['Averted'][stat], weights, 0.75)
 					if stat == 'hvl-primary':
-						primary_positions = (median_position, q1_position, q3_position)
+						stats.statistics['Averted']['primary-percent'] = stats.statistics['Averted']['hvl-primary'] / self.status_quo_stats.statistics['Infections']['hvl-primary']
+						stats.median['Averted']['primary-percent'], median_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.5)
+						stats.lower_quartile['Averted']['primary-percent'], q1_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.25)
+						stats.upper_quartile['Averted']['primary-percent'], q3_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.75)
+						
 					elif stat == 'total':
-						total_positions = (median_position, q1_position, q3_position)
+						stats.statistics['Averted']['total-percent'] = stats.statistics['Averted']['total'] / self.status_quo_stats.statistics['Infections']['total']
+						stats.median['Averted']['total-percent'], median_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.5)
+						stats.lower_quartile['Averted']['total-percent'], q1_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.25)
+						stats.upper_quartile['Averted']['total-percent'], q3_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.75)
 				except ValueError as e:
 					print ("Couldn't calculate Averted Infections for runset {}. The skipped runs are {}, the processed ones {}, the length of the Infections array is {}.".format(run_set.name, len(skipped_runs), len(processed_runs), len(stats.series['Infections'][stat])), file = sys.stderr)
 					print (e)
-
-			# Now we calculate the averted %... Terribly clunky, but so it goes
-			median_position, q1_position, q3_position = primary_positions
-			stats.statistics['Averted']['primary-percent'] = stats.statistics['Averted']['hvl-primary'] / self.status_quo_stats.statistics['Infections']['hvl-primary']
-			stats.median['Averted']['primary-percent'] = stats.median['Averted']['hvl-primary'] / self.status_quo_stats.series['Infections']['hvl-primary'][median_position]
-			stats.lower_quartile['Averted']['primary-percent'] = stats.lower_quartile['Averted']['hvl-primary'] / self.status_quo_stats.series['Infections']['hvl-primary'][q1_position]
-			stats.upper_quartile['Averted']['primary-percent'] = stats.upper_quartile['Averted']['hvl-primary'] / self.status_quo_stats.series['Infections']['hvl-primary'][q3_position]
-
-			median_position, q1_position, q3_position = total_positions
-			stats.statistics['Averted']['total-percent'] = stats.statistics['Averted']['total'] / self.status_quo_stats.statistics['Infections']['total']
-			stats.median['Averted']['total-percent'] = stats.median['Averted']['total'] / self.status_quo_stats.series['Infections']['total'][median_position]
-			stats.lower_quartile['Averted']['total-percent'] = stats.lower_quartile['Averted']['total'] / self.status_quo_stats.series['Infections']['total'][q1_position]
-			stats.upper_quartile['Averted']['total-percent'] = stats.upper_quartile['Averted']['total'] / self.status_quo_stats.series['Infections']['total'][q3_position]
-		'''
-		if self.num_runs != num_runs:
-			print('Number of runs processed is {}, expected {}. Are all runs present and completed in your batches?'.format(num_runs, self.num_runs))
-		if self.cumulative_weight != total_weight:
-			print('Total weight of all runs in {} is {}, expected {}. Are all runs present and completed in your batches?'.format(run_set.name, total_weight, self.cumulative_weight))
-		'''
 		return stats, processed_runs, skipped_runs
 
 	def apply_formatting(self, runs):
@@ -1152,7 +1141,7 @@ def run():
 	year_range = (2014, 2059) # Years of interest for our analysis
 	year_comparison = 2014 # base year for computing the differences to rank in  quartiles 
 	excludes = ["85PerSudDecBef2016_50K", "3PerIncBef2016_50K"]  # run sets to be excluded from our analysis (useful when the script is executed on very large folders
-	status_quo = ""#"BaseCase_50K"
+	status_quo = "" #"BaseCase_50K"
 
 	Summary(directory, post_calib, weight, year_range, year_comparison, status_quo).summarise(out, excludes)
 	

@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [ "$#" -ne 2 ]; then
+    echo "Usage: $0 <prep-script-file> <post-calib-file>"
+fi
+
 for dir in ./*; do
 	# if not a directory, skip
 	[ -d "${dir}" ] || continue
