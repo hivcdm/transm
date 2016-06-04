@@ -120,7 +120,7 @@ void SimulationBuilderXml::ReadSimulationParameters()
 	simulation_.SetFixedSeed(Text<int>(simulation_node.child("fixedSeed")));
 	simulation_.SetDuration(Text<int>(simulation_node.child("duration")));
 
-	//TODO: This needs to be changed, we can't let the user leave debug on, it slows things down considerably. For the time being, we force it to zero. GA
+	//TODO-GA: This needs to be changed, we can't let the user leave debug on, it slows things down considerably. For the time being, we force it to zero. GA
 	//parameters.debugLevel = static_cast<DebugLevel>(Text<int>(simulation_node.child("debugLevel")));
 	parameters.debugLevel = static_cast<DebugLevel>(0);
 	parameters.monthOf1990 = Text<int>(simulation_node.child("monthOf1990"));
@@ -146,7 +146,8 @@ void SimulationBuilderXml::ReadSimulationParameters()
         {EventParams::TraceFile::Type::Clinical, "clinical"},
         {EventParams::TraceFile::Type::Events, "events"},
         {EventParams::TraceFile::Type::Health, "health"},
-        {EventParams::TraceFile::Type::SinglePerson, "singlePerson"},
+		//TODO-GA: This should also become part of debug mode, it NOT a normal output. For the moment we disable it manually. GA
+        //{EventParams::TraceFile::Type::SinglePerson, "singlePerson"},
         {EventParams::TraceFile::Type::LifeExpectancy, "lifeExpectancy"},
         {EventParams::TraceFile::Type::PartnerAcquisition, "partnerAcquisition"},
         {EventParams::TraceFile::Type::CalibrationStatistics, "calibrationStatistics"},

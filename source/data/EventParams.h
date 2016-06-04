@@ -58,7 +58,7 @@ public :
             Last,
             First = Population
         } type;
-        bool enabled;
+        bool enabled = false;
         std::string extension;
         bool toss;
         std::fstream file;
