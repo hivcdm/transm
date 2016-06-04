@@ -383,7 +383,7 @@ void SimulationBuilderXml::InitializePopulation()
     }
 
 	//create EntityPool - this will contain all Entities
-	auto entities = std::make_unique<EntityPool>(population_parameters.getAgeOfMajority(), population.GetId(), assort);
+	auto entities = std::make_unique<EntityPool>(population_parameters.getAgeOfMajority(), population.GetId(), population_parameters, assort);
 	population.entities.swap(entities);
 
 	//initialize infection trace generator print detailed info about certain ProfileID's
