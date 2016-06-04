@@ -367,7 +367,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
             if((p->getDemographicProfileVal(DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::Active)
                 && (p->getAge(TimeGranularity::Month) >= popWideParams.ageOfMajority))
 			{
-				// set them as SA and potentially CSWs
+            	// set them as SA and potentially CSWs
 				if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && p->trace())
 				{
                     if(p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
@@ -929,19 +929,25 @@ std::size_t Population::UpdateSize()
 		}	//while(currBucketIndex < entityBuckets->size()) {
 	}
 
+	// necessary step to update the tally of people per age
+	entities->countPeoplePerAge();
+
 	for(auto &ageRangeSizePair : currSizeByAgeRange)
 	{
-		ageRangeSizePair.second = entities->sizeSexuallyActiveByAge(ageRangeSizePair.first.lower, ageRangeSizePair.first.upper);
+		ageRangeSizePair.second = entities->sizeByAge(ageRangeSizePair.first.lower, ageRangeSizePair.first.upper);
+		//fprintf(stderr, "Value for all people is %lu.\n", ageRangeSizePair.second);
 	}
 
 	for(auto &ageRangeSizePair : currSizeByAgeRangeMale)
 	{
-		ageRangeSizePair.second = entities->sizeSexuallyActiveByAge(ageRangeSizePair.first.lower, ageRangeSizePair.first.upper, DemographicProfile::Gender::Male);
+		ageRangeSizePair.second = entities->sizeByAgeMales(ageRangeSizePair.first.lower, ageRangeSizePair.first.upper);
+		//fprintf(stderr, "Value for males is %lu.\n", ageRangeSizePair.second);
 	}
 
 	for(auto &ageRangeSizePair : currSizeByAgeRangeFemale)
 	{
-		ageRangeSizePair.second = entities->sizeSexuallyActiveByAge(ageRangeSizePair.first.lower, ageRangeSizePair.first.upper, DemographicProfile::Gender::Female);
+		ageRangeSizePair.second = entities->sizeByAgeFemales(ageRangeSizePair.first.lower, ageRangeSizePair.first.upper);
+		//fprintf(stderr, "Value for females is %lu.\n", ageRangeSizePair.second);
 	}
 
     num_circumcised_na = 0;
@@ -3294,7 +3300,7 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 		{
 			if(i == 0)
 			{
-				firstRow << "SA Pop (Age Months)";
+				firstRow << "All Pop (Age Months)";
 			}
 
 			firstRow << Constants::TAB;
@@ -3308,7 +3314,7 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 		{
 			if(i == 0)
 			{
-				firstRow << "SA Pop (Age Months)";
+				firstRow << "All Males (Age Months)";
 			}
 
 			firstRow << Constants::TAB;
@@ -3322,7 +3328,7 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 		{
 			if(i == 0)
 			{
-				firstRow << "SA Pop (Age Months)";
+				firstRow << "All Females (Age Months)";
 			}
 
 			firstRow << Constants::TAB;

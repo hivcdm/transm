@@ -7,7 +7,6 @@ This file contains the implementations for the methods of EntityPool
 #include "EntityPool.h"
 #include "../../core/Constants.h"
 #include "../../utility/Utility.h"
-#include "../Person.h"
 #include "BucketSexualMixing.h"
 
 void EntityPool::forEach(std::function<void(Person *)> callback)
@@ -376,11 +375,76 @@ unsigned long EntityPool::sizeNotSexuallyActive(DemographicProfile::Gender _gend
 	return size;
 }
 
+//calculate the current number of non sexually active persons within the specified age range
+unsigned long EntityPool::sizeNotSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths)
+{
+	BucketDemographicProfile *bucket = nullptr;
+	unsigned long size = 0;
+	size_t currBucketIndex = 0;
+
+	//iterate through all buckets
+	while(currBucketIndex < entityBuckets.size())
+	{
+		bucket = entityBuckets.at(currBucketIndex);
+
+		//if bucket == nullptr, that means we are not using this particular DemographicProfile during this sim
+		if(bucket == nullptr)
+		{
+			currBucketIndex++;
+			continue;
+		}
+
+		//Only add the sizes of sexually active buckets
+        if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
+		{
+			size += ((BucketSexualMixing *)(entityBuckets.at(currBucketIndex)))->sizeByAge(minAgeMonths, maxAgeMonths);
+		}
+
+		currBucketIndex++;
+	}	//while(currBucketIndex < entityBuckets.size()) {
+
+	return size;
+}
+
+//calculate the current number of non sexually active persons within the specified age range and gender
+unsigned long EntityPool::sizeNotSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths, DemographicProfile::Gender _gender)
+{
+	BucketDemographicProfile *bucket = nullptr;
+	unsigned long size = 0;
+	size_t currBucketIndex = 0;
+
+	//iterate through all buckets
+	while(currBucketIndex < entityBuckets.size())
+	{
+		bucket = entityBuckets.at(currBucketIndex);
+
+		//if bucket == nullptr, that means we are not using this particular DemographicProfile during this sim
+		if(bucket == nullptr)
+		{
+			currBucketIndex++;
+			continue;
+		}
+
+		//Only add the sizes of sexually active buckets
+        if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
+		{
+			if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::Gender) == static_cast<BaseEnumCls::Enum>(_gender))
+			{
+				size += ((BucketSexualMixing *)(entityBuckets.at(currBucketIndex)))->sizeByAge(minAgeMonths, maxAgeMonths);
+			}
+		}
+
+		currBucketIndex++;
+	}	//while(currBucketIndex < entityBuckets.size()) {
+
+	return size;
+}
+
 //calculate the current number of persons that are sexually active in the entity pool with a given demographic
 unsigned long EntityPool::sizeSexuallyActive(DemographicProfile::Gender _gender, Person::RiskLevel _risk)
 {
 	BucketDemographicProfile *bucket = nullptr;
-	unsigned long size = 0;		//total of the zie
+	unsigned long size = 0;
 	size_t currBucketIndex = 0;
 
 	//iterate through all buckets
@@ -413,7 +477,7 @@ unsigned long EntityPool::sizeSexuallyActive(DemographicProfile::Gender _gender,
 unsigned long EntityPool::sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths)
 {
 	BucketDemographicProfile *bucket = nullptr;
-	unsigned long size = 0;		//total of the zie
+	unsigned long size = 0;
 	size_t currBucketIndex = 0;
 
 	//iterate through all buckets
@@ -549,16 +613,79 @@ list<Person *>::iterator EntityPool::end(DemographicProfile::Gender _gender)
 	}
 }
 
+void EntityPool::resetPeoplePerAge()
+{
+	std::fill(malesPerAge.begin(), malesPerAge.end(), 0);
+	std::fill(femalesPerAge.begin(), femalesPerAge.end(), 0);
+}
+
+void EntityPool::countPeoplePerAge()
+{
+	// Just to be sure, we do not want to read old values in case there are age gaps
+	resetPeoplePerAge();
+
+	std::list<Person *>::iterator p_Iter;
+
+	// We count everyone's age in years and store it in two gender-specific arrays
+	for (p_Iter = this->begin(DemographicProfile::Gender::Male); p_Iter != this->end(DemographicProfile::Gender::Male); p_Iter++)
+	{
+		malesPerAge[(*p_Iter)->getAge(TimeGranularity::Month)]++;
+	}
+
+	for (p_Iter = this->begin(DemographicProfile::Gender::Female); p_Iter != this->end(DemographicProfile::Gender::Female); p_Iter++)
+	{
+		femalesPerAge[(*p_Iter)->getAge(TimeGranularity::Month)]++;
+	}
+	return;
+}
+
+unsigned long EntityPool::sizeByAgeFemales(int minAgeMonths, int maxAgeMonths)
+{
+	int ageMonth = 0;
+	unsigned long ageCount = 0;
+		for (ageMonth = minAgeMonths; ageMonth <= maxAgeMonths; ageMonth++)
+		{
+			ageCount+=femalesPerAge[ageMonth];
+		}
+	return ageCount;
+}
+
+unsigned long EntityPool::sizeByAgeMales(int minAgeMonths, int maxAgeMonths)
+{
+	int ageMonth = 0;
+	unsigned long ageCount = 0;
+		for (ageMonth = minAgeMonths; ageMonth <= maxAgeMonths; ageMonth++)
+		{
+			ageCount+=malesPerAge[ageMonth];
+		}
+	return ageCount;
+}
+
+unsigned long EntityPool::sizeByAge(int minAgeMonths, int maxAgeMonths)
+{
+	int ageMonth = 0;
+	unsigned long ageCount = 0;
+		for (ageMonth = minAgeMonths; ageMonth <= maxAgeMonths; ageMonth++)
+		{
+			ageCount+=femalesPerAge[ageMonth];
+			ageCount+=malesPerAge[ageMonth];
+
+		}
+	return ageCount;
+}
+
+
 //-------------------< End allMale and allFemale functions >----------------//
 //---------------< Begin constructors and destructors >-------------------------//
 
 
 //creates a New EntityPool
 // @param _SAEntAgeMths age of sexual debut
-EntityPool::EntityPool(int ageOfMajority, unsigned int _popID, const std::map<SexualPartnership::Type, double> &_assort)
+EntityPool::EntityPool(int ageOfMajority, unsigned int _popID, PopulationParameters& _popParameters, const std::map<SexualPartnership::Type, double> &_assort)
 {
 	//allocate space for Buckets and set to nullptr
 	entityBuckets = std::vector<BucketDemographicProfile *>(DemographicProfile::TotalNumBuckets, nullptr);
+	// initialize the counters for each age
 	//this helps us select the buckets we want to use in the sim
 	// initializing to END values will select all buckets
 	DemographicProfile selector;
