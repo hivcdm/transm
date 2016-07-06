@@ -66,7 +66,7 @@ ExternalProject_Add(
 	pugixml_project
 	PREFIX ${CMAKE_SOURCE_DIR}/build/third-party
 	GIT_REPOSITORY https://github.com/zeux/pugixml.git
-	CONFIGURE_COMMAND cmake -DCMAKE_BUILD_TYPE=Release ../pugixml_project/scripts
+	CONFIGURE_COMMAND cmake -DCMAKE_BUILD_TYPE=Release ../pugixml_project
     BUILD_COMMAND make pugixml
     INSTALL_COMMAND mv libpugixml.a ${CMAKE_SOURCE_DIR}/lib
 )
