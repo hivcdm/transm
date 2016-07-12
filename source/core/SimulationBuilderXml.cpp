@@ -120,9 +120,13 @@ void SimulationBuilderXml::ReadSimulationParameters()
 	simulation_.SetFixedSeed(Text<int>(simulation_node.child("fixedSeed")));
 	simulation_.SetDuration(Text<int>(simulation_node.child("duration")));
 
-	//TODO-GA: This needs to be changed, we can't let the user leave debug on, it slows things down considerably. For the time being, we force it to zero. GA
+	//TODO-GA: This needs slows things down considerably, and is often left on by mistake. Disabled for non-debug builds. GA
 	//parameters.debugLevel = static_cast<DebugLevel>(Text<int>(simulation_node.child("debugLevel")));
+#ifndef NDEBUG
+	parameters.debugLevel = static_cast<DebugLevel>(Text<int>(simulation_node.child("debugLevel")));
+#else
 	parameters.debugLevel = static_cast<DebugLevel>(0);
+#endif
 	parameters.monthOf1990 = Text<int>(simulation_node.child("monthOf1990"));
 	parameters.delayPrevalence = Text<int>(simulation_node.child("population").child("initialState").child("delay"));
 
@@ -146,8 +150,10 @@ void SimulationBuilderXml::ReadSimulationParameters()
         {EventParams::TraceFile::Type::Clinical, "clinical"},
         {EventParams::TraceFile::Type::Events, "events"},
         {EventParams::TraceFile::Type::Health, "health"},
-		//TODO-GA: This should also become part of debug mode, it NOT a normal output. For the moment we disable it manually. GA
-        //{EventParams::TraceFile::Type::SinglePerson, "singlePerson"},
+		//TODO-GA: This is NOT a normal output. Disabled for non-debug builds. GA
+#ifndef NDEBUG
+        {EventParams::TraceFile::Type::SinglePerson, "singlePerson"},
+#endif
         {EventParams::TraceFile::Type::LifeExpectancy, "lifeExpectancy"},
         {EventParams::TraceFile::Type::PartnerAcquisition, "partnerAcquisition"},
         {EventParams::TraceFile::Type::CalibrationStatistics, "calibrationStatistics"},
@@ -178,9 +184,12 @@ void SimulationBuilderXml::ReadSimulationParameters()
 	}
 
 	auto calibration_node = simulation_node.child("calibration");
-	// We can't let the user enable this by mistake (yes that happens!), it makes things way too slow. Disabled for now. GA
-	//parameters.calibrationInputs.useCalibration = Attr<bool>(calibration_node, "enabled");
+	// We can't let the user enable this by mistake (yes that happens!), it makes things way too slow. Disabled for non-debug builds. GA
+#ifndef NDEBUG
+	parameters.calibrationInputs.useCalibration = Attr<bool>(calibration_node, "enabled");
+#else
 	parameters.calibrationInputs.useCalibration = false;
+#endif
 
 	if(parameters.calibrationInputs.useCalibration)
 	{
