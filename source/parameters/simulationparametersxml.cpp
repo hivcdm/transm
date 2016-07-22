@@ -225,24 +225,24 @@ CalibrationInputs SimulationParametersXml::GetCalibrationParameters() const
     if(calib.useCalibration)
     {
         calib.monthOfCalibration = Time::from_months(Text<int>(calibration_node.child("monthOfCalibration")));
-        calib.steadyPrevPopulation = Text<int>(calibration_node.child("monthOfCalibration"));
-        calib.steadyPrevBounds.lower = Text<double>(calibration_node.child("monthOfCalibration"));
-        calib.steadyPrevBounds.upper = Text<double>(calibration_node.child("monthOfCalibration"));
-        calib.casualPrevPopulation = Text<int>(calibration_node.child("monthOfCalibration"));
-        calib.casualPrevBounds.lower = Text<double>(calibration_node.child("monthOfCalibration"));
-        calib.casualPrevBounds.upper = Text<double>(calibration_node.child("monthOfCalibration"));
-        calib.CSWPrevPopulation = Text<int>(calibration_node.child("monthOfCalibration"));
-        calib.CSWPrevBounds.lower = Text<double>(calibration_node.child("monthOfCalibration"));
-        calib.CSWPrevBounds.upper = Text<double>(calibration_node.child("monthOfCalibration"));
-        calib.propInConcurrentPopulation = Text<int>(calibration_node.child("monthOfCalibration"));
-        calib.propInConcurrentBounds.lower = Text<double>(calibration_node.child("monthOfCalibration"));
-        calib.propInConcurrentBounds.upper = Text<double>(calibration_node.child("monthOfCalibration"));
-        calib.numActsPopulation = Text<int>(calibration_node.child("monthOfCalibration"));
-        calib.numActsBounds.lower = Text<double>(calibration_node.child("monthOfCalibration"));
-        calib.numActsBounds.upper = Text<double>(calibration_node.child("monthOfCalibration"));
-        calib.femaleCasualPrevRatio = Text<double>(calibration_node.child("monthOfCalibration"));
-        calib.femalePropInConcurrentRatio = Text<double>(calibration_node.child("monthOfCalibration"));
-        calib.femaleNumActsLRtoHRRatio = Text<double>(calibration_node.child("monthOfCalibration"));
+	calib.steadyPrevPopulation = Text<int>(calibration_node.child("partnershipOutcomes").child("steadyPrev").child("popOfInterest"));
+	calib.steadyPrevBounds.lower = Text<double>(calibration_node.child("partnershipOutcomes").child("steadyPrev").child("lwrBound"));
+	calib.steadyPrevBounds.upper = Text<double>(calibration_node.child("partnershipOutcomes").child("steadyPrev").child("uprBound"));
+	calib.casualPrevPopulation = Text<int>(calibration_node.child("partnershipOutcomes").child("casualPrev").child("popOfInterest"));
+	calib.casualPrevBounds.lower = Text<double>(calibration_node.child("partnershipOutcomes").child("casualPrev").child("lwrBound"));
+	calib.casualPrevBounds.upper = Text<double>(calibration_node.child("partnershipOutcomes").child("casualPrev").child("uprBound"));
+	calib.CSWPrevPopulation = Text<int>(calibration_node.child("partnershipOutcomes").child("cswPrev").child("popOfInterest"));
+	calib.CSWPrevBounds.lower = Text<double>(calibration_node.child("partnershipOutcomes").child("cswPrev").child("lwrBound"));
+	calib.CSWPrevBounds.upper = Text<double>(calibration_node.child("partnershipOutcomes").child("cswPrev").child("uprBound"));
+	calib.propInConcurrentPopulation = Text<int>(calibration_node.child("partnershipOutcomes").child("propInCon").child("popOfInterest"));
+	calib.propInConcurrentBounds.lower = Text<double>(calibration_node.child("partnershipOutcomes").child("propInCon").child("lwrBound"));
+	calib.propInConcurrentBounds.upper = Text<double>(calibration_node.child("partnershipOutcomes").child("propInCon").child("uprBound"));
+	calib.numActsPopulation = Text<int>(calibration_node.child("partnershipOutcomes").child("numActs").child("popOfInterest"));
+	calib.numActsBounds.lower = Text<double>(calibration_node.child("partnershipOutcomes").child("numActs").child("lwrBound"));
+	calib.numActsBounds.upper = Text<double>(calibration_node.child("partnershipOutcomes").child("numActs").child("uprBound"));
+	calib.femaleCasualPrevRatio = Text<double>(calibration_node.child("partnershipOutcomes").child("femaleCasualPrev").child("ratio"));
+	calib.femalePropInConcurrentRatio = Text<double>(calibration_node.child("partnershipOutcomes").child("femalePropInCon").child("ratio"));
+	calib.femaleNumActsLRtoHRRatio = Text<double>(calibration_node.child("partnershipOutcomes").child("femaleNumActsLRtoHR").child("ratio"));
 
         for(int i = 0; i < Constants::NumberCalibrationPrevs; i++)
         {
@@ -250,7 +250,9 @@ CalibrationInputs SimulationParametersXml::GetCalibrationParameters() const
             calib.calendarPrevs[i] = Text<double>(calibration_node.child("calendarPrevalence").child(name.c_str()));
         }
 
-        calib.thresholdPrevMult = Text<double>(calibration_node.child("thresholdMultiplier"));
+	//TODO-GA: this somehow disappeared from the xml files, let's set it to 1 for the moment.
+	//calib.thresholdPrevMult = Text<double>(calibration_node.child("thresholdMultiplier"));
+	calib.thresholdPrevMult = 1.00;
     }
 
     return calib;

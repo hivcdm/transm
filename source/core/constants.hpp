@@ -19,7 +19,7 @@ public:
 	static const int NumberOfOIs = 15;
 
 	static const int NumberConcurrencyDefs = 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2;
-	static const int NumberCalibrationPrevs = 13;
+	static const int NumberCalibrationPrevs = 0;
 
 	static const int InitialInfection = 0;
 };
