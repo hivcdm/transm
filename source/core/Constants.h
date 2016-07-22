@@ -73,8 +73,8 @@ public:
 	static const int NUMBER_OF_OIS = 15;
 
 	static const int NUMBER_CONCURRENCY_DEFS = 16;
-	static const int NUMBER_CALIBRATION_PREVS = 13;
-	static const int NUMBER_TIME_POINTS_SAVE_STATE = 2;
+	static const int NUMBER_CALIBRATION_PREVS = 0; //13;
+	static const int NUMBER_TIME_POINTS_SAVE_STATE = 0; //2;
 
 	static const int PREVALENT_INFECTION = 0;
 };
