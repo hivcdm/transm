@@ -495,8 +495,11 @@ void Simulation::Step()
 
 	if(parameters_.calibrationInputs.useCalibration && parameters_.calibrationInputs.monthOfCalibration == time_)
 	{
+		bool passedCalibration = population_.PassesPartnershipCalibration(parameters_);
+		string passedCalibrationString = (passedCalibration == true ? "true" : "false");
+		std::cerr << "PARTNERSHIP CALIBRATION PASSED: " << passedCalibrationString << endl;
 		//If this run doesn't pass the partnership calibration stop the run and discard specified trace files
-		if(!population_.PassesPartnershipCalibration(parameters_))
+		if(!passedCalibration)
 		{
 			return;
 		}
