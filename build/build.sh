@@ -4,6 +4,7 @@
 # arguments, they will be passed directly to CMake. Examples:
 #
 # $0 -D CMAKE_BUILD_TYPE=Debug (for a debug build)
+# $0 CALIB_ENABLED (for a build with calibration enabled)
 # env CXX=g++-5 env CC=gcc-5 $0 (to use another compiler like GCC5)
 
 # If we have no additional arguments we go for a release build
