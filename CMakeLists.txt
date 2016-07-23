@@ -114,6 +114,14 @@ include(cmake.sources)
 
 add_executable(transm source/main.cpp ${TRANSM_SOURCE_FILES})
 
+# Our switch for calibration, off by default
+
+option(DEFINE_CALIB "switch to enable calibration" OFF) 
+
+if(DEFINE_CALIB)
+    add_definitions(-DCALIB_ENABLED)
+endif(DEFINE_CALIB)
+
 # Read and set up the version number
 
 file(READ VERSION TRANSM_VER)
