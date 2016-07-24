@@ -1764,7 +1764,7 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
     int maleSA = numSexuallyActive[(std::size_t)DemographicProfile::Gender::Male];
     int femaleSA = numSexuallyActive[(std::size_t)DemographicProfile::Gender::Female];
 	int totalSA = maleSA + femaleSA;
-	double steadyPrev, casualPrev, CSWPrev, propInConcurrent, numActsAvg;
+	double steadyPrev = 0.0, casualPrev = 0.0, CSWPrev = 0.0, propInConcurrent = 0.0, numActsAvg = 0.0;
 
 	if(parameters_.calibrationInputs.steadyPrevPopulation == 0)
 	{

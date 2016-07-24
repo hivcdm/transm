@@ -120,6 +120,7 @@ option(DEFINE_CALIB "switch to enable calibration" OFF)
 
 if(DEFINE_CALIB)
     add_definitions(-DCALIB_ENABLED)
+    message("Calibration Enabled!")
 endif(DEFINE_CALIB)
 
 # Read and set up the version number
