@@ -179,9 +179,14 @@ void SimulationBuilderXml::ReadSimulationParameters()
 	parameters.tracePrevalentCases = Text<bool>(simulation_node.child("traceFiles").child("singlePerson").child("tracePrevalentCases"));
 
     simulation_.SetLifeExpectancyConfidenceInterval(Text<double>(simulation_node.child("traceFiles").child("lifeExpectancy").child("medianConfidenceInterval")));
-	for(auto time_node : simulation_node.child("traceFiles").child("lifeExpectancy").children("time"))
+
+    for(auto time_node : simulation_node.child("traceFiles").child("lifeExpectancy").children("time"))
 	{
 		simulation_.AddLifeExpectancyRecordTime(Text<int>(time_node));
+	}
+	for(auto time_node : simulation_node.child("traceFiles").child("partnerAcquisition").children("time"))
+	{
+		simulation_.AddPartnerAcquisitionRecordTime(Text<int>(time_node));
 	}
 
 	auto calibration_node = simulation_node.child("calibration");

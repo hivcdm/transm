@@ -213,6 +213,7 @@ public:
 
 	void addLifeExpectancyRecordTime(int time) { timesToRecordLE.push_back(time); }
     void setMedianLECI(double ci) { medianLECI = ci; }
+	void addPartnerAcquisitionRecordTime(int time) { timesToRecordPartAcq.push_back(time); }
 
 	std::vector<PopulationStatistics::SingleTimeStats *> *getSelectedSummaryStats();
 };
