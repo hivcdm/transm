@@ -64,6 +64,8 @@ public:
 
     void SetLifeExpectancyConfidenceInterval(double ci) { population_.populationStatistics.setMedianLECI(ci); }
 
+	void AddPartnerAcquisitionRecordTime(Time time) { population_.populationStatistics.addPartnerAcquisitionRecordTime(time); }
+
     void RegisterPopulationIntervention(const Intervention &intervention);
 
 private:

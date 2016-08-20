@@ -210,6 +210,12 @@ SimulationParameters::TracingParameters SimulationParametersXml::GetTracingParam
     {
         parameters.life_expectancy_record_times.push_back(Text<int>(time_node));
     }
+
+    for(auto time_node : simulation_node.child("traceFiles").child("partnerAcquisition").children("time"))
+    {
+	parameters.partner_acquisition_record_times.push_back(Text<int>(time_node));
+    }
+  
     
     return parameters;
 }
