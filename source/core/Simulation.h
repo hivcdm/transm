@@ -57,6 +57,8 @@ public:
 
     void SetLifeExpectancyConfidenceInterval(double ci) { population_.populationStatistics.setMedianLECI(ci); }
 
+	void AddPartnerAcquisitionRecordTime(int time) { population_.populationStatistics.addPartnerAcquisitionRecordTime(time); }
+
     void RegisterIntervention(const Intervention &intervention);
 
 	struct TreatmentFile
