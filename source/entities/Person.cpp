@@ -385,7 +385,7 @@ void Person::initialCEPACpatient(EventParams &_eventParams)
 			simContextToUse = _eventParams.cepacSimContexts[getCEPACSimContextIndex(_eventParams)];
 		}
 
-		cepacPatient = new Patient(simContextToUse, _eventParams.cepacRunStats, _eventParams.cepacTracer,
+		cepacPatient = new Patient(simContextToUse, _eventParams.cepacRunStats, _eventParams.capacCostStats, _eventParams.cepacTracer,
             true, getAge(TimeGranularity::Month), cepacGender, setAsIncidentCase, _eventParams.currTime);
 
 		auto discount_factor = Utility::computeCepacDiscountFactor(_eventParams.currTime, simContextToUse->getRunSpecsInputs()->discountFactor);
