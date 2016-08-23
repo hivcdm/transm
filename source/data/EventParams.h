@@ -177,6 +177,7 @@ public :
 		treatedContext = nullptr;
         cepacRunStats = nullptr;
         cepacTracer = nullptr;
+        capacCostStats = nullptr;
 	}
 
     EventParams(const EventParams &) = delete;
@@ -233,6 +234,8 @@ public :
 	RunStats *cepacRunStats;
 	//CEPAC tracing object (output)
 	Tracer *cepacTracer;
+	// CEPAC cost Tracer
+	CostStats *capacCostStats;
 	//--------- CEPAC related objects -------------//
 
 	//calibration inputs

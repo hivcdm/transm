@@ -3,6 +3,7 @@
 #include <string>
 #include <pugixml.hpp>
 
+#include "include.h"
 #include "SimulationBuilder.h"
 #include "Simulation.h"
 #include "utility/CepacInputParser.h"

@@ -3,6 +3,7 @@
 #include <unordered_set>
 #include <pugixml.hpp>
 
+#include "include.h"
 #include "Intervention.h"
 #include "Outputs.h"
 #include "Population.h"
