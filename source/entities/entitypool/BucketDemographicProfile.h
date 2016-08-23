@@ -7,7 +7,7 @@ class Person;
 class RandomNumberGenerator;
 
 /// <summary>
-/// This class is a simple container for Entitys and allows us to add, count, get, and remove them
+/// This class is a simple container for Entities and allows us to add, count, get, and remove them
 /// </summary>
 /// <remarks>
 /// This class is related to class DemographicProfile in that for each unique DemographicProfile, there is one and only one BucketDemographicProfile

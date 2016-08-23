@@ -56,6 +56,8 @@ public:
 	//converts a rate to a probability
 	static double rateToProb(double _rate);
 
+	static double computeCepacDiscountFactor(int month, double discount_rate);
+
 	template <typename T>
 	static T round(double d)
 	{

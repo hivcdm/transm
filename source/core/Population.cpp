@@ -36,9 +36,10 @@ void Population::Circumcise(Person *p)
 {
     if(!p->IsCircumcised())
     {
+    	double discount = Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor);
         p->Circumcise();
-		populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * p->getCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor));
-		p->add_cdm_cost(popWideParams.circumcisionCost, popWideParams.circumcisionCost * p->getCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor));
+		populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * discount);
+		p->add_cdm_cost(popWideParams.circumcisionCost, popWideParams.circumcisionCost * discount);
     }
 }
 
@@ -209,6 +210,15 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 {
     dead_people_this_month_.clear();
 
+	double cepacDiscountFactor = 1;
+
+	if (parameters_.useRollout) {
+		cepacDiscountFactor = Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor);
+	}
+	else {
+		cepacDiscountFactor = Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor);
+	}
+
 	int totalDied = 0;		//keeps track of deaths this timestep
 	//holds a pointer to the current bucket we are looking at
 	BucketDemographicProfile *currBucket = nullptr;
@@ -303,9 +313,8 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 
             if (p->UsingPrEP())
             {
-                double discountFactor = p->getCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor);
-                populationStatistics.costsTracker.RecordPrEPCost(popWideParams.prEPCost, popWideParams.prEPCost * discountFactor);
-                p->add_cdm_cost(popWideParams.prEPCost, popWideParams.prEPCost * discountFactor);
+                populationStatistics.costsTracker.RecordPrEPCost(popWideParams.prEPCost, popWideParams.prEPCost * cepacDiscountFactor);
+                p->add_cdm_cost(popWideParams.prEPCost, popWideParams.prEPCost * cepacDiscountFactor);
             }
 
 			if(oldStatus != p->hivStatus)
@@ -358,7 +367,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
             if((p->getDemographicProfileVal(DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::Active)
                 && (p->getAge(TimeGranularity::Month) >= popWideParams.ageOfMajority))
 			{
-				// set them as SA and potentially CSWs
+            	// set them as SA and potentially CSWs
 				if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && p->trace())
 				{
                     if(p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
@@ -420,11 +429,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 				}
 			}
 
-            auto discount = parameters_.useRollout ?
-                parameters_.untreatedContext->getRunSpecsInputs()->discountFactor
-                : parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor;
-			populationStatistics.costsTracker.RecordLifeMonth(p->getQualityOfLife(), p->getCepacDiscountFactor(parameters_.currTime, discount), p->getHIVStatus());
-
+			populationStatistics.costsTracker.RecordLifeMonth(p->getQualityOfLife(), cepacDiscountFactor, p->getHIVStatus());
 			p_Iter++;
 		}
 	}
@@ -459,6 +464,14 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 	//Number of attemptedPartnerships may be higher than the actual partnerships formed if there weren't enough females/males tried to repartner with current partners
 	int attemptedPartnershipCount[(std::size_t)SexualPartnership::Type::ENDType];
 	int	endedPartnershipCount[(std::size_t)SexualPartnership::Type::ENDType];
+	double cepacDiscountFactor = 1;
+
+	if (parameters_.useRollout) {
+		cepacDiscountFactor = Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor);
+	}
+	else {
+		cepacDiscountFactor = Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor);
+	}
 
 	//initialize counters
 	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
@@ -604,11 +617,9 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 
 		//Add the cost of condom usage
 		auto totalCondomCostUndiscounted = initiator->getCondomsUsedThisMonth() * popWideParams.condomCost;
-        auto discount = parameters_.useRollout ?
-            parameters_.untreatedContext->getRunSpecsInputs()->discountFactor
-            : parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor;
-		initiator->add_cdm_cost(totalCondomCostUndiscounted, totalCondomCostUndiscounted * initiator->getCepacDiscountFactor(parameters_.currTime, discount));
-		populationStatistics.costsTracker.RecordCondomUse(totalCondomCostUndiscounted, totalCondomCostUndiscounted * initiator->getCepacDiscountFactor(parameters_.currTime, discount));
+        initiator->add_cdm_cost(totalCondomCostUndiscounted, totalCondomCostUndiscounted * cepacDiscountFactor);
+		populationStatistics.costsTracker.RecordCondomUse(totalCondomCostUndiscounted, totalCondomCostUndiscounted * cepacDiscountFactor);
+
 	} //for (p_Iter = entities->begin(DemographicProfile::Gender::Male); p_Iter != entities->end(DemographicProfile::Gender::Male); p_Iter++)
 
 	//Ends the second pass through (i.e. the sex acts pass through)
@@ -619,9 +630,8 @@ void Population::UpdatePartnerships(EventParams &parameters_)
         if (p->GetVaginalMicrobicideApplicationsThisMonth() > 0)
         {
             auto cost = popWideParams.vaginalMicrobicideApplicationCost * p->GetVaginalMicrobicideApplicationsThisMonth();
-            auto discount = p->getCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor);
-            populationStatistics.costsTracker.RecordVaginalMicrobicideCost(cost, cost * discount);
-            p->add_cdm_cost(cost, cost * discount);
+            populationStatistics.costsTracker.RecordVaginalMicrobicideCost(cost, cost * cepacDiscountFactor);
+            p->add_cdm_cost(cost, cost * cepacDiscountFactor);
         }
     }
 
@@ -919,19 +929,25 @@ std::size_t Population::UpdateSize()
 		}	//while(currBucketIndex < entityBuckets->size()) {
 	}
 
+	// necessary step to update the tally of people per age
+	entities->countPeoplePerAge();
+
 	for(auto &ageRangeSizePair : currSizeByAgeRange)
 	{
-		ageRangeSizePair.second = entities->sizeSexuallyActiveByAge(ageRangeSizePair.first.lower, ageRangeSizePair.first.upper);
+		ageRangeSizePair.second = entities->sizeByAge(ageRangeSizePair.first.lower, ageRangeSizePair.first.upper);
+		//fprintf(stderr, "Value for all people is %lu.\n", ageRangeSizePair.second);
 	}
 
 	for(auto &ageRangeSizePair : currSizeByAgeRangeMale)
 	{
-		ageRangeSizePair.second = entities->sizeSexuallyActiveByAge(ageRangeSizePair.first.lower, ageRangeSizePair.first.upper, DemographicProfile::Gender::Male);
+		ageRangeSizePair.second = entities->sizeByAgeMales(ageRangeSizePair.first.lower, ageRangeSizePair.first.upper);
+		//fprintf(stderr, "Value for males is %lu.\n", ageRangeSizePair.second);
 	}
 
 	for(auto &ageRangeSizePair : currSizeByAgeRangeFemale)
 	{
-		ageRangeSizePair.second = entities->sizeSexuallyActiveByAge(ageRangeSizePair.first.lower, ageRangeSizePair.first.upper, DemographicProfile::Gender::Female);
+		ageRangeSizePair.second = entities->sizeByAgeFemales(ageRangeSizePair.first.lower, ageRangeSizePair.first.upper);
+		//fprintf(stderr, "Value for females is %lu.\n", ageRangeSizePair.second);
 	}
 
     num_circumcised_na = 0;
@@ -1102,10 +1118,10 @@ Person *Population::GeneratePerson(EventParams &parameters_, DemographicProfile:
 		if(m->isCircumcised())
 		{
             auto discount = parameters_.useRollout ? 
-                parameters_.untreatedContext->getRunSpecsInputs()->discountFactor 
-                : parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor;
-			populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * m->getCepacDiscountFactor(parameters_.currTime, discount));
-			toReturn->add_cdm_cost(popWideParams.circumcisionCost, popWideParams.circumcisionCost * m->getCepacDiscountFactor(parameters_.currTime, discount));
+                Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor)
+                : Utility::computeCepacDiscountFactor(parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor, parameters_.currTime);
+			populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * discount);
+			toReturn->add_cdm_cost(popWideParams.circumcisionCost, popWideParams.circumcisionCost * discount);
 		}
 	}
 
@@ -1748,7 +1764,7 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
     int maleSA = numSexuallyActive[(std::size_t)DemographicProfile::Gender::Male];
     int femaleSA = numSexuallyActive[(std::size_t)DemographicProfile::Gender::Female];
 	int totalSA = maleSA + femaleSA;
-	double steadyPrev, casualPrev, CSWPrev, propInConcurrent, numActsAvg;
+	double steadyPrev = 0.0, casualPrev = 0.0, CSWPrev = 0.0, propInConcurrent = 0.0, numActsAvg = 0.0;
 
 	if(parameters_.calibrationInputs.steadyPrevPopulation == 0)
 	{
@@ -3284,7 +3300,7 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 		{
 			if(i == 0)
 			{
-				firstRow << "SA Pop (Age Months)";
+				firstRow << "All Pop (Age Months)";
 			}
 
 			firstRow << Constants::TAB;
@@ -3298,7 +3314,7 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 		{
 			if(i == 0)
 			{
-				firstRow << "SA Pop (Age Months)";
+				firstRow << "All Males (Age Months)";
 			}
 
 			firstRow << Constants::TAB;
@@ -3312,7 +3328,7 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 		{
 			if(i == 0)
 			{
-				firstRow << "SA Pop (Age Months)";
+				firstRow << "All Females (Age Months)";
 			}
 
 			firstRow << Constants::TAB;

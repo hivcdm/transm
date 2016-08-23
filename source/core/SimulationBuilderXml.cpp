@@ -120,9 +120,13 @@ void SimulationBuilderXml::ReadSimulationParameters()
 	simulation_.SetFixedSeed(Text<int>(simulation_node.child("fixedSeed")));
 	simulation_.SetDuration(Text<int>(simulation_node.child("duration")));
 
-	//TODO: This needs to be changed, we can't let the user leave debug on, it slows things down considerably. For the time being, we force it to zero. GA
+	//TODO-GA: This needs slows things down considerably, and is often left on by mistake. Disabled for non-debug builds. GA
 	//parameters.debugLevel = static_cast<DebugLevel>(Text<int>(simulation_node.child("debugLevel")));
+#ifndef NDEBUG
+	parameters.debugLevel = static_cast<DebugLevel>(Text<int>(simulation_node.child("debugLevel")));
+#else
 	parameters.debugLevel = static_cast<DebugLevel>(0);
+#endif
 	parameters.monthOf1990 = Text<int>(simulation_node.child("monthOf1990"));
 	parameters.delayPrevalence = Text<int>(simulation_node.child("population").child("initialState").child("delay"));
 
@@ -146,7 +150,10 @@ void SimulationBuilderXml::ReadSimulationParameters()
         {EventParams::TraceFile::Type::Clinical, "clinical"},
         {EventParams::TraceFile::Type::Events, "events"},
         {EventParams::TraceFile::Type::Health, "health"},
+		//TODO-GA: This is NOT a normal output. Disabled for non-debug builds. GA
+#ifndef NDEBUG
         {EventParams::TraceFile::Type::SinglePerson, "singlePerson"},
+#endif
         {EventParams::TraceFile::Type::LifeExpectancy, "lifeExpectancy"},
         {EventParams::TraceFile::Type::PartnerAcquisition, "partnerAcquisition"},
         {EventParams::TraceFile::Type::CalibrationStatistics, "calibrationStatistics"},
@@ -177,30 +184,35 @@ void SimulationBuilderXml::ReadSimulationParameters()
 	}
 
 	auto calibration_node = simulation_node.child("calibration");
+	// We can't let the user enable this by mistake (yes that happens!), it makes things way too slow. Disabled for non-specific builds. GA
+#ifdef CALIB_ENABLED
 	parameters.calibrationInputs.useCalibration = Attr<bool>(calibration_node, "enabled");
+#else
+	parameters.calibrationInputs.useCalibration = false;
+#endif
 
 	if(parameters.calibrationInputs.useCalibration)
 	{
 		auto &calib = parameters.calibrationInputs;
-		calib.monthOfCalibration = Text<int>(calibration_node.child("monthOfCalibration"));
-		calib.steadyPrevPopulation = Text<int>(calibration_node.child("monthOfCalibration"));
-		calib.steadyPrevBounds.lower = Text<double>(calibration_node.child("monthOfCalibration"));
-		calib.steadyPrevBounds.upper = Text<double>(calibration_node.child("monthOfCalibration"));
-		calib.casualPrevPopulation = Text<int>(calibration_node.child("monthOfCalibration"));
-		calib.casualPrevBounds.lower = Text<double>(calibration_node.child("monthOfCalibration"));
-		calib.casualPrevBounds.upper = Text<double>(calibration_node.child("monthOfCalibration"));
-		calib.CSWPrevPopulation = Text<int>(calibration_node.child("monthOfCalibration"));
-		calib.CSWPrevBounds.lower = Text<double>(calibration_node.child("monthOfCalibration"));
-		calib.CSWPrevBounds.upper = Text<double>(calibration_node.child("monthOfCalibration"));
-		calib.propInConcurrentPopulation = Text<int>(calibration_node.child("monthOfCalibration"));
-		calib.propInConcurrentBounds.lower = Text<double>(calibration_node.child("monthOfCalibration"));
-		calib.propInConcurrentBounds.upper = Text<double>(calibration_node.child("monthOfCalibration"));
-		calib.numActsPopulation = Text<int>(calibration_node.child("monthOfCalibration"));
-		calib.numActsBounds.lower = Text<double>(calibration_node.child("monthOfCalibration"));
-		calib.numActsBounds.upper = Text<double>(calibration_node.child("monthOfCalibration"));
-		calib.femaleCasualPrevRatio = Text<double>(calibration_node.child("monthOfCalibration"));
-		calib.femalePropInConcurrentRatio = Text<double>(calibration_node.child("monthOfCalibration"));
-		calib.femaleNumActsLRtoHRRatio = Text<double>(calibration_node.child("monthOfCalibration"));
+		calib.monthOfCalibration = Text<int>(calibration_node.child("time"));
+		calib.steadyPrevPopulation = Text<int>(calibration_node.child("partnershipOutcomes").child("steadyPrev").child("popOfInterest"));
+		calib.steadyPrevBounds.lower = Text<double>(calibration_node.child("partnershipOutcomes").child("steadyPrev").child("lwrBound"));
+		calib.steadyPrevBounds.upper = Text<double>(calibration_node.child("partnershipOutcomes").child("steadyPrev").child("uprBound"));
+		calib.casualPrevPopulation = Text<int>(calibration_node.child("partnershipOutcomes").child("casualPrev").child("popOfInterest"));
+		calib.casualPrevBounds.lower = Text<double>(calibration_node.child("partnershipOutcomes").child("casualPrev").child("lwrBound"));
+		calib.casualPrevBounds.upper = Text<double>(calibration_node.child("partnershipOutcomes").child("casualPrev").child("uprBound"));
+		calib.CSWPrevPopulation = Text<int>(calibration_node.child("partnershipOutcomes").child("cswPrev").child("popOfInterest"));
+		calib.CSWPrevBounds.lower = Text<double>(calibration_node.child("partnershipOutcomes").child("cswPrev").child("lwrBound"));
+		calib.CSWPrevBounds.upper = Text<double>(calibration_node.child("partnershipOutcomes").child("cswPrev").child("uprBound"));
+		calib.propInConcurrentPopulation = Text<int>(calibration_node.child("partnershipOutcomes").child("propInCon").child("popOfInterest"));
+		calib.propInConcurrentBounds.lower = Text<double>(calibration_node.child("partnershipOutcomes").child("propInCon").child("lwrBound"));
+		calib.propInConcurrentBounds.upper = Text<double>(calibration_node.child("partnershipOutcomes").child("propInCon").child("uprBound"));
+		calib.numActsPopulation = Text<int>(calibration_node.child("partnershipOutcomes").child("numActs").child("popOfInterest"));
+		calib.numActsBounds.lower = Text<double>(calibration_node.child("partnershipOutcomes").child("numActs").child("lwrBound"));
+		calib.numActsBounds.upper = Text<double>(calibration_node.child("partnershipOutcomes").child("numActs").child("uprBound"));
+		calib.femaleCasualPrevRatio = Text<double>(calibration_node.child("partnershipOutcomes").child("femaleCasualPrev").child("ratio"));
+		calib.femalePropInConcurrentRatio = Text<double>(calibration_node.child("partnershipOutcomes").child("femalePropInCon").child("ratio"));
+		calib.femaleNumActsLRtoHRRatio = Text<double>(calibration_node.child("partnershipOutcomes").child("femaleNumActsLRtoHR").child("ratio"));
 
 		for(int i = 0; i < Constants::NUMBER_CALIBRATION_PREVS; i++)
 		{
@@ -213,8 +225,9 @@ void SimulationBuilderXml::ReadSimulationParameters()
 			auto name = "storePoint" + std::to_string(i) + "Mth";
 			calib.saveStateTimePoints[i] = Text<int>(calibration_node.child(name.c_str()));
 		}
-
-		calib.thresholdPrevMult = Text<double>(calibration_node.child("thresholdMultiplier"));
+		//TODO-GA: this somehow disappeared from the xml files, let's set it to 1 for the moment.
+		//calib.thresholdPrevMult = Text<double>(calibration_node.child("thresholdMultiplier"));
+		calib.thresholdPrevMult = 1.00;
 	}
 
 	auto interventions_node = simulation_node.child("interventions");
@@ -381,7 +394,7 @@ void SimulationBuilderXml::InitializePopulation()
     }
 
 	//create EntityPool - this will contain all Entities
-	auto entities = std::make_unique<EntityPool>(population_parameters.getAgeOfMajority(), population.GetId(), assort);
+	auto entities = std::make_unique<EntityPool>(population_parameters.getAgeOfMajority(), population.GetId(), population_parameters, assort);
 	population.entities.swap(entities);
 
 	//initialize infection trace generator print detailed info about certain ProfileID's

@@ -66,7 +66,7 @@ ExternalProject_Add(
 	pugixml_project
 	PREFIX ${CMAKE_SOURCE_DIR}/build/third-party
 	GIT_REPOSITORY https://github.com/zeux/pugixml.git
-	CONFIGURE_COMMAND cmake -DCMAKE_BUILD_TYPE=Release ../pugixml_project/scripts
+	CONFIGURE_COMMAND cmake -DCMAKE_BUILD_TYPE=Release ../pugixml_project
     BUILD_COMMAND make pugixml
     INSTALL_COMMAND mv libpugixml.a ${CMAKE_SOURCE_DIR}/lib
 )
@@ -113,6 +113,15 @@ include(cmake.sources)
 # We add our executable
 
 add_executable(transm source/main.cpp ${TRANSM_SOURCE_FILES})
+
+# Our switch for calibration, off by default
+
+option(DEFINE_CALIB "switch to enable calibration" OFF) 
+
+if(DEFINE_CALIB)
+    add_definitions(-DCALIB_ENABLED)
+    message("Calibration Enabled!")
+endif(DEFINE_CALIB)
 
 # Read and set up the version number
 

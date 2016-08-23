@@ -4,10 +4,14 @@
 #include <memory>
 #include <list>
 #include <vector>
+#include <utility>
+#include <array>
 
 #include "BucketSexualMixing.h"
 #include "../classifiers/DemographicProfile.h"
 #include "../classifiers/SexualPartnership.h"
+#include "../Person.h"
+#include "../../core/PopulationParameters.h"
 
 /// <summary>
 /// This is a container for Person objects which are separated into different BucketDemographicProfile depending on
@@ -23,7 +27,7 @@ public:
 	/// <summary>
 	/// Creates a new EntityPool
 	/// </summary>
-	EntityPool(int ageOfMajority, unsigned int _popID, const std::map<SexualPartnership::Type, double> &_assort);
+	EntityPool(int ageOfMajority, unsigned int _popID, PopulationParameters& _popParameters, const std::map<SexualPartnership::Type, double> &_assort);
 
 	~EntityPool();
 
@@ -104,6 +108,16 @@ public:
 	unsigned long sizeNotSexuallyActive(DemographicProfile::Gender _gender);
 
 	/// <summary>
+	/// calculate the current number of non sexually active persons within the specified age range
+	/// </summary>
+	unsigned long sizeNotSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths);
+
+	/// <summary>
+	/// calculate the current number of non sexually active persons within the specified age range and gender
+	/// </summary>
+	unsigned long sizeNotSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths, DemographicProfile::Gender _gender);
+
+	/// <summary>
 	/// calculate the current number of sexually active persons within the specified age range
 	/// </summary>
 	unsigned long sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths);
@@ -112,6 +126,21 @@ public:
 	/// calculate the current number of sexually active persons within the specified age range and gender
 	/// </summary>
 	unsigned long sizeSexuallyActiveByAge(int minAgeMonths, int maxAgeMonths, DemographicProfile::Gender _gender);
+
+	/// <summary>
+	/// calculate the current number of people within the specified age range
+	/// </summary>
+	unsigned long sizeByAge(int minAgeMonths, int maxAgeMonths);
+
+	/// <summary>
+	/// calculate the current number of males within the specified age range
+	/// </summary>
+	unsigned long sizeByAgeMales(int minAgeMonths, int maxAgeMonths);
+
+	/// <summary>
+	/// calculate the current number of females within the specified age range
+	/// </summary>
+	unsigned long sizeByAgeFemales(int minAgeMonths, int maxAgeMonths);
 
 	/// <summary>
 	/// adds Person to BucketDemographicProfile AND allMales or allFemales depending on gender
@@ -134,6 +163,12 @@ public:
 	/// </summary>
 	std::list<Person *>::iterator end(DemographicProfile::Gender _gender);
 
+	/// <summary>
+	/// Updates the tally of males and females per year of age
+	/// </summary>
+	void countPeoplePerAge();
+
+
 private:
 	/// <summary>
 	/// This is a container that holds Person Buckets. This is the authoritative container for the pool.
@@ -141,6 +176,7 @@ private:
 	/// Each index of the vector corresponds to a DemographicProfile::ProfileID. This corresponds to
 	/// a unique combucketation of DemographicProfile enum values
 	/// </summary>
+
 	std::vector<BucketDemographicProfile *> entityBuckets;
 
 	/// <summary>
@@ -152,4 +188,12 @@ private:
 	/// Master list of females for iterating
 	/// </summary>
 	std::list<Person *> allFemales;
+
+	/// <summary>
+	/// Quick way to keep track of people's age
+	/// </summary>
+	std::array<unsigned long, Person::maxYrForDeathStats * 12 + 1> malesPerAge;
+	std::array<unsigned long, Person::maxYrForDeathStats * 12 + 1> femalesPerAge;
+
+	void resetPeoplePerAge();
 };
