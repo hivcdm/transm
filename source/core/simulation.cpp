@@ -2,7 +2,8 @@
 #include <numeric>
 #include <random>
 #include <set>
-#include <include.h>
+
+#include "include.h"
 
 #include "simulation.hpp"
 #include "constants.hpp"
@@ -558,6 +559,8 @@ void Simulation::LastStep()
 		{
 			parameters_.cepacRunStats->finalizeStats();
 			parameters_.cepacRunStats->writeStatsFile();
+			parameters_.cepacCostStats->finalizeStats();
+			parameters_.cepacCostStats->writeStatsFile();
 		}
 	}
 	catch(std::string errorString)
@@ -771,6 +774,11 @@ RunStats &Simulation::GetCEPACRunStats()
 	return *parameters_.cepacRunStats;
 }
 
+CostStats &Simulation::GetCEPACCostStats()
+{
+	return *parameters_.cepacCostStats;
+}
+
 PopulationStatisticsOld &Simulation::GetPopulationStatistics()
 {
     return population_.populationStatistics;
@@ -836,6 +844,7 @@ void Simulation::Initialize(SimulationParameters &parameters)
 
         parameters_.cepacTracer = new Tracer(name_, parameters_.untreatedContext, 1);
         parameters_.cepacRunStats = new RunStats(name_, parameters_.untreatedContext);
+        parameters_.cepacCostStats = new CostStats(name_, parameters_.untreatedContext);
     }
     else
     {
@@ -850,6 +859,7 @@ void Simulation::Initialize(SimulationParameters &parameters)
 
         parameters_.cepacTracer = new Tracer(name_, parameters_.cepacSimContexts[0], 1);
         parameters_.cepacRunStats = new RunStats(name_, parameters_.cepacSimContexts[0]);
+        parameters_.cepacCostStats = new CostStats(name_, parameters_.cepacSimContexts[0]);
     }
 
     auto tracing_parameters = parameters.GetTracingParameters();

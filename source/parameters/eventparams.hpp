@@ -70,10 +70,11 @@ public:
 		useRollout = false;
 		untreatedContext = nullptr;
 		treatedContext = nullptr;
-        cepacRunStats = nullptr;
-        cepacTracer = nullptr;
-        numNewbornsTraced = 0;
-        numNewbornsToTrace = 0;
+		cepacRunStats = nullptr;
+		cepacCostStats = nullptr;
+		cepacTracer = nullptr;
+		numNewbornsTraced = 0;
+		numNewbornsToTrace = 0;
 	}
 
     /// <summary>
@@ -125,6 +126,8 @@ public:
 
 	//CEPAC related runStats (output)
 	RunStats *cepacRunStats;
+        // CEPAC cost Tracer
+        CostStats *cepacCostStats;
 	//CEPAC tracing object (output)
 	Tracer *cepacTracer;
 

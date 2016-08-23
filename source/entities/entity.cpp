@@ -380,7 +380,7 @@ void Entity::initialCEPACpatient(EventParams &_eventParams)
 			simContextToUse = _eventParams.cepacSimContexts[getCEPACSimContextIndex(_eventParams)];
 		}
 
-		cepacPatient = new Patient(simContextToUse, _eventParams.cepacRunStats, _eventParams.cepacTracer,
+		cepacPatient = new Patient(simContextToUse, _eventParams.cepacRunStats, _eventParams.cepacCostStats, _eventParams.cepacTracer,
 			true, (int)getAge().in_months(), cepacGender, setAsIncidentCase, (int)_eventParams.currTime.in_months());
 
 		//Only update hvl and cd4 if the patient is infected

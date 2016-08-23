@@ -3,6 +3,8 @@
 #include <unordered_set>
 #include <pugixml.hpp>
 
+#include "include.h"
+
 #include "batchstatus.hpp"
 #include "intervention.hpp"
 #include "population.hpp"
@@ -32,6 +34,9 @@ public:
 
 	//returns eventParams.cepacRunStats for adding to the general popstats
 	RunStats &GetCEPACRunStats();
+
+	//returns eventParams.cepacCostStats for adding to the general popstats
+	CostStats &GetCEPACCostStats();
 
 	//returns population->popStats information for creating popStats-like file for transmission output
 	PopulationStatisticsOld &GetPopulationStatistics();
