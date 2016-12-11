@@ -97,8 +97,6 @@ add_library(cepac STATIC IMPORTED)
 set_property(TARGET cepac PROPERTY IMPORTED_LOCATION  ${CMAKE_SOURCE_DIR}/lib/libcepac.a)
 add_dependencies(cepac cepac_project)
 
-
-
 # Now it is time to compile our own code
 
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/build)
