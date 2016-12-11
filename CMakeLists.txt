@@ -82,8 +82,8 @@ add_dependencies(pugixml pugixml_project)
 ExternalProject_Add(
 	cepac_project 
 	PREFIX ${CMAKE_SOURCE_DIR}/build/third-party
-	GIT_REPOSITORY https://github.com/hsphcdm/cepac.git
-	GIT_TAG 5.0a
+	GIT_REPOSITORY https://github.com/hsphcdm/cepac-svn.git
+	GIT_TAG cepac-transm
 	UPDATE_COMMAND ""
 	CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 	#CONFIGURE_COMMAND cmake ../cepac_project
@@ -96,6 +96,8 @@ include_directories(${source_dir}/src)
 add_library(cepac STATIC IMPORTED)
 set_property(TARGET cepac PROPERTY IMPORTED_LOCATION  ${CMAKE_SOURCE_DIR}/lib/libcepac.a)
 add_dependencies(cepac cepac_project)
+
+
 
 # Now it is time to compile our own code
 
@@ -113,6 +115,7 @@ include(cmake.sources)
 # We add our executable
 
 add_executable(transm source/main.cpp ${TRANSM_SOURCE_FILES})
+add_dependencies(transm rana_project tclap_project cepac_project)
 
 # Our switch for calibration, off by default
 
@@ -150,3 +153,9 @@ target_link_libraries(transm cepac pugixml) # ${Boost_LIBRARIES})
 add_custom_command(TARGET transm POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --cyan
                    "Build complete. The binary is in ${EXECUTABLE_OUTPUT_PATH}.")
+                   
+add_custom_target(clean-cmake-files
+   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/clean-all.cmake
+)
+
+message ("The binary dir in the main script is: ${CMAKE_BINARY_DIR}")
