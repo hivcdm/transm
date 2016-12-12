@@ -155,5 +155,3 @@ add_custom_command(TARGET transm POST_BUILD
 add_custom_target(clean-cmake-files
    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/clean-all.cmake
 )
-
-message ("The binary dir in the main script is: ${CMAKE_BINARY_DIR}")
