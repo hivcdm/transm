@@ -4,16 +4,6 @@ project(transm)
 include(GNUInstallDirs)
 include(ExternalProject)
 
-#This ugly bunch of lines is a hack to compile properly on Odyssey:
-#they have an older version of Boost in /usr that causes a bug in
-#the lib paths with cmake's find_package.
-
-#set(Boost_NO_BOOST_CMAKE ON) 
-#set(Boost_USE_STATIC_LIBS ON)
-#set(BOOST_INCLUDEDIR /n/sw/fasrcsw/apps/Core/boost/1.59.0-fasrc01/include)
-#set(BOOST_ROOT /n/sw/fasrcsw/apps/Core/boost/1.59.0-fasrc01/lib)
-#set(Boost_NO_SYSTEM_PATHS ON)
-
 # First let's see if we have what we need
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}")
