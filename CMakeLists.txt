@@ -117,9 +117,15 @@ endif(DEFINE_CALIB)
 # Read and set up the version number
 
 file(READ VERSION TRANSM_VER)
+string(STRIP ${TRANSM_VER} TRANSM_VER) #make sure we have no whitespace characters in the version
+
 message("Building version ${TRANSM_VER}")
 #set_property(TARGET transm PROPERTY VERSION ${TRANSM_VER}) # Better way of indicating our version number, however...
 set(CMAKE_EXECUTABLE_SUFFIX "-v${TRANSM_VER}") # ...we need to use the following for compatibility with ridiculous assert in transm code
+
+# Create a header file containing the version number from the VERSION file to keep the build version in sync
+message("Creating Version.h")
+file(WRITE "${CMAKE_SOURCE_DIR}/source/core/Version.h" "const std::string VERSION=\"${TRANSM_VER}\";")
 
 # Then specify all the flags we need for our compiler and linker
 

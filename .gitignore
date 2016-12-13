@@ -1,3 +1,5 @@
+*cscope*
+source/core/Version.h
 results/
 x64/
 .project
