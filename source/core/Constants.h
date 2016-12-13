@@ -54,7 +54,6 @@ enum class TimeGranularity
 class Constants
 {
 public:
-	static const std::string VERSION;
 	static const std::string ASTERISK;
 	static const std::string BLANK;
 	static const std::string COLON;

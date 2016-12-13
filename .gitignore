@@ -26,3 +26,5 @@ CMakeFiles/
 scripts/generate_runs/*/
 /Default/
 tmp/
+*cscope*
+source/utility/Version.h
