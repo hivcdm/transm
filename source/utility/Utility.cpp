@@ -17,6 +17,7 @@
 
 #include "Utility.h"
 #include "filesystem.h"
+#include "Version.h"
 
 namespace {
 std::string to_string(TimeGranularity granularity)
@@ -119,7 +120,7 @@ Version Utility::get_model_version()
 //  auto version_string = exe_name.substr(hyphen_index + 2);
 //  return Version::FromString(version_string);
 
-    return Version::FromString(Constants::VERSION);
+    return Version::FromString(VERSION);
 }
 
 //convert _val from one TimeGranularity to another
