@@ -1,7 +1,6 @@
 #include "Constants.h"
-#include "Version.h"
 
-std::string const Constants::VERSION = VERSION;
+std::string const Constants::VERSION = "3.7.8";
 std::string const Constants::ASTERISK = "*";
 std::string const Constants::BLANK = "";
 std::string const Constants::COLON = ":";
