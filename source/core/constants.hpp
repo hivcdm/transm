@@ -8,7 +8,6 @@ namespace transm {
 class Constants
 {
 public:
-	static const std::string Version;
 	static const std::string Asterisk;
 	static const std::string Blank;
 	static const std::string Colon;

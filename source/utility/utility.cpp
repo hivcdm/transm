@@ -16,6 +16,7 @@
 #endif
 
 #include "utility.hpp"
+#include "version.h"
 
 namespace transm {
 
@@ -169,14 +170,7 @@ std::string get_executable_name()
 
 Version Utility::get_model_version()
 {
-//	I am leaving this horror here for posterity. GA
-//  auto exe_name = get_executable_name();
-//  auto hyphen_index = exe_name.find_last_of('-');
-//  assert(hyphen_index != std::string::npos);
-//  auto version_string = exe_name.substr(hyphen_index + 2);
-//  return Version::FromString(version_string);
-
-    return Version::from_string(Constants::Version);
+    return Version::from_string(VERSION);
 }
 
 std::unordered_map<std::string, std::string> Utility::load_config()

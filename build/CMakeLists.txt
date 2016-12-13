@@ -123,6 +123,16 @@ message("Building version ${TRANSM_VER}")
 #set_property(TARGET transm PROPERTY VERSION ${TRANSM_VER}) # Better way of indicating our version number, however...
 set(CMAKE_EXECUTABLE_SUFFIX "-v${TRANSM_VER}") # ...we need to use the following for compatibility with ridiculous assert in transm code
 
+# Add a makefile target that creates a header file with the version from VERSION
+
+add_custom_target(create-version-header 
+   COMMAND ./version_header.sh ${CMAKE_SOURCE_DIR}/../ ${TRANSM_VER}
+   COMMENT "Creating version.h"
+)
+add_dependencies(transm create-version-header)
+set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES 
+	${CMAKE_SOURCE_DIR}/../source/utility/version.h)
+
 # Then specify all the flags we need for our compiler and linker
 
 #set_property(TARGET transm PROPERTY CXX_STANDARD 14) # Proper way to require c++14 compatibility, 

@@ -19,4 +19,5 @@ build/Makefile
 build/cmake_install.cmake
 build/third-party/
 scripts/generate_runs/*/
-third-party/
+*cscope*
+source/utility/Version.h
