@@ -4,16 +4,6 @@ project(transm)
 include(GNUInstallDirs)
 include(ExternalProject)
 
-#This ugly bunch of lines is a hack to compile properly on Odyssey:
-#they have an older version of Boost in /usr that causes a bug in
-#the lib paths with cmake's find_package.
-
-#set(Boost_NO_BOOST_CMAKE ON) 
-#set(Boost_USE_STATIC_LIBS ON)
-#set(BOOST_INCLUDEDIR /n/sw/fasrcsw/apps/Core/boost/1.59.0-fasrc01/include)
-#set(BOOST_ROOT /n/sw/fasrcsw/apps/Core/boost/1.59.0-fasrc01/lib)
-#set(Boost_NO_SYSTEM_PATHS ON)
-
 # First let's see if we have what we need
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}")
@@ -82,8 +72,8 @@ add_dependencies(pugixml pugixml_project)
 ExternalProject_Add(
 	cepac_project 
 	PREFIX ${CMAKE_SOURCE_DIR}/build/third-party
-	GIT_REPOSITORY https://github.com/hsphcdm/cepac.git
-	GIT_TAG 4.4a
+	GIT_REPOSITORY https://github.com/hsphcdm/cepac-svn.git
+	GIT_TAG cepac-transm
 	UPDATE_COMMAND ""
 	CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 	#CONFIGURE_COMMAND cmake ../cepac_project
@@ -113,6 +103,7 @@ include(cmake.sources)
 # We add our executable
 
 add_executable(transm source/main.cpp ${TRANSM_SOURCE_FILES})
+add_dependencies(transm rana_project tclap_project cepac_project)
 
 # Our switch for calibration, off by default
 
@@ -126,9 +117,21 @@ endif(DEFINE_CALIB)
 # Read and set up the version number
 
 file(READ VERSION TRANSM_VER)
+string(STRIP ${TRANSM_VER} TRANSM_VER) # remove whitespace
+
 message("Building version ${TRANSM_VER}")
 #set_property(TARGET transm PROPERTY VERSION ${TRANSM_VER}) # Better way of indicating our version number, however...
 set(CMAKE_EXECUTABLE_SUFFIX "-v${TRANSM_VER}") # ...we need to use the following for compatibility with ridiculous assert in transm code
+
+# Add a makefile target that creates a header file with the version from VERSION
+
+add_custom_target(create-version-header 
+   COMMAND ./version_header.sh ${CMAKE_SOURCE_DIR} ${TRANSM_VER}
+   COMMENT "Creating Version.h"
+)
+add_dependencies(transm create-version-header)
+set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES 
+	${CMAKE_SOURCE_DIR}/source/utility/Version.h)
 
 # Then specify all the flags we need for our compiler and linker
 
@@ -150,3 +153,7 @@ target_link_libraries(transm cepac pugixml) # ${Boost_LIBRARIES})
 add_custom_command(TARGET transm POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --cyan
                    "Build complete. The binary is in ${EXECUTABLE_OUTPUT_PATH}.")
+                   
+add_custom_target(clean-cmake-files
+   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/clean-all.cmake
+)

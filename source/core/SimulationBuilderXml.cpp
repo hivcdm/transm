@@ -2,6 +2,7 @@
 #include "utility/enum_iterator.h"
 #include "utility/filesystem.h"
 #include "utility/make_unique.h"
+#include "CostStats.h"
 
 namespace {
 std::string to_string(SexualPartnership::Type type)
@@ -296,6 +297,7 @@ void SimulationBuilderXml::ReadSimulationParameters()
 
 		parameters.cepacTracer = new Tracer(parameters.simName, parameters.rolloutSimContexts[0]->rolloutSimContext.get(), 1);
 		parameters.cepacRunStats = new RunStats(parameters.simName, parameters.rolloutSimContexts[0]->rolloutSimContext.get());
+		parameters.capacCostStats = new CostStats(parameters.simName, parameters.rolloutSimContexts[0]->rolloutSimContext.get());
 	}
 	else
 	{
@@ -341,6 +343,7 @@ void SimulationBuilderXml::ReadSimulationParameters()
 
 		parameters.cepacTracer = new Tracer(parameters.simName, parameters.cepacSimContexts[0], 1);
 		parameters.cepacRunStats = new RunStats(parameters.simName, parameters.cepacSimContexts[0]);
+		parameters.capacCostStats = new CostStats(parameters.simName, parameters.cepacSimContexts[0]);
 	}
 
     auto population_interventions_node = simulation_node.child("interventions").child("populationInterventions");

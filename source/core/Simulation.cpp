@@ -2,7 +2,6 @@
 #include <numeric>
 #include <set>
 #include <random>
-#include <include.h>
 
 #include "Simulation.h"
 #include "Constants.h"
@@ -589,6 +588,8 @@ void Simulation::LastStep()
 		{
 			parameters_.cepacRunStats->finalizeStats();
 			parameters_.cepacRunStats->writeStatsFile();
+			parameters_.capacCostStats->finalizeStats();
+			parameters_.capacCostStats->writeStatsFile();
 		}
 	}
 	catch(std::string errorString)
