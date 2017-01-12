@@ -28,3 +28,4 @@ scripts/generate_runs/*/
 tmp/
 *cscope*
 source/utility/Version.h
+TAGS
