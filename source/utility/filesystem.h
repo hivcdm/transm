@@ -83,23 +83,12 @@ class filesystem
 {
 public:
     static std::vector<path> listdir(const path &p);
-    static path absolute(const path &p);
-    static path absolute(const path &p, const path &base);
-    static path canonical(const path &p);
-    static path canonical(const path &p, const path &base);
-    static void copy_directory(const path &from, const path &to);
-    static void copy_file(const path &from, const path &to);
-    static bool create_directory(const path &p);
     static path current_path();
     static void current_path(const path &p);
     static bool exists(const path &p);
     static bool is_directory(const path &p);
     static bool is_regular_file(const path &p);
     static bool is_dotdir(const path &p);
-    static bool remove_file(const path &p);
-    static std::size_t remove_directory(const path &p);
-    static void rename(const path &from, const path &to);
-    static path temp_directory_path();
 };
 
 } // namespace transm
