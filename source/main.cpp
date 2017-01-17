@@ -29,7 +29,8 @@ std::vector<transm::path> find_input_files(const transm::path &batch_directory)
         && transm::filesystem::is_directory(batch_directory))
     {
         auto all_files = transm::filesystem::listdir(batch_directory);
-        auto new_end = std::remove_if(all_files.begin(), all_files.end(), is_not_known_extension);
+        auto new_end = std::remove_if(all_files.begin(), all_files.end(),
+				      is_not_known_extension);
         input_files = std::vector<transm::path>(all_files.begin(), new_end);
     }
     // a specific file was given, return it as a singular element in a list
@@ -54,10 +55,10 @@ std::vector<transm::path> find_input_files(const transm::path &batch_directory)
 /// </summary>
 int run_simulation(const transm::path &batch_directory)
 {
-    auto workingDirectory = transm::filesystem::current_path();
+    chdir(batch_directory.string().c_str());
+    auto input_files = find_input_files(transm::filesystem::current_path());
 
     CepacUtil::inputsDirectory = batch_directory.string();
-    CepacUtil::changeDirectoryToInputs();
     //Call this so that relative directories can be used as input (i.e. "../")
     CepacUtil::useCurrentDirectoryForInputs();
     CepacUtil::createResultsDirectory();
@@ -65,13 +66,11 @@ int run_simulation(const transm::path &batch_directory)
     SummaryStats cepac_summary("cepacPopstats.out");
     TransmissionSummaryStats transmission_summary("summaryStats.out");
 
-    auto batch_name = batch_directory.stem().string();
-    auto input_files = find_input_files(batch_directory);
-
     for(auto input_file : input_files)
     {
-        //Changing back to the input directory because over the course of Sim->run, the directory gets changed to results
-        CepacUtil::changeDirectoryToInputs();
+        //Changing back to the input directory because over the course of Sim->run,
+	//the directory gets changed to results
+        chdir(batch_directory.string().c_str());
         std::cout << "Running File: " << input_file.stem().string() << std::endl;
 
         SimulationBuilderXml sim_builder;
@@ -181,11 +180,11 @@ int main(int argc, char *argv[])
 
         for(auto batch : input_files_arg.getValue())
         {
-			auto result = run_simulation(batch);
-			// added because sometimes we don't see all output if buffered
-			std::cout.flush();
+	    auto result = run_simulation(batch);
+	    // added because sometimes we don't see all output if buffered
+	    std::cout.flush();
 
-			// stop if any batch fails
+	    // stop if any batch fails
             if(result != 0)
             {
                 return 1;
