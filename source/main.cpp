@@ -29,7 +29,8 @@ std::vector<transm::path> find_input_files(const transm::path &batch_directory)
         && transm::filesystem::is_directory(batch_directory))
     {
         auto all_files = transm::filesystem::listdir(batch_directory);
-        auto new_end = std::remove_if(all_files.begin(), all_files.end(), is_not_known_extension);
+        auto new_end = std::remove_if(all_files.begin(), all_files.end(),
+				      is_not_known_extension);
         input_files = std::vector<transm::path>(all_files.begin(), new_end);
     }
     // a specific file was given, return it as a singular element in a list
@@ -54,10 +55,10 @@ std::vector<transm::path> find_input_files(const transm::path &batch_directory)
 /// </summary>
 int run_simulation(const transm::path &batch_directory)
 {
-    auto workingDirectory = transm::filesystem::current_path();
+    chdir(batch_directory.string().c_str());
+    auto input_files = find_input_files(batch_directory);
 
     CepacUtil::inputsDirectory = batch_directory.string();
-    CepacUtil::changeDirectoryToInputs();
     //Call this so that relative directories can be used as input (i.e. "../")
     CepacUtil::useCurrentDirectoryForInputs();
     CepacUtil::createResultsDirectory();
@@ -67,14 +68,13 @@ int run_simulation(const transm::path &batch_directory)
 
     auto batch_name = batch_directory.stem().string();
     transm::BatchStatus status(batch_name);
-
-    auto input_files = find_input_files(batch_directory);
     status.initialize(input_files);
 
     for(auto input_file : input_files)
     {
-        //Changing back to the input directory because over the course of Sim->run, the directory gets changed to results
-        CepacUtil::changeDirectoryToInputs();
+        //Changing back to the input directory because over the course of Sim->run,
+	//the directory gets changed to results
+        chdir(batch_directory.string().c_str());
         std::cout << "Running File: " << input_file.stem().string() << std::endl;
 
         transm::SimulationParametersXml parameters(input_file);

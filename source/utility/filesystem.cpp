@@ -418,9 +418,10 @@ path filesystem::current_path()
     GetCurrentDirectory((DWORD)buffer.size(), buffer.data());
     return path(path::string_type(buffer.begin(), buffer.end()));
 #else
-    std::array<char, 512> buffer;
-    assert(getcwd(buffer.data(), buffer.size()) != nullptr);
-    return path(std::string(buffer.begin(), buffer.end()));
+    char buffer[64];
+    std::fill_n(buffer, sizeof(buffer), NULL);
+    assert(getcwd(buffer, sizeof(buffer)) != nullptr);
+    return path(std::string(buffer));
 #endif
 }
 
