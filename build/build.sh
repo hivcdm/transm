@@ -11,6 +11,9 @@
 if [[ $# -eq 0 ]]
 then
 	CMAKE_ARGS="-D CMAKE_BUILD_TYPE=Release"
+elif [[ $1 == "--debug" ]]
+then
+	CMAKE_ARGS="-D CMAKE_BUILD_TYPE=Debug"
 else
 	CMAKE_ARGS=$@
 fi
