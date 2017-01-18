@@ -83,6 +83,7 @@ class filesystem
 {
 public:
     static std::vector<path> listdir(const path &p);
+    static int change_dir(const path &p);
     static path real_path(const path &p);
     static path current_path();
     static void current_path(const path &p);
