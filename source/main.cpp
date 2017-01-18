@@ -33,20 +33,25 @@ std::vector<transm::path> find_input_files(const transm::path &batch_directory)
 				      is_not_known_extension);
         input_files = std::vector<transm::path>(all_files.begin(), new_end);
     }
-    // a specific file was given, return it as a singular element in a list
-    else if (transm::filesystem::exists(batch_directory)
-        && transm::filesystem::is_regular_file(batch_directory)
-        && !is_not_known_extension(batch_directory)) //double negative!
-    {
-        input_files.push_back(batch_directory);
-    }
     else
     {
-        auto message = std::string("not a directory ") + batch_directory.string();
+        auto message =  batch_directory.string() + std::string("must be a directory.");
         throw std::runtime_error(message);
     }
 
     return input_files;
+}
+
+static inline int change_dir(const transm::path &p)
+{
+    int r = 0;
+    if ((chdir(p.string().c_str())) != 0) {
+	r = errno;
+        std::cout << "Error: Couldn't change directory to " <<
+	    p.string().c_str() << ": " <<  strerror(r) <<std::endl;
+    }
+
+    return r;
 }
 
 /// <summary>
@@ -55,11 +60,12 @@ std::vector<transm::path> find_input_files(const transm::path &batch_directory)
 /// </summary>
 int run_simulation(const transm::path &batch_directory)
 {
-    chdir(batch_directory.string().c_str());
-    auto input_files = find_input_files(batch_directory);
+    /* run the simulation with input and output files in batch directory */
+    if ((change_dir(batch_directory)) != 0)
+	return 1;
 
+    /* Set up the Cepac directories */
     CepacUtil::inputsDirectory = batch_directory.string();
-    //Call this so that relative directories can be used as input (i.e. "../")
     CepacUtil::useCurrentDirectoryForInputs();
     CepacUtil::createResultsDirectory();
 
@@ -68,13 +74,26 @@ int run_simulation(const transm::path &batch_directory)
 
     auto batch_name = batch_directory.stem().string();
     transm::BatchStatus status(batch_name);
+
+    auto input_files = find_input_files(batch_directory);
     status.initialize(input_files);
 
+    if (input_files.empty()) {
+	std::cout << "Error: Batch directory contains no input files: " <<
+	    batch_directory.string().c_str() << std::endl;
+    }
+
+    int r = 0;
     for(auto input_file : input_files)
     {
         //Changing back to the input directory because over the course of Sim->run,
 	//the directory gets changed to results
-        chdir(batch_directory.string().c_str());
+	if ((change_dir(batch_directory)) != 0) {
+	    /* something went wrong -- get out of here */
+	    r = 1;
+	    break;
+        }
+
         std::cout << "Running File: " << input_file.stem().string() << std::endl;
 
         transm::SimulationParametersXml parameters(input_file);
@@ -93,7 +112,7 @@ int run_simulation(const transm::path &batch_directory)
     cepac_summary.writeSummariesFile();
     transmission_summary.writeSummariesFile();
 
-    return 0;
+    return r;
 }
 
 /// <summary>
@@ -179,7 +198,16 @@ int main(int argc, char *argv[])
 
         for(auto batch : input_files_arg.getValue())
         {
-			auto result = run_simulation(batch);
+            /* Use the absolute path for the directory */
+	    transm::path absolute_path = transm::filesystem::real_path(batch);
+	    if (absolute_path.empty()) {
+                /* bail if the directory is bogus */
+		std::cout << "Error: Check the path to the batch directory: " <<
+		    batch.c_str() << std::endl;
+		return 1;
+	    }
+
+	    auto result = run_simulation(absolute_path);
 			// added because sometimes we don't see all output if buffered
 			std::cout.flush();
 

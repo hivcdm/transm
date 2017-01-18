@@ -411,6 +411,20 @@ bool filesystem::exists(const path &p)
     return is_directory(p) || is_regular_file(p);
 }
 
+path filesystem::real_path(const path &p)
+{
+    char *absp;
+    if (!(absp = realpath(p.string().c_str(), NULL))) {
+        std::cout << strerror(errno) << std::endl;
+	return path();
+    }
+
+    path rp = path(absp);
+    free(absp);
+
+    return rp;
+}
+
 path filesystem::current_path()
 {
 #ifdef _WIN32
@@ -420,7 +434,9 @@ path filesystem::current_path()
 #else
     char buffer[64];
     std::fill_n(buffer, sizeof(buffer), NULL);
-    assert(getcwd(buffer, sizeof(buffer)) != nullptr);
+    if ((getcwd(buffer, sizeof(buffer))) == NULL) {
+	std::cout << strerror(errno) << std::endl;
+    }
     return path(std::string(buffer));
 #endif
 }
