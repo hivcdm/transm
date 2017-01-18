@@ -42,18 +42,6 @@ std::vector<transm::path> find_input_files(const transm::path &batch_directory)
     return input_files;
 }
 
-static inline int change_dir(const transm::path &p)
-{
-    int r = 0;
-    if ((chdir(p.string().c_str())) != 0) {
-	r = errno;
-        std::cout << "Error: Couldn't change directory to " <<
-	    p.string().c_str() << ": " <<  strerror(r) <<std::endl;
-    }
-
-    return r;
-}
-
 /// <summary>
 /// Find all XML and JSON files in batch_directory. Load parameters from each
 /// file and run the model using those parameters.
@@ -61,8 +49,11 @@ static inline int change_dir(const transm::path &p)
 int run_simulation(const transm::path &batch_directory)
 {
     /* run the simulation with input and output files in batch directory */
-    if ((change_dir(batch_directory)) != 0)
+    if ((transm::filesystem::change_dir(batch_directory)) != 0) {
+	std::cout << "Check that the path to " <<
+	    batch_directory.string().c_str() << " is correct" << std::endl;
 	return 1;
+    }
 
     /* Set up the Cepac directories */
     CepacUtil::inputsDirectory = batch_directory.string();
@@ -79,8 +70,8 @@ int run_simulation(const transm::path &batch_directory)
     status.initialize(input_files);
 
     if (input_files.empty()) {
-	std::cout << "Error: Batch directory contains no input files: " <<
-	    batch_directory.string().c_str() << std::endl;
+	std::cout << "The directory " << batch_directory.string().c_str() <<
+	    " contains no input files" << std::endl;
     }
 
     int r = 0;
@@ -88,8 +79,9 @@ int run_simulation(const transm::path &batch_directory)
     {
         //Changing back to the input directory because over the course of Sim->run,
 	//the directory gets changed to results
-	if ((change_dir(batch_directory)) != 0) {
-	    /* something went wrong -- get out of here */
+	if ((transm::filesystem::change_dir(batch_directory)) != 0) {
+	    std::cout << "Check that " << batch_directory.string().c_str() << 
+		" still exists" << std::endl;
 	    r = 1;
 	    break;
         }
@@ -202,7 +194,7 @@ int main(int argc, char *argv[])
 	    transm::path absolute_path = transm::filesystem::real_path(batch);
 	    if (absolute_path.empty()) {
                 /* bail if the directory is bogus */
-		std::cout << "Error: Check the path to the batch directory: " <<
+		std::cout << "Check the path to the batch directory: " <<
 		    batch.c_str() << std::endl;
 		return 1;
 	    }

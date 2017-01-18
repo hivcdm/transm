@@ -1,6 +1,7 @@
 #include <array>
 #include <cassert>
 #include <stdexcept>
+#include <string.h>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -409,6 +410,17 @@ bool filesystem::is_regular_file(const path &p)
 bool filesystem::exists(const path &p)
 {
     return is_directory(p) || is_regular_file(p);
+}
+
+int filesystem::change_dir(const path &p)
+{
+    int r = chdir(p.string().c_str());
+    if (r != 0) {
+	r = errno;
+	std::cout << strerror(r) << std::endl;
+    }
+
+    return r;
 }
 
 path filesystem::real_path(const path &p)
