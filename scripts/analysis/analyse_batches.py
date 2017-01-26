@@ -407,7 +407,7 @@ class Run:
 		self.statistics['Cascade']['percent-treated'] = percent_treated
 		percent_supressed = cepac_file.get_number_with_hiv_supressed() / cepac_file.get_number_with_hiv_treated()
 		self.statistics['Cascade']['percent-supressed'] = percent_supressed
-		self.statistics['Cascade']['total-percent-supressed'] = percent_tested * percent_treated * percent_tested
+		self.statistics['Cascade']['total-percent-supressed'] = percent_tested * percent_treated * percent_supressed
 		
 	def extract_prevalence_and_incidence(self):
 	# This first check is to make sure we can read far enough in the files
