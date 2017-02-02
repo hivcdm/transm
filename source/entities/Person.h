@@ -297,6 +297,7 @@ public:
 	DeathStatus deathStatus;
 
 	CD4Strata getCd4Stratum() const;
+	HVLStrata getHvlStratum() const;
 
 	bool isEligibleForTreatment(const SimContext::TreatmentInputs::ARTStartPolicy &artStartPolicy);
 

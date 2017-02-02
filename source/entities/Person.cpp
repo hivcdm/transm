@@ -70,6 +70,30 @@ Person::CD4Strata Person::getCd4Stratum() const
 	}
 }
 
+Person::HVLStrata Person::getHvlStratum() const
+{
+    SimContext::HVL_STRATA hvl = cepacPatient->getDiseaseState()->currTrueHVLStrata;
+    switch (hvl) {
+    case SimContext::HVL_VLO:
+	 return HVL_ZERO;    //0-20
+    case SimContext::HVL__LO:
+	 return HVL_ONE;    //21-500
+    case SimContext::HVL_MLO:
+	 return HVL_TWO;    //501-3000
+    case SimContext::HVL_MED:
+	return  HVL_THREE;    //3001-10000
+    case SimContext::HVL_MHI:
+	return HVL_FOUR;    //10001-30000
+    case SimContext::HVL__HI:
+	return HVL_FIVE;    //30001-100000
+    case SimContext::HVL_VHI:
+	return HVL_SIX;    //100000+
+    default:
+	throw std::runtime_error("Invalid CEPAC API infection state: " +
+				 std::string(SimContext::HVL_STRATA_STRS[hvl]));
+    }
+}
+
 
     template<>
     DemographicProfile::Gender Person::getDemographicProfileVal() const { return (DemographicProfile::Gender)getDemographicProfileVal(DemographicProfile::Demographic::Gender); }
@@ -262,43 +286,7 @@ void Person::becomeInfected(int _generationOfInfection, EventParams &_eventParam
 	{
 		cepacPatient->forceNewInfection();
 		cd4 = cepacPatient->getDiseaseState()->currTrueCD4;
-		//update HVL state
-		SimContext::HVL_STRATA hvlStrata = cepacPatient->getDiseaseState()->currTrueHVLStrata;
-
-		if(hvlStrata == SimContext::HVL_VLO)
-		{
-			hvl = HVL_ZERO;    //0-20
-		}
-		else if(hvlStrata == SimContext::HVL__LO)
-		{
-			hvl = HVL_ONE;    //21-500
-		}
-		else if(hvlStrata == SimContext::HVL_MLO)
-		{
-			hvl = HVL_TWO;    //501-3000
-		}
-		else if(hvlStrata == SimContext::HVL_MED)
-		{
-			hvl = HVL_THREE;    //3001-10000
-		}
-		else if(hvlStrata == SimContext::HVL_MHI)
-		{
-			hvl = HVL_FOUR;    //10001-30000
-		}
-		else if(hvlStrata == SimContext::HVL__HI)
-		{
-			hvl = HVL_FIVE;    //30001-100000
-		}
-		else if(hvlStrata == SimContext::HVL_VHI)
-		{
-			hvl = HVL_SIX;    //100000+
-		}
-		else
-		{
-		    throw std::runtime_error("Invalid CEPAC API infection state: " + std::string(SimContext::HVL_STRATA_STRS[hvlStrata]));
-		}
-
-		currentTrueHvl = hvl;
+		currentTrueHvl = getHvlStratum();
 
 		if(cepacPatient->getDiseaseState()->infectedHIVState == SimContext::HIV_INF_ACUTE_SYN)
 		{
@@ -396,43 +384,7 @@ void Person::initialCEPACpatient(EventParams &_eventParams)
 		if(isInfected())
 		{
 			cd4 = cepacPatient->getDiseaseState()->currTrueCD4;
-			//update HVL state
-			SimContext::HVL_STRATA hvlStrata = cepacPatient->getDiseaseState()->currTrueHVLStrata;
-
-			if(hvlStrata == SimContext::HVL_VLO)
-			{
-				hvl = HVL_ZERO;    //0-20
-			}
-			else if(hvlStrata == SimContext::HVL__LO)
-			{
-				hvl = HVL_ONE;    //21-500
-			}
-			else if(hvlStrata == SimContext::HVL_MLO)
-			{
-				hvl = HVL_TWO;    //501-3000
-			}
-			else if(hvlStrata == SimContext::HVL_MED)
-			{
-				hvl = HVL_THREE;    //3001-10000
-			}
-			else if(hvlStrata == SimContext::HVL_MHI)
-			{
-				hvl = HVL_FOUR;    //10001-30000
-			}
-			else if(hvlStrata == SimContext::HVL__HI)
-			{
-				hvl = HVL_FIVE;    //30001-100000
-			}
-			else if(hvlStrata == SimContext::HVL_VHI)
-			{
-				hvl = HVL_SIX;    //100000+
-			}
-			else
-			{
-			    throw std::runtime_error("Invalid CEPAC API infection state: " + std::string(SimContext::HVL_STRATA_STRS[hvlStrata]));
-			}
-
-			currentTrueHvl = hvl;
+			currentTrueHvl = getHvlStratum();
 
 			if(cepacPatient->getDiseaseState()->infectedHIVState == SimContext::HIV_INF_ACUTE_SYN)
 			{
