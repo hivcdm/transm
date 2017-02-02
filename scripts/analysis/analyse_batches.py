@@ -1,7 +1,11 @@
-#!/bin/bash
-''''which python3 >/dev/null 2>&1 && exec python3 "$0" "$@" # '''
-''''which python  >/dev/null 2>&1 && exec python  "$0" "$@" # '''
-''''exec echo "Error: I can't find python anywhere! :("  # '''
+#!/usr/bin/python
+#
+# analyse_batches.py end_year target_dir post_calib_file output_file
+#
+# end_year:   Last year of analysis
+# directory:  Directory with batch files
+# post_calib: Post Calibration file with batch information
+# out:        Output file
 
 import collections # for OrderedDict
 import openpyxl # for creating xlsx
@@ -9,9 +13,6 @@ import os
 import zipfile
 import sys
 import numpy
-#from numpy.lib.function_base import average
-#from numpy.lib.function_base import median
-#from test.test_Decimal import directory
 
 supported_versions = ['3.6', '3.7']
 
@@ -1134,20 +1135,19 @@ class Summary:
             print ("For details on skipped run sets check {}.\n".format(logname))
 
 def run():
-    #directory = r'Z:\CEPAC - All Users\Transmission Model\Runs01_2016\PrEP_ReRuns_3.76'
-    #post_calib = r'Z:\CEPAC - All Users\Transmission Model\Runs08_2015\90_90_90_Runs\30PercLRFemale_All\post calib.out'
-    #out = r'Z:\CEPAC - All Users\Transmission Model\Runs01_2016\PrEP_ReRuns_3.76\analyse_batches_2030_PrEP__FINAL.xlsx'
-    if len(sys.argv) != 4:
-        print ("usage: analyse_batches.py target_dir post_calib_file output_file", file = sys.stderr)
+    if len(sys.argv) != 5:
+        print ("usage: analyse_batches.py end_year target_dir post_calib_file "\
+               "output_file", file = sys.stderr)
         return
-    directory = sys.argv[1]
-    post_calib = sys.argv[2]
-    out = sys.argv[3]
+    end_year = int(sys.argv[1])
+    directory = sys.argv[2]
+    post_calib = sys.argv[3]
+    out = sys.argv[4]
     '''
     The following parameters can be manually changed by the user
     '''
     weight = float(0.9) # Weight cutoff for the calibration file
-    year_range = (2014, 2059) # Years of interest for our analysis
+    year_range = (2014, end_year) # Years of interest for our analysis
     year_comparison = 2014 # base year for computing the differences to rank in  quartiles
     excludes = ["85PerSudDecBef2016_50K", "3PerIncBef2016_50K"]  # run sets to be excluded from our analysis (useful when the script is executed on very large folders
     status_quo = "" #"BaseCase_50K"
