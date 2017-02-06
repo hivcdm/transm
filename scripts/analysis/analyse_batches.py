@@ -595,7 +595,9 @@ class Summary:
         self.skipped_run_set = dict()
 
         if self.comparison_base_year < self.year_range_min or self.comparison_base_year > self.year_range_max:
-            print("Incorrect year comparison ({}) vs year analysis ({}-{}) range. Please change the parameters and re-run the script.".format(self.comparison_base_year, self.year_range_min, self.year_range_max))
+            print("Incorrect year comparison ({}) vs year analysis ({}-{}) range. " \
+                  "Please change the parameters and re-run the script." \
+                  .format(self.comparison_base_year, self.year_range_min, self.year_range_max))
             exit()
         self.headers = [
             ('Infections', [
@@ -827,7 +829,6 @@ class Summary:
                 total_weight += weight
                 weight = weight / self.cumulative_weight
                 weights.append(weight)
-                #print ("Run Weight: {} \t Cumulative Weight: {} \t Total Weight: {}".format(self.get_weight(run.name, False), self.cumulative_weight, total_weight), file=sys.stderr)
                 num_runs += 1
                 processed_runs.append(run.name)
 
@@ -843,7 +844,6 @@ class Summary:
                             stats.series[stat_category][stat] = []
 
                         run_value = run.statistics[stat_category][stat]
-                        #print ("Category: {} \t Name: {} \t Run Value: {}".format(stat_category, stat, run_value), file=sys.stderr)
 
                         if run_value == None:
                             stats.statistics[stat_category][stat] = None
@@ -880,59 +880,65 @@ class Summary:
             for stat in stats.series[stat_category]:
                 if stats.series[stat_category][stat] == None:
                     continue
+
+                if stat_category in ['Incidence', 'Prevalence', 'SA-Proportion', 'Failed-ART']:
+                    self._calculate_year_trend_stats(stats, weights, stat_category)
                 else:
-                    stats.median[stat_category][stat], median_position = self.wquantile(stats.series[stat_category][stat], weights, 0.5)
-                    stats.lower_quartile[stat_category][stat], q1_position = self.wquantile(stats.series[stat_category][stat], weights, 0.25)
-                    stats.upper_quartile[stat_category][stat], q3_position = self.wquantile(stats.series[stat_category][stat], weights, 0.75)
-                    #stats.differences[stat_category][stat] = numpy.asarray(stats.series[stat_category][stat]) - numpy.asarray(stats.series[stat_category][self.comparison_base_year])
-                    #stats.median[stat_category][stat] = weighted.quantile(stats.differences[stat_category][stat], weights, 0.5)
-                    #stats.lower_quartile[stat_category][stat] = weighted.quantile(stats.differences[stat_category][stat], weights, 0.25)
-                    #stats.upper_quartile[stat_category][stat] = weighted.quantile(stats.differences[stat_category][stat], weights, 0.75)
-        for stat_category in stats.series:
-            if stat_category in ['Incidence', 'Prevalence', 'SA-Proportion', 'Failed-ART']:
-                year_range = "{} to {}".format(self.year_range_min, self.year_range_max)
-#                 print("Stats max year is {}".format(stats.max_year), file=sys.stderr)
-#                 print("stat category is {}, year is {}, stats max year is {}, length of array 1 is {}, length of array 2 is {}.".format(stat_category, year_range, stats.max_year, len(stats.series[stat_category]), len(stats.series[stat_category])), file=sys.stderr)
-                stats.differences[stat_category][year_range] = numpy.asarray(stats.series[stat_category][stats.max_year]) - numpy.asarray(stats.series[stat_category][self.comparison_base_year])
-                stats.percentage_diff[stat_category][year_range] = stats.differences[stat_category][year_range] / stats.series[stat_category][self.comparison_base_year]
-                stats.statistics[stat_category][year_range] = numpy.average(stats.differences[stat_category][year_range], weights=weights)
-                stats.median[stat_category][year_range] = self.wquantile(stats.differences[stat_category][year_range], weights, 0.5)[0]
-                stats.lower_quartile[stat_category][year_range] =  self.wquantile(stats.differences[stat_category][year_range], weights, 0.25)[0]
-                stats.upper_quartile[stat_category][year_range] =  self.wquantile(stats.differences[stat_category][year_range], weights, 0.75)[0]
-
-                stats.statistics[stat_category]["%"] = stats.statistics[stat_category][year_range] / stats.statistics[stat_category][self.comparison_base_year]
-                stats.median[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.5)[0]
-
-                stats.lower_quartile[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.25)[0]
-                stats.upper_quartile[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.75)[0]
+                    self._calculate_stats(stats, weights, stat_category, stat)
 
         if run_set.name == self.status_quo:
             self.status_quo_stats = stats
             self.status_quo_is_sane = run_set.is_sane
         if self.status_quo_found == 1 and self.status_quo_is_sane == True and len(processed_runs) == self.num_runs:
-            for stat in stats.statistics['Infections']:
-                try:
-                    stats.differences['Averted'][stat] = numpy.asarray(self.status_quo_stats.series['Infections'][stat]) - numpy.asarray(stats.series['Infections'][stat])
-                    stats.statistics['Averted'][stat] = numpy.average(stats.differences['Averted'][stat], weights=weights)
-                    stats.percentage_diff['Averted'][stat] = stats.differences['Averted'][stat] / self.status_quo_stats.series['Infections'][stat]
-                    stats.median['Averted'][stat], median_position = self.wquantile(stats.differences['Averted'][stat], weights, 0.5)
-                    stats.lower_quartile['Averted'][stat], q1_position = self.wquantile(stats.differences['Averted'][stat], weights, 0.25)
-                    stats.upper_quartile['Averted'][stat], q3_position = self.wquantile(stats.differences['Averted'][stat], weights, 0.75)
-                    if stat == 'hvl-primary':
-                        stats.statistics['Averted']['primary-percent'] = stats.statistics['Averted']['hvl-primary'] / self.status_quo_stats.statistics['Infections']['hvl-primary']
-                        stats.median['Averted']['primary-percent'], median_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.5)
-                        stats.lower_quartile['Averted']['primary-percent'], q1_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.25)
-                        stats.upper_quartile['Averted']['primary-percent'], q3_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.75)
+            self._calculate_averted_infection_stats(stats, weights)
 
-                    elif stat == 'total':
-                        stats.statistics['Averted']['total-percent'] = stats.statistics['Averted']['total'] / self.status_quo_stats.statistics['Infections']['total']
-                        stats.median['Averted']['total-percent'], median_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.5)
-                        stats.lower_quartile['Averted']['total-percent'], q1_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.25)
-                        stats.upper_quartile['Averted']['total-percent'], q3_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.75)
-                except ValueError as e:
-                    print ("Couldn't calculate Averted Infections for runset {}. The skipped runs are {}, the processed ones {}, the length of the Infections array is {}.".format(run_set.name, len(skipped_runs), len(processed_runs), len(stats.series['Infections'][stat])), file = sys.stderr)
-                    print (e)
         return stats, processed_runs, skipped_runs
+
+    def _calculate_stats(self, stats, weights, stat_category, stat):
+        stats.median[stat_category][stat], median_position = self.wquantile(stats.series[stat_category][stat], weights, 0.5)
+        stats.lower_quartile[stat_category][stat], q1_position = self.wquantile(stats.series[stat_category][stat], weights, 0.25)
+        stats.upper_quartile[stat_category][stat], q3_position = self.wquantile(stats.series[stat_category][stat], weights, 0.75)
+
+    def _calculate_year_trend_stats(self, stats, weights, stat_category):
+        year_range = "{} to {}".format(self.year_range_min, self.year_range_max)
+
+        stats.differences[stat_category][year_range] = numpy.asarray(stats.series[stat_category][stats.max_year]) \
+                                                       - numpy.asarray(stats.series[stat_category][self.comparison_base_year])
+        stats.percentage_diff[stat_category][year_range] = stats.differences[stat_category][year_range] / \
+                                                           stats.series[stat_category][self.comparison_base_year]
+        stats.statistics[stat_category][year_range] = numpy.average(stats.differences[stat_category][year_range], weights=weights)
+        stats.median[stat_category][year_range] = self.wquantile(stats.differences[stat_category][year_range], weights, 0.5)[0]
+        stats.lower_quartile[stat_category][year_range] =  self.wquantile(stats.differences[stat_category][year_range], weights, 0.25)[0]
+        stats.upper_quartile[stat_category][year_range] =  self.wquantile(stats.differences[stat_category][year_range], weights, 0.75)[0]
+
+        stats.statistics[stat_category]["%"] = stats.statistics[stat_category][year_range] / stats.statistics[stat_category][self.comparison_base_year]
+        stats.median[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.5)[0]
+        stats.lower_quartile[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.25)[0]
+        stats.upper_quartile[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.75)[0]
+
+    def _calculate_averted_infection_stats(self, stats, weights):
+        for stat in stats.statistics['Infections']:
+            try:
+                stats.differences['Averted'][stat] = numpy.asarray(self.status_quo_stats.series['Infections'][stat]) - numpy.asarray(stats.series['Infections'][stat])
+                stats.statistics['Averted'][stat] = numpy.average(stats.differences['Averted'][stat], weights=weights)
+                stats.percentage_diff['Averted'][stat] = stats.differences['Averted'][stat] / self.status_quo_stats.series['Infections'][stat]
+                stats.median['Averted'][stat], median_position = self.wquantile(stats.differences['Averted'][stat], weights, 0.5)
+                stats.lower_quartile['Averted'][stat], q1_position = self.wquantile(stats.differences['Averted'][stat], weights, 0.25)
+                stats.upper_quartile['Averted'][stat], q3_position = self.wquantile(stats.differences['Averted'][stat], weights, 0.75)
+                if stat == 'hvl-primary':
+                    stats.statistics['Averted']['primary-percent'] = stats.statistics['Averted']['hvl-primary'] / \
+                                                                     self.status_quo_stats.statistics['Infections']['hvl-primary']
+                    stats.median['Averted']['primary-percent'], median_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.5)
+                    stats.lower_quartile['Averted']['primary-percent'], q1_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.25)
+                    stats.upper_quartile['Averted']['primary-percent'], q3_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.75)
+
+                elif stat == 'total':
+                    stats.statistics['Averted']['total-percent'] = stats.statistics['Averted']['total'] / self.status_quo_stats.statistics['Infections']['total']
+                    stats.median['Averted']['total-percent'], median_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.5)
+                    stats.lower_quartile['Averted']['total-percent'], q1_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.25)
+                    stats.upper_quartile['Averted']['total-percent'], q3_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.75)
+            except ValueError as e:
+                print (e)
 
     def apply_formatting(self, wb):
         for page, header in self.headers:
@@ -943,25 +949,24 @@ class Summary:
             if page not in ['Prevalence', 'Incidence', \
                             'SA-Proportion', 'Failed-ART']:
                 self.pages[page].column_width('A', 25)
-            if page in ['SA-Proportion', 'Failed-ART']:
-                for column in range(2,60): # XXX -- need way to cound columns
-                    self.pages[page].column_number_format(column, '0.00%')
+
             if page in ['Infections', 'Averted']:
                 self.pages[page].row_height(1, 60)
                 self.pages[page].row_height(2, 60)
                 self.pages[page].merge('A1:A2')
                 self.pages[page].bold_row(2)
                 self.pages[page].freeze('B3')
-            if page in ['Cascade']:
+            elif page in ['Cascade']:
                 self.pages[page].row_height(1, 60)
                 for column in ['C', 'D', 'E', 'F', 'G', 'H']:
                     self.pages[page].column_width(column, 25)
                 for column in range(9,15):
                     self.pages[page].column_number_format(column, '0.00%')
-            if page in ['LMs-Undiscounted','LMs-Discounted']:
+            elif page in ['LMs-Undiscounted','LMs-Discounted']:
                 self.pages[page].row_height(1, 45)
 
-    def write_incidence_and_prevalence_years(self, max_year):
+    # Output values for the excel tabs that have per-year values
+    def write_year_trend_tab_headers(self, max_year):
         if max_year > 1989:
             for year in range(1990, max_year + 1):
                 row = 2 + year - 1990
@@ -1043,32 +1048,31 @@ class Summary:
                 self.excluded_run_set.append(run_set.name)
                 continue
 
-##            try:
             print('Averaging run set {}'.format(run_set.name))
             stats, processed_runs, skipped_runs = self.calculate_stats(run_set)
-##            except Exception as e:
-##                print('Skipping {}: {}'.format(run_set.name, e))
-##                print()
-##                continue
+
             for page_name, header in self.headers:
-                number_format = '#,0.00'
                 if page_name == 'Averted' and self.status_quo_found != 1:
                     continue
+
+                number_format = '#,0.00'
                 if 'Cost' in page_name:
                     number_format = '$#,0.00'
-                if page_name in ['Incidence', 'Prevalence', \
-                                 'SA-Proportion', 'Failed-ART']:
+                elif page_name in ['Incidence', 'Prevalence']:
                     number_format = '0.000000'
+                elif page_name in ['SA-Proportion', 'Failed-ART']:
+                    number_format = '#%,0.00'
+
                 self.pages[page_name].add_data('AVG ' + run_set.name, stats.statistics[page_name], number_format)
                 self.pages[page_name].add_data('Q1 ' + run_set.name, stats.lower_quartile[page_name], number_format)
                 self.pages[page_name].add_data('MED ' + run_set.name, stats.median[page_name], number_format)
                 self.pages[page_name].add_data('Q3 ' + run_set.name, stats.upper_quartile[page_name], number_format)
-                '''
-                if page_name == 'Averted':
-                    self.pages[page_name].add_data('Q1 ' + run_set.name, stats.lower_quartile[page_name], number_format)
-                    self.pages[page_name].add_data('MED ' + run_set.name, stats.median[page_name], number_format)
-                    self.pages[page_name].add_data('Q3 ' + run_set.name, stats.upper_quartile[page_name], number_format)
-                '''
+
+                #if page_name == 'Averted':
+                #    self.pages[page_name].add_data('Q1 ' + run_set.name, stats.lower_quartile[page_name], number_format)
+                #    self.pages[page_name].add_data('MED ' + run_set.name, stats.median[page_name], number_format)
+                #    self.pages[page_name].add_data('Q3 ' + run_set.name, stats.upper_quartile[page_name], number_format)
+
             # If this is true at this point it means we have missing runs
             missing_runs_names = set()
             if self.num_runs != (len(processed_runs) + len(skipped_runs)):
@@ -1131,7 +1135,7 @@ class Summary:
                        .format(run_set.name), file = sys.stderr)
         print()
 
-        self.write_incidence_and_prevalence_years(max_year)
+        self.write_year_trend_tab_headers(max_year)
         self.apply_formatting(wb)
 
         try:
