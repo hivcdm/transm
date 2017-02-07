@@ -46,19 +46,19 @@ public:
 
 	virtual void Circumcise() = 0;
 
-    void SetSexualActivityDelay(int delay) { sexualActivityDelay = delay; }
+	void SetSexualActivityDelay(int delay) { sexualActivityDelay = delay; }
 
-    int GetSexualActivityDelay() const { return sexualActivityDelay; }
+	int GetSexualActivityDelay() const { return sexualActivityDelay; }
 
-    virtual bool IsCircumcised() const = 0;
+	virtual bool IsCircumcised() const = 0;
 
-    virtual void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) = 0;
+	virtual void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) = 0;
 
-    void SetPreExposureProphylaxisAdherence(double adherence) { preExposureProphylaxisAdherence_ = adherence; }
+	void SetPreExposureProphylaxisAdherence(double adherence) { preExposureProphylaxisAdherence_ = adherence; }
 
-    virtual void SetPreExposureProphylaxisEfficacy(double efficacy) = 0;
+	virtual void SetPreExposureProphylaxisEfficacy(double efficacy) = 0;
 
-    virtual double GetPreExposureProphylaxisEfficacy() const = 0;
+	virtual double GetPreExposureProphylaxisEfficacy() const = 0;
 
 	/// <summary>
 	/// every Person's CD4 count falls in a CD4 strata - used in CEPAC
@@ -321,7 +321,7 @@ public:
 	 * Initializes cepacPatient using the persons current age, gender, and infection status.
 	 * Prevalent cases should call "becomeInfected" before calling this function; incident cases will become infected later
 	 */
-	void initialCEPACpatient(EventParams &_eventParams);
+	void initializeCEPACpatient(EventParams &_eventParams);
 
 	virtual double getChanceBecomeCsw() const = 0;
 
@@ -391,6 +391,8 @@ public:
 
 	// Self explanatory I'd say
 	bool isSexuallyActive();
+
+	bool isCSW();
 
 	/**
 	//see whether person dies. If they went through CEPAC, use health trace. else roll against nonAIDS death probs

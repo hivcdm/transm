@@ -197,7 +197,7 @@ public:
 
 private:
     friend class Intervention;
-	friend class SimulationBuilderXml;
+    friend class SimulationBuilderXml;
     friend class Simulation;
 
 	/// <summary>
@@ -227,8 +227,17 @@ private:
     /// @param _ageBucketParams	parameters that determine a prevalent person's characteristics. If this is nullptr, then this method will create a newborn
     /// @return a newly formed person
     /// </summary>
-	Person *GeneratePerson(EventParams &_eventParams, DemographicProfile::Gender _gender,
-	                       PopulationParameters::AgeBucketPrevalenceInfo *_ageBucketParams, bool toTrace);
+	Person *GeneratePerson(EventParams &_eventParams,
+			       DemographicProfile::Gender _gender,
+	                       PopulationParameters::AgeBucketPrevalenceInfo
+			       *_ageBucketParams, bool toTrace);
+
+	/// <summary>
+	/// helper funtions for ApplyIncidentPrevalence()
+	/// <summary>
+	void ApplyPrevalentInfection(Person *p);
+	void ApplyPrevalentInfections(DemographicProfile::Gender _gender,
+				      std::vector<std::array<int, 3>> bucket);
 
     /// <summary>
 	/// processes the death of 1 person, updates statistics, removes that person from any relationships

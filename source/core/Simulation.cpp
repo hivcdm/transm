@@ -812,19 +812,17 @@ std::size_t Simulation::SimulateMonth()
         population_.populationStatistics.selectedPartAcqStats = new PopulationStatistics::SinglePartAcqStats();
 		population_.RecordPartAcqFreq();
 
-        if(parameters_.trace_files[EventParams::TraceFile::Type::PartnerAcquisition].enabled)
-		{
-            population_.populationStatistics.printPartAcqStats(parameters_.trace_files[EventParams::TraceFile::Type::PartnerAcquisition].file, time_);
-		}
+        if(parameters_.trace_files[EventParams::TraceFile::Type::PartnerAcquisition].enabled) {
+	  population_.populationStatistics.printPartAcqStats(parameters_.trace_files[EventParams::TraceFile::Type::PartnerAcquisition].file, time_);
+	}
 
         delete population_.populationStatistics.selectedPartAcqStats;
         population_.populationStatistics.selectedPartAcqStats = nullptr;
 	}
 
 	//apply incident prevalence
-	if(parameters_.delayPrevalence != 0 && parameters_.delayPrevalence == time_)
-	{
-		population_.ApplyIncidentPrevalence(parameters_);
+	if(parameters_.delayPrevalence != 0 && parameters_.delayPrevalence == time_) {
+	    population_.ApplyIncidentPrevalence(parameters_);
 	}
 
 	//Will confirm that population_.currSize is correct and update size of age ranges

@@ -241,11 +241,12 @@ void Person::addPartnership(SexualPartnership *_partnership)
 void Person::becomeInfected(int _generationOfInfection, EventParams &_eventParams)
 {
     //hvl needs to be set even for people who are about to go through CEPAC so that isInfected() correctly returns true
-	hvl = HVL_PRIMARY;
+    hvl = HVL_PRIMARY;
+
     //CD4 doesn't affect much in the transmission model yet... will be updated with CEPAC
-	cd4 = -1;
-	ageInfected = age;
-	generationOfInfection = _generationOfInfection;
+    cd4 = -1;
+    ageInfected = age;
+    generationOfInfection = _generationOfInfection;
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
 	{
@@ -338,11 +339,11 @@ void Person::becomeInfected(int _generationOfInfection, EventParams &_eventParam
 	else
 	{
 		//Infection of prevalent cases happens when CEPAC person is initialized
-		initialCEPACpatient(_eventParams);
+		initializeCEPACpatient(_eventParams);
 	}
 }
 
-void Person::initialCEPACpatient(EventParams &_eventParams)
+void Person::initializeCEPACpatient(EventParams &_eventParams)
 {
 	//Only initialize the person if they haven't already been initialized!  (Prevalent cases will get called to initialize twice!)
 	if(!wentThroughCEPAC)
@@ -374,7 +375,7 @@ void Person::initialCEPACpatient(EventParams &_eventParams)
 		}
 
 		cepacPatient = new Patient(simContextToUse, _eventParams.cepacRunStats, _eventParams.capacCostStats, _eventParams.cepacTracer,
-            true, getAge(TimeGranularity::Month), cepacGender, setAsIncidentCase, _eventParams.currTime);
+					   true, getAge(TimeGranularity::Month), cepacGender, setAsIncidentCase, _eventParams.currTime);
 
 		auto discount_factor = Utility::computeCepacDiscountFactor(_eventParams.currTime, simContextToUse->getRunSpecsInputs()->discountFactor);
 		const_cast<Patient::GeneralState *>(cepacPatient->getGeneralState())->discountFactor = discount_factor;
@@ -516,7 +517,7 @@ void Person::becomeSexuallyActive(EventParams &_eventParams)
 {
     dmgProfile.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::Active);
 	//CEPAC person needs to be initialized
-	initialCEPACpatient(_eventParams);
+	initializeCEPACpatient(_eventParams);
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
 	{
@@ -547,14 +548,11 @@ Person *Person::fling(Person *_p, SexualPartnership::Type _partnershipType, Even
 
 int Person::getAge(TimeGranularity _granularity) const
 {
-    if(_granularity == TimeGranularity::Month)
-	{
-		return age;
-	}
-	else
-	{
-        return Utility::convertTime(TimeGranularity::Month, _granularity, age);
-	}
+    if(_granularity == TimeGranularity::Month) {
+      return age;
+    } else {
+      return Utility::convertTime(TimeGranularity::Month, _granularity, age);
+    }
 }
 
 
@@ -812,6 +810,12 @@ bool Person::isInfected()
 bool Person::isSexuallyActive()
 {
 	return sexuallyActive;
+}
+
+bool Person::isCSW()
+{
+    return (getDemographicProfileVal(DemographicProfile::Demographic::Employment) ==
+	    (std::size_t)DemographicProfile::Employment::Csw);
 }
 
 void Person::removePartnership(SexualPartnership *_partnership)

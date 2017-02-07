@@ -1186,170 +1186,101 @@ void Population::InitIncidentInfectionsByAge()
 	populationStatistics.infectionsTracker.initializeIncidentInfectionsByAge(incidentInfsAgeMale, incidentInfsAgeFemale, totalIncidentInfsAge);
 }
 
+void Population::ApplyPrevalentInfection(Person *p)
+{
+    Person::HIVStatus oldStatus = p->hivStatus;
+
+    if(parameters_.tracePrevalentCases) {
+	p->setToBeTraced();
+    }
+
+    p->becomeInfected(Constants::PREVALENT_INFECTION, parameters_);
+    RecordInfection(p, nullptr, parameters_.currTime);
+   
+    if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled) {
+	p->printCurrentPartners(parameters_.trace_files
+				[EventParams::TraceFile::Type::SinglePerson].file,
+				"Current partners for newly infected prevalent case:");
+    }
+    
+    if(oldStatus != p->hivStatus) {
+	((BucketSexualMixing *) entities->getBucket(
+	    p->getDemographicProfile()->getProfileID()))->
+	    changeHIVStatus(p, oldStatus, p->hivStatus);
+    }
+
+    if(parameters_.useRollout) {
+	rolloutUntreatedPool.push_back(p);
+    }
+
+    if (p->getDemographicProfile()->get(
+	    p->getDemographicProfile()->getProfileID(),
+	    DemographicProfile::Demographic::SexualActivityStatus) !=
+	(std::size_t)DemographicProfile::SexualActivityStatus::NotActive) {
+	((BucketSexualMixing *)entities->getBucket(
+	    p->getDemographicProfile()->
+	    getProfileID()))->increaseInfected(p);
+    }
+}
+
+void Population::ApplyPrevalentInfections(DemographicProfile::Gender _gender,
+				     std::vector<std::array<int, 3>> _bucket)
+{
+    for(std::list<Person *>::iterator _iter = entities->begin(_gender);
+        _iter != entities->end(_gender); _iter++)
+    {
+	Person *p = *(_iter);
+	int ageBucketIndex = GetAgeBucketIndex(p);
+	PopulationParameters::AgeBucketPrevalenceInfo &_ageBucketParams =
+	    popWideParams.initialAgeBuckets.at(ageBucketIndex);
+    
+	bool isCSW = p->isCSW();
+	Person::RiskLevel risk = p->getRiskLevel();
+	
+	bool isPrevalent = false;
+	if(isCSW) {
+	    if(_bucket.at(ageBucketIndex)[0] <
+	       _ageBucketParams.numInfectedCSW[(std::size_t)_gender])
+		{
+		    isPrevalent = true;
+		    _bucket.at(ageBucketIndex)[0]++;
+		}
+	} else {
+	    if(risk == Person::HIGH) {
+		if(_bucket.at(ageBucketIndex)[1] <
+		   _ageBucketParams.numInfectedRisk[(std::size_t)_gender][risk]) {
+		    isPrevalent = true;
+		    _bucket.at(ageBucketIndex)[1]++;
+		}
+	    } else {
+		if(_bucket.at(ageBucketIndex)[2] <
+		   _ageBucketParams.numInfectedRisk[(std::size_t)_gender][risk]) {
+			isPrevalent = true;
+			_bucket.at(ageBucketIndex)[2]++;
+		}
+	    }
+	}
+
+	if (isPrevalent)
+	    ApplyPrevalentInfection(p);
+    }
+}
+
+
 void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 {
-	parameters_.displayOut("Applying incident prevalence data\n");
-	//counter for number of people in each age bucket who are infected (used to initialize prevalence) (CSW, High risk, Low risk)
-	std::vector<std::array<int, 3>> numInfectedByAgeBucketMale(popWideParams.initialAgeBuckets.size());
-	std::vector<std::array<int, 3>> numInfectedByAgeBucketFemale(popWideParams.initialAgeBuckets.size());
+    parameters_.displayOut("Applying incident prevalence data\n");
+    // counter for number of people in each age bucket who are infected
+    // (used to initialize prevalence) (CSW, High risk, Low risk)
+    std::vector<std::array<int, 3>> numInfectedByAgeBucketMale(
+	popWideParams.initialAgeBuckets.size());
+    std::vector<std::array<int, 3>> numInfectedByAgeBucketFemale(
+	popWideParams.initialAgeBuckets.size());
 
-	//loop through all males and apply prevalence to population
-	for(std::list<Person *>::iterator males_iter = entities->begin(DemographicProfile::Gender::Male);
-	        males_iter != entities->end(DemographicProfile::Gender::Male); males_iter++)
-	{
-		Person *p = *(males_iter);
-		int ageBucketIndex = GetAgeBucketIndex(p);
-		auto _ageBucketParams = popWideParams.initialAgeBuckets.at(ageBucketIndex);
-		DemographicProfile::Gender _gender = DemographicProfile::Gender::Male;
-		//if this is a prevalent person, see if they're infected. Right now, newborns cannot be infected
-		//TODO: Have counter in ageBucketParams for persons infected
-
-        bool isCSW = p->getDemographicProfileVal(DemographicProfile::Demographic::Employment) == (std::size_t)DemographicProfile::Employment::Csw;
-		Person::RiskLevel risk = p->getRiskLevel();
-		//apply prevalence if we have not yet reached the quoto of infected people for that bucket
-		bool isPrevalent = false;
-
-		if(isCSW)
-		{
-            if(numInfectedByAgeBucketMale.at(ageBucketIndex)[0] < _ageBucketParams.numInfectedCSW[(std::size_t)_gender])
-			{
-				isPrevalent = true;
-				numInfectedByAgeBucketMale.at(ageBucketIndex)[0]++;
-			}
-		}
-		else
-		{
-			if(risk == Person::HIGH)
-			{
-                if(numInfectedByAgeBucketMale.at(ageBucketIndex)[1] < _ageBucketParams.numInfectedRisk[(std::size_t)_gender][risk])
-				{
-					isPrevalent = true;
-					numInfectedByAgeBucketMale.at(ageBucketIndex)[1]++;
-				}
-			}
-			else
-			{
-                if(numInfectedByAgeBucketMale.at(ageBucketIndex)[2] < _ageBucketParams.numInfectedRisk[(std::size_t)_gender][risk])
-				{
-					isPrevalent = true;
-					numInfectedByAgeBucketMale.at(ageBucketIndex)[2]++;
-				}
-			}
-		}
-
-		if(isPrevalent)
-		{
-			//Generation of infection for all prevalent cases is 0
-			//toReturn->cepacPatient is initialized HERE for prevalent cases
-			Person::HIVStatus oldStatus = p->hivStatus;
-
-			if(parameters_.tracePrevalentCases)
-			{
-				p->setToBeTraced();
-			}
-
-			p->becomeInfected(Constants::PREVALENT_INFECTION, parameters_);
-            RecordInfection(p, nullptr, parameters_.currTime);
-
-            if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled)
-            {
-                p->printCurrentPartners(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].file, "Current partners for newly infected prevalent case:");
-            }
-
-			if(oldStatus != p->hivStatus)
-			{
-				((BucketSexualMixing *) entities->getBucket(p->getDemographicProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
-					    p->hivStatus);
-			}
-
-			//Adds person to the untreated pool if using rollout
-			if(parameters_.useRollout)
-			{
-				rolloutUntreatedPool.push_back(p);
-			}
-
-            if(p->getDemographicProfile()->get(p->getDemographicProfile()->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
-			{
-				((BucketSexualMixing *)entities->getBucket(p->getDemographicProfile()->getProfileID()))->increaseInfected(p);
-			}
-		}
-	}//for()
-
-	//loop through all females and apply prevalence to population
-	for(std::list<Person *>::iterator females_iter = entities->begin(DemographicProfile::Gender::Female);
-	        females_iter != entities->end(DemographicProfile::Gender::Female); females_iter++)
-	{
-		Person *p = *(females_iter);
-		int ageBucketIndex = GetAgeBucketIndex(p);
-		PopulationParameters::AgeBucketPrevalenceInfo &_ageBucketParams = popWideParams.initialAgeBuckets.at(
-		            ageBucketIndex);
-		DemographicProfile::Gender _gender = DemographicProfile::Gender::Female;
-		//if this is a prevalent person, see if they're infected. Right now, newborns cannot be infected
-		//TODO: Have counter in ageBucketParams for persons infected
-
-        bool isCSW = p->getDemographicProfileVal(DemographicProfile::Demographic::Employment) == (std::size_t)DemographicProfile::Employment::Csw;
-		Person::RiskLevel risk = p->getRiskLevel();
-		bool isPrevalent = false;
-
-		if(isCSW)
-		{
-            if(numInfectedByAgeBucketFemale.at(ageBucketIndex)[0] < _ageBucketParams.numInfectedCSW[(std::size_t)_gender])
-			{
-				isPrevalent = true;
-				numInfectedByAgeBucketFemale.at(ageBucketIndex)[0]++;
-			}
-		}
-		else
-		{
-			if(risk == Person::HIGH)
-			{
-                if(numInfectedByAgeBucketFemale.at(ageBucketIndex)[1] < _ageBucketParams.numInfectedRisk[(std::size_t)_gender][risk])
-				{
-					isPrevalent = true;
-					numInfectedByAgeBucketFemale.at(ageBucketIndex)[1]++;
-				}
-			}
-			else
-			{
-                if(numInfectedByAgeBucketFemale.at(ageBucketIndex)[2] < _ageBucketParams.numInfectedRisk[(std::size_t)_gender][risk])
-				{
-					isPrevalent = true;
-					numInfectedByAgeBucketFemale.at(ageBucketIndex)[2]++;
-				}
-			}
-		}
-
-		if(isPrevalent)
-		{
-			//Generation of infection for all prevalent cases is 0
-			//toReturn->cepacPatient is initialized HERE for prevalent cases
-			Person::HIVStatus oldStatus = p->hivStatus;
-
-			if(parameters_.tracePrevalentCases)
-			{
-				p->setToBeTraced();
-			}
-
-			p->becomeInfected(Constants::PREVALENT_INFECTION, parameters_);
-            RecordInfection(p, nullptr, parameters_.currTime);
-
-			if(oldStatus != p->hivStatus)
-			{
-				((BucketSexualMixing *) entities->getBucket(p->getDemographicProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
-					    p->hivStatus);
-			}
-
-			if(parameters_.useRollout)
-			{
-				rolloutUntreatedPool.push_back(p);
-			}
-
-            if(p->getDemographicProfile()->get(p->getDemographicProfile()->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
-			{
-				((BucketSexualMixing *)entities->getBucket(p->getDemographicProfile()->getProfileID()))->increaseInfected(p);
-			}
-		}
-	}//for()
+    ApplyPrevalentInfections(DemographicProfile::Gender::Male,
+			     numInfectedByAgeBucketMale);
+    ApplyPrevalentInfections(DemographicProfile::Gender::Female,
+			     numInfectedByAgeBucketFemale);
 }
 
 void Population::RecordInfection(const Person *infectee, const Person *infector, int time)
