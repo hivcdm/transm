@@ -5,5 +5,5 @@
 # the code of the external projects. 
 # Use to clean up the build environment.
 
-# That's all we need to do
-cmake -P ../clean-all.cmake
+make clean
+cmake -P clean-all.cmake
