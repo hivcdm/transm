@@ -210,7 +210,7 @@ public:
 
 private:
     friend class Intervention;
-	friend class SimulationBuilderXml;
+    friend class SimulationBuilderXml;
     friend class Simulation;
 
 	/// <summary>
@@ -242,6 +242,13 @@ private:
     /// </summary>
 	Entity *GenerateEntity(EventParams &_eventParams, const std::string &entity_type,
 	                       AgeBucketPrevalenceInfo *_ageBucketParams, bool toTrace);
+
+	/// <summary>
+	/// helper funtions for ApplyIncidentPrevalence()
+	/// <summary>
+	void ApplyPrevalentInfection(Entity *p);
+	void ApplyPrevalentInfections(DemographicProfile::Gender _gender,
+				      std::vector<std::array<int, 3>> bucket);
 
     /// <summary>
 	/// processes the death of 1 person, updates statistics, removes that person from any relationships

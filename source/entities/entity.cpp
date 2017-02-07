@@ -242,10 +242,11 @@ void Entity::becomeInfected(int _generationOfInfection, EventParams &_eventParam
 {
     //hvl needs to be set even for people who are about to go through CEPAC so that isInfected() correctly returns true
 	hvl = HVLStrata::HVL_PRIMARY;
+
     //CD4 doesn't affect much in the transmission model yet... will be updated with CEPAC
-	cd4 = -1;
-	ageInfected = age;
-	generationOfInfection = _generationOfInfection;
+    cd4 = -1;
+    ageInfected = age;
+    generationOfInfection = _generationOfInfection;
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
 	{
@@ -333,11 +334,11 @@ void Entity::becomeInfected(int _generationOfInfection, EventParams &_eventParam
 	else
 	{
 		//Infection of prevalent cases happens when CEPAC person is initialized
-		initialCEPACpatient(_eventParams);
+		initializeCEPACpatient(_eventParams);
 	}
 }
 
-void Entity::initialCEPACpatient(EventParams &_eventParams)
+void Entity::initializeCEPACpatient(EventParams &_eventParams)
 {
 	// Only initialize the person if they haven't already been initialized!  
     // Prevalent cases will get called to initialize twice!
@@ -508,7 +509,7 @@ void Entity::becomeSexuallyActive(EventParams &_eventParams)
 {
     dmgProfile.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::Active);
 	//CEPAC person needs to be initialized
-	initialCEPACpatient(_eventParams);
+	initializeCEPACpatient(_eventParams);
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
 	{
@@ -529,7 +530,6 @@ Time Entity::getAge() const
 {
 	return age;
 }
-
 
 DemographicProfile::ProfileID Entity::getCurrBucketProfileID()
 {
@@ -686,7 +686,7 @@ bool Entity::hasPartnership()
 	}
 	return false;
 }
- 
+
 bool Entity::isInfected()
 {
     return hvl != HVLStrata::UNINFECTED;
@@ -695,6 +695,12 @@ bool Entity::isInfected()
 bool Entity::isSexuallyActive()
 {
 	return sexuallyActive;
+}
+
+bool Entity::isCSW()
+{
+    return (getDemographicProfileVal(DemographicProfile::Demographic::Employment) ==
+	    (std::size_t)DemographicProfile::Employment::Csw);
 }
 
 void Entity::removePartnership(SexualPartnership *_partnership)

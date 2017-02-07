@@ -53,11 +53,6 @@ public:
 	PopulationParameters();
 	~PopulationParameters();
 
-	void AddInfectionTarget(const PopulationTarget &target, std::size_t number)
-	{
-		initial_infection_targets_.push_back({ target, number });
-	}
-
 	double GetBirthRate() const;
 	void SetBirthRate(double birth_rate) { birthRate = birth_rate; }
 
@@ -126,7 +121,7 @@ public:
 		case DemographicProfile::Gender::Male:
             defaultMaleParams.SetProportionHighRisk(employment, proportion);
             break;
-		case DemographicProfile::Gender::Female: 
+		case DemographicProfile::Gender::Female:
            defaultFemaleParams.SetProportionHighRisk(employment, proportion);
            break;
 		default:
@@ -225,7 +220,6 @@ private:
     /// </summary>
 	double circumcisionCost;
 
-	std::vector<std::pair<PopulationTarget, std::size_t>> initial_infection_targets_;
     double prEPCost;
 
     double vaginalMicrobicideApplicationCost;
