@@ -4,15 +4,6 @@
 #include <list>
 #include <set>
 #include <vector>
-
-#include "include.h"
-
-#include <boost/multi_index_container.hpp>
-#include <boost/multi_index/ordered_index.hpp>
-#include <boost/multi_index/member.hpp>
-#include <boost/multi_index/identity.hpp>
-#include <boost/multi_index/composite_key.hpp>
-
 #include <include.h>
 
 #include "demographicprofile.hpp"
@@ -23,6 +14,12 @@
 #include "statistics/statsrecord.hpp"
 #include "utility/time.hpp"
 #include "utility/utility.hpp"
+
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index/member.hpp>
+#include <boost/multi_index/identity.hpp>
+#include <boost/multi_index/composite_key.hpp>
 
 namespace transm {
 
@@ -773,12 +770,27 @@ public:
 private:
     //Return the current index of which SimContext should be used to update the
     //health of a patient
-	int getCEPACSimContextIndex(EventParams &_eventParams);
+    int getCEPACSimContextIndex(EventParams &_eventParams);
 
-	double monthly_cepac_costs_undiscounted_;
-	double monthly_cepac_costs_discounted_;
-	double monthly_cdm_costs_undiscounted_;
-	double monthly_cdm_costs_discounted_;
+    double updateHealthCosts(EventParams &_eventParams,
+			     CostsTracker *costsTracker,
+			     const RunStats::OverallCosts before,
+			     const RunStats::OverallCosts after);
+    void updateTestingStatus(EventParams &_eventParams,
+			     ArtRolloutTracker *testTracker,
+			     const RunStats::HIVScreening before,
+			     const RunStats::HIVScreening after);
+    void traceTreatmentChange(EventParams &_eventParams, bool after);
+    void traceCD4Change(EventParams &_eventParams, double before, double after);
+    void traceHVLChange(EventParams &_eventParams, HVLStrata before,
+			HVLStrata after);
+    void traceHIVChange(EventParams &_eventParams, HIVStatus before,
+			HIVStatus after);
+
+    double monthly_cepac_costs_undiscounted_;
+    double monthly_cepac_costs_discounted_;
+    double monthly_cdm_costs_undiscounted_;
+    double monthly_cdm_costs_discounted_;
 
     bool using_prep_this_month_;
 };

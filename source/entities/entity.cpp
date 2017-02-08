@@ -261,6 +261,7 @@ void Entity::becomeInfected(int _generationOfInfection, EventParams &_eventParam
 	initializeCEPACpatient(_eventParams);
     }
 
+    /* force new infection - force hvl, cd4, duration and OI hist (possible) */
     cepacPatient->forceNewInfection();
     cd4 = cepacPatient->getDiseaseState()->currTrueCD4;
     currentTrueHvl = getHvlStratum();
@@ -339,7 +340,7 @@ void Entity::initializeCEPACpatient(EventParams &_eventParams)
     bool setAsIncidentCase = !isInfected();
 
     SimContext::GENDER_TYPE cepacGender = (isMale() ? SimContext::GENDER_MALE :
-        SimContext::GENDER_FEMALE);
+	SimContext::GENDER_FEMALE);
 
     SimContext *simContextToUse;
     if(_eventParams.useRollout) {
@@ -931,98 +932,40 @@ std::string to_string(Entity::HIVStatus status)
     }
 }
 
-
 double Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTracker, CostsTracker *costsTracker)
 {
-	//if this person has died, then don't update.
-	if(!isAlive())
-	{
-		return 0;
+    double costThisMonthDiscounted = 0.0;
+
+    if(!isAlive() || !wentThroughCEPAC)
+	return costThisMonthDiscounted;
+
+    if(!_eventParams.useRollout) {
+	//Adjust the CEPAC SimContext depending on what time it is
+	if(_eventParams.itIsTimeToSwitchSimContext()) {
+	    cepacPatient->setSimContext(_eventParams.cepacSimContexts[
+					getCEPACSimContextIndex(_eventParams)]);
 	}
+    }
 
-	//if we haven't put this person through CEPAC, then don't bother w/ second part
-	if(!wentThroughCEPAC)
-	{
-		return 0;
-	}
-
-	if(!_eventParams.useRollout)
-	{
-		//Adjust the CEPAC SimContext depending on what time it is
-		if(_eventParams.itIsTimeToSwitchSimContext())
-		{
-			cepacPatient->setSimContext(_eventParams.cepacSimContexts[getCEPACSimContextIndex(_eventParams)]);
-		}
-	}
-
-	const auto costsBefore = *_eventParams.cepacRunStats->getOverallCosts();
-	const auto hivScreeningBefore = *_eventParams.cepacRunStats->getHIVScreening();
-
+    const RunStats::OverallCosts costsBefore =
+	*_eventParams.cepacRunStats->getOverallCosts();
+    const RunStats::HIVScreening hivScreeningBefore =
+	*_eventParams.cepacRunStats->getHIVScreening();
     auto treatmentBefore = isOnArt();
 
-	//run this person's patient info one month forward in CEPAC
-	cepacPatient->simulateMonth();
+    //run this person's patient info one month forward in CEPAC
+    cepacPatient->simulateMonth();
 
     auto treatmentAfter = isOnArt();
 
-    if(treatmentBefore != treatmentAfter && _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
-    {
-        if(treatmentAfter)
-        {
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !!# "
-                << getID() << " started treatment." << std::endl;
-        }
-        else
-        {
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !!# "
-                << getID() << " stoppped treatment." << std::endl;
-        }
-    }
+    if(treatmentBefore != treatmentAfter)
+	traceTreatmentChange(_eventParams, treatmentAfter);
 
-	const auto costsAfter = *_eventParams.cepacRunStats->getOverallCosts();
-	const auto hivScreeningAfter = *_eventParams.cepacRunStats->getHIVScreening();
-	const auto discountFactor = cepacPatient->getGeneralState()->discountFactor;
+    const auto costsAfter = *_eventParams.cepacRunStats->getOverallCosts();
+    const auto hivScreeningAfter = *_eventParams.cepacRunStats->getHIVScreening();
 
-	//Update this patient's costs
-	auto costThisMonthDiscounted = cepacPatient->getGeneralState()->costsDiscounted - CEPACcosts;
-	CEPACcosts = cepacPatient->getGeneralState()->costsDiscounted;
-
-	// We don't have access to the original undiscounted costs, so reverse the discounting factor
-	auto costThisMonthUndiscounted = costThisMonthDiscounted / cepacPatient->getGeneralState()->discountFactor;
-
-	if(costThisMonthUndiscounted > 0)
-	{
-		add_cepac_cost(costThisMonthUndiscounted, costThisMonthDiscounted);
-		costsTracker->RecordCepacCosts(costThisMonthUndiscounted, costThisMonthDiscounted,
-			getEntityType(), getCd4Stratum(), 
-			getHVL(), getHIVStatus());
-
-		std::array<double, SimContext::COST_NUM_TYPES> medicalCostsUndiscounted;
-		for(int i = 0; i < SimContext::COST_NUM_TYPES; i++)
-		{
-			medicalCostsUndiscounted[i] = costsAfter.totalUndiscountedCosts[i] - costsBefore.totalUndiscountedCosts[i];
-		}
-		costsTracker->RecordMedicalCosts(medicalCostsUndiscounted, Scale(medicalCostsUndiscounted, discountFactor));
-
-		std::array<double, 5> clinicalCostsDiscounted;
-		clinicalCostsDiscounted[(size_t)ClinicalCostTypes::CD4Testing] = costsAfter.costsCD4Testing - costsBefore.costsCD4Testing;
-		clinicalCostsDiscounted[(size_t)ClinicalCostTypes::HvlTesting] = costsAfter.costsHVLTesting - costsBefore.costsHVLTesting;
-		clinicalCostsDiscounted[(size_t)ClinicalCostTypes::ClinicVisits] = costsAfter.costsClinicVisits - costsBefore.costsClinicVisits;
-		clinicalCostsDiscounted[(size_t)ClinicalCostTypes::HivScreeningTests] = costsAfter.costsHIVScreeningTests - costsBefore.costsHIVScreeningTests;
-		clinicalCostsDiscounted[(size_t)ClinicalCostTypes::HivScreeningMisc] = costsAfter.costsHIVScreeningMisc - costsBefore.costsHIVScreeningMisc;
-		costsTracker->RecordClinicalCosts(Scale(clinicalCostsDiscounted, 1 / discountFactor), clinicalCostsDiscounted);
-
-		if(isOnArt())
-		{
-			std::array<double, 3> treatmentCostsDiscounted;
-			int artLine = cepacPatient->getARTState()->currRegimenNum;
-			assert(artLine >= 0 && artLine < 4);
-			treatmentCostsDiscounted[0] = costsAfter.directCostsARTLine[artLine] - costsBefore.directCostsARTLine[artLine];
-			treatmentCostsDiscounted[1] = costsAfter.costsDrugs - costsBefore.costsDrugs;
-			treatmentCostsDiscounted[2] = costsAfter.costsToxicity - costsBefore.costsToxicity;
-			costsTracker->RecordTreatmentCosts(Scale(treatmentCostsDiscounted, 1 / discountFactor), treatmentCostsDiscounted, artLine);
-		}
-	}
+    costThisMonthDiscounted = updateHealthCosts(_eventParams, costsTracker,
+						costsBefore, costsAfter);
 
     bool not_observed_postitive = hivStatus == HIVStatus::NEGATIVE 
         || hivStatus == HIVStatus::UNOBSERVED_ACUTE 
@@ -1030,138 +973,195 @@ double Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
         || hivStatus == HIVStatus::UNOBSERVED_LATESTAGE;
 
     if (not_observed_postitive
-        && preExposureProphylaxisAdherence_ > 0
-        && _eventParams.randomNums.chance(preExposureProphylaxisAdherence_))
-    {
-        using_prep_this_month_ = true;
-        testTracker->recordPrEP(this);
-    }
-    else
-    {
-        using_prep_this_month_ = false;
+	&& preExposureProphylaxisAdherence_ > 0
+	&& _eventParams.randomNums.chance(preExposureProphylaxisAdherence_)) {
+	using_prep_this_month_ = true;
+	testTracker->recordPrEP(this);
+    } else {
+	using_prep_this_month_ = false;
     }
 
-	//update HVL and CD4 for this Entity if they are infected
-	if(isInfected())
-	{
-        auto cd4Before = cd4;
-		cd4 = cepacPatient->getDiseaseState()->currTrueCD4;
+    //update HVL and CD4 for this Person if they are infected
+    if(isInfected()) {
+	double cd4Before = cd4;
+	cd4 = cepacPatient->getDiseaseState()->currTrueCD4;
 
-        if(cd4Before != cd4 && _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
-        {
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !!# "
-                << getID() << " CD4 changed from " << cd4Before << " to " << cd4 << std::endl;
-        }
+	if(cd4Before != cd4)
+	    traceCD4Change(_eventParams, cd4Before, cd4);
 
         auto hvlBefore = hvl;
         auto hivStatusBefore = hivStatus;
 
-        hvl = HvlFromCepacHvl(cepacPatient->getDiseaseState()->currTrueHVLStrata);
-		currentTrueHvl = hvl;
+	hvl = HvlFromCepacHvl(cepacPatient->getDiseaseState()->currTrueHVLStrata);
+	currentTrueHvl = hvl;
 
-		if(cepacPatient->getDiseaseState()->infectedHIVState == SimContext::HIV_INF_ACUTE_SYN)
-		{
-			hvl = HVLStrata::HVL_PRIMARY;
+	updateCEPACpatient(_eventParams);
 
-			if(cepacPatient->getMonitoringState()->isDetectedHIVPositive)
-			{
-                hivStatus = HIVStatus::OBSERVED_ACUTE;
-			}
-			else
-			{
-                hivStatus = HIVStatus::UNOBSERVED_ACUTE;
-			}
-		}
-		//Late stage is defined as having failed the last ART regimen (or having no art regimens to start with) and a CD4 <= 50
-		else if((!(cepacPatient->getARTState()->hasNextRegimenAvailable) &&
-		         (!(cepacPatient->getARTState()->isOnART) || cepacPatient->getARTState()->hasObservedFailure)) &&
-		        cepacPatient->getDiseaseState()->currTrueCD4 <= 50)
-		{
-            hvl = HVLStrata::HVL_LATESTAGE;
+	if(hvl != hvlBefore)
+	    traceHVLChange(_eventParams, hvlBefore, hvl);
+	if (hivStatus != hivStatusBefore)
+	    traceHIVChange(_eventParams, hivStatusBefore, hivStatus);
 
-			if(cepacPatient->getMonitoringState()->isDetectedHIVPositive)
-			{
-                hivStatus = HIVStatus::OBSERVED_LATESTAGE;
-			}
-			else
-			{
-                hivStatus = HIVStatus::UNOBSERVED_LATESTAGE;
-			}
-		}
-		else
-		{
-			if(cepacPatient->getMonitoringState()->isDetectedHIVPositive)
-			{
-                hivStatus = HIVStatus::OBSERVED_CHRONIC;
-			}
-			else
-			{
-                hivStatus = HIVStatus::UNOBSERVED_CHRONIC;
-			}
-		}
+	updateTestingStatus(_eventParams, testTracker,
+			    hivScreeningBefore, hivScreeningAfter);
+    }
 
-        if(hvl != hvlBefore && _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
-        {
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !!# "
-                << getID() << " HVL changed from " << to_string(hvlBefore) << " to " << to_string(hvl) << std::endl;
-        }
+    return costThisMonthDiscounted;
+}
 
-        if(hivStatus != hivStatusBefore && _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
-        {
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !!# "
-                << getID() << " HIV status changed from " << to_string(hivStatusBefore) << " to " << to_string(hivStatus) << std::endl;
-        }
+double Entity::updateHealthCosts(EventParams &_eventParams,
+				 CostsTracker *costsTracker,
+				 const RunStats::OverallCosts before,
+				 const RunStats::OverallCosts after)
+{
+    const auto discountFactor = cepacPatient->getGeneralState()->discountFactor;
 
-		//Update OI History
-		for(int i = 0; i < Constants::NumberOfOIs; i++)
-		{
-			oiHistory[i] = cepacPatient->getDiseaseState()->hasTrueOIHistory[i];
-		}
+    //Update this patient's costs
+    auto costThisMonthDiscounted = cepacPatient->getGeneralState()->costsDiscounted -
+	CEPACcosts;
+    CEPACcosts = cepacPatient->getGeneralState()->costsDiscounted;
+
+    // We don't have access to the original undiscounted costs,
+    // so reverse the discounting factor
+    auto costThisMonthUndiscounted = costThisMonthDiscounted /
+	cepacPatient->getGeneralState()->discountFactor;
+
+    if(costThisMonthUndiscounted > 0) {
+	add_cepac_cost(costThisMonthUndiscounted, costThisMonthDiscounted);
+
+	costsTracker->RecordCepacCosts(costThisMonthUndiscounted,
+	    costThisMonthDiscounted, getEntityType(),
+	    getCd4Stratum(), getHVL(), getHIVStatus());
+
+	std::array<double, SimContext::COST_NUM_TYPES> medicalCostsUndiscounted;
+	for(int i = 0; i < SimContext::COST_NUM_TYPES; i++) {
+	    medicalCostsUndiscounted[i] = after.totalUndiscountedCosts[i] -
+			before.totalUndiscountedCosts[i];
 	}
+	costsTracker->RecordMedicalCosts(medicalCostsUndiscounted,
+	    Scale(medicalCostsUndiscounted, discountFactor));
 
-	bool offeredTest = hivScreeningAfter.numAcceptTest > hivScreeningBefore.numAcceptTest
-	                   || hivScreeningAfter.numRefuseTest > hivScreeningBefore.numRefuseTest;
-	bool acceptedTest = offeredTest && hivScreeningAfter.numAcceptTest > hivScreeningBefore.numAcceptTest;
-	bool returnedForResults = hivScreeningAfter.numReturnForResults > hivScreeningBefore.numReturnForResults;
-	SimContext::TEST_RESULT testResult = (SimContext::TEST_RESULT)0;
+	std::array<double, 5> clinicalCostsDiscounted;
+	clinicalCostsDiscounted[(size_t)ClinicalCostTypes::CD4Testing] =
+	    after.costsCD4Testing - before.costsCD4Testing;
+	clinicalCostsDiscounted[(size_t)ClinicalCostTypes::HvlTesting] =
+	    after.costsHVLTesting - before.costsHVLTesting;
+	clinicalCostsDiscounted[(size_t)ClinicalCostTypes::ClinicVisits] =
+	    after.costsClinicVisits - before.costsClinicVisits;
+	clinicalCostsDiscounted[(size_t)ClinicalCostTypes::HivScreeningTests] =
+	    after.costsHIVScreeningTests - before.costsHIVScreeningTests;
+	clinicalCostsDiscounted[(size_t)ClinicalCostTypes::HivScreeningMisc] =
+	    after.costsHIVScreeningMisc - before.costsHIVScreeningMisc;
+	costsTracker->RecordClinicalCosts(
+	    Scale(clinicalCostsDiscounted, 1 / discountFactor),
+	    clinicalCostsDiscounted);
 
-	if(returnedForResults)
-	{
-		if(hivScreeningAfter.numTestResultsHIVNegativeType[SimContext::TEST_FALSE_POS] >
-		        hivScreeningBefore.numTestResultsHIVNegativeType[SimContext::TEST_FALSE_POS])
-		{
-			testResult = SimContext::TEST_FALSE_POS;
-		}
-		else if(hivScreeningAfter.numTestResultsPrevalentType[SimContext::TEST_TRUE_POS] >
-		        hivScreeningBefore.numTestResultsPrevalentType[SimContext::TEST_TRUE_POS] ||
-		        (hivScreeningAfter.numTestResultsIncidentType[SimContext::TEST_TRUE_POS] >
-		         hivScreeningBefore.numTestResultsIncidentType[SimContext::TEST_TRUE_POS]))
-		{
-			testResult = SimContext::TEST_TRUE_POS;
-		}
-		else if(hivScreeningAfter.numTestResultsHIVNegativeType[SimContext::TEST_TRUE_POS] >
-		        hivScreeningBefore.numTestResultsHIVNegativeType[SimContext::TEST_TRUE_POS])
-		{
-			testResult = SimContext::TEST_TRUE_POS;
-		}
-		else if(hivScreeningAfter.numTestResultsPrevalentType[SimContext::TEST_FALSE_NEG] >
-		        hivScreeningBefore.numTestResultsPrevalentType[SimContext::TEST_FALSE_NEG] ||
-		        (hivScreeningAfter.numTestResultsIncidentType[SimContext::TEST_FALSE_NEG] >
-		         hivScreeningBefore.numTestResultsIncidentType[SimContext::TEST_FALSE_NEG]))
-		{
-			testResult = SimContext::TEST_FALSE_NEG;
-		}
+	if(isOnArt()) {
+	    std::array<double, 3> treatmentCostsDiscounted;
+	    int artLine = cepacPatient->getARTState()->currRegimenNum;
+	    assert(artLine >= 0 && artLine < 4);
+	    treatmentCostsDiscounted[0] = after.directCostsARTLine[artLine] -
+		before.directCostsARTLine[artLine];
+	    treatmentCostsDiscounted[1] = after.costsDrugs -
+		before.costsDrugs;
+	    treatmentCostsDiscounted[2] = after.costsToxicity -
+		before.costsToxicity;
+	    costsTracker->RecordTreatmentCosts(
+		Scale(treatmentCostsDiscounted, 1 / discountFactor),
+		treatmentCostsDiscounted, artLine);
 	}
+    }
 
-    if(_eventParams.trace_files[EventParams::TraceFile::Type::ArtRollout].enabled)
-	{
-		if(offeredTest)
-		{
-			testTracker->recordTest(this, acceptedTest, returnedForResults, testResult);
-		}
+    return costThisMonthDiscounted;
+}
+
+void Entity::updateTestingStatus(EventParams &_eventParams,
+				 ArtRolloutTracker *testTracker,
+				 const RunStats::HIVScreening before,
+				 const RunStats::HIVScreening after)
+{
+    bool offeredTest = after.numAcceptTest >
+	before.numAcceptTest || after.numRefuseTest >
+	before.numRefuseTest;
+    bool acceptedTest = offeredTest && after.numAcceptTest >
+	before.numAcceptTest;
+    bool returnedForResults = after.numReturnForResults >
+	before.numReturnForResults;
+    SimContext::TEST_RESULT testResult = (SimContext::TEST_RESULT)0;
+
+    if(returnedForResults) {
+	if(after.numTestResultsHIVNegativeType[SimContext::TEST_FALSE_POS] >
+	   before.numTestResultsHIVNegativeType[SimContext::TEST_FALSE_POS]) {
+	    testResult = SimContext::TEST_FALSE_POS;
+
+	} else if(after.numTestResultsPrevalentType[SimContext::TEST_TRUE_POS] >
+		  before.numTestResultsPrevalentType[SimContext::TEST_TRUE_POS] ||
+		  (after.numTestResultsIncidentType[SimContext::TEST_TRUE_POS] >
+		   before.numTestResultsIncidentType[SimContext::TEST_TRUE_POS])) {
+	    testResult = SimContext::TEST_TRUE_POS;
+
+	} else if(after.numTestResultsHIVNegativeType[SimContext::TEST_TRUE_POS] >
+		  before.numTestResultsHIVNegativeType[SimContext::TEST_TRUE_POS]) {
+	    testResult = SimContext::TEST_TRUE_POS;
+
+	} else if(after.numTestResultsPrevalentType[SimContext::TEST_FALSE_NEG] >
+		  before.numTestResultsPrevalentType[SimContext::TEST_FALSE_NEG] ||
+		  (after.numTestResultsIncidentType[SimContext::TEST_FALSE_NEG] >
+		   before.numTestResultsIncidentType[SimContext::TEST_FALSE_NEG])) {
+	    testResult = SimContext::TEST_FALSE_NEG;
 	}
+    }
 
-	return costThisMonthDiscounted;
+    if(_eventParams.trace_files[EventParams::TraceFile::Type::ArtRollout].enabled) {
+	if(offeredTest) {
+	    testTracker->recordTest(this, acceptedTest, returnedForResults,
+				    testResult);
+	}
+    }
+}
+
+void Entity::traceTreatmentChange(EventParams &_eventParams, bool after)
+{
+    if (_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled
+	&& trace()) {
+	_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
+	    " !!# "  << getID() << (after ? " started treatment." :
+				    "stopped treatment.")
+	   << std::endl;
+    }
+}
+
+void Entity::traceCD4Change(EventParams &_eventParams, double before, double after)
+{
+    if (_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled
+	&& trace()) {
+	_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
+	    " !!# " << getID() << " CD4 changed from " << before << " to " <<
+	    after << std::endl;
+    }
+}
+
+void Entity::traceHVLChange(EventParams &_eventParams, HVLStrata before,
+			    HVLStrata after)
+{
+    if (_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled
+	&& trace()) {
+	_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
+	    " !!# " << getID() << " HVL changed from " << to_string(before) <<
+	    " to " << to_string(after) << std::endl;
+    }
+}
+
+void Entity::traceHIVChange(EventParams &_eventParams,Entity::HIVStatus before,
+			    Entity::HIVStatus after)
+{
+    if (_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled &&
+	trace()) {
+	    _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
+		" !!# " << getID() << " HIV status changed from " <<
+		to_string(before) << " to " << to_string(after) <<
+		std::endl;
+    }
 }
 
 //Call this after all transmission/population dynamics are done.
