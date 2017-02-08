@@ -95,22 +95,29 @@ Person::HVLStrata Person::getHvlStratum() const
 }
 
 
-    template<>
-    DemographicProfile::Gender Person::getDemographicProfileVal() const { return (DemographicProfile::Gender)getDemographicProfileVal(DemographicProfile::Demographic::Gender); }
+template<>
+DemographicProfile::Gender Person::getDemographicProfileVal() const
+{
+    return (DemographicProfile::Gender)getDemographicProfileVal(
+	DemographicProfile::Demographic::Gender);
+}
 
-    template<>
-    DemographicProfile::SexualActivityStatus Person::getDemographicProfileVal() const 
-    { 
-        return (DemographicProfile::SexualActivityStatus)getDemographicProfileVal(DemographicProfile::Demographic::SexualActivityStatus); 
-    }
+template<>
+DemographicProfile::SexualActivityStatus Person::getDemographicProfileVal() const
+{
+    return (DemographicProfile::SexualActivityStatus)getDemographicProfileVal(
+	DemographicProfile::Demographic::SexualActivityStatus);
+}
 
-    template<>
-    DemographicProfile::Employment Person::getDemographicProfileVal() const
-    {
-        return (DemographicProfile::Employment)getDemographicProfileVal(DemographicProfile::Demographic::Employment);
-    }
+template<>
+DemographicProfile::Employment Person::getDemographicProfileVal() const
+{
+    return (DemographicProfile::Employment)getDemographicProfileVal(
+	DemographicProfile::Demographic::Employment);
+}
 
-bool Person::isEligibleForTreatment(const SimContext::TreatmentInputs::ARTStartPolicy &artStartPolicy)
+bool Person::isEligibleForTreatment(const SimContext::TreatmentInputs::ARTStartPolicy
+    &artStartPolicy)
 {
 	// Evaluate the CD4 only criteria
 	double trueCD4 = cepacPatient->getDiseaseState()->currTrueCD4;
@@ -169,7 +176,7 @@ bool Person::isEligibleForTreatment(const SimContext::TreatmentInputs::ARTStartP
 }
 
 Person *Person::allPartnerSexualActivity(EventParams &_eventParams, SexualPartnership::Type _partnershipType,
-        list<Person *> &_newlyInfected, InfectionsTracker *infTrack)
+	list<Person *> &_newlyInfected, InfectionsTracker *infTrack)
 {
 	assert(_partnershipType < SexualPartnership::Type::ENDType);
 	//iterate through all partnerships of SexualActivity::Type _partnershipType and have them engage in sexual activity
@@ -232,211 +239,132 @@ void Person::addPartnership(SexualPartnership *_partnership)
 	//if a STEADY partnership was added && we are SINGLE, the we need to change or RELATIONSHIP_STATUS
 	if((_partnership->getType() == SexualPartnership::Type::Steady) &&
 		(!partners[(int)SexualPartnership::Type::Steady].empty()) &&
-        (getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus) == (std::size_t)DemographicProfile::RelationshipStatus::Single))
+	(getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus) == (std::size_t)DemographicProfile::RelationshipStatus::Single))
 	{
-        dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::NonSingle);
+	  dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::NonSingle);
 	}
 }
 
 void Person::becomeInfected(int _generationOfInfection, EventParams &_eventParams)
 {
-    //hvl needs to be set even for people who are about to go through CEPAC so that isInfected() correctly returns true
-    hvl = HVL_PRIMARY;
+    enableInfectionTrace(_generationOfInfection, _eventParams);
 
-    //CD4 doesn't affect much in the transmission model yet... will be updated with CEPAC
+    stats.setStat(Person::STAT_TIME_OF_INFECTION_MTH, _eventParams.currTime);
+    stats.setStat(Person::STAT_AGE_AT_INFECTION_MTH, getAge(TimeGranularity::Month));
+    stats.setStat(Person::STAT_GENERATION_OF_INFECTION, _generationOfInfection);
+
+    hvl = HVL_PRIMARY;
     cd4 = -1;
     ageInfected = age;
     generationOfInfection = _generationOfInfection;
 
-    if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
-	{
-        if(getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
-		{
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "@ Male ";
-		}
-		else
-		{
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "@ Female ";
-		}
+    if(!wentThroughCEPAC) {
+	// Need to initialize CEPAC person first
+	initializeCEPACpatient(_eventParams);
+    }
 
-        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << getID() << " has ";
+    cepacPatient->forceNewInfection();
+    cd4 = cepacPatient->getDiseaseState()->currTrueCD4;
+    currentTrueHvl = getHvlStratum();
 
-		if(_generationOfInfection == 0)
-		{
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "a prevalent case of HIV";
-		}
-		else
-		{
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "an incident case of HIV";
-		}
+    updateCEPACpatient(_eventParams);
+}
 
-        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "!" << std::endl;
+void Person::enableInfectionTrace(int _generationOfInfection,
+				  EventParams &_eventParams)
+{
+    if (_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled
+	&& trace()) {
+	 _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
+	     (isMale() ? "@ Male " :  "@ Female ");
+	_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
+	    getID() << " has ";
+	_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
+	    ((_generationOfInfection == 0) ? "a prevalent case of HIV" :
+	    "an incident case of HIV");
+	_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
+	    "!" << std::endl;
 
-        if(_generationOfInfection == 0)
-        {
-            print(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].file, "Demographic info for person:");
-        }
+	if(_generationOfInfection == 0) {
+	    print(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson]
+		  .file, "Demographic info for person:");
 	}
+    }
+}
 
-	stats.setStat(Person::STAT_TIME_OF_INFECTION_MTH, _eventParams.currTime);
-    stats.setStat(Person::STAT_AGE_AT_INFECTION_MTH, getAge(TimeGranularity::Month));
-	stats.setStat(Person::STAT_GENERATION_OF_INFECTION, _generationOfInfection);
+void Person::updateCEPACpatient(EventParams &_eventParams)
+{
+    if(cepacPatient->getDiseaseState()->infectedHIVState ==
+       SimContext::HIV_INF_ACUTE_SYN) {
+	hvl = HVL_PRIMARY;
 
-	//if a CEPAC person exists (i.e. they were created earlier and thus this is an incident case), set them to infected
-	if(wentThroughCEPAC)
-	{
-		cepacPatient->forceNewInfection();
-		cd4 = cepacPatient->getDiseaseState()->currTrueCD4;
-		currentTrueHvl = getHvlStratum();
-
-		if(cepacPatient->getDiseaseState()->infectedHIVState == SimContext::HIV_INF_ACUTE_SYN)
-		{
-			hvl = HVL_PRIMARY;
-
-			if(cepacPatient->getMonitoringState()->isDetectedHIVPositive)
-			{
-				hivStatus = OBSERVED_ACUTE;
-			}
-			else
-			{
-				hivStatus = UNOBSERVED_ACUTE;
-			}
-		}
-		//Late stage is defined as having failed the last ART regimen (or having no art regimens to start with) and a CD4 <= 50
-		else if((!(cepacPatient->getARTState()->hasNextRegimenAvailable) &&
-		         (!(cepacPatient->getARTState()->isOnART) || cepacPatient->getARTState()->hasObservedFailure)) &&
-		        cepacPatient->getDiseaseState()->currTrueCD4 <= 50)
-		{
-			hvl = HVL_LATESTAGE;
-
-			if(cepacPatient->getMonitoringState()->isDetectedHIVPositive)
-			{
-				hivStatus = OBSERVED_LATESTAGE;
-			}
-			else
-			{
-				hivStatus = UNOBSERVED_LATESTAGE;
-			}
-		}
-		else
-		{
-			if(cepacPatient->getMonitoringState()->isDetectedHIVPositive)
-			{
-				hivStatus = OBSERVED_CHRONIC;
-			}
-			else
-			{
-				hivStatus = UNOBSERVED_CHRONIC;
-			}
-		}
-
-		//Update OI History
-		for(int i = 0; i < Constants::NUMBER_OF_OIS; i++)
-		{
-			oiHistory[i] = cepacPatient->getDiseaseState()->hasTrueOIHistory[i];
-		}
+	if(cepacPatient->getMonitoringState()->isDetectedHIVPositive) {
+	    hivStatus = OBSERVED_ACUTE;
+	} else {
+	    hivStatus = UNOBSERVED_ACUTE;
 	}
-	else
-	{
-		//Infection of prevalent cases happens when CEPAC person is initialized
-		initializeCEPACpatient(_eventParams);
+    } else if((!(cepacPatient->getARTState()->hasNextRegimenAvailable) &&
+	       (!(cepacPatient->getARTState()->isOnART) ||
+		cepacPatient->getARTState()->hasObservedFailure)) &&
+	      cepacPatient->getDiseaseState()->currTrueCD4 <= 50) {
+
+	//Late stage is defined as having failed the last ART regimen
+	// (or having no art regimens to start with) and a CD4 <= 50
+
+	hvl = HVL_LATESTAGE;
+
+	if(cepacPatient->getMonitoringState()->isDetectedHIVPositive) {
+	    hivStatus = OBSERVED_LATESTAGE;
+	} else {
+	    hivStatus = UNOBSERVED_LATESTAGE;
 	}
+    } else {
+	if(cepacPatient->getMonitoringState()->isDetectedHIVPositive) {
+	    hivStatus = OBSERVED_CHRONIC;
+	} else {
+	    hivStatus = UNOBSERVED_CHRONIC;
+	}
+    }
+
+    //Update OI History
+    for(int i = 0; i < Constants::NUMBER_OF_OIS; i++) {
+	oiHistory[i] = cepacPatient->getDiseaseState()->hasTrueOIHistory[i];
+    }
 }
 
 void Person::initializeCEPACpatient(EventParams &_eventParams)
 {
-	//Only initialize the person if they haven't already been initialized!  (Prevalent cases will get called to initialize twice!)
-	if(!wentThroughCEPAC)
-	{
-		wentThroughCEPAC = true;
-		//determine if prevalent or incident case
-		//Prevalent cases will be set to be infected prior to initialization
-		//"Incident" cases are not yet infected and will be initialized later.
-		bool setAsIncidentCase = !isInfected();
-		//initial CEPAC patient for this person
-		SimContext::GENDER_TYPE cepacGender = SimContext::GENDER_FEMALE;
+    wentThroughCEPAC = true;
+    bool setAsIncidentCase = !isInfected();
 
-        if(getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
-		{
-			cepacGender = SimContext::GENDER_MALE;
-		}
+    SimContext::GENDER_TYPE cepacGender = (isMale() ? SimContext::GENDER_MALE :
+        SimContext::GENDER_FEMALE);
 
-		//TODO: Switch to multiple input sheets!
-		SimContext *simContextToUse;
+    //TODO: Switch to multiple input sheets!
+    SimContext *simContextToUse;
+    if(_eventParams.useRollout) {
+	//When patients are initialized they are added to the untreated pool
+	simContextToUse = _eventParams.untreatedContext;
+    } else {
+	simContextToUse = _eventParams.cepacSimContexts[getCEPACSimContextIndex(
+		_eventParams)];
+    }
 
-		if(_eventParams.useRollout)
-		{
-			//When patients are initialized they are added to the untreated pool
-			simContextToUse = _eventParams.untreatedContext;
-		}
-		else
-		{
-			simContextToUse = _eventParams.cepacSimContexts[getCEPACSimContextIndex(_eventParams)];
-		}
+    cepacPatient = new Patient(simContextToUse,
+			       _eventParams.cepacRunStats,
+			       _eventParams.capacCostStats,
+			       _eventParams.cepacTracer,
+			       true, getAge(TimeGranularity::Month),
+			       cepacGender,
+			       setAsIncidentCase,
+			       _eventParams.currTime);
 
-		cepacPatient = new Patient(simContextToUse, _eventParams.cepacRunStats, _eventParams.capacCostStats, _eventParams.cepacTracer,
-					   true, getAge(TimeGranularity::Month), cepacGender, setAsIncidentCase, _eventParams.currTime);
+    auto discount_factor = Utility::computeCepacDiscountFactor(
+	_eventParams.currTime, simContextToUse->getRunSpecsInputs()->discountFactor);
+    const_cast<Patient::GeneralState *>(
+	cepacPatient->getGeneralState())->discountFactor = discount_factor;
 
-		auto discount_factor = Utility::computeCepacDiscountFactor(_eventParams.currTime, simContextToUse->getRunSpecsInputs()->discountFactor);
-		const_cast<Patient::GeneralState *>(cepacPatient->getGeneralState())->discountFactor = discount_factor;
-
-		//Only update hvl and cd4 if the patient is infected
-		//update HVL and CD4  and infection status for this Person if they are infected
-		if(isInfected())
-		{
-			cd4 = cepacPatient->getDiseaseState()->currTrueCD4;
-			currentTrueHvl = getHvlStratum();
-
-			if(cepacPatient->getDiseaseState()->infectedHIVState == SimContext::HIV_INF_ACUTE_SYN)
-			{
-				hvl = HVL_PRIMARY;
-
-				if(cepacPatient->getMonitoringState()->isDetectedHIVPositive)
-				{
-					hivStatus = OBSERVED_ACUTE;
-				}
-				else
-				{
-					hivStatus = UNOBSERVED_ACUTE;
-				}
-			}
-			//Late stage is defined as having failed the last ART regimen (or having no art regimens to start with) and a CD4 <= 50
-			else if((!(cepacPatient->getARTState()->hasNextRegimenAvailable) &&
-			         (!(cepacPatient->getARTState()->isOnART) || cepacPatient->getARTState()->hasObservedFailure)) &&
-			        cepacPatient->getDiseaseState()->currTrueCD4 <= 50)
-			{
-				hvl = HVL_LATESTAGE;
-
-				if(cepacPatient->getMonitoringState()->isDetectedHIVPositive)
-				{
-					hivStatus = OBSERVED_LATESTAGE;
-				}
-				else
-				{
-					hivStatus = UNOBSERVED_LATESTAGE;
-				}
-			}
-			else
-			{
-				if(cepacPatient->getMonitoringState()->isDetectedHIVPositive)
-				{
-					hivStatus = OBSERVED_CHRONIC;
-				}
-				else
-				{
-					hivStatus = UNOBSERVED_CHRONIC;
-				}
-			}
-
-			//Update OI History
-			for(int i = 0; i < Constants::NUMBER_OF_OIS; i++)
-			{
-				oiHistory[i] = cepacPatient->getDiseaseState()->hasTrueOIHistory[i];
-			}
-		}//if (isInfected)
-
-		Person::numTracesSoFar++;
-	}
+    Person::numTracesSoFar++;
 }
 
 int Person::getGenerationOfInfection(bool cap_at_5) const
@@ -515,36 +443,20 @@ void Person::setMonthOfLatestConcurrent(int _month)
 }
 void Person::becomeSexuallyActive(EventParams &_eventParams)
 {
-    dmgProfile.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::Active);
-	//CEPAC person needs to be initialized
-	initializeCEPACpatient(_eventParams);
+    dmgProfile.set(DemographicProfile::Demographic::SexualActivityStatus,
+		   (std::size_t)DemographicProfile::SexualActivityStatus::Active);
 
-    if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
-	{
-        if(getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
-		{
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " % Male ";
-		}
-		else
-		{
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " % Female ";
-		}
+    //CEPAC person needs to be initialized
+    initializeCEPACpatient(_eventParams);
 
-        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << getID() << " becomes sexually active" << std::endl;
-	}
+    if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled
+       && trace()) {
+	_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
+	    (isMale() ? " % Male " : " % Female ");
+	_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
+	    getID() << " becomes sexually active" << std::endl;
+    }
 }
-
-/*
-Person *Person::fling(Person *_p, SexualPartnership::Type _partnershipType, EventParams &_eventParams,
-                      InfectionsTracker *infTrack)
-{
-	assert((_p != nullptr));
-	assert(_p->isAlive());
-	assert(_partnershipType < SexualPartnership::Type::ENDType);
-	int numActs = rollNumEventsPerPartner(_p, _eventParams.randomNums, _partnershipType);
-	return sexualActivity(_p, numActs, _partnershipType, _eventParams, infTrack);
-}
-*/
 
 int Person::getAge(TimeGranularity _granularity) const
 {
@@ -577,7 +489,7 @@ unsigned long Person::getID() const
 }
 
 long Person::getPartnershipsToEnd(long _currTime, SexualPartnership::Type _partnershipType,
-                                  list<SexualPartnership *> &_partnershipsToEnd, bool _fromDeath)
+				  list<SexualPartnership *> &_partnershipsToEnd, bool _fromDeath)
 {
 	assert(_partnershipType < SexualPartnership::Type::ENDType);
 	assert((_currTime >= 0) || _fromDeath);
@@ -714,8 +626,8 @@ bool Person::hasPartnership() {
 
 void Person::print(ostream &_outStream, const std::string &_prefix) const
 {
-	_outStream << _prefix << std::endl;
-    _outStream << ((getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male) ? "Male" : "Female") << Constants::TAB;
+    _outStream << _prefix << std::endl;
+    _outStream << (isMale() ? "Male" : "Female") << Constants::TAB;
 	_outStream << "ID: " << id << Constants::TAB;
 	_outStream << "(";
 	getDemographicProfile()->print(_outStream, "");
@@ -741,7 +653,7 @@ void Person::printCurrentPartners(ostream &_outStream, const std::string &prefix
 			_outStream << (SexualPartnership::TypeStrings.at(SexualPartnership::Type(type))) << Constants::COLON << std::endl;
 		}
 
-        int i = 0;
+	int i = 0;
 		while(iter != iterEnd)
 		{
 			Person *partner = (*iter)->getOtherPartner(this);
@@ -812,10 +724,16 @@ bool Person::isSexuallyActive()
 	return sexuallyActive;
 }
 
-bool Person::isCSW()
+bool Person::isCSW() const
 {
     return (getDemographicProfileVal(DemographicProfile::Demographic::Employment) ==
 	    (std::size_t)DemographicProfile::Employment::Csw);
+}
+
+bool Person::isMale() const
+{
+    return (getDemographicProfileVal(DemographicProfile::Demographic::Gender) ==
+	    (std::size_t)DemographicProfile::Gender::Male);
 }
 
 void Person::removePartnership(SexualPartnership *_partnership)
@@ -826,63 +744,51 @@ void Person::removePartnership(SexualPartnership *_partnership)
 	//if a STEADY partnership was removed and we have no more, then we should be set to SINGLE
 	if((_partnership->getType() == SexualPartnership::Type::Steady) &&
 		(partners[(int)SexualPartnership::Type::Steady].empty()) &&
-        (getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus) == (std::size_t)DemographicProfile::RelationshipStatus::NonSingle))
+	(getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus) == (std::size_t)DemographicProfile::RelationshipStatus::NonSingle))
 	{
-        dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::Single);
+	dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::Single);
 	}
 }
 
-void Person::rollForBecomeSexWorker(EventParams &_eventParams, bool _isInit, double initialProb)
+void Person::rollForBecomeSexWorker(EventParams &_eventParams, bool _isInit,
+				    double initialProb)
 {
-	//see whether this person will become a CSW when they make their sexual debut
-	double currGenderChanceBecomeCSW;
+    //see whether this person will become a CSW when they make their sexual debut
+    double currGenderChanceBecomeCSW;
 
-	if(_isInit)
-	{
-		currGenderChanceBecomeCSW = initialProb;
+    if(_isInit) {
+	currGenderChanceBecomeCSW = initialProb;
+    } else {
+	currGenderChanceBecomeCSW = getChanceBecomeCsw();
+    }
+
+    if(_eventParams.randomNums.chance(currGenderChanceBecomeCSW)) {
+	if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson]
+	   .enabled && trace()) {
+	    _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
+		(isMale() ? " % Male " : " % Female ");
+	    _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
+		getID() << " becomes CSW" << std::endl;
 	}
-	else
-	{
-		currGenderChanceBecomeCSW = getChanceBecomeCsw();
-	}
 
-	if(_eventParams.randomNums.chance(currGenderChanceBecomeCSW))
-	{
-        if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
-		{
-            if(getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
-			{
-                _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " % Male ";
-			}
-			else
-			{
-                _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " % Female ";
-			}
-
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << getID() << " becomes CSW" << std::endl;
-		}
-
-        dmgProfile.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::Csw);
-	}
+	dmgProfile.set(DemographicProfile::Demographic::Employment,
+		       (std::size_t)DemographicProfile::Employment::Csw);
+    }
 }
 
 void Person::quitSexWork(EventParams &_eventParams)
 {
-    if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
-	{
-        if(getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
-		{
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " % Male ";
-		}
-		else
-		{
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " % Female ";
-		}
+    if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled
+       && trace()) {
+	_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
+	    (isMale() ? " % Male " : " % Female ");
 
-        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << getID() << " quits being CSW" << std::endl;
-	}
+	_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
+	    getID() << " quits being CSW" << std::endl;
+    }
 
-    dmgProfile.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::NonCsw);
+    dmgProfile.set(DemographicProfile::Demographic::Employment,
+		   (std::size_t)DemographicProfile::Employment::NonCsw);
 }
 
 //determine whether this person died
@@ -940,12 +846,12 @@ bool Person::rollForDeath(RandomNumberGenerator &_randomNums)
 
 		//if this person is past Person::maxYrForDeathStats, they should not be alive
 		//get the correct probability of death for this person's gender and age
-        if(getAge(TimeGranularity::Year) >= static_cast<int>(Person::probDeathNatCauses[getDemographicProfileVal(DemographicProfile::Demographic::Gender)].size()))
+	if(getAge(TimeGranularity::Year) >= static_cast<int>(Person::probDeathNatCauses[getDemographicProfileVal(DemographicProfile::Demographic::Gender)].size()))
 		{
-            cout << "The age is " << getAge(TimeGranularity::Year) << std::endl;
+	    cout << "The age is " << getAge(TimeGranularity::Year) << std::endl;
 		}
 
-        double deathRate = Person::probDeathNatCauses[getDemographicProfileVal(DemographicProfile::Demographic::Gender)].at(getAge(TimeGranularity::Year));
+	double deathRate = Person::probDeathNatCauses[getDemographicProfileVal(DemographicProfile::Demographic::Gender)].at(getAge(TimeGranularity::Year));
 		death = _randomNums.chance(deathRate);
 
 		if(death)
@@ -957,8 +863,8 @@ bool Person::rollForDeath(RandomNumberGenerator &_randomNums)
 	//if they died, collect statistics
 	if(death)
 	{
-        stats.setStat(STAT_TOTAL_LM, getAge(TimeGranularity::Month));
-        stats.setStat(STAT_HIV_NEG_LM, getAge(TimeGranularity::Month) - (isInfected() ? stats.getStat(STAT_TIME_OF_INFECTION_MTH) : 0));
+	stats.setStat(STAT_TOTAL_LM, getAge(TimeGranularity::Month));
+	stats.setStat(STAT_HIV_NEG_LM, getAge(TimeGranularity::Month) - (isInfected() ? stats.getStat(STAT_TIME_OF_INFECTION_MTH) : 0));
 		stats.setStat(STAT_HIV_POS_POSTINFECT_LM, stats.getStat(STAT_TOTAL_LM) - stats.getStat(STAT_AGE_AT_INFECTION_MTH));
 	}
 
@@ -976,7 +882,7 @@ void Person::setSimContext(SimContext *newSimContext)
 }
 
 Person *Person::sexualActivity(Person *_p, int _numActs, SexualPartnership::Type _partnershipType,
-                               EventParams &_eventParams, InfectionsTracker *infTrack)
+			       EventParams &_eventParams, InfectionsTracker *infTrack)
 {
 	assert((_p != nullptr));
 	assert(_p->isAlive());
@@ -987,13 +893,13 @@ Person *Person::sexualActivity(Person *_p, int _numActs, SexualPartnership::Type
 	{
 		if(trace())
 		{
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "# Male " << getID() << " engages in " << _numActs <<
-			        " acts with his " << (SexualPartnership::TypeStrings.at(_partnershipType)) << " " << _p->getID() << std::endl;
+	    _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "# Male " << getID() << " engages in " << _numActs <<
+				" acts with his " << (SexualPartnership::TypeStrings.at(_partnershipType)) << " " << _p->getID() << std::endl;
 		}
 		else
 		{
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "# Female " << _p->getID() << " engages in " << _numActs <<
-			        " acts with her " << (SexualPartnership::TypeStrings.at(_partnershipType)) << " " << getID() << std::endl;
+	    _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << "# Female " << _p->getID() << " engages in " << _numActs <<
+				" acts with her " << (SexualPartnership::TypeStrings.at(_partnershipType)) << " " << getID() << std::endl;
 		}
 	}
 
@@ -1035,10 +941,10 @@ Person *Person::sexualActivity(Person *_p, int _numActs, SexualPartnership::Type
 	//perform _numActs and see whether someone gets infected
 	if(transmissionOccured)
 	{
-        if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (trace() || _p->trace()))
+	if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (trace() || _p->trace()))
 		{
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !!# " << infected->getID() << " infected " <<
-			        uninfected->getID() << "!" << std::endl;
+	    _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !!# " << infected->getID() << " infected " <<
+				uninfected->getID() << "!" << std::endl;
 		}
 
 		//record who infected whom
@@ -1058,10 +964,10 @@ Person *Person::sexualActivity(Person *_p, int _numActs, SexualPartnership::Type
 	}
 	else
 	{
-        if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (trace() || _p->trace()))
+	if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (trace() || _p->trace()))
 		{
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !# " << infected->getID() << " exposed but did not infect " <<
-			        uninfected->getID() << "!" << std::endl;
+	    _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !# " << infected->getID() << " exposed but did not infect " <<
+				uninfected->getID() << "!" << std::endl;
 		}
 
 		//uninfected person was exposed but not infected
@@ -1163,16 +1069,16 @@ double Person::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 
     if(treatmentBefore != treatmentAfter && _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
     {
-        if(treatmentAfter)
-        {
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !!# "
-                << getID() << " started treatment." << std::endl;
-        }
-        else
-        {
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !!# "
-                << getID() << " stoppped treatment." << std::endl;
-        }
+	if(treatmentAfter)
+	{
+	    _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !!# "
+		<< getID() << " started treatment." << std::endl;
+	}
+	else
+	{
+	    _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !!# "
+		<< getID() << " stoppped treatment." << std::endl;
+	}
     }
 
 	const auto costsAfter = *_eventParams.cepacRunStats->getOverallCosts();
@@ -1220,39 +1126,39 @@ double Person::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 		}
 	}
 
-    bool not_observed_postitive = hivStatus == HIVStatus::NEGATIVE 
-        || hivStatus == HIVStatus::UNOBSERVED_ACUTE 
-        || hivStatus == HIVStatus::UNOBSERVED_CHRONIC 
-        || hivStatus == HIVStatus::UNOBSERVED_LATESTAGE;
+    bool not_observed_postitive = hivStatus == HIVStatus::NEGATIVE
+	|| hivStatus == HIVStatus::UNOBSERVED_ACUTE
+	|| hivStatus == HIVStatus::UNOBSERVED_CHRONIC
+	|| hivStatus == HIVStatus::UNOBSERVED_LATESTAGE;
 
     if (not_observed_postitive
-        && preExposureProphylaxisAdherence_ > 0
-        && _eventParams.randomNums.chance(preExposureProphylaxisAdherence_))
+	&& preExposureProphylaxisAdherence_ > 0
+	&& _eventParams.randomNums.chance(preExposureProphylaxisAdherence_))
     {
-        using_prep_this_month_ = true;
-        testTracker->recordPrEP(this);
+	using_prep_this_month_ = true;
+	testTracker->recordPrEP(this);
     }
     else
     {
-        using_prep_this_month_ = false;
+	using_prep_this_month_ = false;
     }
 
 	//update HVL and CD4 for this Person if they are infected
 	if(isInfected())
 	{
-        auto cd4Before = cd4;
+	auto cd4Before = cd4;
 		cd4 = cepacPatient->getDiseaseState()->currTrueCD4;
 
-        if(cd4Before != cd4 && _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
-        {
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !!# "
-                << getID() << " CD4 changed from " << cd4Before << " to " << cd4 << std::endl;
-        }
+	if(cd4Before != cd4 && _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
+	{
+	    _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !!# "
+		<< getID() << " CD4 changed from " << cd4Before << " to " << cd4 << std::endl;
+	}
 
-        auto hvlBefore = hvl;
-        auto hivStatusBefore = hivStatus;
+	auto hvlBefore = hvl;
+	auto hivStatusBefore = hivStatus;
 
-        hvl = HvlFromCepacHvl(cepacPatient->getDiseaseState()->currTrueHVLStrata);
+	hvl = HvlFromCepacHvl(cepacPatient->getDiseaseState()->currTrueHVLStrata);
 		currentTrueHvl = hvl;
 
 		if(cepacPatient->getDiseaseState()->infectedHIVState == SimContext::HIV_INF_ACUTE_SYN)
@@ -1270,8 +1176,8 @@ double Person::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 		}
 		//Late stage is defined as having failed the last ART regimen (or having no art regimens to start with) and a CD4 <= 50
 		else if((!(cepacPatient->getARTState()->hasNextRegimenAvailable) &&
-		         (!(cepacPatient->getARTState()->isOnART) || cepacPatient->getARTState()->hasObservedFailure)) &&
-		        cepacPatient->getDiseaseState()->currTrueCD4 <= 50)
+			 (!(cepacPatient->getARTState()->isOnART) || cepacPatient->getARTState()->hasObservedFailure)) &&
+			cepacPatient->getDiseaseState()->currTrueCD4 <= 50)
 		{
 			hvl = HVL_LATESTAGE;
 
@@ -1296,17 +1202,17 @@ double Person::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 			}
 		}
 
-        if(hvl != hvlBefore && _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
-        {
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !!# "
-                << getID() << " HVL changed from " << to_string(hvlBefore) << " to " << to_string(hvl) << std::endl;
-        }
+	if(hvl != hvlBefore && _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
+	{
+	    _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !!# "
+		<< getID() << " HVL changed from " << to_string(hvlBefore) << " to " << to_string(hvl) << std::endl;
+	}
 
-        if(hivStatus != hivStatusBefore && _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
-        {
-            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !!# "
-                << getID() << " HIV status changed from " << to_string(hivStatusBefore) << " to " << to_string(hivStatus) << std::endl;
-        }
+	if(hivStatus != hivStatusBefore && _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && trace())
+	{
+	    _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !!# "
+		<< getID() << " HIV status changed from " << to_string(hivStatusBefore) << " to " << to_string(hivStatus) << std::endl;
+	}
 
 		//Update OI History
 		for(int i = 0; i < Constants::NUMBER_OF_OIS; i++)
@@ -1316,7 +1222,7 @@ double Person::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 	}
 
 	bool offeredTest = hivScreeningAfter.numAcceptTest > hivScreeningBefore.numAcceptTest
-	                   || hivScreeningAfter.numRefuseTest > hivScreeningBefore.numRefuseTest;
+			   || hivScreeningAfter.numRefuseTest > hivScreeningBefore.numRefuseTest;
 	bool acceptedTest = offeredTest && hivScreeningAfter.numAcceptTest > hivScreeningBefore.numAcceptTest;
 	bool returnedForResults = hivScreeningAfter.numReturnForResults > hivScreeningBefore.numReturnForResults;
 	SimContext::TEST_RESULT testResult = (SimContext::TEST_RESULT)0;
@@ -1324,26 +1230,26 @@ double Person::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 	if(returnedForResults)
 	{
 		if(hivScreeningAfter.numTestResultsHIVNegativeType[SimContext::TEST_FALSE_POS] >
-		        hivScreeningBefore.numTestResultsHIVNegativeType[SimContext::TEST_FALSE_POS])
+			hivScreeningBefore.numTestResultsHIVNegativeType[SimContext::TEST_FALSE_POS])
 		{
 			testResult = SimContext::TEST_FALSE_POS;
 		}
 		else if(hivScreeningAfter.numTestResultsPrevalentType[SimContext::TEST_TRUE_POS] >
-		        hivScreeningBefore.numTestResultsPrevalentType[SimContext::TEST_TRUE_POS] ||
-		        (hivScreeningAfter.numTestResultsIncidentType[SimContext::TEST_TRUE_POS] >
-		         hivScreeningBefore.numTestResultsIncidentType[SimContext::TEST_TRUE_POS]))
+			hivScreeningBefore.numTestResultsPrevalentType[SimContext::TEST_TRUE_POS] ||
+			(hivScreeningAfter.numTestResultsIncidentType[SimContext::TEST_TRUE_POS] >
+			 hivScreeningBefore.numTestResultsIncidentType[SimContext::TEST_TRUE_POS]))
 		{
 			testResult = SimContext::TEST_TRUE_POS;
 		}
 		else if(hivScreeningAfter.numTestResultsHIVNegativeType[SimContext::TEST_TRUE_POS] >
-		        hivScreeningBefore.numTestResultsHIVNegativeType[SimContext::TEST_TRUE_POS])
+			hivScreeningBefore.numTestResultsHIVNegativeType[SimContext::TEST_TRUE_POS])
 		{
 			testResult = SimContext::TEST_TRUE_POS;
 		}
 		else if(hivScreeningAfter.numTestResultsPrevalentType[SimContext::TEST_FALSE_NEG] >
-		        hivScreeningBefore.numTestResultsPrevalentType[SimContext::TEST_FALSE_NEG] ||
-		        (hivScreeningAfter.numTestResultsIncidentType[SimContext::TEST_FALSE_NEG] >
-		         hivScreeningBefore.numTestResultsIncidentType[SimContext::TEST_FALSE_NEG]))
+			hivScreeningBefore.numTestResultsPrevalentType[SimContext::TEST_FALSE_NEG] ||
+			(hivScreeningAfter.numTestResultsIncidentType[SimContext::TEST_FALSE_NEG] >
+			 hivScreeningBefore.numTestResultsIncidentType[SimContext::TEST_FALSE_NEG]))
 		{
 			testResult = SimContext::TEST_FALSE_NEG;
 		}
@@ -1638,60 +1544,19 @@ int Person::getSexualActivity()
 
 /**** Start constructors, destructors, initializers *****/
 
-/*
-Person::Person()
-{
-	//healthAfterInfection = nullptr;
-	risk = LOW;
-	traceMe = false;
-	generationOfInfection = -1;
-	ageInfected = -1;
-	wentThroughCEPAC = false;
-	cepacPatient = nullptr;
-    sexualActivityDelay = 0;
-
-	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
-	{
-		unformedPartnershipsLatestTime[type] = 0;
-		unformedPartnershipsTotal[type] = 0;
-		numPartnersInHistory[type] = 0;
-		monthOfLatestPartnershipDissolution[type] = 0;
-	}
-
-	monthOfLatestConcurrent = 0;
-	CEPACcosts = 0;
-}
-*/
-
 //this constructor is used by the Male and Female classes
 Person::Person(int _age, unsigned int _populationID) :
     preExposureProphylaxisAdherence_(0),
     targetedCepacContext_(nullptr),
-	sexualActivityDelay(0),
-	monthly_cepac_costs_undiscounted_(0),
-	monthly_cepac_costs_discounted_(0),
-	monthly_cdm_costs_undiscounted_(0),
-	monthly_cdm_costs_discounted_(0),
+    sexualActivityDelay(0),
+    monthly_cepac_costs_undiscounted_(0),
+    monthly_cepac_costs_discounted_(0),
+    monthly_cdm_costs_undiscounted_(0),
+    monthly_cdm_costs_discounted_(0),
     using_prep_this_month_(false)
 {
 	id = Person::idCounter++;
 	populationID = _populationID;
-#ifndef TESTING
-
-    if(!Utility::withinRange<int>(_age, 0, Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Person::maxYrForDeathStats)))
-	{
-		if(_age < 0)
-		{
-			_age = 0;
-		}
-		else
-		{
-			//cout << "SOMEONE WAS TOO OLD (" << _age << ")!  MAKING THEM " << Utility::convertTime(YEAR, MONTH, Person::maxYrForDeathStats) << "!" << std::endl;
-            _age = Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Person::maxYrForDeathStats);
-		}
-	}
-
-#endif
 	age = _age;
 	initAge = _age;
 	sexuallyActive = false;
@@ -1699,7 +1564,6 @@ Person::Person(int _age, unsigned int _populationID) :
 	death = false;
 	deathStatus = ALIVE;
 	sexualActivityLevel = 1.0;
-	//healthAfterInfection = nullptr;
 	cepacPatient = nullptr;
 	CEPACcosts = 0;
 	wentThroughCEPAC = false;
