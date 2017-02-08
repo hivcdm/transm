@@ -1236,7 +1236,6 @@ void Population::ApplyPrevalentInfections(DemographicProfile::Gender _gender,
     
 	bool isCSW = p->isCSW();
 	Person::RiskLevel risk = p->getRiskLevel();
-	
 	bool isPrevalent = false;
 	if(isCSW) {
 	    if(_bucket.at(ageBucketIndex)[0] <
@@ -1266,6 +1265,15 @@ void Population::ApplyPrevalentInfections(DemographicProfile::Gender _gender,
     }
 }
 
+/* Seed Population with Prevalent Individuals 
+ * 
+ * Example (for Botswana):
+ * age range: 17-49 (driven by input)
+ * duration: 144 (How do we inform CEPAC?)
+ * hvl: select from distribution
+ * cd4: select from distribution -- correlated to hvl
+ * oiHitory: select from distribution (if needed)
+ */
 
 void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 {

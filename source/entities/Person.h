@@ -13,6 +13,7 @@
 #include "core/Constants.h"
 #include "statistics/StatsRecord.h"
 #include "utility/Utility.h"
+
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/member.hpp>
@@ -765,6 +766,21 @@ private:
     //Return the current index of which SimContext should be used to update the
     //health of a patient
     int getCEPACSimContextIndex(EventParams &_eventParams);
+
+    double updateHealthCosts(EventParams &_eventParams,
+			     CostsTracker *costsTracker,
+			     const RunStats::OverallCosts before,
+			     const RunStats::OverallCosts after);
+    void updateTestingStatus(EventParams &_eventParams,
+			     ArtRolloutTracker *testTracker,
+			     const RunStats::HIVScreening before,
+			     const RunStats::HIVScreening after);
+    void traceTreatmentChange(EventParams &_eventParams, bool after);
+    void traceCD4Change(EventParams &_eventParams, double before, double after);
+    void traceHVLChange(EventParams &_eventParams, HVLStrata before,
+			HVLStrata after);
+    void traceHIVChange(EventParams &_eventParams, HIVStatus before,
+			HIVStatus after);
 
     double monthly_cepac_costs_undiscounted_;
     double monthly_cepac_costs_discounted_;
