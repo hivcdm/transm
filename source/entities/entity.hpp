@@ -231,12 +231,14 @@ protected:
 
     SimContext *targetedCepacContext_;
 
-	//person's current demographic profile - values in here depend on person's physical, relational state, and other preferences
+    //person's current demographic profile - values in here depend on person's
+    //physical, relational state, and other preferences
 	DemographicProfile dmgProfile;
 
 	//person keeps track of which BucketDemographicProfile they are currently in
 	//  this value should stay equal to dmgProfile->getProfileID()
-	//  sometimes a person's dmgProfile is changed, so we have to refresh their place in the EntityPool
+    //  sometimes a person's dmgProfile is changed, so we have to refresh their
+    //  place in the EntityPool
 	DemographicProfile::ProfileID currentBucketID;
 
 	//Entity's relational state
@@ -367,6 +369,8 @@ public:
 	 */
 	void initializeCEPACpatient(EventParams &_eventParams);
 
+	void updateCEPACpatient(EventParams &_eventParams);
+
 	virtual double getChanceBecomeCsw() const = 0;
 
 	/**
@@ -436,7 +440,9 @@ public:
 	// Self explanatory I'd say
 	bool isSexuallyActive();
 
-	bool isCSW();
+	bool isCSW() const;
+
+	bool isMale() const;
 
 	/**
 	//see whether person dies. If they went through CEPAC, use health trace. else roll against nonAIDS death probs
@@ -677,6 +683,9 @@ public:
 
 	const EntityStatsRecord *getStats();
 
+	void enableInfectionTrace(int _generationOfInfection,
+				  EventParams &_eventParams);
+
 	//Unformed partnership tallies getters and setters -- the total should never be reset, only the "latest" (i.e. current time step)
 	int getTotalUnformedPartnerships(SexualPartnership::Type type);
 	int getLatestUnformedPartnerships(SexualPartnership::Type type);
@@ -762,7 +771,8 @@ public:
     }
 
 private:
-	//Return the current index of which SimContext should be used to update the health of a patient
+    //Return the current index of which SimContext should be used to update the
+    //health of a patient
 	int getCEPACSimContextIndex(EventParams &_eventParams);
 
 	double monthly_cepac_costs_undiscounted_;
@@ -771,35 +781,6 @@ private:
 	double monthly_cdm_costs_discounted_;
 
     bool using_prep_this_month_;
-
-/*    class PersonDB {
-    	typedef boost::multi_index::multi_index_container<><
-    			Person,
-				indexed_by<
-					ordered_unique<
-						composite_key<
-							Person,
-							member<Person, unsigned_int, &Person::age>,
-							identity<Person>>,
-						composite_key<
-							member<Person, HVLStrata, &Person::hvl>,
-							identity<Person>>,
-
-
-
-    	    hashed_non_unique< // indexed by quadrant coordinates
-    	      composite_key<
-    	        street_entry,
-    	        member<street_entry,int,&street_entry::x>,
-    	        member<street_entry,int,&street_entry::y>
-    	      >
-    	    >,
-    	    hashed_non_unique< // indexed by street name
-    	      member<street_entry,std::string,&street_entry::name>
-    	    >
-    	  >
-    	> street_locator;
-    };*/
 };
 
 } // namespace transm
