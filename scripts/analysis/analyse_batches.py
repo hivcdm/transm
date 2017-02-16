@@ -434,9 +434,9 @@ class Run:
                 self.files[file_type] = TabularFile(_file, num_header_rows[file_type])
 
         if self.is_sane == True:
-            #self.extract_infections()
+            self.extract_infections()
             self.extract_cascade()
-            #self.extract_costs_and_lms()
+            self.extract_costs_and_lms()
             self.extract_prevalence_and_incidence()
             if full_output:
                 self.extract_health_states()
