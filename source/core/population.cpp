@@ -30,7 +30,7 @@ unsigned int Population::idCounter = 0;
 /**
 Creates an initial population of folks
 **/
-Population::Population(EventParams &parameters) 
+Population::Population(EventParams &parameters)
     : populationID(Population::idCounter++),
       parameters_(parameters)
 {
@@ -43,9 +43,9 @@ void Population::Circumcise(Entity *p)
     {
         p->Circumcise();
         populationStatistics.costsTracker.RecordCircumcision(
-			popWideParams.circumcisionCost, 
+			popWideParams.circumcisionCost,
 			popWideParams.circumcisionCost * p->getCepacDiscountFactor(parameters_));
-		p->add_cdm_cost(popWideParams.circumcisionCost, 
+		p->add_cdm_cost(popWideParams.circumcisionCost,
 			popWideParams.circumcisionCost * p->getCepacDiscountFactor(parameters_));
     }
 }
@@ -1143,35 +1143,19 @@ void Population::InitIncidentInfectionsByAge()
     populationStatistics.infectionsTracker.initializeIncidentInfectionsByAge(incident_by_entity_type_age, totalIncidentInfsAge);
 }
 
-void Population::ApplyPrevalentInfection(Entity *p)
+void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 {
-    Entity::HIVStatus oldStatus = p->hivStatus;
+    // counter for number of people in each age bucket who are infected
+    // (used to initialize prevalence) (CSW, High risk, Low risk)
+    std::vector<std::array<int, 3>> numInfectedByAgeBucketMale(
+	popWideParams.initialAgeBuckets.size());
+    std::vector<std::array<int, 3>> numInfectedByAgeBucketFemale(
+	popWideParams.initialAgeBuckets.size());
 
-    if(parameters_.tracePrevalentCases) {
-	p->setToBeTraced();
-    }
-
-    p->becomeInfected(Constants::InitialInfection, parameters_);
-    RecordInfection(p, nullptr, parameters_.currTime);
-
-    if(oldStatus != p->hivStatus) {
-	((BucketSexualMixing *) entities->getBucket(
-	    p->getDemographicProfile()->getProfileID()))->
-	    changeHIVStatus(p, oldStatus, p->hivStatus);
-    }
-
-    if(parameters_.useRollout) {
-	rolloutUntreatedPool.push_back(p);
-    }
-
-    if (p->getDemographicProfile()->get(
-	    p->getDemographicProfile()->getProfileID(),
-	    DemographicProfile::Demographic::SexualActivityStatus) !=
-	(std::size_t)DemographicProfile::SexualActivityStatus::NotActive) {
-	((BucketSexualMixing *)entities->getBucket(
-	    p->getDemographicProfile()->
-	    getProfileID()))->increaseInfected(p);
-    }
+    ApplyPrevalentInfections(DemographicProfile::Gender::Male,
+			     numInfectedByAgeBucketMale);
+    ApplyPrevalentInfections(DemographicProfile::Gender::Female,
+			     numInfectedByAgeBucketFemale);
 }
 
 void Population::ApplyPrevalentInfections(DemographicProfile::Gender _gender,
@@ -1218,19 +1202,42 @@ void Population::ApplyPrevalentInfections(DemographicProfile::Gender _gender,
     }
 }
 
-void Population::ApplyIncidentPrevalence(EventParams &parameters_)
+void Population::ApplyPrevalentInfection(Entity *p)
 {
-    // counter for number of people in each age bucket who are infected
-    // (used to initialize prevalence) (CSW, High risk, Low risk)
-    std::vector<std::array<int, 3>> numInfectedByAgeBucketMale(
-	popWideParams.initialAgeBuckets.size());
-    std::vector<std::array<int, 3>> numInfectedByAgeBucketFemale(
-	popWideParams.initialAgeBuckets.size());
+    Entity::HIVStatus oldStatus = p->hivStatus;
 
-    ApplyPrevalentInfections(DemographicProfile::Gender::Male,
-			     numInfectedByAgeBucketMale);
-    ApplyPrevalentInfections(DemographicProfile::Gender::Female,
-			     numInfectedByAgeBucketFemale);
+    if(parameters_.tracePrevalentCases) {
+	p->setToBeTraced();
+    }
+
+    bool chronicInfection = rollForChronicInfection(parameters_.randomNums);
+    p->seedInfection(Constants::InitialInfection, parameters_, chronicInfection);
+    RecordInfection(p, nullptr, parameters_.currTime);
+
+    if(oldStatus != p->hivStatus) {
+	((BucketSexualMixing *) entities->getBucket(
+	    p->getDemographicProfile()->getProfileID()))->
+	    changeHIVStatus(p, oldStatus, p->hivStatus);
+    }
+
+    if(parameters_.useRollout) {
+	rolloutUntreatedPool.push_back(p);
+    }
+
+    if (p->getDemographicProfile()->get(
+	    p->getDemographicProfile()->getProfileID(),
+	    DemographicProfile::Demographic::SexualActivityStatus) !=
+	(std::size_t)DemographicProfile::SexualActivityStatus::NotActive) {
+	((BucketSexualMixing *)entities->getBucket(
+	    p->getDemographicProfile()->
+	    getProfileID()))->increaseInfected(p);
+    }
+}
+
+bool Population::rollForChronicInfection(RandomNumberGenerator &_randomNums)
+{
+    double infectionRate = popWideParams.GetChanceChronicInfection();
+    return (_randomNums.chance(infectionRate));
 }
 
 void Population::RecordInfection(const Entity *infectee, const Entity *infector, Time time)

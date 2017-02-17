@@ -741,12 +741,12 @@ SimulationParametersXml::EntityDistributions SimulationParametersXml::GetEntityD
 
 PopulationParameters SimulationParametersXml::GetPopulationParameters() const
 {
-	auto population_node = document_.child("simulation").child("population");
+    auto population_node = document_.child("simulation").child("population");
     auto initial_infections_node = population_node.child("initialInfections");
-	auto initial_state_node = population_node.child("initialState");
+    auto initial_state_node = population_node.child("initialState");
 
     PopulationParameters parameters;
-	parameters.SetInitialSize(Text<int>(initial_state_node.child("size")));
+    parameters.SetInitialSize(Text<int>(initial_state_node.child("size")));
 
 	//get initial age distribution
 	for(auto age_bucket_node : initial_state_node.child("entityDistributions").children("ageRange"))
@@ -848,17 +848,20 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
 
 	auto defaultMaleParams = GetMaleSubPopParams();
 	parameters.SetMaleParameters(defaultMaleParams);
-    auto defaultMsmParams = GetMsmSubPopParams();
-    parameters.SetMsmParameters(defaultMsmParams);
-    auto defaultMsmwParams = GetMsmwSubPopParams();
-    parameters.SetBiMaleParameters(defaultMsmwParams);
+	auto defaultMsmParams = GetMsmSubPopParams();
+	parameters.SetMsmParameters(defaultMsmParams);
+	auto defaultMsmwParams = GetMsmwSubPopParams();
+	parameters.SetBiMaleParameters(defaultMsmwParams);
 	auto defaultFemaleParams = GetFemaleSubPopParams();
 	parameters.SetFemaleParameters(defaultFemaleParams);
 
-    parameters.SetInitialCswProportion("male", defaultMaleParams.getChanceBecomeCSW());
-    parameters.SetInitialCswProportion("female", defaultFemaleParams.GetChanceBecomeCSW());
-    parameters.SetCswEndAge("male", defaultMaleParams.GetCswEndAge());
-    parameters.SetCswEndAge("female", defaultFemaleParams.GetCswEndAge());
+	parameters.SetChanceChronicInfection(
+	    Text<double>(initial_infections_node.child("chanceSeedChronicInfection")));
+
+	parameters.SetInitialCswProportion("male", defaultMaleParams.getChanceBecomeCSW());
+	parameters.SetInitialCswProportion("female", defaultFemaleParams.GetChanceBecomeCSW());
+	parameters.SetCswEndAge("male", defaultMaleParams.GetCswEndAge());
+	parameters.SetCswEndAge("female", defaultFemaleParams.GetCswEndAge());
 
 	//save flags to indicate whether particular partnership types have duration or not
 	for(auto type : enum_iterator<SexualPartnership::Type>())

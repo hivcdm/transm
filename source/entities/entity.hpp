@@ -360,6 +360,9 @@ public:
 	/// </summary>
 	void becomeInfected(int _generationOfInfection, EventParams &_eventParams);
 
+	void seedInfection(int _generationOfInfection, EventParams &_eventParams,
+		bool chronicInfection);
+
 	/*
 	 * Initializes cepacPatient using the persons current age, gender, and infection status.
 	 * Prevalent cases should call "becomeInfected" before calling this function; incident cases will become infected later

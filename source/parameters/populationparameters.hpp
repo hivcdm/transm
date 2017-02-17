@@ -93,6 +93,9 @@ public:
 	int GetInitialSize() const { return initSize; }
 	void SetInitialSize(int size) { initSize = size; }
 
+	double GetChanceChronicInfection() const {return chronicInfectionRate; }
+	void SetChanceChronicInfection(double rate) { chronicInfectionRate = rate; }
+
 	const std::vector<AgeBucketPrevalenceInfo> &GetInitialAgeBuckets() const { return initialAgeBuckets; }
 	std::vector<AgeBucketPrevalenceInfo> &GetInitialAgeBuckets() { return initialAgeBuckets; }
 
@@ -147,6 +150,8 @@ protected:
 
 private:
 	long initSize;
+
+	double chronicInfectionRate;
 
     /// <summary>
 	/// Per month per person based on WHI data
