@@ -238,6 +238,7 @@ private:
 	void ApplyPrevalentInfection(Person *p);
 	void ApplyPrevalentInfections(DemographicProfile::Gender _gender,
 				      std::vector<std::array<int, 3>> bucket);
+	bool rollForChronicInfection(RandomNumberGenerator &_randomNums);
 
     /// <summary>
 	/// processes the death of 1 person, updates statistics, removes that person from any relationships

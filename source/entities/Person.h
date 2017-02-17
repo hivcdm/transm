@@ -314,11 +314,16 @@ public:
 	void ageOneTimeUnit();
 
 	/*
-		call this to infect person...
-		if CEPAC bridge is in place, will call CEPAC to determine the health trajectory of this person
-		@params _prevalentInfection if true, than this person was a prevalent infection
+	 * call this to infect person...
+	 * if CEPAC bridge is in place, will call CEPAC to determine the health 
+	 * trajectory of this person
+	 * @params _prevalentInfection if true, than this person was a prevalent 
+	 * infection
 	*/
 	void becomeInfected(int _generationOfInfection, EventParams &_eventParams);
+
+	void seedInfection(int _generationOfInfection, EventParams &_eventParams,
+		bool chronicInfection);
 
 	/*
 	 * Initializes cepacPatient using the persons current age, gender, and infection status.

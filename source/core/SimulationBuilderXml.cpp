@@ -756,6 +756,9 @@ void SimulationBuilderXml::ReadPopulationParameters()
 			Text<int>(age_bucket_node.child("numInfectedFemaleHighRisk")));
 	}
 
+	population_parameters.SetChanceChronicInfection(
+	    Text<double>(initial_state_node.child("chanceSeedChronicInfection")));
+
 	population_parameters.SetInitialCswProportion(DemographicProfile::Gender::Male, Text<double>(initial_state_node.child("chanceBeingCswMale")));
 	population_parameters.SetInitialCswProportion(DemographicProfile::Gender::Female, Text<double>(initial_state_node.child("chanceBeingCswFemale")));
     population_parameters.SetCswEndAge(DemographicProfile::Gender::Male, Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Text<int>(initial_state_node.child("cswEndAgeMale"))));

@@ -245,6 +245,31 @@ void Person::addPartnership(SexualPartnership *_partnership)
 	}
 }
 
+void Person::seedInfection(int _generationOfInfection, EventParams &_eventParams,
+    bool chronicInfection)
+{
+    enableInfectionTrace(_generationOfInfection, _eventParams);
+
+    hvl = HVL_PRIMARY; // From InitHVL in cepac.in file
+    cd4 = -1; // will get updated below
+    ageInfected = age; // Calc from cdm.xml file
+
+    generationOfInfection = _generationOfInfection;
+
+    if(!wentThroughCEPAC) {
+	// Need to initialize CEPAC person first
+	initializeCEPACpatient(_eventParams);
+    }
+
+    // force new infection
+    cepacPatient->forceNewInfection(chronicInfection);
+    cd4 = cepacPatient->getDiseaseState()->currTrueCD4;
+    currentTrueHvl = getHvlStratum();
+
+    updateCEPACpatient(_eventParams);
+}
+
+
 void Person::becomeInfected(int _generationOfInfection, EventParams &_eventParams)
 {
     enableInfectionTrace(_generationOfInfection, _eventParams);
@@ -256,6 +281,7 @@ void Person::becomeInfected(int _generationOfInfection, EventParams &_eventParam
     hvl = HVL_PRIMARY;
     cd4 = -1;
     ageInfected = age;
+
     generationOfInfection = _generationOfInfection;
 
     if(!wentThroughCEPAC) {
@@ -263,8 +289,8 @@ void Person::becomeInfected(int _generationOfInfection, EventParams &_eventParam
 	initializeCEPACpatient(_eventParams);
     }
 
-    /* force new infection - force hvl, cd4, duration and OI hist (possible) */
-    cepacPatient->forceNewInfection();
+    // force new Acute infection
+    cepacPatient->forceNewInfection(false);
     cd4 = cepacPatient->getDiseaseState()->currTrueCD4;
     currentTrueHvl = getHvlStratum();
 
