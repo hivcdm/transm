@@ -121,7 +121,7 @@ private:
 	/** current population */
 	Population population_;
 
-	bool failedCalibration_;
+	bool passedCalibration_;
 
 	bool hasPassedFirstMonthCalibPrev_;
 
