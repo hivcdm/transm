@@ -288,7 +288,7 @@ Simulation::Simulation()
     : time_(0),
       parameters_(),
       population_(parameters_),
-      failedCalibration_(false),
+      passedCalibration_(true),
       hasPassedFirstMonthCalibPrev_(false),
       monthOfFirstMonthCalibPrev_(0),
       incidence_(0),
@@ -494,11 +494,12 @@ void Simulation::Step()
 
 	if(parameters_.calibrationInputs.useCalibration && parameters_.calibrationInputs.monthOfCalibration == time_)
 	{
-		bool passedCalibration = population_.PassesPartnershipCalibration(parameters_);
-		string passedCalibrationString = (passedCalibration == true ? "true" : "false");
+		passedCalibration_ = population_.PassesPartnershipCalibration(parameters_);
+		string passedCalibrationString = (passedCalibration_ == true ? "true" : "false");
 		std::cerr << "PARTNERSHIP CALIBRATION PASSED: " << passedCalibrationString << endl;
-		//If this run doesn't pass the partnership calibration stop the run and discard specified trace files
-		if(!passedCalibration)
+		//If this run doesn't pass the partnership calibration stop the run and
+		// discard specified trace files
+		if(!passedCalibration_)
 		{
 			return;
 		}
@@ -565,15 +566,13 @@ void Simulation::LastStep()
 	}
 
 	//Run every infected person left through CEPAC until they die
-	if(failedCalibration_)
-	{
-		parameters_.displayOut("Partnership Calibration Failed...Deleting specified trace files...\n");
-	}
-	else
-	{
-		parameters_.displayOut("Running all remaining persons through CEPAC until they die...\n");
-		population_.UpdateFinalPhysicalState(parameters_);
-		parameters_.displayOut("Done!\n");
+	if(!passedCalibration_) {
+	    parameters_.displayOut("Partnership Calibration Failed..."\
+				   "Deleting specified trace files...\n");
+	} else {
+	    parameters_.displayOut("Running all remaining persons through CEPAC until they die...\n");
+	    population_.UpdateFinalPhysicalState(parameters_);
+	    parameters_.displayOut("Done!\n");
 	}
 
     if(parameters_.trace_files[EventParams::TraceFile::Type::Infection].enabled)
@@ -598,25 +597,21 @@ void Simulation::LastStep()
 	}
 
 	//if failed partnership calibration toss unneeded files
-	if(failedCalibration_)
-	{
-        for(auto &trace_file : parameters_.trace_files)
-        {
-            if(trace_file.second.toss)
-            {
-                trace_file.second.file.close();
-                std::string fileName = parameters_.simName;
-                fileName.append("-" + trace_file.second.extension);
-                remove(fileName.c_str());
-            }
-        }
-
-		for(int i = 0; i < Constants::NUMBER_TIME_POINTS_SAVE_STATE; i++)
-		{
-			std::string fileName = parameters_.simName;
-			fileName.append("-popState" + boost::lexical_cast<std::string>(i)+".pop");
-			remove(fileName.c_str());
+	if(!passedCalibration_) {
+	    for(auto &trace_file : parameters_.trace_files) {
+		if(trace_file.second.toss) {
+		    trace_file.second.file.close();
+		    std::string fileName = parameters_.simName;
+		    fileName.append("-" + trace_file.second.extension);
+		    remove(fileName.c_str());
 		}
+	    }
+
+	    for(int i = 0; i < Constants::NUMBER_TIME_POINTS_SAVE_STATE; i++) {
+		std::string fileName = parameters_.simName;
+		fileName.append("-popState" + boost::lexical_cast<std::string>(i)+".pop");
+		remove(fileName.c_str());
+	    }
 	}
 
     outputs_.intervention_outcomes.Write(parameters_.simName + "-InterventionOutcomes.xls");
@@ -856,7 +851,7 @@ Outputs Simulation::Run(MessageCallback message_callback)
 		FirstStep();
 	}
 
-	while(time_ < duration_)
+	while(time_ < duration_ && passedCalibration_)
 	{
 		Step();
 	}
