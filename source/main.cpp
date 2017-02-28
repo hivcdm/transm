@@ -86,6 +86,16 @@ int run_simulation(const transm::path &batch_directory)
         SimulationBuilderXml sim_builder;
 	SimulationReader sim_reader(sim_builder);
 	sim_reader.ConstructSimulation(input_file.string());
+	Simulation &simulation = sim_builder.GetResult();
+
+	if (simulation.GetEventParams().calibrationInputs.useCalibration) {
+	    std::cout << std::endl;
+	    std::cout << "*****Warning: Calibration Enabled******" << std::endl;
+	    std::cout << "This will make things run slowly" << std::endl;
+	    std::cout << "If this is not expected abort hit Ctrl+c to abort" << std::endl;
+	    std::cout << std::endl;
+	    sleep(4);
+	}
 
 	auto write_and_print = [](const std::string &s)
         {
@@ -93,7 +103,6 @@ int run_simulation(const transm::path &batch_directory)
             std::ofstream("log.txt", std::ios::app) << s;
         };
 
-	Simulation &simulation = sim_builder.GetResult();
 	auto outputs = simulation.Run(write_and_print);
 
         cepac_summary.addRunStats(&simulation.GetCEPACRunStats());

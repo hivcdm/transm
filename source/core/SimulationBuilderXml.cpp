@@ -190,13 +190,7 @@ void SimulationBuilderXml::ReadSimulationParameters()
 	}
 
 	auto calibration_node = simulation_node.child("calibration");
-	// We can't let the user enable this by mistake (yes that happens!), it makes things way too slow. Disabled for non-specific builds. GA
-#ifdef CALIB_ENABLED
 	parameters.calibrationInputs.useCalibration = Attr<bool>(calibration_node, "enabled");
-#else
-	parameters.calibrationInputs.useCalibration = false;
-#endif
-
 	if(parameters.calibrationInputs.useCalibration)
 	{
 		auto &calib = parameters.calibrationInputs;
