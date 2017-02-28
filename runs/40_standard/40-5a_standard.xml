@@ -129,7 +129,7 @@
     </definition>
   </concurrencyDefinition>
   <calibration enabled="false">
-    <time>600</time>
+    <monthOfCalibration>600</monthOfCalibration>
     <partnershipOutcomes>
       <steadyPrev>
         <popOfInterest>0</popOfInterest>
@@ -172,6 +172,7 @@
     <ageOfMajority>17</ageOfMajority>
     <initialInfections>
       <delay>600</delay>
+      <chanceSeedChronicInfection>0.00</chanceSeedChronicInfection>
       <profile bucket="SA:MALE:HETERO:*:NON_CSW" risk="high" age-range="17-19">1</profile>
       <profile bucket="SA:FEMALE:HETERO:*:NON_CSW" risk="high" age-range="17-19">1</profile>
       <profile bucket="SA:FEMALE:HETERO:*:CSW" risk="high" age-range="17-19">1</profile>

@@ -94,6 +94,16 @@ int run_simulation(const transm::path &batch_directory)
         //XXX: we shouldn't have to do this
         parameters.SetRandomNumberGenerator(simulation.GetEventParams().randomNums);
         simulation.Initialize(parameters);
+
+	if (simulation.GetEventParams().calibrationInputs.useCalibration) {
+	    std::cout << std::endl;
+	    std::cout << "*****Warning: Calibration Enabled******" << std::endl;
+	    std::cout << "This will make things run slowly" << std::endl;
+	    std::cout << "If this is not expected abort hit Ctrl+c to abort" << std::endl;
+	    std::cout << std::endl;
+	    sleep(4);
+	}
+
 	auto outputs = simulation.Run();
 
         cepac_summary.addRunStats(&simulation.GetCEPACRunStats());
