@@ -1,6 +1,6 @@
-<simulation version="3.8">
+<simulation version="3.9">
   <debugLevel>1</debugLevel>
-  <duration>10000</duration>
+  <duration>1000</duration>
   <fixedSeed>0</fixedSeed>
   <monthOf1990>600</monthOf1990>
   <traceFiles>
@@ -183,6 +183,56 @@
         <range lower="0" upper="16">
           <distribMale>0.433</distribMale>
           <distribFemale>0.414</distribFemale>
+        </range>
+        <range lower="17" upper="19">
+          <distribMale>0.069</distribMale>
+          <distribFemale>0.071</distribFemale>
+        </range>
+        <range lower="20" upper="24">
+          <distribMale>0.110</distribMale>
+          <distribFemale>0.118</distribFemale>
+        </range>
+        <range lower="25" upper="29">
+          <distribMale>0.088</distribMale>
+          <distribFemale>0.092</distribFemale>
+        </range>
+        <range lower="30" upper="34">
+          <distribMale>0.071</distribMale>
+          <distribFemale>0.063</distribFemale>
+        </range>
+        <range lower="35" upper="39">
+          <distribMale>0.057</distribMale>
+          <distribFemale>0.049</distribFemale>
+        </range>
+        <range lower="40" upper="44">
+          <distribMale>0.046</distribMale>
+          <distribFemale>0.044</distribFemale>
+          <numInfectedMaleCsw>0</numInfectedMaleCsw>
+        </range>
+        <range lower="45" upper="49">
+          <distribMale>0.035</distribMale>
+          <distribFemale>0.038</distribFemale>
+          <numInfectedMaleCsw>0</numInfectedMaleCsw>
+        </range>
+        <range lower="50" upper="100">
+          <distribMale>0.089</distribMale>
+          <distribFemale>0.112</distribFemale>
+        </range>
+      </ageDistributionYrs>
+      <seedingDistribution seedDelay="600" useWeights="true">
+      <!-- SeedingDistribution
+	   @seedDelay: month to seed the population
+	   @useWeights: when True, calculate the total numInfected
+	       using the values in <numInfected*> as a weighting of the
+	       entire sexually active population
+	       when False, use the value in <numInfected*> as the exact 
+	       number of individuals in that range*sex*risk bucket
+      -->
+	<chanceSeedChronicInfection>0.91</chanceSeedChronicInfection>
+	<seedPrevalence>0.06</seedPrevalence>
+	<minAgeSeedPrev>17</minAgeSeedPrev>
+	<maxAgeSeedPrev>49</maxAgeSeedPrev>
+        <range lower="0" upper="16">
           <numInfectedMaleCsw>0</numInfectedMaleCsw>
           <numInfectedMaleHighRisk>0</numInfectedMaleHighRisk>
           <numInfectedMaleLowRisk>0</numInfectedMaleLowRisk>
@@ -191,8 +241,6 @@
           <numInfectedFemaleLowRisk>0</numInfectedFemaleLowRisk>
         </range>
         <range lower="17" upper="19">
-          <distribMale>0.069</distribMale>
-          <distribFemale>0.071</distribFemale>
           <numInfectedMaleCsw>0</numInfectedMaleCsw>
           <numInfectedMaleHighRisk>3</numInfectedMaleHighRisk>
           <numInfectedMaleLowRisk>2</numInfectedMaleLowRisk>
@@ -201,8 +249,6 @@
           <numInfectedFemaleLowRisk>3</numInfectedFemaleLowRisk>
         </range>
         <range lower="20" upper="24">
-          <distribMale>0.110</distribMale>
-          <distribFemale>0.118</distribFemale>
           <numInfectedMaleCsw>0</numInfectedMaleCsw>
           <numInfectedMaleHighRisk>3</numInfectedMaleHighRisk>
           <numInfectedMaleLowRisk>2</numInfectedMaleLowRisk>
@@ -211,8 +257,6 @@
           <numInfectedFemaleLowRisk>3</numInfectedFemaleLowRisk>
         </range>
         <range lower="25" upper="29">
-          <distribMale>0.088</distribMale>
-          <distribFemale>0.092</distribFemale>
           <numInfectedMaleCsw>0</numInfectedMaleCsw>
           <numInfectedMaleHighRisk>3</numInfectedMaleHighRisk>
           <numInfectedMaleLowRisk>2</numInfectedMaleLowRisk>
@@ -221,8 +265,6 @@
           <numInfectedFemaleLowRisk>3</numInfectedFemaleLowRisk>
         </range>
         <range lower="30" upper="34">
-          <distribMale>0.071</distribMale>
-          <distribFemale>0.063</distribFemale>
           <numInfectedMaleCsw>0</numInfectedMaleCsw>
           <numInfectedMaleHighRisk>3</numInfectedMaleHighRisk>
           <numInfectedMaleLowRisk>2</numInfectedMaleLowRisk>
@@ -231,8 +273,6 @@
           <numInfectedFemaleLowRisk>6</numInfectedFemaleLowRisk>
         </range>
         <range lower="35" upper="39">
-          <distribMale>0.057</distribMale>
-          <distribFemale>0.049</distribFemale>
           <numInfectedMaleCsw>0</numInfectedMaleCsw>
           <numInfectedMaleHighRisk>3</numInfectedMaleHighRisk>
           <numInfectedMaleLowRisk>2</numInfectedMaleLowRisk>
@@ -241,8 +281,6 @@
           <numInfectedFemaleLowRisk>6</numInfectedFemaleLowRisk>
         </range>
         <range lower="40" upper="44">
-          <distribMale>0.046</distribMale>
-          <distribFemale>0.044</distribFemale>
           <numInfectedMaleCsw>0</numInfectedMaleCsw>
           <numInfectedMaleHighRisk>3</numInfectedMaleHighRisk>
           <numInfectedMaleLowRisk>2</numInfectedMaleLowRisk>
@@ -251,8 +289,6 @@
           <numInfectedFemaleLowRisk>6</numInfectedFemaleLowRisk>
         </range>
         <range lower="45" upper="49">
-          <distribMale>0.035</distribMale>
-          <distribFemale>0.038</distribFemale>
           <numInfectedMaleCsw>0</numInfectedMaleCsw>
           <numInfectedMaleHighRisk>3</numInfectedMaleHighRisk>
           <numInfectedMaleLowRisk>2</numInfectedMaleLowRisk>
@@ -261,8 +297,6 @@
           <numInfectedFemaleLowRisk>6</numInfectedFemaleLowRisk>
         </range>
         <range lower="50" upper="100">
-          <distribMale>0.089</distribMale>
-          <distribFemale>0.112</distribFemale>
           <numInfectedMaleCsw>0</numInfectedMaleCsw>
           <numInfectedMaleHighRisk>0</numInfectedMaleHighRisk>
           <numInfectedMaleLowRisk>0</numInfectedMaleLowRisk>
@@ -270,7 +304,7 @@
           <numInfectedFemaleHighRisk>0</numInfectedFemaleHighRisk>
           <numInfectedFemaleLowRisk>0</numInfectedFemaleLowRisk>
         </range>
-      </ageDistributionYrs>
+      </seedingDistribution>
     </initialState>
     <entities>
       <entity type="Male">
