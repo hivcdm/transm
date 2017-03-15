@@ -748,7 +748,9 @@ bool Person::isInfected()
 
 bool Person::isSexuallyActive()
 {
-	return sexuallyActive;
+    return (getDemographicProfileVal(
+		DemographicProfile::Demographic::SexualActivityStatus) !=
+	    (std::size_t)DemographicProfile::SexualActivityStatus::NotActive);
 }
 
 bool Person::isCSW() const
@@ -1590,7 +1592,6 @@ Person::Person(int _age, unsigned int _populationID) :
 	populationID = _populationID;
 	age = _age;
 	initAge = _age;
-	sexuallyActive = false;
 	ageInfected = -1;
 	death = false;
 	deathStatus = ALIVE;

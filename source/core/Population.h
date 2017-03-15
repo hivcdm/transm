@@ -53,6 +53,7 @@ public:
     SimContext *LoadCepacFile(const std::string &cepac_file) { return parameters_.LoadCepacContext(cepac_file); }
 
     std::vector<Person *> Find(std::function<bool(Person *)> predicate);
+    std::vector<Person *> FindSAInAgeRange(int minAge, int maxAge);
 
     /// <summary>
 	/// determines which DemographicProfiles have the power to initiate relationships and determines which
@@ -139,12 +140,12 @@ public:
     /// <summary>
     /// gets the age bucket of the person
     /// </summary>
-	PopulationParameters::AgeBucketPrevalenceInfo &GetAgeBucket(Person *);
+    SeedDistribution &GetAgeBucket(Person *);
 
     /// <summary>
     /// gets the index of the age bucket of the person
     /// </summary>
-	int GetAgeBucketIndex(Person *);
+    int GetAgeBucketIndex(Person *);
 
     /// <summary>
     /// returns internal count of how big the current population is
@@ -155,6 +156,7 @@ public:
     /// returns internal count of how big the current population is
     /// </summary>
     std::size_t GetNASize();
+    std::size_t GetSASize();
 
     /// <summary>
     /// returns internal count of how big the current population is
@@ -164,17 +166,20 @@ public:
     /// <summary>
     /// returns internal count of how big the current population is
     /// </summary>
-    std::size_t GetSASize(DemographicProfile::Gender _gender, Person::RiskLevel _risk);
+    std::size_t GetSASize(DemographicProfile::Gender _gender,
+			  Person::RiskLevel _risk);
 
     /// <summary>
     /// returns internal count of how big the current population is
     /// </summary>
-    std::size_t GetCSWSize(DemographicProfile::Gender _gender, Person::RiskLevel _risk);
+    std::size_t GetCSWSize(DemographicProfile::Gender _gender,
+			   Person::RiskLevel _risk);
 
     /// <summary>
     ///
     /// </summary>
-	const AgeRangeSizeContainer &GetSizeByAgeRange() const { return currSizeByAgeRange; }
+    const AgeRangeSizeContainer &GetSizeByAgeRange() const
+        { return currSizeByAgeRange; }
 
     /// <summary>
     ///
@@ -229,15 +234,18 @@ private:
     /// </summary>
 	Person *GeneratePerson(EventParams &_eventParams,
 			       DemographicProfile::Gender _gender,
-	                       PopulationParameters::AgeBucketPrevalenceInfo
-			       *_ageBucketParams, bool toTrace);
+	                       AgeDistribution *_ageBucketParams, bool toTrace);
 
 	/// <summary>
 	/// helper funtions for ApplyIncidentPrevalence()
-	/// <summary>
-	void ApplyPrevalentInfection(Person *p);
-	void ApplyPrevalentInfections(DemographicProfile::Gender _gender,
-				      std::vector<std::array<int, 3>> bucket);
+	/// </summary>
+	int prevalentInfectionsFromCoefficients(std::vector<Person *> people,
+					  unsigned long seedPopulation);
+	bool getSeedPersonToInfect(std::vector<Person *> people,
+	    DemographicProfile::Gender _gender, Person::RiskLevel _risk,
+	    bool getCSW = false);
+	void prevalentInfectionsFromCount(DemographicProfile::Gender _gender);
+	void applyPrevalentInfection(Person *p);
 	bool rollForChronicInfection(RandomNumberGenerator &_randomNums);
 
     /// <summary>
@@ -247,7 +255,7 @@ private:
 	void ProcessDeath(EventParams &_eventParams, Person *_p, bool calculateLE);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
 	void DetermineRankings(const EventParams::RolloutEligibility &criteria);
 

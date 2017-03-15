@@ -289,7 +289,6 @@ public:
 	//Person's physical state
 	unsigned int age;					//age of Person (in months)
 	unsigned int initAge;				//age of Person on model init (in months)
-	bool sexuallyActive;
 	int ageInfected;						//age of Person when they got infected (-1 for uninfected)
 	bool death;							//whether this person is dead or not
 	HIVStatus hivStatus;				//Person's infected status

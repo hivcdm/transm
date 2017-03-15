@@ -129,7 +129,6 @@ void SimulationBuilderXml::ReadSimulationParameters()
 	parameters.debugLevel = static_cast<DebugLevel>(0);
 #endif
 	parameters.monthOf1990 = Text<int>(simulation_node.child("monthOf1990"));
-	parameters.delayPrevalence = Text<int>(simulation_node.child("population").child("initialState").child("delay"));
 
 	//save Concurrency Definitions
 	auto concurrency_node = simulation_node.child("concurrencyDefinition");
@@ -430,41 +429,41 @@ void SimulationBuilderXml::InitializePopulation()
 	//  we will go through each age bucket and create the part of the prevalent population that falls within the bucket
 	std::vector<AgeRange> ageRanges;
 
-	for(auto ageBucketParams : population_parameters.GetInitialAgeBuckets())
-	{
-        auto numMalesInCurrentBucket = Utility::round<std::size_t>(totalNumMales * ageBucketParams.proportionOfPopulation[(std::size_t)DemographicProfile::Gender::Male]);
-        auto numFemalesInCurrentBucket = Utility::round<std::size_t>(totalNumFemales * ageBucketParams.proportionOfPopulation[(std::size_t)DemographicProfile::Gender::Female]);
+	for (auto ageBucketParams : population_parameters.GetAgeDistributions()) {
+	    auto numMalesInCurrentBucket = Utility::round<std::size_t>(
+		totalNumMales * ageBucketParams.proportionOfPopulation[(std::size_t)DemographicProfile::Gender::Male]);
+	    auto numFemalesInCurrentBucket = Utility::round<std::size_t>(
+		totalNumFemales * ageBucketParams.proportionOfPopulation[(std::size_t)DemographicProfile::Gender::Female]);
 
-		//calc how many people are in the current age range
-		auto currentBucketSize = numMalesInCurrentBucket + numFemalesInCurrentBucket;
+	    //calc how many people are in the current age range
+	    auto currentBucketSize = numMalesInCurrentBucket + numFemalesInCurrentBucket;
 
-		//Number of persons of each gender to be traced in detailed output file
-		auto numToTrace = static_cast<std::size_t>(population.GetNumberToTrace());
+	    //Number of persons of each gender to be traced in detailed output file
+	    auto numToTrace = static_cast<std::size_t>(population.GetNumberToTrace());
 
-		for(std::size_t count = 0; count < currentBucketSize; count++)
-		{
-			//Determine whether or not person should be traced in SinglePersonTrace
-			bool tracePerson = (count < numToTrace || (count >= numMalesInCurrentBucket && (count - numMalesInCurrentBucket) < numToTrace));
+	    for(std::size_t count = 0; count < currentBucketSize; count++) {
+		//Determine whether or not person should be traced in SinglePersonTrace
+		bool tracePerson = (count < numToTrace || (count >= numMalesInCurrentBucket && (count - numMalesInCurrentBucket) < numToTrace));
 
-			//create a person, males first and females second
-			auto gender = (count < numMalesInCurrentBucket) ? DemographicProfile::Gender::Male : DemographicProfile::Gender::Female;
-			auto person = population.GeneratePerson(simulation_.GetEventParams(), gender, &ageBucketParams, tracePerson);
+		//create a person, males first and females second
+		auto gender = (count < numMalesInCurrentBucket) ? DemographicProfile::Gender::Male : DemographicProfile::Gender::Female;
+		auto person = population.GeneratePerson(simulation_.GetEventParams(), gender, &ageBucketParams, tracePerson);
 
-			//add the created person to the EntityPool
-			population.entities->addPersonToAll(person);
-		}
+		//add the created person to the EntityPool
+		population.entities->addPersonToAll(person);
+	    }
 
-		AgeRange ageRange = {ageBucketParams.minAgeMth, ageBucketParams.maxAgeMth};
-		AgeRangeSizePair ageRangeSize = std::make_pair(ageRange, currentBucketSize);
+	    AgeRange ageRange = {ageBucketParams.minAgeMth, ageBucketParams.maxAgeMth};
+	    AgeRangeSizePair ageRangeSize = std::make_pair(ageRange, currentBucketSize);
 
-		//Add a tuple to the currSizeByAgeRange vector along with the initial size of the age range
-		ageRanges.push_back(ageRange);
-		population.currSizeByAgeRange.push_back(ageRangeSize);
-		population.currSizeByAgeRangeMale.push_back(std::make_pair(ageRange, numMalesInCurrentBucket));
-		population.currSizeByAgeRangeFemale.push_back(std::make_pair(ageRange, numFemalesInCurrentBucket));
+	    //Add a tuple to the currSizeByAgeRange vector along with the initial size of the age range
+	    ageRanges.push_back(ageRange);
+	    population.currSizeByAgeRange.push_back(ageRangeSize);
+	    population.currSizeByAgeRangeMale.push_back(std::make_pair(ageRange, numMalesInCurrentBucket));
+	    population.currSizeByAgeRangeFemale.push_back(std::make_pair(ageRange, numFemalesInCurrentBucket));
 	}
 
-    population.populationStatistics.artTracker.SetAgeRanges(ageRanges);
+	population.populationStatistics.artTracker.SetAgeRanges(ageRanges);
 
 	if(population.parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled)
 	{
@@ -729,80 +728,113 @@ Female::SubPopParams SimulationBuilderXml::ReadFemaleSubPopParams()
 
 void SimulationBuilderXml::ReadPopulationParameters()
 {
-	auto population_node = document_.child("simulation").child("population");
+    auto population_node = document_.child("simulation").child("population");
 
-	auto initial_state_node = population_node.child("initialState");
-	population_parameters.SetInitialSize(Text<int>(initial_state_node.child("size")));
+    auto initial_state_node = population_node.child("initialState");
+    population_parameters.SetInitialSize(Text<int>(initial_state_node.child("size")));
+	
+    population_parameters.SetInitialCswProportion(DemographicProfile::Gender::Male,
+        Text<double>(initial_state_node.child("chanceBeingCswMale")));
+    population_parameters.SetInitialCswProportion(DemographicProfile::Gender::Female,
+        Text<double>(initial_state_node.child("chanceBeingCswFemale")));
+    population_parameters.SetCswEndAge(DemographicProfile::Gender::Male,
+        Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month,
+			     Text<int>(initial_state_node.child("cswEndAgeMale"))));
+    population_parameters.SetCswEndAge(DemographicProfile::Gender::Female,
+        Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month,
+			     Text<int>(initial_state_node.child("cswEndAgeFemale"))));
 
-	//get initial age distribution
-	for(auto age_bucket_node : initial_state_node.child("ageDistributionYrs").children("range"))
-	{
-		population_parameters.GetInitialAgeBuckets().emplace_back(
-            Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Attr<int>(age_bucket_node, "lower")),
-            Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Attr<int>(age_bucket_node, "upper")) + 11,
-			Text<double>(age_bucket_node.child("distribMale")),
-			Text<double>(age_bucket_node.child("distribFemale")),
-			Text<int>(age_bucket_node.child("numInfectedMaleCsw")),
-			Text<int>(age_bucket_node.child("numInfectedFemaleCsw")),
-			Text<int>(age_bucket_node.child("numInfectedMaleLowRisk")),
-			Text<int>(age_bucket_node.child("numInfectedFemaleLowRisk")),
-			Text<int>(age_bucket_node.child("numInfectedMaleHighRisk")),
-			Text<int>(age_bucket_node.child("numInfectedFemaleHighRisk")));
+    //get initial age distribution
+    for(auto age_bucket_node : initial_state_node.child("ageDistribution").children("range")) {
+	population_parameters.GetAgeDistributions().emplace_back(
+	    Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month,
+				 Attr<int>(age_bucket_node, "lower")),
+	    Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month,
+				 Attr<int>(age_bucket_node, "upper")) + 11,
+	    Text<double>(age_bucket_node.child("distribMale")),
+	    Text<double>(age_bucket_node.child("distribFemale")));
+    }
+    
+    //normalize %population values for each age bucket
+    std::array<double, (std::size_t)DemographicProfile::Gender::Last> totalPopulationproportionages;
+    totalPopulationproportionages.fill(0);
+
+    //get the total of proportionage values
+    for(std::size_t i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++) {
+	for(auto &age_bucket : population_parameters.GetAgeDistributions()) {
+	    totalPopulationproportionages[i] += age_bucket.proportionOfPopulation[i];
 	}
 
-	population_parameters.SetChanceChronicInfection(
-	    Text<double>(initial_state_node.child("chanceSeedChronicInfection")));
-
-	population_parameters.SetInitialCswProportion(DemographicProfile::Gender::Male, Text<double>(initial_state_node.child("chanceBeingCswMale")));
-	population_parameters.SetInitialCswProportion(DemographicProfile::Gender::Female, Text<double>(initial_state_node.child("chanceBeingCswFemale")));
-    population_parameters.SetCswEndAge(DemographicProfile::Gender::Male, Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Text<int>(initial_state_node.child("cswEndAgeMale"))));
-    population_parameters.SetCswEndAge(DemographicProfile::Gender::Female, Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Text<int>(initial_state_node.child("cswEndAgeFemale"))));
-
-	//normalize %population values for each age bucket
-	std::array<double, (std::size_t)DemographicProfile::Gender::Last> totalPopulationproportionages;
-	totalPopulationproportionages.fill(0);
-
-	//get the total of proportionage values of AgeBucketPrevalencInfo.proportionOfPopulation
-    for(std::size_t i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
-	{
-		for(auto &age_bucket : population_parameters.GetInitialAgeBuckets())
-		{
-			totalPopulationproportionages[i] += age_bucket.proportionOfPopulation[i];
-		}
-
-		//normalize each proportionage value so that the sum of them == 1
-		for(auto &age_bucket : population_parameters.GetInitialAgeBuckets())
-		{
-			age_bucket.proportionOfPopulation[i] /= totalPopulationproportionages[i];
-		}
+	//normalize each proportionage value so that the sum of them == 1
+	for(auto &age_bucket : population_parameters.GetAgeDistributions()) {
+	    age_bucket.proportionOfPopulation[i] /= totalPopulationproportionages[i];
 	}
+    }
 
-	population_parameters.setBirthRate(Text<double>(population_node.child("birthRate")));
-	population_parameters.setProportionMale(Text<double>(population_node.child("proportionMale")));
-	population_parameters.setProportionCircumcised(Text<double>(population_node.child("proportionCircumcised")));
-	population_parameters.setAgeOfMajority(Text<int>(population_node.child("ageOfMajority")), TimeGranularity::Year);
+    //get parameters related to the seeding of infected individuals
+    auto seed_distrib_node = initial_state_node.child("seedDistribution");
+    population_parameters.SetSeedDelay(Attr<int>(seed_distrib_node, "seedDelay"));
+    population_parameters.SetUseSeedCoefficients(
+	Attr<bool>(seed_distrib_node, "useCoefficients"));
+    population_parameters.SetChanceChronicInfection(
+	Text<double>(seed_distrib_node.child("chanceSeedChronicInfection")));
+    population_parameters.SetSeedPrevalence(
+	Text<double>(seed_distrib_node.child("seedPrevalence")));
+    population_parameters.SetMinSeedAge(
+	Text<int>(seed_distrib_node.child("minSeedAge")));
+    population_parameters.SetMaxSeedAge(
+	Text<int>(seed_distrib_node.child("maxSeedAge")));
 
-	auto defaultMaleParams = ReadMaleSubPopParams();
-	population_parameters.SetMaleParameters(defaultMaleParams);
-	auto defaultFemaleParams = ReadFemaleSubPopParams();
-	population_parameters.SetFemaleParameters(defaultFemaleParams);
+    for(auto range_node : seed_distrib_node.children("range")) {
+	population_parameters.GetSeedDistributions().emplace_back(
+	    Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month,
+				 Attr<int>(range_node, "lower")),
+	    Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month,
+				 Attr<int>(range_node, "upper")) + 11,
+	    Text<int>(range_node.child("numInfectedMaleCsw")),
+	    Text<int>(range_node.child("numInfectedFemaleCsw")),
+	    Text<int>(range_node.child("numInfectedMaleLowRisk")),
+	    Text<int>(range_node.child("numInfectedFemaleLowRisk")),
+	    Text<int>(range_node.child("numInfectedMaleHighRisk")),
+	    Text<int>(range_node.child("numInfectedFemaleHighRisk")));
+    }
 
-	//save flags to indicate whether particular partnership types have duration or not
-	for(auto type : enum_iterator<SexualPartnership::Type>())
-	{
-		auto has_duration = !(defaultMaleParams.getSexualBehavior(SexualPartnership::Type(type)).getPartnershipDurationMth(Person::LOW).isZeroDistrib)
-			&& !(defaultMaleParams.getSexualBehavior(SexualPartnership::Type(type)).getPartnershipDurationMth(Person::HIGH).isZeroDistrib);
-		population_parameters.SetPartnershipHasDuration(DemographicProfile::Gender::Male, type, has_duration);
-		population_parameters.SetPartnershipHasDuration(DemographicProfile::Gender::Female, type, false);
-	}
+    population_parameters.setBirthRate(
+	Text<double>(population_node.child("birthRate")));
+    population_parameters.setProportionMale(
+	Text<double>(population_node.child("proportionMale")));
+    population_parameters.setProportionCircumcised(
+	Text<double>(population_node.child("proportionCircumcised")));
+    population_parameters.setAgeOfMajority(
+	Text<int>(population_node.child("ageOfMajority")), TimeGranularity::Year);
 
-    pugi::xml_node costs_node = document_.select_single_node("/simulation/traceFiles/costEffectiveness").node();
+    auto defaultMaleParams = ReadMaleSubPopParams();
+    population_parameters.SetMaleParameters(defaultMaleParams);
+    auto defaultFemaleParams = ReadFemaleSubPopParams();
+    population_parameters.SetFemaleParameters(defaultFemaleParams);
+
+    //save flags to indicate whether particular partnership types have duration or not
+    for(auto type : enum_iterator<SexualPartnership::Type>()) {
+	auto has_duration = !(defaultMaleParams.getSexualBehavior(SexualPartnership::Type(type))
+			      .getPartnershipDurationMth(Person::LOW).isZeroDistrib)
+	    && !(defaultMaleParams.getSexualBehavior(SexualPartnership::Type(type))
+		 .getPartnershipDurationMth(Person::HIGH).isZeroDistrib);
+	population_parameters.SetPartnershipHasDuration(
+	    DemographicProfile::Gender::Male, type, has_duration);
+	population_parameters.SetPartnershipHasDuration(
+	    DemographicProfile::Gender::Female, type, false);
+    }
+
+    pugi::xml_node costs_node = document_.select_single_node(
+	"/simulation/traceFiles/costEffectiveness").node();
 
     //Costs
     population_parameters.SetCondomCost(Text<double>(costs_node.child("condomCost")));
-    population_parameters.SetCircumcisionCost(Text<double>(costs_node.child("circumcisionCost")));
+    population_parameters.SetCircumcisionCost(
+	Text<double>(costs_node.child("circumcisionCost")));
     population_parameters.SetPrEPCost(Text<double>(costs_node.child("prEPCost")));
-    population_parameters.SetVaginalMicrobicideCost(Text<double>(costs_node.child("vaginalMicrobicideCost")));
+    population_parameters.SetVaginalMicrobicideCost(
+	Text<double>(costs_node.child("vaginalMicrobicideCost")));
 }
 
 Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node criteria_node)
