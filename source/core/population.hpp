@@ -57,13 +57,13 @@ public:
 
 	void Circumcise(Entity *p);
 
-    std::vector<Entity *> Find(std::function<bool(Entity *)> predicate);
-
     PopulationParameters &GetParameters() { return popWideParams; }
     const PopulationParameters &GetParameters() const { return popWideParams; }
 
     SimContext *LoadCepacFile(const std::string &cepac_file) { return parameters_.LoadCepacContext(cepac_file); }
 
+    std::vector<Entity *> Find(std::function<bool(Entity *)> predicate);
+    std::vector<Entity *> FindSAInAgeRange(int minAge, int maxAge);
 
     /// <summary>
 	/// determines which DemographicProfiles have the power to initiate relationships and determines which
@@ -152,12 +152,12 @@ public:
     /// <summary>
     /// gets the age bucket of the person
     /// </summary>
-	AgeBucketPrevalenceInfo &GetAgeBucket(Entity *);
+    AgeBucketPrevalenceInfo &GetAgeBucket(Entity *);
 
     /// <summary>
     /// gets the index of the age bucket of the person
     /// </summary>
-	int GetAgeBucketIndex(Entity *);
+    int GetAgeBucketIndex(Entity *);
 
     /// <summary>
     /// returns internal count of how big the current population is
@@ -168,6 +168,7 @@ public:
     /// returns internal count of how big the current population is
     /// </summary>
     std::size_t GetNASize();
+    std::size_t GetSASize();
 
     /// <summary>
     /// returns internal count of how big the current population is
@@ -249,6 +250,17 @@ private:
 	void ApplyPrevalentInfection(Entity *p);
 	void ApplyPrevalentInfections(DemographicProfile::Gender _gender,
 				      std::vector<std::array<int, 3>> bucket);
+
+	/// <summary>
+	/// helper funtions for ApplyIncidentPrevalence()
+	/// </summary>
+	int prevalentInfectionsFromCoefficients(std::vector<Entity *> people,
+					  unsigned long seedPopulation);
+	bool getSeedPersonToInfect(std::vector<Entity *> people,
+	    DemographicProfile::Gender _gender, Entity::RiskLevel _risk,
+	    bool getCSW = false);
+	void prevalentInfectionsFromCount(DemographicProfile::Gender _gender);
+	void applyPrevalentInfection(Entity *p);
 	bool rollForChronicInfection(RandomNumberGenerator &_randomNums);
 
     /// <summary>
@@ -258,7 +270,7 @@ private:
 	void ProcessDeath(EventParams &_eventParams, Entity *_p, bool calculateLE);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
 	void DetermineRankings(const RolloutEligibility &criteria);
 

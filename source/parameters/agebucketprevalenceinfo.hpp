@@ -23,7 +23,7 @@ public:
         std::size_t _numInfectedNonCSWMalesLowRisk, std::size_t _numInfectedNonCSWFemalesLowRisk,
         std::size_t _numInfectedNonCSWMalesHighRisk, std::size_t _numInfectedNonCSWFemalesHighRisk);
 
-    void print(EventParams &_eventParams);
+    //void print(EventParams &_eventParams);
 
     /// <summary>
     /// the min age that this bucket represents

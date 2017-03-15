@@ -314,8 +314,6 @@ public:
     //age of Entity on model init (in months)
 	Age initAge;
 
-    bool sexuallyActive;
-
     //age of Entity when they got infected (-1 for uninfected)
 	Age ageInfected;
 

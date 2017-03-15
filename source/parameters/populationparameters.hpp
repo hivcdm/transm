@@ -99,7 +99,18 @@ public:
 	const std::vector<AgeBucketPrevalenceInfo> &GetInitialAgeBuckets() const { return initialAgeBuckets; }
 	std::vector<AgeBucketPrevalenceInfo> &GetInitialAgeBuckets() { return initialAgeBuckets; }
 
-    void SetInitialCswProportion(const std::string &entity_type, double proportion) { initProbCSW[entity_type] = proportion; }
+	void SetSeedDelay(int delay) { seedDelay = Time().from_months(delay); }
+	Time GetSeedDelay() { return seedDelay; }
+	void SetSeedPrevalence(double prev) { seedPrevalence = prev; }
+	double GetSeedPrevalence() { return seedPrevalence; }
+	void SetUseSeedCoefficients(bool useCoeffs) { useSeedCoefficients = useCoeffs; }
+	bool UseSeedCoefficients() { return useSeedCoefficients; }
+	void SetMinSeedAge(int age) { minSeedAge = age; }
+	int GetMinSeedAge() { return minSeedAge; }
+	void SetMaxSeedAge(int age) { maxSeedAge = age; }
+	int GetMaxSeedAge() { return maxSeedAge; }
+
+	void SetInitialCswProportion(const std::string &entity_type, double proportion) { initProbCSW[entity_type] = proportion; }
     void SetCswEndAge(const std::string &entity_type, Age age) { CSWEndAge[entity_type] = age; }
 
 	void SetChanceBecomeCsw(DemographicProfile::Gender gender, double chance)
@@ -183,6 +194,15 @@ private:
     /// prevalence parameters stratified by age.
     /// </summary>
 	std::vector<AgeBucketPrevalenceInfo> initialAgeBuckets;
+
+    /// <summary>
+    /// prevalence parameters stratified by age.
+    /// </summary>
+    Time seedDelay;
+    double seedPrevalence;
+    bool useSeedCoefficients;
+    int minSeedAge;
+    int maxSeedAge;
 
     /// <summary>
     /// Base FOI for different transmission types at various viral loads.

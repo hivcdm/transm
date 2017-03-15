@@ -75,7 +75,7 @@ bool Intervention::IsCompleted(Time current_time) const
     return current_time > time_ + duration_;
 }
 
-void TargetGroup::Update(Population &population, Time current_time, 
+void TargetGroup::Update(Population &population, Time current_time,
     RandomNumberGenerator &rng, const std::unordered_set<Entity *> &dead_people)
 {
     if(enrollment_period_.start > current_time)
@@ -351,7 +351,7 @@ void Simulation::FirstStep()
 	//initialize incident infections by age
 	population_.InitIncidentInfectionsByAge();
 
-	if(parameters_.delayPrevalence == Time::Zero)
+	if(population_.popWideParams.GetSeedDelay() == Time::Zero)
 	{
 		population_.ApplyIncidentPrevalence(parameters_);
 	}
@@ -755,9 +755,9 @@ std::size_t Simulation::SimulateMonth()
 	}
 
 	//apply incident prevalence
-	if(parameters_.delayPrevalence == time_)
-	{
-		population_.ApplyIncidentPrevalence(parameters_);
+	Time seedDelay = population_.popWideParams.GetSeedDelay();
+	if(seedDelay != Time::Zero && seedDelay.in_months() == time_.in_months()) {
+	    population_.ApplyIncidentPrevalence(parameters_);
 	}
 
 	//Will confirm that population_.currSize is correct and update size of age ranges

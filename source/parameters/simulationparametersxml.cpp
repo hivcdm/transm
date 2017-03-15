@@ -748,92 +748,116 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
     PopulationParameters parameters;
     parameters.SetInitialSize(Text<int>(initial_state_node.child("size")));
 
-	//get initial age distribution
-	for(auto age_bucket_node : initial_state_node.child("entityDistributions").children("ageRange"))
-	{
-        auto dist = GetEntityDistributions(age_bucket_node);
+    parameters.SetSeedDelay(Text<int>(initial_infections_node.child("delay")));
+    parameters.SetUseSeedCoefficients(
+	Text<bool>(initial_infections_node.child("useCoefficients")));
+    parameters.SetChanceChronicInfection(
+	Text<double>(initial_infections_node.child("chanceSeedChronicInfection")));
+    parameters.SetSeedPrevalence(
+	Text<double>(initial_infections_node.child("seedPrevalence")));
+    parameters.SetMinSeedAge(
+	Text<int>(initial_infections_node.child("minSeedAge")));
+    parameters.SetMaxSeedAge(
+	Text<int>(initial_infections_node.child("maxSeedAge")));
 
-        auto bucket_age_range = std::string(age_bucket_node.attribute("lower").as_string()) + "-" + age_bucket_node.attribute("upper").as_string();
+    //get initial age distribution
+    for (auto age_bucket_node : initial_state_node.child("entityDistributions").children("ageRange")) {
+	    auto dist = GetEntityDistributions(age_bucket_node);
 
-        std::size_t numInfectedCSWMale = 0, numInfectedCSWFemale = 0,
-            numInfectedNonCSWMalesLowRisk = 0, numInfectedNonCSWFemalesLowRisk = 0,
-            numInfectedNonCSWMalesHighRisk = 0, numInfectedNonCSWFemalesHighRisk = 0;
+	    auto bucket_age_range = std::string(age_bucket_node.attribute("lower").as_string()) +"-"
+		+ age_bucket_node.attribute("upper").as_string();
 
-        for(auto profile_node : initial_infections_node.children("profile"))
-        {
-            DemographicProfile profile;
-            profile.parse(profile_node.attribute("bucket").as_string());
-            std::string risk_string = profile_node.attribute("risk").as_string();
-            std::string age_range = profile_node.attribute("age-range").as_string();
+	    std::size_t numInfectedCSWMale = 0, numInfectedCSWFemale = 0,
+		numInfectedNonCSWMalesLowRisk = 0, numInfectedNonCSWFemalesLowRisk = 0,
+		numInfectedNonCSWMalesHighRisk = 0, numInfectedNonCSWFemalesHighRisk = 0;
 
-            if(age_range == bucket_age_range)
-            {
-                auto gender = (DemographicProfile::Gender)profile.get(DemographicProfile::Demographic::Gender);
-                auto risk = risk_string == "high" ? Entity::RiskLevel::HIGH : Entity::RiskLevel::LOW;
-                auto csw = (DemographicProfile::Employment)profile.get(DemographicProfile::Demographic::Employment);
-                auto number = profile_node.text().as_int();
+	    for(auto profile_node : initial_infections_node.children("profile"))
+	    {
+		DemographicProfile profile;
+		profile.parse(profile_node.attribute("bucket").as_string());
+		std::string risk_string = profile_node.attribute("risk").as_string();
+		std::string age_range = profile_node.attribute("age-range").as_string();
 
-                if(risk == Entity::RiskLevel::HIGH && gender == DemographicProfile::Gender::Male && csw == DemographicProfile::Employment::Csw)
-                {
-                    numInfectedCSWMale += number;
-                }
-                else if(risk == Entity::RiskLevel::HIGH && gender == DemographicProfile::Gender::Male && csw == DemographicProfile::Employment::NonCsw)
-                {
-                    numInfectedNonCSWMalesHighRisk += number;
-                }
-                else if(risk == Entity::RiskLevel::LOW && gender == DemographicProfile::Gender::Male && csw == DemographicProfile::Employment::NonCsw)
-                {
-                    numInfectedNonCSWMalesLowRisk += number;
-                }
-                else if(risk == Entity::RiskLevel::HIGH && gender == DemographicProfile::Gender::Female && csw == DemographicProfile::Employment::Csw)
-                {
-                    numInfectedCSWFemale += number;
-                }
-                else if(risk == Entity::RiskLevel::HIGH && gender == DemographicProfile::Gender::Female && csw == DemographicProfile::Employment::NonCsw)
-                {
-                    numInfectedNonCSWFemalesHighRisk += number;
-                }
-                else if(risk == Entity::RiskLevel::LOW && gender == DemographicProfile::Gender::Female && csw == DemographicProfile::Employment::NonCsw)
-                {
-                    numInfectedNonCSWFemalesLowRisk += number;
-                }
-            }
-        }
+		if(age_range == bucket_age_range)
+		{
+		    auto gender = (DemographicProfile::Gender)profile.get(DemographicProfile::Demographic::Gender);
+		    auto risk = risk_string == "high" ? Entity::RiskLevel::HIGH : Entity::RiskLevel::LOW;
+		    auto csw = (DemographicProfile::Employment)profile.get(DemographicProfile::Demographic::Employment);
+		    auto number = profile_node.text().as_int();
 
-        parameters.GetInitialAgeBuckets().emplace_back(
-            Age(Attr<int>(age_bucket_node, "lower"), 0),
-            Age(Attr<int>(age_bucket_node, "upper"), 11),
-            dist,
-            numInfectedCSWMale,  numInfectedCSWFemale,
-            numInfectedNonCSWMalesLowRisk, numInfectedNonCSWFemalesLowRisk,
-            numInfectedNonCSWMalesHighRisk, numInfectedNonCSWFemalesHighRisk);
-	}
+		    if (risk == Entity::RiskLevel::HIGH &&
+			gender == DemographicProfile::Gender::Male &&
+			csw == DemographicProfile::Employment::Csw)
+		    {
+			    numInfectedCSWMale = number;
+		    }
+		    else if (risk == Entity::RiskLevel::HIGH &&
+			gender == DemographicProfile::Gender::Male &&
+			csw == DemographicProfile::Employment::NonCsw)
+		    {
+			    numInfectedNonCSWMalesHighRisk = number;
+		    }
+		    else if (risk == Entity::RiskLevel::LOW &&
+			gender == DemographicProfile::Gender::Male &&
+			csw == DemographicProfile::Employment::NonCsw)
+		    {
+			    numInfectedNonCSWMalesLowRisk = number;
+		    }
+		    else if (risk == Entity::RiskLevel::HIGH &&
+			gender == DemographicProfile::Gender::Female &&
+			csw == DemographicProfile::Employment::Csw)
+		    {
+			    numInfectedCSWFemale = number;
+		    }
+		    else if (risk == Entity::RiskLevel::HIGH &&
+			gender == DemographicProfile::Gender::Female &&
+			csw == DemographicProfile::Employment::NonCsw)
+		    {
+			    numInfectedNonCSWFemalesHighRisk = number;
+		    }
+		    else if (risk == Entity::RiskLevel::LOW &&
+			gender == DemographicProfile::Gender::Female &&
+			csw == DemographicProfile::Employment::NonCsw)
+		    {
+			    numInfectedNonCSWFemalesLowRisk = number;
+		    }
+		}
+	    }
 
-	//normalize %population values for each age bucket
+	    parameters.GetInitialAgeBuckets().emplace_back(
+		Age(Attr<int>(age_bucket_node, "lower"), 0),
+		Age(Attr<int>(age_bucket_node, "upper"), 11),
+		dist,
+		numInfectedCSWMale,  numInfectedCSWFemale,
+		numInfectedNonCSWMalesLowRisk, numInfectedNonCSWFemalesLowRisk,
+		numInfectedNonCSWMalesHighRisk, numInfectedNonCSWFemalesHighRisk);
+    }
+
+    parameters.SetTransmissionCoefficients(GetTransmissionCoefficients());
+
+    //normalize %population values for each age bucket
     double totalFemaleProportion = 0;
     double totalHeteroMaleProportion = 0;
     double totalMsmwProportion = 0;
     double totalMsmProportion = 0;
 
-    parameters.SetTransmissionCoefficients(GetTransmissionCoefficients());
-
-	//get the total of proportionage values of AgeBucketPrevalencInfo.proportionOfPopulation
-		for(auto &age_bucket : parameters.GetInitialAgeBuckets())
-		{
-			totalFemaleProportion += age_bucket.entityProportions["female"];
+    //get the total of proportionage values of AgeBucketPrevalencInfo.proportionOfPopulation
+    for(auto &age_bucket : parameters.GetInitialAgeBuckets())
+    {
+	    totalFemaleProportion += age_bucket.entityProportions["female"];
             totalHeteroMaleProportion += age_bucket.entityProportions["hetero-male"];
             totalMsmwProportion += age_bucket.entityProportions["msmw"];
             totalMsmProportion += age_bucket.entityProportions["msm"];
-		}
+    }
 
-		//normalize each proportionage value so that the sum of them == 1
-		for(auto &age_bucket : parameters.GetInitialAgeBuckets())
-		{
-			if(totalFemaleProportion != 0) age_bucket.entityProportions["female"] /= totalFemaleProportion;
+    //normalize each proportionage value so that the sum of them == 1
+    for(auto &age_bucket : parameters.GetInitialAgeBuckets())
+    {
+	    if(totalFemaleProportion != 0) age_bucket.entityProportions["female"] /= totalFemaleProportion;
             if(totalHeteroMaleProportion != 0) age_bucket.entityProportions["hetero-male"] /= totalHeteroMaleProportion;
             if(totalMsmwProportion != 0) age_bucket.entityProportions["msmw"] /= totalMsmwProportion;
             if(totalMsmProportion != 0) age_bucket.entityProportions["msm"] /= totalMsmProportion;
-		}
+    }
 
     auto births_node = population_node.child("births");
 	parameters.SetBirthRate(Text<double>(births_node.child("rate")));
@@ -854,14 +878,6 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
 	parameters.SetBiMaleParameters(defaultMsmwParams);
 	auto defaultFemaleParams = GetFemaleSubPopParams();
 	parameters.SetFemaleParameters(defaultFemaleParams);
-
-	try {
-		parameters.SetChanceChronicInfection(
-		    Text<double>(initial_infections_node.child("chanceSeedChronicInfection")));
-	} catch (std::exception e) {
-		printf("WARNING: Input chanceSeedChronicInfection missing\n");
-		printf("\t Defaulting to all acute infections\n");
-	}
 
 	parameters.SetInitialCswProportion("male", defaultMaleParams.getChanceBecomeCSW());
 	parameters.SetInitialCswProportion("female", defaultFemaleParams.GetChanceBecomeCSW());

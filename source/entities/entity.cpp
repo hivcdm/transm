@@ -646,7 +646,9 @@ bool Entity::isInfected()
 
 bool Entity::isSexuallyActive()
 {
-	return sexuallyActive;
+    return (getDemographicProfileVal(
+		DemographicProfile::Demographic::SexualActivityStatus) !=
+	    (std::size_t)DemographicProfile::SexualActivityStatus::NotActive);
 }
 
 bool Entity::isCSW() const
@@ -1461,8 +1463,8 @@ Entity::Entity(Age _age, unsigned int _populationID) :
 
 	age = _age;
 	initAge = _age;
-	sexuallyActive = false;
 	ageInfected = Age(0, -1);
+
 	death = false;
 	deathStatus = DeathStatus::ALIVE;
 	sexualActivityLevel = 1.0;
