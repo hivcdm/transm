@@ -41,12 +41,15 @@ void Population::Circumcise(Entity *p)
 {
     if(!p->IsCircumcised())
     {
-        p->Circumcise();
-        populationStatistics.costsTracker.RecordCircumcision(
-			popWideParams.circumcisionCost,
-			popWideParams.circumcisionCost * p->getCepacDiscountFactor(parameters_));
-		p->add_cdm_cost(popWideParams.circumcisionCost,
-			popWideParams.circumcisionCost * p->getCepacDiscountFactor(parameters_));
+	double discount = 1.0;
+	if (parameters_.useRollout) {
+	    discount = p->getCepacDiscountFactor(parameters_);
+        }
+ 	p->Circumcise();
+	populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost,
+            popWideParams.circumcisionCost * discount);
+	p->add_cdm_cost(popWideParams.circumcisionCost,
+	    popWideParams.circumcisionCost * discount);
     }
 }
 
