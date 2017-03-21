@@ -1068,28 +1068,6 @@ Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node cri
     return target;
 }
 
-std::pair<int, int> ParseRange(const std::string &range_string, bool require_both = false)
-{
-    int lower_bound, upper_bound = -1;
-
-    if(range_string.find('-') != std::string::npos)
-    {
-        lower_bound = std::stoi(range_string.substr(0, range_string.find('-')));
-        upper_bound = std::stoi(range_string.substr(range_string.find('-') + 1));
-    }
-    else
-    {
-        lower_bound = std::stoi(range_string);
-
-        if(require_both)
-        {
-            throw std::runtime_error("range should be of the form <lower>-<upper>");
-        }
-    }
-
-    return {lower_bound, upper_bound};
-}
-
 std::vector<Intervention> SimulationBuilderXml::ParseInterventions(pugi::xml_node interventions_node, bool individual)
 {
     std::vector<Intervention> interventions;
@@ -1111,14 +1089,13 @@ std::unordered_map<std::string, TargetGroup> SimulationBuilderXml::ReadGroups()
     for(auto group_node : groups_node.children("group"))
     {
         auto label = Attr<std::string>(group_node, "label");
-        auto enrollment_period_string = 
-            Text<std::string>(group_node.child("enrollment-period"));
-        auto enrollment_period = ParseRange(enrollment_period_string);
+        auto enrollment_start = Text<int>(group_node.child("enrollment-start"));
+        auto enrollment_end = Text<int>(group_node.child("enrollment-end"));
         bool permanent = Text<bool>(group_node.child("permanent-effect"));
         bool open = Text<bool>(group_node.child("open-enrollment"));
         auto target = ParseGroupEligibility(group_node.child("eligibility-criteria"));
 
-        TargetGroup group(label, enrollment_period.first, enrollment_period.second, 
+        TargetGroup group(label, enrollment_start, enrollment_end,
             open, permanent, target);
 
         for(auto partition_node : group_node.child("partitions").children("partition"))
@@ -1131,8 +1108,7 @@ std::unordered_map<std::string, TargetGroup> SimulationBuilderXml::ReadGroups()
             group.AddPartition(label, trace, proportion, interventions);
         }
 
-        auto group_label = Attr<std::string>(group_node, "label");
-        groups.emplace(std::make_pair(group_label, group));
+        groups.emplace(std::make_pair(label, group));
     }
 
     return groups;

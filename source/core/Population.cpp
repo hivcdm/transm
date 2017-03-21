@@ -36,10 +36,16 @@ void Population::Circumcise(Person *p)
 {
     if(!p->IsCircumcised())
     {
-	double discount = Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor);
+	double discount = 1.0;
+	if (parameters_.useRollout) {
+	    discount = Utility::computeCepacDiscountFactor(parameters_.currTime,
+            parameters_.untreatedContext->getRunSpecsInputs()->discountFactor);
+        }
 	p->Circumcise();
-		populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * discount);
-		p->add_cdm_cost(popWideParams.circumcisionCost, popWideParams.circumcisionCost * discount);
+	populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost,
+            popWideParams.circumcisionCost * discount);
+	p->add_cdm_cost(popWideParams.circumcisionCost,
+	    popWideParams.circumcisionCost * discount);
     }
 }
 
