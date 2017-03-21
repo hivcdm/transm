@@ -78,7 +78,7 @@ public:
 
     };
 
-    TargetGroup(const std::string &label, int start, int end, bool open, bool permanent, Nullable<PopulationTarget> target);
+    TargetGroup(const std::string &label, int start, int end, bool open, Nullable<PopulationTarget> target);
 
     void Update(Population &p, int simulation_time, RandomNumberGenerator &rng, 
         const std::unordered_set<Person *> &dead_people);
@@ -259,7 +259,6 @@ private:
     } enrollment_period_;
 
     bool open_;
-    bool permanent_effect_;
     std::string label_;
 
     class Partition

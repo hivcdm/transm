@@ -1091,12 +1091,11 @@ std::unordered_map<std::string, TargetGroup> SimulationBuilderXml::ReadGroups()
         auto label = Attr<std::string>(group_node, "label");
         auto enrollment_start = Text<int>(group_node.child("enrollment-start"));
         auto enrollment_end = Text<int>(group_node.child("enrollment-end"));
-        bool permanent = Text<bool>(group_node.child("permanent-effect"));
         bool open = Text<bool>(group_node.child("open-enrollment"));
         auto target = ParseGroupEligibility(group_node.child("eligibility-criteria"));
 
         TargetGroup group(label, enrollment_start, enrollment_end,
-            open, permanent, target);
+            open, target);
 
         for(auto partition_node : group_node.child("partitions").children("partition"))
         {

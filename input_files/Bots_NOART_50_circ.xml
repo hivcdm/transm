@@ -650,36 +650,20 @@
     </cepacIntervention>
     <groups>
       <group label="group1">
-    	<enrollment-period>600-660</enrollment-period>
-  	<permanent-effect>true</permanent-effect>
-	<open-enrollment>true</open-enrollment>
+    	<enrollment-start>600</enrollment-start>
+	<enrollment-end>1200</enrollment-end>
+	<open-enrollment>false</open-enrollment>
 	<enrollment-criteria>
 	  <gender>male</gender>
 	  <circumcised>false</circumcised>
+	  <age>204-204</age>
 	</enrollment-criteria>
 	<partitions>
 	  <partition id="treatment">
-	    <proportion>0.5</proportion>
+	    <proportion>0.15</proportion>
 	    <trace>true</trace>
 	    <interventions>
 	      <circumcise/>
-	    </interventions>
-	  </partition>
-	</partitions>
-      </group>
-      <group label="group2">
-    	<enrollment-period>800-860</enrollment-period>
-  	<permanent-effect>true</permanent-effect>
-	<open-enrollment>true</open-enrollment>
-	<enrollment-criteria>
-	  <gender>male</gender>
-	</enrollment-criteria>
-	<partitions>
-	  <partition id="treatment">
-	    <proportion>0.5</proportion>
-	    <trace>true</trace>
-	    <interventions>
-	      <overrideChanceCondomUse>0.7</overrideChanceCondomUse>
 	    </interventions>
 	  </partition>
 	</partitions>

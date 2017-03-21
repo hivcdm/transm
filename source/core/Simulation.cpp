@@ -73,7 +73,7 @@ bool Intervention::IsCompleted(int current_time) const
 }
 
 // Apply an intervention to a TargetGroups in the population
-void TargetGroup::Update(Population &population, int current_time, 
+void TargetGroup::Update(Population &population, int current_time,
     RandomNumberGenerator &rng, const std::unordered_set<Person *> &dead_people)
 {
     if(enrollment_period_.start > current_time)
@@ -121,13 +121,13 @@ void TargetGroup::Update(Population &population, int current_time,
             }
 
             if(target_.value.age_lower.has_value
-                && target_.value.age_lower.value > person->getAge(TimeGranularity::Month))
+                && target_.value.age_lower.value >= person->getAge(TimeGranularity::Month))
             {
                 return false;
             }
 
             if(target_.value.age_upper.has_value
-                && target_.value.age_upper.value < person->getAge(TimeGranularity::Month))
+                && target_.value.age_upper.value <= person->getAge(TimeGranularity::Month))
             {
                 return false;
             }
@@ -214,7 +214,7 @@ void TargetGroup::Update(Population &population, int current_time,
         {
             return;
         }
-        
+
         std::vector<int> assignments;
         std::size_t partition_index = 0;
         std::size_t assigned = 0;
@@ -240,8 +240,8 @@ void TargetGroup::Update(Population &population, int current_time,
         std::default_random_engine generator(seed);
         std::uniform_real_distribution<> dist(0, 1);
 
-        auto generate_rand = [&](int i) 
-        { 
+        auto generate_rand = [&](int i)
+        {
             auto rand_01 = dist(generator);
             return static_cast<int>(rand_01 * i);
         };
@@ -259,10 +259,9 @@ Intervention::Intervention(int time, int duration) : time_(time), duration_(dura
 {
 }
 
-TargetGroup::TargetGroup(const std::string &label, int start, int end, bool open, bool permanent, Nullable<PopulationTarget> target)
+TargetGroup::TargetGroup(const std::string &label, int start, int end, bool open, Nullable<PopulationTarget> target)
     : enrollment_period_({start, end}),
       open_(open),
-      permanent_effect_(permanent),
       label_(label),
       target_(target)
 {
