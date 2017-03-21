@@ -123,13 +123,13 @@ void TargetGroup::Update(Population &population, Time current_time,
             }
 
             if(target_.value.age_lower.has_value
-				&& target_.value.age_lower.value > person->getAge().in_months())
+				&& target_.value.age_lower.value >= person->getAge().in_months())
             {
                 return false;
             }
 
             if(target_.value.age_upper.has_value
-                && target_.value.age_upper.value < person->getAge().in_months())
+                && target_.value.age_upper.value <= person->getAge().in_months())
             {
                 return false;
             }
@@ -260,10 +260,9 @@ Intervention::Intervention(Time time, TimeSpan duration) : time_(time), duration
 {
 }
 
-TargetGroup::TargetGroup(const std::string &label, Time start, Time end, bool open, bool permanent, Nullable<PopulationTarget> target)
+TargetGroup::TargetGroup(const std::string &label, Time start, Time end, bool open, Nullable<PopulationTarget> target)
     : enrollment_period_({start, end}),
       open_(open),
-      permanent_effect_(permanent),
       label_(label),
       target_(target)
 {

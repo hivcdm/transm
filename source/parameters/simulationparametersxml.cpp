@@ -1178,15 +1178,15 @@ std::unordered_map<std::string, TargetGroup> SimulationParametersXml::GetTargetG
     for(auto group_node : groups_node.children("group"))
     {
         auto label = Attr<std::string>(group_node, "label");
-        auto enrollment_period_string = 
+        auto enrollment_period_string =
             Text<std::string>(group_node.child("enrollment-period"));
         auto enrollment_period = ParseRange(enrollment_period_string);
         bool permanent = Text<bool>(group_node.child("permanent-effect"));
         bool open = Text<bool>(group_node.child("open-enrollment"));
         auto target = ParseGroupEligibility(group_node.child("eligibility-criteria"));
 
-        TargetGroup group(label, Time::from_months(enrollment_period.first), 
-			Time::from_months(enrollment_period.second), open, permanent, target);
+        TargetGroup group(label, Time::from_months(enrollment_period.first),
+			Time::from_months(enrollment_period.second), open, target);
 
         for(auto partition_node : group_node.child("partitions").children("partition"))
         {

@@ -79,7 +79,7 @@ public:
 		double cepac_costs_discounted;
     };
 
-    TargetGroup(const std::string &label, Time start, Time end, bool open, bool permanent, Nullable<PopulationTarget> target);
+    TargetGroup(const std::string &label, Time start, Time end, bool open, Nullable<PopulationTarget> target);
 
     void Update(Population &p, Time simulation_time, RandomNumberGenerator &rng, 
         const std::unordered_set<Entity *> &dead_people);
@@ -289,7 +289,6 @@ private:
     } enrollment_period_;
 
     bool open_;
-    bool permanent_effect_;
     std::string label_;
 
     class Partition
