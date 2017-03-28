@@ -632,7 +632,7 @@ Male::SubPopParams SimulationBuilderXml::ReadMaleSubPopParams()
 	Male::SubPopParams result;
 
 	auto behavior_node = node.child("behavior");
-    result.SetChanceBecomeCsw(Text<double>(behavior_node.child("chanceBecomeSexWorker")));
+	result.SetChanceBecomeCsw(Text<double>(behavior_node.child("chanceBecomeSexWorker")));
 	result.SetPartnerAcqMultWithSteady(Person::HIGH, Text<double>(behavior_node.child("partnerAcqMultWithSteadyHighRisk")));
 	result.SetPartnerAcqMultWithSteady(Person::LOW, Text<double>(behavior_node.child("partnerAcqMultWithSteadyLowRisk")));
 
@@ -1244,6 +1244,27 @@ SexualPartnership::Type SimulationBuilderXml::from_string(const std::string &typ
     throw std::runtime_error("unknown partnership type: " + type_string);
 }
 
+/*
+ * Calculates the current beta distribution used for choosing chance condom use
+ * for an intervention. The intervention start time and duration, along with the
+ * current beta distribution and target normal distribution are used in the calculation.
+ */
+BetaDist SimulationBuilderXml::CalculateChanceCondomUse(NormalDist target_dist,
+    BetaDist curr_beta_dist, int time, int duration)
+{
+    NormalDist curr_dist = BetaDist::ToNormal(curr_beta_dist);
+    NormalDist new_dist;
+
+    // calculate the amount to add each time step so we don't have to store a coeff value
+    int lapsed = duration - (simulation_.GetTime() - time) + 1;
+    double mean_coeff = (target_dist.mean - curr_dist.mean) / lapsed;
+    double stddev_coeff = (target_dist.stddev - curr_dist.stddev) / lapsed;
+    new_dist.mean = curr_dist.mean + mean_coeff;
+    new_dist.stddev = curr_dist.stddev + stddev_coeff;
+
+    return BetaDist::FromNormal(new_dist);
+}
+
 Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool individual)
 {
     int time = node.attribute("time") != nullptr ? Attr<int>(node, "time") : -1;
@@ -1321,11 +1342,31 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
         case KnownIntervention::ChanceCondomUse:
         {
             auto risk = Attr<Person::RiskLevel>(node, "risk");
-            auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
-            auto dist = GetBetaDist(node);
-            intervention.SetIndividualCallback(
-                [=](Person *person) {
-                    person->SetChanceCondomUsePerEvent(risk, partnership_type, dist, simulation_.GetEventParams().randomNums); });
+            auto type = Attr<SexualPartnership::Type>(node, "type");
+	    bool transform = false;
+	    if (node.child("transform"))
+		transform = Text<bool>(node.child("transform"));
+	    NormalDist target_dist = GetNormalDist(node);
+
+	    intervention.SetIndividualCallback(
+	        [=](Person *person) {
+		    const BetaDist curr_beta_dist = person->GetChanceCondomUsePerEvent(risk, type);
+		    BetaDist new_beta_dist;
+
+		    if (transform) {
+			// increase or descrease to the target value over the duration
+			new_beta_dist = CalculateChanceCondomUse(
+			    target_dist, curr_beta_dist, time, duration);
+		    } else {
+			// Set the target immediately
+			new_beta_dist = BetaDist::FromNormal(target_dist);
+		    }
+
+		    // Turn the normal to a beta dist to ensure it fits 0 to 1 range
+                    person->SetChanceCondomUsePerEvent(risk, type, new_beta_dist,
+		        simulation_.GetEventParams().randomNums);
+		}
+	    );
             break;
         }
         case KnownIntervention::PartnershipDuration:
@@ -1376,7 +1417,7 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
             auto adherence = Text<double>(node);
             intervention.SetIndividualCallback([=](Person *person) 
             {
-                if (person->getDemographicProfileVal<DemographicProfile::Gender>() != DemographicProfile::Gender::Female)
+                if (person->isMale())
                 {
 		  return;
                 }
@@ -1502,7 +1543,7 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
                 [=](Population &p) { p.popWideParams.SetAverageYearsYounger(partnership_type, dist); });
             intervention.SetIndividualCallback([=](Person *person) 
             { 
-                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == DemographicProfile::Gender::Male)
+                if (person->isMale())
                 {
                     person->SetAverageYearsYounger(partnership_type, dist);
                 }
@@ -1518,7 +1559,7 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
                 [=](Population &p) { p.popWideParams.SetAcquisitionRatePerMonth(risk, partnership_type, dist); });
             intervention.SetIndividualCallback([=](Person *person)
             {
-                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == DemographicProfile::Gender::Male)
+                if (person->isMale())
                 {
                     person->SetAcquisitionRatePerMonth(risk, partnership_type, dist, simulation_.GetEventParams().randomNums);
                 }
@@ -1531,10 +1572,11 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = Text<double>(node.child("distribution").child("mean"));
             intervention.SetPopulationCallback(
-                [=](Population &p) { p.popWideParams.SetCoitalEventsPerMonth(risk, partnership_type, dist); });
+                [=](Population &p) {
+		    p.popWideParams.SetCoitalEventsPerMonth(risk, partnership_type, dist); });
             intervention.SetIndividualCallback([=](Person *person)
             {
-                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == DemographicProfile::Gender::Male)
+	      if (person->isMale())
                 {
                     person->SetCoitalEventsPerMonth(risk, partnership_type, dist);
                 }
@@ -1544,17 +1586,50 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
         case KnownIntervention::ChanceCondomUse:
         {
             auto risk = Attr<Person::RiskLevel>(node, "risk");
-            auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
-            auto dist = GetBetaDist(node);
+            auto type = Attr<SexualPartnership::Type>(node, "type");
+	    bool transform = false;
+	    if (node.child("transform"))
+		transform = Text<bool>(node.child("transform"));
+	    NormalDist target_dist = GetNormalDist(node);
+
             intervention.SetPopulationCallback(
-                [=](Population &p) { p.popWideParams.SetChanceCondomUsePerEvent(risk, partnership_type, dist); });
-            intervention.SetIndividualCallback([=](Person *person)
-            {
-                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == DemographicProfile::Gender::Male)
-                {
-                    person->SetChanceCondomUsePerEvent(risk, partnership_type, dist, simulation_.GetEventParams().randomNums);
-                }
-            });
+                [=](Population &p) {
+		    const BetaDist curr_beta_dist = p.popWideParams.
+			GetChanceCondomUsePerEvent(risk, type);
+		    BetaDist new_beta_dist;
+
+		    if (transform) {
+			// increase or descrease to the target value over the duration
+			new_beta_dist = CalculateChanceCondomUse(
+			    target_dist, curr_beta_dist, time, duration);
+		    } else {
+			// Set the target immediately
+			new_beta_dist = BetaDist::FromNormal(target_dist);
+		    }
+
+		    // Turn the normal to a beta dist to ensure it fits 0 to 1 range
+		    p.popWideParams.SetChanceCondomUsePerEvent(risk, type, new_beta_dist);
+		}
+	    );
+	    intervention.SetIndividualCallback(
+	        [=](Person *person) {
+		    const BetaDist curr_beta_dist = person->GetChanceCondomUsePerEvent(risk, type);
+		    BetaDist new_beta_dist;
+
+		    if (transform) {
+			// increase or descrease to the target value over the duration
+			new_beta_dist = CalculateChanceCondomUse(
+			    target_dist, curr_beta_dist, time, duration);
+		    } else {
+			// Set the target immediately
+			new_beta_dist = BetaDist::FromNormal(target_dist);
+		    }
+
+		    // Turn the normal to a beta dist to ensure it fits 0 to 1 range
+                    person->SetChanceCondomUsePerEvent(risk, type, new_beta_dist,
+		        simulation_.GetEventParams().randomNums);
+		}
+	    );
             break;
         }
         case KnownIntervention::PartnershipDuration:
