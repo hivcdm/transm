@@ -90,6 +90,8 @@ public:
         void SetCoitalEventsPerMonth(Entity::RiskLevel risk, SexualPartnership::Type type, double mean) { sexualBehaviorParams[type].setCoitalEventsPerMonth(risk, mean); }
         void SetChanceCondomUsePerEvent(Entity::RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { sexualBehaviorParams[type].setChanceCondomUsePerEvent(risk, dist); }
         void SetPartnershipDuration(Entity::RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { sexualBehaviorParams[type].setPartnershipDuration(risk, dist); }
+	const BetaDist GetChanceCondomUsePerEvent(Entity::RiskLevel risk, SexualPartnership::Type type) const
+		{ return getSexualBehavior(type).getChanceCondomUsePerEvent(risk); }
 
         void SetActivityLevel(NormalDist activity_level) { activityLevel = activity_level; }
 
@@ -180,7 +182,10 @@ public:
     virtual void SetPreExposureProphylaxisEfficacy(double efficacy);
 
     virtual double GetPreExposureProphylaxisEfficacy() const;
-  
+
+    const BetaDist GetChanceCondomUsePerEvent(Entity::RiskLevel risk, SexualPartnership::Type type)
+	{ return populationSpecificParams.getSexualBehavior(type).getChanceCondomUsePerEvent(risk);}
+
     void SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, double meanEvents);
 
     void SetPartnershipDuration(RiskLevel risk, SexualPartnership::Type partnershipType, ShiftedLogNormalDist dist);

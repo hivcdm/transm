@@ -1324,6 +1324,28 @@ Entity::HVLStrata SimulationParametersXml::from_string(const std::string &hvl_st
     throw std::runtime_error("unknown hvl stratum: " + hvl_string);
 }
 
+/*
+ * Calculates the current beta distribution used for choosing chance condom use
+ * for an intervention. The intervention start time and duration, along with the
+ * current beta distribution and target normal distribution are used in the calculation.
+ */
+BetaDist SimulationParametersXml::CalculateChanceCondomUse(NormalDist target_dist,
+    BetaDist curr_beta_dist, int time, int duration, Time current_time) const
+{
+	NormalDist curr_dist = BetaDist::ToNormal(curr_beta_dist);
+	NormalDist new_dist;
+
+	int curr_time = current_time.in_months();
+	// calculate the amount to add each time step so we don't have to store a coeff value
+	int lapsed = duration - (curr_time - time) + 1;
+	double mean_coeff = (target_dist.mean - curr_dist.mean) / lapsed;
+	double stddev_coeff = (target_dist.stddev - curr_dist.stddev) / lapsed;
+	new_dist.mean = curr_dist.mean + mean_coeff;
+	new_dist.stddev = curr_dist.stddev + stddev_coeff;
+
+	return BetaDist::FromNormal(new_dist);
+}
+
 template<>
 SexualPartnership::Type SimulationParametersXml::from_string(const std::string &type_string)
 {
@@ -1351,7 +1373,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         case KnownIntervention::Circumcise:
         {
             intervention.SetPopulationIndividualCallback(
-                [=](Population &population, Entity *person) { 
+                [=](Time current_time, Population &population, Entity *person) { 
                     population.Circumcise(person); });
             break;
         }
@@ -1359,7 +1381,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         {
             auto chance = Text<double>(node);
             intervention.SetIndividualCallback(
-                [=](Entity *person) { 
+                [=](Time current_time, Entity *person) { 
                     person->SetChanceBecomeSexWorker(chance); });
             break;
         }
@@ -1367,7 +1389,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         {
             auto months = Text<int>(node);
             intervention.SetIndividualCallback(
-                [=](Entity *person) { 
+                [=](Time current_time, Entity *person) { 
                     person->SetSexualActivityDelay(TimeSpan(0, months)); });
             break;
         }
@@ -1377,7 +1399,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto hvl_stratum = Attr<Entity::HVLStrata>(node, "hvl");
             auto coefficient = Text<double>(node);
             intervention.SetIndividualCallback(
-                [=](Entity *person) { 
+                [=](Time current_time, Entity *person) { 
                     person->SetTransmissionCoefficient(hvl_stratum, coefficient); });
             break;
             */
@@ -1388,7 +1410,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = GetNormalDist(node);
             intervention.SetIndividualCallback(
-                [=](Entity *person) { 
+                [=](Time current_time, Entity *person) { 
                     person->SetAverageYearsYounger(partnership_type, dist); });
             break;
         }
@@ -1398,7 +1420,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = GetLogNormalDist(node);
             intervention.SetIndividualCallback(
-                [=](Entity *person) { 
+                [=](Time current_time, Entity *person) { 
                     person->SetAcquisitionRatePerMonth(risk, partnership_type, dist, GetRandomNumberGenerator()); });
             break;
         }
@@ -1408,18 +1430,38 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = Text<double>(node.child("distribution").child("mean"));
             intervention.SetIndividualCallback(
-                [=](Entity *person) { 
+                [=](Time current_time, Entity *person) {
                     person->SetCoitalEventsPerMonth(risk, partnership_type, dist); });
             break;
         }
         case KnownIntervention::ChanceCondomUse:
         {
             auto risk = Attr<Entity::RiskLevel>(node, "risk");
-            auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
-            auto dist = GetBetaDist(node);
-            intervention.SetIndividualCallback(
-                [=](Entity *person) {
-                    person->SetChanceCondomUsePerEvent(risk, partnership_type, dist, GetRandomNumberGenerator()); });
+            auto type = Attr<SexualPartnership::Type>(node, "type");
+	    bool transform = false;
+	    if (node.child("transform"))
+		transform = Text<bool>(node.child("transform"));
+	    NormalDist target_dist = GetNormalDist(node);
+
+	    intervention.SetIndividualCallback(
+	        [=](Time current_time, Entity *person) {
+		    const BetaDist curr_beta_dist = person->GetChanceCondomUsePerEvent(risk, type);
+		    BetaDist new_beta_dist;
+
+		    if (transform) {
+			// increase or descrease to the target value over the duration
+			new_beta_dist = CalculateChanceCondomUse(
+			    target_dist, curr_beta_dist, time, duration, current_time);
+		    } else {
+			// Set the target immediately
+			new_beta_dist = BetaDist::FromNormal(target_dist);
+		    }
+
+		    // Turn the normal to a beta dist to ensure it fits 0 to 1 range
+                    person->SetChanceCondomUsePerEvent(risk, type, new_beta_dist,
+		        GetRandomNumberGenerator());
+		}
+	    );
             break;
         }
         case KnownIntervention::PartnershipDuration:
@@ -1428,7 +1470,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = GetShiftedLogNormalDist(node);
             intervention.SetIndividualCallback(
-                [=](Entity *person) { 
+                [=](Time current_time, Entity *person) { 
                     person->SetPartnershipDuration(risk, partnership_type, dist); });
             break;
         }
@@ -1438,7 +1480,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto chance = Text<double>(node);
             intervention.SetIndividualCallback(
-                [=](Entity *person) {
+                [=](Time current_time, Entity *person) {
                 person->SetPartnershipRejectionChance(risk, partnership_type, chance); });
             break;
         }
@@ -1446,14 +1488,14 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         {
             auto chance = Text<double>(node);
             intervention.SetIndividualCallback(
-                [=](Entity *person) {
+                [=](Time current_time, Entity *person) {
                 person->SetOverrideChanceCondomUse(chance); });
             break;
         }
         case KnownIntervention::CepacContext:
          {
              auto cepac_file = Text<std::string>(node);
-             intervention.SetPopulationIndividualCallback([=](Population &pop, Entity *person) 
+             intervention.SetPopulationIndividualCallback([=](Time current_time, Population &pop, Entity *person) 
              {
                  if (person->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() != DemographicProfile::SexualActivityStatus::Active)
                  {
@@ -1468,7 +1510,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
          case KnownIntervention::VaginalMicrobicideUse:
          {
              auto adherence = Text<double>(node);
-             intervention.SetIndividualCallback([=](Entity *person) 
+             intervention.SetIndividualCallback([=](Time current_time, Entity *person) 
              {
                  if (person->getDemographicProfileVal<DemographicProfile::Gender>() != DemographicProfile::Gender::Female)
                  {
@@ -1483,7 +1525,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
          case KnownIntervention::PreExposureProphylaxisUse:
          {
              auto adherence = Text<double>(node);
-             intervention.SetIndividualCallback([=](Entity *person) 
+             intervention.SetIndividualCallback([=](Time current_time, Entity *person) 
              {
                 if (person->getHIVStatus() == Entity::HIVStatus::OBSERVED_ACUTE
                     || person->getHIVStatus() == Entity::HIVStatus::OBSERVED_LATESTAGE
@@ -1512,7 +1554,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         {
             auto value = Text<double>(node);
             intervention.SetPopulationCallback(
-                [=](Population &p) { 
+                [=](Time current_time, Population &p) { 
                 p.GetParameters().SetBirthRate(value); });
             break;
         }
@@ -1520,7 +1562,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         {
             auto value = Text<double>(node);
             intervention.SetPopulationCallback(
-                [=](Population &p) { 
+                [=](Time current_time, Population &p) { 
                 p.GetParameters().SetBirthProportion("male", value); });
             break;
         }
@@ -1528,7 +1570,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         {
             auto value = Text<double>(node);
             intervention.SetPopulationCallback(
-                [=](Population &p) {
+                [=](Time current_time, Population &p) {
                 p.GetParameters().SetProportionCircumcised(value); });
             break;
         }
@@ -1537,8 +1579,8 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto gender = Attr<DemographicProfile::Gender>(node, "gender");
             auto chance = Text<double>(node);
             intervention.SetPopulationCallback(
-                [=](Population &p) { p.GetParameters().SetChanceBecomeCsw(gender, chance); });
-            intervention.SetIndividualCallback([=](Entity *person)
+                [=](Time current_time, Population &p) { p.GetParameters().SetChanceBecomeCsw(gender, chance); });
+            intervention.SetIndividualCallback([=](Time current_time, Entity *person)
             {
                 if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == gender)
                 {
@@ -1551,9 +1593,9 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         {
             auto months = Text<int>(node);
             intervention.SetPopulationCallback(
-				[=](Population &p) { p.GetParameters().SetSexualActivityDelay(TimeSpan(0, months)); });
+				[=](Time current_time, Population &p) { p.GetParameters().SetSexualActivityDelay(TimeSpan(0, months)); });
             intervention.SetIndividualCallback(
-                [=](Entity *person) { person->SetSexualActivityDelay(TimeSpan(0, months)); });
+                [=](Time current_time, Entity *person) { person->SetSexualActivityDelay(TimeSpan(0, months)); });
             break;
         }
         case KnownIntervention::TransmissionCoefficient:
@@ -1563,8 +1605,8 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto hvl_stratum = Attr<Entity::HVLStrata>(node, "hvl");
             auto coefficient = Text<double>(node);
             intervention.SetPopulationCallback(
-                [=](Population &p) { p.popWideParams.SetTransmissionCoefficient(gender, hvl_stratum, coefficient); });
-            intervention.SetIndividualCallback([=](Entity *person)
+                [=](Time current_time, Population &p) { p.popWideParams.SetTransmissionCoefficient(gender, hvl_stratum, coefficient); });
+            intervention.SetIndividualCallback([=](Time current_time, Entity *person)
             {
                 if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == gender)
                 {
@@ -1581,8 +1623,8 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto employment = Attr<DemographicProfile::Employment>(node, "employment");
             auto proportion = Text<double>(node);
             intervention.SetPopulationCallback(
-                [=](Population &p) { p.GetParameters().SetProportionHighRisk(gender, employment, proportion); });
-            intervention.SetIndividualCallback([=](Entity *person)
+                [=](Time current_time, Population &p) { p.GetParameters().SetProportionHighRisk(gender, employment, proportion); });
+            intervention.SetIndividualCallback([=](Time current_time, Entity *person)
             {
                 if(gender == (DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender))
                 {
@@ -1596,8 +1638,8 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = GetNormalDist(node);
             intervention.SetPopulationCallback(
-                [=](Population &p) { p.GetParameters().SetAverageYearsYounger(partnership_type, dist); });
-            intervention.SetIndividualCallback([=](Entity *person) 
+                [=](Time current_time, Population &p) { p.GetParameters().SetAverageYearsYounger(partnership_type, dist); });
+            intervention.SetIndividualCallback([=](Time current_time, Entity *person) 
             { 
                 if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == DemographicProfile::Gender::Male)
                 {
@@ -1612,8 +1654,8 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = GetLogNormalDist(node);
             intervention.SetPopulationCallback(
-                [=](Population &p) { p.GetParameters().SetAcquisitionRatePerMonth(risk, partnership_type, dist); });
-            intervention.SetIndividualCallback([=](Entity *person)
+                [=](Time current_time, Population &p) { p.GetParameters().SetAcquisitionRatePerMonth(risk, partnership_type, dist); });
+            intervention.SetIndividualCallback([=](Time current_time, Entity *person)
             {
                 if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == DemographicProfile::Gender::Male)
                 {
@@ -1628,8 +1670,8 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = Text<double>(node.child("distribution").child("mean"));
             intervention.SetPopulationCallback(
-                [=](Population &p) { p.GetParameters().SetCoitalEventsPerMonth(risk, partnership_type, dist); });
-            intervention.SetIndividualCallback([=](Entity *person)
+                [=](Time current_time, Population &p) { p.GetParameters().SetCoitalEventsPerMonth(risk, partnership_type, dist); });
+            intervention.SetIndividualCallback([=](Time current_time, Entity *person)
             {
                 if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == DemographicProfile::Gender::Male)
                 {
@@ -1641,17 +1683,50 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         case KnownIntervention::ChanceCondomUse:
         {
             auto risk = Attr<Entity::RiskLevel>(node, "risk");
-            auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
-            auto dist = GetBetaDist(node);
+            auto type = Attr<SexualPartnership::Type>(node, "type");
+	    bool transform = false;
+	    if (node.child("transform"))
+		transform = Text<bool>(node.child("transform"));
+	    NormalDist target_dist = GetNormalDist(node);
+
             intervention.SetPopulationCallback(
-                [=](Population &p) { p.GetParameters().SetChanceCondomUsePerEvent(risk, partnership_type, dist); });
-            intervention.SetIndividualCallback([=](Entity *person)
-            {
-                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == DemographicProfile::Gender::Male)
-                {
-                    person->SetChanceCondomUsePerEvent(risk, partnership_type, dist, GetRandomNumberGenerator());
-                }
-            });
+                [=](Time current_time, Population &p) {
+		    const BetaDist curr_beta_dist = p.GetParameters().
+			GetChanceCondomUsePerEvent(risk, type);
+		    BetaDist new_beta_dist;
+
+		    if (transform) {
+			// increase or descrease to the target value over the duration
+			new_beta_dist = CalculateChanceCondomUse(
+			    target_dist, curr_beta_dist, time, duration, current_time);
+		    } else {
+			// Set the target immediately
+			new_beta_dist = BetaDist::FromNormal(target_dist);
+		    }
+
+		    // Turn the normal to a beta dist to ensure it fits 0 to 1 range
+		    p.GetParameters().SetChanceCondomUsePerEvent(risk, type, new_beta_dist);
+		}
+	    );
+	    intervention.SetIndividualCallback(
+	        [=](Time current_time, Entity *person) {
+		    const BetaDist curr_beta_dist = person->GetChanceCondomUsePerEvent(risk, type);
+		    BetaDist new_beta_dist;
+
+		    if (transform) {
+			// increase or descrease to the target value over the duration
+			new_beta_dist = CalculateChanceCondomUse(
+			    target_dist, curr_beta_dist, time, duration, current_time);
+		    } else {
+			// Set the target immediately
+			new_beta_dist = BetaDist::FromNormal(target_dist);
+		    }
+
+		    // Turn the normal to a beta dist to ensure it fits 0 to 1 range
+                    person->SetChanceCondomUsePerEvent(risk, type, new_beta_dist,
+		        GetRandomNumberGenerator());
+		}
+	    );
             break;
         }
         case KnownIntervention::PartnershipDuration:
@@ -1660,10 +1735,10 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = GetShiftedLogNormalDist(node);
             intervention.SetPopulationCallback(
-                [=](Population &p) { p.GetParameters().SetPartnershipDuration(risk, partnership_type, dist); });
-            intervention.SetIndividualCallback([=](Entity *person) 
-            { 
-                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == DemographicProfile::Gender::Male)
+                [=](Time current_time, Population &p) { p.GetParameters().SetPartnershipDuration(risk, partnership_type, dist); });
+            intervention.SetIndividualCallback([=](Time current_time, Entity *person)
+            {
+		if (person->isMale())
                 {
                     person->SetPartnershipDuration(risk, partnership_type, dist);
                 }
@@ -1681,18 +1756,18 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
                 if(parameter_name == "rank")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.oiHistRank = new_value; });
+                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.oiHistRank = new_value; });
                 }
                 else if(parameter_name.substr(0, 2) == "OI")
                 {
                     int oi_number = std::stoi(parameter_name.substr(2));
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.oiHistOIs[oi_number] = new_value != 0; });
+                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.oiHistOIs[oi_number] = new_value != 0; });
                 }
                 else if(parameter_name == "numOIToStart")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.oiHistNumToStart = new_value; });
+                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.oiHistNumToStart = new_value; });
                 }
                 else
                 {
@@ -1704,17 +1779,17 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
                 if(parameter_name == "rank")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.cd4Rank = new_value; });
+                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.cd4Rank = new_value; });
                 }
                 else if(parameter_name == "CD4Lwr")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.cd4Bounds.lower = new_value; });
+                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.cd4Bounds.lower = new_value; });
                 }
                 else if(parameter_name == "CD4Upp")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.cd4Bounds.upper = new_value; });
+                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.cd4Bounds.upper = new_value; });
                 }
                 else
                 {
@@ -1726,23 +1801,23 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
                 if(parameter_name == "rank")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.cd4OiHistRank = new_value; });
+                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.cd4OiHistRank = new_value; });
                 }
                 else if(parameter_name == "CD4Lwr")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.cd4OiHistCd4Bounds.lower = new_value; });
+                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.cd4OiHistCd4Bounds.lower = new_value; });
                 }
                 else if(parameter_name == "CD4Upp")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.cd4OiHistCd4Bounds.upper = new_value; });
+                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.cd4OiHistCd4Bounds.upper = new_value; });
                 }
                 else if(parameter_name.substr(0, 2) == "OI")
                 {
                     int oi_number = std::stoi(parameter_name.substr(2));
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.cd4OiHistOIs[oi_number] = new_value != 0; });
+                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.cd4OiHistOIs[oi_number] = new_value != 0; });
                 }
                 else
                 {
@@ -1754,17 +1829,17 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
                 if(parameter_name == "rank")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.hvlRank = new_value; });
+                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.hvlRank = new_value; });
                 }
                 else if(parameter_name == "HVLLwr")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.hvlBounds.lower = new_value; });
+                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.hvlBounds.lower = new_value; });
                 }
                 else if(parameter_name == "HVLUpp")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.hvlBounds.upper = new_value; });
+                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.hvlBounds.upper = new_value; });
                 }
                 else
                 {
@@ -1776,27 +1851,27 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
                 if(parameter_name == "rank")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.cd4HvlRank = new_value; });
+                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.cd4HvlRank = new_value; });
                 }
                 else if(parameter_name == "CD4Lwr")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.cd4HvlCd4Bounds.lower = new_value; });
+                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.cd4HvlCd4Bounds.lower = new_value; });
                 }
                 else if(parameter_name == "CD4Upp")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.cd4HvlCd4Bounds.upper = new_value; });
+                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.cd4HvlCd4Bounds.upper = new_value; });
                 }
                 else if(parameter_name == "HVLLwr")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { s.GetEventParams().rolloutEligibility.cd4HvlHvlBounds.lower = new_value; });
+                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.cd4HvlHvlBounds.lower = new_value; });
                 }
                 else if(parameter_name == "HVLUpp")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Simulation &s) { 
+                        [=](Time current_time, Simulation &s) {
                         s.GetEventParams().rolloutEligibility.cd4HvlHvlBounds.upper = new_value; });
                 }
                 else

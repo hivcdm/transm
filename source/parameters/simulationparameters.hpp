@@ -109,6 +109,9 @@ private:
     BetaDist GetBetaDist(const pugi::xml_node node) const;
     ShiftedLogNormalDist GetShiftedLogNormalDist(const pugi::xml_node node) const;
 
+    BetaDist CalculateChanceCondomUse(NormalDist target_dist, BetaDist curr_dist,
+	int time, int duration, Time current_time) const;
+
     EntityDistributions GetEntityDistributions(pugi::xml_node node) const;
 
     InterventionsContainer GetInterventions(pugi::xml_node interventions_node, bool individual) const;

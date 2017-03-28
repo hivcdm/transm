@@ -146,9 +146,12 @@ public:
     void SetOverrideChanceCondomUse(double chance) { overrideChanceCondomUse_ = chance; }
     double GetOverrideChanceCondomUse() const { return overrideChanceCondomUse_; }
 
-	std::size_t GetTimesSelected() const { return times_selected_; }
-	void IncrementTimesSelected() { times_selected_++; }
-	void ResetTimesSelected() { times_selected_ = 0; }
+    std::size_t GetTimesSelected() const { return times_selected_; }
+    void IncrementTimesSelected() { times_selected_++; }
+    void ResetTimesSelected() { times_selected_ = 0; }
+
+    const BetaDist GetChanceCondomUsePerEvent(Entity::RiskLevel risk,
+	SexualPartnership::Type type) { BetaDist dist; return dist; }
 
 private:
 	SubPopParams populationSpecificParams;

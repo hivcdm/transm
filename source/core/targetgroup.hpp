@@ -87,12 +87,12 @@ public:
     void AddPartition(const std::string &label, bool trace, double proportion,
         std::vector<Intervention> simulation_interventions);
 
-    void AssignToPartition(Population &pop, Entity *p, int partition) 
-    { 
+    void AssignToPartition(Time current_time, Population &pop, Entity *p, int partition)
+    {
         if(!InGroup(p))
         {
             member_partitions_[p] = partition;
-            partitions_[partition].ApplyInterventions(pop, p);
+            partitions_[partition].ApplyInterventions(current_time, pop, p);
         }
     }
 
@@ -296,11 +296,11 @@ private:
     public:
         double GetProportion() const { return proportion_; }
 
-        void ApplyInterventions(Population &pop, Entity *p) 
-        { 
+        void ApplyInterventions(Time current_time, Population &pop, Entity *p)
+        {
             for(auto &intervention : interventions_)
             {
-                intervention.Apply(pop, p);
+	        intervention.Apply(current_time, pop, p);
             }
         }
 

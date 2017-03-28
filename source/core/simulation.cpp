@@ -19,39 +19,39 @@ namespace transm {
 
 TargetGroup::PopulationTarget TargetGroup::PopulationTarget::Any;
 
-void Intervention::Apply(Simulation &simulation)
+void Intervention::Apply(Time current_time, Simulation &simulation)
 {
     if(simulation_intervention_)
     {
-        simulation_intervention_(simulation);
+	simulation_intervention_(current_time, simulation);
     }
 }
 
-void Intervention::Apply(Population &population)
+void Intervention::Apply(Time current_time, Population &population)
 {
     if(population_intervention_)
     {
-        population_intervention_(population);
+        population_intervention_(current_time, population);
     }
 }
 
-void Intervention::Apply(Population &population, Entity *person)
+void Intervention::Apply(Time current_time, Population &population, Entity *person)
 {
     if(population_individual_intervention_)
     {
-        population_individual_intervention_(population, person);
+        population_individual_intervention_(current_time, population, person);
     }
     else if(individual_intervention_)
     {
-        individual_intervention_(person);
+        individual_intervention_(current_time, person);
     }
 }
 
-void Intervention::Apply(Entity *person)
+void Intervention::Apply(Time current_time, Entity *person)
 {
     if(individual_intervention_)
     {
-        individual_intervention_(person);
+        individual_intervention_(current_time, person);
     }
 }
 
@@ -251,7 +251,7 @@ void TargetGroup::Update(Population &population, Time current_time,
 
 		for (std::size_t i = 0; i < people.size(); i++)
 		{
-			AssignToPartition(population, people[i], assignments[i]);
+			AssignToPartition(current_time, population, people[i], assignments[i]);
 		}
 	}
 }
@@ -404,17 +404,17 @@ void Simulation::Step()
         {
             if(intervention.AffectsSimulation())
             {
-                intervention.Apply(*this);
+	        intervention.Apply(time_, *this);
             }
 
             if(intervention.AffectsPopulation())
             {
-                intervention.Apply(population_);
+                intervention.Apply(time_, population_);
             }
 
             if(intervention.AffectsIndividual())
             {
-                population_.entities->forEach([&](Entity *p) { intervention.Apply(p); });
+                population_.entities->forEach([&](Entity *p) { intervention.Apply(time_, p); });
             }
         }
     }
