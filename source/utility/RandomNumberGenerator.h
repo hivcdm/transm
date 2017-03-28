@@ -11,8 +11,8 @@
 
 struct NormalDist
 {
-    double mean;
-    double stddev;
+	double mean;
+	double stddev;
 };
 
 struct LogNormalDist
@@ -78,26 +78,15 @@ struct BetaDist
 	{
 		BetaDist result;
 
-		double alpha, beta;
-		double sampleSize = dist.mean * (1 - dist.mean) /
-		  (dist.stddev * dist.stddev) - 1;
+		double sampleSize = dist.mean * (1 - dist.mean) / (dist.stddev * dist.stddev) - 1;
 		result.alpha = dist.mean * sampleSize;
 		result.beta = (1 - dist.mean) * sampleSize;
 
 		return result;
 	}
-    static NormalDist ToNormal(BetaDist dist) {
-	NormalDist result;
-	
-	result.mean = dist.alpha / (dist.alpha + dist.beta);
-	result.stddev = sqrt((dist.alpha*dist.beta)/
-	    (pow(dist.alpha+dist.beta,2)*(dist.alpha+dist.beta+1)));
 
-	return result;
-    }
-
-    double alpha;
-    double beta;
+	double alpha;
+	double beta;
 };
 
 /***

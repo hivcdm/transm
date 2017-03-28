@@ -57,8 +57,6 @@ private:
 	SexualBehavior ReadSexualBehavior(SexualPartnership::Type type);
 
     Intervention ReadIntervention(pugi::xml_node &node, bool individual);
-    BetaDist CalculateChanceCondomUse(
-	NormalDist target_dist, BetaDist bd, int time, int duration);
 
     NormalDist GetNormalDist(const pugi::xml_node node);
     LogNormalDist GetLogNormalDist(const pugi::xml_node node);

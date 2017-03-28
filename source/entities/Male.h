@@ -86,20 +86,16 @@ public :
 		void SetAverageYearsYounger(SexualPartnership::Type type, NormalDist dist) { sexualBehaviorParams[(int)type].setAverageYearsYounger(dist); }
 		void SetAcquisitionRatePerMonth(Person::RiskLevel risk, SexualPartnership::Type type, LogNormalDist dist) { sexualBehaviorParams[(int)type].setAcquisitionRatePerMonth(risk, dist); }
 		void SetCoitalEventsPerMonth(Person::RiskLevel risk, SexualPartnership::Type type, double mean) { sexualBehaviorParams[(int)type].setCoitalEventsPerMonth(risk, mean); }
-		void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type type, BetaDist dist)
-		{ sexualBehaviorParams[(int)type].setChanceCondomUsePerEvent(risk, dist); }
-		const BetaDist GetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type type) const
-		{ return getSexualBehavior(type).getChanceCondomUsePerEvent(risk); }
-				  
+		void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { sexualBehaviorParams[(int)type].setChanceCondomUsePerEvent(risk, dist); }
 		void SetPartnershipDuration(Person::RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { sexualBehaviorParams[(int)type].setPartnershipDuration(risk, dist); }
 
 		void SetActivityLevel(NormalDist activity_level) { activityLevel = activity_level; }
 
-		int GetMaxPartnershipRejections() const { return maxPartnershipRejections; }
-		void SetMaxPartnershipRejections(int rejections) { maxPartnershipRejections = rejections; }
+        int GetMaxPartnershipRejections() const { return maxPartnershipRejections; }
+        void SetMaxPartnershipRejections(int rejections) { maxPartnershipRejections = rejections; }
 
-		void SetPreExposureProphylaxisEfficacy(double efficacy) { preExposureProphylaxisEfficacy_ = efficacy; }
-		double GetPreExposureProphylaxisEfficacy() const { return preExposureProphylaxisEfficacy_; }
+        void SetPreExposureProphylaxisEfficacy(double efficacy) { preExposureProphylaxisEfficacy_ = efficacy; }
+        double GetPreExposureProphylaxisEfficacy() const { return preExposureProphylaxisEfficacy_; }
 
 	private:
 		double chanceBecomeCSW;		//chance that a male will become a CSW
@@ -172,14 +168,11 @@ public:
 	Person *choosePartner(RandomNumberGenerator &_randomNums, EntityPool *_availableEntities,
 	                      SexualPartnership::Type _partnershipType, bool _remove);
 
-	virtual void SetPreExposureProphylaxisEfficacy(double efficacy);
+    virtual void SetPreExposureProphylaxisEfficacy(double efficacy);
 
-	virtual double GetPreExposureProphylaxisEfficacy() const;
+    virtual double GetPreExposureProphylaxisEfficacy() const;
 
-	void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng);
-        
-	const BetaDist GetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type type)
-	{ return populationSpecificParams.getSexualBehavior(type).getChanceCondomUsePerEvent(risk); }
+    void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng);
 
 	void SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, double meanEvents);
 

@@ -99,7 +99,7 @@ void Male::SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type pa
             chanceCondomUsePerEvent[(int)partnershipType] = rng.randBeta(dist);
         }
     }
-    behavior.setChanceCondomUsePerEvent(risk, dist);
+	behavior.setChanceCondomUsePerEvent(risk, dist);
 }
 
 void Male::SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, double meanEvents)
