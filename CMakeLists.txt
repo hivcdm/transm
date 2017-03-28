@@ -29,7 +29,8 @@ ExternalProject_Add(
 	GIT_REPOSITORY https://github.com/tfussell/rana
 	CONFIGURE_COMMAND ""
 	BUILD_COMMAND ""
-    INSTALL_COMMAND ""
+    	INSTALL_COMMAND ""
+	UPDATE_DISCONNECTED 1
 )
 
 ExternalProject_Get_Property(rana_project source_dir)
@@ -44,7 +45,8 @@ ExternalProject_Add(
 	GIT_REPOSITORY https://github.com/eile/tclap.git
 	CONFIGURE_COMMAND ""
 	BUILD_COMMAND ""
-    INSTALL_COMMAND ""
+    	INSTALL_COMMAND ""
+	UPDATE_DISCONNECTED 1
 )
 
 ExternalProject_Get_Property(tclap_project source_dir)
@@ -57,8 +59,9 @@ ExternalProject_Add(
 	PREFIX ${CMAKE_SOURCE_DIR}/build/third-party
 	GIT_REPOSITORY https://github.com/zeux/pugixml.git
 	CONFIGURE_COMMAND cmake -DCMAKE_BUILD_TYPE=Release ../pugixml_project
-    BUILD_COMMAND make pugixml
-    INSTALL_COMMAND mv libpugixml.a ${CMAKE_SOURCE_DIR}/lib
+	UPDATE_DISCONNECTED 1
+    	BUILD_COMMAND make pugixml
+    	INSTALL_COMMAND mv libpugixml.a ${CMAKE_SOURCE_DIR}/lib
 )
 
 ExternalProject_Get_Property(pugixml_project source_dir)
