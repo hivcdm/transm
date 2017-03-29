@@ -77,9 +77,15 @@ struct BetaDist
     static BetaDist FromNormal(NormalDist dist) {
 	BetaDist result;
 
-	double alpha, beta;
-	double sampleSize = dist.mean * (1 - dist.mean) /
-	    (dist.stddev * dist.stddev) - 1;
+	double limit = dist.mean * (1 - dist.mean) / (dist.stddev * dist.stddev);
+	if (limit < 1) {
+	    auto message = std::string("Normal distribution cannot be converted to beta: ") +
+		std::string("The mean and stddev will cause alpha or beta to be negative") +
+		std::string("Mean: ") + std::to_string(dist.mean) + std::string(" ") +
+		std::string("StdDev: ") + std::to_string(dist.stddev);
+	    throw std::runtime_error(message);
+	}
+	double sampleSize = limit - 1;
 	result.alpha = dist.mean * sampleSize;
 	result.beta = (1 - dist.mean) * sampleSize;
 
