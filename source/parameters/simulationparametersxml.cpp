@@ -1326,19 +1326,32 @@ Entity::HVLStrata SimulationParametersXml::from_string(const std::string &hvl_st
     throw std::runtime_error("unknown hvl stratum: " + hvl_string);
 }
 
+template<>
+double SimulationParametersXml::TransformInterventionValue(double target_value,
+    double curr_value, Time time, TimeSpan duration, Time current_time)
+{
+    double new_value;
+
+    int lapsed = duration.in_months() - (current_time.in_months() - time.in_months()) + 1;
+    double coeff = (target_value - curr_value) / lapsed;
+    new_value = curr_value + coeff;
+
+    return new_value;
+}
+
 /*
  * Calculates the current beta distribution used for choosing chance condom use
  * for an intervention. The intervention start time and duration, along with the
  * current beta distribution and target normal distribution are used in the calculation.
  */
+template<>
 NormalDist SimulationParametersXml::TransformInterventionValue(NormalDist target_dist,
-    NormalDist curr_dist, int time, int duration, Time current_time) const
+    NormalDist curr_dist, Time time, TimeSpan duration, Time current_time)
 {
 	NormalDist new_dist;
 
-	int curr_time = current_time.in_months();
 	// calculate the amount to add each time step so we don't have to store a coeff value
-	int lapsed = duration - (curr_time - time) + 1;
+	int lapsed = duration.in_months() - (current_time.in_months() - time.in_months()) + 1;
 	double mean_coeff = (target_dist.mean - curr_dist.mean) / lapsed;
 	double stddev_coeff = (target_dist.stddev - curr_dist.stddev) / lapsed;
 	new_dist.mean = curr_dist.mean + mean_coeff;
@@ -1348,7 +1361,7 @@ NormalDist SimulationParametersXml::TransformInterventionValue(NormalDist target
 }
 
 void SimulationParametersXml::SetChanceCondomUseCallback(pugi::xml_node &node,
-    Intervention &intervention, int time, int duration, bool individual) const
+    Intervention &intervention, bool individual) const
 {
     auto risk = Attr<Entity::RiskLevel>(node, "risk");
     auto type = Attr<SexualPartnership::Type>(node, "type");
@@ -1359,6 +1372,8 @@ void SimulationParametersXml::SetChanceCondomUseCallback(pugi::xml_node &node,
     // check that conversion from normal to beta is possible
     BetaDist::FromNormal(target_dist);
 
+    Time time = intervention.GetTime();
+    TimeSpan duration = intervention.GetDuration();
     if (!individual) {
 	intervention.SetPopulationCallback(
 	    [=](Time current_time, Population &p) {
@@ -1394,6 +1409,31 @@ void SimulationParametersXml::SetChanceCondomUseCallback(pugi::xml_node &node,
 
 	    person->SetChanceCondomUsePerEvent(risk, type, target_beta_dist,
 		GetRandomNumberGenerator());
+	}
+    );
+}
+
+void SimulationParametersXml::SetProportionCircumcisedCallback(pugi::xml_node &node,
+    Intervention &intervention) const
+{
+    bool transform = false;
+    if (node.child("transform"))
+	transform = Text<bool>(node.child("transform"));
+    double target_value = Text<bool>(node.child("proportion"));
+
+    Time time = intervention.GetTime();
+    TimeSpan duration = intervention.GetDuration();
+    intervention.SetPopulationCallback (
+	[=](Time current_time, Population &p) {
+	    double new_value = target_value;
+	    if (transform) {
+		// increase or descrease to the target value over the duration
+	        double curr_value = p.GetParameters().GetProportionCircumcised();
+		new_value = TransformInterventionValue(
+		    target_value, curr_value, time, duration, current_time);
+	    }
+
+	    p.GetParameters().SetProportionCircumcised(new_value);
 	}
     );
 }
@@ -1488,7 +1528,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         }
         case KnownIntervention::ChanceCondomUse:
         {
-	    SetChanceCondomUseCallback(node, intervention, time, duration, individual);
+	    SetChanceCondomUseCallback(node, intervention, individual);
         }
         case KnownIntervention::PartnershipDuration:
         {
@@ -1496,7 +1536,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = GetShiftedLogNormalDist(node);
             intervention.SetIndividualCallback(
-                [=](Time current_time, Entity *person) { 
+                [=](Time current_time, Entity *person) {
                     person->SetPartnershipDuration(risk, partnership_type, dist); });
             break;
         }
@@ -1616,10 +1656,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         }
         case KnownIntervention::ProportionCircumcised:
         {
-            auto value = Text<double>(node);
-            intervention.SetPopulationCallback(
-                [=](Time current_time, Population &p) {
-                p.GetParameters().SetProportionCircumcised(value); });
+	    SetProportionCircumcisedCallback(node, intervention);
             break;
         }
         case KnownIntervention::ChanceBecomeSexWorker:
@@ -1730,7 +1767,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         }
         case KnownIntervention::ChanceCondomUse:
         {
-	    SetChanceCondomUseCallback(node, intervention, time, duration, individual);
+	    SetChanceCondomUseCallback(node, intervention, individual);
             break;
         }
         case KnownIntervention::PartnershipDuration:

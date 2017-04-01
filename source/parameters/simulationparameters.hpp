@@ -109,10 +109,13 @@ private:
     BetaDist GetBetaDist(const pugi::xml_node node) const;
     ShiftedLogNormalDist GetShiftedLogNormalDist(const pugi::xml_node node) const;
 
-    NormalDist TransformInterventionValue(NormalDist target_dist, NormalDist curr_dist,
-	int time, int duration, Time current_time) const;
-    void SetChanceCondomUseCallback(pugi::xml_node &node, Intervention &intervention,
-	int time, int duration, bool individual) const;
+    void SetChanceCondomUseCallback(pugi::xml_node &node, Intervention &intervention, bool individual) const;
+    void SetProportionCircumcisedCallback(pugi::xml_node &node, Intervention &intervention) const;
+
+    // template function for returning different values when calculating transform
+    // values in interventions (transform meaning increase or decrease)
+    template<typename V>
+    V TransformInterventionValue(V target, V curr, Time time, TimeSpan duration, Time current_time);
 
     EntityDistributions GetEntityDistributions(pugi::xml_node node) const;
 

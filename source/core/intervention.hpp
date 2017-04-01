@@ -15,7 +15,9 @@ class Entity;
 class Intervention
 {
 public:
-    Intervention(Time time, TimeSpan duration = TimeSpan(0, -1));
+    Intervention(Time time, TimeSpan duration);
+    Time GetTime() { return time_; }
+    TimeSpan GetDuration() { return duration_; }
 
     void SetSimulationCallback(std::function<void(Time, Simulation &)> callback) { simulation_intervention_ = callback; }
     bool AffectsSimulation() const { return (bool)simulation_intervention_; }
