@@ -1329,10 +1329,9 @@ Entity::HVLStrata SimulationParametersXml::from_string(const std::string &hvl_st
  * for an intervention. The intervention start time and duration, along with the
  * current beta distribution and target normal distribution are used in the calculation.
  */
-BetaDist SimulationParametersXml::CalculateChanceCondomUse(NormalDist target_dist,
-    const BetaDist curr_beta_dist, int time, int duration, Time current_time) const
+NormalDist SimulationParametersXml::TransformInterventionValue(NormalDist target_dist,
+    NormalDist curr_dist, int time, int duration, Time current_time) const
 {
-	NormalDist curr_dist = BetaDist::ToNormal(curr_beta_dist);
 	NormalDist new_dist;
 
 	int curr_time = current_time.in_months();
@@ -1343,7 +1342,7 @@ BetaDist SimulationParametersXml::CalculateChanceCondomUse(NormalDist target_dis
 	new_dist.mean = curr_dist.mean + mean_coeff;
 	new_dist.stddev = curr_dist.stddev + stddev_coeff;
 
-	return BetaDist::FromNormal(new_dist);
+	return new_dist;
 }
 
 void SimulationParametersXml::SetChanceCondomUseCallback(pugi::xml_node &node,
@@ -1364,10 +1363,10 @@ void SimulationParametersXml::SetChanceCondomUseCallback(pugi::xml_node &node,
 		BetaDist target_beta_dist;
 		if (transform) {
 		    // increase or descrease to the target value over the duration
-		    const BetaDist curr_beta_dist = p.GetParameters().
-			GetChanceCondomUsePerEvent(risk, type);
-		    target_beta_dist = CalculateChanceCondomUse(
-			target_dist, curr_beta_dist, time, duration, current_time);
+		    NormalDist curr_dist = BetaDist::ToNormal(p.GetParameters().
+			GetChanceCondomUsePerEvent(risk, type));
+		    target_beta_dist = BetaDist::FromNormal(TransformInterventionValue(
+			target_dist, curr_dist, time, duration, current_time));
 		} else {
 		    // set the target value immediately
 		    target_beta_dist = BetaDist::FromNormal(target_dist);
@@ -1382,10 +1381,10 @@ void SimulationParametersXml::SetChanceCondomUseCallback(pugi::xml_node &node,
 	    BetaDist target_beta_dist;
 	    if (transform) {
 		// increase or descrease to the target value over the duration
-		const BetaDist curr_beta_dist = person->
-		    GetChanceCondomUsePerEvent(risk, type);
-		target_beta_dist = CalculateChanceCondomUse(
-		    target_dist, curr_beta_dist, time, duration, current_time);
+		NormalDist curr_dist = BetaDist::ToNormal(person->
+		    GetChanceCondomUsePerEvent(risk, type));
+		target_beta_dist = BetaDist::FromNormal(TransformInterventionValue(
+		    target_dist, curr_dist, time, duration, current_time));
 	    } else {
 		// set the target value immediately
 		target_beta_dist = BetaDist::FromNormal(target_dist);

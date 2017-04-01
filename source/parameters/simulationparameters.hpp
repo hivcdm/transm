@@ -109,7 +109,7 @@ private:
     BetaDist GetBetaDist(const pugi::xml_node node) const;
     ShiftedLogNormalDist GetShiftedLogNormalDist(const pugi::xml_node node) const;
 
-    BetaDist CalculateChanceCondomUse(NormalDist target_dist, const BetaDist curr_dist,
+    NormalDist TransformInterventionValue(NormalDist target_dist, NormalDist curr_dist,
 	int time, int duration, Time current_time) const;
     void SetChanceCondomUseCallback(pugi::xml_node &node, Intervention &intervention,
 	int time, int duration, bool individual) const;
