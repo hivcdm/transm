@@ -1244,11 +1244,25 @@ SexualPartnership::Type SimulationBuilderXml::from_string(const std::string &typ
     throw std::runtime_error("unknown partnership type: " + type_string);
 }
 
+template<>
+double SimulationBuilderXml::TransformInterventionValue(double target_value,
+    double curr_value, int time, int duration)
+{
+    double new_value;
+
+    int lapsed = duration - (simulation_.GetTime() - time) + 1;
+    double coeff = (target_value - curr_value) / lapsed;
+    new_value = curr_value + coeff;
+
+    return new_value;
+}
+
 /*
  * Calculates the current beta distribution used for choosing chance condom use
  * for an intervention. The intervention start time and duration, along with the
  * current beta distribution and target normal distribution are used in the calculation.
  */
+template<>
 NormalDist SimulationBuilderXml::TransformInterventionValue(NormalDist target_dist,
     NormalDist curr_dist, int time, int duration)
 {
@@ -1265,7 +1279,7 @@ NormalDist SimulationBuilderXml::TransformInterventionValue(NormalDist target_di
 }
 
 void SimulationBuilderXml::SetChanceCondomUseCallback(pugi::xml_node &node,
-    Intervention &intervention, int time, int duration, bool individual)
+    Intervention &intervention, bool individual)
 {
     auto risk = Attr<Person::RiskLevel>(node, "risk");
     auto type = Attr<SexualPartnership::Type>(node, "type");
@@ -1276,6 +1290,8 @@ void SimulationBuilderXml::SetChanceCondomUseCallback(pugi::xml_node &node,
     // check that conversion from normal to beta is possible
     BetaDist::FromNormal(target_dist);
 
+    int time = intervention.GetTime();
+    int duration = intervention.GetDuration();
     if (!individual) {
 	intervention.SetPopulationCallback(
 	    [=](Population &p) {
@@ -1311,6 +1327,31 @@ void SimulationBuilderXml::SetChanceCondomUseCallback(pugi::xml_node &node,
 
 	    person->SetChanceCondomUsePerEvent(risk, type, target_beta_dist,
 					       simulation_.GetEventParams().randomNums);
+	}
+    );
+}
+
+void SimulationBuilderXml::SetProportionCircumcisedCallback(pugi::xml_node &node,
+    Intervention &intervention)
+{
+    bool transform = false;
+    if (node.child("transform"))
+	transform = Text<bool>(node.child("transform"));
+    double target_value = Text<bool>(node.child("proportion"));
+
+    int time = intervention.GetTime();
+    int duration = intervention.GetDuration();
+    intervention.SetPopulationCallback (
+	[=](Population &p) {
+	    double new_value = target_value;
+	    if (transform) {
+		// increase or descrease to the target value over the duration
+		double curr_value = p.popWideParams.getProportionCircumcised();
+		new_value = TransformInterventionValue(
+		    target_value, curr_value, time, duration);
+	    }
+
+	    p.popWideParams.setProportionCircumcised(new_value);
 	}
     );
 }
@@ -1391,7 +1432,7 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
         }
         case KnownIntervention::ChanceCondomUse:
         {
-	    SetChanceCondomUseCallback(node, intervention, time, duration, individual);
+	    SetChanceCondomUseCallback(node, intervention, individual);
             break;
         }
         case KnownIntervention::PartnershipDuration:
@@ -1498,10 +1539,7 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
         }
         case KnownIntervention::ProportionCircumcised:
         {
-            auto value = Text<double>(node);
-            intervention.SetPopulationCallback(
-                [=](Population &p) {
-                    p.popWideParams.setProportionCircumcised(value); });
+	    SetProportionCircumcisedCallback(node, intervention);
             break;
         }
         case KnownIntervention::ChanceBecomeSexWorker:
@@ -1512,7 +1550,7 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
                 [=](Population &p) { p.popWideParams.SetChanceBecomeCsw(gender, chance); });
             intervention.SetIndividualCallback([=](Person *person)
             {
-                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == gender)
+                if(person->isMale())
                 {
                     person->SetChanceBecomeSexWorker(chance);
                 }
@@ -1610,7 +1648,7 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
         }
         case KnownIntervention::ChanceCondomUse:
         {
-	    SetChanceCondomUseCallback(node, intervention, time, duration, individual);
+	    SetChanceCondomUseCallback(node, intervention, individual);
             break;
         }
         case KnownIntervention::PartnershipDuration:

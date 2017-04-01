@@ -57,10 +57,14 @@ private:
 	SexualBehavior ReadSexualBehavior(SexualPartnership::Type type);
 
     Intervention ReadIntervention(pugi::xml_node &node, bool individual);
-    NormalDist TransformInterventionValue(NormalDist target_dist, NormalDist curr_dist,
-				      int time, int duration);
-    void SetChanceCondomUseCallback(pugi::xml_node &node, Intervention &intervention,
-	int time, int duration, bool individual);
+    void SetChanceCondomUseCallback(pugi::xml_node &node, Intervention &intervention, bool individual);
+    void SetProportionCircumcisedCallback(pugi::xml_node &node,
+					  Intervention &intervention);
+
+    // template function for returning different values when calculating transform
+    // values in interventions (transform meaning increase or decrease)
+    template<typename V>
+    V TransformInterventionValue(V target, V curr, int time, int duration);
 
     NormalDist GetNormalDist(const pugi::xml_node node);
     LogNormalDist GetLogNormalDist(const pugi::xml_node node);
