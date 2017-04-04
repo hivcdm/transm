@@ -138,44 +138,53 @@ Population::~Population()
 
 //-----------------< Event-related methods -----------------------------//
 
-
 void Population::Births(EventParams &parameters_)
 {
-	//number of people to be born this month
-	unsigned long numBorn = Utility::round<unsigned long>(currSize * popWideParams.birthRate);
-	unsigned long numMales = static_cast<unsigned long>(popWideParams.proportionMale * numBorn);
-	DemographicProfile::Gender gender;
-	Person *p = nullptr;
+    unsigned long numBorn = 0;
+    if (popWideParams.UseBirthRate) {
+	// get numBorn from the birth rate
+	numBorn = Utility::round<unsigned long>(currSize * popWideParams.getBirthRate());
+    } else {
+	// get numBorn from fertility rates
+	// numBorn = sum((rate*females) / 1000
+	double sumRates;
+	for ( auto rate : popWideParams.GetFertilityRates()) {
+	    int numFemales = entities->sizeByAgeFemales(rate.Lower(), rate.Upper());
+	    sumRates += rate.Rate() * numFemales;
+	}
+	numBorn += Utility::round<unsigned long>(sumRates / 1000);
+    }
+    unsigned long numMales = static_cast<unsigned long>(popWideParams.proportionMale * numBorn);
+    DemographicProfile::Gender gender;
+    Person *p = nullptr;
 
-	//create currSize * birthRate New people
-	for(unsigned long i = 0; i < numBorn; ++i)
-	{
-		//determine gender
-		gender = (i < numMales) ? DemographicProfile::Gender::Male : DemographicProfile::Gender::Female;
-		bool toTrace = parameters_.currTime >= parameters_.monthTraceNewborns ? parameters_.numNewbornsTraced <
-		               parameters_.numNewbornsToTrace : false;
+    //create currSize * birthRate New people
+    for(unsigned long i = 0; i < numBorn; ++i) {
+	// add males first to fit the proportion male
+	gender = (i < numMales) ? DemographicProfile::Gender::Male :
+	    DemographicProfile::Gender::Female;
+	bool toTrace = parameters_.currTime >= parameters_.monthTraceNewborns ?
+	    parameters_.numNewbornsTraced < parameters_.numNewbornsToTrace : false;
 
-		if(toTrace)
-		{
-			parameters_.numNewbornsTraced++;
-		}
+	if(toTrace)
+	    parameters_.numNewbornsTraced++;
 
-		p = GeneratePerson(parameters_, gender, nullptr, toTrace);
+	p = GeneratePerson(parameters_, gender, nullptr, toTrace);
 
-        if(parameters_.debugLevel > DebugLevel::One && parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
-		{
-            p->print(parameters_.trace_files[EventParams::TraceFile::Type::Events].file, Constants::TABTAB);
-		}
-
-		//add the newborn to the EntityPool
-		//Use addPersonToAll here (initial entrance into population)
-		entities->addPersonToAll(p);
+	if(parameters_.debugLevel > DebugLevel::One &&
+	   parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled) {
+	    p->print(parameters_.trace_files[EventParams::TraceFile::Type::Events].file,
+		     Constants::TABTAB);
 	}
 
-    if(parameters_.debugLevel > DebugLevel::Zero)
-	{
-		PrintMethodResults(parameters_, "Births", "People Born", numBorn, "total born", true);
-	}
+	//add the newborn to the EntityPool
+	//Use addPersonToAll here (initial entrance into population)
+	entities->addPersonToAll(p);
+    }
+
+    if(parameters_.debugLevel > DebugLevel::Zero) {
+	    PrintMethodResults(parameters_, "Births", "People Born", numBorn, "total born", true);
+    }
 }
 
 //Updates the age buckets for use with life expectancy

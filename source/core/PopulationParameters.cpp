@@ -32,21 +32,17 @@ PopulationParameters::AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(int _minA
 
 PopulationParameters::PopulationParameters()
 {
-	//set default values of fields
+    //set default values of fields
     debugLevel = DebugLevel::One;
-	initSize = 10000;
-	birthRate = 0.0038;
-	ageOfMajority = 180;
-	proportionMale = 0.51;
-	proportionCircumcised = 0.20;
+    initSize = 10000;
+    birthRate = 0.0038;
+    UseBirthRate = true;
+    ageOfMajority = 180;
+    proportionMale = 0.51;
+    proportionCircumcised = 0.20;
     sexualActivityDelay = 0;
 }
 
 PopulationParameters::~PopulationParameters()
 {
-}
-
-double PopulationParameters::getBirthRate() const
-{
-	return birthRate;
 }

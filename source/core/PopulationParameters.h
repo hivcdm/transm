@@ -4,6 +4,25 @@
 #include "../entities/Female.h"
 #include "../statistics/CostsTracker.h"
 
+class FertilityRate {
+  public:
+	FertilityRate();
+	FertilityRate(int l, int u, double r)
+	{
+		lower = l;
+		upper = u;
+		rate = r;
+	}
+	int Lower() const { return lower; }
+	int Upper() const { return upper; }
+	double Rate() const { return rate; }
+
+  private:
+	int lower;
+	int upper;
+	double rate;
+};
+
 class PopulationParameters
 {
 public:
@@ -12,47 +31,52 @@ public:
     /// </summary>
 	class AgeBucketPrevalenceInfo
 	{
-	public:
-		AgeBucketPrevalenceInfo();
+	  public:
+	    AgeBucketPrevalenceInfo();
 
-		AgeBucketPrevalenceInfo(int _minAgeMth, int _maxAgeMth, double _proportionOfPopulationMale,
-			double _proportionOfPopulationFemale, int _numInfectedCSWMale, int _numInfectedCSWFemale,
-			int _numInfectedNonCSWMalesLowRisk, int _numInfectedNonCSWFemalesLowRisk,
-			int _numInfectedNonCSWMalesHighRisk, int _numInfectedNonCSWFemalesHighRisk);
+	    AgeBucketPrevalenceInfo(int _minAgeMth, int _maxAgeMth, double _proportionOfPopulationMale,
+				    double _proportionOfPopulationFemale, int _numInfectedCSWMale, int _numInfectedCSWFemale,
+				    int _numInfectedNonCSWMalesLowRisk, int _numInfectedNonCSWFemalesLowRisk,
+				    int _numInfectedNonCSWMalesHighRisk, int _numInfectedNonCSWFemalesHighRisk);
 
-		void print(EventParams &_eventParams);
+	    void print(EventParams &_eventParams);
 
-        /// <summary>
-        /// the min age that this bucket represents
-        /// </summary>
-        int minAgeMth;
+	    /// <summary>
+	    /// the min age that this bucket represents
+	    /// </summary>
+	    int minAgeMth;
 
-        /// <summary>
-        /// the max age that this bucket represents
-        /// </summary>
-        int maxAgeMth;
+	    /// <summary>
+	    /// the max age that this bucket represents
+	    /// </summary>
+	    int maxAgeMth;
 
-        /// <summary>
-        /// determines size as proportion of the population
-        /// </summary>
-        double proportionOfPopulation[(std::size_t)DemographicProfile::Gender::Last];
+	    /// <summary>
+	    /// determines size as proportion of the population
+	    /// </summary>
+	    double proportionOfPopulation[(std::size_t)DemographicProfile::Gender::Last];
 
-        /// <summary>
-        /// number of males and female csw in this bucket that are infected (at prevalence delay)
-        /// </summary>
-        int numInfectedCSW[(std::size_t)DemographicProfile::Gender::Last];
+	    /// <summary>
+	    /// number of males and female csw in this bucket that are infected (at prevalence delay)
+	    /// </summary>
+	    int numInfectedCSW[(std::size_t)DemographicProfile::Gender::Last];
 
-        /// <summary>
-        /// number of male and female non-csw in this bucket that are infected (at prevalence delay)
-        /// </summary>
-        int numInfectedRisk[(std::size_t)DemographicProfile::Gender::Last][Person::ENDRiskLevel];
+	    /// <summary>
+	    /// number of male and female non-csw in this bucket that are infected (at prevalence delay)
+	    /// </summary>
+	    int numInfectedRisk[(std::size_t)DemographicProfile::Gender::Last][Person::ENDRiskLevel];
 	};
 
 	PopulationParameters();
 	~PopulationParameters();
 
-	double getBirthRate() const;
+	bool UseBirthRate;
+	double getBirthRate() { return birthRate; } const
 	void setBirthRate(double birth_rate) { birthRate = birth_rate; }
+
+	std::vector<FertilityRate> GetFertilityRates() const { return fertilityRates; }
+	void ClearFertilityRates() { fertilityRates.clear(); }
+	void PushFertilityRate(FertilityRate rate) { fertilityRates.push_back(rate); }
 
 	double getProportionCircumcised() const { return proportionCircumcised; }
 	void setProportionCircumcised(double value) { proportionCircumcised = value; }
@@ -167,6 +191,7 @@ private:
 	/// Per month per person based on WHI data
     /// </summary>
 	double birthRate;
+	std::vector<FertilityRate> fertilityRates;
 
     /// <summary>
     /// age in months
