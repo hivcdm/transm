@@ -218,7 +218,6 @@ void TargetGroup::Update(Population &population, Time current_time,
 		std::size_t partition_index = 0;
 		std::size_t assigned = 0;
 		double assigned_partitions = 0;
-		bool was_rounded = false;
 
 		for (auto &partition : partitions_)
 		{
@@ -227,8 +226,7 @@ void TargetGroup::Update(Population &population, Time current_time,
 
 			assigned_partitions += proportion;
 			// lump rounding errors into the last non-empty partition
-			if(was_rounded == false &&
-			   (assigned_partitions == 1.00 || partition_index == partitions_.size() - 1))
+			if(assigned_partitions == 1.00 || partition_index == partitions_.size() - 1)
 			{
 				number = static_cast<int>(people.size() - assigned);
 			}

@@ -111,11 +111,13 @@ private:
 
     void SetChanceCondomUseCallback(pugi::xml_node &node, Intervention &intervention, bool individual) const;
     void SetProportionCircumcisedCallback(pugi::xml_node &node, Intervention &intervention) const;
+    void SetCircumciseCallback(pugi::xml_node &node, Intervention &intervention, bool individual) const;
+
 
     // template function for returning different values when calculating transform
     // values in interventions (transform meaning increase or decrease)
     template<typename V>
-    V TransformInterventionValue(V target, V curr, Time time, TimeSpan duration, Time current_time);
+    V TransformInterventionValue(V target, V curr, Time time, TimeSpan duration, Time current_time) const;
 
     EntityDistributions GetEntityDistributions(pugi::xml_node node) const;
 

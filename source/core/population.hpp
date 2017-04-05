@@ -56,6 +56,7 @@ public:
 	void SetCircumcisionCost(double circumcision_cost) { popWideParams.circumcisionCost = circumcision_cost; }
 
 	void Circumcise(Entity *p);
+	void Circumcise(double proportion);
 
     PopulationParameters &GetParameters() { return popWideParams; }
     const PopulationParameters &GetParameters() const { return popWideParams; }
@@ -64,6 +65,7 @@ public:
 
     std::vector<Entity *> Find(std::function<bool(Entity *)> predicate);
     std::vector<Entity *> FindSAInAgeRange(int minAge, int maxAge);
+    std::vector<Entity *> FindNonCircumcised();
 
     /// <summary>
 	/// determines which DemographicProfiles have the power to initiate relationships and determines which
@@ -208,6 +210,8 @@ public:
 	int GetNumberToTrace() const { return parameters_.numToTrace; }
 
     void RegisterIntervention(const Intervention &intervention);
+
+    std::size_t GetNumberCircumcised() { return num_circumcised_sa + num_circumcised_na; }
 
 private:
     friend class Intervention;

@@ -1328,7 +1328,7 @@ Entity::HVLStrata SimulationParametersXml::from_string(const std::string &hvl_st
 
 template<>
 double SimulationParametersXml::TransformInterventionValue(double target_value,
-    double curr_value, Time time, TimeSpan duration, Time current_time)
+    double curr_value, Time time, TimeSpan duration, Time current_time) const
 {
     double new_value;
 
@@ -1346,7 +1346,7 @@ double SimulationParametersXml::TransformInterventionValue(double target_value,
  */
 template<>
 NormalDist SimulationParametersXml::TransformInterventionValue(NormalDist target_dist,
-    NormalDist curr_dist, Time time, TimeSpan duration, Time current_time)
+    NormalDist curr_dist, Time time, TimeSpan duration, Time current_time) const
 {
 	NormalDist new_dist;
 
@@ -1419,7 +1419,7 @@ void SimulationParametersXml::SetProportionCircumcisedCallback(pugi::xml_node &n
     bool transform = false;
     if (node.child("transform"))
 	transform = Text<bool>(node.child("transform"));
-    double target_value = Text<bool>(node.child("proportion"));
+    double target_value = Text<double>(node.child("proportion"));
 
     Time time = intervention.GetTime();
     TimeSpan duration = intervention.GetDuration();
@@ -1436,6 +1436,40 @@ void SimulationParametersXml::SetProportionCircumcisedCallback(pugi::xml_node &n
 	    p.GetParameters().SetProportionCircumcised(new_value);
 	}
     );
+}
+
+void SimulationParametersXml::SetCircumciseCallback(pugi::xml_node &node,
+    Intervention &intervention, bool individual) const
+{
+    if (individual) {
+	intervention.SetPopulationIndividualCallback(
+	    [=](Time current_time, Population &population, Entity *person) {
+		population.Circumcise(person);
+	    }
+	);
+    } else {
+	bool transform = false;
+	if (node.child("transform"))
+	    transform = Text<bool>(node.child("transform"));
+	double target_value = Text<double>(node.child("proportion"));
+
+	Time time = intervention.GetTime();
+	TimeSpan duration = intervention.GetDuration();
+	intervention.SetPopulationCallback (
+	    [=](Time current_time, Population &p) {
+		double new_value = target_value;
+		if (transform) {
+		    // increase or descrease to the target value over the duration
+		    double curr_value = (double) p.GetNumberCircumcised() /
+			(double) p.GetSize(DemographicProfile::Gender::Male);
+		    new_value = TransformInterventionValue(
+			target_value, curr_value, time, duration, current_time);
+		}
+
+		p.Circumcise(new_value);
+	    }
+	);
+    }
 }
 
 template<>
@@ -1464,9 +1498,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         {
         case KnownIntervention::Circumcise:
         {
-            intervention.SetPopulationIndividualCallback(
-                [=](Time current_time, Population &population, Entity *person) { 
-                    population.Circumcise(person); });
+	    SetCircumciseCallback(node, intervention, individual);
             break;
         }
         case KnownIntervention::ChanceBecomeSexWorker:
@@ -1646,6 +1678,11 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
 	    );
 	    break;
 	}
+	case KnownIntervention::Circumcise:
+        {
+	    SetCircumciseCallback(node, intervention, individual);
+            break;
+        }
         case KnownIntervention::ProportionMale:
         {
             auto value = Text<double>(node);

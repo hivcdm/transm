@@ -37,6 +37,21 @@ Population::Population(EventParams &parameters)
     //risk_group_changed_.push_back([&](const Entity *e) { trace_files_.at("single-person").RecordRiskGroupChanged(parameters.currTime, e); });
 }
 
+
+void Population::Circumcise(double proportion)
+{
+    std::vector<Entity *> people = FindNonCircumcised();
+
+    if(people.empty())
+	return;
+
+    // only circumcise the proportion desired
+    auto number = (int)(proportion * people.size());
+    for (int i = 0; i < number; i++) {
+	Circumcise(people.at(i));
+    }
+}
+
 void Population::Circumcise(Entity *p)
 {
     if(!p->IsCircumcised())
@@ -514,6 +529,20 @@ std::vector<Entity *> Population::FindSAInAgeRange(int minAge, int maxAge)
     return matches;
 }
 
+std::vector<Entity *> Population::FindNonCircumcised()
+{
+    auto match = [&](Entity *person) {
+	return !person->IsCircumcised();
+    };
+
+    std::vector<Entity *> matches;
+    entities->forEach([=, &matches](Entity *p) {
+	    if(match(p))
+		matches.push_back(p);
+	});
+    return matches;
+}
+
 void Population::RegisterIntervention(const Intervention &intervention)
 {
     interventions_.push_back(intervention);
@@ -898,7 +927,7 @@ std::size_t Population::UpdateSize()
 	}
 
 	entities->countEntitiesPerAge();
-    
+
     num_circumcised_na = 0;
     num_circumcised_sa = 0;
 
