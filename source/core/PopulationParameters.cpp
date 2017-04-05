@@ -45,6 +45,7 @@ PopulationParameters::PopulationParameters()
     debugLevel = DebugLevel::One;
     initSize = 10000;
     birthRate = 0.0038;
+    UseBirthRate = true;
     ageOfMajority = 180;
     proportionMale = 0.51;
     proportionCircumcised = 0.20;
@@ -53,9 +54,4 @@ PopulationParameters::PopulationParameters()
 
 PopulationParameters::~PopulationParameters()
 {
-}
-
-double PopulationParameters::getBirthRate() const
-{
-	return birthRate;
 }

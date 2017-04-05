@@ -4,10 +4,25 @@
 #include "../entities/Female.h"
 #include "../statistics/CostsTracker.h"
 
-/// <summary>
-/// This data structure holds proporiton of males and females
-/// for a defined age range
-/// </summary>
+class FertilityRate {
+  public:
+	FertilityRate();
+	FertilityRate(int l, int u, double r)
+	{
+		lower = l;
+		upper = u;
+		rate = r;
+	}
+	int Lower() const { return lower; }
+	int Upper() const { return upper; }
+	double Rate() const { return rate; }
+
+  private:
+	int lower;
+	int upper;
+	double rate;
+};
+
 class AgeDistribution
 {
   public:
@@ -65,8 +80,13 @@ public:
 	PopulationParameters();
 	~PopulationParameters();
 
-	double getBirthRate() const;
+	bool UseBirthRate;
+	double getBirthRate() { return birthRate; } const
 	void setBirthRate(double birth_rate) { birthRate = birth_rate; }
+
+	std::vector<FertilityRate> GetFertilityRates() const { return fertilityRates; }
+	void ClearFertilityRates() { fertilityRates.clear(); }
+	void PushFertilityRate(FertilityRate rate) { fertilityRates.push_back(rate); }
 
 	double getProportionCircumcised() const { return proportionCircumcised; }
 	void setProportionCircumcised(double value) { proportionCircumcised = value; }
@@ -205,6 +225,7 @@ private:
 	/// Per month per person based on WHI data
     /// </summary>
 	double birthRate;
+	std::vector<FertilityRate> fertilityRates;
 
     /// <summary>
     /// age in months

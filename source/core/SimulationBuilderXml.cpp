@@ -1129,6 +1129,7 @@ enum class KnownIntervention
 {
     Circumcise,
     BirthRate,
+    FertilityRate,
     ProportionMale,
     ProportionCircumcised,
     ChanceBecomeSexWorker,
@@ -1152,6 +1153,7 @@ const std::map<KnownIntervention, std::string> KnownInterventionStrings =
 {
     { KnownIntervention::Circumcise, "circumcise" },
     { KnownIntervention::BirthRate, "birthRate" },
+    { KnownIntervention::FertilityRate, "fertilityRate" },
     { KnownIntervention::ProportionMale, "proportionMale" },
     { KnownIntervention::ProportionCircumcised, "proportionCircumcised" },
     { KnownIntervention::ChanceBecomeSexWorker, "chanceBecomeSexWorker" },
@@ -1529,6 +1531,29 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
                     p.popWideParams.setBirthRate(value); });
             break;
         }
+	case KnownIntervention::FertilityRate:
+	{
+	    std::vector<FertilityRate> rates;
+	    for(auto child : node.children("rateForAgeRange")) {
+		auto lower = Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month,
+				     Attr<int>(child, "lower"));
+		auto upper = Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month,
+						  Attr<int>(child, "upper")) + 11;
+		auto value = Text<double>(child);
+		FertilityRate rate(lower, upper, value);
+		rates.push_back(rate);
+	    }
+	    intervention.SetPopulationCallback(
+		[=](Population &p) {
+		    p.popWideParams.UseBirthRate = false;
+		    p.popWideParams.ClearFertilityRates();
+		    for ( auto rate : rates)
+			p.popWideParams.PushFertilityRate(rate);
+		}
+	    );
+	    break;
+	}
+
         case KnownIntervention::ProportionMale:
         {
             auto value = Text<double>(node);
