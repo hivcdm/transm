@@ -32,6 +32,22 @@ Population::Population(EventParams &parameters)
 {
 }
 
+void Population::Circumcise(double proportion)
+{
+    std::vector<Person *> people = FindNonCircumcised();
+
+    if(people.empty())
+	return;
+
+    // only circumcise the proportion desired
+    auto number = (int)(proportion * people.size());
+    for (int i = 0; i < number; i++) {
+	Circumcise(people.at(i));
+    }
+
+
+}
+
 void Population::Circumcise(Person *p)
 {
     if(!p->IsCircumcised())
@@ -482,6 +498,20 @@ std::vector<Person *> Population::FindSAInAgeRange(int minAge, int maxAge)
 	    if(match(p, minAge, maxAge))
 		matches.push_back(p);
     });
+    return matches;
+}
+
+std::vector<Person *> Population::FindNonCircumcised()
+{
+    auto match = [&](Person *person) {
+	return person->IsCircumcised();
+    };
+
+    std::vector<Person *> matches;
+    entities->forEach([=, &matches](Person *p) {
+	    if(match(p))
+		matches.push_back(p);
+	});
     return matches;
 }
 

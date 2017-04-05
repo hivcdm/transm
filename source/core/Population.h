@@ -49,11 +49,13 @@ public:
 	void SetCircumcisionCost(double circumcision_cost) { popWideParams.circumcisionCost = circumcision_cost; }
 
 	void Circumcise(Person *p);
+	void Circumcise(double proportion);
 
     SimContext *LoadCepacFile(const std::string &cepac_file) { return parameters_.LoadCepacContext(cepac_file); }
 
     std::vector<Person *> Find(std::function<bool(Person *)> predicate);
     std::vector<Person *> FindSAInAgeRange(int minAge, int maxAge);
+    std::vector<Person *> FindNonCircumcised();
 
     /// <summary>
 	/// determines which DemographicProfiles have the power to initiate relationships and determines which

@@ -59,7 +59,8 @@ private:
     Intervention ReadIntervention(pugi::xml_node &node, bool individual);
     void SetChanceCondomUseCallback(pugi::xml_node &node, Intervention &intervention, bool individual);
     void SetProportionCircumcisedCallback(pugi::xml_node &node,
-					  Intervention &intervention);
+	Intervention &intervention);
+    void SetCircumciseCallback(pugi::xml_node &node, Intervention &intervention, bool individual);
 
     // template function for returning different values when calculating transform
     // values in interventions (transform meaning increase or decrease)

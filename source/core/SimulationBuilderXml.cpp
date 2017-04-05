@@ -1339,7 +1339,7 @@ void SimulationBuilderXml::SetProportionCircumcisedCallback(pugi::xml_node &node
     bool transform = false;
     if (node.child("transform"))
 	transform = Text<bool>(node.child("transform"));
-    double target_value = Text<bool>(node.child("proportion"));
+    double target_value = Text<double>(node.child("proportion"));
 
     int time = intervention.GetTime();
     int duration = intervention.GetDuration();
@@ -1358,6 +1358,40 @@ void SimulationBuilderXml::SetProportionCircumcisedCallback(pugi::xml_node &node
     );
 }
 
+void SimulationBuilderXml::SetCircumciseCallback(pugi::xml_node &node,
+    Intervention &intervention, bool individual)
+{
+    if (individual) {
+	intervention.SetPopulationIndividualCallback(
+	    [=](Population &population, Person *person) {
+		population.Circumcise(person);
+	    }
+	);
+    } else {
+	bool transform = false;
+	if (node.child("transform"))
+	    transform = Text<bool>(node.child("transform"));
+	double target_value = Text<double>(node.child("proportion"));
+
+	int time = intervention.GetTime();
+	int duration = intervention.GetDuration();
+	intervention.SetPopulationCallback (
+	    [=](Population &p) {
+		double new_value = target_value;
+		if (transform) {
+		    // increase or descrease to the target value over the duration
+		    double curr_value = (double) (p.num_circumcised_sa + p.num_circumcised_na) /
+			(double) p.GetSize(DemographicProfile::Gender::Male);
+		    new_value = TransformInterventionValue(
+			target_value, curr_value, time, duration);
+		}
+
+		p.Circumcise(new_value);
+	    }
+	);
+    }
+}
+
 Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool individual)
 {
     int time = node.attribute("time") != nullptr ? Attr<int>(node, "time") : -1;
@@ -1373,16 +1407,14 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
         {
         case KnownIntervention::Circumcise:
         {
-            intervention.SetPopulationIndividualCallback(
-                [=](Population &population, Person *person) { 
-                    population.Circumcise(person); });
+	    SetCircumciseCallback(node, intervention, individual);
             break;
         }
         case KnownIntervention::ChanceBecomeSexWorker:
         {
             auto chance = Text<double>(node);
             intervention.SetIndividualCallback(
-                [=](Person *person) { 
+                [=](Person *person) {
                     person->SetChanceBecomeSexWorker(chance); });
             break;
         }
@@ -1527,7 +1559,7 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
         {
             auto value = Text<double>(node);
             intervention.SetPopulationCallback(
-                [=](Population &p) { 
+                [=](Population &p) {
                     p.popWideParams.setBirthRate(value); });
             break;
         }
@@ -1553,12 +1585,16 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
 	    );
 	    break;
 	}
-
+	case KnownIntervention::Circumcise:
+        {
+	    SetCircumciseCallback(node, intervention, individual);
+            break;
+        }
         case KnownIntervention::ProportionMale:
         {
             auto value = Text<double>(node);
             intervention.SetPopulationCallback(
-                [=](Population &p) { 
+                [=](Population &p) {
                     p.popWideParams.setProportionMale(value); });
             break;
         }
