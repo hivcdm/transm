@@ -11,6 +11,25 @@
 
 namespace transm {
 
+class FertilityRate {
+  public:
+	FertilityRate();
+	FertilityRate(Age l, Age u, double r)
+	{
+		lower = l;
+		upper = u;
+		rate = r;
+	}
+	Age Lower() const { return lower; }
+	Age Upper() const { return upper; }
+	double Rate() const { return rate; }
+
+  private:
+	Age lower;
+	Age upper;
+	double rate;
+};
+
 class PopulationParameters
 {
 public:
@@ -53,25 +72,31 @@ public:
 	PopulationParameters();
 	~PopulationParameters();
 
-	double GetBirthRate() const;
+	bool GetUseBirthRate() { return useBirthRate; } const
+	void SetUseBirthRate(bool value) { useBirthRate = value; }
+	double GetBirthRate() { return birthRate; } const
 	void SetBirthRate(double birth_rate) { birthRate = birth_rate; }
+
+	std::vector<FertilityRate> GetFertilityRates() const { return fertilityRates; }
+	void ClearFertilityRates() { fertilityRates.clear(); }
+	void PushFertilityRate(FertilityRate rate) { fertilityRates.push_back(rate); }
 
 	double GetProportionCircumcised() const { return proportionCircumcised; }
 	void SetProportionCircumcised(double value) { proportionCircumcised = value; }
 
-    double GetBirthProportion(const std::string &entity_type) const { return birthProportions.at(entity_type); }
-    void SetBirthProportion(const std::string &entity_type, double proportion) { birthProportions[entity_type] = proportion; }
+	double GetBirthProportion(const std::string &entity_type) const
+		{ return birthProportions.at(entity_type); }
+	void SetBirthProportion(const std::string &entity_type, double proportion)
+		{ birthProportions[entity_type] = proportion; }
 
 	Age GetAgeOfMajority() const { return ageOfMajority; }
-    void SetAgeOfMajority(Age age) 
-    { 
-		ageOfMajority = age;
-    }
+	void SetAgeOfMajority(Age age) { ageOfMajority = age; }
 
-    void SetPartnershipHasDuration(DemographicProfile::Gender gender, SexualPartnership::Type type, bool has_duration) 
-    { 
-        partnershipsHaveDuration[(std::size_t)gender][(std::size_t)type] = has_duration;
-    }
+	void SetPartnershipHasDuration(DemographicProfile::Gender gender, SexualPartnership::Type type,
+	    bool has_duration)
+		{
+			partnershipsHaveDuration[(std::size_t)gender][(std::size_t)type] = has_duration;
+		}
 
 	const Male::SubPopParams &GetMaleParameters() const { return defaultMaleParams; }
 	void SetMaleParameters(Male::SubPopParams &params) { defaultMaleParams = params; }
@@ -170,7 +195,9 @@ private:
     /// <summary>
 	/// Per month per person based on WHI data
     /// </summary>
+	bool useBirthRate;
 	double birthRate;
+	std::vector<FertilityRate> fertilityRates;
 
     /// <summary>
     /// Age that entities roll to change risk.

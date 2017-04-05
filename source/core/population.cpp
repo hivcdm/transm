@@ -156,49 +156,62 @@ Population::~Population()
 
 void Population::Births(EventParams &parameters_)
 {
-	//number of people to be born this month
-	unsigned long numBorn = Utility::round<unsigned long>(currSize * popWideParams.birthRate);
-	unsigned long numHeteroMales = static_cast<unsigned long>(popWideParams.birthProportions["hetero-male"] * numBorn);
+    unsigned long numBorn = 0;
+    if (GetParameters().GetUseBirthRate()) {
+	// get numBorn from birth rate
+	numBorn = Utility::round<unsigned long>(currSize * popWideParams.birthRate);
+    } else {
+	// get numBorn from fertility rates
+	// numBorn = sum((rate*females) / 1000
+	double sumRates = 0.0;
+	for ( auto rate : popWideParams.GetFertilityRates()) {
+	    int numFemales = entities->sizeByAgeFemales(rate.Lower(), rate.Upper());
+	    sumRates += rate.Rate() * numFemales;
+	}
+	numBorn = Utility::round<unsigned long>(sumRates / 1000);
+    }
+
+    unsigned long numHeteroMales = static_cast<unsigned long>(popWideParams.birthProportions["hetero-male"] * numBorn);
     unsigned long numMsmws = static_cast<unsigned long>(popWideParams.birthProportions["msmw"] * numBorn);
     unsigned long numMsms = static_cast<unsigned long>(popWideParams.birthProportions["msm"] * numBorn);
     unsigned long numMales = numHeteroMales + numMsmws + numMsms;
     //unsigned long numFemales = static_cast<unsigned long>(popWideParams.proportionFemale * numBorn);
 
-	//create currSize * birthRate New people
-	for(unsigned long i = 0; i < numBorn; ++i)
-	{
-		//determine gender
-		std::string entity_type = (i < numMales) ? "male" : "female";
+    //create currSize * birthRate New people
+    for(unsigned long i = 0; i < numBorn; ++i)
+    {
+	    //determine gender
+	    std::string entity_type = (i < numMales) ? "male" : "female";
 
-        if(entity_type == "male")
-        {
-            if(i > numHeteroMales)
-            {
-                if(i > numMsmws + numHeteroMales)
-                {
-                    entity_type = "msm";
-                }
-                else
-                {
-                    entity_type = "msmw";
-                }
-            }
-        }
+	    if(entity_type == "male")
+	    {
+		    if(i > numHeteroMales)
+		    {
+			    if(i > numMsmws + numHeteroMales)
+			    {
+				    entity_type = "msm";
+			    }
+			    else
+			    {
+				    entity_type = "msmw";
+			    }
+		    }
+	    }
 
-        bool toTrace = parameters_.currTime >= parameters_.monthTraceNewborns 
-            && parameters_.numNewbornsTraced < parameters_.numNewbornsToTrace;
+	    bool toTrace = parameters_.currTime >= parameters_.monthTraceNewborns 
+		&& parameters_.numNewbornsTraced < parameters_.numNewbornsToTrace;
 
-		if(toTrace)
-		{
-			parameters_.numNewbornsTraced++;
-		}
+	    if(toTrace)
+	    {
+		    parameters_.numNewbornsTraced++;
+	    }
 
-		auto p = GenerateEntity(parameters_, entity_type, nullptr, toTrace);
+	    auto p = GenerateEntity(parameters_, entity_type, nullptr, toTrace);
 
-		//add the newborn to the EntityPool
-		//Use addEntityToAll here (initial entrance into population)
-		entities->addEntityToAll(p);
-	}
+	    //add the newborn to the EntityPool
+	    //Use addEntityToAll here (initial entrance into population)
+	    entities->addEntityToAll(p);
+    }
 }
 
 //Updates the age buckets for use with life expectancy
@@ -883,6 +896,8 @@ std::size_t Population::UpdateSize()
             }
 		}
 	}
+
+	entities->countEntitiesPerAge();
     
     num_circumcised_na = 0;
     num_circumcised_sa = 0;

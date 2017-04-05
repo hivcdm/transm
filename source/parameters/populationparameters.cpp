@@ -12,6 +12,7 @@ PopulationParameters::PopulationParameters()
 	//set default values of fields
 	initSize = 10000;
 	birthRate = 0.0038;
+	useBirthRate = true;
 	ageOfMajority = Age::from_months(180);
 	birthProportions["hetero-male"] = 0.51;
 	birthProportions["female"] = 1 - birthProportions["hetero-male"];
@@ -21,11 +22,6 @@ PopulationParameters::PopulationParameters()
 
 PopulationParameters::~PopulationParameters()
 {
-}
-
-double PopulationParameters::GetBirthRate() const
-{
-	return birthRate;
 }
 
 } // namespace transm

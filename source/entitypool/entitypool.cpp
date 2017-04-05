@@ -329,6 +329,7 @@ std::size_t EntityPool::sizeSexuallyActive(const std::string &entity_type, Entit
     forEach([&](Entity *e) { if(e->getEntityType() == entity_type && _risk == e->getRiskLevel()) count++; });
     return count;
 }
+
 //calculate the current number of sexually active persons within the specified age range
 unsigned long EntityPool::sizeSexuallyActiveByAge(Age minAgeMonths, Age maxAgeMonths)
 {
@@ -364,14 +365,12 @@ unsigned long EntityPool::sizeSexuallyActiveByAge(Age minAgeMonths, Age maxAgeMo
 std::size_t EntityPool::sizeSexuallyActiveByAge(Age minAgeMonths, Age maxAgeMonths, const std::string &entity_type)
 {
     std::size_t count = 0;
-    forEach([&](Entity *e) 
-	{ 
-		if(e->getEntityType() == entity_type 
-			&& e->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::Active 
-			&& e->getAge() >= minAgeMonths 
-			&& e->getAge() <= maxAgeMonths) 
-			count++; 
-	});
+    forEach([&](Entity *e)
+    {
+	if(e->getEntityType() == entity_type && e->isSexuallyActive() &&
+	    e->getAge() >= minAgeMonths && e->getAge() <= maxAgeMonths)
+		    count++;
+    });
     return count;
 }
 
@@ -449,6 +448,68 @@ list<Entity *>::iterator EntityPool::end(DemographicProfile::Gender _gender)
 	{
 		return allFemales.end();
 	}
+}
+
+
+void EntityPool::resetPeoplePerAge()
+{
+	std::fill(malesPerAge.begin(), malesPerAge.end(), 0);
+	std::fill(femalesPerAge.begin(), femalesPerAge.end(), 0);
+}
+
+void EntityPool::countEntitiesPerAge()
+{
+	// Just to be sure, we do not want to read old values in case there are age gaps
+	resetPeoplePerAge();
+
+	std::list<Entity *>::iterator p_Iter;
+
+	// We count everyone's age in years and store it in two gender-specific arrays
+	for (p_Iter = this->begin(DemographicProfile::Gender::Male); p_Iter != this->end(DemographicProfile::Gender::Male); p_Iter++)
+	{
+		malesPerAge[(*p_Iter)->getAge().in_months()]++;
+	}
+
+	for (p_Iter = this->begin(DemographicProfile::Gender::Female); p_Iter != this->end(DemographicProfile::Gender::Female); p_Iter++)
+	{
+		femalesPerAge[(*p_Iter)->getAge().in_months()]++;
+	}
+	return;
+}
+
+unsigned long EntityPool::sizeByAgeFemales(Age minAgeMonths, Age maxAgeMonths)
+{
+	int ageMonth = 0;
+	unsigned long ageCount = 0;
+	for (ageMonth = minAgeMonths.in_months(); ageMonth <= maxAgeMonths.in_months(); ageMonth++)
+	{
+		ageCount+=femalesPerAge[ageMonth];
+	}
+	return ageCount;
+}
+
+unsigned long EntityPool::sizeByAgeMales(Age minAgeMonths, Age maxAgeMonths)
+{
+	int ageMonth = 0;
+	unsigned long ageCount = 0;
+	for (ageMonth = minAgeMonths.in_months(); ageMonth <= maxAgeMonths.in_months(); ageMonth++)
+	{
+		ageCount+=malesPerAge[ageMonth];
+	}
+	return ageCount;
+}
+
+unsigned long EntityPool::sizeByAge(Age minAgeMonths, Age maxAgeMonths)
+{
+	int ageMonth = 0;
+	unsigned long ageCount = 0;
+	for (ageMonth = minAgeMonths.in_months(); ageMonth <= maxAgeMonths.in_months(); ageMonth++)
+	{
+		ageCount+=femalesPerAge[ageMonth];
+		ageCount+=malesPerAge[ageMonth];
+
+	}
+	return ageCount;
 }
 
 //creates a New EntityPool

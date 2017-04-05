@@ -116,6 +116,21 @@ public:
 	std::size_t sizeSexuallyActiveByAge(Age minAge, Age maxAge, const std::string &entity_type);
 
 	/// <summary>
+	/// calculate the current number of people within the specified age range
+	/// </summary>
+	unsigned long sizeByAge(Age minAgeMonths, Age maxAgeMonths);
+
+	/// <summary>
+	/// calculate the current number of males within the specified age range
+	/// </summary>
+	unsigned long sizeByAgeMales(Age minAgeMonths, Age maxAgeMonths);
+
+	/// <summary>
+	/// calculate the current number of females within the specified age range
+	/// </summary>
+	unsigned long sizeByAgeFemales(Age minAgeMonths, Age maxAgeMonths);
+
+	/// <summary>
 	/// adds Person to BucketDemographicProfile AND allMales or allFemales depending on gender
 	/// </summary>
 	bool addEntityToAll(Entity *_p);
@@ -136,6 +151,11 @@ public:
 	/// </summary>
 	std::list<Entity *>::iterator end(DemographicProfile::Gender _gender);
 
+	/// <summary>
+	/// Updates the tally of males and females per year of age
+	/// </summary>
+	void countEntitiesPerAge();
+
 private:
 	/// <summary>
 	/// This is a container that holds Person Buckets. This is the authoritative container for the pool.
@@ -154,6 +174,14 @@ private:
 	/// Master list of females for iterating
 	/// </summary>
 	std::list<Entity *> allFemales;
+
+	/// <summary>
+	/// Quick way to keep track of people's age
+	/// </summary>
+	std::array<unsigned long, Entity::maxYrForDeathStats * 12 + 1> malesPerAge;
+	std::array<unsigned long, Entity::maxYrForDeathStats * 12 + 1> femalesPerAge;
+
+	void resetPeoplePerAge();
 };
 
 } // namespace transm
