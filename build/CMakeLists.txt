@@ -158,3 +158,18 @@ add_custom_target(clean-cmake-files
    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/clean-all.cmake
 )
 
+add_custom_target(tags
+    COMMAND find ${CMAKE_SOURCE_DIR} -name "*.cpp" -print -or -name "*.h" -print | xargs etags --append
+    COMMAND install TAGS ${CMAKE_SOURCE_DIR}/source
+)
+set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES TAGS) 
+
+add_custom_target(cppcheck
+    COMMAND which cppcheck &> /dev/null
+    COMMAND -rm -rf CPPCHECK
+    COMMAND mkdir CPPCHECK
+    COMMAND cppcheck --enable=all --force -I${source_dir} --std=c++11 ${CMAKE_SOURCE_DIR}
+			 --xml-version=2 --xml -q 2>CPPCHECK/cdm_cppcheck.xml
+    COMMAND cppcheck-htmlreport --title=cdm --file=CPPCHECK/cdm_cppcheck.xml --report=CPPCHECK
+)
+set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES CPPCHECK) 

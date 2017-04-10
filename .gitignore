@@ -18,6 +18,8 @@ build/CMakeFiles/
 build/Makefile
 build/cmake_install.cmake
 build/third-party/
+build/TAGS
+build/source
 scripts/generate_runs/*/
 *cscope*
 source/utility/version.h
