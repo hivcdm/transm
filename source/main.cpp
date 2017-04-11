@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
         {
             /* Use the absolute path for the directory */
 	    transm::path absolute_path = transm::filesystem::real_path(batch);
-	    if (absolute_path.empty()) {
+	    if (!transm::filesystem::exists(absolute_path)) {
                 /* bail if the directory is bogus */
 		std::cout << "Check the path to the batch directory: " <<
 		    batch.c_str() << std::endl;

@@ -292,51 +292,71 @@ void SimulationBuilderXml::ReadSimulationParameters()
 		parameters.cepacRunStats = new RunStats(parameters.simName, parameters.rolloutSimContexts[0]->rolloutSimContext.get());
 		parameters.capacCostStats = new CostStats(parameters.simName, parameters.rolloutSimContexts[0]->rolloutSimContext.get());
 	}
-	else
-	{
-        for(auto treatment_file_node : interventions_node.select_nodes("cepacIntervention/cepacTreatmentFiles/treatmentFile"))
-        {
-            int time = treatment_file_node.node().child("time").text().as_int();
+	else {
+	    transm::path file_path = transm::path();
+	    auto cepac_treatment_files_node = interventions_node.child("cepacIntervention").child("cepacTreatmentFiles");
+	    if (cepac_treatment_files_node.attribute("directory")) {
+		std::string in_file_dir = Attr<std::string>(cepac_treatment_files_node, "directory");
+		file_path = transm::filesystem::real_path(in_file_dir);
+		if (!transm::filesystem::exists(file_path))
+		    throw std::runtime_error("CEPAC .in directory missing: " + file_path.string());
+	    }
 
-            if(time > -1)
-            {
-                std::string file_name = treatment_file_node.node().child("fileName").text().as_string();
-                int file_number = treatment_file_node.node().child("fileNumber").text().as_int();
+	    for(auto treatment_file_node : cepac_treatment_files_node.select_nodes("treatmentFile"))
+		{
+		    int time = treatment_file_node.node().child("time").text().as_int();
+		    if(time > -1)
+			{
+			    std::string file_name = treatment_file_node.node().child("fileName").text().as_string();
+			    if (file_path.empty()) {
+				file_path = file_name;
+			    } else {
+				file_path.append(file_name);
+			    }
+			    if (!transm::filesystem::exists(file_path))
+				throw std::runtime_error("CEPAC .in file missing: " + file_path.string());
 
-                parameters.timesToSwitchSimContext[file_number] = time;
+			    int file_number = treatment_file_node.node().child("fileNumber").text().as_int();
 
-                //Make sure the number of CEPAC input files from the .xml file is not greater than the number expected by the code!
-                assert(file_number < Constants::NUMBER_OF_CEPAC_FILES);
+			    parameters.timesToSwitchSimContext[file_number] = time;
 
-                //Set the CEPAC simContext from the specified CEPAC .in file
-                auto contextToAdd = new SimContext(file_name.substr(0, file_name.find(CepacUtil::FILE_EXTENSION_FOR_INPUT)));
-                contextToAdd->numPatientsToTrace = 0;
-                parameters.cepacSimContexts.push_back(contextToAdd);
+			    //Make sure the number of CEPAC input files from the .xml file is not
+			    // greater than the number expected by the code!
+			    assert(file_number < Constants::NUMBER_OF_CEPAC_FILES);
 
-                //Read in the inputs
-                try
-                {
-                    contextToAdd->readInputs();
-                }
-                catch(std::string errorString)
-                {
-                    throw std::runtime_error("error loading rollout file, " + file_name + ": " + errorString);
-                }
+			    //Set the CEPAC simContext from the specified CEPAC .in file
+			    // SimContext takes a filename without the ".in" extension
+			    std::string file_path_str = file_path.string();
+			    file_path_str = file_path_str.substr(0,
+				file_path_str.find(CepacUtil::FILE_EXTENSION_FOR_INPUT));
+			    auto contextToAdd = new SimContext(file_path_str);
+			    contextToAdd->numPatientsToTrace = 0;
+			    parameters.cepacSimContexts.push_back(contextToAdd);
 
-                //From the first file only, get the death tables for non-AIDS death
-                if(file_number == 0)
-                {
-                    CepacInputParser cepacInput(file_name);
-                    auto probabilities = cepacInput.parseNonAidsDeathProbabilities();
-                    Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Male] = probabilities[0];
-                    Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Female] = probabilities[1];
-                }
-            }
-        }
+			    //Read in the inputs
+			    try
+				{
+				    contextToAdd->readInputs();
+				}
+			    catch(std::string errorString)
+				{
+				    throw std::runtime_error("error loading rollout file, " + file_name + ": " + errorString);
+				}
 
-		parameters.cepacTracer = new Tracer(parameters.simName, parameters.cepacSimContexts[0], 1);
-		parameters.cepacRunStats = new RunStats(parameters.simName, parameters.cepacSimContexts[0]);
-		parameters.capacCostStats = new CostStats(parameters.simName, parameters.cepacSimContexts[0]);
+			    //From the first file only, get the death tables for non-AIDS death
+			    if(file_number == 0)
+				{
+				    CepacInputParser cepacInput(file_name);
+				    auto probabilities = cepacInput.parseNonAidsDeathProbabilities();
+				    Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Male] = probabilities[0];
+				    Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Female] = probabilities[1];
+				}
+			}
+		}
+
+	parameters.cepacTracer = new Tracer(parameters.simName, parameters.cepacSimContexts[0], 1);
+	parameters.cepacRunStats = new RunStats(parameters.simName, parameters.cepacSimContexts[0]);
+	parameters.capacCostStats = new CostStats(parameters.simName, parameters.cepacSimContexts[0]);
 	}
 
     auto population_interventions_node = simulation_node.child("interventions").child("populationInterventions");
