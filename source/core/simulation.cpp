@@ -583,46 +583,6 @@ void Simulation::LastStep()
     population_.SaveIndividualSummaries(summary_stream);
 }
 
-/*
-* This function records all of the SimContext files to be used by the CEPAC disease model throughout the run of the transmission model
-*/
-
-bool Simulation::LoadCepacSimContexts(const TreatmentFiles &treatment_files)
-{
-	for(const auto &treatment_file : treatment_files)
-	{
-		//Set the CEPAC simContext from the specified CEPAC .in file
-		auto stem = path(treatment_file.file_name).stem().string();
-		parameters_.cepacSimContexts.push_back(new SimContext(stem));
-		assert(parameters_.cepacSimContexts.size() == static_cast<size_t>(treatment_file.file_number) + 1);
-		//parameters_.cepacSimContext = new SimContext(cepacInputFile.substr(0, cepacInputFile.find(CepacUtility::FILE_EXTENSION_FOR_INPUT)));
-		parameters_.cepacSimContexts.at(treatment_file.file_number)->numPatientsToTrace = 0;
-
-		//Read in the inputs
-		try
-		{
-			parameters_.cepacSimContexts.back()->readInputs();
-		}
-		catch(std::string errorString)
-		{
-			return false;
-		}
-
-		//From the first file only, get the death tables for non-AIDS death
-		if(treatment_file.file_number == 0)
-		{
-			CepacInputParser cepacInput(treatment_file.file_name);
-			auto probabilities = cepacInput.parseNonAidsDeathProbabilities();
-			Entity::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Male] = probabilities[0];
-            Entity::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Female] = probabilities[1];
-		}
-
-		parameters_.timesToSwitchSimContext.push_back(treatment_file.time);
-	}
-
-	return true;
-}
-
 /***
 Sets the Non aids death from a cepac simcontext
 ***/

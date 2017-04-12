@@ -85,19 +85,15 @@ private:
 		int target_population;
 	};
 
-    using TreatmentFiles = std::vector<TreatmentFile>;
+private:
+	friend class SimulationBuilderXml;
+	friend class Intervention;
 
 	void FirstStep();
 
 	void LastStep();
 
 	void Step();
-
-	/** Returns true if all simContexts loaded correctly */
-	bool LoadCepacSimContexts(const TreatmentFiles &treatment_files);
-
-	/** */
-	bool LoadRolloutSimContexts(const TreatmentFiles &treatment_files);
 
 	/** Sets the Non aids death from a cepac simcontext */
 	void SetNonAidsDeathFromCepac(SimContext &context, std::vector<double> &male, std::vector<double> &female);
@@ -136,10 +132,6 @@ private:
 	HighResolutionTimer timer_;
 
 	Outputs outputs_;
-
-	TreatmentFiles cepac_treatment_files_;
-
-	TreatmentFiles rollout_treatment_files_;
 
     std::vector<TargetGroup> groups_;
 
