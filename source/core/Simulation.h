@@ -72,22 +72,13 @@ public:
 
 private:
 	friend class SimulationBuilderXml;
-    friend class Intervention;
-
-	typedef std::array<TreatmentFile, Constants::NUMBER_OF_CEPAC_FILES> CepacTreatmentFiles;
-	typedef std::array<TreatmentFile, Constants::NUMBER_OF_ROLLOUT_FILES> RolloutTreatmentFiles;
+	friend class Intervention;
 
 	void FirstStep();
 
 	void LastStep();
 
 	void Step();
-
-	/** Returns true if all simContexts loaded correctly */
-	bool LoadCepacSimContexts(const CepacTreatmentFiles &treatment_files);
-
-	/** */
-	bool LoadRolloutSimContexts(const RolloutTreatmentFiles &treatment_files);
 
 	/** Sets the Non aids death from a cepac simcontext */
 	void SetNonAidsDeathFromCepac(SimContext &context, std::vector<double> &male, std::vector<double> &female);
@@ -128,10 +119,6 @@ private:
 	HighResolutionTimer timer_;
 
 	Outputs outputs_;
-
-	CepacTreatmentFiles cepac_treatment_files_;
-
-	RolloutTreatmentFiles rollout_treatment_files_;
 
     std::vector<TargetGroup> groups_;
 
