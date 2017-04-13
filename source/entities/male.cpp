@@ -420,8 +420,9 @@ int Male::rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType
 	assert((_p != nullptr));
 	assert(_p->isAlive());
 	assert(_partnershipType < SexualPartnership::Type::ENDType);
-	ShiftedLogNormalDist duration = populationSpecificParams.getSexualBehavior(_partnershipType).getPartnershipDurationMth(risk);
-	return (int)(_randomNums.randShiftedLogNormal(duration) + .5);
+	ShiftedLogNormalDist duration = populationSpecificParams.
+	    getSexualBehavior(_partnershipType).getPartnershipDurationMth(risk);
+	return Utility::round<int>(_randomNums.randShiftedLogNormal(duration));
 }
 
 void Male::rerollRiskGroup(EventParams &_eventParams)
