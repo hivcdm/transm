@@ -322,7 +322,7 @@ void Simulation::FirstStep()
     run_time_predictor_.SetTotalMonths(duration_);
 
 	//No longer creating a CEPAC trace file, but we still need to change over to the results folder before creating any other output files
-	CepacUtil::changeDirectoryToResults();
+	Utility::changeDirectoryToResults();
 
 	if(parameters_.calibrationInputs.useCalibration)
 	{
