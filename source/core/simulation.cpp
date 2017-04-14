@@ -322,7 +322,7 @@ void Simulation::FirstStep()
     run_time_predictor_.SetTotalMonths(duration_);
 
 	//No longer creating a CEPAC trace file, but we still need to change over to the results folder before creating any other output files
-	CepacUtil::changeDirectoryToResults();
+	Utility::changeDirectoryToResults();
 
 	//output seed used for this run
 	if(parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
@@ -821,7 +821,7 @@ void Simulation::Initialize(SimulationParameters &parameters)
     parameters_.numNewbornsToTrace = tracing_parameters.num_newborns_to_trace;
     parameters_.monthTraceNewborns = tracing_parameters.month_trace_newborns;
 
-    CepacUtil::changeDirectoryToResults();
+    Utility::changeDirectoryToResults();
 
     for(auto trace_file : tracing_parameters.files)
     {

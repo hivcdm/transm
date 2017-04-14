@@ -15,50 +15,57 @@ namespace {
 /// <summary>
 /// Search batch_directory and return list of XML and JSON files.
 /// </summary>
-std::vector<transm::path> find_input_files(const transm::path &batch_directory)
+std::vector<transm::path> find_input_files(const transm::path &batch_path)
 {
     static const std::unordered_set<std::string> known_extensions = {".xml", ".json"};
     auto is_not_known_extension = [](const transm::path &p) -> bool
     {
         return known_extensions.find(p.extension().string()) == known_extensions.end();
     };
-    std::vector<transm::path> input_files;
 
-    // return all files in the directory with known extensions
-    if(transm::filesystem::exists(batch_directory) 
-        && transm::filesystem::is_directory(batch_directory))
-    {
-        auto all_files = transm::filesystem::listdir(batch_directory);
+    std::vector<transm::path> input_files;
+    if (transm::filesystem::is_regular_file(batch_path) &&
+	!is_not_known_extension(batch_path)) {
+	input_files.push_back(batch_path);
+    } else if(transm::filesystem::is_directory(batch_path)) {
+        auto all_files = transm::filesystem::listdir(batch_path);
         auto new_end = std::remove_if(all_files.begin(), all_files.end(),
 				      is_not_known_extension);
         input_files = std::vector<transm::path>(all_files.begin(), new_end);
-    }
-    else
-    {
-        auto message =  batch_directory.string() + std::string("must be a directory.");
-        throw std::runtime_error(message);
     }
 
     return input_files;
 }
 
 /// <summary>
-/// Find all XML and JSON files in batch_directory. Load parameters from each
-/// file and run the model using those parameters.
+/// Find all XML files in batch_directory and CEPAC .in files in cepac_directory
+/// (Might be the same directory). Load parameters from each XML file and run
+/// the model using those parameters.
 /// </summary>
-int run_simulation(const transm::path &batch_directory)
+int run_simulation(const transm::path &batch_path, const transm::path &cepac_directory)
 {
-    /* run the simulation with input and output files in batch directory */
-    if ((transm::filesystem::change_dir(batch_directory)) != 0) {
-	std::cout << "Check that the path to " <<
-	    batch_directory.string().c_str() << " is correct" << std::endl;
+    int result;
+
+    transm::path batch_directory;
+    if (transm::filesystem::is_regular_file(batch_path)) {
+	batch_directory = batch_path.parent_path();
+    } else {
+	batch_directory = batch_path;
+    }
+    transm::Utility::setInputsDirectory(batch_directory.string());
+    transm::Utility::changeDirectoryToInputs();
+
+    transm::path results("results");
+    transm::path results_directory(batch_directory.append(results));
+    result = transm::Utility::createResultsDirectory(results_directory.string());
+    if (result != 0) {
+	cout << "Failed to create the results directory: " +
+	    results_directory.string() << std::endl;
 	return 1;
     }
 
-    /* Set up the Cepac directories */
-    CepacUtil::inputsDirectory = batch_directory.string();
-    CepacUtil::useCurrentDirectoryForInputs();
-    CepacUtil::createResultsDirectory();
+    /* Set the Cepac input directory */
+    CepacUtil::inputsDirectory = cepac_directory.string();
 
     SummaryStats cepac_summary("cepacPopstats.out");
     transm::TransmissionSummaryStats transmission_summary("summaryStats.out");
@@ -66,25 +73,19 @@ int run_simulation(const transm::path &batch_directory)
     auto batch_name = batch_directory.stem().string();
     transm::BatchStatus status(batch_name);
 
-    auto input_files = find_input_files(batch_directory);
+    auto input_files = find_input_files(batch_path);
     status.initialize(input_files);
 
     if (input_files.empty()) {
-	std::cout << "The directory " << batch_directory.string().c_str() <<
-	    " contains no input files" << std::endl;
+	cout << "No input files found in batch" << batch_path.string() << std::endl;
+	return 1;
     }
 
-    int r = 0;
     for(auto input_file : input_files)
     {
         //Changing back to the input directory because over the course of Sim->run,
 	//the directory gets changed to results
-	if ((transm::filesystem::change_dir(batch_directory)) != 0) {
-	    std::cout << "Check that " << batch_directory.string().c_str() << 
-		" still exists" << std::endl;
-	    r = 1;
-	    break;
-        }
+	    transm::Utility::changeDirectoryToInputs();
 
         std::cout << "Running File: " << input_file.stem().string() << std::endl;
 
@@ -99,7 +100,7 @@ int run_simulation(const transm::path &batch_directory)
 	    std::cout << std::endl;
 	    std::cout << "*****Warning: Calibration Enabled******" << std::endl;
 	    std::cout << "This will make things run slowly" << std::endl;
-	    std::cout << "If this is not expected abort hit Ctrl+c to abort" << std::endl;
+	    std::cout << "If this is not expected hit Ctrl+c to abort" << std::endl;
 	    std::cout << std::endl;
 	    sleep(4);
 	}
@@ -114,7 +115,7 @@ int run_simulation(const transm::path &batch_directory)
     cepac_summary.writeSummariesFile();
     transmission_summary.writeSummariesFile();
 
-    return r;
+    return 0;
 }
 
 /// <summary>
@@ -123,7 +124,7 @@ int run_simulation(const transm::path &batch_directory)
 void print_usage(const std::string &executable)
 {
     std::cout << "usage: " << executable;
-    std::cout << " [--version] [--help] input [input...]" << std::endl;
+    std::cout << " [--version] [--help] --cepac [directory] [input...]" << std::endl;
 }
 
 void print_help(const std::string &executable)
@@ -173,16 +174,24 @@ int main(int argc, char *argv[])
         std::string version_description = "version";
         TCLAP::SwitchArg version_switch("v", "version", version_description, false);
 
-        auto input_files_description = "One or more JSON files or directories "
-            "containing JSON files that will be simulated in the given order.";
-        TCLAP::UnlabeledMultiArg<std::string> input_files_arg("input",
-            input_files_description, true, "something", false, nullptr);
+        auto cepac_dir_description = "Directory containing CEPAC .in files";
+        TCLAP::ValueArg<std::string> cepac_dir_arg("d", "cepac",
+	    cepac_dir_description, false, "", "directory", nullptr);
 
+	auto batch_files_description = "One or more XML files or a directory"
+	    "containing XML files.";
+	TCLAP::UnlabeledMultiArg<std::string> batch_files_arg("batch",
+	    batch_files_description, true, "XML file, files or directory", false, nullptr);
+
+	/* cmd.xorAdd cmdline arguments that are required to make them mutually exclusive */
 	std::vector<TCLAP::Arg *> xor_list;
 	xor_list.push_back(&help_switch);
         xor_list.push_back(&version_switch);
-        xor_list.push_back(&input_files_arg);
+	xor_list.push_back(&batch_files_arg);
         cmd.xorAdd(xor_list);
+
+	/* cmd.add additional args */
+	cmd.add(cepac_dir_arg);
 
         cmd.parse(argc, argv);
 
@@ -198,27 +207,48 @@ int main(int argc, char *argv[])
             return 0;
         }
 
-        for(auto batch : input_files_arg.getValue())
+	bool use_cmdline_cepac_directory = false;
+	transm::path cepac_directory;
+	std::string cepac_dir_str = cepac_dir_arg.getValue();
+	if (!cepac_dir_str.empty()) {
+	    /* Use the absolute path to the cepac directory */
+	    cepac_directory = transm::filesystem::real_path(cepac_dir_str);
+	    if (!transm::filesystem::exists(cepac_directory)) {
+		/* bail if the directory is bogus */
+		std::cout << "Check the path to the cepac directory: " <<
+		    cepac_dir_str.c_str() << std::endl;
+		return 1;
+	    }
+	    use_cmdline_cepac_directory = true;
+	}
+
+	transm::path batch_path;
+	for(auto batch : batch_files_arg.getValue())
         {
-            /* Use the absolute path for the directory */
-	    transm::path absolute_path = transm::filesystem::real_path(batch);
-	    if (absolute_path.empty()) {
+            /* Check that the file or directory exists using the absolute path */
+	    batch_path = transm::filesystem::real_path(batch);
+	    if (!transm::filesystem::exists(batch_path)) {
                 /* bail if the directory is bogus */
 		std::cout << "Check the path to the batch directory: " <<
 		    batch.c_str() << std::endl;
 		return 1;
 	    }
 
-	    auto result = run_simulation(absolute_path);
-			// added because sometimes we don't see all output if buffered
-			std::cout.flush();
+	    if (!use_cmdline_cepac_directory) {
+		/* Set the cepac_directory to the batch dir */
+		if (transm::filesystem::is_regular_file(batch_path))
+		    cepac_directory = batch_path.parent_path();
+		else
+		    cepac_directory = batch_path;
+	    }
 
-			// stop if any batch fails
-            if(result != 0)
-            {
-                return 1;
-            }
-        }
+	    auto result = run_simulation(batch_path, cepac_directory);
+	    // added because sometimes we don't see all output if buffered
+	    std::cout.flush();
+
+	    if (result != 0)
+		return result;
+	}
 
         return 0;
     }

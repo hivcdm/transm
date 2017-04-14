@@ -86,7 +86,7 @@ void TransmissionSummaryStats::addPopulationStatistics(PopulationStatisticsOld &
 void TransmissionSummaryStats::writeSummariesFile()
 {
 	// Open the popstats file and write header if needed
-	CepacUtil::changeDirectoryToResults();
+	Utility::changeDirectoryToResults();
 	summaryStatsStream.open(summariesFileName.c_str(), ios::out | ios::app);
 	writeSummariesFileHeader();
 

@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <sys/stat.h>
 
 #include "filesystem.hpp"
 #include "randomnumbergenerator.hpp"
@@ -29,6 +30,9 @@ class Utility
     static double day_to_month_multiplier;
     static double day_to_year_multiplier;
     static double month_to_year_multiplier;
+
+    static std::string inputsDirectory;
+    static std::string resultsDirectory;
 
 public:
     static std::size_t get_current_process_id();
@@ -108,7 +112,7 @@ public:
     static T round(double d);
 
 	static bool is_norm_dist_zero(const NormalDist &dist);
-	
+
     /// <summary>
 	/// returns true if _val is within [_min,_max]
 	/// </summary>
@@ -124,6 +128,11 @@ public:
     /// Return the set of tokens resulting form splitting str on provided delimiters.
     /// </summary>
 	static std::vector<std::string> tokenize(const std::string &str, const std::string &delimiters);
+
+	static int createResultsDirectory(std::string directory);
+	static void changeDirectoryToResults();
+	static void setInputsDirectory(std::string input);
+	static void changeDirectoryToInputs();
 };
 
 // Template implementations.
