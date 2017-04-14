@@ -261,7 +261,6 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 {
     dead_people_this_month_.clear();
 
-	int totalDied = 0;		//keeps track of deaths this timestep
 	//holds a pointer to the current bucket we are looking at
 	BucketDemographicProfile *currBucket = nullptr;
 	//helps us iterate through all BucketDemographicProfiles
@@ -330,34 +329,17 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 			Entity *p = (*p_Iter);
 			assert(p != nullptr);
 
-			if(!p->isAlive())
-			{
-				//Advances p_Iter one in the list, so no increment is necessary
-				p_Iter = entities->removeEntityFromAll(p_Iter);
-				ProcessDeath(parameters_, p, calculateLE);
+			auto processDeath = [&](Entity *p) {
+			    //if this person was in a couple, this will push living members to personsToAdd
+			    // to be reinserted into the EntityPool once we have iterated through all buckets
+			    //removePersonFromAll returns iterator to next person in list no need to increment
+ 			    p_Iter = entities->removeEntityFromAll(p_Iter);
+ 			    ProcessDeath(parameters_, p, calculateLE);
+			};
 
-				if(parameters_.useRollout)
-				{
-					//Remove people from the treated/untreated pool if they die
-					std::list<Entity *>::iterator poolIterator;
-					poolIterator = std::find(rolloutUntreatedPool.begin(), rolloutUntreatedPool.end(), p);
-
-					if(poolIterator != rolloutUntreatedPool.end())
-					{
-						rolloutUntreatedPool.erase(poolIterator);
-					}
-					else
-					{
-						poolIterator = std::find(rolloutTreatedPool.begin(), rolloutTreatedPool.end(), p);
-
-						if(poolIterator != rolloutTreatedPool.end())
-						{
-							rolloutTreatedPool.erase(poolIterator);
-						}
-					}
-				}
-
-				totalDied++;
+			// check whether CEPAC considers this person to be dead
+			if (!p->isAlive()) {
+				processDeath(p);
 				continue;
 			}
 
@@ -380,40 +362,10 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 				}
 			}
 
-			//see whether this person has died.
-			//if this person was a couple, then will push living members to personsToAdd
-			// to be reinserted into the EntityPool once we have iterated through all buckets
+			// roll to see if this person dies this month
 			if(p->rollForDeath(parameters_.randomNums))
 			{
-			  //				bool wasProcessed = false;
-				p_Iter = entities->removeEntityFromAll(p_Iter);
-				//				wasProcessed = true;
-				ProcessDeath(parameters_, p, calculateLE);
-				totalDied++;
-
-				if(parameters_.useRollout)
-				{
-					//Remove people from the treated/untreated pool if they die
-					std::list<Entity *>::iterator poolIterator;
-					poolIterator = std::find(rolloutUntreatedPool.begin(), rolloutUntreatedPool.end(), p);
-
-					if(poolIterator != rolloutUntreatedPool.end())
-					{
-						rolloutUntreatedPool.erase(poolIterator);
-					}
-					else
-					{
-						poolIterator = std::find(rolloutTreatedPool.begin(), rolloutTreatedPool.end(), p);
-
-						if(poolIterator != rolloutTreatedPool.end())
-						{
-							rolloutTreatedPool.erase(poolIterator);
-						}
-					}
-				}
-
-				//removeEntityFromAll returns iterator to next person in list...
-				//no need to increment
+				processDeath(p);
 				continue;
 			}
 
@@ -2447,6 +2399,23 @@ void Population::ProcessDeath(EventParams &parameters_, Entity *_p, bool calcula
 	DissolveSexualPartnerships(parameters_, _p, formerPartnerships);
     currDeathCauses[(std::size_t)_p->deathStatus]++;
 	populationStatistics.processDeath(_p, parameters_);
+
+	if(parameters_.useRollout) {
+	    //Remove people from the treated/untreated pool if they die
+	    std::list<Entity *>::iterator poolIterator;
+	    poolIterator = std::find(rolloutUntreatedPool.begin(),
+				     rolloutUntreatedPool.end(), _p);
+
+	    if(poolIterator != rolloutUntreatedPool.end()) {
+		rolloutUntreatedPool.erase(poolIterator);
+	    } else {
+		poolIterator = std::find(rolloutTreatedPool.begin(),
+					 rolloutTreatedPool.end(), _p);
+
+		if(poolIterator != rolloutTreatedPool.end())
+		    rolloutTreatedPool.erase(poolIterator);
+	    }
+	}
 
 	delete _p;
 }
