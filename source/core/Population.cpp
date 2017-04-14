@@ -307,91 +307,45 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 			Person *p = (*p_Iter);
 			assert(p != nullptr);
 
+			auto processDeath = [&](Person *p) {
+			    //if this person was in a couple, this will push living members to personsToAdd
+			    // to be reinserted into the EntityPool once we have iterated through all buckets
+			    //removePersonFromAll returns iterator to next person in list no need to increment
+			    p_Iter = entities->removePersonFromAll(p_Iter);
+			    ProcessDeath(parameters_, p, calculateLE);
+			    totalDied++;
+			};
+
+			// check whether CEPAC considers this person to be dead
 			if(!p->isAlive())
 			{
-				//Advances p_Iter one in the list, so no increment is necessary
-				p_Iter = entities->removePersonFromAll(p_Iter);
-				ProcessDeath(parameters_, p, calculateLE);
-
-				if(parameters_.useRollout)
-				{
-					//Remove people from the treated/untreated pool if they die
-					std::list<Person *>::iterator poolIterator;
-					poolIterator = std::find(rolloutUntreatedPool.begin(), rolloutUntreatedPool.end(), p);
-
-					if(poolIterator != rolloutUntreatedPool.end())
-					{
-						rolloutUntreatedPool.erase(poolIterator);
-					}
-					else
-					{
-						poolIterator = std::find(rolloutTreatedPool.begin(), rolloutTreatedPool.end(), p);
-
-						if(poolIterator != rolloutTreatedPool.end())
-						{
-							rolloutTreatedPool.erase(poolIterator);
-						}
-					}
-				}
-
-				totalDied++;
-				continue;
+			    processDeath(p);
+			    continue;
 			}
 
 			Person::HIVStatus oldStatus = p->hivStatus;
 			//update their health status
 			p->updateHealthStatus(parameters_, &populationStatistics.artTracker, &populationStatistics.costsTracker);
 
-	    if (p->UsingPrEP())
-	    {
-		populationStatistics.costsTracker.RecordPrEPCost(popWideParams.prEPCost, popWideParams.prEPCost * cepacDiscountFactor);
-		p->add_cdm_cost(popWideParams.prEPCost, popWideParams.prEPCost * cepacDiscountFactor);
-	    }
-
-			if(oldStatus != p->hivStatus)
-			{
-		if(p->getDemographicProfile()->get(p->getDemographicProfile()->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
-				{
-					((BucketSexualMixing *) entities->getBucket(p->getDemographicProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
-						p->hivStatus);
-				}
+			if (p->UsingPrEP()) {
+			    populationStatistics.costsTracker.RecordPrEPCost(popWideParams.prEPCost, popWideParams.prEPCost * cepacDiscountFactor);
+			    p->add_cdm_cost(popWideParams.prEPCost, popWideParams.prEPCost * cepacDiscountFactor);
 			}
 
-			//see whether this person has died.
-			//if this person was a couple, then will push living members to personsToAdd
-			// to be reinserted into the EntityPool once we have iterated through all buckets
+			if(oldStatus != p->hivStatus) {
+			    if(p->getDemographicProfile()->get(p->getDemographicProfile()->getProfileID(),
+							       DemographicProfile::Demographic::SexualActivityStatus) !=
+			       (std::size_t)DemographicProfile::SexualActivityStatus::NotActive) {
+				((BucketSexualMixing *) entities->getBucket(p->getDemographicProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
+																	  p->hivStatus);
+			    }
+			}
+
+			// roll to see if this person dies this month
 			if(p->rollForDeath(parameters_.randomNums))
 			{
-			  //				bool wasProcessed = false;
-				p_Iter = entities->removePersonFromAll(p_Iter);
-				//				wasProcessed = true;
-				ProcessDeath(parameters_, p, calculateLE);
-				totalDied++;
-
-				if(parameters_.useRollout)
-				{
-					//Remove people from the treated/untreated pool if they die
-					std::list<Person *>::iterator poolIterator;
-					poolIterator = std::find(rolloutUntreatedPool.begin(), rolloutUntreatedPool.end(), p);
-
-					if(poolIterator != rolloutUntreatedPool.end())
-					{
-						rolloutUntreatedPool.erase(poolIterator);
-					}
-					else
-					{
-						poolIterator = std::find(rolloutTreatedPool.begin(), rolloutTreatedPool.end(), p);
-
-						if(poolIterator != rolloutTreatedPool.end())
-						{
-							rolloutTreatedPool.erase(poolIterator);
-						}
-					}
-				}
-
-				//removePersonFromAll returns iterator to next person in list...
-				//no need to increment
-				continue;
+			    processDeath(p);
+			    continue;
 			}
 
 			//if this person wasn't sexually active but is now old enough to
@@ -2466,12 +2420,12 @@ void Population::ProcessDeath(EventParams &parameters_, Person *_p, bool calcula
 	}
 
 	//print out this info to the trace
-    if(parameters_.debugLevel > DebugLevel::One && parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
+	if(parameters_.debugLevel > DebugLevel::One && parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
 	{
 		_p->print(parameters_.trace_files[EventParams::TraceFile::Type::Events].file, "Someone died: " + Constants::TAB);
 	}
 
-    if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && _p->trace())
+	if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && _p->trace())
 	{
 		_p->print(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].file, ">> Today we mourn: ");
 	}
@@ -2489,6 +2443,23 @@ void Population::ProcessDeath(EventParams &parameters_, Person *_p, bool calcula
 	DissolveSexualPartnerships(parameters_, _p, formerPartnerships);
 	currDeathCauses[_p->deathStatus]++;
 	populationStatistics.processDeath(_p, parameters_);
+
+	if(parameters_.useRollout) {
+	    //Remove people from the treated/untreated pool if they die
+	    std::list<Person *>::iterator poolIterator;
+	    poolIterator = std::find(rolloutUntreatedPool.begin(),
+				     rolloutUntreatedPool.end(), _p);
+
+	    if(poolIterator != rolloutUntreatedPool.end()) {
+		rolloutUntreatedPool.erase(poolIterator);
+	    } else {
+		poolIterator = std::find(rolloutTreatedPool.begin(),
+					 rolloutTreatedPool.end(), _p);
+
+		if(poolIterator != rolloutTreatedPool.end())
+		    rolloutTreatedPool.erase(poolIterator);
+	    }
+	}
 
 	delete _p;
 }
