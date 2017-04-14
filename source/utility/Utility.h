@@ -3,6 +3,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <sys/stat.h>
 
 #include "utility/RandomNumberGenerator.h"
 #include "../core/Constants.h"
@@ -20,12 +21,15 @@ struct Version
 
 class Utility
 {
-
 	//usually we would divide to convert between these time increments
 	//but division is more expensive, so multiply by inverse instead.
 	static double dayToMonthMult;
 	static double dayToYearMult;
 	static double monthToYearMult;
+
+	static std::string inputsDirectory;
+	static std::string resultsDirectory;
+
 public:
     /// <summary>
     /// Return a version object that represents the version of the running model.
@@ -85,7 +89,13 @@ public:
 
 	//this function was taken from
 	// http://www.oopweb.com/CPP/Documents/CPPHOWTO/Volume/C++Programming-HOWTO-7.html
-	static void Tokenize(const std::string &str, std::vector<std::string> &tokens, const std::string &delimiters);
+	static void Tokenize(const std::string &str, std::vector<std::string> &tokens,
+			     const std::string &delimiters);
+
+	static int createResultsDirectory(std::string directory);
+	static void changeDirectoryToResults();
+	static void setInputsDirectory(std::string input);
+	static void changeDirectoryToInputs();
 };
 
 //returns true if _elem is a member of _set

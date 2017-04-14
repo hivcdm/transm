@@ -244,3 +244,26 @@ bool Utility::validProbability(double _prob)
 {
 	return Utility::withinRange(_prob, 0.0, 1.0);
 }
+
+std::string Utility::resultsDirectory;
+std::string Utility::inputsDirectory;
+
+int Utility::createResultsDirectory(std::string directory) {
+	int result;
+	Utility::resultsDirectory = directory;
+	result = mkdir(Utility::resultsDirectory.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+	return result;
+}
+
+void Utility::changeDirectoryToResults() {
+	chdir(Utility::resultsDirectory.c_str());
+}
+
+void Utility::setInputsDirectory(std::string input) {
+	Utility::inputsDirectory = input;
+}
+
+void Utility::changeDirectoryToInputs() {
+	chdir(Utility::inputsDirectory.c_str());
+}
