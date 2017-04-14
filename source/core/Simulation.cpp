@@ -665,21 +665,14 @@ std::size_t Simulation::SimulateMonth()
 	parameters_.currTime = time_;
 
 	//change non AIDS death if it is time to switch cepac files
-	if(parameters_.itIsTimeToSwitchSimContext() && !parameters_.useRollout)
-	{
-        int simIndex = 0;
-
-        for(std::size_t i = 0; i < parameters_.cepacSimContexts.size(); i++)
-        {
-            if(parameters_.currTime > parameters_.timesToSwitchSimContext[i])
-            {
-                simIndex = static_cast<int>(i);
-            }
-        }
-
-        SetNonAidsDeathFromCepac(*parameters_.cepacSimContexts[simIndex], 
-            Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Male],
-            Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Female]);
+	if(parameters_.itIsTimeToSwitchSimContext() && !parameters_.useRollout) {
+	    for(auto sc : parameters_.cepacSimContexts) {
+		if(parameters_.currTime > sc->timeToApply) {
+		    SetNonAidsDeathFromCepac(*sc->simContext.get(),
+		        Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Male],
+		        Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Female]);
+		}
+	    }
 	}
 
 	//output the current timestep of the simulation

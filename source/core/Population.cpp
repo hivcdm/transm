@@ -247,7 +247,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 		cepacDiscountFactor = Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor);
 	}
 	else {
-		cepacDiscountFactor = Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor);
+		cepacDiscountFactor = Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.cepacSimContexts.front()->simContext->getRunSpecsInputs()->discountFactor);
 	}
 
 	int totalDied = 0;		//keeps track of deaths this timestep
@@ -538,7 +538,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 		cepacDiscountFactor = Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor);
 	}
 	else {
-		cepacDiscountFactor = Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor);
+		cepacDiscountFactor = Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.cepacSimContexts.front()->simContext->getRunSpecsInputs()->discountFactor);
 	}
 
 	//initialize counters
@@ -1188,7 +1188,7 @@ Person *Population::GeneratePerson(EventParams &parameters_,
 		{
 	    auto discount = parameters_.useRollout ?
 		Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor)
-		: Utility::computeCepacDiscountFactor(parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor, parameters_.currTime);
+		: Utility::computeCepacDiscountFactor(parameters_.cepacSimContexts.front()->simContext->getRunSpecsInputs()->discountFactor, parameters_.currTime);
 			populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * discount);
 			toReturn->add_cdm_cost(popWideParams.circumcisionCost, popWideParams.circumcisionCost * discount);
 		}
@@ -1568,23 +1568,20 @@ void Population::RecordInfection(const Person *infectee, const Person *infector,
 */
 void Population::ApplyRolloutContext(EventParams &parameters_, int time)
 {
-	for(vector <EventParams::RolloutContext *>::iterator rolloutContextIter = parameters_.rolloutSimContexts.begin();
-		rolloutContextIter != parameters_.rolloutSimContexts.end(); rolloutContextIter++)
+	for(EventParams::CepacSimContext *rolloutContext : parameters_.cepacSimContexts)
 	{
-		EventParams::RolloutContext *rolloutContext = *rolloutContextIter;
-
 		if(rolloutContext->timeToApply == time)
 		{
 			//Switch the cepac file depending on the population the new file is applied to
 			switch(rolloutContext->popOfInterest)
 			{
 			case 0: //All Untreated
-				parameters_.untreatedContext = rolloutContext->rolloutSimContext.get();
+				parameters_.untreatedContext = rolloutContext->simContext.get();
 				break;
 
 			case 1:  //All Treated
 			{
-				parameters_.treatedContext = rolloutContext->rolloutSimContext.get();
+				parameters_.treatedContext = rolloutContext->simContext.get();
 				//Apply to all current treated patients
 				std::list<Person *>::iterator personIter;
 
@@ -1597,7 +1594,7 @@ void Population::ApplyRolloutContext(EventParams &parameters_, int time)
 			}
 
 			case 2: //Untreated Getting new art
-				parameters_.treatedContext = rolloutContext->rolloutSimContext.get();
+				parameters_.treatedContext = rolloutContext->simContext.get();
 				break;
 
 			default:

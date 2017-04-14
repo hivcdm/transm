@@ -373,8 +373,8 @@ void Person::initializeCEPACpatient(EventParams &_eventParams)
 	//When patients are initialized they are added to the untreated pool
 	simContextToUse = _eventParams.untreatedContext;
     } else {
-	simContextToUse = _eventParams.cepacSimContexts[getCEPACSimContextIndex(
-		_eventParams)];
+	EventParams::CepacSimContext *sc = getCEPACSimContextIndex(_eventParams);
+	simContextToUse = sc->simContext.get();
     }
 
     cepacPatient = new Patient(simContextToUse,
@@ -1074,8 +1074,8 @@ double Person::updateHealthStatus(EventParams &_eventParams,
     if(!_eventParams.useRollout) {
 	//Adjust the CEPAC SimContext depending on what time it is
 	if(_eventParams.itIsTimeToSwitchSimContext()) {
-	    cepacPatient->setSimContext(_eventParams.cepacSimContexts[
-					getCEPACSimContextIndex(_eventParams)]);
+	    EventParams::CepacSimContext *sc = getCEPACSimContextIndex(_eventParams);
+	    cepacPatient->setSimContext(sc->simContext.get());
 	}
     }
 
@@ -1686,17 +1686,14 @@ void Person::deletePersonWithoutDeleting()
 
 /**** End constructors, destructors, initializers *****/
 
-int Person::getCEPACSimContextIndex(EventParams &_eventParams)
+EventParams::CepacSimContext *Person::getCEPACSimContextIndex(EventParams &_eventParams)
 {
-	int returnValue = 0;
-
-    for(std::size_t i = 0; i < _eventParams.cepacSimContexts.size(); i++)
-	{
-		if(_eventParams.currTime > _eventParams.timesToSwitchSimContext[i])
-		{
-			returnValue = static_cast<int>(i);
-		}
+    EventParams::CepacSimContext *sc = nullptr;
+    for(EventParams::CepacSimContext *ptr : _eventParams.cepacSimContexts) {
+	if(_eventParams.currTime >= ptr->timeToApply) {
+	    sc = ptr;
+	    break;
 	}
-
-	return returnValue;
+    }
+    return sc;
 }

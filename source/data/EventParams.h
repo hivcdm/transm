@@ -76,25 +76,26 @@ public :
         }
     };
 
-	/**
-	this structure gives information about the rollout file to use and when to apply it if ART Rollout intervention is turned on
-	*/
-	class RolloutContext
-	{
+    /**
+       this structure gives information about a cepac .in file to use and
+       when to apply it. If ART Rollout intervention is turned on, a popOfInterest
+       is also specified.
+    */
+    class CepacSimContext
+    {
 	public:
-		int timeToApply;
-		std::unique_ptr<SimContext> rolloutSimContext;
-		//who to apply to 0=All Untreated 1=All Treated 2=Untreated Getting New ART -1=None
-		int popOfInterest;
-		RolloutContext(int t, std::unique_ptr<SimContext> context, int pop) : rolloutSimContext(std::move(context))
-		{
-			timeToApply = t;
-			popOfInterest = pop;
-		}
-		~RolloutContext()
-		{
-		}
-	};
+	    int timeToApply;
+	    std::unique_ptr<SimContext> simContext;
+	    //who to apply to 0=All Untreated 1=All Treated 2=Untreated Getting New ART -1=None
+	    int popOfInterest;
+
+            CepacSimContext(int t, std::unique_ptr<SimContext> context, int pop = -1)
+		: simContext(std::move(context))
+	    {
+		    timeToApply = t;
+		    popOfInterest = pop;
+	    }
+    };
 
 	/**
 	this structure stores the definintion fo concurrency
@@ -195,21 +196,15 @@ public :
 	int monthOf1990;
 
 	//--------- CEPAC related objects -------------//
-	//CEPAC related simContext (input)
-	std::vector<SimContext *> cepacSimContexts;
+	// List of CEPAC sim contexts input from xml file
+	std::vector<CepacSimContext *> cepacSimContexts;
 
-	//CEPAC input files for Rollout
-    std::vector<RolloutContext *> rolloutSimContexts;
+	//If we are using rollout use the cepac files specified in the ART rollout section
+	bool useRollout;
 	RolloutEligibility rolloutEligibility;
 	//Cepac files for storing current population groups (only if using rollout)
 	SimContext *untreatedContext;
 	SimContext *treatedContext;
-
-	//If we are using rollout use the cepac files specified in the ART rollout section
-	bool useRollout;
-
-	//timesToSwitchSimContext[0] should always be 0 by default (?)
-	int timesToSwitchSimContext[Constants::NUMBER_OF_CEPAC_FILES];
 
 	inline bool itIsTimeToSwitchSimContext()
 	{
@@ -218,10 +213,10 @@ public :
 			return false;
 		}
 
-		for(int i = 0; i < Constants::NUMBER_OF_CEPAC_FILES; i++)
+		for(auto sc : cepacSimContexts)
 		{
 			//Switching doesn't occur until 1 month later
-			if(currTime == timesToSwitchSimContext[i] + 1)
+			if(currTime == sc->timeToApply + 1)
 			{
 				return true;
 			}
@@ -300,15 +295,8 @@ public :
 
 		while(cepacSimContexts.size() > 0)
 		{
-			SimContext *sc = cepacSimContexts.back();
+			CepacSimContext *sc = cepacSimContexts.back();
 			cepacSimContexts.pop_back();
-			delete sc;
-		}
-
-		while(rolloutSimContexts.size() > 0)
-		{
-			RolloutContext *sc = rolloutSimContexts.back();
-			rolloutSimContexts.pop_back();
 			delete sc;
 		}
 

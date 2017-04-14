@@ -768,9 +768,8 @@ public:
     }
 
 private:
-    //Return the current index of which SimContext should be used to update the
-    //health of a patient
-    int getCEPACSimContextIndex(EventParams &_eventParams);
+    // Returns the SimContext the patient should use
+    EventParams::CepacSimContext *getCEPACSimContextIndex(EventParams &_eventParams);
 
     double updateHealthCosts(EventParams &_eventParams,
 			     CostsTracker *costsTracker,

@@ -231,7 +231,7 @@ public:
 						summary.life_months_undiscounted++;
                         auto discount = parameters.useRollout ?
                             parameters.untreatedContext->getRunSpecsInputs()->discountFactor
-                            : parameters.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor;
+                            : parameters.cepacSimContexts.front()->simContext->getRunSpecsInputs()->discountFactor;
 						summary.life_months_discounted += person.first->getCepacDiscountFactor(parameters.currTime, discount);
 						summary.cepac_costs_undiscounted += person.first->get_monthly_cepac_costs_undiscounted();
 						summary.cepac_costs_discounted += person.first->get_monthly_cepac_costs_discounted();
