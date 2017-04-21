@@ -623,15 +623,14 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 					rolloutUntreatedPool.push_back(wasUninfected);
 				}
 
-				if(parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
-				{
-		    populationStatistics.recordIncidentInfection(parameters_, parameters_.currTime,
-			SexualPartnership::Type(type),
-			wasInfected,
-			wasUninfected,
-			(parameters_.debugLevel > DebugLevel::One),
-			parameters_.trace_files[EventParams::TraceFile::Type::Events].file);
-				}
+				bool printInfection = (parameters_.debugLevel > DebugLevel::One &&
+						       parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled);
+				populationStatistics.recordIncidentInfection(parameters_, parameters_.currTime,
+									     SexualPartnership::Type(type),
+									     wasInfected,
+									     wasUninfected,
+									     printInfection,
+									     parameters_.trace_files[EventParams::TraceFile::Type::Events].file);
 
 				newlyInfectedIter++;
 			}//while(newlyInfectedIter != newlyInfected.end())
@@ -2640,7 +2639,6 @@ void Population::PrintMethodResults(EventParams &parameters_, const std::string 
 	unsigned long totalInSteady = 0;
 	unsigned long totalInRegular = 0;
 	unsigned long totalSexuallyActive = 0;
-	_showInfections = false;
 
     if(parameters_.debugLevel > DebugLevel::Zero && parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
 	{
