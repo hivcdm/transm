@@ -461,28 +461,27 @@ std::vector<Entity *> Population::Find(std::function<bool(Entity *)> predicate)
     return matches;
 }
 
-std::vector<Entity *> Population::FindSAInAgeRange(int minAge, int maxAge)
+std::vector<Entity *> Population::FindSAInAgeRange(int minAge, int maxAge,
+    DemographicProfile::Gender gender)
 {
-    auto match = [&](Entity *person, int minAge, int maxAge) {
+    std::vector<Entity *> matches;
+    for(std::list<Entity *>::iterator _iter = entities->begin(gender);
+	_iter != entities->end(gender); _iter++) {
+	Entity *person = *(_iter);
 	if (!person->isSexuallyActive())
-	    return false;
+	    continue;
 
         /* EDS: Added 'floor' call to match with v3.9
 	 * Remove when no longer needed */
 	if(minAge > (int)floor(person->getAge().in_years()))
-	    return false;
+	    continue;
 
 	if(maxAge < (int)floor(person->getAge().in_years()))
-	    return false;
+	    continue;
 
-	return true;
-    };
+	matches.push_back(person);
+    }
 
-    std::vector<Entity *> matches;
-    entities->forEach([=, &matches](Entity *p) {
-	    if(match(p, minAge, maxAge))
-		matches.push_back(p);
-    });
     return matches;
 }
 
@@ -1206,8 +1205,11 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 		double seedPrev = popWideParams.GetSeedPrevalence();
 		int minAge = popWideParams.GetMinSeedAge();
 		int maxAge = popWideParams.GetMaxSeedAge();
-		std::vector<Entity *> people = FindSAInAgeRange(minAge, maxAge);
-		std::size_t popInAgeRange = people.size();
+		std::vector<Entity *> males = FindSAInAgeRange(minAge, maxAge,
+		    DemographicProfile::Gender::Male);
+		std::vector<Entity *> females = FindSAInAgeRange(minAge, maxAge,
+		    DemographicProfile::Gender::Female);
+		std::size_t popInAgeRange = males.size() + females.size();
 		if (popInAgeRange == 0) {
 			throw std::runtime_error("No people in age range to seed. "
 			    "Check input parameters.");
@@ -1215,7 +1217,7 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 
 		auto seedPopulation = Utility::round<unsigned long>(popInAgeRange * seedPrev);
 
-		int seedTotal = prevalentInfectionsFromCoefficients(people, seedPopulation);
+		int seedTotal = prevalentInfectionsFromCoefficients(males, females, seedPopulation);
 		double seedRatio = double(seedTotal) / double(popInAgeRange);
 		std::cout << boost::str(
 		    boost::format("Seeded prevalence rate: %f for ages %d to %d\n")
@@ -1239,8 +1241,8 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
  * @return: the final count of Person's infected
  * 	(may not be equal to seedPopulation)
  */
-int Population::prevalentInfectionsFromCoefficients(std::vector<Entity *> people,
-					      unsigned long seedPopulation)
+int Population::prevalentInfectionsFromCoefficients(std::vector<Entity *> males,
+    std::vector<Entity *> females, unsigned long seedPopulation)
 {
     // Select and infect the seed population
     int count = 0;
@@ -1255,7 +1257,7 @@ int Population::prevalentInfectionsFromCoefficients(std::vector<Entity *> people
 	    risk = Entity::RiskLevel::LOW;
 	    coeff = seedDistribution.numInfectedRisk[(std::size_t)gender][(std::size_t)risk];
 	    for (int i = 0; i < coeff; i++) {
-		if (getSeedPersonToInfect(people, gender, risk, true)) {
+		if (getSeedPersonToInfect(males, risk, true)) {
 		    if ((count++) == seedPopulation) goto out;
 		} else {
 		    break;
@@ -1265,7 +1267,7 @@ int Population::prevalentInfectionsFromCoefficients(std::vector<Entity *> people
 	    risk = Entity::RiskLevel::HIGH;
 	    coeff = seedDistribution.numInfectedRisk[(std::size_t)gender][(std::size_t)risk];
 	    for (int i = 0; i < coeff; i++) {
-		if (getSeedPersonToInfect(people, gender, risk, true)) {
+		if (getSeedPersonToInfect(males, risk, true)) {
 		    if ((count++) == seedPopulation) goto out;
 		} else {
 		    break;
@@ -1274,7 +1276,7 @@ int Population::prevalentInfectionsFromCoefficients(std::vector<Entity *> people
 	    // CSW
 	    coeff = seedDistribution.numInfectedCSW[(std::size_t)gender];
 	    for (int i = 0; i < coeff; i++) {
-		if (getSeedPersonToInfect(people, gender, risk, true)) {
+		if (getSeedPersonToInfect(males, risk, true)) {
 		    if ((count++) == seedPopulation) goto out;
 		} else {
 		    break;
@@ -1287,7 +1289,7 @@ int Population::prevalentInfectionsFromCoefficients(std::vector<Entity *> people
 	    risk = Entity::RiskLevel::LOW;
 	    coeff = seedDistribution.numInfectedRisk[(std::size_t)gender][(std::size_t)risk];
 	    for (int i = 0; i < coeff; i++) {
-		if (getSeedPersonToInfect(people, gender, risk, true)) {
+		if (getSeedPersonToInfect(females, risk, true)) {
 		    if ((count++) == seedPopulation) goto out;
 		} else {
 		    break;
@@ -1297,7 +1299,7 @@ int Population::prevalentInfectionsFromCoefficients(std::vector<Entity *> people
 	    risk = Entity::RiskLevel::HIGH;
 	    coeff = seedDistribution.numInfectedRisk[(std::size_t)gender][(std::size_t)risk];
 	    for (int i = 0; i < coeff; i++) {
-		if (getSeedPersonToInfect(people, gender, risk, true)) {
+		if (getSeedPersonToInfect(females, risk, true)) {
 		    if ((count++) == seedPopulation) goto out;
 		} else {
 		    break;
@@ -1306,7 +1308,7 @@ int Population::prevalentInfectionsFromCoefficients(std::vector<Entity *> people
 	    // CSW
 	    coeff = seedDistribution.numInfectedCSW[(std::size_t)gender];
 	    for (int i = 0; i < coeff; i++) {
-		if (getSeedPersonToInfect(people, gender, risk, true)) {
+		if (getSeedPersonToInfect(females, risk, true)) {
 		    if ((count++) == seedPopulation) goto out;
 		} else {
 		    break;
@@ -1331,7 +1333,7 @@ int Population::prevalentInfectionsFromCoefficients(std::vector<Entity *> people
  *         false if there are no more people for these parameters to infect
  */
 bool Population::getSeedPersonToInfect(std::vector<Entity *> people,
-    DemographicProfile::Gender _gender, Entity::RiskLevel _risk, bool getCSW)
+    Entity::RiskLevel _risk, bool getCSW)
 {
     for (Entity *p : people) {
 	if (p->isInfected())
