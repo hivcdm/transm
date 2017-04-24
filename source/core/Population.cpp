@@ -432,28 +432,6 @@ std::vector<Person *> Population::Find(std::function<bool(Person *)> predicate)
     return matches;
 }
 
-std::vector<Person *> Population::FindSAInAgeRange(int minAge, int maxAge,
-						   DemographicProfile::Gender gender)
-{
-    std::vector<Person *> matches;
-    for(std::list<Person *>::iterator _iter = entities->begin(gender);
-	_iter != entities->end(gender); _iter++) {
-	Person *person = *(_iter);
-      if (!person->isSexuallyActive())
-	  continue;
-
-      if(minAge > person->getAge(TimeGranularity::Year))
-	  continue;
-
-      if(maxAge < person->getAge(TimeGranularity::Year))
-	  continue;
-      
-      matches.push_back(person);
-    }
-    
-    return matches;
-}
-
 std::vector<Person *> Population::FindNonCircumcised()
 {
     auto match = [&](Person *person) {
@@ -1132,7 +1110,7 @@ Person *Population::GeneratePerson(EventParams &parameters_,
     toReturn->SetSexualActivityDelay(popWideParams.sexualActivityDelay);
 
 	//If it was a boy and he was circumcised, add the costs
-    if(toReturn->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
+    if(toReturn->isMale())
 	{
 		Male *m = (Male *)toReturn;
 
@@ -1221,40 +1199,16 @@ void Population::InitIncidentInfectionsByAge()
  * If by coefficient, the the values stored in the SeedDistribution
  * vector are used to calculate the proportion of individuals infected
  * in each risk group and age bucket.
- *
- * Notes:
- * 1. Person's selected for seeding are not choosen randomly.
- * The order of selection is the order Person's appear in entities list.
- * 2. The only gaurentee that a person will not be chosen twice for seeding
- * is the check for infection, which means we are forced to apply the
- * infection immediately upon finding the new person.
  */
 void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 {
     parameters_.displayOut("Applying incident prevalence data...\n");
 
     if (popWideParams.UseSeedCoefficients()) {
-	// calculate seed population
 	double seedPrev = popWideParams.GetSeedPrevalence();
 	int minAge = popWideParams.GetMinSeedAge();
 	int maxAge = popWideParams.GetMaxSeedAge();
-	std::vector<Person *> males = FindSAInAgeRange(minAge, maxAge,
-            DemographicProfile::Gender::Male);
-	std::vector<Person *> females = FindSAInAgeRange(minAge, maxAge,
-            DemographicProfile::Gender::Female);
-	std::size_t popInAgeRange = males.size() + females.size();
-	if (popInAgeRange == 0) {
-	    throw std::runtime_error("No people in age range to seed. "
-		"Check input parameters.");
-	}
-
-	auto seedPopulation = Utility::round<unsigned long>(popInAgeRange * seedPrev);
-
-	int seedTotal = prevalentInfectionsFromCoefficients(males, females, seedPopulation);
-	double seedRatio = double(seedTotal) / double(popInAgeRange);
-	parameters_.displayOut(boost::str(
-	    boost::format("Seeded prevalence rate: %f for ages %d to %d\n")
-	    % seedRatio % minAge % maxAge));
+	prevalentInfectionsFromCoefficients(minAge, maxAge, seedPrev);
 
     } else {
 	for(auto gender : enum_iterator<DemographicProfile::Gender>()) {
@@ -1266,131 +1220,111 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 /*
  * prevalentInfectionsFromCoefficients()
  *
- * Selects and infects @seedPopulation individuals from a list of people
+ * Creates a vector containing a list of people for seeding and randomly
+ * selects ones to infect.
  *
- * Person's are selected by seed distribution age buckets and risk order:
- * [LowRiskMale]
- * [HighRiskMale]
- * [MaleCSW]
- * [LowRiskFemale]
- * [HighRiskFemale]
- * [FemaleCSW]
- *
- * In each risk for loop, at most coeff number of Person's are selected.
- * This way @seedPopulation will have the correct proportion across risk
- * and age groups.
- *
- * @return: the final count of Person's infected
- * 	(may not be equal to seedPopulation)
  */
-int Population::prevalentInfectionsFromCoefficients(std::vector<Person *> males,
-						    std::vector<Person *> females,
-					      unsigned long seedPopulation)
+void Population::prevalentInfectionsFromCoefficients(int minAge, int maxAge, double seedPrevalence)
 {
-    // Select and infect the seed population
-    int count = 0;
-    int coeff = 0;
-    DemographicProfile::Gender gender;
-    Person::RiskLevel risk;
-    while (count < seedPopulation) {
-	for (auto seedDistribution : popWideParams.GetSeedDistributions()) {
-	    // Males
-	    gender = DemographicProfile::Gender::Male;
-	    // Low Risk
-	    risk = Person::RiskLevel::LOW;
-	    coeff = seedDistribution.numInfectedRisk[(std::size_t)gender][risk];
-	    for (int i = 0; i < coeff; i++) {
-		if (getSeedPersonToInfect(males, risk, true)) {
-		    if ((count++) == seedPopulation) goto out;
-		} else {
-		    break;
-		}
-	    }
-	    // High Risk
-	    risk = Person::RiskLevel::HIGH;
-	    coeff = seedDistribution.numInfectedRisk[(std::size_t)gender][risk];
-	    for (int i = 0; i < coeff; i++) {
-		if (getSeedPersonToInfect(males, risk, true)) {
-		    if ((count++) == seedPopulation) goto out;
-		} else {
-		    break;
-		}
-	    }
-	    // CSW
-	    coeff = seedDistribution.numInfectedCSW[(std::size_t)gender];
-	    for (int i = 0; i < coeff; i++) {
-		if (getSeedPersonToInfect(males, risk, true)) {
-		    if ((count++) == seedPopulation) goto out;
-		} else {
-		    break;
-		}
-	    }
+    // vector of people to consider for seeding
+    // contains number of people per starta multiplied by the coefficient for that strata
+    std::vector<Person *> seedList;
 
-	    // Females
-	    gender = DemographicProfile::Gender::Female;
-	    // Low Risk
-	    risk = Person::RiskLevel::LOW;
-	    coeff = seedDistribution.numInfectedRisk[(std::size_t)gender][risk];
-	    for (int i = 0; i < coeff; i++) {
-		if (getSeedPersonToInfect(females, risk, true)) {
-		    if ((count++) == seedPopulation) goto out;
-		} else {
-		    break;
-		}
-	    }
-	    // High Risk
-	    risk = Person::RiskLevel::HIGH;
-	    coeff = seedDistribution.numInfectedRisk[(std::size_t)gender][risk];
-	    for (int i = 0; i < coeff; i++) {
-		if (getSeedPersonToInfect(females, risk, true)) {
-		    if ((count++) == seedPopulation) goto out;
-		} else {
-		    break;
-		}
-	    }
-	    // CSW
-	    coeff = seedDistribution.numInfectedCSW[(std::size_t)gender];
-	    for (int i = 0; i < coeff; i++) {
-		if (getSeedPersonToInfect(females, risk, true)) {
-		    if ((count++) == seedPopulation) goto out;
-		} else {
-		    break;
-		}
-	    }
-	}
+    std::size_t popInAgeRange = 0;
+    for (auto seedDistribution : popWideParams.GetSeedDistributions()) {
+	popInAgeRange += buildSeedList(seedList, seedDistribution, minAge, maxAge);
     }
 
-  out:
-    return count;
+    if (popInAgeRange == 0 || seedList.size() == 0) {
+	throw std::runtime_error("No people in age range to seed. "
+				 "Check input parameters.");
+    }
+
+    auto seedPopulation = Utility::round<unsigned long>(popInAgeRange * seedPrevalence);
+
+    int seedTotal = infectSeedPopulation(seedList, seedPopulation);
+
+    double seedRatio = double(seedTotal) / double(popInAgeRange);
+    parameters_.displayOut(
+	boost::str(boost::format("Seeded prevalence rate: %f for ages %d to %d\n")
+		   % seedRatio % minAge % maxAge));
+
 }
 
 /*
- * getSeedPersonToInfect()
+ * buildSeedList
  *
- * Loops through the list of people to find a non-infected person
- * with the correct demographic to infect.
+ * In order to accurately represent the risk for each gender|risk strata
+ * each person is added to the list the number of times of the coefficient value
+ * of the risk group in which they belong.
  *
- * Helper function for prevalentInfectionsFromCoefficients()
- *
- * @return true if a person was infected
- *         false if there are no more people for these parameters to infect
+ * The total tally of people added to the list only includes one addition per person.
+ * This allows us to calculate the seedRatio in the calling function.
  */
-bool Population::getSeedPersonToInfect(std::vector<Person *> people,
-    Person::RiskLevel _risk, bool getCSW)
+int Population::buildSeedList(std::vector<Person *> &seedList, SeedDistribution seedDistribution,
+			      int minAge, int maxAge)
 {
-    for (Person *p : people) {
+    int total = 0;
+
+    int coeff;
+    for(auto gender : enum_iterator<DemographicProfile::Gender>()) {
+	for(std::list<Person *>::iterator _iter = entities->begin(gender);
+	    _iter != entities->end(gender); _iter++) {
+
+	    Person *person = *(_iter);
+	    if (!person->isSexuallyActive())
+		continue;
+
+	    if(minAge > person->getAge(TimeGranularity::Year))
+		continue;
+
+	    if(maxAge < person->getAge(TimeGranularity::Year))
+		continue;
+
+	    if (person->isCSW()) {
+		coeff = seedDistribution.numInfectedCSW[(std::size_t)gender];
+		for (int i = 0; i < coeff; i++) {
+		    seedList.push_back(person);
+		}
+		if (coeff > 0)
+		    total++;
+		continue;
+	    }
+
+	    auto risk = person->getRiskLevel();
+	    coeff = seedDistribution.numInfectedRisk[(std::size_t)gender][risk];
+	    for (int i = 0; i < coeff; i++) {
+		seedList.push_back(person);
+	    }
+	    if (coeff > 0)
+		total++;
+	}
+    }
+
+    return total;
+}
+
+/*
+ * infectSeedPopulation()
+ *
+ * Randomly selects a person from the list to infect.
+ */
+int Population::infectSeedPopulation(std::vector<Person *> seedList, std::size_t seedPopulation)
+{
+    int count = 0;
+    while (count < seedPopulation) {
+	int index = (int)parameters_.randomNums.randInt(0,
+	    (uint32_t)seedList.size() - 1);
+	Person *p = seedList.at(index);
+
 	if (p->isInfected())
 	    continue;
 
-	// if _risk == -1, then accept a CSW
-	if ((getCSW && p->isCSW()) ||
-	    (!p->isCSW() && (_risk == p->getRiskLevel()))) {
-	    applyPrevalentInfection(p);
-	    return true;
-	}
-
+	applyPrevalentInfection(p);
+	count++;
     }
-    return false;
+
+    return count;
 }
 
 /*
