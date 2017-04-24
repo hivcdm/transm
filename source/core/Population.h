@@ -54,7 +54,8 @@ public:
     SimContext *LoadCepacFile(const std::string &cepac_file) { return parameters_.LoadCepacContext(cepac_file); }
 
     std::vector<Person *> Find(std::function<bool(Person *)> predicate);
-    std::vector<Person *> FindSAInAgeRange(int minAge, int maxAge);
+    std::vector<Person *> FindSAInAgeRange(int minAge, int maxAge,
+					   DemographicProfile::Gender gender);
     std::vector<Person *> FindNonCircumcised();
 
     /// <summary>
@@ -241,11 +242,11 @@ private:
 	/// <summary>
 	/// helper funtions for ApplyIncidentPrevalence()
 	/// </summary>
-	int prevalentInfectionsFromCoefficients(std::vector<Person *> people,
+	int prevalentInfectionsFromCoefficients(std::vector<Person *> males,
+						std::vector<Person *> females,
 					  unsigned long seedPopulation);
 	bool getSeedPersonToInfect(std::vector<Person *> people,
-	    DemographicProfile::Gender _gender, Person::RiskLevel _risk,
-	    bool getCSW = false);
+	    Person::RiskLevel _risk, bool getCSW = false);
 	void prevalentInfectionsFromCount(DemographicProfile::Gender _gender);
 	void applyPrevalentInfection(Person *p);
 	bool rollForChronicInfection(RandomNumberGenerator &_randomNums);
