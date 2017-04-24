@@ -44,8 +44,6 @@ std::vector<transm::path> find_input_files(const transm::path &batch_path)
 /// </summary>
 int run_simulation(const transm::path &batch_path, const transm::path &cepac_directory)
 {
-    int result;
-
     transm::path batch_directory;
     if (transm::filesystem::is_regular_file(batch_path)) {
 	batch_directory = batch_path.parent_path();
@@ -57,12 +55,8 @@ int run_simulation(const transm::path &batch_path, const transm::path &cepac_dir
 
     transm::path results("results");
     transm::path results_directory(batch_directory.append(results));
-    result = transm::Utility::createResultsDirectory(results_directory.string());
-    if (result != 0) {
-	cout << "Failed to create the results directory: " +
-	    results_directory.string() << std::endl;
-	return 1;
-    }
+
+    transm::Utility::createResultsDirectory(results_directory.string());
 
     /* Set the Cepac input directory */
     CepacUtil::inputsDirectory = cepac_directory.string();
