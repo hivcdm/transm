@@ -15,9 +15,11 @@ find_package(
 	REQUIRED
 )
 
-find_package(
-	GooglePerfTools 
-)
+add_definitions(-DUSE_GOOGLE_PERF_TOOLS=${USE_GOOGLE_PERF_TOOLS})
+message("Use gpt: ${USE_GOOGLE_PERF_TOOLS}")
+if (USE_GOOGLE_PERF_TOOLS)
+	find_package(GooglePerfTools)
+endif (USE_GOOGLE_PERF_TOOLS)
 
 include_directories(${Boost_INCLUDE_DIR})
 
