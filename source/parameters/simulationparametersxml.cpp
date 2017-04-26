@@ -755,10 +755,6 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
 	Text<double>(initial_infections_node.child("chanceSeedChronicInfection")));
     parameters.SetSeedPrevalence(
 	Text<double>(initial_infections_node.child("seedPrevalence")));
-    parameters.SetMinSeedAge(
-	Text<int>(initial_infections_node.child("minSeedAge")));
-    parameters.SetMaxSeedAge(
-	Text<int>(initial_infections_node.child("maxSeedAge")));
 
     //get initial age distribution
     for (auto age_bucket_node : initial_state_node.child("entityDistributions").children("ageRange")) {

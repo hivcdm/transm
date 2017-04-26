@@ -1171,9 +1171,7 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 {
 	if (popWideParams.UseSeedCoefficients()) {
 		double seedPrev = popWideParams.GetSeedPrevalence();
-		int minAge = popWideParams.GetMinSeedAge();
-		int maxAge = popWideParams.GetMaxSeedAge();
-		prevalentInfectionsFromCoefficients(minAge, maxAge, seedPrev);
+		prevalentInfectionsFromCoefficients(seedPrev);
 
 	} else {
 		for(auto gender : enum_iterator<DemographicProfile::Gender>()) {
@@ -1188,7 +1186,7 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
  * Creates a vector containing a list of people for seeding and randomly
  * selects ones to infect.
  */
-void Population::prevalentInfectionsFromCoefficients(int minAge, int maxAge, double seedPrevalence)
+void Population::prevalentInfectionsFromCoefficients(double seedPrevalence)
 {
 	// vector of people to consider for seeding
 	// contains number of people per starta multiplied by the coefficient for that strata
@@ -1196,7 +1194,7 @@ void Population::prevalentInfectionsFromCoefficients(int minAge, int maxAge, dou
 	std::size_t popInAgeRange = 0;
 
 	for (auto seedDistribution : popWideParams.GetInitialAgeBuckets()) {
-		popInAgeRange += buildSeedList(seedList, seedDistribution, minAge, maxAge);
+		popInAgeRange += buildSeedList(seedList, seedDistribution);
 	}
 
 	if (popInAgeRange == 0 || seedList.size() == 0) {
@@ -1204,9 +1202,9 @@ void Population::prevalentInfectionsFromCoefficients(int minAge, int maxAge, dou
 		    "Check input parameters.");
 	}
 
-	auto seedPopulation = Utility::round<unsigned long>(popInAgeRange * seedPrevalence);
+	auto popToSeed = Utility::round<unsigned long>(popInAgeRange * seedPrevalence);
 
-	infectSeedPopulation(seedList, seedPopulation);
+	infectSeedPopulation(seedList, popToSeed);
 }
 
 /*
@@ -1217,10 +1215,9 @@ void Population::prevalentInfectionsFromCoefficients(int minAge, int maxAge, dou
  * of the risk group in which they belong.
  *
  * The total tally of people added to the list only includes one addition per person.
- * This allows us to calculate the seedRatio in the calling function.
+ * This allows us to return the total number of people picked for seeding.
  */
-int Population::buildSeedList(std::vector<Entity *> &seedList, AgeBucketPrevalenceInfo seedDistribution,
-    int minAge, int maxAge)
+int Population::buildSeedList(std::vector<Entity *> &seedList, AgeBucketPrevalenceInfo seedDistribution)
 {
     int total = 0;
     int coeff;
@@ -1232,10 +1229,10 @@ int Population::buildSeedList(std::vector<Entity *> &seedList, AgeBucketPrevalen
 		if (!person->isSexuallyActive())
 			continue;
 
-		if(minAge > person->getAge().in_months())
+		if(seedDistribution.minAgeMth > person->getAge())
 			continue;
 
-		if(maxAge < person->getAge().in_months())
+		if(seedDistribution.maxAgeMth < person->getAge())
 			continue;
 
 		if (person->isCSW()) {
@@ -2372,7 +2369,7 @@ std::size_t Population::CalcPrevalentPopulation(Time time)
     std::unordered_map<std::string, AgeRangeSizeContainer> prevalenceByEntityTypeAge;
 
 	//initialize prevalent infections by age
-	for(auto ageBucketParams : popWideParams.initialAgeBuckets)
+    for(auto ageBucketParams : popWideParams.GetInitialAgeBuckets())
 	{
 		AgeRange range = {ageBucketParams.minAgeMth, ageBucketParams.maxAgeMth};
 		for(auto entity_type : {"male", "msmw", "msm", "female"})

@@ -257,10 +257,10 @@ private:
 	/// <summary>
 	/// helper funtions for ApplyIncidentPrevalence()
 	/// </summary>
-	void prevalentInfectionsFromCoefficients(int minAge, int maxAge, double seedPrevalence);
-	int buildSeedList(std::vector<Entity *> &seedList, AgeBucketPrevalenceInfo seedDistribution,
-	    int minAge, int maxAge);
+	void prevalentInfectionsFromCoefficients(double seedPrevalence);
+	int buildSeedList(std::vector<Entity *> &seedList, AgeBucketPrevalenceInfo seedDistribution);
 	int infectSeedPopulation(std::vector<Entity *> seedList, std::size_t seedPopulation);
+
 	void prevalentInfectionsFromCount(DemographicProfile::Gender _gender);
 	void applyPrevalentInfection(Entity *p);
 	bool rollForChronicInfection(RandomNumberGenerator &_randomNums);

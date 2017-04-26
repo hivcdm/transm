@@ -130,10 +130,6 @@ public:
 	double GetSeedPrevalence() { return seedPrevalence; }
 	void SetUseSeedCoefficients(bool useCoeffs) { useSeedCoefficients = useCoeffs; }
 	bool UseSeedCoefficients() { return useSeedCoefficients; }
-	void SetMinSeedAge(int age) { minSeedAge = age; }
-	int GetMinSeedAge() { return minSeedAge; }
-	void SetMaxSeedAge(int age) { maxSeedAge = age; }
-	int GetMaxSeedAge() { return maxSeedAge; }
 
 	void SetInitialCswProportion(const std::string &entity_type, double proportion) { initProbCSW[entity_type] = proportion; }
     void SetCswEndAge(const std::string &entity_type, Age age) { CSWEndAge[entity_type] = age; }
