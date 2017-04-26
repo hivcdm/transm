@@ -1174,7 +1174,7 @@ void Population::InitIncidentInfectionsByAge()
 {
 	AgeRangeSizeContainer incidentInfsAgeMale, incidentInfsAgeFemale, totalIncidentInfsAge;
 
-	for(auto ageBucketParams : popWideParams.GetSeedDistributions())
+	for(auto ageBucketParams : popWideParams.GetAgeDistributions())
 	{
 		AgeRange ageRange = {ageBucketParams.minAgeMth, ageBucketParams.maxAgeMth};
 		incidentInfsAgeMale.push_back({ageRange, 0});
@@ -1206,9 +1206,7 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 
     if (popWideParams.UseSeedCoefficients()) {
 	double seedPrev = popWideParams.GetSeedPrevalence();
-	int minAge = popWideParams.GetMinSeedAge();
-	int maxAge = popWideParams.GetMaxSeedAge();
-	prevalentInfectionsFromCoefficients(minAge, maxAge, seedPrev);
+	prevalentInfectionsFromCoefficients(seedPrev);
 
     } else {
 	for(auto gender : enum_iterator<DemographicProfile::Gender>()) {
@@ -1224,7 +1222,7 @@ void Population::ApplyIncidentPrevalence(EventParams &parameters_)
  * selects ones to infect.
  *
  */
-void Population::prevalentInfectionsFromCoefficients(int minAge, int maxAge, double seedPrevalence)
+void Population::prevalentInfectionsFromCoefficients(double seedPrevalence)
 {
     // vector of people to consider for seeding
     // contains number of people per starta multiplied by the coefficient for that strata
@@ -1232,7 +1230,7 @@ void Population::prevalentInfectionsFromCoefficients(int minAge, int maxAge, dou
 
     std::size_t popInAgeRange = 0;
     for (auto seedDistribution : popWideParams.GetSeedDistributions()) {
-	popInAgeRange += buildSeedList(seedList, seedDistribution, minAge, maxAge);
+	popInAgeRange += buildSeedList(seedList, seedDistribution);
     }
 
     if (popInAgeRange == 0 || seedList.size() == 0) {
@@ -1240,14 +1238,12 @@ void Population::prevalentInfectionsFromCoefficients(int minAge, int maxAge, dou
 				 "Check input parameters.");
     }
 
-    auto seedPopulation = Utility::round<unsigned long>(popInAgeRange * seedPrevalence);
+    auto popToSeed = Utility::round<unsigned long>(popInAgeRange * seedPrevalence);
+    int actualPopSeeded = infectSeedPopulation(seedList, popToSeed);
 
-    int seedTotal = infectSeedPopulation(seedList, seedPopulation);
-
-    double seedRatio = double(seedTotal) / double(popInAgeRange);
+    double seedRatio = double(actualPopSeeded) / double(popInAgeRange);
     parameters_.displayOut(
-	boost::str(boost::format("Seeded prevalence rate: %f for ages %d to %d\n")
-		   % seedRatio % minAge % maxAge));
+	boost::str(boost::format("Seeded prevalence rate: %f\n") % seedRatio));
 
 }
 
@@ -1259,10 +1255,9 @@ void Population::prevalentInfectionsFromCoefficients(int minAge, int maxAge, dou
  * of the risk group in which they belong.
  *
  * The total tally of people added to the list only includes one addition per person.
- * This allows us to calculate the seedRatio in the calling function.
+ * This allows us to return the total number of people picked for seeding.
  */
-int Population::buildSeedList(std::vector<Person *> &seedList, SeedDistribution seedDistribution,
-			      int minAge, int maxAge)
+int Population::buildSeedList(std::vector<Person *> &seedList, SeedDistribution seedDistribution)
 {
     int total = 0;
 
@@ -1275,10 +1270,10 @@ int Population::buildSeedList(std::vector<Person *> &seedList, SeedDistribution 
 	    if (!person->isSexuallyActive())
 		continue;
 
-	    if(minAge > person->getAge(TimeGranularity::Year))
+	    if(seedDistribution.minAgeMth > person->getAge(TimeGranularity::Month))
 		continue;
 
-	    if(maxAge < person->getAge(TimeGranularity::Year))
+	    if(seedDistribution.maxAgeMth < person->getAge(TimeGranularity::Month))
 		continue;
 
 	    if (person->isCSW()) {
@@ -2413,10 +2408,10 @@ long Population::CalcPrevalentPopulation(long _time)
 	AgeRangeSizeContainer prevalenceByAgeMale, prevalenceByAgeFemale;
 
 	//initialize prevalent infections by age
-	for(auto seedDistribution : popWideParams.GetSeedDistributions())
+	for(auto ageDistribution : popWideParams.GetAgeDistributions())
 	{
-		AgeRange range = {seedDistribution.minAgeMth,
-				  seedDistribution.maxAgeMth};
+		AgeRange range = {ageDistribution.minAgeMth,
+				  ageDistribution.maxAgeMth};
 		prevalenceByAgeMale.push_back({range, 0});
 		prevalenceByAgeFemale.push_back({range, 0});
 	}

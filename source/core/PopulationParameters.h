@@ -138,8 +138,10 @@ public:
 
 	double GetMaleProportion() const { return proportionMale; }
 
-	const std::vector<AgeDistribution> &GetAgeDistributions() const { return initialAgeDistributions; }
-	std::vector<AgeDistribution> &GetAgeDistributions() { return initialAgeDistributions; }
+	const std::vector<AgeDistribution> &GetAgeDistributions() const
+	    { return initialAgeDistributions; }
+	std::vector<AgeDistribution> &GetAgeDistributions()
+	    { return initialAgeDistributions; }
 
 	const std::vector<SeedDistribution> &GetSeedDistributions() const
 	    { return initialSeedDistributions; }
@@ -152,10 +154,6 @@ public:
 	double GetSeedPrevalence() { return seedPrevalence; }
 	void SetUseSeedCoefficients(bool useCoeffs) { useSeedCoefficients = useCoeffs; }
 	bool UseSeedCoefficients() { return useSeedCoefficients; }
-	void SetMinSeedAge(int age) { minSeedAge = age; }
-	int GetMinSeedAge() { return minSeedAge; }
-	void SetMaxSeedAge(int age) { maxSeedAge = age; }
-	int GetMaxSeedAge() { return maxSeedAge; }
 
     void SetInitialCswProportion(DemographicProfile::Gender gender, double proportion) { initProbCSW[(std::size_t)gender] = proportion; }
     void SetCswEndAge(DemographicProfile::Gender gender, int age_months) { CSWEndAgeMth[(std::size_t)gender] = age_months; }

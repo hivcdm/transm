@@ -240,9 +240,8 @@ private:
 	/// <summary>
 	/// helper funtions for ApplyIncidentPrevalence()
 	/// </summary>
-	void prevalentInfectionsFromCoefficients(int minAge, int maxAge, double seedPrevalence);
-	int buildSeedList(std::vector<Person *> &seedList, SeedDistribution seedDistribution,
-	    int minAge, int maxAge);
+	void prevalentInfectionsFromCoefficients(double seedPrevalence);
+	int buildSeedList(std::vector<Person *> &seedList, SeedDistribution seedDistribution);
 	int infectSeedPopulation(std::vector<Person *> seedList, std::size_t seedPopulation);
 	void prevalentInfectionsFromCount(DemographicProfile::Gender _gender);
 	void applyPrevalentInfection(Person *p);

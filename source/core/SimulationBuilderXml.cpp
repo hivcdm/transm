@@ -749,10 +749,6 @@ void SimulationBuilderXml::ReadPopulationParameters()
 	Text<double>(seed_distrib_node.child("chanceSeedChronicInfection")));
     population_parameters.SetSeedPrevalence(
 	Text<double>(seed_distrib_node.child("seedPrevalence")));
-    population_parameters.SetMinSeedAge(
-	Text<int>(seed_distrib_node.child("minSeedAge")));
-    population_parameters.SetMaxSeedAge(
-	Text<int>(seed_distrib_node.child("maxSeedAge")));
 
     for(auto range_node : seed_distrib_node.children("range")) {
 	population_parameters.GetSeedDistributions().emplace_back(
