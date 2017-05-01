@@ -482,7 +482,7 @@ void InfectionsTracker::printInfectionsHeaders(std::ostream &_outStream, Populat
 	}
 
 	//write out headers for population by gender
-	firstRow << "Prevalence Cases By Age and Gender" << Constants::TAB << Constants::TAB;
+	firstRow << "Prevalence Cases By Age and Gender" << Constants::TAB;
 	secondRow << "Gender" << Constants::TAB << Constants::TAB;
 	thirdRow << "Males" << Constants::TAB
 		 << "Females" << Constants::TAB;
