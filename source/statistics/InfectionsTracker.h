@@ -173,6 +173,7 @@ public :
 	@param _outStream the stream to print
 	@returns the current prevalence (for GUI purposes)
 	**/
+	void printInfectionsHeaders(std::ostream &_outStream, Population *_population);
 	int printInfections(EventParams &_eventParams, long _time, std::ostream &_outStream, Population *_population);
 
     /** Returns total number of incident infections that have occurred during current timestep */

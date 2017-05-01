@@ -181,7 +181,10 @@ public:
     /// </summary>
     const AgeRangeSizeContainer &GetSizeByAgeRange() const
         { return currSizeByAgeRange; }
-
+    const AgeRangeSizeContainer &GetSizeByAgeRangeMale() const
+        { return currSizeByAgeRangeMale; }
+    const AgeRangeSizeContainer &GetSizeByAgeRangeFemale() const
+        { return currSizeByAgeRangeFemale; }
     /// <summary>
     ///
     /// </summary>
