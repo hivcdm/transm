@@ -55,7 +55,7 @@ int Version::Compare(const Version &v1, const Version &v2, bool ignore_patch)
 	return 0;
 }
 
-const Version Utility::MODEL_VERSION = Version::FromString("3.6.1");
+const Version Utility::MODEL_VERSION = Version::FromString("3.6.2");
 
 double Utility::dayToMonthMult = 1.0 / 30;
 double Utility::dayToYearMult = 1.0 / 365;
