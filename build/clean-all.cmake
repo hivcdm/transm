@@ -2,12 +2,12 @@
 
 message ("Cleaning up the build environment...")
 
-set(build_files ${CMAKE_BINARY_DIR}/CMakeCache.txt
-                    ${CMAKE_BINARY_DIR}/cmake_install.cmake
-                    ${CMAKE_BINARY_DIR}/Makefile
-                    ${CMAKE_BINARY_DIR}/CMakeFiles
-                    ${CMAKE_BINARY_DIR}/third-party/src
-                    ${CMAKE_BINARY_DIR}/third-party/tmp
+set(build_files ${CMAKE_SOURCE_DIR}/CMakeCache.txt
+                    ${CMAKE_SOURCE_DIR}/cmake_install.cmake
+                    ${CMAKE_SOURCE_DIR}/Makefile
+                    ${CMAKE_SOURCE_DIR}/CMakeFiles
+                    ${CMAKE_SOURCE_DIR}/third-party/src
+                    ${CMAKE_SOURCE_DIR}/third-party/tmp
 )
 
 foreach(file ${build_files})

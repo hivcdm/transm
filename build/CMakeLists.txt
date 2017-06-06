@@ -4,32 +4,33 @@ project(transm)
 include(GNUInstallDirs)
 include(ExternalProject)
 
-#This ugly bunch of lines is a hack to compile properly on Odyssey:
-#they have an older version of Boost in /usr that causes a bug in
-#the lib paths with cmake's find_package.
-
-#set(Boost_NO_BOOST_CMAKE ON) 
-#set(Boost_USE_STATIC_LIBS ON)
-#set(BOOST_INCLUDEDIR /n/sw/fasrcsw/apps/Core/boost/1.59.0-fasrc01/include)
-#set(BOOST_ROOT /n/sw/fasrcsw/apps/Core/boost/1.59.0-fasrc01/lib)
-#set(Boost_NO_SYSTEM_PATHS ON)
+##### Uncomment to build on Odyssey #####
+set(Boost_NO_BOOST_CMAKE ON)
+set(BOOST_ROOT $ENV{BOOST_HOME})
+set(BOOST_INCLUDEDIR $ENV{BOOST_INCLUDE})
+set(BOOST_LIBRARYDIR $ENV{BOOST_LIB})
+set(Boost_NO_SYSTEM_PATHS ON)
+if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0)
+    message(FATAL_ERROR "GCC version must be 4.X!")
+endif()
 
 # First let's see if we have what we need
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}")
-set(Boost_USE_STATIC_LIBS ON)
 
+set(Boost_USE_STATIC_LIBS ON)
 find_package(
 	Boost 1.53.0
 	COMPONENTS system filesystem
 	REQUIRED
 )
-
-find_package(
-	GooglePerfTools 
-)
-
 include_directories(${Boost_INCLUDE_DIR})
+
+add_definitions(-DUSE_GOOGLE_PERF_TOOLS=${USE_GOOGLE_PERF_TOOLS})
+message("Use gpt: ${USE_GOOGLE_PERF_TOOLS}")
+if (USE_GOOGLE_PERF_TOOLS)
+        find_package(GooglePerfTools)
+endif (USE_GOOGLE_PERF_TOOLS)
 
 # We only need to include the headers for rana
 
@@ -83,12 +84,12 @@ ExternalProject_Add(
 	cepac_project 
 	PREFIX ${CMAKE_SOURCE_DIR}/third-party
 	GIT_REPOSITORY https://github.com/hsphcdm/cepac.git
-	GIT_TAG 44a
+	GIT_TAG 4.4a
 	UPDATE_COMMAND ""
 	CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 	#CONFIGURE_COMMAND cmake ../cepac_project
 	BUILD_COMMAND make
-	INSTALL_COMMAND mv libcepac.a ${CMAKE_SOURCE_DIR}/../lib/
+	INSTALL_COMMAND mv libcepac.a ${CMAKE_SOURCE_DIR}/../lib/ 
 )
 
 ExternalProject_Get_Property(cepac_project source_dir)
