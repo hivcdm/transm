@@ -1519,32 +1519,55 @@ double InterpolateProportion(const std::map<int, double> &yearly_proportions, in
 	return 0;
 }
 
+/*
+ * Treatment slots are calculated in one of two ways depending if
+ * dynamic treatment scaling (DTS) is enabled or disabled. DTS is meant to
+ * adjust for the lag in the treatment cascade in CEPAC.
+ *
+ * When DTS is enabled, we artificially increase the number of treatment slots
+ * by a "correction factor". This correction factor is the ratio of the treatment
+ * pool size in CDM over the number of people being treated in CEPAC (which will
+ * always be greater than one). In this way we force the actual treatment proportion
+ * closer to the value given as a parameter.
+ *
+ * When DTS is disabled, the number of treatment slots is the proportion of the
+ * total population  eligible for rollout minus the number of slots already taken.
+ */
 int Population::UpdateTreatmentSlots(double rolloutProportion)
 {
-	int numAccessingTreatment = (int)rolloutTreatedPool.size();
-	double targetTreatmentSlots = GetSize() * rolloutProportion;
+#ifdef USE_POPULATION_PROPORTION_FOR_TREATMENT_SLOTS
+    int eligiblePopulation = GetSize();
+#else
+    int eligiblePopulation = (int)(rolloutTreatedPool.size() + rolloutUntreatedPool.size());
+#endif
 
-	if(parameters_.enableDynamicTreatmentScaling)
-	{
-		int position = (parameters_.currTime - parameters_.monthOf1990) % parameters_.dynamicFeedbackPeriod;
+    int numAccessingTreatment = (int)rolloutTreatedPool.size();
+    double targetTreatmentSlots = eligiblePopulation * rolloutProportion;
 
-		if(position == 0)
-		{
-			treatmentCorrectionFactor_ = 1;
-			auto numTreated = std::count_if(rolloutTreatedPool.begin(), rolloutTreatedPool.end(), [](Person *p) { return p->isOnArt(); });
+    int numSlots;
+    if(parameters_.enableDynamicTreatmentScaling) {
+	int position = (parameters_.currTime - parameters_.monthOf1990) %
+	    parameters_.dynamicFeedbackPeriod;
 
-			if(numTreated > 0)
-			{
-				treatmentCorrectionFactor_ = numAccessingTreatment / static_cast<double>(numTreated);
-			}
-		}
+	if(position == 0) {
+	    treatmentCorrectionFactor_ = 1;
+	    // Count the number of people reported to be on ART in CEPAC
+	    auto numTreated = std::count_if(rolloutTreatedPool.begin(), rolloutTreatedPool.end(),
+					    [](Person *p) { return p->isOnArt(); });
 
-		return static_cast<int>(targetTreatmentSlots * treatmentCorrectionFactor_) - numAccessingTreatment;
+	    if(numTreated > 0) {
+		treatmentCorrectionFactor_ = numAccessingTreatment /
+		    static_cast<double>(numTreated);
+	    }
 	}
-	else
-	{
-		return static_cast<int>(GetSize() * rolloutProportion) - numAccessingTreatment;
-	}
+	numSlots = static_cast<int>(targetTreatmentSlots * treatmentCorrectionFactor_) -
+	    numAccessingTreatment;
+
+    } else {
+	numSlots = static_cast<int>(targetTreatmentSlots) - numAccessingTreatment;
+    }
+
+    return numSlots;
 }
 
 void Population::ApplyARTRollout(EventParams &parameters_)
