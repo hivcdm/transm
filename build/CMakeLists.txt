@@ -5,14 +5,14 @@ include(GNUInstallDirs)
 include(ExternalProject)
 
 ##### Uncomment to build on Odyssey #####
-set(Boost_NO_BOOST_CMAKE ON)
-set(BOOST_ROOT $ENV{BOOST_HOME})
-set(BOOST_INCLUDEDIR $ENV{BOOST_INCLUDE})
-set(BOOST_LIBRARYDIR $ENV{BOOST_LIB})
-set(Boost_NO_SYSTEM_PATHS ON)
-if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0)
-    message(FATAL_ERROR "GCC version must be 4.X!")
-endif()
+#set(Boost_NO_BOOST_CMAKE ON)
+#set(BOOST_ROOT $ENV{BOOST_HOME})
+#set(BOOST_INCLUDEDIR $ENV{BOOST_INCLUDE})
+#set(BOOST_LIBRARYDIR $ENV{BOOST_LIB})
+#set(Boost_NO_SYSTEM_PATHS ON)
+#if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0)
+#    message(FATAL_ERROR "GCC version must be 4.X!")
+#endif()
 
 # First let's see if we have what we need
 
