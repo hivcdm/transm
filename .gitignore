@@ -11,6 +11,7 @@ x64/
 .DS_Store
 runs/*
 bin/
+lib/*
 build/CMakeCache.txt
 build/CMakeFiles/
 build/Makefile
