@@ -21,7 +21,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}")
 set(Boost_USE_STATIC_LIBS ON)
 find_package(
 	Boost 1.53.0
-	COMPONENTS system filesystem
+	COMPONENTS system
 	REQUIRED
 )
 include_directories(${Boost_INCLUDE_DIR})
@@ -31,6 +31,11 @@ message("Use gpt: ${USE_GOOGLE_PERF_TOOLS}")
 if (USE_GOOGLE_PERF_TOOLS)
         find_package(GooglePerfTools)
 endif (USE_GOOGLE_PERF_TOOLS)
+
+set(CMAKE_FIND_FRAMEWORK NEVER) # on OSX, don't search frameworks
+set(CMAKE_FIND_APPBUNDLE NEVER) # or appbundles for sqlite3
+find_package (sqlite3 REQUIRED)
+include_directories(${SQLITE3_INCLUDE_DIRS})
 
 # We only need to include the headers for rana
 
@@ -105,7 +110,7 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/../bin)
 
 # The headers are nicely referenced with relative path, we can simply include the source directory
 
-include_directories(source) 
+include_directories(../source)
 
 # Then we add our source files, they are listed in our helper file
 
@@ -128,7 +133,7 @@ set(CMAKE_EXECUTABLE_SUFFIX "-v${TRANSM_VER}") # ...we need to use the followin
 
 #set_property(TARGET transm PROPERTY CXX_STANDARD 14) # Proper way to require c++14 compatibility, 
 #set_property(TARGET transm PROPERTY CXX_STANDARD_REQUIRED ON) # but it causes issues on CentOS 7 + CMake 2.8,
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fpermissive -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free") # so we just set the flag
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -fpermissive -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free") # so we just set the flag
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native") 
 
 # We link our libraries and we are done
@@ -137,7 +142,7 @@ if(GOOGLE_PERFTOOLS_FOUND)
 	target_link_libraries(transm ${TCMALLOC_LIBRARY} ${PROFILER_LIBRARY})
 endif(GOOGLE_PERFTOOLS_FOUND)
 
-target_link_libraries(transm cepac pugixml ${Boost_LIBRARIES})
+target_link_libraries(transm cepac pugixml ${SQLITE3_LIBRARIES} ${Boost_LIBRARIES})
 
 # If the build is successful we remind the user of the location of the binary
 
