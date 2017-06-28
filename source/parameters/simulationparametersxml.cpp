@@ -14,10 +14,10 @@ std::string to_string(SexualPartnership::Type type)
 	case SexualPartnership::Type::Regular: return "regular";
 	case SexualPartnership::Type::Casual: return "casual";
 	case SexualPartnership::Type::Csw: return "csw";
-    case SexualPartnership::Type::SteadyMsm: return "steady-msm";
-    case SexualPartnership::Type::RegularMsm: return "regular-msm";
-    case SexualPartnership::Type::CasualMsm: return "casual-msm";
-    case SexualPartnership::Type::CswMsm: return "csw-msm";
+	case SexualPartnership::Type::SteadyMsm: return "steady-msm";
+	case SexualPartnership::Type::RegularMsm: return "regular-msm";
+	case SexualPartnership::Type::CasualMsm: return "casual-msm";
+	case SexualPartnership::Type::CswMsm: return "csw-msm";
 	default: throw std::runtime_error("unknown type");
 	}
 }
@@ -384,7 +384,7 @@ std::unordered_map<TransmissionType, std::array<double, (std::size_t)Entity::HVL
         return coefficients;
     };
 
-    auto coeff_node = document_.select_single_node("/simulation/population/transmissionCoefficients").node();
+    auto coeff_node = document_.select_node("/simulation/population/transmissionCoefficients").node();
     coefficient_map[TransmissionType::male_to_female] = read_coefficients(coeff_node.child("maleToFemale"));
     coefficient_map[TransmissionType::female_to_male] = read_coefficients(coeff_node.child("femaleToMale"));
     coefficient_map[TransmissionType::male_to_male] = read_coefficients(coeff_node.child("maleToMale"));
@@ -394,34 +394,34 @@ std::unordered_map<TransmissionType, std::array<double, (std::size_t)Entity::HVL
 
 RolloutEligibility SimulationParametersXml::GetRolloutEligibility() const
 {
-    auto eligibility_node = document_.select_single_node("/simulation/interventions/artRolloutIntervention/rolloutEligibility").node();
+    auto eligibility_node = document_.select_node("/simulation/interventions/artRolloutIntervention/rolloutEligibility").node();
     RolloutEligibility eligibility;
 
     // OIHist
-    auto oi_hist_node = eligibility_node.select_single_node("criteria[@name='OIHist']").node();
+    auto oi_hist_node = eligibility_node.select_node("criteria[@name='OIHist']").node();
     eligibility.oiHistRank = Text<int>(oi_hist_node.child("rank"));
     eligibility.oiHistNumToStart = Text<int>(oi_hist_node.child("numOIToStart"));
 
     // CD4
-    auto cd4_node = eligibility_node.select_single_node("criteria[@name='CD4']").node();
+    auto cd4_node = eligibility_node.select_node("criteria[@name='CD4']").node();
     eligibility.cd4Rank = Text<int>(cd4_node.child("rank"));
     eligibility.cd4Bounds.lower = Text<int>(cd4_node.child("CD4Lwr"));
     eligibility.cd4Bounds.upper = Text<int>(cd4_node.child("CD4Upp"));
 
     // CD4OIHist
-    auto cd4_oi_hist_node = eligibility_node.select_single_node("criteria[@name='CD4OIHist']").node();
+    auto cd4_oi_hist_node = eligibility_node.select_node("criteria[@name='CD4OIHist']").node();
     eligibility.cd4OiHistRank = Text<int>(cd4_oi_hist_node.child("rank"));
     eligibility.cd4OiHistCd4Bounds.lower = Text<int>(cd4_oi_hist_node.child("CD4Lwr"));
     eligibility.cd4OiHistCd4Bounds.upper = Text<int>(cd4_oi_hist_node.child("CD4Upp"));
 
     // HVL
-    auto hvl_node = eligibility_node.select_single_node("criteria[@name='HVL']").node();
+    auto hvl_node = eligibility_node.select_node("criteria[@name='HVL']").node();
     eligibility.hvlRank = Text<int>(hvl_node.child("rank"));
     eligibility.hvlBounds.lower = Text<int>(hvl_node.child("HVLLwr"));
     eligibility.hvlBounds.upper = Text<int>(hvl_node.child("HVLUpp"));
 
     // CD4HVL
-    auto cd4_hvl_node = eligibility_node.select_single_node("criteria[@name='CD4HVL']").node();
+    auto cd4_hvl_node = eligibility_node.select_node("criteria[@name='CD4HVL']").node();
     eligibility.cd4HvlRank = Text<int>(cd4_hvl_node.child("rank"));
     eligibility.cd4HvlCd4Bounds.lower = Text<int>(cd4_hvl_node.child("CD4Lwr"));
     eligibility.cd4HvlCd4Bounds.upper = Text<int>(cd4_hvl_node.child("CD4Upp"));
@@ -441,7 +441,7 @@ RolloutEligibility SimulationParametersXml::GetRolloutEligibility() const
 SexualBehavior SimulationParametersXml::GetSexualBehavior(const std::string &entity_type, SexualPartnership::Type type) const
 {
 	auto path = "/simulation/population/entities/entity[@type='" + entity_type + "']/behavior/partnershipTypes/partnership[@type='" + to_string(type) + "']";
-	auto node = document_.select_single_node(path.c_str()).node();
+	auto node = document_.select_node(path.c_str()).node();
 
     if(node == nullptr)
     {
@@ -478,7 +478,7 @@ SexualBehavior SimulationParametersXml::GetSexualBehavior(const std::string &ent
 
 Male::SubPopParams SimulationParametersXml::GetMaleSubPopParams() const
 {
-	auto node = document_.select_single_node("/simulation/population/entities/entity[@type='hetero-male']").node();
+	auto node = document_.select_node("/simulation/population/entities/entity[@type='hetero-male']").node();
 
 	Male::SubPopParams result;
 
@@ -546,7 +546,7 @@ Male::SubPopParams SimulationParametersXml::GetMaleSubPopParams() const
 
 Msm::SubPopParams SimulationParametersXml::GetMsmSubPopParams() const
 {
-    auto node = document_.select_single_node("/simulation/population/entities/entity[@type='msm']").node();
+    auto node = document_.select_node("/simulation/population/entities/entity[@type='msm']").node();
     
     Msm::SubPopParams result;
 
@@ -620,7 +620,7 @@ Msm::SubPopParams SimulationParametersXml::GetMsmSubPopParams() const
 
 Msmw::SubPopParams SimulationParametersXml::GetMsmwSubPopParams() const
 {
-    auto node = document_.select_single_node("/simulation/population/entities/entity[@type='msmw']").node();
+    auto node = document_.select_node("/simulation/population/entities/entity[@type='msmw']").node();
 
     Msmw::SubPopParams result;
 
@@ -694,7 +694,7 @@ Msmw::SubPopParams SimulationParametersXml::GetMsmwSubPopParams() const
 
 Female::SubPopParams SimulationParametersXml::GetFemaleSubPopParams() const
 {
-	auto node = document_.select_single_node("/simulation/population/entities/entity[@type='female']").node();
+	auto node = document_.select_node("/simulation/population/entities/entity[@type='female']").node();
 
 	Female::SubPopParams result;
 
@@ -908,7 +908,7 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
 		parameters.SetPartnershipHasDuration(DemographicProfile::Gender::Female, type, false);
 	}
 
-    pugi::xml_node costs_node = document_.select_single_node("/simulation/traceFiles/costEffectiveness").node();
+    pugi::xml_node costs_node = document_.select_node("/simulation/traceFiles/costEffectiveness").node();
 
     //Costs
     parameters.SetCondomCost(Text<double>(costs_node.child("condomCost")));
@@ -1176,7 +1176,7 @@ std::vector<Intervention> SimulationParametersXml::GetInterventions(pugi::xml_no
 
 std::unordered_map<std::string, TargetGroup> SimulationParametersXml::GetTargetGroups() const
 {
-    pugi::xml_node groups_node = document_.select_single_node("/simulation/interventions/groups").node();
+    pugi::xml_node groups_node = document_.select_node("/simulation/interventions/groups").node();
     std::unordered_map<std::string, TargetGroup> groups;
 
     for(auto group_node : groups_node.children("group"))
