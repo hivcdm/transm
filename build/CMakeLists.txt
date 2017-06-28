@@ -4,24 +4,14 @@ project(transm)
 include(GNUInstallDirs)
 include(ExternalProject)
 
-##### Uncomment to build on Odyssey #####
-#set(Boost_NO_BOOST_CMAKE ON)
-#set(BOOST_ROOT $ENV{BOOST_HOME})
-#set(BOOST_INCLUDEDIR $ENV{BOOST_INCLUDE})
-#set(BOOST_LIBRARYDIR $ENV{BOOST_LIB})
-#set(Boost_NO_SYSTEM_PATHS ON)
-#if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0)
-#    message(FATAL_ERROR "GCC version must be 4.X!")
-#endif()
-
 # First let's see if we have what we need
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}")
 
 set(Boost_USE_STATIC_LIBS ON)
 find_package(
-	Boost 1.53.0
-	COMPONENTS system
+	Boost
+	COMPONENTS system math
 	REQUIRED
 )
 include_directories(${Boost_INCLUDE_DIR})
@@ -34,7 +24,7 @@ endif (USE_GOOGLE_PERF_TOOLS)
 
 set(CMAKE_FIND_FRAMEWORK NEVER) # on OSX, don't search frameworks
 set(CMAKE_FIND_APPBUNDLE NEVER) # or appbundles for sqlite3
-find_package (sqlite3 REQUIRED)
+find_package (SQLite3 REQUIRED)
 include_directories(${SQLITE3_INCLUDE_DIRS})
 
 # We only need to include the headers for rana
@@ -142,7 +132,7 @@ if(GOOGLE_PERFTOOLS_FOUND)
 	target_link_libraries(transm ${TCMALLOC_LIBRARY} ${PROFILER_LIBRARY})
 endif(GOOGLE_PERFTOOLS_FOUND)
 
-target_link_libraries(transm cepac pugixml ${SQLITE3_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(transm cepac pugixml ${SQLITE3_LIBRARIES}) # ${Boost_LIBRARIES})
 
 # If the build is successful we remind the user of the location of the binary
 
