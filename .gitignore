@@ -11,8 +11,11 @@ x64/
 .DS_Store
 runs/*
 bin/
-build/vs*/
-build/gmake/
-build/xcode*/
-scripts/generate_runs/*/
 third-party/
+lib/*
+build/CMakeCache.txt
+build/CMakeFiles/
+build/Makefile
+build/cmake_install.cmake
+build/third-party/
+scripts/generate_runs/*/
