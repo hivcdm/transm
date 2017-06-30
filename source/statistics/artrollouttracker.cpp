@@ -110,7 +110,7 @@ void ArtRolloutTracker::recordTreatment(Entity *person)
 	counter.Increment(PersonBucket(*person, ageRanges), "treated");
 }
 
-void ArtRolloutTracker::recordPrEP(Person *person)
+void ArtRolloutTracker::recordPrEP(Entity *person)
 {
 	counter.Increment(PersonBucket(*person, ageRanges), "prep");
 }

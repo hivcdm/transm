@@ -83,15 +83,7 @@ int run_simulation(const transm::path &batch_directory)
         //XXX: we shouldn't have to do this
         parameters.SetRandomNumberGenerator(simulation.GetEventParams().randomNums);
         simulation.Initialize(parameters);
-
-	auto write_and_print = [](const std::string &s)
-        {
-            std::cout << s;
-            std::ofstream("log.txt", std::ios::app) << s;
-        };
-
-	Simulation &simulation = sim_builder.GetResult();
-	auto outputs = simulation.Run(write_and_print);
+	auto outputs = simulation.Run();
 
         cepac_summary.addRunStats(&simulation.GetCEPACRunStats());
         transmission_summary.addPopulationStatistics(simulation.GetPopulationStatistics(), simulation.GetEventParams());
