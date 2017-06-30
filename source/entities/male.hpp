@@ -144,12 +144,12 @@ public :
 		double coefficientOfVariation;
 		bool useCoefficientVariation;
 
-        // The number of times the male can be rejected by a female before he
-        // decreases his number of partnerships to be formed and stops looking
-        // for the current partner.
-        int maxPartnershipRejections;
+	        // The number of times the male can be rejected by a female before he
+                // decreases his number of partnerships to be formed and stops looking
+                // for the current partner.
+                int maxPartnershipRejections;
 
-        double preExposureProphylaxisEfficacy_;
+                double preExposureProphylaxisEfficacy_;
 	};
 
 private:
@@ -178,7 +178,7 @@ public:
 	constructor should set the CD4, HVL, and HVLsetpoint from age and gender **/
 	Male(EventParams &_eventParams, Age age, bool _circumcised, unsigned int _populationID, const Male::SubPopParams &params);
 
-	/** Start: Inherited from Person, comments found there **/
+	/** Start: Inherited from Entity, comments found there **/
 
 	Entity *choosePartner(RandomNumberGenerator &_randomNums, EntityPool *_availableEntities,
 	                      SexualPartnership::Type _partnershipType, bool _remove);
@@ -188,8 +188,6 @@ public:
     virtual void SetPreExposureProphylaxisEfficacy(double efficacy);
 
     virtual double GetPreExposureProphylaxisEfficacy() const;
-
-    void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng);
 
 	void SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, double meanEvents);
 

@@ -99,6 +99,10 @@ public:
         void SetCswEndAge(Age end_age) { cswEndAge = end_age; }
         Age GetCswEndAge() const { return cswEndAge; }
 
+        void SetPreExposureProphylaxisEfficacy(double efficacy) { preExposureProphylaxisEfficacy_ = efficacy; }
+        double GetPreExposureProphylaxisEfficacy() const { return preExposureProphylaxisEfficacy_; }
+      
+
     private:
         Age cswEndAge; // in months
         double chanceBecomeCSW;		//chance that a male will become a CSW
@@ -136,6 +140,8 @@ public:
         // decreases his number of partnerships to be formed and stops looking
         // for the current partner.
         int maxPartnershipRejections;
+
+        double preExposureProphylaxisEfficacy_;
     };
 
 private:
@@ -156,6 +162,8 @@ private:
     // The distribution the males will draw from to determine how many years younger their partner should be (resulting difference may be negative for older women)
     NormalDist averageYearsYounger[(int)SexualPartnership::Type::ENDType];
 
+    double preExposureProphylaxisAdherence_;
+
     std::size_t times_selected_;
 
 public:
@@ -171,6 +179,10 @@ public:
 
     void SetChanceCondomUsePerEvent(Entity::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng);
 
+    virtual void SetPreExposureProphylaxisEfficacy(double efficacy);
+
+    virtual double GetPreExposureProphylaxisEfficacy() const;
+  
     void SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, double meanEvents);
 
     void SetPartnershipDuration(RiskLevel risk, SexualPartnership::Type partnershipType, ShiftedLogNormalDist dist);

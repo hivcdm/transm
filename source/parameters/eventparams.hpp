@@ -187,9 +187,7 @@ public:
      {
          if (cepac_file_context_map_.find(cepac_file)
              == cepac_file_context_map_.end())
-         {
-             displayOut("\tReading " + cepac_file + "\n");
- 
+         { 
              //Set the CEPAC simContext from the specified CEPAC .in file
              auto stem = transm::path(cepac_file).stem().string();
              cepac_file_context_map_[cepac_file] = new SimContext(stem);

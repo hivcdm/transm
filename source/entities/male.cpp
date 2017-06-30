@@ -1,6 +1,7 @@
 #include <vector>
 
 #include "male.hpp"
+#include "female.hpp"
 #include "sexualpartnership.hpp"
 #include "sexualbehavior.hpp"
 #include "entitypool/entitypool.hpp"
@@ -152,7 +153,7 @@ void Male::Circumcise()
 	circumcised = true;
 }
 
-Male::Male(EventParams &_eventParams, int _age, bool _circumcised, unsigned int _populationID, const Male::SubPopParams &params) :
+Male::Male(EventParams &_eventParams, Age _age, bool _circumcised, unsigned int _populationID, const Male::SubPopParams &params) :
 	Entity(_age, _populationID),
 	populationSpecificParams(params),
 	preExposureProphylaxisAdherence_(0)
@@ -250,8 +251,8 @@ double Male::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::
 
     assert(_p->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Female);
     double microbicideEfficacy = 
-        ((Female *)_p)->RollForVaginalMicrobicideUse(_eventParams.randomNums) 
-        ? ((Female *)_p)->GetVaginalMicrobicideEfficacy() : 0;
+      dynamic_cast<Female *>(_p)->RollForVaginalMicrobicideUse(_eventParams.randomNums) 
+      ? dynamic_cast<Female *>(_p)->GetVaginalMicrobicideEfficacy() : 0;
 
     double prepEfficacy = _p->UsingPrEP() ? _p->GetPreExposureProphylaxisEfficacy() : 0;
     double base_foi = transmission_coefficients.at(TransmissionType::male_to_female)[(std::size_t)getHVL()];

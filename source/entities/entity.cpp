@@ -1593,12 +1593,12 @@ Entity::~Entity(void)
 	}
 }
 
-void Person::UsePreExposureProphylaxis(double adherence)
+void Entity::UsePreExposureProphylaxis(double adherence)
 {
     preExposureProphylaxisAdherence_ = adherence;
 }
 
-void Person::deleteEntityWithoutDeleting()
+void Entity::deleteEntityWithoutDeleting()
 {
 	//Don't delete the cepacPatient -- this causes a weird exception when you try to delete it at the close of simulation, so keep it around
 	//take person out of all current relationships

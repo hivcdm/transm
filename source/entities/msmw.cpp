@@ -1,6 +1,7 @@
 #include <vector>
 
 #include "msmw.hpp"
+#include "female.hpp"
 #include "sexualpartnership.hpp"
 #include "sexualbehavior.hpp"
 #include "entitypool/entitypool.hpp"
@@ -19,7 +20,9 @@ std::string Msmw::getEntityType() const
 }
 
 Msmw::SubPopParams::SubPopParams() : 
-  maxPartnershipRejections(0)  
+    maxPartnershipRejections(0),
+    preExposureProphylaxisEfficacy_(0)
+
 {
 }
 
@@ -128,7 +131,8 @@ void Msmw::Circumcise()
 Msmw::Msmw(EventParams &_eventParams, Age _age, bool _circumcised, unsigned int _populationID, const Msmw::SubPopParams &params)
     : Entity(_age, _populationID),
     populationSpecificParams(params),
-    times_selected_(0)
+      preExposureProphylaxisAdherence_(0),
+      times_selected_(0)
 {
 	_age = max(min(Age(Entity::maxYrForDeathStats, 0), _age), Age::Zero);
     dmgProfile.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
@@ -167,6 +171,16 @@ Msmw::Msmw(EventParams &_eventParams, Age _age, bool _circumcised, unsigned int 
 
 Msmw::~Msmw()
 {
+}
+
+/*virtual*/ void Msmw::SetPreExposureProphylaxisEfficacy(double efficacy)
+{
+    populationSpecificParams.SetPreExposureProphylaxisEfficacy(efficacy);
+}
+
+/*virtual*/ double Msmw::GetPreExposureProphylaxisEfficacy() const
+{
+    return populationSpecificParams.GetPreExposureProphylaxisEfficacy();
 }
 
 double Msmw::getCondomUseProb(Entity *_p, SexualPartnership::Type _partnershipType)
@@ -217,19 +231,23 @@ double Msmw::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::
     {
         condomEff = getCondomProtectEff();
     }
+    
+    double prepEfficacy = _p->UsingPrEP() ? _p->GetPreExposureProphylaxisEfficacy() : 0;
 
     double base_foi = 0;
-
+    double microbicideEfficacy = 0;
     if(_p->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Female)
     {
         base_foi = transmission_coefficients.at(TransmissionType::male_to_female)[(std::size_t)getHVL()];
+	microbicideEfficacy = dynamic_cast<Female *>(_p)->RollForVaginalMicrobicideUse(_eventParams.randomNums) 
+      ? dynamic_cast<Female *>(_p)->GetVaginalMicrobicideEfficacy() : 0;
     }
     else
     {
         base_foi = transmission_coefficients.at(TransmissionType::male_to_male)[(std::size_t)getHVL()];
     }
 
-    double FOI = base_foi * (1 - condomEff);
+    double FOI = base_foi * (1 - condomEff) * (1 - microbicideEfficacy) * (1 - prepEfficacy);
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (trace() || _p->trace()))
     {

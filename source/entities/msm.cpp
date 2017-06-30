@@ -19,7 +19,9 @@ std::string Msm::getEntityType() const
 //(we only have 1 population for now so the size of the vector will default to 1
 
 Msm::SubPopParams::SubPopParams() :
-  maxPartnershipRejections(0)
+    maxPartnershipRejections(0),
+    preExposureProphylaxisEfficacy_(0)
+
 {
 }
 
@@ -127,8 +129,9 @@ void Msm::Circumcise()
 
 Msm::Msm(EventParams &_eventParams, Age _age, bool _circumcised, unsigned int _populationID, const Msm::SubPopParams &params)
     : Entity(_age, _populationID),
-    populationSpecificParams(params),
-    times_selected_(0)
+      populationSpecificParams(params),
+      preExposureProphylaxisAdherence_(0),
+      times_selected_(0)
 {
 	_age = max(min(Age(Entity::maxYrForDeathStats, 0), _age), Age::Zero);
     dmgProfile.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
@@ -169,6 +172,16 @@ Msm::~Msm()
 {
 }
 
+/*virtual*/ void Msm::SetPreExposureProphylaxisEfficacy(double efficacy)
+{
+    populationSpecificParams.SetPreExposureProphylaxisEfficacy(efficacy);
+}
+
+/*virtual*/ double Msm::GetPreExposureProphylaxisEfficacy() const
+{
+    return populationSpecificParams.GetPreExposureProphylaxisEfficacy();
+}
+
 double Msm::getCondomUseProb(Entity *_p, SexualPartnership::Type _partnershipType)
 {
     assert((_p != nullptr));
@@ -192,11 +205,9 @@ bool Msm::isCircumcised()
     return circumcised;
 }
 
-//in this case, the male is infected and female is uninfected
+//in this case, the male is infected and passed entity is an uninfected male
 double Msm::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
 {
-    //note: in the case of male->female transmission, circumcision makes no difference
-    //transmission coeff				1-	(condoms are used and succeed)
     assert(Utility::valid_probability(getCondomProtectEff()));
     assert((_p != nullptr));
     assert(_p->isAlive());
@@ -219,8 +230,9 @@ double Msm::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::a
 
     assert(_p->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Male);
 
+    double prepEfficacy = _p->UsingPrEP() ? _p->GetPreExposureProphylaxisEfficacy() : 0;
     double base_foi = transmission_coefficients.at(TransmissionType::male_to_male)[(std::size_t)getHVL()];
-    double FOI = base_foi * (1 - condomEff);
+    double FOI = base_foi * (1 - condomEff) * (1 - prepEfficacy);
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (trace() || _p->trace()))
     {

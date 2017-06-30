@@ -48,7 +48,6 @@ public:
 		NormalDist activityLevel;
 
         //chance of infection for women->men, w/o circumcision or condoms
-		std::array<double, HVLStrata::ENDHVLStrata> transmitPerEventCoeffs;
         double preExposureProphylaxisEfficacy_;
         double vaginalMicrobicideEfficacy_;
 	};

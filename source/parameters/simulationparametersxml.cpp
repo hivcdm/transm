@@ -919,8 +919,8 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
     //Costs
     parameters.SetCondomCost(Text<double>(costs_node.child("condomCost")));
     parameters.SetCircumcisionCost(Text<double>(costs_node.child("circumcisionCost")));
-    population_parameters.SetPrEPCost(Text<double>(costs_node.child("prEPCost")));
-    population_parameters.SetVaginalMicrobicideCost(Text<double>(costs_node.child("vaginalMicrobicideCost")));
+    parameters.SetPrEPCost(Text<double>(costs_node.child("prEPCost")));
+    parameters.SetVaginalMicrobicideCost(Text<double>(costs_node.child("vaginalMicrobicideCost")));
 
     return parameters;
 }
@@ -1465,7 +1465,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         case KnownIntervention::CepacContext:
          {
              auto cepac_file = Text<std::string>(node);
-             intervention.SetPopulationIndividualCallback([=](Population &pop, Person *person) 
+             intervention.SetPopulationIndividualCallback([=](Population &pop, Entity *person) 
              {
                  if (person->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() != DemographicProfile::SexualActivityStatus::Active)
                  {
@@ -1481,7 +1481,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
          case KnownIntervention::VaginalMicrobicideUse:
          {
              auto adherence = Text<double>(node);
-             intervention.SetIndividualCallback([=](Person *person) 
+             intervention.SetIndividualCallback([=](Entity *person) 
              {
                  if (person->getDemographicProfileVal<DemographicProfile::Gender>() != DemographicProfile::Gender::Female)
                  {
@@ -1497,9 +1497,9 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
          case KnownIntervention::PreExposureProphylaxisUse:
          {
              auto adherence = Text<double>(node);
-             intervention.SetIndividualCallback([=](Person *person) 
+             intervention.SetIndividualCallback([=](Entity *person) 
              {
-                 if (person->getHIVStatus() != Person::HIVStatus::NEGATIVE)
+                 if (person->getHIVStatus() != Entity::HIVStatus::NEGATIVE)
                  {
                      auto message = "error: attempting to apply PrEP to HIV positive";
                      throw std::runtime_error(message);
