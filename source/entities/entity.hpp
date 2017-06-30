@@ -133,9 +133,11 @@ public:
 		OBSERVED_LATESTAGE,//Late stage takes precedence over chronic (acute cases are never latestage)
 		UNOBSERVED_LATESTAGE,
 		ENDHIVStatus,
-        ANY_POSITIVE,
-        ANY_OBSERVED_POSITIVE,
-        ANY_NOT_OBSERVED_POSITIVE
+		ANY_POSITIVE,
+		ANY_OBSERVED_POSITIVE,
+		ANY_NOT_OBSERVED_POSITIVE,
+		Last,
+		First = NEGATIVE
 	};
 
 	enum class DeathStatus

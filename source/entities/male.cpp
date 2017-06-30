@@ -157,6 +157,7 @@ Male::Male(EventParams &_eventParams, Age _age, bool _circumcised, unsigned int 
     const Male::SubPopParams &params) :
 	Entity(_age, _populationID),
 	populationSpecificParams(params)
+{
 	_age = max(min(Age(Entity::maxYrForDeathStats, 0), _age), Age::Zero);
     dmgProfile.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
 	circumcised = _circumcised;

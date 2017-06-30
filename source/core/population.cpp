@@ -329,7 +329,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 				parameters_.untreatedContext->getRunSpecsInputs()->discountFactor
 				: parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor;
 			    populationStatistics.costsTracker.RecordPrEPCost(popWideParams.prEPCost, popWideParams.prEPCost * discount);
-			    p->add_cdm_cost(popWideParams.prEPCost, popWideParams.prEPCost * discounts);
+			    p->add_cdm_cost(popWideParams.prEPCost, popWideParams.prEPCost * discount);
 			}
 
 			if(oldStatus != p->hivStatus)
@@ -664,11 +664,11 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 		populationStatistics.costsTracker.RecordVaginalMicrobicideCost(cost, cost * discount);
 	    }
 	}
-    }
+
 
 	//Ends the second pass through (i.e. the sex acts pass through)
 	
-	if(parameters_.calibrationInputs.useCalibration
+	if (parameters_.calibrationInputs.useCalibration
 	        && parameters_.currTime > (parameters_.calibrationInputs.monthOfCalibration - TimeSpan::Year)
 	        && parameters_.currTime <= parameters_.calibrationInputs.monthOfCalibration)
 	{

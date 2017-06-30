@@ -138,29 +138,29 @@ void TargetGroup::Update(Population &population, Time current_time,
                 switch (target_.value.observed_hiv_status.value)
                 {
                 case Entity::HIVStatus::ANY_POSITIVE:
-                    if (person->getHIVStatus() == Person::NEGATIVE)
+		    if (person->getHIVStatus() == Entity::HIVStatus::NEGATIVE)
 	            {
 			return false;
 	            }
 
                     break;
-                case Person::ANY_NOT_OBSERVED_POSITIVE:
+                case Entity::HIVStatus::ANY_NOT_OBSERVED_POSITIVE:
                 {
-                    if (person->getHIVStatus() == Person::HIVStatus::OBSERVED_ACUTE
-                        || person->getHIVStatus() == Person::HIVStatus::OBSERVED_LATESTAGE
-                        || person->getHIVStatus() == Person::HIVStatus::OBSERVED_CHRONIC)
+                    if (person->getHIVStatus() == Entity::HIVStatus::OBSERVED_ACUTE
+                        || person->getHIVStatus() == Entity::HIVStatus::OBSERVED_LATESTAGE
+                        || person->getHIVStatus() == Entity::HIVStatus::OBSERVED_CHRONIC)
                     {
                         return false;
                     }
 
                     break;
                 }
-                case Person::ANY_OBSERVED_POSITIVE:
+                case Entity::HIVStatus::ANY_OBSERVED_POSITIVE:
                 {
-                    if (person->getHIVStatus() == Person::HIVStatus::NEGATIVE
-                        || person->getHIVStatus() == Person::HIVStatus::UNOBSERVED_LATESTAGE
-                        || person->getHIVStatus() == Person::HIVStatus::UNOBSERVED_CHRONIC
-                        || person->getHIVStatus() == Person::HIVStatus::UNOBSERVED_ACUTE)
+                    if (person->getHIVStatus() == Entity::HIVStatus::NEGATIVE
+                        || person->getHIVStatus() == Entity::HIVStatus::UNOBSERVED_LATESTAGE
+                        || person->getHIVStatus() == Entity::HIVStatus::UNOBSERVED_CHRONIC
+                        || person->getHIVStatus() == Entity::HIVStatus::UNOBSERVED_ACUTE)
                     {
                         return false;
                     }

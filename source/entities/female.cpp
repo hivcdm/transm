@@ -177,7 +177,6 @@ double Female::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std
 
     assert(_p->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Male);
 
-    double prepEfficacy = _p->GetPreExposureProphylaxisEfficacy();
     double base_foi = transmission_coefficients.at(TransmissionType::female_to_male)[(std::size_t)getHVL()];
     double FOI = base_foi * (1 - condomEff) * (1 - circEff) * (1 - prepEfficacy);
 

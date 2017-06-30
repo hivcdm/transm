@@ -1523,7 +1523,6 @@ int Entity::getSexualActivity()
 Entity::Entity(Age _age, unsigned int _populationID) : 
     preExposureProphylaxisAdherence_(0),
     targetedCepacContext_(nullptr),
-    sexualActivityDelay(0),
     monthly_cepac_costs_undiscounted_(0),
     monthly_cepac_costs_discounted_(0),
     monthly_cdm_costs_undiscounted_(0),

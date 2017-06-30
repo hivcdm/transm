@@ -163,7 +163,8 @@ private:
 	unsigned long numRisk[(std::size_t)Entity::RiskLevel::Last];
 	unsigned long numRiskCSW[(std::size_t)Entity::RiskLevel::Last]; // number of csw persons by risk bucket
 	unsigned long numInfectedRisk[(std::size_t)Entity::RiskLevel::Last];
-	unsigned long numRiskHIVStatus[(std::size_t)Entity::RiskLevel::Last][(std::size_t)Entity::HIVStatus::Last];
+	unsigned long numRiskHIVStatus[(std::size_t)Entity::RiskLevel::Last]
+	    [(std::size_t)Entity::HIVStatus::Last];
 };
 
 } // namespace transm
