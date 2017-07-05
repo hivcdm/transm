@@ -49,10 +49,12 @@ public:
 	void SetCircumcisionCost(double circumcision_cost) { popWideParams.circumcisionCost = circumcision_cost; }
 
 	void Circumcise(Person *p);
+	void Circumcise(double proportion);
 
     SimContext *LoadCepacFile(const std::string &cepac_file) { return parameters_.LoadCepacContext(cepac_file); }
 
     std::vector<Person *> Find(std::function<bool(Person *)> predicate);
+    std::vector<Person *> FindNonCircumcised();
 
     /// <summary>
 	/// determines which DemographicProfiles have the power to initiate relationships and determines which
@@ -139,12 +141,12 @@ public:
     /// <summary>
     /// gets the age bucket of the person
     /// </summary>
-	PopulationParameters::AgeBucketPrevalenceInfo &GetAgeBucket(Person *);
+    SeedDistribution &GetAgeBucket(Person *);
 
     /// <summary>
     /// gets the index of the age bucket of the person
     /// </summary>
-	int GetAgeBucketIndex(Person *);
+    int GetAgeBucketIndex(Person *);
 
     /// <summary>
     /// returns internal count of how big the current population is
@@ -155,6 +157,7 @@ public:
     /// returns internal count of how big the current population is
     /// </summary>
     std::size_t GetNASize();
+    std::size_t GetSASize();
 
     /// <summary>
     /// returns internal count of how big the current population is
@@ -164,18 +167,24 @@ public:
     /// <summary>
     /// returns internal count of how big the current population is
     /// </summary>
-    std::size_t GetSASize(DemographicProfile::Gender _gender, Person::RiskLevel _risk);
+    std::size_t GetSASize(DemographicProfile::Gender _gender,
+			  Person::RiskLevel _risk);
 
     /// <summary>
     /// returns internal count of how big the current population is
     /// </summary>
-    std::size_t GetCSWSize(DemographicProfile::Gender _gender, Person::RiskLevel _risk);
+    std::size_t GetCSWSize(DemographicProfile::Gender _gender,
+			   Person::RiskLevel _risk);
 
     /// <summary>
     ///
     /// </summary>
-	const AgeRangeSizeContainer &GetSizeByAgeRange() const { return currSizeByAgeRange; }
-
+    const AgeRangeSizeContainer &GetSizeByAgeRange() const
+        { return currSizeByAgeRange; }
+    const AgeRangeSizeContainer &GetSizeByAgeRangeMale() const
+        { return currSizeByAgeRangeMale; }
+    const AgeRangeSizeContainer &GetSizeByAgeRangeFemale() const
+        { return currSizeByAgeRangeFemale; }
     /// <summary>
     ///
     /// </summary>
@@ -197,7 +206,7 @@ public:
 
 private:
     friend class Intervention;
-	friend class SimulationBuilderXml;
+    friend class SimulationBuilderXml;
     friend class Simulation;
 
 	/// <summary>
@@ -227,8 +236,19 @@ private:
     /// @param _ageBucketParams	parameters that determine a prevalent person's characteristics. If this is nullptr, then this method will create a newborn
     /// @return a newly formed person
     /// </summary>
-	Person *GeneratePerson(EventParams &_eventParams, DemographicProfile::Gender _gender,
-	                       PopulationParameters::AgeBucketPrevalenceInfo *_ageBucketParams, bool toTrace);
+	Person *GeneratePerson(EventParams &_eventParams,
+			       DemographicProfile::Gender _gender,
+	                       AgeDistribution *_ageBucketParams, bool toTrace);
+
+	/// <summary>
+	/// helper funtions for ApplyIncidentPrevalence()
+	/// </summary>
+	void prevalentInfectionsFromCoefficients(double seedPrevalence);
+	int buildSeedList(std::vector<Person *> &seedList, SeedDistribution seedDistribution);
+	int infectSeedPopulation(std::vector<Person *> seedList, std::size_t seedPopulation);
+	void prevalentInfectionsFromCount(DemographicProfile::Gender _gender);
+	void applyPrevalentInfection(Person *p);
+	bool rollForChronicInfection(RandomNumberGenerator &_randomNums);
 
     /// <summary>
 	/// processes the death of 1 person, updates statistics, removes that person from any relationships
@@ -237,7 +257,7 @@ private:
 	void ProcessDeath(EventParams &_eventParams, Person *_p, bool calculateLE);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
 	void DetermineRankings(const EventParams::RolloutEligibility &criteria);
 

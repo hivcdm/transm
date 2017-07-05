@@ -52,11 +52,25 @@ private:
 
 	Male::SubPopParams ReadMaleSubPopParams();
 
+	void ParseCepacSimContexts(const pugi::xml_node &interventions_node,
+		EventParams &parameters);
+	void ParseSimContextFile(const pugi::xml_node &treatment_file_node,
+		EventParams &parameters);
+
     std::vector<Intervention> ParseInterventions(pugi::xml_node interventions_node, bool individual);
 
-	SexualBehavior ReadSexualBehavior(SexualPartnership::Type type);
+    SexualBehavior ReadSexualBehavior(SexualPartnership::Type type);
 
     Intervention ReadIntervention(pugi::xml_node &node, bool individual);
+    void SetChanceCondomUseCallback(pugi::xml_node &node, Intervention &intervention, bool individual);
+    void SetProportionCircumcisedCallback(pugi::xml_node &node,
+	Intervention &intervention);
+    void SetCircumciseCallback(pugi::xml_node &node, Intervention &intervention, bool individual);
+
+    // template function for returning different values when calculating transform
+    // values in interventions (transform meaning increase or decrease)
+    template<typename V>
+    V TransformInterventionValue(V target, V curr, int time, int duration);
 
     NormalDist GetNormalDist(const pugi::xml_node node);
     LogNormalDist GetLogNormalDist(const pugi::xml_node node);

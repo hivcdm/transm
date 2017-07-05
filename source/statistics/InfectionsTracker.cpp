@@ -429,275 +429,311 @@ void InfectionsTracker::setPrevalentInfections(long /*_time*/,
 
 //-----------------< Begin functions to print out infections >-----------------------//
 
+void InfectionsTracker::printInfectionsHeaders(std::ostream &_outStream, Population *_population)
+{
+	auto currSizeByAgeRange = _population->GetSizeByAgeRange();
+	int numAgeRanges = (int)currSizeByAgeRange.size();
+
+	ostringstream firstRow;
+	ostringstream secondRow;
+	ostringstream thirdRow;
+	//incidence-related headers
+	firstRow << "Epidemiology Outputs" << Constants::TAB;
+	secondRow << Constants::TAB;
+	thirdRow << "Month" << Constants::TAB;
+	firstRow << Constants::TAB;
+	secondRow << Constants::TAB;
+	thirdRow << "New Infections" << Constants::TAB;
+	firstRow << Constants::TAB;
+	secondRow << Constants::TAB;
+	thirdRow << "Total Infected in History (Prevalent Cases Excluded)" << Constants::TAB;
+	firstRow << Constants::TAB;
+	secondRow << Constants::TAB;
+	thirdRow << "Currently Infected" << Constants::TAB;
+	firstRow << Constants::TAB;
+	secondRow << Constants::TAB;
+	thirdRow << "Pop Size" << Constants::TAB;
+	firstRow << Constants::TAB;
+	secondRow << Constants::TAB;
+	thirdRow << "Prevalence" << Constants::TAB;
+	firstRow << Constants::TAB;
+	secondRow << Constants::TAB;
+	thirdRow << "SA Pop Size" << Constants::TAB;
+	firstRow << Constants::TAB;
+	secondRow << Constants::TAB;
+	thirdRow << "SA Prevalence" << Constants::TAB;
+
+	//write out headers for population by age\sexual activity
+	firstRow << "Prevalent Cases By Age" << Constants::TAB;
+	secondRow << "Non-Sexually Active Population" << Constants::TAB;
+	thirdRow << "All ages" << Constants::TAB;
+
+	for(int i = 0; i < numAgeRanges; i++)
+	{
+		if(i == 0)
+		{
+			secondRow << "Sexually Active Population";
+		}
+
+		firstRow << Constants::TAB;
+		secondRow << Constants::TAB;
+		thirdRow << currSizeByAgeRange.at(i).first.lower << "-"
+			 << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
+	}
+
+	//write out headers for population by gender
+	firstRow << "Prevalence Cases By Age and Gender" << Constants::TAB;
+	secondRow << "Gender" << Constants::TAB << Constants::TAB;
+	thirdRow << "Males" << Constants::TAB
+		 << "Females" << Constants::TAB;
+
+	//write out headers for population by gender and age
+	firstRow <<  "Males" << Constants::TAB;
+	secondRow << "Non-Sexually Active Population" << Constants::TAB;
+	thirdRow << "All Ages" << Constants::TAB;
+	for(int i = 0; i < numAgeRanges; i++)
+	{
+		if(i == 0)
+		{
+			secondRow << "Sexually Active Population";
+		}
+
+		firstRow << Constants::TAB;
+		secondRow << Constants::TAB;
+		thirdRow << currPrevalentInfectionsAgeMale.at(i).first.lower << "-"
+			 << currPrevalentInfectionsAgeMale.at(i).first.upper << Constants::TAB;
+	}
+	firstRow << "Females" << Constants::TAB;
+	secondRow << "Non-Sexually Active Population" << Constants::TAB;
+	thirdRow << "All Ages" << Constants::TAB;
+	for(int i = 0; i < numAgeRanges; i++)
+	{
+		if(i == 0)
+		{
+			secondRow << "Sexually Active Population";
+		}
+
+		firstRow << Constants::TAB;
+		secondRow << Constants::TAB;
+		thirdRow << currPrevalentInfectionsAgeFemale.at(i).first.lower << "-"
+			 << currPrevalentInfectionsAgeFemale.at(i).first.upper << Constants::TAB;
+	}
+
+	//write out headers for prevalence by age\sexual activity
+	firstRow << "Prevalence By Age and Gender" << Constants::TAB;
+	for(int i = 0; i < numAgeRanges; i++)
+	{
+		if(i == 0)
+		{
+			secondRow << "Males";
+		}
+
+		firstRow << Constants::TAB;
+		secondRow << Constants::TAB;
+		thirdRow << currPrevalentInfectionsAgeMale.at(i).first.lower << "-"
+			 << currPrevalentInfectionsAgeMale.at(i).first.upper << Constants::TAB;
+	}
+	for(int i = 0; i < numAgeRanges; i++)
+	{
+		if(i == 0)
+		{
+			secondRow << "Females";
+		}
+
+		firstRow << Constants::TAB;
+		secondRow << Constants::TAB;
+		thirdRow << currPrevalentInfectionsAgeFemale.at(i).first.lower << "-"
+			 << currPrevalentInfectionsAgeFemale.at(i).first.upper << Constants::TAB;
+	}
+
+	//write out headers for number infected by risk
+	firstRow << "Prevalent Cases By Risk" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB
+		 << Constants::TAB;
+	secondRow << "Risk Group" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+	    Constants::TAB;
+	thirdRow << "CSW High Risk" << Constants::TAB << "CSW Low Risk" << Constants::TAB << "Non-CSW High Risk Male" <<
+	    Constants::TAB << "Non-CSW High Risk Female" << Constants::TAB << "Non-CSW Low Risk Male" << Constants::TAB <<
+	    "Non-CSW Low Risk Female" << Constants::TAB;
+	//write out headers for number of infections by generation (7 tabs)
+	firstRow << "Prevalent Cases" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB
+		 << Constants::TAB;
+	secondRow << "Number Infected by Generation" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+	    Constants::TAB << Constants::TAB;
+	thirdRow << "0 (Prev.)" << Constants::TAB << "First" << Constants::TAB << "Second" << Constants::TAB << "Third" <<
+	    Constants::TAB << "Fourth" << Constants::TAB << "Fifth+" << Constants::TAB;
+	//write out headers for number of exposures and infections by HVL
+	firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+	    Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+	secondRow << Constants::TAB << "Exposures by HVL" << Constants::TAB << Constants::TAB << Constants::TAB <<
+	    Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+	thirdRow << Constants::TAB << "HVL 0-20" << Constants::TAB << "HVL 21-500" << Constants::TAB << "HVL 501-3000" <<
+	    Constants::TAB << "HVL 3001-10000" << Constants::TAB << "HVL 10000-30000" << Constants::TAB << "HVL 30001-100000" <<
+	    Constants::TAB << "HVL 100000+" << Constants::TAB << "HVL Primary" << Constants::TAB << "HVL Late Stage" <<
+	    Constants::TAB;
+	firstRow << Constants::TAB << "Incident Cases" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB
+		 << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+	secondRow << Constants::TAB << "Infections by HVL (of Infector)" << Constants::TAB << Constants::TAB << Constants::TAB
+		  << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+	thirdRow << Constants::TAB << "HVL 0-20" << Constants::TAB << "HVL 21-500" << Constants::TAB << "HVL 501-3000" <<
+	    Constants::TAB << "HVL 3001-10000" << Constants::TAB << "HVL 10000-30000" << Constants::TAB << "HVL 30001-100000" <<
+	    Constants::TAB << "HVL 100000+" << Constants::TAB << "HVL Primary" << Constants::TAB << "HVL Late Stage" <<
+	    Constants::TAB;
+
+	//write out headers for number of infections by Age and gender
+	for(int i = 0; i < numAgeRanges; i++)
+	{
+		if(i == 0)
+		{
+			firstRow << "Incident Cases";
+			secondRow << "Infections By Age";
+		}
+
+		firstRow << Constants::TAB;
+		secondRow << Constants::TAB;
+		thirdRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
+	}
+
+	firstRow << "Incident Cases" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB
+		 << Constants::TAB << Constants::TAB << Constants::TAB;
+	secondRow << "Gender" << Constants::TAB << Constants::TAB << "Risk Group" << Constants::TAB << Constants::TAB <<
+	    Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+	thirdRow << "Male" << Constants::TAB << "Female" << Constants::TAB << "CSW High Risk" << Constants::TAB <<
+	    "CSW Low Risk" << Constants::TAB << "Non-CSW High Risk Male" << Constants::TAB << "Non-CSW High Risk Female" <<
+	    Constants::TAB << "Non-CSW Low Risk Male" << Constants::TAB << "Non-CSW Low Risk Female" << Constants::TAB;
+
+	for(int i = 0; i < numAgeRanges; i++)
+	{
+		if(i == 0)
+		{
+			firstRow << "Incident Cases";
+			secondRow << "Male (By Age)";
+		}
+
+		firstRow << Constants::TAB;
+		secondRow << Constants::TAB;
+		thirdRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
+	}
+
+	for(int i = 0; i < numAgeRanges; i++)
+	{
+		if(i == 0)
+		{
+			firstRow << "Incident Cases";
+			secondRow << "Female (By Age)";
+		}
+
+		firstRow << Constants::TAB;
+		secondRow << Constants::TAB;
+		thirdRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
+	}
+
+	firstRow << Constants::TAB;
+	secondRow << Constants::TAB;
+	thirdRow << Constants::TAB;
+
+	//write out headers for incident infections by relationship type
+	for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
+	{
+		if(i == 0)
+		{
+			firstRow << "Total Infected in History (Prevalent Cases Excluded)";
+			secondRow << "Relationship Type";
+		}
+
+		firstRow << Constants::TAB;
+		secondRow << Constants::TAB;
+		thirdRow << SexualPartnership::TypeStrings.at(SexualPartnership::Type(i)) << Constants::TAB;
+	}
+
+	firstRow << Constants::TAB;
+	secondRow << "Infectors:" << Constants::TAB;
+	thirdRow << "Infecteds:" << Constants::TAB;
+	//write out headers that tally infections from one DemographicProfile to another
+	//loop through all used ProfileID's and create internal string buffer headers for future timestep trace output
+	list<DemographicProfile::ProfileID>::iterator infectorProfileID = profileIDsForDetailedTrace.begin();
+
+	while(infectorProfileID != profileIDsForDetailedTrace.end())
+	{
+		//first row profile str refers to infectors
+		firstRow << "Total Infected in History (Prevalent Cases Excluded)";
+		secondRow << *DemographicProfile::toString(*infectorProfileID);
+		list<DemographicProfile::ProfileID>::iterator infectedProfileID = profileIDsForDetailedTrace.begin();
+
+		while(infectedProfileID != profileIDsForDetailedTrace.end())
+		{
+			firstRow << Constants::TAB;
+			secondRow << Constants::TAB;
+			//second row profile str refers to infecteds
+			thirdRow << *DemographicProfile::toString(*infectedProfileID) << Constants::TAB;
+			infectedProfileID++;
+		} //while(infectorProfileID < profileIDsForDetailedTrace.end()) {
+
+		infectorProfileID++;
+	} //while(infectedProfileID < profileIDsForDetailedTrace.end()) {
+
+	//write out headers that tally total infections based on age and gender and risk group
+	for(int i = 0; i < numAgeRanges; i++)
+	{
+		if(i == 0)
+		{
+			firstRow << "Total Infected in History (Prevalent Cases Excluded)";
+			secondRow << "Infections By Age";
+		}
+
+		firstRow << Constants::TAB;
+		secondRow << Constants::TAB;
+		thirdRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
+	}
+
+	firstRow << "Total Infected in History (Prevalent Cases Excluded)" << Constants::TAB << Constants::TAB;
+	secondRow << "Gender" << Constants::TAB << Constants::TAB;
+	thirdRow << "Male" << Constants::TAB << "Female" << Constants::TAB;
+	firstRow << "Total Infected in History (Prevalent Cases Excluded)" << Constants::TAB << Constants::TAB << Constants::TAB
+		 << Constants::TAB << Constants::TAB << Constants::TAB;
+	secondRow << "Risk Group" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+	    Constants::TAB;
+	thirdRow << "CSW High Risk" << Constants::TAB << "CSW Low Risk" << Constants::TAB << "Non-CSW High Risk Male" <<
+	    Constants::TAB << "Non-CSW High Risk Female" << Constants::TAB << "Non-CSW Low Risk Male" << Constants::TAB <<
+	    "Non-CSW Low Risk Female" << Constants::TAB;
+	firstRow << Constants::TAB;
+	secondRow << Constants::TAB;
+	thirdRow << Constants::TAB;
+	firstRow << "Age at Infection" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+	secondRow << "Male" << Constants::TAB << Constants::TAB << "Female" << Constants::TAB << Constants::TAB;
+	thirdRow << "Mean" << Constants::TAB << "SD" << Constants::TAB << "Mean" << Constants::TAB << "SD" << Constants::TAB;
+	firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+	secondRow << "CSW" << Constants::TAB << Constants::TAB << "CSW High Risk" << Constants::TAB << Constants::TAB <<
+	    "CSW Low Risk"  << Constants::TAB << Constants::TAB;
+	thirdRow << "Mean" << Constants::TAB << "SD" << Constants::TAB << "Mean" << Constants::TAB << "SD" << Constants::TAB <<
+	    "Mean" << Constants::TAB << "SD" << Constants::TAB;
+	firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+	    Constants::TAB << Constants::TAB;
+	secondRow << "Non-CSW High Risk Male" << Constants::TAB << Constants::TAB << "Non-CSW High Risk Female" <<
+	    Constants::TAB << Constants::TAB << "Non-CSW Low Risk Male"  << Constants::TAB << Constants::TAB <<
+	    "Non-CSW Low Risk Female"  << Constants::TAB << Constants::TAB;
+	thirdRow << "Mean" << Constants::TAB << "SD" << Constants::TAB << "Mean" << Constants::TAB << "SD" << Constants::TAB <<
+	    "Mean" << Constants::TAB << "SD" << Constants::TAB << "Mean" << Constants::TAB << "SD" << Constants::TAB;
+	//write out string buffers to trace file
+	_outStream << firstRow.str() << std::endl;
+	_outStream << secondRow.str() << std::endl;
+	_outStream << thirdRow.str() << std::endl;
+
+}
+
 int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, ostream &_outStream, Population *_population)
 {
 	assert(_time >= 0);
 	//total # infections this month
 	int totalInfected = 0;
 	//current population size
-    std::size_t currPopSize = _population->GetSize();
-    std::size_t currSAPopSize = currPopSize - _population->GetNASize();
+	std::size_t currPopSize = _population->GetSize();
+	std::size_t currSAPopSize = currPopSize - _population->GetNASize();
 	//total # of age ranges to print out
 	auto currSizeByAgeRange = _population->GetSizeByAgeRange();
 	int numAgeRanges = (int)currSizeByAgeRange.size();
 
-	//write headers for infections sheet
-	if(_time == 0)
-	{
-		ostringstream firstRow;
-		ostringstream secondRow;
-		ostringstream thirdRow;
-		//incidence-related headers
-		firstRow << "Epidemiology Outputs" << Constants::TAB;
-		secondRow << Constants::TAB;
-		thirdRow << "Month" << Constants::TAB;
-		firstRow << Constants::TAB;
-		secondRow << Constants::TAB;
-		thirdRow << "New Infections" << Constants::TAB;
-		firstRow << Constants::TAB;
-		secondRow << Constants::TAB;
-		thirdRow << "Total Infected in History (Prevalent Cases Excluded)" << Constants::TAB;
-		firstRow << Constants::TAB;
-		secondRow << Constants::TAB;
-		thirdRow << "Currently Infected" << Constants::TAB;
-		firstRow << Constants::TAB;
-		secondRow << Constants::TAB;
-		thirdRow << "Pop Size" << Constants::TAB;
-		firstRow << Constants::TAB;
-		secondRow << Constants::TAB;
-		thirdRow << "Prevalence" << Constants::TAB;
-		firstRow << Constants::TAB;
-		secondRow << Constants::TAB;
-		thirdRow << "SA Pop Size" << Constants::TAB;
-		firstRow << Constants::TAB;
-		secondRow << Constants::TAB;
-		thirdRow << "SA Prevalence" << Constants::TAB;
-		//write out headers for population by age\sexual activity
-		firstRow << "Prevalent Cases" << Constants::TAB;
-		secondRow << "Non-Sexually Active Population" << Constants::TAB;
-		thirdRow << "All ages" << Constants::TAB;
-
-		for(int i = 0; i < numAgeRanges; i++)
-		{
-			if(i == 0)
-			{
-				secondRow << "Sexually Active Population";
-			}
-
-			firstRow << Constants::TAB;
-			secondRow << Constants::TAB;
-			thirdRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
-		}
-
-		//write out headers for population by gender
-		firstRow << "Prevalent Cases" << Constants::TAB << Constants::TAB;
-		secondRow << "Gender" << Constants::TAB << Constants::TAB;
-		thirdRow << "Males" << Constants::TAB << "Females" << Constants::TAB;
-		//write out headers for population by gender and age
-		firstRow << "Males" << Constants::TAB;
-		secondRow << "Non-Sexually Active Population" << Constants::TAB;
-		thirdRow << "All Ages" << Constants::TAB;
-
-		for(int i = 0; i < numAgeRanges; i++)
-		{
-			if(i == 0)
-			{
-				secondRow << "Sexually Active Population";
-			}
-
-			firstRow << Constants::TAB;
-			secondRow << Constants::TAB;
-			thirdRow << currPrevalentInfectionsAgeMale.at(i).first.lower << "-" << currPrevalentInfectionsAgeMale.at(i).first.upper << Constants::TAB;
-		}
-
-		firstRow << "Females" << Constants::TAB;
-		secondRow << "Non-Sexually Active Population" << Constants::TAB;
-		thirdRow << "All Ages" << Constants::TAB;
-
-		for(int i = 0; i < numAgeRanges; i++)
-		{
-			if(i == 0)
-			{
-				secondRow << "Sexually Active Population";
-			}
-
-			firstRow << Constants::TAB;
-			secondRow << Constants::TAB;
-			thirdRow << currPrevalentInfectionsAgeFemale.at(i).first.lower << "-" << currPrevalentInfectionsAgeFemale.at(i).first.upper << Constants::TAB;
-		}
-
-		//write out headers for number infected by risk
-		firstRow << "Prevalent Cases" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB
-		         << Constants::TAB;
-		secondRow << "Risk Group" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB;
-		thirdRow << "CSW High Risk" << Constants::TAB << "CSW Low Risk" << Constants::TAB << "Non-CSW High Risk Male" <<
-		         Constants::TAB << "Non-CSW High Risk Female" << Constants::TAB << "Non-CSW Low Risk Male" << Constants::TAB <<
-		         "Non-CSW Low Risk Female" << Constants::TAB;
-		//write out headers for number of infections by generation (7 tabs)
-		firstRow << "Prevalent Cases" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB
-		         << Constants::TAB;
-		secondRow << "Number Infected by Generation" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB;
-		thirdRow << "0 (Prev.)" << Constants::TAB << "First" << Constants::TAB << "Second" << Constants::TAB << "Third" <<
-		         Constants::TAB << "Fourth" << Constants::TAB << "Fifth+" << Constants::TAB;
-		//write out headers for number of exposures and infections by HVL
-		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		secondRow << Constants::TAB << "Exposures by HVL" << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		thirdRow << Constants::TAB << "HVL 0-20" << Constants::TAB << "HVL 21-500" << Constants::TAB << "HVL 501-3000" <<
-		         Constants::TAB << "HVL 3001-10000" << Constants::TAB << "HVL 10000-30000" << Constants::TAB << "HVL 30001-100000" <<
-		         Constants::TAB << "HVL 100000+" << Constants::TAB << "HVL Primary" << Constants::TAB << "HVL Late Stage" <<
-		         Constants::TAB;
-		firstRow << Constants::TAB << "Incident Cases" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB
-		         << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		secondRow << Constants::TAB << "Infections by HVL (of Infector)" << Constants::TAB << Constants::TAB << Constants::TAB
-		          << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		thirdRow << Constants::TAB << "HVL 0-20" << Constants::TAB << "HVL 21-500" << Constants::TAB << "HVL 501-3000" <<
-		         Constants::TAB << "HVL 3001-10000" << Constants::TAB << "HVL 10000-30000" << Constants::TAB << "HVL 30001-100000" <<
-		         Constants::TAB << "HVL 100000+" << Constants::TAB << "HVL Primary" << Constants::TAB << "HVL Late Stage" <<
-		         Constants::TAB;
-
-		//write out headers for number of infections by Age and gender
-		for(int i = 0; i < numAgeRanges; i++)
-		{
-			if(i == 0)
-			{
-				firstRow << "Incident Cases";
-				secondRow << "Infections By Age";
-			}
-
-			firstRow << Constants::TAB;
-			secondRow << Constants::TAB;
-			thirdRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
-		}
-
-		firstRow << "Incident Cases" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB
-		         << Constants::TAB << Constants::TAB << Constants::TAB;
-		secondRow << "Gender" << Constants::TAB << Constants::TAB << "Risk Group" << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		thirdRow << "Male" << Constants::TAB << "Female" << Constants::TAB << "CSW High Risk" << Constants::TAB <<
-		         "CSW Low Risk" << Constants::TAB << "Non-CSW High Risk Male" << Constants::TAB << "Non-CSW High Risk Female" <<
-		         Constants::TAB << "Non-CSW Low Risk Male" << Constants::TAB << "Non-CSW Low Risk Female" << Constants::TAB;
-
-		for(int i = 0; i < numAgeRanges; i++)
-		{
-			if(i == 0)
-			{
-				firstRow << "Incident Cases";
-				secondRow << "Male (By Age)";
-			}
-
-			firstRow << Constants::TAB;
-			secondRow << Constants::TAB;
-			thirdRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
-		}
-
-		for(int i = 0; i < numAgeRanges; i++)
-		{
-			if(i == 0)
-			{
-				firstRow << "Incident Cases";
-				secondRow << "Female (By Age)";
-			}
-
-			firstRow << Constants::TAB;
-			secondRow << Constants::TAB;
-			thirdRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
-		}
-
-		firstRow << Constants::TAB;
-		secondRow << Constants::TAB;
-		thirdRow << Constants::TAB;
-
-		//write out headers for incident infections by relationship type
-		for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
-		{
-			if(i == 0)
-			{
-				firstRow << "Total Infected in History (Prevalent Cases Excluded)";
-				secondRow << "Relationship Type";
-			}
-
-			firstRow << Constants::TAB;
-			secondRow << Constants::TAB;
-			thirdRow << SexualPartnership::TypeStrings.at(SexualPartnership::Type(i)) << Constants::TAB;
-		}
-
-		firstRow << Constants::TAB;
-		secondRow << "Infectors:" << Constants::TAB;
-		thirdRow << "Infecteds:" << Constants::TAB;
-		//write out headers that tally infections from one DemographicProfile to another
-		//loop through all used ProfileID's and create internal string buffer headers for future timestep trace output
-		list<DemographicProfile::ProfileID>::iterator infectorProfileID = profileIDsForDetailedTrace.begin();
-
-		while(infectorProfileID != profileIDsForDetailedTrace.end())
-		{
-			//first row profile str refers to infectors
-			firstRow << "Total Infected in History (Prevalent Cases Excluded)";
-			secondRow << *DemographicProfile::toString(*infectorProfileID);
-			list<DemographicProfile::ProfileID>::iterator infectedProfileID = profileIDsForDetailedTrace.begin();
-
-			while(infectedProfileID != profileIDsForDetailedTrace.end())
-			{
-				firstRow << Constants::TAB;
-				secondRow << Constants::TAB;
-				//second row profile str refers to infecteds
-				thirdRow << *DemographicProfile::toString(*infectedProfileID) << Constants::TAB;
-				infectedProfileID++;
-			} //while(infectorProfileID < profileIDsForDetailedTrace.end()) {
-
-			infectorProfileID++;
-		} //while(infectedProfileID < profileIDsForDetailedTrace.end()) {
-
-		//write out headers that tally total infections based on age and gender and risk group
-		for(int i = 0; i < numAgeRanges; i++)
-		{
-			if(i == 0)
-			{
-				firstRow << "Total Infected in History (Prevalent Cases Excluded)";
-				secondRow << "Infections By Age";
-			}
-
-			firstRow << Constants::TAB;
-			secondRow << Constants::TAB;
-			thirdRow << currSizeByAgeRange.at(i).first.lower << "-" << currSizeByAgeRange.at(i).first.upper << Constants::TAB;
-		}
-
-		firstRow << "Total Infected in History (Prevalent Cases Excluded)" << Constants::TAB << Constants::TAB;
-		secondRow << "Gender" << Constants::TAB << Constants::TAB;
-		thirdRow << "Male" << Constants::TAB << "Female" << Constants::TAB;
-		firstRow << "Total Infected in History (Prevalent Cases Excluded)" << Constants::TAB << Constants::TAB << Constants::TAB
-		         << Constants::TAB << Constants::TAB << Constants::TAB;
-		secondRow << "Risk Group" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB;
-		thirdRow << "CSW High Risk" << Constants::TAB << "CSW Low Risk" << Constants::TAB << "Non-CSW High Risk Male" <<
-		         Constants::TAB << "Non-CSW High Risk Female" << Constants::TAB << "Non-CSW Low Risk Male" << Constants::TAB <<
-		         "Non-CSW Low Risk Female" << Constants::TAB;
-		firstRow << Constants::TAB;
-		secondRow << Constants::TAB;
-		thirdRow << Constants::TAB;
-		firstRow << "Age at Infection" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		secondRow << "Male" << Constants::TAB << Constants::TAB << "Female" << Constants::TAB << Constants::TAB;
-		thirdRow << "Mean" << Constants::TAB << "SD" << Constants::TAB << "Mean" << Constants::TAB << "SD" << Constants::TAB;
-		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
-		secondRow << "CSW" << Constants::TAB << Constants::TAB << "CSW High Risk" << Constants::TAB << Constants::TAB <<
-		          "CSW Low Risk"  << Constants::TAB << Constants::TAB;
-		thirdRow << "Mean" << Constants::TAB << "SD" << Constants::TAB << "Mean" << Constants::TAB << "SD" << Constants::TAB <<
-		         "Mean" << Constants::TAB << "SD" << Constants::TAB;
-		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB << Constants::TAB;
-		secondRow << "Non-CSW High Risk Male" << Constants::TAB << Constants::TAB << "Non-CSW High Risk Female" <<
-		          Constants::TAB << Constants::TAB << "Non-CSW Low Risk Male"  << Constants::TAB << Constants::TAB <<
-		          "Non-CSW Low Risk Female"  << Constants::TAB << Constants::TAB;
-		thirdRow << "Mean" << Constants::TAB << "SD" << Constants::TAB << "Mean" << Constants::TAB << "SD" << Constants::TAB <<
-		         "Mean" << Constants::TAB << "SD" << Constants::TAB << "Mean" << Constants::TAB << "SD" << Constants::TAB;
-		//write out string buffers to trace file
-		_outStream << firstRow.str() << std::endl;
-		_outStream << secondRow.str() << std::endl;
-		_outStream << thirdRow.str() << std::endl;
-	} //if( _time == 0) {
+	if (_time == 0)
+		printInfectionsHeaders(_outStream, _population);
 
 	//if no incident infections happened during this time, then make sure that we have 0 in the currTime incident infections and exposures
 	if(_time > static_cast<long>(currTimeStep))
@@ -720,7 +756,7 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	_outStream << getCurrTimeStepIncidentInfsTotal() << Constants::TAB;
 
 	//Print to BatchStats file if NEWINFECTIONS stream is open
-    if(_eventParams.BatchStatsStream[BatchStatsVariables::NEWINFECTIONS].is_open())
+	if(_eventParams.BatchStatsStream[BatchStatsVariables::NEWINFECTIONS].is_open())
 	{
         _eventParams.BatchStatsStream[BatchStatsVariables::NEWINFECTIONS] << getCurrTimeStepIncidentInfsTotal() << Constants::TAB;
 	}
@@ -802,16 +838,18 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	_outStream << currPrevalenceSA << Constants::TAB;
 
 	//Print up a batchstats file!
-    if(_eventParams.BatchStatsStream[BatchStatsVariables::PREVALENCESA].is_open())
+	if(_eventParams.BatchStatsStream[BatchStatsVariables::PREVALENCESA].is_open())
 	{
-        _eventParams.BatchStatsStream[BatchStatsVariables::PREVALENCESA] << currPrevalenceSA << Constants::TAB;
+		_eventParams.BatchStatsStream[BatchStatsVariables::PREVALENCESA] << currPrevalenceSA << Constants::TAB;
 	}
 
-	//TODO: this should be done somewhere else, so we're not relying on side effects to record information
+//TODO: this should be done somewhere else, so we're not relying on side effects to record information
 	_population->GetPopulationStatistics().recordPrevalenceAndIncidence(_time, currPrevalence, currPrevalenceSA, incidence, static_cast<int>(currSAPopSize),
 	        getCurrTimeStepIncidentInfsTotal(), totalInfectedSA);
 	//Multiply by 100 and round to nearest integer for graphical output
 	int intPrevalence = (int)(100 * currPrevalence + 0.5);
+//END TODO
+
 	//prev cases by age\sexual activity
 	int totalInfectedNA = totalInfected - totalInfectedSA;
 	_outStream << totalInfectedNA << Constants::TAB;
@@ -858,26 +896,49 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 	{
 		for(size_t j = 0; j < NUMBER_GENERATIONS_TO_TRACE; j++)
 		{
-            totalInfectedGender[(std::size_t)DemographicProfile::Gender::Female] += currPrevalentInfections[GenderProfileIDs[i]][j];
+			totalInfectedGender[(std::size_t)DemographicProfile::Gender::Female] += currPrevalentInfections[GenderProfileIDs[i]][j];
 		}
 	}
 
 	//Actually print the size and infections by gender
-    _outStream << totalInfectedGender[(std::size_t)DemographicProfile::Gender::Male] << Constants::TAB << totalInfectedGender[(std::size_t)DemographicProfile::Gender::Female] <<
-	           Constants::TAB;
-	//output infections by age and gender
-    _outStream << totalInfectedGender[(std::size_t)DemographicProfile::Gender::Male] - totalInfectedSAGender[(std::size_t)DemographicProfile::Gender::Male] << Constants::TAB;
+	_outStream << totalInfectedGender[(std::size_t)DemographicProfile::Gender::Male] << Constants::TAB <<
+	totalInfectedGender[(std::size_t)DemographicProfile::Gender::Female] << Constants::TAB;
+
+	//output count of prevalent infections by age and gender
+	_outStream << totalInfectedGender[(std::size_t)DemographicProfile::Gender::Male] -
+	totalInfectedSAGender[(std::size_t)DemographicProfile::Gender::Male] << Constants::TAB;
 
 	for(int i = 0; i < numAgeRanges; i++)
 	{
 		_outStream << currPrevalentInfectionsAgeMale.at(i).second << Constants::TAB;
 	}
 
-    _outStream << totalInfectedGender[(std::size_t)DemographicProfile::Gender::Female] - totalInfectedSAGender[(std::size_t)DemographicProfile::Gender::Female] << Constants::TAB;
+	_outStream << totalInfectedGender[(std::size_t)DemographicProfile::Gender::Female] -
+	totalInfectedSAGender[(std::size_t)DemographicProfile::Gender::Female] << Constants::TAB;
 
 	for(int i = 0; i < numAgeRanges; i++)
 	{
 		_outStream << currPrevalentInfectionsAgeFemale.at(i).second << Constants::TAB;
+	}
+
+	//output prevalence by age and gender
+	AgeRangeSizeContainer currSizeByAgeRangeMale = _population->GetSizeByAgeRangeMale();
+	for(int i = 0; i < numAgeRanges; i++)
+	{
+		double prevalenceByAge = 0;
+		if (currSizeByAgeRangeMale.at(i).second != 0)
+			prevalenceByAge = (double)currPrevalentInfectionsAgeMale.at(i).second /
+			    (double)currSizeByAgeRangeMale.at(i).second;
+		_outStream << prevalenceByAge << Constants::TAB;
+	}
+	AgeRangeSizeContainer currSizeByAgeRangeFemale = _population->GetSizeByAgeRangeFemale();
+	for(int i = 0; i < numAgeRanges; i++)
+	{
+		double prevalenceByAge = 0;
+		if (currSizeByAgeRangeFemale.at(i).second != 0)
+			prevalenceByAge = (double)currPrevalentInfectionsAgeFemale.at(i).second /
+			    (double)currSizeByAgeRangeFemale.at(i).second;
+		_outStream << prevalenceByAge << Constants::TAB;
 	}
 
 	//output prevalent infections by risk

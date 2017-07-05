@@ -11,7 +11,10 @@ class Person;
 class Intervention
 {
 public:
-    Intervention(int time, int duration = -1);
+    Intervention(int time, int duration);
+
+    int GetTime() { return time_; }
+    int GetDuration() { return duration_; }
 
     void SetSimulationCallback(std::function<void(Simulation &)> callback) { simulation_intervention_ = callback; }
     bool AffectsSimulation() const { return (bool)simulation_intervention_; }

@@ -129,7 +129,6 @@ void SimulationBuilderXml::ReadSimulationParameters()
 	parameters.debugLevel = static_cast<DebugLevel>(0);
 #endif
 	parameters.monthOf1990 = Text<int>(simulation_node.child("monthOf1990"));
-	parameters.delayPrevalence = Text<int>(simulation_node.child("population").child("initialState").child("delay"));
 
 	//save Concurrency Definitions
 	auto concurrency_node = simulation_node.child("concurrencyDefinition");
@@ -231,114 +230,8 @@ void SimulationBuilderXml::ReadSimulationParameters()
 	}
 
 	auto interventions_node = simulation_node.child("interventions");
-	parameters.useRollout = Attr<bool>(interventions_node.child("artRolloutIntervention"), "enabled");
 
-	if(parameters.useRollout)
-	{
-		auto scaling_node = interventions_node.child("artRolloutIntervention").child("dynamicTreatmentScaling");
-		parameters.dynamicFeedbackPeriod = Text<int>(scaling_node.child("feedbackPeriod"));
-		parameters.enableDynamicTreatmentScaling = Attr<bool>(scaling_node, "enabled");
-
-		for(auto treatment_file_node : interventions_node.select_nodes("artRolloutIntervention/rolloutTreatmentFiles/rolloutFile"))
-		{
-			int time = treatment_file_node.node().child("time").text().as_int();
-
-			if(time > -1)
-			{
-				std::string file_name = treatment_file_node.node().child("fileName").text().as_string();
-				int file_number = treatment_file_node.node().child("fileNumber").text().as_int();
-				int target_population = treatment_file_node.node().child("popToApply").text().as_int();
-
-				//Make sure the number of CEPAC input files from the .xml file is not greater than the number expected by the code!
-				assert(file_number < Constants::NUMBER_OF_ROLLOUT_FILES);
-
-				//Set the CEPAC simContext from the specified CEPAC .in file
-				auto contextToAdd = std::make_unique<SimContext>(file_name.substr(0, file_name.find(CepacUtil::FILE_EXTENSION_FOR_INPUT)));
-				parameters.rolloutSimContexts.push_back(new EventParams::RolloutContext(time, std::move(contextToAdd), target_population));
-				//Don't trace any CEPAC patients -- the output doesn't make any sense and it just gets overly large for no reason
-				//TODO: The reason is because the CEPAC Patient number doesn't get updated until the patient dies: this should be changed!
-				//parameters.cepacSimContext->numPatientsToTrace = 0;
-				parameters.rolloutSimContexts.at(file_number)->rolloutSimContext->numPatientsToTrace = 0;
-
-				//Read in the inputs
-				try
-				{
-					parameters.rolloutSimContexts.back()->rolloutSimContext->readInputs();
-				}
-				catch(std::string errorString)
-				{
-					throw std::runtime_error("error loading rollout file, " + file_name + ": " + errorString);
-				}
-
-				//From the first file only, get the death tables for non-AIDS death
-				if(file_number == 0)
-				{
-					CepacInputParser cepacInput(file_name);
-					auto probabilities = cepacInput.parseNonAidsDeathProbabilities();
-                    Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Male] = probabilities[0];
-                    Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Female] = probabilities[1];
-				}
-			}
-		}
-
-		parameters.rolloutEligibility = ReadRolloutEligibility();
-
-		for(auto target : interventions_node.select_nodes("artRolloutIntervention/targetRolloutProportions/target"))
-		{
-			auto year = Attr<int>(target.node(), "year");
-			parameters.targetYearlyRolloutProportions[year] = Text<double>(target.node());
-		}
-
-		parameters.cepacTracer = new Tracer(parameters.simName, parameters.rolloutSimContexts[0]->rolloutSimContext.get(), 1);
-		parameters.cepacRunStats = new RunStats(parameters.simName, parameters.rolloutSimContexts[0]->rolloutSimContext.get());
-		parameters.capacCostStats = new CostStats(parameters.simName, parameters.rolloutSimContexts[0]->rolloutSimContext.get());
-	}
-	else
-	{
-        for(auto treatment_file_node : interventions_node.select_nodes("cepacIntervention/cepacTreatmentFiles/treatmentFile"))
-        {
-            int time = treatment_file_node.node().child("time").text().as_int();
-
-            if(time > -1)
-            {
-                std::string file_name = treatment_file_node.node().child("fileName").text().as_string();
-                int file_number = treatment_file_node.node().child("fileNumber").text().as_int();
-
-                parameters.timesToSwitchSimContext[file_number] = time;
-
-                //Make sure the number of CEPAC input files from the .xml file is not greater than the number expected by the code!
-                assert(file_number < Constants::NUMBER_OF_CEPAC_FILES);
-
-                //Set the CEPAC simContext from the specified CEPAC .in file
-                auto contextToAdd = new SimContext(file_name.substr(0, file_name.find(CepacUtil::FILE_EXTENSION_FOR_INPUT)));
-                contextToAdd->numPatientsToTrace = 0;
-                parameters.cepacSimContexts.push_back(contextToAdd);
-
-                //Read in the inputs
-                try
-                {
-                    contextToAdd->readInputs();
-                }
-                catch(std::string errorString)
-                {
-                    throw std::runtime_error("error loading rollout file, " + file_name + ": " + errorString);
-                }
-
-                //From the first file only, get the death tables for non-AIDS death
-                if(file_number == 0)
-                {
-                    CepacInputParser cepacInput(file_name);
-                    auto probabilities = cepacInput.parseNonAidsDeathProbabilities();
-                    Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Male] = probabilities[0];
-                    Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Female] = probabilities[1];
-                }
-            }
-        }
-
-		parameters.cepacTracer = new Tracer(parameters.simName, parameters.cepacSimContexts[0], 1);
-		parameters.cepacRunStats = new RunStats(parameters.simName, parameters.cepacSimContexts[0]);
-		parameters.capacCostStats = new CostStats(parameters.simName, parameters.cepacSimContexts[0]);
-	}
+	ParseCepacSimContexts(interventions_node, parameters);
 
     auto population_interventions_node = simulation_node.child("interventions").child("populationInterventions");
     for(auto intervention : ParseInterventions(population_interventions_node, false))
@@ -349,6 +242,81 @@ void SimulationBuilderXml::ReadSimulationParameters()
     for(auto group : ReadGroups())
     {
         simulation_.RegisterTargetGroup(group.second);
+    }
+}
+
+void SimulationBuilderXml::ParseCepacSimContexts(const pugi::xml_node &interventions_node,
+    EventParams &parameters)
+{
+    parameters.useRollout = Attr<bool>(
+	interventions_node.child("artRolloutIntervention"), "enabled");
+
+    std::string treatment_files_path;
+    if(parameters.useRollout) {
+	auto art_rollout_node = interventions_node.child("artRolloutIntervention");
+	auto scaling_node = art_rollout_node.child("dynamicTreatmentScaling");
+	parameters.dynamicFeedbackPeriod = Text<int>(scaling_node.child("feedbackPeriod"));
+	parameters.enableDynamicTreatmentScaling = Attr<bool>(scaling_node, "enabled");
+
+	// Use ART rollout files as the CEPAC SimContext
+	treatment_files_path = "artRolloutIntervention/rolloutTreatmentFiles/rolloutFile";
+
+	parameters.rolloutEligibility = ReadRolloutEligibility();
+
+	for(auto target : art_rollout_node.select_nodes("targetRolloutProportions/target")) {
+	    auto year = Attr<int>(target.node(), "year");
+	    parameters.targetYearlyRolloutProportions[year] = Text<double>(target.node());
+	}
+    } else {
+	// Use standard treatment files as the CEPAC SimContext
+	treatment_files_path = "cepacIntervention/cepacTreatmentFiles/treatmentFile";
+    }
+
+    // Read the input CEPAC file information
+    for(auto treatment_file_node : interventions_node.select_nodes(treatment_files_path.c_str())) {
+	ParseSimContextFile(treatment_file_node.node(), parameters);
+    }
+
+    //From the first file only, get the death tables for non-AIDS death
+    SimContext *simContext = parameters.cepacSimContexts.front()->simContext.get();
+    CepacInputParser cepacInput(simContext->getRunSpecsInputs()->runName);
+    auto probabilities = cepacInput.parseNonAidsDeathProbabilities();
+    Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Male] = probabilities[0];
+    Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Female] = probabilities[1];
+
+    // and set the cepac output trace to the first simContext file
+    parameters.cepacTracer = new Tracer(parameters.simName, simContext, 1);
+    parameters.cepacRunStats = new RunStats(parameters.simName, simContext);
+    parameters.capacCostStats = new CostStats(parameters.simName, simContext);
+}
+
+void SimulationBuilderXml::ParseSimContextFile(const pugi::xml_node &treatment_file_node,
+    EventParams &parameters)
+{
+    int time = treatment_file_node.child("time").text().as_int();
+
+    if(time > -1) {
+	std::string file_name = treatment_file_node.child("fileName").text().as_string();
+	int file_number = treatment_file_node.child("fileNumber").text().as_int();
+	int target_population = treatment_file_node.child("popToApply").text().as_int();
+
+	//Set the CEPAC simContext from the specified CEPAC .in file
+	auto contextToAdd = std::make_unique<SimContext>(
+	    file_name.substr(0, file_name.find(CepacUtil::FILE_EXTENSION_FOR_INPUT)));
+	EventParams::CepacSimContext *cdmSimContext =
+	    new EventParams::CepacSimContext(time, std::move(contextToAdd), target_population);
+	parameters.cepacSimContexts.push_back(cdmSimContext);
+
+	// Note: can't use *cmdSimContext since std::move(contextToAdd) clears the pointer
+	SimContext *simContext = parameters.cepacSimContexts.back()->simContext.get();
+	simContext->numPatientsToTrace = 0;
+
+	//Read in the inputs
+	try	{
+	   simContext->readInputs();
+	} catch(std::string errorString) {
+	    throw std::runtime_error("error loading CEPAC file, " + file_name + ": " + errorString);
+	}
     }
 }
 
@@ -430,41 +398,41 @@ void SimulationBuilderXml::InitializePopulation()
 	//  we will go through each age bucket and create the part of the prevalent population that falls within the bucket
 	std::vector<AgeRange> ageRanges;
 
-	for(auto ageBucketParams : population_parameters.GetInitialAgeBuckets())
-	{
-        auto numMalesInCurrentBucket = Utility::round<std::size_t>(totalNumMales * ageBucketParams.proportionOfPopulation[(std::size_t)DemographicProfile::Gender::Male]);
-        auto numFemalesInCurrentBucket = Utility::round<std::size_t>(totalNumFemales * ageBucketParams.proportionOfPopulation[(std::size_t)DemographicProfile::Gender::Female]);
+	for (auto ageBucketParams : population_parameters.GetAgeDistributions()) {
+	    auto numMalesInCurrentBucket = Utility::round<std::size_t>(
+		totalNumMales * ageBucketParams.proportionOfPopulation[(std::size_t)DemographicProfile::Gender::Male]);
+	    auto numFemalesInCurrentBucket = Utility::round<std::size_t>(
+		totalNumFemales * ageBucketParams.proportionOfPopulation[(std::size_t)DemographicProfile::Gender::Female]);
 
-		//calc how many people are in the current age range
-		auto currentBucketSize = numMalesInCurrentBucket + numFemalesInCurrentBucket;
+	    //calc how many people are in the current age range
+	    auto currentBucketSize = numMalesInCurrentBucket + numFemalesInCurrentBucket;
 
-		//Number of persons of each gender to be traced in detailed output file
-		auto numToTrace = static_cast<std::size_t>(population.GetNumberToTrace());
+	    //Number of persons of each gender to be traced in detailed output file
+	    auto numToTrace = static_cast<std::size_t>(population.GetNumberToTrace());
 
-		for(std::size_t count = 0; count < currentBucketSize; count++)
-		{
-			//Determine whether or not person should be traced in SinglePersonTrace
-			bool tracePerson = (count < numToTrace || (count >= numMalesInCurrentBucket && (count - numMalesInCurrentBucket) < numToTrace));
+	    for(std::size_t count = 0; count < currentBucketSize; count++) {
+		//Determine whether or not person should be traced in SinglePersonTrace
+		bool tracePerson = (count < numToTrace || (count >= numMalesInCurrentBucket && (count - numMalesInCurrentBucket) < numToTrace));
 
-			//create a person, males first and females second
-			auto gender = (count < numMalesInCurrentBucket) ? DemographicProfile::Gender::Male : DemographicProfile::Gender::Female;
-			auto person = population.GeneratePerson(simulation_.GetEventParams(), gender, &ageBucketParams, tracePerson);
+		//create a person, males first and females second
+		auto gender = (count < numMalesInCurrentBucket) ? DemographicProfile::Gender::Male : DemographicProfile::Gender::Female;
+		auto person = population.GeneratePerson(simulation_.GetEventParams(), gender, &ageBucketParams, tracePerson);
 
-			//add the created person to the EntityPool
-			population.entities->addPersonToAll(person);
-		}
+		//add the created person to the EntityPool
+		population.entities->addPersonToAll(person);
+	    }
 
-		AgeRange ageRange = {ageBucketParams.minAgeMth, ageBucketParams.maxAgeMth};
-		AgeRangeSizePair ageRangeSize = std::make_pair(ageRange, currentBucketSize);
+	    AgeRange ageRange = {ageBucketParams.minAgeMth, ageBucketParams.maxAgeMth};
+	    AgeRangeSizePair ageRangeSize = std::make_pair(ageRange, currentBucketSize);
 
-		//Add a tuple to the currSizeByAgeRange vector along with the initial size of the age range
-		ageRanges.push_back(ageRange);
-		population.currSizeByAgeRange.push_back(ageRangeSize);
-		population.currSizeByAgeRangeMale.push_back(std::make_pair(ageRange, numMalesInCurrentBucket));
-		population.currSizeByAgeRangeFemale.push_back(std::make_pair(ageRange, numFemalesInCurrentBucket));
+	    //Add a tuple to the currSizeByAgeRange vector along with the initial size of the age range
+	    ageRanges.push_back(ageRange);
+	    population.currSizeByAgeRange.push_back(ageRangeSize);
+	    population.currSizeByAgeRangeMale.push_back(std::make_pair(ageRange, numMalesInCurrentBucket));
+	    population.currSizeByAgeRangeFemale.push_back(std::make_pair(ageRange, numFemalesInCurrentBucket));
 	}
 
-    population.populationStatistics.artTracker.SetAgeRanges(ageRanges);
+	population.populationStatistics.artTracker.SetAgeRanges(ageRanges);
 
 	if(population.parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled)
 	{
@@ -633,7 +601,7 @@ Male::SubPopParams SimulationBuilderXml::ReadMaleSubPopParams()
 	Male::SubPopParams result;
 
 	auto behavior_node = node.child("behavior");
-    result.SetChanceBecomeCsw(Text<double>(behavior_node.child("chanceBecomeSexWorker")));
+	result.SetChanceBecomeCsw(Text<double>(behavior_node.child("chanceBecomeSexWorker")));
 	result.SetPartnerAcqMultWithSteady(Person::HIGH, Text<double>(behavior_node.child("partnerAcqMultWithSteadyHighRisk")));
 	result.SetPartnerAcqMultWithSteady(Person::LOW, Text<double>(behavior_node.child("partnerAcqMultWithSteadyLowRisk")));
 
@@ -729,77 +697,109 @@ Female::SubPopParams SimulationBuilderXml::ReadFemaleSubPopParams()
 
 void SimulationBuilderXml::ReadPopulationParameters()
 {
-	auto population_node = document_.child("simulation").child("population");
+    auto population_node = document_.child("simulation").child("population");
 
-	auto initial_state_node = population_node.child("initialState");
-	population_parameters.SetInitialSize(Text<int>(initial_state_node.child("size")));
+    auto initial_state_node = population_node.child("initialState");
+    population_parameters.SetInitialSize(Text<int>(initial_state_node.child("size")));
+	
+    population_parameters.SetInitialCswProportion(DemographicProfile::Gender::Male,
+        Text<double>(initial_state_node.child("chanceBeingCswMale")));
+    population_parameters.SetInitialCswProportion(DemographicProfile::Gender::Female,
+        Text<double>(initial_state_node.child("chanceBeingCswFemale")));
+    population_parameters.SetCswEndAge(DemographicProfile::Gender::Male,
+        Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month,
+			     Text<int>(initial_state_node.child("cswEndAgeMale"))));
+    population_parameters.SetCswEndAge(DemographicProfile::Gender::Female,
+        Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month,
+			     Text<int>(initial_state_node.child("cswEndAgeFemale"))));
 
-	//get initial age distribution
-	for(auto age_bucket_node : initial_state_node.child("ageDistributionYrs").children("range"))
-	{
-		population_parameters.GetInitialAgeBuckets().emplace_back(
-            Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Attr<int>(age_bucket_node, "lower")),
-            Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Attr<int>(age_bucket_node, "upper")) + 11,
-			Text<double>(age_bucket_node.child("distribMale")),
-			Text<double>(age_bucket_node.child("distribFemale")),
-			Text<int>(age_bucket_node.child("numInfectedMaleCsw")),
-			Text<int>(age_bucket_node.child("numInfectedFemaleCsw")),
-			Text<int>(age_bucket_node.child("numInfectedMaleLowRisk")),
-			Text<int>(age_bucket_node.child("numInfectedFemaleLowRisk")),
-			Text<int>(age_bucket_node.child("numInfectedMaleHighRisk")),
-			Text<int>(age_bucket_node.child("numInfectedFemaleHighRisk")));
+    //get initial age distribution
+    for(auto age_bucket_node : initial_state_node.child("ageDistribution").children("range")) {
+	population_parameters.GetAgeDistributions().emplace_back(
+	    Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month,
+				 Attr<int>(age_bucket_node, "lower")),
+	    Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month,
+				 Attr<int>(age_bucket_node, "upper")) + 11,
+	    Text<double>(age_bucket_node.child("distribMale")),
+	    Text<double>(age_bucket_node.child("distribFemale")));
+    }
+    
+    //normalize %population values for each age bucket
+    std::array<double, (std::size_t)DemographicProfile::Gender::Last> totalPopulationproportionages;
+    totalPopulationproportionages.fill(0);
+
+    //get the total of proportionage values
+    for(std::size_t i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++) {
+	for(auto &age_bucket : population_parameters.GetAgeDistributions()) {
+	    totalPopulationproportionages[i] += age_bucket.proportionOfPopulation[i];
 	}
 
-	population_parameters.SetInitialCswProportion(DemographicProfile::Gender::Male, Text<double>(initial_state_node.child("chanceBeingCswMale")));
-	population_parameters.SetInitialCswProportion(DemographicProfile::Gender::Female, Text<double>(initial_state_node.child("chanceBeingCswFemale")));
-    population_parameters.SetCswEndAge(DemographicProfile::Gender::Male, Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Text<int>(initial_state_node.child("cswEndAgeMale"))));
-    population_parameters.SetCswEndAge(DemographicProfile::Gender::Female, Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month, Text<int>(initial_state_node.child("cswEndAgeFemale"))));
-
-	//normalize %population values for each age bucket
-	std::array<double, (std::size_t)DemographicProfile::Gender::Last> totalPopulationproportionages;
-	totalPopulationproportionages.fill(0);
-
-	//get the total of proportionage values of AgeBucketPrevalencInfo.proportionOfPopulation
-    for(std::size_t i = 0; i < (std::size_t)DemographicProfile::Gender::Last; i++)
-	{
-		for(auto &age_bucket : population_parameters.GetInitialAgeBuckets())
-		{
-			totalPopulationproportionages[i] += age_bucket.proportionOfPopulation[i];
-		}
-
-		//normalize each proportionage value so that the sum of them == 1
-		for(auto &age_bucket : population_parameters.GetInitialAgeBuckets())
-		{
-			age_bucket.proportionOfPopulation[i] /= totalPopulationproportionages[i];
-		}
+	//normalize each proportionage value so that the sum of them == 1
+	for(auto &age_bucket : population_parameters.GetAgeDistributions()) {
+	    age_bucket.proportionOfPopulation[i] /= totalPopulationproportionages[i];
 	}
+    }
 
-	population_parameters.setBirthRate(Text<double>(population_node.child("birthRate")));
-	population_parameters.setProportionMale(Text<double>(population_node.child("proportionMale")));
-	population_parameters.setProportionCircumcised(Text<double>(population_node.child("proportionCircumcised")));
-	population_parameters.setAgeOfMajority(Text<int>(population_node.child("ageOfMajority")), TimeGranularity::Year);
+    //get parameters related to the seeding of infected individuals
+    auto seed_distrib_node = initial_state_node.child("seedDistribution");
+    population_parameters.SetSeedDelay(Attr<int>(seed_distrib_node, "seedDelay"));
+    population_parameters.SetUseSeedCoefficients(
+	Attr<bool>(seed_distrib_node, "useCoefficients"));
+    population_parameters.SetChanceChronicInfection(
+	Text<double>(seed_distrib_node.child("chanceSeedChronicInfection")));
+    population_parameters.SetSeedPrevalence(
+	Text<double>(seed_distrib_node.child("seedPrevalence")));
 
-	auto defaultMaleParams = ReadMaleSubPopParams();
-	population_parameters.SetMaleParameters(defaultMaleParams);
-	auto defaultFemaleParams = ReadFemaleSubPopParams();
-	population_parameters.SetFemaleParameters(defaultFemaleParams);
+    for(auto range_node : seed_distrib_node.children("range")) {
+	population_parameters.GetSeedDistributions().emplace_back(
+	    Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month,
+				 Attr<int>(range_node, "lower")),
+	    Utility::convertTime(TimeGranularity::Year, TimeGranularity::Month,
+				 Attr<int>(range_node, "upper")) + 11,
+	    Text<int>(range_node.child("numInfectedMaleCsw")),
+	    Text<int>(range_node.child("numInfectedFemaleCsw")),
+	    Text<int>(range_node.child("numInfectedMaleLowRisk")),
+	    Text<int>(range_node.child("numInfectedFemaleLowRisk")),
+	    Text<int>(range_node.child("numInfectedMaleHighRisk")),
+	    Text<int>(range_node.child("numInfectedFemaleHighRisk")));
+    }
 
-	//save flags to indicate whether particular partnership types have duration or not
-	for(auto type : enum_iterator<SexualPartnership::Type>())
-	{
-		auto has_duration = !(defaultMaleParams.getSexualBehavior(SexualPartnership::Type(type)).getPartnershipDurationMth(Person::LOW).isZeroDistrib)
-			&& !(defaultMaleParams.getSexualBehavior(SexualPartnership::Type(type)).getPartnershipDurationMth(Person::HIGH).isZeroDistrib);
-		population_parameters.SetPartnershipHasDuration(DemographicProfile::Gender::Male, type, has_duration);
-		population_parameters.SetPartnershipHasDuration(DemographicProfile::Gender::Female, type, false);
-	}
+    population_parameters.setBirthRate(
+	Text<double>(population_node.child("birthRate")));
+    population_parameters.setProportionMale(
+	Text<double>(population_node.child("proportionMale")));
+    population_parameters.setProportionCircumcised(
+	Text<double>(population_node.child("proportionCircumcised")));
+    population_parameters.setAgeOfMajority(
+	Text<int>(population_node.child("ageOfMajority")), TimeGranularity::Year);
 
-    pugi::xml_node costs_node = document_.select_single_node("/simulation/traceFiles/costEffectiveness").node();
+    auto defaultMaleParams = ReadMaleSubPopParams();
+    population_parameters.SetMaleParameters(defaultMaleParams);
+    auto defaultFemaleParams = ReadFemaleSubPopParams();
+    population_parameters.SetFemaleParameters(defaultFemaleParams);
+
+    //save flags to indicate whether particular partnership types have duration or not
+    for(auto type : enum_iterator<SexualPartnership::Type>()) {
+	auto has_duration = !(defaultMaleParams.getSexualBehavior(SexualPartnership::Type(type))
+			      .getPartnershipDurationMth(Person::LOW).isZeroDistrib)
+	    && !(defaultMaleParams.getSexualBehavior(SexualPartnership::Type(type))
+		 .getPartnershipDurationMth(Person::HIGH).isZeroDistrib);
+	population_parameters.SetPartnershipHasDuration(
+	    DemographicProfile::Gender::Male, type, has_duration);
+	population_parameters.SetPartnershipHasDuration(
+	    DemographicProfile::Gender::Female, type, false);
+    }
+
+    pugi::xml_node costs_node = document_.select_single_node(
+	"/simulation/traceFiles/costEffectiveness").node();
 
     //Costs
     population_parameters.SetCondomCost(Text<double>(costs_node.child("condomCost")));
-    population_parameters.SetCircumcisionCost(Text<double>(costs_node.child("circumcisionCost")));
+    population_parameters.SetCircumcisionCost(
+	Text<double>(costs_node.child("circumcisionCost")));
     population_parameters.SetPrEPCost(Text<double>(costs_node.child("prEPCost")));
-    population_parameters.SetVaginalMicrobicideCost(Text<double>(costs_node.child("vaginalMicrobicideCost")));
+    population_parameters.SetVaginalMicrobicideCost(
+	Text<double>(costs_node.child("vaginalMicrobicideCost")));
 }
 
 Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node criteria_node)
@@ -1033,28 +1033,6 @@ Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node cri
     return target;
 }
 
-std::pair<int, int> ParseRange(const std::string &range_string, bool require_both = false)
-{
-    int lower_bound, upper_bound = -1;
-
-    if(range_string.find('-') != std::string::npos)
-    {
-        lower_bound = std::stoi(range_string.substr(0, range_string.find('-')));
-        upper_bound = std::stoi(range_string.substr(range_string.find('-') + 1));
-    }
-    else
-    {
-        lower_bound = std::stoi(range_string);
-
-        if(require_both)
-        {
-            throw std::runtime_error("range should be of the form <lower>-<upper>");
-        }
-    }
-
-    return {lower_bound, upper_bound};
-}
-
 std::vector<Intervention> SimulationBuilderXml::ParseInterventions(pugi::xml_node interventions_node, bool individual)
 {
     std::vector<Intervention> interventions;
@@ -1076,15 +1054,13 @@ std::unordered_map<std::string, TargetGroup> SimulationBuilderXml::ReadGroups()
     for(auto group_node : groups_node.children("group"))
     {
         auto label = Attr<std::string>(group_node, "label");
-        auto enrollment_period_string = 
-            Text<std::string>(group_node.child("enrollment-period"));
-        auto enrollment_period = ParseRange(enrollment_period_string);
-        bool permanent = Text<bool>(group_node.child("permanent-effect"));
+        auto enrollment_start = Text<int>(group_node.child("enrollment-start"));
+        auto enrollment_end = Text<int>(group_node.child("enrollment-end"));
         bool open = Text<bool>(group_node.child("open-enrollment"));
         auto target = ParseGroupEligibility(group_node.child("eligibility-criteria"));
 
-        TargetGroup group(label, enrollment_period.first, enrollment_period.second, 
-            open, permanent, target);
+        TargetGroup group(label, enrollment_start, enrollment_end,
+            open, target);
 
         for(auto partition_node : group_node.child("partitions").children("partition"))
         {
@@ -1096,8 +1072,7 @@ std::unordered_map<std::string, TargetGroup> SimulationBuilderXml::ReadGroups()
             group.AddPartition(label, trace, proportion, interventions);
         }
 
-        auto group_label = Attr<std::string>(group_node, "label");
-        groups.emplace(std::make_pair(group_label, group));
+        groups.emplace(std::make_pair(label, group));
     }
 
     return groups;
@@ -1236,6 +1211,152 @@ SexualPartnership::Type SimulationBuilderXml::from_string(const std::string &typ
     throw std::runtime_error("unknown partnership type: " + type_string);
 }
 
+template<>
+double SimulationBuilderXml::TransformInterventionValue(double target_value,
+    double curr_value, int time, int duration)
+{
+    double new_value;
+
+    int lapsed = duration - (simulation_.GetTime() - time) + 1;
+    double coeff = (target_value - curr_value) / lapsed;
+    new_value = curr_value + coeff;
+
+    return new_value;
+}
+
+/*
+ * Calculates the current beta distribution used for choosing chance condom use
+ * for an intervention. The intervention start time and duration, along with the
+ * current beta distribution and target normal distribution are used in the calculation.
+ */
+template<>
+NormalDist SimulationBuilderXml::TransformInterventionValue(NormalDist target_dist,
+    NormalDist curr_dist, int time, int duration)
+{
+    NormalDist new_dist;
+
+    // calculate the amount to add each time step so we don't have to store a coeff value
+    int lapsed = duration - (simulation_.GetTime() - time) + 1;
+    double mean_coeff = (target_dist.mean - curr_dist.mean) / lapsed;
+    double stddev_coeff = (target_dist.stddev - curr_dist.stddev) / lapsed;
+    new_dist.mean = curr_dist.mean + mean_coeff;
+    new_dist.stddev = curr_dist.stddev + stddev_coeff;
+
+    return new_dist;
+}
+
+void SimulationBuilderXml::SetChanceCondomUseCallback(pugi::xml_node &node,
+    Intervention &intervention, bool individual)
+{
+    auto risk = Attr<Person::RiskLevel>(node, "risk");
+    auto type = Attr<SexualPartnership::Type>(node, "type");
+    bool transform = false;
+    if (node.child("transform"))
+	transform = Text<bool>(node.child("transform"));
+    NormalDist target_dist = GetNormalDist(node);
+    // check that conversion from normal to beta is possible
+    BetaDist::FromNormal(target_dist);
+
+    int time = intervention.GetTime();
+    int duration = intervention.GetDuration();
+    if (!individual) {
+	intervention.SetPopulationCallback(
+	    [=](Population &p) {
+		BetaDist target_beta_dist;
+		if (transform) {
+		    // increase or descrease to the target value over the duration
+		    NormalDist curr_dist = BetaDist::ToNormal(p.popWideParams.
+		        GetChanceCondomUsePerEvent(risk, type));
+		    target_beta_dist = BetaDist::FromNormal(TransformInterventionValue(
+		        target_dist, curr_dist, time, duration));
+		} else {
+		    // set the target value immediately
+		    target_beta_dist = BetaDist::FromNormal(target_dist);
+		}
+
+		p.popWideParams.SetChanceCondomUsePerEvent(risk, type, target_beta_dist);
+	    }
+	);
+    }
+    intervention.SetIndividualCallback(
+	[=](Person *person) {
+	    BetaDist target_beta_dist;
+	    if (transform) {
+		// increase or descrease to the target value over the duration
+		NormalDist curr_dist = BetaDist::ToNormal(person->
+	            GetChanceCondomUsePerEvent(risk, type));
+		target_beta_dist = BetaDist::FromNormal(TransformInterventionValue(
+		    target_dist, curr_dist, time, duration));
+	    } else {
+		// set the target value immediately
+		target_beta_dist = BetaDist::FromNormal(target_dist);
+	    }
+
+	    person->SetChanceCondomUsePerEvent(risk, type, target_beta_dist,
+					       simulation_.GetEventParams().randomNums);
+	}
+    );
+}
+
+void SimulationBuilderXml::SetProportionCircumcisedCallback(pugi::xml_node &node,
+    Intervention &intervention)
+{
+    bool transform = false;
+    if (node.child("transform"))
+	transform = Text<bool>(node.child("transform"));
+    double target_value = Text<double>(node.child("proportion"));
+
+    int time = intervention.GetTime();
+    int duration = intervention.GetDuration();
+    intervention.SetPopulationCallback (
+	[=](Population &p) {
+	    double new_value = target_value;
+	    if (transform) {
+		// increase or descrease to the target value over the duration
+		double curr_value = p.popWideParams.getProportionCircumcised();
+		new_value = TransformInterventionValue(
+		    target_value, curr_value, time, duration);
+	    }
+
+	    p.popWideParams.setProportionCircumcised(new_value);
+	}
+    );
+}
+
+void SimulationBuilderXml::SetCircumciseCallback(pugi::xml_node &node,
+    Intervention &intervention, bool individual)
+{
+    if (individual) {
+	intervention.SetPopulationIndividualCallback(
+	    [=](Population &population, Person *person) {
+		population.Circumcise(person);
+	    }
+	);
+    } else {
+	bool transform = false;
+	if (node.child("transform"))
+	    transform = Text<bool>(node.child("transform"));
+	double target_value = Text<double>(node.child("proportion"));
+
+	int time = intervention.GetTime();
+	int duration = intervention.GetDuration();
+	intervention.SetPopulationCallback (
+	    [=](Population &p) {
+		double new_value = target_value;
+		if (transform) {
+		    // increase or descrease to the target value over the duration
+		    double curr_value = (double) (p.num_circumcised_sa + p.num_circumcised_na) /
+			(double) p.GetSize(DemographicProfile::Gender::Male);
+		    new_value = TransformInterventionValue(
+			target_value, curr_value, time, duration);
+		}
+
+		p.Circumcise(new_value);
+	    }
+	);
+    }
+}
+
 Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool individual)
 {
     int time = node.attribute("time") != nullptr ? Attr<int>(node, "time") : -1;
@@ -1251,16 +1372,14 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
         {
         case KnownIntervention::Circumcise:
         {
-            intervention.SetPopulationIndividualCallback(
-                [=](Population &population, Person *person) { 
-                    population.Circumcise(person); });
+	    SetCircumciseCallback(node, intervention, individual);
             break;
         }
         case KnownIntervention::ChanceBecomeSexWorker:
         {
             auto chance = Text<double>(node);
             intervention.SetIndividualCallback(
-                [=](Person *person) { 
+                [=](Person *person) {
                     person->SetChanceBecomeSexWorker(chance); });
             break;
         }
@@ -1312,12 +1431,7 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
         }
         case KnownIntervention::ChanceCondomUse:
         {
-            auto risk = Attr<Person::RiskLevel>(node, "risk");
-            auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
-            auto dist = GetBetaDist(node);
-            intervention.SetIndividualCallback(
-                [=](Person *person) {
-                    person->SetChanceCondomUsePerEvent(risk, partnership_type, dist, simulation_.GetEventParams().randomNums); });
+	    SetChanceCondomUseCallback(node, intervention, individual);
             break;
         }
         case KnownIntervention::PartnershipDuration:
@@ -1368,7 +1482,7 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
             auto adherence = Text<double>(node);
             intervention.SetIndividualCallback([=](Person *person) 
             {
-                if (person->getDemographicProfileVal<DemographicProfile::Gender>() != DemographicProfile::Gender::Female)
+                if (person->isMale())
                 {
 		  return;
                 }
@@ -1410,7 +1524,7 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
         {
             auto value = Text<double>(node);
             intervention.SetPopulationCallback(
-                [=](Population &p) { 
+                [=](Population &p) {
                     p.popWideParams.setBirthRate(value); });
             break;
         }
@@ -1436,21 +1550,22 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
 	    );
 	    break;
 	}
-
+	case KnownIntervention::Circumcise:
+        {
+	    SetCircumciseCallback(node, intervention, individual);
+            break;
+        }
         case KnownIntervention::ProportionMale:
         {
             auto value = Text<double>(node);
             intervention.SetPopulationCallback(
-                [=](Population &p) { 
+                [=](Population &p) {
                     p.popWideParams.setProportionMale(value); });
             break;
         }
         case KnownIntervention::ProportionCircumcised:
         {
-            auto value = Text<double>(node);
-            intervention.SetPopulationCallback(
-                [=](Population &p) {
-                    p.popWideParams.setProportionCircumcised(value); });
+	    SetProportionCircumcisedCallback(node, intervention);
             break;
         }
         case KnownIntervention::ChanceBecomeSexWorker:
@@ -1461,7 +1576,7 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
                 [=](Population &p) { p.popWideParams.SetChanceBecomeCsw(gender, chance); });
             intervention.SetIndividualCallback([=](Person *person)
             {
-                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == gender)
+                if(person->isMale())
                 {
                     person->SetChanceBecomeSexWorker(chance);
                 }
@@ -1517,7 +1632,7 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
                 [=](Population &p) { p.popWideParams.SetAverageYearsYounger(partnership_type, dist); });
             intervention.SetIndividualCallback([=](Person *person) 
             { 
-                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == DemographicProfile::Gender::Male)
+                if (person->isMale())
                 {
                     person->SetAverageYearsYounger(partnership_type, dist);
                 }
@@ -1533,7 +1648,7 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
                 [=](Population &p) { p.popWideParams.SetAcquisitionRatePerMonth(risk, partnership_type, dist); });
             intervention.SetIndividualCallback([=](Person *person)
             {
-                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == DemographicProfile::Gender::Male)
+                if (person->isMale())
                 {
                     person->SetAcquisitionRatePerMonth(risk, partnership_type, dist, simulation_.GetEventParams().randomNums);
                 }
@@ -1546,10 +1661,11 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = Text<double>(node.child("distribution").child("mean"));
             intervention.SetPopulationCallback(
-                [=](Population &p) { p.popWideParams.SetCoitalEventsPerMonth(risk, partnership_type, dist); });
+                [=](Population &p) {
+		    p.popWideParams.SetCoitalEventsPerMonth(risk, partnership_type, dist); });
             intervention.SetIndividualCallback([=](Person *person)
             {
-                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == DemographicProfile::Gender::Male)
+	      if (person->isMale())
                 {
                     person->SetCoitalEventsPerMonth(risk, partnership_type, dist);
                 }
@@ -1558,18 +1674,7 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
         }
         case KnownIntervention::ChanceCondomUse:
         {
-            auto risk = Attr<Person::RiskLevel>(node, "risk");
-            auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
-            auto dist = GetBetaDist(node);
-            intervention.SetPopulationCallback(
-                [=](Population &p) { p.popWideParams.SetChanceCondomUsePerEvent(risk, partnership_type, dist); });
-            intervention.SetIndividualCallback([=](Person *person)
-            {
-                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == DemographicProfile::Gender::Male)
-                {
-                    person->SetChanceCondomUsePerEvent(risk, partnership_type, dist, simulation_.GetEventParams().randomNums);
-                }
-            });
+	    SetChanceCondomUseCallback(node, intervention, individual);
             break;
         }
         case KnownIntervention::PartnershipDuration:

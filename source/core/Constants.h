@@ -64,13 +64,7 @@ public:
 
 	static const std::map<BatchStatsVariables, std::string> BatchStatFileName;
 
-    /// <summary>
-	/// Used to keep track of the number of CEPAC .in files (i.e. SimContext) there are
-    /// </summary>
-	static const int NUMBER_OF_CEPAC_FILES = 5;
-	static const int NUMBER_OF_ROLLOUT_FILES = 13;
 	static const int NUMBER_OF_OIS = 15;
-
 	static const int NUMBER_CONCURRENCY_DEFS = 16;
 	static const int NUMBER_CALIBRATION_PREVS = 0; //13;
 	static const int NUMBER_TIME_POINTS_SAVE_STATE = 0; //2;

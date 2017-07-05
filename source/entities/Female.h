@@ -146,6 +146,9 @@ public:
     void SetOverrideChanceCondomUse(double chance) { overrideChanceCondomUse_ = chance; }
     double GetOverrideChanceCondomUse() const { return overrideChanceCondomUse_; }
 
+    const BetaDist GetChanceCondomUsePerEvent(Person::RiskLevel risk,
+	   SexualPartnership::Type type) { BetaDist dist; return dist; }
+
 private:
 	SubPopParams populationSpecificParams;
     double overrideChanceCondomUse_;

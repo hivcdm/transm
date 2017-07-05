@@ -26,20 +26,42 @@ unsigned int Population::idCounter = 0;
 /**
 Creates an initial population of folks
 **/
-Population::Population(EventParams &parameters) 
+Population::Population(EventParams &parameters)
     : populationID(Population::idCounter++),
       parameters_(parameters)
 {
+}
+
+void Population::Circumcise(double proportion)
+{
+    std::vector<Person *> people = FindNonCircumcised();
+
+    if(people.empty())
+	return;
+
+    // only circumcise the proportion desired
+    auto number = (int)(proportion * people.size());
+    for (int i = 0; i < number; i++) {
+	Circumcise(people.at(i));
+    }
+
+
 }
 
 void Population::Circumcise(Person *p)
 {
     if(!p->IsCircumcised())
     {
-    	double discount = Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor);
-        p->Circumcise();
-		populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * discount);
-		p->add_cdm_cost(popWideParams.circumcisionCost, popWideParams.circumcisionCost * discount);
+	double discount = 1.0;
+	if (parameters_.useRollout) {
+	    discount = Utility::computeCepacDiscountFactor(parameters_.currTime,
+            parameters_.untreatedContext->getRunSpecsInputs()->discountFactor);
+        }
+	p->Circumcise();
+	populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost,
+            popWideParams.circumcisionCost * discount);
+	p->add_cdm_cost(popWideParams.circumcisionCost,
+	    popWideParams.circumcisionCost * discount);
     }
 }
 
@@ -97,18 +119,18 @@ void Population::InitPartnershipBuckets()
 			currProfileSelector.set(partneringParams.getAvailableBucket(j).dmgProfileSelector);
 			currProfileSelector.selectProfileIDs(selectedIDs, nullptr);
 
-            //TODO:eventually, we should change this.
+	    //TODO:eventually, we should change this.
 			assert(selectedIDs.size() == 1);	//we don't want any wild cards in the DemographicProfile string.
 
 			//check to see whether we have a repeat Bucket.
 			for(size_t i = 0; i < potentialPartnerBuckets[partnership_type].size(); ++i)
 			{
-                if(potentialPartnerBuckets[partnership_type].at(i)->getProfileID() == selectedIDs.at(0))
+		if(potentialPartnerBuckets[partnership_type].at(i)->getProfileID() == selectedIDs.at(0))
 				{
-                    throw std::runtime_error("For available buckets for partnership type '"
-                        + SexualPartnership::TypeStrings.at(SexualPartnership::Type(partnership_type))
-                        + "', " + *DemographicProfile::toString(selectedIDs.at(0))
-                        + " is listed multiple times either via repeat or wildcard overlaps");
+		    throw std::runtime_error("For available buckets for partnership type '"
+			+ SexualPartnership::TypeStrings.at(SexualPartnership::Type(partnership_type))
+			+ "', " + *DemographicProfile::toString(selectedIDs.at(0))
+			+ " is listed multiple times either via repeat or wildcard overlaps");
 				}
 			}
 
@@ -116,19 +138,19 @@ void Population::InitPartnershipBuckets()
 
 			if(bucket == nullptr)
 			{
-                throw std::runtime_error("This Demographic Profile " 
-                    + *DemographicProfile::toString(selectedIDs.at(0))
-                    + " has not been instantiated and so cannot be used");
+		throw std::runtime_error("This Demographic Profile "
+		    + *DemographicProfile::toString(selectedIDs.at(0))
+		    + " has not been instantiated and so cannot be used");
 			}
 			else
 			{
-                potentialPartnerBuckets[partnership_type].push_back(bucket);
-                eligibleBucketWeights[partnership_type].push_back(partneringParams.getAvailableBucket(j).weight);
+		potentialPartnerBuckets[partnership_type].push_back(bucket);
+		eligibleBucketWeights[partnership_type].push_back(partneringParams.getAvailableBucket(j).weight);
 			}
 		}
 
 		//make sure that the weights sum to 1
-        Utility::normalize(eligibleBucketWeights[partnership_type]);
+	Utility::normalize(eligibleBucketWeights[partnership_type]);
 	}
 }
 
@@ -170,7 +192,7 @@ void Population::Births(EventParams &parameters_)
 	    parameters_.numNewbornsTraced++;
 
 	p = GeneratePerson(parameters_, gender, nullptr, toTrace);
-
+	
 	if(parameters_.debugLevel > DebugLevel::One &&
 	   parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled) {
 	    p->print(parameters_.trace_files[EventParams::TraceFile::Type::Events].file,
@@ -204,9 +226,9 @@ void Population::UpdateAgeBucketsLE()
 			assert(p != nullptr);
 			//calculate life expectancy
 			assert((populationStatistics.selectedLEStats != nullptr));
-            assert(p->getAge(TimeGranularity::Year) >= 0);
-            assert(p->getAge(TimeGranularity::Year) < Person::maxYrForDeathStats);
-            populationStatistics.selectedLEStats->popByAge[p->getAge(TimeGranularity::Year)]++;
+	    assert(p->getAge(TimeGranularity::Year) >= 0);
+	    assert(p->getAge(TimeGranularity::Year) < Person::maxYrForDeathStats);
+	    populationStatistics.selectedLEStats->popByAge[p->getAge(TimeGranularity::Year)]++;
 			p_Iter++;
 		}
 	}
@@ -225,7 +247,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 		cepacDiscountFactor = Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor);
 	}
 	else {
-		cepacDiscountFactor = Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor);
+		cepacDiscountFactor = Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.cepacSimContexts.front()->simContext->getRunSpecsInputs()->discountFactor);
 	}
 
 	int totalDied = 0;		//keeps track of deaths this timestep
@@ -285,101 +307,55 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 			Person *p = (*p_Iter);
 			assert(p != nullptr);
 
+			auto processDeath = [&](Person *p) {
+			    //if this person was in a couple, this will push living members to personsToAdd
+			    // to be reinserted into the EntityPool once we have iterated through all buckets
+			    //removePersonFromAll returns iterator to next person in list no need to increment
+			    p_Iter = entities->removePersonFromAll(p_Iter);
+			    ProcessDeath(parameters_, p, calculateLE);
+			    totalDied++;
+			};
+
+			// check whether CEPAC considers this person to be dead
 			if(!p->isAlive())
 			{
-				//Advances p_Iter one in the list, so no increment is necessary
-				p_Iter = entities->removePersonFromAll(p_Iter);
-				ProcessDeath(parameters_, p, calculateLE);
-
-				if(parameters_.useRollout)
-				{
-					//Remove people from the treated/untreated pool if they die
-					std::list<Person *>::iterator poolIterator;
-					poolIterator = std::find(rolloutUntreatedPool.begin(), rolloutUntreatedPool.end(), p);
-
-					if(poolIterator != rolloutUntreatedPool.end())
-					{
-						rolloutUntreatedPool.erase(poolIterator);
-					}
-					else
-					{
-						poolIterator = std::find(rolloutTreatedPool.begin(), rolloutTreatedPool.end(), p);
-
-						if(poolIterator != rolloutTreatedPool.end())
-						{
-							rolloutTreatedPool.erase(poolIterator);
-						}
-					}
-				}
-
-				totalDied++;
-				continue;
+			    processDeath(p);
+			    continue;
 			}
 
 			Person::HIVStatus oldStatus = p->hivStatus;
 			//update their health status
 			p->updateHealthStatus(parameters_, &populationStatistics.artTracker, &populationStatistics.costsTracker);
 
-            if (p->UsingPrEP())
-            {
-                populationStatistics.costsTracker.RecordPrEPCost(popWideParams.prEPCost, popWideParams.prEPCost * cepacDiscountFactor);
-                p->add_cdm_cost(popWideParams.prEPCost, popWideParams.prEPCost * cepacDiscountFactor);
-            }
-
-			if(oldStatus != p->hivStatus)
-			{
-                if(p->getDemographicProfile()->get(p->getDemographicProfile()->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
-				{
-					((BucketSexualMixing *) entities->getBucket(p->getDemographicProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
-					        p->hivStatus);
-				}
+			if (p->UsingPrEP()) {
+			    populationStatistics.costsTracker.RecordPrEPCost(popWideParams.prEPCost, popWideParams.prEPCost * cepacDiscountFactor);
+			    p->add_cdm_cost(popWideParams.prEPCost, popWideParams.prEPCost * cepacDiscountFactor);
 			}
 
-			//see whether this person has died.
-			//if this person was a couple, then will push living members to personsToAdd
-			// to be reinserted into the EntityPool once we have iterated through all buckets
+			if(oldStatus != p->hivStatus) {
+			    if(p->getDemographicProfile()->get(p->getDemographicProfile()->getProfileID(),
+							       DemographicProfile::Demographic::SexualActivityStatus) !=
+			       (std::size_t)DemographicProfile::SexualActivityStatus::NotActive) {
+				((BucketSexualMixing *) entities->getBucket(p->getDemographicProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
+																	  p->hivStatus);
+			    }
+			}
+
+			// roll to see if this person dies this month
 			if(p->rollForDeath(parameters_.randomNums))
 			{
-			  //				bool wasProcessed = false;
-				p_Iter = entities->removePersonFromAll(p_Iter);
-				//				wasProcessed = true;
-				ProcessDeath(parameters_, p, calculateLE);
-				totalDied++;
-
-				if(parameters_.useRollout)
-				{
-					//Remove people from the treated/untreated pool if they die
-					std::list<Person *>::iterator poolIterator;
-					poolIterator = std::find(rolloutUntreatedPool.begin(), rolloutUntreatedPool.end(), p);
-
-					if(poolIterator != rolloutUntreatedPool.end())
-					{
-						rolloutUntreatedPool.erase(poolIterator);
-					}
-					else
-					{
-						poolIterator = std::find(rolloutTreatedPool.begin(), rolloutTreatedPool.end(), p);
-
-						if(poolIterator != rolloutTreatedPool.end())
-						{
-							rolloutTreatedPool.erase(poolIterator);
-						}
-					}
-				}
-
-				//removePersonFromAll returns iterator to next person in list...
-				//no need to increment
-				continue;
+			    processDeath(p);
+			    continue;
 			}
 
 			//if this person wasn't sexually active but is now old enough to
-            if((p->getDemographicProfileVal(DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::Active)
-                && (p->getAge(TimeGranularity::Month) >= popWideParams.ageOfMajority))
+	    if((p->getDemographicProfileVal(DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::Active)
+		&& (p->getAge(TimeGranularity::Month) >= popWideParams.ageOfMajority))
 			{
-            	// set them as SA and potentially CSWs
+		// set them as SA and potentially CSWs
 				if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && p->trace())
 				{
-                    if(p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
+		    if(p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
 					{
 						parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " % Male ";
 					}
@@ -396,14 +372,14 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 
 				if(oldStatus != p->hivStatus)
 				{
-                    if(p->getDemographicProfile()->get(p->getDemographicProfile()->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
+		    if(p->getDemographicProfile()->get(p->getDemographicProfile()->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
 					{
 						((BucketSexualMixing *) entities->getBucket(p->getDemographicProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
-						        p->hivStatus);
+							p->hivStatus);
 					}
 				}
 
-                if(p->getAge(TimeGranularity::Month) < popWideParams.CSWEndAgeMth[p->getDemographicProfileVal(DemographicProfile::Demographic::Gender)])
+		if(p->getAge(TimeGranularity::Month) < popWideParams.CSWEndAgeMth[p->getDemographicProfileVal(DemographicProfile::Demographic::Gender)])
 				{
 					p->rollForBecomeSexWorker(parameters_, false);
 				}
@@ -416,16 +392,16 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 			}
 
 			//Check for age to stop becoming CSW
-            if(p->getDemographicProfileVal(DemographicProfile::Demographic::Employment) == (std::size_t)DemographicProfile::Employment::Csw
-                && p->getAge(TimeGranularity::Month) >= popWideParams.CSWEndAgeMth[p->getDemographicProfileVal(DemographicProfile::Demographic::Gender)])
+	    if(p->getDemographicProfileVal(DemographicProfile::Demographic::Employment) == (std::size_t)DemographicProfile::Employment::Csw
+		&& p->getAge(TimeGranularity::Month) >= popWideParams.CSWEndAgeMth[p->getDemographicProfileVal(DemographicProfile::Demographic::Gender)])
 			{
 				p->quitSexWork(parameters_);
 				entities->refreshBucketDemographicProfile(p, &p_Iter);
 			}
-            
+
 			if(((parameters_.useRollout && parameters_.treatedContext) || p->HasTargetedCepacContext()) && p->isInfected())
 			{
-                auto context = p->HasTargetedCepacContext() ? p->GetTargetedCepacContext() : parameters_.treatedContext;
+		auto context = p->HasTargetedCepacContext() ? p->GetTargetedCepacContext() : parameters_.treatedContext;
 
 				if(p->isOnArt())
 				{
@@ -456,6 +432,20 @@ std::vector<Person *> Population::Find(std::function<bool(Person *)> predicate)
     return matches;
 }
 
+std::vector<Person *> Population::FindNonCircumcised()
+{
+    auto match = [&](Person *person) {
+	return person->IsCircumcised();
+    };
+
+    std::vector<Person *> matches;
+    entities->forEach([=, &matches](Person *p) {
+	    if(match(p))
+		matches.push_back(p);
+	});
+    return matches;
+}
+
 void Population::RegisterIntervention(const Intervention &intervention)
 {
     interventions_.push_back(intervention);
@@ -479,7 +469,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 		cepacDiscountFactor = Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor);
 	}
 	else {
-		cepacDiscountFactor = Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor);
+		cepacDiscountFactor = Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.cepacSimContexts.front()->simContext->getRunSpecsInputs()->discountFactor);
 	}
 
 	//initialize counters
@@ -527,7 +517,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 	{
 		(*p_Iter)->resetNumActs();
 		(*p_Iter)->reset_costs();
-        ((Female *)*p_Iter)->ResetVaginalMicrobicideUsage();
+	((Female *)*p_Iter)->ResetVaginalMicrobicideUsage();
 	}
 
 	//Second pass: Form new partnerships and have sex
@@ -547,10 +537,10 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 
 		assert(initiator != nullptr);
 
-        if(initiator->getAge(TimeGranularity::Month) < popWideParams.ageOfMajority + initiator->GetSexualActivityDelay())
-        {
-            continue;
-        }
+	if(initiator->getAge(TimeGranularity::Month) < popWideParams.ageOfMajority + initiator->GetSexualActivityDelay())
+	{
+	    continue;
+	}
 
 		//Get available partnership types
 		vector<SexualPartnership::Type> partnershipTypes =
@@ -581,7 +571,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 			std::list<Person *> newlyInfected;
 			//sexual activity among any existing partnerships that have a duration associated with them
 			Person *infectedMe = initiator->allPartnerSexualActivity(parameters_, SexualPartnership::Type(type), newlyInfected,
-			                     &(populationStatistics.infectionsTracker));
+					     &(populationStatistics.infectionsTracker));
 			//TODO: Get a condom use count here!
 			//record all incident infections
 			std::list<Person *>::iterator newlyInfectedIter = newlyInfected.begin();
@@ -591,7 +581,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 				Person *wasUninfected = *newlyInfectedIter;
 
 				if(wasUninfected->getDemographicProfile()->get(wasUninfected->getDemographicProfile()->getProfileID(),
-                    DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
+		    DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
 				{
 					((BucketSexualMixing *) entities->getBucket(wasUninfected->getDemographicProfile()->getProfileID()))->changeHIVStatus(
 					    wasUninfected, Person::NEGATIVE, wasUninfected->hivStatus);
@@ -602,7 +592,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 				//initiator only gets infected once...
 				Person *wasInfected = (*newlyInfectedIter == initiator) ? infectedMe : initiator;
 
-                RecordInfection(wasUninfected, wasInfected, parameters_.currTime);
+		RecordInfection(wasUninfected, wasInfected, parameters_.currTime);
 
 				//Adds person to the untreated pool if using rollout
 				if(parameters_.useRollout)
@@ -625,7 +615,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 
 		//Add the cost of condom usage
 		auto totalCondomCostUndiscounted = initiator->getCondomsUsedThisMonth() * popWideParams.condomCost;
-        initiator->add_cdm_cost(totalCondomCostUndiscounted, totalCondomCostUndiscounted * cepacDiscountFactor);
+	initiator->add_cdm_cost(totalCondomCostUndiscounted, totalCondomCostUndiscounted * cepacDiscountFactor);
 		populationStatistics.costsTracker.RecordCondomUse(totalCondomCostUndiscounted, totalCondomCostUndiscounted * cepacDiscountFactor);
 
 	} //for (p_Iter = entities->begin(DemographicProfile::Gender::Male); p_Iter != entities->end(DemographicProfile::Gender::Male); p_Iter++)
@@ -634,19 +624,19 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 
     for (p_Iter = entities->begin(DemographicProfile::Gender::Female); p_Iter != entities->end(DemographicProfile::Gender::Female); p_Iter++)
     {
-        auto p = static_cast<Female *>(*p_Iter);
-        if (p->GetVaginalMicrobicideApplicationsThisMonth() > 0)
-        {
-            auto cost = popWideParams.vaginalMicrobicideApplicationCost * p->GetVaginalMicrobicideApplicationsThisMonth();
-            populationStatistics.costsTracker.RecordVaginalMicrobicideCost(cost, cost * cepacDiscountFactor);
-            p->add_cdm_cost(cost, cost * cepacDiscountFactor);
-        }
+	auto p = static_cast<Female *>(*p_Iter);
+	if (p->GetVaginalMicrobicideApplicationsThisMonth() > 0)
+	{
+	    auto cost = popWideParams.vaginalMicrobicideApplicationCost * p->GetVaginalMicrobicideApplicationsThisMonth();
+	    populationStatistics.costsTracker.RecordVaginalMicrobicideCost(cost, cost * cepacDiscountFactor);
+	    p->add_cdm_cost(cost, cost * cepacDiscountFactor);
+	}
     }
 
 	//print out results to traces
 	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
 	{
-        if(parameters_.debugLevel > DebugLevel::Zero)
+	if(parameters_.debugLevel > DebugLevel::Zero)
 		{
 			//print out how many partnerships were attempted
 			std::ostringstream attemptedLabel;
@@ -660,22 +650,22 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 				"New " + SexualPartnership::TypeStrings.at(SexualPartnership::Type(type)), true);
 
 			//if these partnerships have a duration beyond the month, print out how many were ended
-            if(popWideParams.partnershipsHaveDuration[(std::size_t)DemographicProfile::Gender::Male][type])
+	    if(popWideParams.partnershipsHaveDuration[(std::size_t)DemographicProfile::Gender::Male][type])
 			{
 				std::ostringstream endedLabel;
 				endedLabel << SexualPartnership::TypeStrings.at(SexualPartnership::Type(type)) << " Ended";
 				PrintMethodResults(parameters_, "updatePartnerships(...)", endedLabel.str(), endedPartnershipCount[type],
-				                         "Number Ended", true);
+							 "Number Ended", true);
 			}
 		}
 	} //for(SexualPartnership::Type type = SexualPartnership::Type(0); type < SexualPartnership::Type::ENDType; ++type) {
 
 	if(parameters_.calibrationInputs.useCalibration
-	        && parameters_.currTime > (parameters_.calibrationInputs.monthOfCalibration - 12)
-	        && parameters_.currTime <= parameters_.calibrationInputs.monthOfCalibration)
+		&& parameters_.currTime > (parameters_.calibrationInputs.monthOfCalibration - 12)
+		&& parameters_.currTime <= parameters_.calibrationInputs.monthOfCalibration)
 	{
 		//update concurrency status
-        for(auto gender : enum_iterator<DemographicProfile::Gender>())
+	for(auto gender : enum_iterator<DemographicProfile::Gender>())
 		{
 			std::list<Person *>::iterator p_Iter = entities->begin((DemographicProfile::Gender) gender);
 
@@ -700,7 +690,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 				assert(concurrent <= Constants::NUMBER_CONCURRENCY_DEFS);
 
 				if(parameters_.concurrencyDef[concurrent].useDefinition
-				        && totalNumPartners >= parameters_.concurrencyDef[concurrent].minPartnershipsNeeded)
+					&& totalNumPartners >= parameters_.concurrencyDef[concurrent].minPartnershipsNeeded)
 				{
 					//count as concurrent partnership
 					(*p_Iter)->setMonthOfLatestConcurrent(parameters_.currTime);
@@ -720,8 +710,8 @@ void Population::SaveIndividualSummaries(std::ostream &stream) const
 
     for(auto summary : individual_summaries_)
     {
-        ordered_[summary.second.infection_number] = summary.second;
-        infection_numbers[summary.second.person_id] = summary.second.infection_number;
+	ordered_[summary.second.infection_number] = summary.second;
+	infection_numbers[summary.second.person_id] = summary.second.infection_number;
     }
 
     stream << "{" << std::endl;
@@ -729,30 +719,30 @@ void Population::SaveIndividualSummaries(std::ostream &stream) const
 
     for(auto summary : ordered_)
     {
-        stream << "{\"id\"" << ":" << summary.person_id;
-        stream << ",\"gender\"" << ":";
-        stream << (summary.profile.get(DemographicProfile::Demographic::Gender) == 0 ? "\"male\"" : "\"female\"");
-        stream << ",\"employment\"" << ":";
-        stream << (summary.profile.get(DemographicProfile::Demographic::Employment) == 0 ? "\"non-csw\"" : "\"csw\"");
-        stream << ",\"sexual_activity_status\"" << ":";
-        stream << (summary.profile.get(DemographicProfile::Demographic::SexualActivityStatus) == 0 ? "\"sexually active\"" : "\"not active\"");
-        stream << ",\"sexual_orientation\"" << ":";
-        stream << (summary.profile.get(DemographicProfile::Demographic::SexualOrientation) == 0 ? "\"hetero\"" : "\"homo\"");
-        stream << ",\"relationship_status\"" << ":";
-        stream << (summary.profile.get(DemographicProfile::Demographic::RelationshipStatus) == 0 ? "\"non-single\"" : "\"single\"");
-        stream << ",\"risk_group\"" << ":" << (summary.risk_group == Person::HIGH ? "\"high\"" : "\"low\"");
-        stream << ",\"age_at_infection\"" << ":" << summary.age_at_infection;
-        stream << ",\"generation_number\"" << ":" << summary.generation_number;
-        stream << ",\"infection_number\"" << ":" << summary.infection_number;
-        stream << ",\"time_infected\"" << ":" << summary.time_infected;
-        stream << ",\"infected_by\"" << ":" << summary.infected_by;
-        stream << ",\"group\":1";
-        stream << "}";
-        if(summary.person_id != ordered_.back().person_id)
-        {
-            stream << ",";
-        }
-        stream << std::endl;
+	stream << "{\"id\"" << ":" << summary.person_id;
+	stream << ",\"gender\"" << ":";
+	stream << (summary.profile.get(DemographicProfile::Demographic::Gender) == 0 ? "\"male\"" : "\"female\"");
+	stream << ",\"employment\"" << ":";
+	stream << (summary.profile.get(DemographicProfile::Demographic::Employment) == 0 ? "\"non-csw\"" : "\"csw\"");
+	stream << ",\"sexual_activity_status\"" << ":";
+	stream << (summary.profile.get(DemographicProfile::Demographic::SexualActivityStatus) == 0 ? "\"sexually active\"" : "\"not active\"");
+	stream << ",\"sexual_orientation\"" << ":";
+	stream << (summary.profile.get(DemographicProfile::Demographic::SexualOrientation) == 0 ? "\"hetero\"" : "\"homo\"");
+	stream << ",\"relationship_status\"" << ":";
+	stream << (summary.profile.get(DemographicProfile::Demographic::RelationshipStatus) == 0 ? "\"non-single\"" : "\"single\"");
+	stream << ",\"risk_group\"" << ":" << (summary.risk_group == Person::HIGH ? "\"high\"" : "\"low\"");
+	stream << ",\"age_at_infection\"" << ":" << summary.age_at_infection;
+	stream << ",\"generation_number\"" << ":" << summary.generation_number;
+	stream << ",\"infection_number\"" << ":" << summary.infection_number;
+	stream << ",\"time_infected\"" << ":" << summary.time_infected;
+	stream << ",\"infected_by\"" << ":" << summary.infected_by;
+	stream << ",\"group\":1";
+	stream << "}";
+	if(summary.person_id != ordered_.back().person_id)
+	{
+	    stream << ",";
+	}
+	stream << std::endl;
     }
 
     stream << "]," << std::endl;
@@ -760,17 +750,17 @@ void Population::SaveIndividualSummaries(std::ostream &stream) const
 
     for(auto summary : ordered_)
     {
-        if(summary.infected_by == -1)
-        {
-            continue;
-        }
+	if(summary.infected_by == -1)
+	{
+	    continue;
+	}
 
-        stream << "{\"source\":" << infection_numbers[summary.infected_by] << ",\"target\":" << summary.infection_number << ",\"value\":1}";
-        if(summary.person_id != ordered_.back().person_id)
-        {
-            stream << ",";
-        }
-        stream << std::endl;
+	stream << "{\"source\":" << infection_numbers[summary.infected_by] << ",\"target\":" << summary.infection_number << ",\"value\":1}";
+	if(summary.person_id != ordered_.back().person_id)
+	{
+	    stream << ",";
+	}
+	stream << std::endl;
 
     }
 
@@ -783,43 +773,43 @@ void WritePerson(std::ostream &stream, const std::map<int, std::vector<int>> &in
 {
     if(person_id == -1)
     {
-        stream << "{\"id\"" << ":" << "initial prevalent case";
+	stream << "{\"id\"" << ":" << "initial prevalent case";
     }
     else
     {
-        auto &summary = summaries.at(person_id);
+	auto &summary = summaries.at(person_id);
 
-        stream << "{\"id\"" << ":" << summary.person_id;
-        stream << ",\"gender\"" << ":";
-        stream << (summary.profile.get(DemographicProfile::Demographic::Gender) == 0 ? "\"male\"" : "\"female\"");
-        stream << ",\"employment\"" << ":";
-        stream << (summary.profile.get(DemographicProfile::Demographic::Employment) == 0 ? "\"non-csw\"" : "\"csw\"");
-        stream << ",\"sexual_activity_status\"" << ":";
-        stream << (summary.profile.get(DemographicProfile::Demographic::SexualActivityStatus) == 0 ? "\"sexually active\"" : "\"not active\"");
-        stream << ",\"sexual_orientation\"" << ":";
-        stream << (summary.profile.get(DemographicProfile::Demographic::SexualOrientation) == 0 ? "\"hetero\"" : "\"homo\"");
-        stream << ",\"relationship_status\"" << ":";
-        stream << (summary.profile.get(DemographicProfile::Demographic::RelationshipStatus) == 0 ? "\"non-single\"" : "\"single\"");
-        stream << ",\"risk_group\"" << ":" << (summary.risk_group == Person::HIGH ? "\"high\"" : "\"low\"");
-        stream << ",\"age_at_infection\"" << ":" << summary.age_at_infection;
-        stream << ",\"generation_number\"" << ":" << summary.generation_number;
-        stream << ",\"infection_number\"" << ":" << summary.infection_number;
-        stream << ",\"time_infected\"" << ":" << summary.time_infected;
+	stream << "{\"id\"" << ":" << summary.person_id;
+	stream << ",\"gender\"" << ":";
+	stream << (summary.profile.get(DemographicProfile::Demographic::Gender) == 0 ? "\"male\"" : "\"female\"");
+	stream << ",\"employment\"" << ":";
+	stream << (summary.profile.get(DemographicProfile::Demographic::Employment) == 0 ? "\"non-csw\"" : "\"csw\"");
+	stream << ",\"sexual_activity_status\"" << ":";
+	stream << (summary.profile.get(DemographicProfile::Demographic::SexualActivityStatus) == 0 ? "\"sexually active\"" : "\"not active\"");
+	stream << ",\"sexual_orientation\"" << ":";
+	stream << (summary.profile.get(DemographicProfile::Demographic::SexualOrientation) == 0 ? "\"hetero\"" : "\"homo\"");
+	stream << ",\"relationship_status\"" << ":";
+	stream << (summary.profile.get(DemographicProfile::Demographic::RelationshipStatus) == 0 ? "\"non-single\"" : "\"single\"");
+	stream << ",\"risk_group\"" << ":" << (summary.risk_group == Person::HIGH ? "\"high\"" : "\"low\"");
+	stream << ",\"age_at_infection\"" << ":" << summary.age_at_infection;
+	stream << ",\"generation_number\"" << ":" << summary.generation_number;
+	stream << ",\"infection_number\"" << ":" << summary.infection_number;
+	stream << ",\"time_infected\"" << ":" << summary.time_infected;
     }
 
     if(infected.find(person_id) != infected.end())
     {
-        stream << ",\"infected\"" << ":[" << std::endl;
-        for(auto id : infected.at(person_id))
-        {
-            WritePerson(stream, infected, id, summaries);
-            if(id != infected.at(person_id).back())
-            {
-                stream << ",";
-            }
-            stream << std::endl;
-        }
-        stream << "]" << std::endl;
+	stream << ",\"infected\"" << ":[" << std::endl;
+	for(auto id : infected.at(person_id))
+	{
+	    WritePerson(stream, infected, id, summaries);
+	    if(id != infected.at(person_id).back())
+	    {
+		stream << ",";
+	    }
+	    stream << std::endl;
+	}
+	stream << "]" << std::endl;
     }
 
     stream << "}";
@@ -831,7 +821,7 @@ void Population::SaveIndividualSummaries(std::ostream &stream) const
 
     for(auto summary : individual_summaries_)
     {
-        infected[summary.second.infected_by].push_back((int)summary.second.person_id);
+	infected[summary.second.infected_by].push_back((int)summary.second.person_id);
     }
 
     WritePerson(stream, infected, -1, individual_summaries_);
@@ -867,7 +857,7 @@ std::size_t Population::UpdateSize()
 
 	for(size_t i = 0; i < GenderProfileIDs.size(); i++)
 	{
-        currSizeGender[(std::size_t)DemographicProfile::Gender::Male] += entities->size(GenderProfileIDs[i]);
+	currSizeGender[(std::size_t)DemographicProfile::Gender::Male] += entities->size(GenderProfileIDs[i]);
 	}
 
 	//Next tally the women
@@ -878,7 +868,7 @@ std::size_t Population::UpdateSize()
 
 	for(size_t i = 0; i < GenderProfileIDs.size(); i++)
 	{
-        currSizeGender[(std::size_t)DemographicProfile::Gender::Female] += entities->size(GenderProfileIDs[i]);
+	currSizeGender[(std::size_t)DemographicProfile::Gender::Female] += entities->size(GenderProfileIDs[i]);
 	}
 
 	//Count all the CSW's
@@ -899,7 +889,7 @@ std::size_t Population::UpdateSize()
 		currSizeRisk[risk] = 0;
 		currSizeRiskCSW[risk] = 0;
 
-        for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
+	for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 		{
 			currSizeGenderRiskCSW[j][risk] = 0;
 		}
@@ -920,16 +910,16 @@ std::size_t Population::UpdateSize()
 				continue;
 			}
 
-            if(DemographicProfile::get(currBucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
+	    if(DemographicProfile::get(currBucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
 			{
 				//Add all people in bucket of particular risk group
 				currSizeRisk[risk] += ((BucketSexualMixing *)(currBucket))->sizeRisk((Person::RiskLevel) risk);
 
-                if(DemographicProfile::get(currBucket->getProfileID(), DemographicProfile::Demographic::Employment) == (std::size_t)DemographicProfile::Employment::Csw)
+		if(DemographicProfile::get(currBucket->getProfileID(), DemographicProfile::Demographic::Employment) == (std::size_t)DemographicProfile::Employment::Csw)
 				{
 					currSizeRiskCSW[risk] += ((BucketSexualMixing *)(currBucket))->sizeRiskCSW((Person::RiskLevel)risk);
 					currSizeGenderRiskCSW[DemographicProfile::get(currBucket->getProfileID(),
-					                            DemographicProfile::Demographic::Gender)][risk] += ((BucketSexualMixing *)(currBucket))->sizeRiskCSW((Person::RiskLevel)risk);
+								    DemographicProfile::Demographic::Gender)][risk] += ((BucketSexualMixing *)(currBucket))->sizeRiskCSW((Person::RiskLevel)risk);
 				}
 			}
 
@@ -963,18 +953,18 @@ std::size_t Population::UpdateSize()
 
     entities->forEach([this](Person *p)
     {
-        if(p->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Male
-            && ((Male *)p)->isCircumcised())
-        {
-            if(p->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::Active)
-            {
-                num_circumcised_sa++;
-            }
-            else
-            {
-                num_circumcised_na++;
-            }
-        }
+	if(p->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Male
+	    && ((Male *)p)->isCircumcised())
+	{
+	    if(p->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::Active)
+	    {
+		num_circumcised_sa++;
+	    }
+	    else
+	    {
+		num_circumcised_na++;
+	    }
+	}
     });
 
 	return currSize;
@@ -1021,7 +1011,7 @@ void Population::UpdateFinalPhysicalState(EventParams &parameters_)
 //--------------------------< BEGIN helper methods  >-------------------------------------//
 
 void Population::DissolveSexualPartnerships(EventParams &parameters_, Person *_initiator,
-        std::list<SexualPartnership *> &_partnershipsToEnd)
+	std::list<SexualPartnership *> &_partnershipsToEnd)
 {
     bool initiatorMale = (_initiator->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male);
 	//iterate through each partner list
@@ -1032,10 +1022,10 @@ void Population::DissolveSexualPartnerships(EventParams &parameters_, Person *_i
 		Person *partner = (*partnerIter)->getOtherPartner(_initiator);
 
 		//print the couple that is getting divorced
-        if(parameters_.debugLevel > DebugLevel::One && parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
+	if(parameters_.debugLevel > DebugLevel::One && parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
 		{
-            (*partnerIter)->printPartners(parameters_.trace_files[EventParams::TraceFile::Type::Events].file,
-                "This couple is splitting up: " + Constants::TABTAB);
+	    (*partnerIter)->printPartners(parameters_.trace_files[EventParams::TraceFile::Type::Events].file,
+		"This couple is splitting up: " + Constants::TABTAB);
 		}
 
 		if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (_initiator->trace() || partner->trace()))
@@ -1051,7 +1041,7 @@ void Population::DissolveSexualPartnerships(EventParams &parameters_, Person *_i
 					parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "- Female ";
 				}
 
-				parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << _initiator->getID() 
+				parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << _initiator->getID()
 					<< " ends " << (SexualPartnership::TypeStrings.at((*partnerIter)->getType()));
 				parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " partnership with " << partner->getID();
 			}
@@ -1096,20 +1086,21 @@ void Population::DissolveSexualPartnerships(EventParams &parameters_, Person *_i
 	}
 }
 
-Person *Population::GeneratePerson(EventParams &parameters_, DemographicProfile::Gender _gender,
-                                   PopulationParameters::AgeBucketPrevalenceInfo *_ageBucketParams, bool toTrace)
+Person *Population::GeneratePerson(EventParams &parameters_,
+    DemographicProfile::Gender _gender, AgeDistribution *_ageBucketParams,
+    bool toTrace)
 {
-	Person *toReturn = nullptr;	//pointer to the person that was just generated
+	Person *toReturn = nullptr;
 	//determine age of current person. If we have no age _ageBucketParams, then this is a newborn.
 	//Otherwise, generate an age from a uniform distribution bounded by _ageBucketParams
 	int ageMth = (_ageBucketParams == nullptr) ? 0 : parameters_.randomNums.randInt(_ageBucketParams->minAgeMth,
-	             _ageBucketParams->maxAgeMth);
+		     _ageBucketParams->maxAgeMth);
 
 	//create the person
 	if(_gender == DemographicProfile::Gender::Male)
 	{
 		toReturn = new Male(parameters_, ageMth, parameters_.randomNums.chance(popWideParams.proportionCircumcised),
-		                    populationID, popWideParams.defaultMaleParams);
+				    populationID, popWideParams.defaultMaleParams);
 	}
 	else
 	{
@@ -1119,15 +1110,15 @@ Person *Population::GeneratePerson(EventParams &parameters_, DemographicProfile:
     toReturn->SetSexualActivityDelay(popWideParams.sexualActivityDelay);
 
 	//If it was a boy and he was circumcised, add the costs
-    if(toReturn->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
+    if(toReturn->isMale())
 	{
 		Male *m = (Male *)toReturn;
 
 		if(m->isCircumcised())
 		{
-            auto discount = parameters_.useRollout ? 
-                Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor)
-                : Utility::computeCepacDiscountFactor(parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor, parameters_.currTime);
+	    auto discount = parameters_.useRollout ?
+		Utility::computeCepacDiscountFactor(parameters_.currTime, parameters_.untreatedContext->getRunSpecsInputs()->discountFactor)
+		: Utility::computeCepacDiscountFactor(parameters_.cepacSimContexts.front()->simContext->getRunSpecsInputs()->discountFactor, parameters_.currTime);
 			populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost, popWideParams.circumcisionCost * discount);
 			toReturn->add_cdm_cost(popWideParams.circumcisionCost, popWideParams.circumcisionCost * discount);
 		}
@@ -1144,9 +1135,9 @@ Person *Population::GeneratePerson(EventParams &parameters_, DemographicProfile:
 	if(ageMth >= popWideParams.ageOfMajority)
 	{
 		//see if they will be a CSW
-        if(ageMth < popWideParams.CSWEndAgeMth[(std::size_t)_gender])
+	if(ageMth < popWideParams.CSWEndAgeMth[(std::size_t)_gender])
 		{
-            toReturn->rollForBecomeSexWorker(parameters_, true, popWideParams.initProbCSW[(std::size_t)_gender]);
+	    toReturn->rollForBecomeSexWorker(parameters_, true, popWideParams.initProbCSW[(std::size_t)_gender]);
 		}
 
 		//reroll their risk group
@@ -1158,17 +1149,17 @@ Person *Population::GeneratePerson(EventParams &parameters_, DemographicProfile:
 		if(oldStatus != toReturn->hivStatus)
 		{
 			if(toReturn->getDemographicProfile()->get(toReturn->getDemographicProfile()->getProfileID(),
-                DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
+		DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
 			{
 				((BucketSexualMixing *) entities->getBucket(toReturn->getDemographicProfile()->getProfileID()))->changeHIVStatus(toReturn,
-				        oldStatus, toReturn->hivStatus);
+					oldStatus, toReturn->hivStatus);
 			}
 		}
 	}
 
 	if(toTrace)
 	{
-        if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled)
+	if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled)
 		{
 			toReturn->print(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].file, "Tracing the following patient: ");
 		}
@@ -1183,7 +1174,7 @@ void Population::InitIncidentInfectionsByAge()
 {
 	AgeRangeSizeContainer incidentInfsAgeMale, incidentInfsAgeFemale, totalIncidentInfsAge;
 
-	for(auto ageBucketParams : popWideParams.initialAgeBuckets)
+	for(auto ageBucketParams : popWideParams.GetAgeDistributions())
 	{
 		AgeRange ageRange = {ageBucketParams.minAgeMth, ageBucketParams.maxAgeMth};
 		incidentInfsAgeMale.push_back({ageRange, 0});
@@ -1194,177 +1185,247 @@ void Population::InitIncidentInfectionsByAge()
 	populationStatistics.infectionsTracker.initializeIncidentInfectionsByAge(incidentInfsAgeMale, incidentInfsAgeFemale, totalIncidentInfsAge);
 }
 
+/*
+ * ApplyIncidentPrevalence
+ *
+ * Seeds the population with infected individuals
+ *
+ * Seeding the population happens in one of two ways:
+ * by count or by coefficient depending on the input
+ * If by count, then the values stored in the SeedDistribution
+ * vector are used as whole person counts. In this case,
+ * all other seed parameters are ignored.
+ *
+ * If by coefficient, the the values stored in the SeedDistribution
+ * vector are used to calculate the proportion of individuals infected
+ * in each risk group and age bucket.
+ */
 void Population::ApplyIncidentPrevalence(EventParams &parameters_)
 {
-	parameters_.displayOut("Applying incident prevalence data\n");
-	//counter for number of people in each age bucket who are infected (used to initialize prevalence) (CSW, High risk, Low risk)
-	std::vector<std::array<int, 3>> numInfectedByAgeBucketMale(popWideParams.initialAgeBuckets.size());
-	std::vector<std::array<int, 3>> numInfectedByAgeBucketFemale(popWideParams.initialAgeBuckets.size());
+    parameters_.displayOut("Applying incident prevalence data...\n");
 
-	//loop through all males and apply prevalence to population
-	for(std::list<Person *>::iterator males_iter = entities->begin(DemographicProfile::Gender::Male);
-	        males_iter != entities->end(DemographicProfile::Gender::Male); males_iter++)
-	{
-		Person *p = *(males_iter);
-		int ageBucketIndex = GetAgeBucketIndex(p);
-		auto _ageBucketParams = popWideParams.initialAgeBuckets.at(ageBucketIndex);
-		DemographicProfile::Gender _gender = DemographicProfile::Gender::Male;
-		//if this is a prevalent person, see if they're infected. Right now, newborns cannot be infected
-		//TODO: Have counter in ageBucketParams for persons infected
+    if (popWideParams.UseSeedCoefficients()) {
+	double seedPrev = popWideParams.GetSeedPrevalence();
+	prevalentInfectionsFromCoefficients(seedPrev);
 
-        bool isCSW = p->getDemographicProfileVal(DemographicProfile::Demographic::Employment) == (std::size_t)DemographicProfile::Employment::Csw;
-		Person::RiskLevel risk = p->getRiskLevel();
-		//apply prevalence if we have not yet reached the quoto of infected people for that bucket
-		bool isPrevalent = false;
+    } else {
+	for(auto gender : enum_iterator<DemographicProfile::Gender>()) {
+	     prevalentInfectionsFromCount(gender);
+	}
+    }
+}
 
-		if(isCSW)
-		{
-            if(numInfectedByAgeBucketMale.at(ageBucketIndex)[0] < _ageBucketParams.numInfectedCSW[(std::size_t)_gender])
-			{
-				isPrevalent = true;
-				numInfectedByAgeBucketMale.at(ageBucketIndex)[0]++;
-			}
+/*
+ * prevalentInfectionsFromCoefficients()
+ *
+ * Creates a vector containing a list of people for seeding and randomly
+ * selects ones to infect.
+ *
+ */
+void Population::prevalentInfectionsFromCoefficients(double seedPrevalence)
+{
+    // vector of people to consider for seeding
+    // contains number of people per starta multiplied by the coefficient for that strata
+    std::vector<Person *> seedList;
+
+    std::size_t popInAgeRange = 0;
+    for (auto seedDistribution : popWideParams.GetSeedDistributions()) {
+	popInAgeRange += buildSeedList(seedList, seedDistribution);
+    }
+
+    if (popInAgeRange == 0 || seedList.size() == 0) {
+	throw std::runtime_error("No people in age range to seed. "
+				 "Check input parameters.");
+    }
+
+    auto popToSeed = Utility::round<unsigned long>(popInAgeRange * seedPrevalence);
+    int actualPopSeeded = infectSeedPopulation(seedList, popToSeed);
+
+    double seedRatio = double(actualPopSeeded) / double(popInAgeRange);
+    parameters_.displayOut(
+	boost::str(boost::format("Seeded prevalence rate: %f\n") % seedRatio));
+
+}
+
+/*
+ * buildSeedList
+ *
+ * In order to accurately represent the risk for each gender|risk strata
+ * each person is added to the list the number of times of the coefficient value
+ * of the risk group in which they belong.
+ *
+ * The total tally of people added to the list only includes one addition per person.
+ * This allows us to return the total number of people picked for seeding.
+ */
+int Population::buildSeedList(std::vector<Person *> &seedList, SeedDistribution seedDistribution)
+{
+    int total = 0;
+
+    int coeff;
+    for(auto gender : enum_iterator<DemographicProfile::Gender>()) {
+	for(std::list<Person *>::iterator _iter = entities->begin(gender);
+	    _iter != entities->end(gender); _iter++) {
+
+	    Person *person = *(_iter);
+	    if (!person->isSexuallyActive())
+		continue;
+
+	    if(seedDistribution.minAgeMth > person->getAge(TimeGranularity::Month))
+		continue;
+
+	    if(seedDistribution.maxAgeMth < person->getAge(TimeGranularity::Month))
+		continue;
+
+	    if (person->isCSW()) {
+		coeff = seedDistribution.numInfectedCSW[(std::size_t)gender];
+		for (int i = 0; i < coeff; i++) {
+		    seedList.push_back(person);
 		}
-		else
+		if (coeff > 0)
+		    total++;
+		continue;
+	    }
+
+	    auto risk = person->getRiskLevel();
+	    coeff = seedDistribution.numInfectedRisk[(std::size_t)gender][risk];
+	    for (int i = 0; i < coeff; i++) {
+		seedList.push_back(person);
+	    }
+	    if (coeff > 0)
+		total++;
+	}
+    }
+
+    return total;
+}
+
+/*
+ * infectSeedPopulation()
+ *
+ * Randomly selects a person from the list to infect.
+ */
+int Population::infectSeedPopulation(std::vector<Person *> seedList, std::size_t seedPopulation)
+{
+    int count = 0;
+    while (count < seedPopulation) {
+	int index = (int)parameters_.randomNums.randInt(0,
+	    (uint32_t)seedList.size() - 1);
+	Person *p = seedList.at(index);
+
+	if (p->isInfected())
+	    continue;
+
+	applyPrevalentInfection(p);
+	count++;
+    }
+
+    return count;
+}
+
+/*
+ * prevalentInfectionsFromCount()
+ *
+ * Loops through entities of @_gender and selects a count of Person's to infect.
+ */
+void Population::prevalentInfectionsFromCount(DemographicProfile::Gender _gender)
+{
+    // counter for number of people in each age bucket who are infected
+    // (used to initialize prevalence) (CSW, High risk, Low risk)
+    std::vector<std::array<int, 3>> bucket(
+	popWideParams.GetSeedDistributions().size());
+
+    for(std::list<Person *>::iterator _iter = entities->begin(_gender);
+	_iter != entities->end(_gender); _iter++) {
+	Person *p = *(_iter);
+
+	int ageBucketIndex = GetAgeBucketIndex(p);
+	SeedDistribution &_ageBucketParams =
+	    popWideParams.GetSeedDistributions().at(ageBucketIndex);
+
+	bool isCSW = p->isCSW();
+	Person::RiskLevel risk = p->getRiskLevel();
+	bool isPrevalent = false;
+	if(isCSW) {
+	    if(bucket.at(ageBucketIndex)[0] <
+	       _ageBucketParams.numInfectedCSW[(std::size_t)_gender])
 		{
-			if(risk == Person::HIGH)
-			{
-                if(numInfectedByAgeBucketMale.at(ageBucketIndex)[1] < _ageBucketParams.numInfectedRisk[(std::size_t)_gender][risk])
-				{
-					isPrevalent = true;
-					numInfectedByAgeBucketMale.at(ageBucketIndex)[1]++;
-				}
-			}
-			else
-			{
-                if(numInfectedByAgeBucketMale.at(ageBucketIndex)[2] < _ageBucketParams.numInfectedRisk[(std::size_t)_gender][risk])
-				{
-					isPrevalent = true;
-					numInfectedByAgeBucketMale.at(ageBucketIndex)[2]++;
-				}
-			}
+		    isPrevalent = true;
+		    bucket.at(ageBucketIndex)[0]++;
 		}
-
-		if(isPrevalent)
-		{
-			//Generation of infection for all prevalent cases is 0
-			//toReturn->cepacPatient is initialized HERE for prevalent cases
-			Person::HIVStatus oldStatus = p->hivStatus;
-
-			if(parameters_.tracePrevalentCases)
-			{
-				p->setToBeTraced();
-			}
-
-			p->becomeInfected(Constants::PREVALENT_INFECTION, parameters_);
-            RecordInfection(p, nullptr, parameters_.currTime);
-
-            if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled)
-            {
-                p->printCurrentPartners(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].file, "Current partners for newly infected prevalent case:");
-            }
-
-			if(oldStatus != p->hivStatus)
-			{
-				((BucketSexualMixing *) entities->getBucket(p->getDemographicProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
-					    p->hivStatus);
-			}
-
-			//Adds person to the untreated pool if using rollout
-			if(parameters_.useRollout)
-			{
-				rolloutUntreatedPool.push_back(p);
-			}
-
-            if(p->getDemographicProfile()->get(p->getDemographicProfile()->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
-			{
-				((BucketSexualMixing *)entities->getBucket(p->getDemographicProfile()->getProfileID()))->increaseInfected(p);
-			}
+	} else {
+	    if(risk == Person::HIGH) {
+		if(bucket.at(ageBucketIndex)[1] <
+		   _ageBucketParams.numInfectedRisk[(std::size_t)_gender][risk]) {
+		    isPrevalent = true;
+		    bucket.at(ageBucketIndex)[1]++;
 		}
-	}//for()
-
-	//loop through all females and apply prevalence to population
-	for(std::list<Person *>::iterator females_iter = entities->begin(DemographicProfile::Gender::Female);
-	        females_iter != entities->end(DemographicProfile::Gender::Female); females_iter++)
-	{
-		Person *p = *(females_iter);
-		int ageBucketIndex = GetAgeBucketIndex(p);
-		PopulationParameters::AgeBucketPrevalenceInfo &_ageBucketParams = popWideParams.initialAgeBuckets.at(
-		            ageBucketIndex);
-		DemographicProfile::Gender _gender = DemographicProfile::Gender::Female;
-		//if this is a prevalent person, see if they're infected. Right now, newborns cannot be infected
-		//TODO: Have counter in ageBucketParams for persons infected
-
-        bool isCSW = p->getDemographicProfileVal(DemographicProfile::Demographic::Employment) == (std::size_t)DemographicProfile::Employment::Csw;
-		Person::RiskLevel risk = p->getRiskLevel();
-		bool isPrevalent = false;
-
-		if(isCSW)
-		{
-            if(numInfectedByAgeBucketFemale.at(ageBucketIndex)[0] < _ageBucketParams.numInfectedCSW[(std::size_t)_gender])
-			{
-				isPrevalent = true;
-				numInfectedByAgeBucketFemale.at(ageBucketIndex)[0]++;
-			}
+	    } else {
+		if(bucket.at(ageBucketIndex)[2] <
+		   _ageBucketParams.numInfectedRisk[(std::size_t)_gender][risk]) {
+		    isPrevalent = true;
+		    bucket.at(ageBucketIndex)[2]++;
 		}
-		else
-		{
-			if(risk == Person::HIGH)
-			{
-                if(numInfectedByAgeBucketFemale.at(ageBucketIndex)[1] < _ageBucketParams.numInfectedRisk[(std::size_t)_gender][risk])
-				{
-					isPrevalent = true;
-					numInfectedByAgeBucketFemale.at(ageBucketIndex)[1]++;
-				}
-			}
-			else
-			{
-                if(numInfectedByAgeBucketFemale.at(ageBucketIndex)[2] < _ageBucketParams.numInfectedRisk[(std::size_t)_gender][risk])
-				{
-					isPrevalent = true;
-					numInfectedByAgeBucketFemale.at(ageBucketIndex)[2]++;
-				}
-			}
-		}
+	    }
+	}
 
-		if(isPrevalent)
-		{
-			//Generation of infection for all prevalent cases is 0
-			//toReturn->cepacPatient is initialized HERE for prevalent cases
-			Person::HIVStatus oldStatus = p->hivStatus;
+	if (isPrevalent)
+	    applyPrevalentInfection(p);
+    }
+}
 
-			if(parameters_.tracePrevalentCases)
-			{
-				p->setToBeTraced();
-			}
+/*
+ * applyPrevalentInfection()
+ *
+ * Forces a prevalent infection on a @p
+ */
+void Population::applyPrevalentInfection(Person *p)
+{
+    Person::HIVStatus oldStatus = p->hivStatus;
 
-			p->becomeInfected(Constants::PREVALENT_INFECTION, parameters_);
-            RecordInfection(p, nullptr, parameters_.currTime);
+    if(parameters_.tracePrevalentCases)
+	p->setToBeTraced();
 
-			if(oldStatus != p->hivStatus)
-			{
-				((BucketSexualMixing *) entities->getBucket(p->getDemographicProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
-					    p->hivStatus);
-			}
+    bool chronicInfection = rollForChronicInfection(parameters_.randomNums);
+    p->seedInfection(Constants::PREVALENT_INFECTION, parameters_, chronicInfection);
+    RecordInfection(p, nullptr, parameters_.currTime);
 
-			if(parameters_.useRollout)
-			{
-				rolloutUntreatedPool.push_back(p);
-			}
+    if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled) {
+	p->printCurrentPartners(parameters_.trace_files
+				[EventParams::TraceFile::Type::SinglePerson].file,
+				"Current partners for newly infected prevalent case:");
+    }
 
-            if(p->getDemographicProfile()->get(p->getDemographicProfile()->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
-			{
-				((BucketSexualMixing *)entities->getBucket(p->getDemographicProfile()->getProfileID()))->increaseInfected(p);
-			}
-		}
-	}//for()
+    if(oldStatus != p->hivStatus) {
+	((BucketSexualMixing *) entities->getBucket(
+	    p->getDemographicProfile()->getProfileID()))->
+	    changeHIVStatus(p, oldStatus, p->hivStatus);
+    }
+
+    if(parameters_.useRollout) {
+	rolloutUntreatedPool.push_back(p);
+    }
+
+    if (p->getDemographicProfile()->get(
+	    p->getDemographicProfile()->getProfileID(),
+	    DemographicProfile::Demographic::SexualActivityStatus) !=
+	(std::size_t)DemographicProfile::SexualActivityStatus::NotActive) {
+	((BucketSexualMixing *)entities->getBucket(
+	    p->getDemographicProfile()->
+	    getProfileID()))->increaseInfected(p);
+    }
+}
+
+bool Population::rollForChronicInfection(RandomNumberGenerator &_randomNums)
+{
+    double infectionRate = popWideParams.GetChanceChronicInfection();
+    return (_randomNums.chance(infectionRate));
 }
 
 void Population::RecordInfection(const Person *infectee, const Person *infector, int time)
 {
     if(individual_summaries_.size() >= 1000)
     {
-        return;
+	return;
     }
 
     PersonSummary summary;
@@ -1381,7 +1442,7 @@ void Population::RecordInfection(const Person *infectee, const Person *infector,
 
     if(individual_summaries_.find(infectee->getID()) != individual_summaries_.end())
     {
-        throw std::runtime_error("already being recorded");
+	throw std::runtime_error("already being recorded");
     }
 
     individual_summaries_[infectee->getID()] = summary;
@@ -1392,23 +1453,20 @@ void Population::RecordInfection(const Person *infectee, const Person *infector,
 */
 void Population::ApplyRolloutContext(EventParams &parameters_, int time)
 {
-	for(vector <EventParams::RolloutContext *>::iterator rolloutContextIter = parameters_.rolloutSimContexts.begin();
-	        rolloutContextIter != parameters_.rolloutSimContexts.end(); rolloutContextIter++)
+	for(EventParams::CepacSimContext *rolloutContext : parameters_.cepacSimContexts)
 	{
-		EventParams::RolloutContext *rolloutContext = *rolloutContextIter;
-
 		if(rolloutContext->timeToApply == time)
 		{
 			//Switch the cepac file depending on the population the new file is applied to
 			switch(rolloutContext->popOfInterest)
 			{
 			case 0: //All Untreated
-				parameters_.untreatedContext = rolloutContext->rolloutSimContext.get();
+				parameters_.untreatedContext = rolloutContext->simContext.get();
 				break;
 
 			case 1:  //All Treated
 			{
-				parameters_.treatedContext = rolloutContext->rolloutSimContext.get();
+				parameters_.treatedContext = rolloutContext->simContext.get();
 				//Apply to all current treated patients
 				std::list<Person *>::iterator personIter;
 
@@ -1421,7 +1479,7 @@ void Population::ApplyRolloutContext(EventParams &parameters_, int time)
 			}
 
 			case 2: //Untreated Getting new art
-				parameters_.treatedContext = rolloutContext->rolloutSimContext.get();
+				parameters_.treatedContext = rolloutContext->simContext.get();
 				break;
 
 			default:
@@ -1500,7 +1558,7 @@ void Population::DetermineRankings(const EventParams::RolloutEligibility &criter
 					}
 
 					if(untPerson->cd4 >= criteria.cd4OiHistCd4Bounds.lower
-					        && untPerson->cd4 <= criteria.cd4OiHistCd4Bounds.upper && numMatchingOIs >= 1)
+						&& untPerson->cd4 <= criteria.cd4OiHistCd4Bounds.upper && numMatchingOIs >= 1)
 					{
 						isEligible = true;
 					}
@@ -1522,7 +1580,7 @@ void Population::DetermineRankings(const EventParams::RolloutEligibility &criter
 					double currCd4 = untPerson->cd4;
 
 					if(currCd4 >= criteria.cd4HvlCd4Bounds.lower && currCd4 <= criteria.cd4HvlCd4Bounds.upper
-					        && currHvl >= criteria.cd4HvlHvlBounds.lower && currHvl <= criteria.cd4HvlHvlBounds.upper)
+						&& currHvl >= criteria.cd4HvlHvlBounds.lower && currHvl <= criteria.cd4HvlHvlBounds.upper)
 					{
 						isEligible = true;
 					}
@@ -1576,37 +1634,60 @@ double InterpolateProportion(const std::map<int, double> &yearly_proportions, in
 	return 0;
 }
 
+/*
+ * Treatment slots are calculated in one of two ways depending if
+ * dynamic treatment scaling (DTS) is enabled or disabled. DTS is meant to
+ * adjust for the lag in the treatment cascade in CEPAC.
+ *
+ * When DTS is enabled, we artificially increase the number of treatment slots
+ * by a "correction factor". This correction factor is the ratio of the treatment
+ * pool size in CDM over the number of people being treated in CEPAC (which will
+ * always be greater than one). In this way we force the actual treatment proportion
+ * closer to the value given as a parameter.
+ *
+ * When DTS is disabled, the number of treatment slots is the proportion of the
+ * total population  eligible for rollout minus the number of slots already taken.
+ */
 int Population::UpdateTreatmentSlots(double rolloutProportion)
 {
-	int numAccessingTreatment = (int)rolloutTreatedPool.size();
-	double targetTreatmentSlots = GetSize() * rolloutProportion;
+#ifdef USE_POPULATION_PROPORTION_FOR_TREATMENT_SLOTS
+    int eligiblePopulation = GetSize();
+#else
+    int eligiblePopulation = (int)(rolloutTreatedPool.size() + rolloutUntreatedPool.size());
+#endif
 
-	if(parameters_.enableDynamicTreatmentScaling)
-	{
-		int position = (parameters_.currTime - parameters_.monthOf1990) % parameters_.dynamicFeedbackPeriod;
+    int numAccessingTreatment = (int)rolloutTreatedPool.size();
+    double targetTreatmentSlots = eligiblePopulation * rolloutProportion;
 
-		if(position == 0)
-		{
-			treatmentCorrectionFactor_ = 1;
-			auto numTreated = std::count_if(rolloutTreatedPool.begin(), rolloutTreatedPool.end(), [](Person *p) { return p->isOnArt(); });
+    int numSlots;
+    if(parameters_.enableDynamicTreatmentScaling) {
+	int position = (parameters_.currTime - parameters_.monthOf1990) %
+	    parameters_.dynamicFeedbackPeriod;
 
-			if(numTreated > 0)
-			{
-				treatmentCorrectionFactor_ = numAccessingTreatment / static_cast<double>(numTreated);
-			}
-		}
+	if(position == 0) {
+	    treatmentCorrectionFactor_ = 1;
+	    // Count the number of people reported to be on ART in CEPAC
+	    auto numTreated = std::count_if(rolloutTreatedPool.begin(), rolloutTreatedPool.end(),
+					    [](Person *p) { return p->isOnArt(); });
 
-		return static_cast<int>(targetTreatmentSlots * treatmentCorrectionFactor_) - numAccessingTreatment;
+	    if(numTreated > 0) {
+		treatmentCorrectionFactor_ = numAccessingTreatment /
+		    static_cast<double>(numTreated);
+	    }
 	}
-	else
-	{
-		return static_cast<int>(GetSize() * rolloutProportion) - numAccessingTreatment;
-	}
+	numSlots = static_cast<int>(targetTreatmentSlots * treatmentCorrectionFactor_) -
+	    numAccessingTreatment;
+
+    } else {
+	numSlots = static_cast<int>(targetTreatmentSlots) - numAccessingTreatment;
+    }
+
+    return numSlots;
 }
 
 void Population::ApplyARTRollout(EventParams &parameters_)
 {
-	double rolloutProportion = InterpolateProportion(parameters_.targetYearlyRolloutProportions, 
+	double rolloutProportion = InterpolateProportion(parameters_.targetYearlyRolloutProportions,
 		parameters_.currTime, parameters_.monthOf1990);
 	int newSlots = UpdateTreatmentSlots(rolloutProportion);
 
@@ -1702,17 +1783,17 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 	std::ostringstream secondRow;
 	std::ostringstream thirdRow;
 	secondRow << "Steady Partnership Prevalence" << Constants::TAB << "Casual Partnership Prevalence" << Constants::TAB <<
-	          "CSW Partnership Prevalence" << Constants::TAB << "Prop in Concurrent" << Constants::TAB <<
-	          "Num Acts (per person per month)" << Constants::TAB << "Casual Partnership Prev Ratio (FtM)" << Constants::TAB <<
-	          "Prop in Concurrent Ratio (FtM)" << Constants::TAB << "Avg Num Acts Ratio (LR to HR Females)" << Constants::TAB <<
-	          "Steady Partnership Prev" << Constants::TAB << "Casual Partnership Prevalence" << Constants::TAB <<
-	          "CSW Partnership Prevalence" << Constants::TAB << "Prop In Concurrent" << Constants::TAB << "Num Acts" << Constants::TAB
-	          << "Casual Partnership Prev Ratio (FtM)" << Constants::TAB << "Prop in Concurrent Ratio (FtM)" << Constants::TAB <<
-	          "Avg Num Acts Ratio (LR to HR Females)" << Constants::TAB;
+		  "CSW Partnership Prevalence" << Constants::TAB << "Prop in Concurrent" << Constants::TAB <<
+		  "Num Acts (per person per month)" << Constants::TAB << "Casual Partnership Prev Ratio (FtM)" << Constants::TAB <<
+		  "Prop in Concurrent Ratio (FtM)" << Constants::TAB << "Avg Num Acts Ratio (LR to HR Females)" << Constants::TAB <<
+		  "Steady Partnership Prev" << Constants::TAB << "Casual Partnership Prevalence" << Constants::TAB <<
+		  "CSW Partnership Prevalence" << Constants::TAB << "Prop In Concurrent" << Constants::TAB << "Num Acts" << Constants::TAB
+		  << "Casual Partnership Prev Ratio (FtM)" << Constants::TAB << "Prop in Concurrent Ratio (FtM)" << Constants::TAB <<
+		  "Avg Num Acts Ratio (LR to HR Females)" << Constants::TAB;
 
     for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
 	{
-        for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
+	for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 		{
 			numInPartnership[i][j] = 0;
 		}
@@ -1737,30 +1818,30 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 
 		while(p_Iter != entities->end(gender))
 		{
-            if((*p_Iter)->getDemographicProfileVal(DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::Active)
+	    if((*p_Iter)->getDemographicProfileVal(DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::Active)
 			{
 				p_Iter++;
 				continue;
 			}
 
 			Person::RiskLevel risk = (*p_Iter)->getRiskLevel();
-            numSexuallyActive[(std::size_t)gender]++;
-            numSexuallyActiveRisk[(std::size_t)gender][risk]++;
-            numActsMonth[(std::size_t)gender] += (*p_Iter)->getNumActsThisMonth();
-            numActsMonthRisk[(std::size_t)gender][risk] += (*p_Iter)->getNumActsThisMonth();
+	    numSexuallyActive[(std::size_t)gender]++;
+	    numSexuallyActiveRisk[(std::size_t)gender][risk]++;
+	    numActsMonth[(std::size_t)gender] += (*p_Iter)->getNumActsThisMonth();
+	    numActsMonthRisk[(std::size_t)gender][risk] += (*p_Iter)->getNumActsThisMonth();
 
 			for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
 			{
 				if((*p_Iter)->getMonthOfLatestPartnershipDissolution((SexualPartnership::Type) i) > max<int>((
-				            parameters_.currTime - 12), 0))
+					    parameters_.currTime - 12), 0))
 				{
-                    numInPartnership[i][(std::size_t)gender]++;
+		    numInPartnership[i][(std::size_t)gender]++;
 				}
 			}
 
 			if((*p_Iter)->getMonthOfLatestConcurrent() > max<int>((parameters_.currTime - 12), 0))
 			{
-                numInConcurrent[(std::size_t)gender]++;
+		numInConcurrent[(std::size_t)gender]++;
 			}
 
 			p_Iter++;
@@ -1777,15 +1858,15 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 	if(parameters_.calibrationInputs.steadyPrevPopulation == 0)
 	{
 		firstRow << "Entire SA Pop" << Constants::TAB;
-        numInSteady = numInPartnership[(int)SexualPartnership::Type::Steady][(std::size_t)DemographicProfile::Gender::Male] +
-            numInPartnership[(int)SexualPartnership::Type::Steady][(std::size_t)DemographicProfile::Gender::Female]; //entire SA pop
+	numInSteady = numInPartnership[(int)SexualPartnership::Type::Steady][(std::size_t)DemographicProfile::Gender::Male] +
+	    numInPartnership[(int)SexualPartnership::Type::Steady][(std::size_t)DemographicProfile::Gender::Female]; //entire SA pop
 
 		if(totalSA != 0)
 		{
 			steadyPrev = numInSteady / (double)totalSA;
 
 			if(steadyPrev < parameters_.calibrationInputs.steadyPrevBounds.lower
-			        || steadyPrev > parameters_.calibrationInputs.steadyPrevBounds.upper)
+				|| steadyPrev > parameters_.calibrationInputs.steadyPrevBounds.upper)
 			{
 				passesCalib = false;
 				passesSteadyPrev = false;
@@ -1799,14 +1880,14 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 	else
 	{
 		firstRow << "Male SA Pop" << Constants::TAB;
-        numInSteady = numInPartnership[(int)SexualPartnership::Type::Steady][(std::size_t)DemographicProfile::Gender::Male]; //only male SA
+	numInSteady = numInPartnership[(int)SexualPartnership::Type::Steady][(std::size_t)DemographicProfile::Gender::Male]; //only male SA
 
 		if(maleSA != 0)
 		{
 			steadyPrev = numInSteady / (double)maleSA;
 
 			if(steadyPrev < parameters_.calibrationInputs.steadyPrevBounds.lower
-			        || steadyPrev > parameters_.calibrationInputs.steadyPrevBounds.upper)
+				|| steadyPrev > parameters_.calibrationInputs.steadyPrevBounds.upper)
 			{
 				passesCalib = false;
 				passesSteadyPrev = false;
@@ -1821,15 +1902,15 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 	if(parameters_.calibrationInputs.casualPrevPopulation == 0)
 	{
 		firstRow << "Entire SA Pop" << Constants::TAB;
-        numInCasual = numInPartnership[(int)SexualPartnership::Type::Casual][(std::size_t)DemographicProfile::Gender::Male] +
-            numInPartnership[(int)SexualPartnership::Type::Casual][(std::size_t)DemographicProfile::Gender::Female]; //entire SA pop
+	numInCasual = numInPartnership[(int)SexualPartnership::Type::Casual][(std::size_t)DemographicProfile::Gender::Male] +
+	    numInPartnership[(int)SexualPartnership::Type::Casual][(std::size_t)DemographicProfile::Gender::Female]; //entire SA pop
 
 		if(totalSA != 0)
 		{
 			casualPrev = numInCasual / (double)totalSA;
 
 			if(casualPrev < parameters_.calibrationInputs.casualPrevBounds.lower
-			        || casualPrev > parameters_.calibrationInputs.casualPrevBounds.upper)
+				|| casualPrev > parameters_.calibrationInputs.casualPrevBounds.upper)
 			{
 				passesCalib = false;
 				passesCasualPrev = false;
@@ -1843,14 +1924,14 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 	else
 	{
 		firstRow << "Male SA Pop" << Constants::TAB;
-        numInCasual = numInPartnership[(int)SexualPartnership::Type::Casual][(std::size_t)DemographicProfile::Gender::Male]; //only male SA
+	numInCasual = numInPartnership[(int)SexualPartnership::Type::Casual][(std::size_t)DemographicProfile::Gender::Male]; //only male SA
 
 		if(maleSA != 0)
 		{
 			casualPrev = numInCasual / (double)maleSA;
 
 			if(casualPrev < parameters_.calibrationInputs.casualPrevBounds.lower
-			        || casualPrev > parameters_.calibrationInputs.casualPrevBounds.upper)
+				|| casualPrev > parameters_.calibrationInputs.casualPrevBounds.upper)
 			{
 				passesCalib = false;
 				passesCasualPrev = false;
@@ -1865,15 +1946,15 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 	if(parameters_.calibrationInputs.CSWPrevPopulation == 0)
 	{
 		firstRow << "Entire SA Pop" << Constants::TAB;
-        numInCSW = numInPartnership[(int)SexualPartnership::Type::Csw][(std::size_t)DemographicProfile::Gender::Male] +
-            numInPartnership[(int)SexualPartnership::Type::Csw][(std::size_t)DemographicProfile::Gender::Female]; //entire SA pop
+	numInCSW = numInPartnership[(int)SexualPartnership::Type::Csw][(std::size_t)DemographicProfile::Gender::Male] +
+	    numInPartnership[(int)SexualPartnership::Type::Csw][(std::size_t)DemographicProfile::Gender::Female]; //entire SA pop
 
 		if(totalSA != 0)
 		{
 			CSWPrev = numInCSW / (double)totalSA;
 
 			if(CSWPrev < parameters_.calibrationInputs.CSWPrevBounds.lower
-			        || CSWPrev > parameters_.calibrationInputs.CSWPrevBounds.upper)
+				|| CSWPrev > parameters_.calibrationInputs.CSWPrevBounds.upper)
 			{
 				passesCalib = false;
 				passesCSWPrev = false;
@@ -1887,14 +1968,14 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 	else
 	{
 		firstRow << "Male SA Pop" << Constants::TAB;
-        numInCSW = numInPartnership[(int)SexualPartnership::Type::Csw][(std::size_t)DemographicProfile::Gender::Male]; //only male SA
+	numInCSW = numInPartnership[(int)SexualPartnership::Type::Csw][(std::size_t)DemographicProfile::Gender::Male]; //only male SA
 
 		if(maleSA != 0)
 		{
 			CSWPrev = numInCSW / (double)maleSA;
 
 			if(CSWPrev < parameters_.calibrationInputs.CSWPrevBounds.lower
-			        || CSWPrev > parameters_.calibrationInputs.CSWPrevBounds.upper)
+				|| CSWPrev > parameters_.calibrationInputs.CSWPrevBounds.upper)
 			{
 				passesCalib = false;
 				passesCSWPrev = false;
@@ -1909,14 +1990,14 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 	if(parameters_.calibrationInputs.propInConcurrentPopulation == 0)
 	{
 		firstRow << "Entire SA Pop" << Constants::TAB;
-        concurrentNum = numInConcurrent[(std::size_t)DemographicProfile::Gender::Male] + numInConcurrent[(std::size_t)DemographicProfile::Gender::Female]; //entire SA pop
+	concurrentNum = numInConcurrent[(std::size_t)DemographicProfile::Gender::Male] + numInConcurrent[(std::size_t)DemographicProfile::Gender::Female]; //entire SA pop
 
 		if(totalSA != 0)
 		{
 			propInConcurrent = concurrentNum / (double)totalSA;
 
 			if(propInConcurrent < parameters_.calibrationInputs.propInConcurrentBounds.lower
-			        || propInConcurrent > parameters_.calibrationInputs.propInConcurrentBounds.upper)
+				|| propInConcurrent > parameters_.calibrationInputs.propInConcurrentBounds.upper)
 			{
 				passesCalib = false;
 				passesPropInConcurrent = false;
@@ -1930,14 +2011,14 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 	else
 	{
 		firstRow << "Male SA Pop" << Constants::TAB;
-        concurrentNum = numInConcurrent[(std::size_t)DemographicProfile::Gender::Male]; //only male SA
+	concurrentNum = numInConcurrent[(std::size_t)DemographicProfile::Gender::Male]; //only male SA
 
 		if(maleSA != 0)
 		{
 			propInConcurrent = concurrentNum / (double)maleSA;
 
 			if(propInConcurrent < parameters_.calibrationInputs.propInConcurrentBounds.lower
-			        || propInConcurrent > parameters_.calibrationInputs.propInConcurrentBounds.upper)
+				|| propInConcurrent > parameters_.calibrationInputs.propInConcurrentBounds.upper)
 			{
 				passesCalib = false;
 				passesPropInConcurrent = false;
@@ -1952,14 +2033,14 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 	if(parameters_.calibrationInputs.numActsPopulation == 0)
 	{
 		firstRow << "Entire SA Pop" << Constants::TAB;
-        numActs = numActsMonth[(std::size_t)DemographicProfile::Gender::Male] + numActsMonth[(std::size_t)DemographicProfile::Gender::Female]; //entire SA pop
+	numActs = numActsMonth[(std::size_t)DemographicProfile::Gender::Male] + numActsMonth[(std::size_t)DemographicProfile::Gender::Female]; //entire SA pop
 
 		if(totalSA != 0)
 		{
 			numActsAvg = numActs / (double)totalSA;
 
 			if(numActsAvg < parameters_.calibrationInputs.numActsBounds.lower
-			        || numActsAvg > parameters_.calibrationInputs.numActsBounds.upper)
+				|| numActsAvg > parameters_.calibrationInputs.numActsBounds.upper)
 			{
 				passesCalib = false;
 				passesNumActs = false;
@@ -1973,14 +2054,14 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 	else
 	{
 		firstRow << "Male SA Pop" << Constants::TAB;
-        numActs = numActsMonth[(std::size_t)DemographicProfile::Gender::Male]; //only male SA
+	numActs = numActsMonth[(std::size_t)DemographicProfile::Gender::Male]; //only male SA
 
 		if(maleSA != 0)
 		{
 			numActsAvg = numActs / (double)maleSA;
 
 			if(numActsAvg < parameters_.calibrationInputs.numActsBounds.lower
-			        || numActsAvg > parameters_.calibrationInputs.numActsBounds.upper)
+				|| numActsAvg > parameters_.calibrationInputs.numActsBounds.upper)
 			{
 				passesCalib = false;
 				passesNumActs = false;
@@ -2044,8 +2125,8 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 
 	if(numSAFemaleHR != 0 && numSAFemaleLR != 0)
 	{
-        double avgNumActsFemaleHR = numActsMonthRisk[(std::size_t)DemographicProfile::Gender::Female][Person::HIGH] / (double)numSAFemaleHR;
-        double avgNumActsFemaleLR = numActsMonthRisk[(std::size_t)DemographicProfile::Gender::Female][Person::LOW] / (double)numSAFemaleLR;
+	double avgNumActsFemaleHR = numActsMonthRisk[(std::size_t)DemographicProfile::Gender::Female][Person::HIGH] / (double)numSAFemaleHR;
+	double avgNumActsFemaleLR = numActsMonthRisk[(std::size_t)DemographicProfile::Gender::Female][Person::LOW] / (double)numSAFemaleLR;
 
 		if(avgNumActsFemaleHR != 0)
 		{
@@ -2061,24 +2142,24 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 
 	firstRow << "Violation of Constraint (1=Condition Met, 0=Not Met)";
 	thirdRow << steadyPrev << Constants::TAB << casualPrev << Constants::TAB << CSWPrev << Constants::TAB <<
-	         propInConcurrent << Constants::TAB << numActsAvg << Constants::TAB << casualPartPrevRatio << Constants::TAB <<
-	         propConcurrentRatio << Constants::TAB << numActsFemaleLRtoHRRatio << Constants::TAB;
+		 propInConcurrent << Constants::TAB << numActsAvg << Constants::TAB << casualPartPrevRatio << Constants::TAB <<
+		 propConcurrentRatio << Constants::TAB << numActsFemaleLRtoHRRatio << Constants::TAB;
 	thirdRow << (int)passesSteadyPrev << Constants::TAB << (int)passesCasualPrev << Constants::TAB <<
-	         (int)passesCSWPrev << Constants::TAB << (int)passesPropInConcurrent << Constants::TAB <<
-	         (int)passesNumActs << Constants::TAB << (int)passesCasualPartPrevRatio << Constants::TAB <<
-	         (int)passesPropConcRatio << Constants::TAB << (int)passesNumActsLRtoHRRatio << Constants::TAB;
+		 (int)passesCSWPrev << Constants::TAB << (int)passesPropInConcurrent << Constants::TAB <<
+		 (int)passesNumActs << Constants::TAB << (int)passesCasualPartPrevRatio << Constants::TAB <<
+		 (int)passesPropConcRatio << Constants::TAB << (int)passesNumActsLRtoHRRatio << Constants::TAB;
 
 	if(parameters_.trace_files[EventParams::TraceFile::Type::CalibrationStatistics].enabled)
 	{
 		parameters_.trace_files[EventParams::TraceFile::Type::CalibrationStatistics] << firstRow.str() << std::endl << secondRow.str() << std::endl <<
-		        thirdRow.str() << std::endl;
+			thirdRow.str() << std::endl;
 	}
 
 	return passesCalib;
 }
 
 unsigned long Population::CreatePartnerships(EventParams &parameters_, Person *_initiator,
-        std::list<Person *>::iterator * /*_p_Iter*/, SexualPartnership::Type _partnershipType, bool _forceNumPartnersOne)
+	std::list<Person *>::iterator * /*_p_Iter*/, SexualPartnership::Type _partnershipType, bool _forceNumPartnersOne)
 {
 	assert((_initiator != nullptr));
 	assert((_initiator->isAlive()));
@@ -2106,7 +2187,7 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Person *_
 	if(printToTrace && numPartners > 0)
 	{
 		parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "+ Male " << _initiator->getID() << " attempts to form " <<
-		        numPartners << " " << (SexualPartnership::TypeStrings.at(_partnershipType)) << " partnerships:" << std::endl;
+			numPartners << " " << (SexualPartnership::TypeStrings.at(_partnershipType)) << " partnerships:" << std::endl;
 	}
 
 	while(numPartners > 0)
@@ -2122,11 +2203,11 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Person *_
 		Person *chosenPartner = nullptr;
 		bool printTracePartner = false;
 
-        int maxRejections = ((Male *)_initiator)->getMaxPartnershipRejections();
+	int maxRejections = ((Male *)_initiator)->getMaxPartnershipRejections();
 
 		//the partner that this man will have a relationship with
 		//remove the partner from the pool will be added back later
-        //Why 10? Magic numbers are evil! GA
+	//Why 10? Magic numbers are evil! GA
 		for(int i = 0; i < 10; i++)
 		{
 			Person *partner = bucket->drawMember(parameters_.randomNums, _initiator, _partnershipType, true);
@@ -2136,7 +2217,7 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Person *_
 				if(printToTrace)
 				{
 					parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "  +x Male " << _initiator->getID() <<
-					        " attempted to draw from empty bucket" << std::endl;
+						" attempted to draw from empty bucket" << std::endl;
 					parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "   x Partnership not formed!" << std::endl;
 				}
 
@@ -2145,10 +2226,10 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Person *_
 				break;
 			}
 
-            if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && partner->trace())
+	    if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && partner->trace())
 			{
-				parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "+ Female " << partner->getID() << " is chosen for a " << 
-				        (SexualPartnership::TypeStrings.at(_partnershipType)) << " partnership:" << std::endl;
+				parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "+ Female " << partner->getID() << " is chosen for a " <<
+					(SexualPartnership::TypeStrings.at(_partnershipType)) << " partnership:" << std::endl;
 				printTracePartner = true;
 			}
 
@@ -2159,7 +2240,7 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Person *_
 			//if we tried to draw someone we are already seeing, then redraw until we pick someone new
 			if(_initiator->isPartneredWith(partner))
 			{
-                if(parameters_.debugLevel > DebugLevel::One)
+		if(parameters_.debugLevel > DebugLevel::One)
 				{
 					_initiator->print(cerr, "");
 					cerr << _initiator->getID() << " Attempted repeat partnership with " << partner->getID() << ", " <<
@@ -2167,11 +2248,11 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Person *_
 					_initiator->printCurrentPartners(cerr, "");
 				}
 
-                if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (_initiator->trace() || partner->trace()))
+		if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (_initiator->trace() || partner->trace()))
 				{
 					if(_initiator->trace())
 					{
-                        if(_initiator->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
+			if(_initiator->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
 						{
 							parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "  +x Male ";
 						}
@@ -2181,11 +2262,11 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Person *_
 						}
 
 						parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << _initiator->getID() << " attempted repeat partnership with " <<
-						        partner->getID() << std::endl;
+							partner->getID() << std::endl;
 					}
 					else
 					{
-                        if(partner->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Female)
+			if(partner->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Female)
 						{
 							parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "  +x Female ";
 						}
@@ -2195,7 +2276,7 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Person *_
 						}
 
 						parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << partner->getID() << " was selected *again* by " <<
-						        _initiator->getID() << std::endl;
+							_initiator->getID() << std::endl;
 					}
 
 					parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "   x Repeat partnership not formed!" << std::endl;
@@ -2203,18 +2284,18 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Person *_
 			}
 			else if(partner != _initiator && popWideParams.ageOfMajority + partner->GetSexualActivityDelay() <= partner->getAge(TimeGranularity::Month))
 			{
-                auto rejectionChance = partner->GetPartnershipRejectionChance(_initiator->getRiskLevel(), _partnershipType);
+		auto rejectionChance = partner->GetPartnershipRejectionChance(_initiator->getRiskLevel(), _partnershipType);
 
-                if(rejectionChance == 0 || !parameters_.randomNums.chance(rejectionChance)) // not rejected or partner rejection not set
-                {
-                    foundPartner = true;
-                    chosenPartner = partner;
-                    break;
-                }
-                else if(maxRejections != 0 && --maxRejections == 0) // rejected -> max reached?
-                {
-                    break;
-                }
+		if(rejectionChance == 0 || !parameters_.randomNums.chance(rejectionChance)) // not rejected or partner rejection not set
+		{
+		    foundPartner = true;
+		    chosenPartner = partner;
+		    break;
+		}
+		else if(maxRejections != 0 && --maxRejections == 0) // rejected -> max reached?
+		{
+		    break;
+		}
 			}
 		}
 
@@ -2239,12 +2320,12 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Person *_
 		{
 			parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "  + Male " << _initiator->getID() << " (";
 			_initiator->getDemographicProfile()->print(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].file, "");
-            parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " age " << _initiator->getAge(TimeGranularity::Month) << ", " 
-                << chosenPartner->getSexualActivity() << " marbles, " << ((chosenPartner->getRiskLevel() == Person::HIGH) ? "HIGH" : "LOW") << " risk) forms " <<
-			        (SexualPartnership::TypeStrings.at(_partnershipType)) << " with female " << chosenPartner->getID() << " (";
+	    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " age " << _initiator->getAge(TimeGranularity::Month) << ", "
+		<< chosenPartner->getSexualActivity() << " marbles, " << ((chosenPartner->getRiskLevel() == Person::HIGH) ? "HIGH" : "LOW") << " risk) forms " <<
+				(SexualPartnership::TypeStrings.at(_partnershipType)) << " with female " << chosenPartner->getID() << " (";
 			chosenPartner->getDemographicProfile()->print(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].file, "");
-			parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " age " << chosenPartner->getAge(TimeGranularity::Month) 
-                << ", " << chosenPartner->getSexualActivity() << " marbles, " << ((chosenPartner->getRiskLevel() == Person::HIGH) ? "HIGH" : "LOW") << " risk)";
+			parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " age " << chosenPartner->getAge(TimeGranularity::Month)
+		<< ", " << chosenPartner->getSexualActivity() << " marbles, " << ((chosenPartner->getRiskLevel() == Person::HIGH) ? "HIGH" : "LOW") << " risk)";
 		}
 
 		//the pointer to this partnership will be stored within initiator.
@@ -2287,18 +2368,18 @@ void Population::ProcessDeath(EventParams &parameters_, Person *_p, bool calcula
 	if(calculateLE)
 	{
 		assert((populationStatistics.selectedLEStats != nullptr));
-        assert(_p->getAge(TimeGranularity::Year) >= 0);
-        assert(_p->getAge(TimeGranularity::Year) <= Person::maxYrForDeathStats);
-        populationStatistics.selectedLEStats->deathsByAge[_p->getAge(TimeGranularity::Year)]++;
+	assert(_p->getAge(TimeGranularity::Year) >= 0);
+	assert(_p->getAge(TimeGranularity::Year) <= Person::maxYrForDeathStats);
+	populationStatistics.selectedLEStats->deathsByAge[_p->getAge(TimeGranularity::Year)]++;
 	}
 
 	//print out this info to the trace
-    if(parameters_.debugLevel > DebugLevel::One && parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
+	if(parameters_.debugLevel > DebugLevel::One && parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
 	{
 		_p->print(parameters_.trace_files[EventParams::TraceFile::Type::Events].file, "Someone died: " + Constants::TAB);
 	}
 
-    if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && _p->trace())
+	if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && _p->trace())
 	{
 		_p->print(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].file, ">> Today we mourn: ");
 	}
@@ -2317,6 +2398,23 @@ void Population::ProcessDeath(EventParams &parameters_, Person *_p, bool calcula
 	currDeathCauses[_p->deathStatus]++;
 	populationStatistics.processDeath(_p, parameters_);
 
+	if(parameters_.useRollout) {
+	    //Remove people from the treated/untreated pool if they die
+	    std::list<Person *>::iterator poolIterator;
+	    poolIterator = std::find(rolloutUntreatedPool.begin(),
+				     rolloutUntreatedPool.end(), _p);
+
+	    if(poolIterator != rolloutUntreatedPool.end()) {
+		rolloutUntreatedPool.erase(poolIterator);
+	    } else {
+		poolIterator = std::find(rolloutTreatedPool.begin(),
+					 rolloutTreatedPool.end(), _p);
+
+		if(poolIterator != rolloutTreatedPool.end())
+		    rolloutTreatedPool.erase(poolIterator);
+	    }
+	}
+
 	delete _p;
 }
 
@@ -2333,9 +2431,10 @@ long Population::CalcPrevalentPopulation(long _time)
 	AgeRangeSizeContainer prevalenceByAgeMale, prevalenceByAgeFemale;
 
 	//initialize prevalent infections by age
-	for(auto ageBucketParams : popWideParams.initialAgeBuckets)
+	for(auto ageDistribution : popWideParams.GetAgeDistributions())
 	{
-		AgeRange range = {ageBucketParams.minAgeMth, ageBucketParams.maxAgeMth};
+		AgeRange range = {ageDistribution.minAgeMth,
+				  ageDistribution.maxAgeMth};
 		prevalenceByAgeMale.push_back({range, 0});
 		prevalenceByAgeFemale.push_back({range, 0});
 	}
@@ -2345,7 +2444,7 @@ long Population::CalcPrevalentPopulation(long _time)
 	{
 	  for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 		{
-            for(int k = 0; k < (int)DemographicProfile::Employment::Last; k++)
+	    for(int k = 0; k < (int)DemographicProfile::Employment::Last; k++)
 			{
 				prevalenceByRiskGenderEmployment[i][j][k] = 0;
 			}
@@ -2380,7 +2479,7 @@ long Population::CalcPrevalentPopulation(long _time)
 		}
 
 		for(int generation = Constants::PREVALENT_INFECTION;
-		        generation < populationStatistics.infectionsTracker.NUMBER_GENERATIONS_TO_TRACE; generation++)
+			generation < populationStatistics.infectionsTracker.NUMBER_GENERATIONS_TO_TRACE; generation++)
 		{
 			//count number of infected in bucket
 			prevalenceByBucket[currProfileID][generation] = currBucket->getNumInfected(generation);
@@ -2389,18 +2488,18 @@ long Population::CalcPrevalentPopulation(long _time)
 		}
 
 		//add the sizes of sexually active buckets
-        if(DemographicProfile::get(currBucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
+	if(DemographicProfile::get(currBucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
 		{
 			//Update size by risk
 			for(int i = 0; i < Person::ENDRiskLevel; i++)
 			{
 				prevalenceByRiskGenderEmployment[i][DemographicProfile::get(currBucket->getProfileID(),
-				                                    DemographicProfile::Demographic::Gender)][DemographicProfile::get(currBucket->getProfileID(),
-				                                            DemographicProfile::Demographic::Employment)] += ((BucketSexualMixing *)currBucket)->getNumInfected((Person::RiskLevel) i);
+								    DemographicProfile::Demographic::Gender)][DemographicProfile::get(currBucket->getProfileID(),
+									    DemographicProfile::Demographic::Employment)] += ((BucketSexualMixing *)currBucket)->getNumInfected((Person::RiskLevel) i);
 			}
 
 			//Update size by age range
-            bool isMale = DemographicProfile::get(currBucket->getProfileID(), DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male;
+	    bool isMale = DemographicProfile::get(currBucket->getProfileID(), DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male;
 			auto &associatedAgeRangePrevalenceContainer = isMale ? prevalenceByAgeMale : prevalenceByAgeFemale;
 			auto currentSexualMixingBucket = static_cast<BucketSexualMixing *>(currBucket);
 
@@ -2420,43 +2519,41 @@ long Population::CalcPrevalentPopulation(long _time)
 	return totalInfected;
 }
 
-PopulationParameters::AgeBucketPrevalenceInfo &Population::GetAgeBucket(Person *p)
+SeedDistribution &Population::GetAgeBucket(Person *p)
 {
     int age = p->getAge(TimeGranularity::Month);
 
-	for(unsigned int ageBucket = 0; ageBucket < popWideParams.initialAgeBuckets.size(); ageBucket++)
-	{
-		//holds the parameters for the current age bucket
-		auto &ageBucketParams = popWideParams.initialAgeBuckets.at(ageBucket);
+    for(unsigned int ageBucket = 0;
+	ageBucket < popWideParams.GetSeedDistributions().size(); ageBucket++) {
+	//holds the parameters for the current age bucket
+	auto &ageBucketParams = popWideParams.GetSeedDistributions().at(ageBucket);
 
-		if(age >= ageBucketParams.minAgeMth && age <= ageBucketParams.maxAgeMth)
-		{
-			return ageBucketParams;
-		}
+	if(age >= ageBucketParams.minAgeMth && age <= ageBucketParams.maxAgeMth) {
+	    return ageBucketParams;
 	}
+    }
 
-	throw std::runtime_error("bucket not found");
-	//return popWideParams.initialAgeBuckets.back();
+    throw std::runtime_error("bucket not found");
+    //return popWideParams.seedDistributions.back();
 }
 
 int Population::GetAgeBucketIndex(Person *p)
 {
     int age = p->getAge(TimeGranularity::Month);
-	unsigned int ageBucket;
+    unsigned int ageBucket;
 
-	for(ageBucket = 0; ageBucket < popWideParams.initialAgeBuckets.size(); ageBucket++)
-	{
-		//holds the parameters for the current age bucket
-		auto &ageBucketParams = popWideParams.initialAgeBuckets.at(ageBucket);
+    for(ageBucket = 0; ageBucket < popWideParams.GetSeedDistributions().size();
+	ageBucket++) {
+	//holds the parameters for the current age bucket
+	auto &ageBucketParams = popWideParams.GetSeedDistributions().at(ageBucket);
 
-		if(age >= ageBucketParams.minAgeMth && age <= ageBucketParams.maxAgeMth)
-		{
-			return ageBucket;
-		}
+	if(age >= ageBucketParams.minAgeMth && age <= ageBucketParams.maxAgeMth) {
+	    return ageBucket;
 	}
+    }
 
-	throw std::runtime_error("bucket not found");
-	//return ageBucket;
+    throw std::runtime_error("bucket not found");
+    //return ageBucket;
 }
 
 std::size_t Population::GetSize()
@@ -2467,6 +2564,11 @@ std::size_t Population::GetSize()
 std::size_t Population::GetNASize()
 {
 	return currNASize;
+}
+
+std::size_t Population::GetSASize()
+{
+    return currSize - currNASize;
 }
 
 std::size_t Population::GetSize(DemographicProfile::Gender gender)
@@ -2496,7 +2598,7 @@ void Population::PrintMethodResults(EventParams &parameters_, const std::string 
     if(parameters_.debugLevel > DebugLevel::Zero && parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
 	{
 		//if we are at time 0, then print out headers
-        if((parameters_.currTime == 0) && (parameters_.debugLevel == DebugLevel::One))
+	if((parameters_.currTime == 0) && (parameters_.debugLevel == DebugLevel::One))
 		{
 			//print out headers for DEBUG level 1 in the BucketDemographicProfile size trace
 			parameters_.trace_files[EventParams::TraceFile::Type::Events] << "Time\t" << "EventLabel\tNumAffected\t";
@@ -2513,13 +2615,13 @@ void Population::PrintMethodResults(EventParams &parameters_, const std::string 
 		//print out the sizes of the buckets to a string stream
 		std::ostringstream bucketTotalsStr;
 		entities->printBucketSizes(bucketTotalsStr, Constants::TAB, _showInfections, totalInfected, totalPopSize,
-            totalSexuallyActive, totalInSteady, totalInRegular, (parameters_.debugLevel > DebugLevel::One));
+	    totalSexuallyActive, totalInSteady, totalInRegular, (parameters_.debugLevel > DebugLevel::One));
 
 		//if debug level > 1, then print trace format in verbose form and include labels
-        if(parameters_.debugLevel > DebugLevel::One)
+	if(parameters_.debugLevel > DebugLevel::One)
 		{
 			parameters_.trace_files[EventParams::TraceFile::Type::Events] << "T: " << parameters_.currTime << " -- " << _methodName << ": " <<
-			        endl;
+				endl;
 			parameters_.trace_files[EventParams::TraceFile::Type::Events] << Constants::TAB << _eventLabel;
 			parameters_.trace_files[EventParams::TraceFile::Type::Events] << Constants::TAB;
 			parameters_.trace_files[EventParams::TraceFile::Type::Events] << _totalAffectedLabel << "= " << _totalAffected << std::endl;
@@ -2528,7 +2630,7 @@ void Population::PrintMethodResults(EventParams &parameters_, const std::string 
 		else
 		{
 			parameters_.trace_files[EventParams::TraceFile::Type::Events] << parameters_.currTime << Constants::TAB << _eventLabel <<
-			        Constants::TAB;
+				Constants::TAB;
 			parameters_.trace_files[EventParams::TraceFile::Type::Events] << _totalAffected << Constants::TAB;
 			parameters_.trace_files[EventParams::TraceFile::Type::Events] << totalInfected << Constants::TAB;
 			parameters_.trace_files[EventParams::TraceFile::Type::Events] << totalPopSize << Constants::TAB;
@@ -2540,13 +2642,13 @@ void Population::PrintMethodResults(EventParams &parameters_, const std::string 
 
 		parameters_.trace_files[EventParams::TraceFile::Type::Events] << bucketTotalsStr.str();
 
-        if(parameters_.debugLevel > DebugLevel::One)
+	if(parameters_.debugLevel > DebugLevel::One)
 		{
 			parameters_.trace_files[EventParams::TraceFile::Type::Events] << std::endl;
 		}
 
 		//print out all people in the population
-        if(parameters_.debugLevel > DebugLevel::Two)
+	if(parameters_.debugLevel > DebugLevel::Two)
 		{
 			parameters_.trace_files[EventParams::TraceFile::Type::Events] << std::endl;
 			entities->print(parameters_.trace_files[EventParams::TraceFile::Type::Events].file);
@@ -2577,40 +2679,40 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 		//Partnership Headers
 		//Steady Partnerships
 		firstRow << "Individuals by Partnership" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+			 Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 		secondRow << "Steady" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB;
+			  Constants::TAB << Constants::TAB << Constants::TAB;
 
-        for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
+	for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
 		{
-            for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
+	    for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 			{
 				for(int m = Person::HIGH; m >= 0; m--)
 				{
 					thirdRow << genderLabels[j] << Constants::SPACE << "Non-Single" << Constants::SPACE << employmentLabels[l] <<
-					         Constants::SPACE << riskLabels[m] << Constants::TAB;
+						 Constants::SPACE << riskLabels[m] << Constants::TAB;
 				}
 			}
 		}
 
 		//Regular Partnerships
 		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+			 Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+			 Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 		secondRow << "Regular" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+			  Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+			  Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 
-        for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
+	for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
 		{
-            for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
+	    for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
 			{
-                for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
+		for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 				{
 					for(int m = Person::HIGH; m >= 0; m--)
 					{
 						thirdRow << genderLabels[j] << Constants::SPACE << relationshipLabels[k] << Constants::SPACE << employmentLabels[l] <<
-						         Constants::SPACE << riskLabels[m] << Constants::TAB;
+							 Constants::SPACE << riskLabels[m] << Constants::TAB;
 					}
 				}
 			}
@@ -2618,22 +2720,22 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 
 		//Casual Partnerships
 		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+			 Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+			 Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 		secondRow << "Casual" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+			  Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+			  Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 
-        for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
+	for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
 		{
-            for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
+	    for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
 			{
-                for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
+		for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 				{
 					for(int m = Person::HIGH; m >= 0; m--)
 					{
 						thirdRow << genderLabels[j] << Constants::SPACE << relationshipLabels[k] << Constants::SPACE << employmentLabels[l] <<
-						         Constants::SPACE << riskLabels[m] << Constants::TAB;
+							 Constants::SPACE << riskLabels[m] << Constants::TAB;
 					}
 				}
 			}
@@ -2641,22 +2743,22 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 
 		//CSW Partnerships
 		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+			 Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+			 Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 		secondRow << "CSW" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+			  Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+			  Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 
-        for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
+	for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
 		{
 		  for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
 			{
-                for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
+		for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 				{
 					for(int m = Person::HIGH; m >= 0; m--)
 					{
 						thirdRow << genderLabels[j] << Constants::SPACE << relationshipLabels[k] << Constants::SPACE << employmentLabels[l] <<
-						         Constants::SPACE << riskLabels[m] << Constants::TAB;
+							 Constants::SPACE << riskLabels[m] << Constants::TAB;
 					}
 				}
 			}
@@ -2665,44 +2767,44 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 		//Concurrent Partnerships
 		//CSW
 		firstRow << "Individuals by Concurrent Partnerships" << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB << Constants::TAB;
+			 Constants::TAB << Constants::TAB;
 		secondRow << "CSW HR" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 		thirdRow << "Concurrent" << Constants::TAB << "2 Partners" << Constants::TAB << "3 Partners" << Constants::TAB <<
-		         "4 Partners" << Constants::TAB << "5+ Partners" << Constants::TAB;
+			 "4 Partners" << Constants::TAB << "5+ Partners" << Constants::TAB;
 		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 		secondRow << "CSW LR" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 		thirdRow << "Concurrent" << Constants::TAB << "2 Partners" << Constants::TAB << "3 Partners" << Constants::TAB <<
-		         "4 Partners" << Constants::TAB << "5+ Partners" << Constants::TAB;
+			 "4 Partners" << Constants::TAB << "5+ Partners" << Constants::TAB;
 		//High Risk Male Non-CSW
 		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 		secondRow << "Male High Risk Non-CSW" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB;;
+			  Constants::TAB;;
 		thirdRow << "Concurrent" << Constants::TAB << "2 Partners" << Constants::TAB << "3 Partners" << Constants::TAB <<
-		         "4 Partners" << Constants::TAB << "5+ Partners" << Constants::TAB;
+			 "4 Partners" << Constants::TAB << "5+ Partners" << Constants::TAB;
 		//High Risk Female Non-CSW
 		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 		secondRow << "Female High Risk Non-CSW" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB;;
+			  Constants::TAB;;
 		thirdRow << "Concurrent" << Constants::TAB << "2 Partners" << Constants::TAB << "3 Partners" << Constants::TAB <<
-		         "4 Partners" << Constants::TAB << "5+ Partners" << Constants::TAB;
+			 "4 Partners" << Constants::TAB << "5+ Partners" << Constants::TAB;
 		//Low Risk Male Non-CSW
 		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 		secondRow << "Male Low Risk Non-CSW" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB;;
+			  Constants::TAB;;
 		thirdRow << "Concurrent" << Constants::TAB << "2 Partners" << Constants::TAB << "3 Partners" << Constants::TAB <<
-		         "4 Partners" << Constants::TAB << "5+ Partners" << Constants::TAB;
+			 "4 Partners" << Constants::TAB << "5+ Partners" << Constants::TAB;
 		//Low Risk Female Non-CSW
 		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 		secondRow << "Female Low Risk Non-CSW" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB;;
+			  Constants::TAB;;
 		thirdRow << "Concurrent" << Constants::TAB << "2 Partners" << Constants::TAB << "3 Partners" << Constants::TAB <<
-		         "4 Partners" << Constants::TAB << "5+ Partners" << Constants::TAB;
+			 "4 Partners" << Constants::TAB << "5+ Partners" << Constants::TAB;
 		//Partnerships by partnership type
 		firstRow << "Partnerships by Partnership Type" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB
-		         << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB << Constants::TAB;
+			 << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
+			 Constants::TAB << Constants::TAB;
 		secondRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+			  Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 
 		for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
 		{
@@ -2730,18 +2832,18 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 
 	//Partnerships
 	unsigned long
-        numInPartnership[(int)SexualPartnership::Type::ENDType][(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::RelationshipStatus::Last][(std::size_t)DemographicProfile::Employment::Last][Person::ENDRiskLevel];
+	numInPartnership[(int)SexualPartnership::Type::ENDType][(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::RelationshipStatus::Last][(std::size_t)DemographicProfile::Employment::Last][Person::ENDRiskLevel];
     unsigned long numInConcurrent[(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::Employment::Last][Person::ENDRiskLevel];
     unsigned long numInMultiple[(std::size_t)DemographicProfile::Gender::Last][(std::size_t)DemographicProfile::Employment::Last][Person::ENDRiskLevel][4];
 	unsigned long doubleNumPartnerships[(int)SexualPartnership::Type::ENDType][3];
 
     for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
 	{
-        for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
+	for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 		{
-            for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
+	    for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
 			{
-                for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
+		for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
 				{
 					for(int m = 0; m < Person::ENDRiskLevel; m++)
 					{
@@ -2759,7 +2861,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 
     for(int i = 0; i < (int)DemographicProfile::Gender::Last; i++)
 	{
-        for(int j = 0; j < (int)DemographicProfile::Employment::Last; j++)
+	for(int j = 0; j < (int)DemographicProfile::Employment::Last; j++)
 		{
 			for(int k = 0; k < Person::ENDRiskLevel; k++)
 			{
@@ -2802,20 +2904,20 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 
 			if(totalNumPartners >= 2 && totalNumPartners <= 4)
 			{
-                numInMultiple[(std::size_t)gender][(*p_Iter)->getDemographicProfileVal(DemographicProfile::Demographic::Employment)][(*p_Iter)->getRiskLevel()][totalNumPartners -
-				        2]++;
+		numInMultiple[(std::size_t)gender][(*p_Iter)->getDemographicProfileVal(DemographicProfile::Demographic::Employment)][(*p_Iter)->getRiskLevel()][totalNumPartners -
+					2]++;
 			}
 			else if(totalNumPartners >= 5)
 			{
-                numInMultiple[(std::size_t)gender][(*p_Iter)->getDemographicProfileVal(DemographicProfile::Demographic::Employment)][(*p_Iter)->getRiskLevel()][3]++;
+		numInMultiple[(std::size_t)gender][(*p_Iter)->getDemographicProfileVal(DemographicProfile::Demographic::Employment)][(*p_Iter)->getRiskLevel()][3]++;
 			}
 
 			for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
 			{
 				if(numPartners[i] != 0)
 				{
-                    numInPartnership[i][(std::size_t)gender][(*p_Iter)->getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus)][(*p_Iter)->getDemographicProfileVal(
-					            DemographicProfile::Demographic::Employment)][(*p_Iter)->getRiskLevel()]++;
+		    numInPartnership[i][(std::size_t)gender][(*p_Iter)->getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus)][(*p_Iter)->getDemographicProfileVal(
+						    DemographicProfile::Demographic::Employment)][(*p_Iter)->getRiskLevel()]++;
 				}
 			}
 
@@ -2833,10 +2935,10 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 			assert(concurrent <= Constants::NUMBER_CONCURRENCY_DEFS);
 
 			if(parameters_.concurrencyDef[concurrent].useDefinition
-			        && totalNumPartners >= parameters_.concurrencyDef[concurrent].minPartnershipsNeeded)
+				&& totalNumPartners >= parameters_.concurrencyDef[concurrent].minPartnershipsNeeded)
 			{
 				//count as concurrent partnership
-                numInConcurrent[(std::size_t)gender][(*p_Iter)->getDemographicProfileVal(DemographicProfile::Demographic::Employment)][(*p_Iter)->getRiskLevel()]++;
+		numInConcurrent[(std::size_t)gender][(*p_Iter)->getDemographicProfileVal(DemographicProfile::Demographic::Employment)][(*p_Iter)->getRiskLevel()]++;
 			}
 
 			p_Iter++;
@@ -2846,11 +2948,11 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 	//steady
     for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
 	{
-        for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
+	for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 		{
 			for(int m = Person::HIGH; m >= 0; m--)
 			{
-                _outStream << numInPartnership[(int)SexualPartnership::Type::Steady][j][(std::size_t)DemographicProfile::RelationshipStatus::NonSingle][l][m] << Constants::TAB;
+		_outStream << numInPartnership[(int)SexualPartnership::Type::Steady][j][(std::size_t)DemographicProfile::RelationshipStatus::NonSingle][l][m] << Constants::TAB;
 			}
 		}
 	}
@@ -2858,9 +2960,9 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 	//regular
     for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
 	{
-        for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
+	for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
 		{
-            for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
+	    for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 			{
 				for(int m = Person::HIGH; m >= 0; m--)
 				{
@@ -2873,9 +2975,9 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 	//casual
     for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
 	{
-        for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
+	for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
 		{
-            for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
+	    for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 			{
 				for(int m = Person::HIGH; m >= 0; m--)
 				{
@@ -2888,9 +2990,9 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 	//CSW
     for(int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
 	{
-        for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
+	for(int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
 		{
-            for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
+	    for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 			{
 				for(int m = Person::HIGH; m >= 0; m--)
 				{
@@ -2919,11 +3021,11 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 	{
 		for(int k = 0; k < Person::ENDRiskLevel; k++)
 		{
-            numInConcurrentCSW[k] += numInConcurrent[i][(std::size_t)DemographicProfile::Employment::Csw][k];
+	    numInConcurrentCSW[k] += numInConcurrent[i][(std::size_t)DemographicProfile::Employment::Csw][k];
 
 			for(int m = 0; m < 4; m++)
 			{
-                numInMultipleCSW[k][m] += numInMultiple[i][(std::size_t)DemographicProfile::Employment::Csw][k][m];
+		numInMultipleCSW[k][m] += numInMultiple[i][(std::size_t)DemographicProfile::Employment::Csw][k][m];
 			}
 		}
 	}
@@ -2943,7 +3045,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 
 	for(int m = 0; m < 4; m++)
 	{
-        _outStream << numInMultiple[(std::size_t)DemographicProfile::Gender::Male][(std::size_t)DemographicProfile::Employment::NonCsw][Person::HIGH][m] << Constants::TAB;
+	_outStream << numInMultiple[(std::size_t)DemographicProfile::Gender::Male][(std::size_t)DemographicProfile::Employment::NonCsw][Person::HIGH][m] << Constants::TAB;
 	}
 
 	//High Risk Females Non CSW
@@ -2951,7 +3053,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 
 	for(int m = 0; m < 4; m++)
 	{
-        _outStream << numInMultiple[(std::size_t)DemographicProfile::Gender::Female][(std::size_t)DemographicProfile::Employment::NonCsw][Person::HIGH][m] << Constants::TAB;
+	_outStream << numInMultiple[(std::size_t)DemographicProfile::Gender::Female][(std::size_t)DemographicProfile::Employment::NonCsw][Person::HIGH][m] << Constants::TAB;
 	}
 
 	//Low Risk Males Non CSW
@@ -2959,7 +3061,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 
 	for(int m = 0; m < 4; m++)
 	{
-        _outStream << numInMultiple[(std::size_t)DemographicProfile::Gender::Male][(std::size_t)DemographicProfile::Employment::NonCsw][Person::LOW][m] << Constants::TAB;
+	_outStream << numInMultiple[(std::size_t)DemographicProfile::Gender::Male][(std::size_t)DemographicProfile::Employment::NonCsw][Person::LOW][m] << Constants::TAB;
 	}
 
 	//Low Risk Females Non CSW
@@ -2967,7 +3069,7 @@ void Population::PrintPartnerships(EventParams &parameters_, long _time, std::os
 
 	for(int m = 0; m < 4; m++)
 	{
-        _outStream << numInMultiple[(std::size_t)DemographicProfile::Gender::Female][(std::size_t)DemographicProfile::Employment::NonCsw][Person::LOW][m] << Constants::TAB;
+	_outStream << numInMultiple[(std::size_t)DemographicProfile::Gender::Female][(std::size_t)DemographicProfile::Employment::NonCsw][Person::LOW][m] << Constants::TAB;
 	}
 
 	//Partnerships by type
@@ -2996,84 +3098,84 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 		thirdRow << "Month" << Constants::TAB;
 		//HIV Status among all SA pop
 		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB;
+			 Constants::TAB;
 		secondRow << "HIV Status Among Sexually Active Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+			  Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 		thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-		         "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-		         << "Unobserved Latestage" << Constants::TAB;
+			 "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
+			 << "Unobserved Latestage" << Constants::TAB;
 		//CSW
 		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB;
+			 Constants::TAB;
 		secondRow << "HIV Status Among CSW SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+			  Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 		thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-		         "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-		         << "Unobserved Latestage" << Constants::TAB;
+			 "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
+			 << "Unobserved Latestage" << Constants::TAB;
 		//High Risk
 		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB;
+			 Constants::TAB;
 		secondRow << "HIV Status Among High Risk Non-CSW SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+			  Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 		thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-		         "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-		         << "Unobserved Latestage" << Constants::TAB;
+			 "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
+			 << "Unobserved Latestage" << Constants::TAB;
 		//Low Risk
 		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB;
+			 Constants::TAB;
 		secondRow << "HIV Status Among Low Risk Non-CSW SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+			  Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 		thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-		         "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-		         << "Unobserved Latestage" << Constants::TAB;
+			 "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
+			 << "Unobserved Latestage" << Constants::TAB;
 		//Male
 		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB;
+			 Constants::TAB;
 		secondRow << "HIV Status Among Male SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+			  Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 		thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-		         "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-		         << "Unobserved Latestage" << Constants::TAB;
+			 "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
+			 << "Unobserved Latestage" << Constants::TAB;
 		//Male High Risk
 		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB;
+			 Constants::TAB;
 		secondRow << "HIV Status Among High Risk Male SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+			  Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 		thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-		         "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-		         << "Unobserved Latestage" << Constants::TAB;
+			 "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
+			 << "Unobserved Latestage" << Constants::TAB;
 		//Male Low Risk
 		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB;
+			 Constants::TAB;
 		secondRow << "HIV Status Among Low Risk Male SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+			  Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 		thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-		         "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-		         << "Unobserved Latestage" << Constants::TAB;
+			 "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
+			 << "Unobserved Latestage" << Constants::TAB;
 		//Female
 		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB;
+			 Constants::TAB;
 		secondRow << "HIV Status Among Female SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+			  Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 		thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-		         "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-		         << "Unobserved Latestage" << Constants::TAB;
+			 "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
+			 << "Unobserved Latestage" << Constants::TAB;
 		//Female High Risk
 		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB;
+			 Constants::TAB;
 		secondRow << "HIV Status Among High Risk Female SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+			  Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 		thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-		         "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-		         << "Unobserved Latestage" << Constants::TAB;
+			 "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
+			 << "Unobserved Latestage" << Constants::TAB;
 		//Female Low Risk
 		firstRow << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB;
+			 Constants::TAB;
 		secondRow << "HIV Status Among Low Risk Female SA Population" << Constants::TAB << Constants::TAB << Constants::TAB <<
-		          Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
+			  Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB;
 		thirdRow << "HIV-" << Constants::TAB << "Observed Acute" << Constants::TAB << "Unobserved Acute" << Constants::TAB <<
-		         "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
-		         << "Unobserved Latestage" << Constants::TAB;
+			 "Observed Chronic" << Constants::TAB << "Unobserved Chronic" << Constants::TAB << "Observed Latestage" << Constants::TAB
+			 << "Unobserved Latestage" << Constants::TAB;
 		//CD4 At Transmission
 		firstRow << Constants::TAB << Constants::TAB << Constants::TAB;
 		secondRow << "CD4 At Transmission" << Constants::TAB << Constants::TAB << Constants::TAB;
@@ -3094,13 +3196,13 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 	}
 
 	unsigned long
-        numWithHIVStatus[Person::ENDRiskLevel][(std::size_t)DemographicProfile::Employment::Last][(std::size_t)DemographicProfile::Gender::Last][Person::ENDHIVStatus];
+	numWithHIVStatus[Person::ENDRiskLevel][(std::size_t)DemographicProfile::Employment::Last][(std::size_t)DemographicProfile::Gender::Last][Person::ENDHIVStatus];
 
 	for(int i = 0; i < Person::ENDRiskLevel; i++)
 	{
-        for(int j = 0; j < (int)DemographicProfile::Employment::Last; j++)
+	for(int j = 0; j < (int)DemographicProfile::Employment::Last; j++)
 		{
-            for(int k = 0; k < (int)DemographicProfile::Gender::Last; k++)
+	    for(int k = 0; k < (int)DemographicProfile::Gender::Last; k++)
 			{
 				for(int m = 0; m < Person::ENDHIVStatus; m++)
 				{
@@ -3127,17 +3229,17 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 		}
 
 		//accumulate all SA buckets
-        if(DemographicProfile::get(currBucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
+	if(DemographicProfile::get(currBucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
 		{
 			for(int i = 0; i < Person::ENDRiskLevel; i++)
 			{
-                for(int m = 0; m < Person::ENDHIVStatus; m++)
-                {
-                    numWithHIVStatus[i][DemographicProfile::get(currBucket->getProfileID(),
-                        DemographicProfile::Demographic::Employment)][DemographicProfile::get(currBucket->getProfileID(),
-                        DemographicProfile::Demographic::Gender)][m] += ((BucketSexualMixing *)currBucket)->sizeRiskHIVStatus((Person::RiskLevel) i,
-                        (Person::HIVStatus) m);
-                }
+		for(int m = 0; m < Person::ENDHIVStatus; m++)
+		{
+		    numWithHIVStatus[i][DemographicProfile::get(currBucket->getProfileID(),
+			DemographicProfile::Demographic::Employment)][DemographicProfile::get(currBucket->getProfileID(),
+			DemographicProfile::Demographic::Gender)][m] += ((BucketSexualMixing *)currBucket)->sizeRiskHIVStatus((Person::RiskLevel) i,
+			(Person::HIVStatus) m);
+		}
 			}
 		}
 
@@ -3154,9 +3256,9 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 
 	for(int i = 0; i < Person::ENDRiskLevel; i++)
 	{
-        for(int j = 0; j < (int)DemographicProfile::Employment::Last; j++)
+	for(int j = 0; j < (int)DemographicProfile::Employment::Last; j++)
 		{
-            for(int k = 0; k < (int)DemographicProfile::Gender::Last; k++)
+	    for(int k = 0; k < (int)DemographicProfile::Gender::Last; k++)
 			{
 				for(int m = 0; m < Person::ENDHIVStatus; m++)
 				{
@@ -3181,11 +3283,11 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 
 	for(int i = 0; i < Person::ENDRiskLevel; i++)
 	{
-        for(int k = 0; k < (int)DemographicProfile::Gender::Last; k++)
+	for(int k = 0; k < (int)DemographicProfile::Gender::Last; k++)
 		{
 			for(int m = 0; m < Person::ENDHIVStatus; m++)
 			{
-                hivStatusCSW[m] += numWithHIVStatus[i][(std::size_t)DemographicProfile::Employment::Csw][k][m];
+		hivStatusCSW[m] += numWithHIVStatus[i][(std::size_t)DemographicProfile::Employment::Csw][k][m];
 			}
 		}
 	}
@@ -3205,11 +3307,11 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 			hivStatusRisk[m] = 0;
 		}
 
-        for(int k = 0; k < (int)DemographicProfile::Gender::Last; k++)
+	for(int k = 0; k < (int)DemographicProfile::Gender::Last; k++)
 		{
 			for(int m = 0; m < Person::ENDHIVStatus; m++)
 			{
-                hivStatusRisk[m] += numWithHIVStatus[i][(std::size_t)DemographicProfile::Employment::NonCsw][k][m];
+		hivStatusRisk[m] += numWithHIVStatus[i][(std::size_t)DemographicProfile::Employment::NonCsw][k][m];
 			}
 		}
 
@@ -3237,7 +3339,7 @@ void Population::PrintClinical(EventParams &/*parameters_*/, long _time, std::os
 
 		for(int i = 0; i < Person::ENDRiskLevel; i++)
 		{
-            for(int j = 0; j < (int)DemographicProfile::Employment::Last; j++)
+	    for(int j = 0; j < (int)DemographicProfile::Employment::Last; j++)
 			{
 				for(int m = 0; m < Person::ENDHIVStatus; m++)
 				{
@@ -3285,10 +3387,10 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 		firstRow << Constants::TAB;
 		secondRow << "SA Pop Size" << Constants::TAB;
 		firstRow << "Deaths" << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB << Constants::TAB <<
-		         Constants::TAB << Constants::TAB;
+			 Constants::TAB << Constants::TAB;
 		secondRow << "Any OI" << Constants::TAB << "Chronic AIDS" << Constants::TAB << "Non-AIDS" << Constants::TAB <<
-		          "ART Toxicity" << Constants::TAB << "Proph Toxicity" << Constants::TAB << "Other" << Constants::TAB << "Total" <<
-		          Constants::TAB;
+			  "ART Toxicity" << Constants::TAB << "Proph Toxicity" << Constants::TAB << "Other" << Constants::TAB << "Total" <<
+			  Constants::TAB;
 		firstRow << "Gender" << Constants::TAB;
 		secondRow << "Males" << Constants::TAB;
 		firstRow << Constants::TAB;
@@ -3363,9 +3465,9 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 
 	//output deaths by causes
 	_outStream << currDeathCauses[Person::DTH_OI] << Constants::TAB << currDeathCauses[Person::DTH_CHRAIDS] <<
-	           Constants::TAB << currDeathCauses[Person::DTH_NONAIDS] << Constants::TAB <<
-	           currDeathCauses[Person::DTH_TOX_ART] << Constants::TAB << currDeathCauses[Person::DTH_TOX_PROPH] <<
-	           Constants::TAB << currDeathCauses[Person::DTH_OTHER] << Constants::TAB;
+		   Constants::TAB << currDeathCauses[Person::DTH_NONAIDS] << Constants::TAB <<
+		   currDeathCauses[Person::DTH_TOX_ART] << Constants::TAB << currDeathCauses[Person::DTH_TOX_PROPH] <<
+		   Constants::TAB << currDeathCauses[Person::DTH_OTHER] << Constants::TAB;
 
     std::size_t totalDeaths = 0;
 
@@ -3380,15 +3482,15 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, long _time, std::
 	_outStream << GetSize(DemographicProfile::Gender::Female) << Constants::TAB;
 	//output size by risk
 	_outStream << currSizeRiskCSW[Person::HIGH] << Constants::TAB << currSizeRiskCSW[Person::LOW] <<
-	           Constants::TAB;
+		   Constants::TAB;
 
 	for(int i = Person::HIGH; i >= 0; i--)
 	{
-        for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
-        {
-            _outStream << GetSASize((DemographicProfile::Gender) j,
-                (Person::RiskLevel) i) - currSizeGenderRiskCSW[j][i] << Constants::TAB;
-        }
+	for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
+	{
+	    _outStream << GetSASize((DemographicProfile::Gender) j,
+		(Person::RiskLevel) i) - currSizeGenderRiskCSW[j][i] << Constants::TAB;
+	}
 	}
 
 	//output size by age

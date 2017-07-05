@@ -23,50 +23,61 @@ class FertilityRate {
 	double rate;
 };
 
+class AgeDistribution
+{
+  public:
+    AgeDistribution(int _minAgeMth, int _maxAgeMth,
+			    double _proportionOfPopulationMale,
+			    double _proportionOfPopulationFemale);
+
+    void print(EventParams &_eventParams);
+
+    /// <summary>
+    /// the min age that this bucket represents
+    /// </summary>
+
+    int minAgeMth;
+
+    /// <summary>
+    /// the max age that this bucket represents
+    /// </summary>
+    int maxAgeMth;
+
+    /// <summary>
+    /// determines size as proportion of the population
+    /// </summary>
+    double proportionOfPopulation[(std::size_t)DemographicProfile::Gender::Last];
+};
+
+/// <summary>
+/// This data structure holds parameters for seeding prevalence
+/// </summary>
+class SeedDistribution
+{
+  public:
+    SeedDistribution(int _minAgeMth, int _maxAgeMth,
+		   int _numInfectedCSWMale, int _numInfectedCSWFemale,
+		   int _numInfectedNonCSWMalesLowRisk, int _numInfectedNonCSWFemalesLowRisk,
+	           int _numInfectedNonCSWMalesHighRisk, int _numInfectedNonCSWFemalesHighRisk);
+
+    int minAgeMth;
+    int maxAgeMth;
+
+    /// <summary>
+    /// number of males and female csw in this bucket that are infected (at prevalence delay)
+    /// </summary>
+    int numInfectedCSW[(std::size_t)DemographicProfile::Gender::Last];
+
+    /// <summary>
+    /// number of male and female non-csw in this bucket that are infected (at prevalence delay)
+    /// </summary>
+    int numInfectedRisk[(std::size_t)DemographicProfile::Gender::Last][Person::ENDRiskLevel];
+
+};
+
 class PopulationParameters
 {
 public:
-    /// <summary>
-	/// this data structure contains prevalence parameters differ in value by age buckets
-    /// </summary>
-	class AgeBucketPrevalenceInfo
-	{
-	  public:
-	    AgeBucketPrevalenceInfo();
-
-	    AgeBucketPrevalenceInfo(int _minAgeMth, int _maxAgeMth, double _proportionOfPopulationMale,
-				    double _proportionOfPopulationFemale, int _numInfectedCSWMale, int _numInfectedCSWFemale,
-				    int _numInfectedNonCSWMalesLowRisk, int _numInfectedNonCSWFemalesLowRisk,
-				    int _numInfectedNonCSWMalesHighRisk, int _numInfectedNonCSWFemalesHighRisk);
-
-	    void print(EventParams &_eventParams);
-
-	    /// <summary>
-	    /// the min age that this bucket represents
-	    /// </summary>
-	    int minAgeMth;
-
-	    /// <summary>
-	    /// the max age that this bucket represents
-	    /// </summary>
-	    int maxAgeMth;
-
-	    /// <summary>
-	    /// determines size as proportion of the population
-	    /// </summary>
-	    double proportionOfPopulation[(std::size_t)DemographicProfile::Gender::Last];
-
-	    /// <summary>
-	    /// number of males and female csw in this bucket that are infected (at prevalence delay)
-	    /// </summary>
-	    int numInfectedCSW[(std::size_t)DemographicProfile::Gender::Last];
-
-	    /// <summary>
-	    /// number of male and female non-csw in this bucket that are infected (at prevalence delay)
-	    /// </summary>
-	    int numInfectedRisk[(std::size_t)DemographicProfile::Gender::Last][Person::ENDRiskLevel];
-	};
-
 	PopulationParameters();
 	~PopulationParameters();
 
@@ -123,10 +134,27 @@ public:
 	int GetInitialSize() const { return initSize; }
 	void SetInitialSize(int size) { initSize = size; }
 
+	double GetChanceChronicInfection() const {return chronicInfectionRate; }
+	void SetChanceChronicInfection(double rate) { chronicInfectionRate = rate; }
+
 	double GetMaleProportion() const { return proportionMale; }
 
-	const std::vector<AgeBucketPrevalenceInfo> &GetInitialAgeBuckets() const { return initialAgeBuckets; }
-	std::vector<AgeBucketPrevalenceInfo> &GetInitialAgeBuckets() { return initialAgeBuckets; }
+	const std::vector<AgeDistribution> &GetAgeDistributions() const
+	    { return initialAgeDistributions; }
+	std::vector<AgeDistribution> &GetAgeDistributions()
+	    { return initialAgeDistributions; }
+
+	const std::vector<SeedDistribution> &GetSeedDistributions() const
+	    { return initialSeedDistributions; }
+	std::vector<SeedDistribution> &GetSeedDistributions()
+	    { return initialSeedDistributions; }
+
+	void SetSeedDelay(int delay) { seedDelay = delay; }
+	int GetSeedDelay() { return seedDelay; }
+	void SetSeedPrevalence(double prev) { seedPrevalence = prev; }
+	double GetSeedPrevalence() { return seedPrevalence; }
+	void SetUseSeedCoefficients(bool useCoeffs) { useSeedCoefficients = useCoeffs; }
+	bool UseSeedCoefficients() { return useSeedCoefficients; }
 
     void SetInitialCswProportion(DemographicProfile::Gender gender, double proportion) { initProbCSW[(std::size_t)gender] = proportion; }
     void SetCswEndAge(DemographicProfile::Gender gender, int age_months) { CSWEndAgeMth[(std::size_t)gender] = age_months; }
@@ -135,7 +163,7 @@ public:
 	{
 		switch(gender)
 		{
-        case DemographicProfile::Gender::Male: 
+        case DemographicProfile::Gender::Male:
             defaultMaleParams.SetChanceBecomeCsw(chance);
             break;
         case DemographicProfile::Gender::Female:
@@ -164,7 +192,10 @@ public:
 	void SetAverageYearsYounger(SexualPartnership::Type type, NormalDist dist) { defaultMaleParams.SetAverageYearsYounger(type, dist); }
 	void SetAcquisitionRatePerMonth(Person::RiskLevel risk, SexualPartnership::Type type, LogNormalDist dist) { defaultMaleParams.SetAcquisitionRatePerMonth(risk, type, dist); }
 	void SetCoitalEventsPerMonth(Person::RiskLevel risk, SexualPartnership::Type type, double mean) { defaultMaleParams.SetCoitalEventsPerMonth(risk, type, mean); }
-	void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { defaultMaleParams.SetChanceCondomUsePerEvent(risk, type, dist); }
+	void SetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type type, BetaDist dist)
+	{ defaultMaleParams.SetChanceCondomUsePerEvent(risk, type, dist); }
+	const BetaDist GetChanceCondomUsePerEvent(Person::RiskLevel risk, SexualPartnership::Type type)
+	{ return defaultMaleParams.getSexualBehavior(type).getChanceCondomUsePerEvent(risk); }
 	void SetPartnershipDuration(Person::RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { defaultMaleParams.SetPartnershipDuration(risk, type, dist); }
 
 	void SetPartnerAcquisitionSteadyMultiplier(Person::RiskLevel risk, double multiplier) { defaultMaleParams.SetPartnerAcqMultWithSteady(risk, multiplier); }
@@ -186,6 +217,8 @@ private:
 	DebugLevel debugLevel;
 
 	long initSize;
+
+	double chronicInfectionRate;
 
     /// <summary>
 	/// Per month per person based on WHI data
@@ -214,9 +247,19 @@ private:
     int CSWEndAgeMth[(std::size_t)DemographicProfile::Gender::Last];
 
     /// <summary>
+    /// population parameters stratified by age.
+    /// </summary>
+    std::vector<AgeDistribution> initialAgeDistributions;
+
+    /// <summary>
     /// prevalence parameters stratified by age.
     /// </summary>
-	std::vector<AgeBucketPrevalenceInfo> initialAgeBuckets;
+    int seedDelay;
+    double seedPrevalence;
+    bool useSeedCoefficients;
+    int minSeedAge;
+    int maxSeedAge;
+    std::vector<SeedDistribution> initialSeedDistributions;
 
     /// <summary>
     /// holds the population-level parameters for population of males

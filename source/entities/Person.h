@@ -13,6 +13,7 @@
 #include "core/Constants.h"
 #include "statistics/StatsRecord.h"
 #include "utility/Utility.h"
+
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/member.hpp>
@@ -46,19 +47,19 @@ public:
 
 	virtual void Circumcise() = 0;
 
-    void SetSexualActivityDelay(int delay) { sexualActivityDelay = delay; }
+	void SetSexualActivityDelay(int delay) { sexualActivityDelay = delay; }
 
-    int GetSexualActivityDelay() const { return sexualActivityDelay; }
+	int GetSexualActivityDelay() const { return sexualActivityDelay; }
 
-    virtual bool IsCircumcised() const = 0;
+	virtual bool IsCircumcised() const = 0;
 
-    virtual void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) = 0;
+	virtual void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) = 0;
 
-    void SetPreExposureProphylaxisAdherence(double adherence) { preExposureProphylaxisAdherence_ = adherence; }
+	void SetPreExposureProphylaxisAdherence(double adherence) { preExposureProphylaxisAdherence_ = adherence; }
 
-    virtual void SetPreExposureProphylaxisEfficacy(double efficacy) = 0;
+	virtual void SetPreExposureProphylaxisEfficacy(double efficacy) = 0;
 
-    virtual double GetPreExposureProphylaxisEfficacy() const = 0;
+	virtual double GetPreExposureProphylaxisEfficacy() const = 0;
 
 	/// <summary>
 	/// every Person's CD4 count falls in a CD4 strata - used in CEPAC
@@ -214,12 +215,14 @@ protected:
 
     SimContext *targetedCepacContext_;
 
-	//person's current demographic profile - values in here depend on person's physical, relational state, and other preferences
-	DemographicProfile dmgProfile;
-	//person keeps track of which BucketDemographicProfile they are currently in
-	//  this value should stay equal to dmgProfile->getProfileID()
-	//  sometimes a person's dmgProfile is changed, so we have to refresh their place in the EntityPool
-	DemographicProfile::ProfileID currentBucketID;
+    //person's current demographic profile - values in here depend on person's
+    //physical, relational state, and other preferences
+    DemographicProfile dmgProfile;
+    //person keeps track of which BucketDemographicProfile they are currently in
+    //  this value should stay equal to dmgProfile->getProfileID()
+    //  sometimes a person's dmgProfile is changed, so we have to refresh their
+    //  place in the EntityPool
+    DemographicProfile::ProfileID currentBucketID;
 
 	//Person's relational state
 	//contains all current partnerships including CSW and Casual
@@ -286,7 +289,6 @@ public:
 	//Person's physical state
 	unsigned int age;					//age of Person (in months)
 	unsigned int initAge;				//age of Person on model init (in months)
-	bool sexuallyActive;
 	int ageInfected;						//age of Person when they got infected (-1 for uninfected)
 	bool death;							//whether this person is dead or not
 	HIVStatus hivStatus;				//Person's infected status
@@ -311,17 +313,24 @@ public:
 	void ageOneTimeUnit();
 
 	/*
-		call this to infect person...
-		if CEPAC bridge is in place, will call CEPAC to determine the health trajectory of this person
-		@params _prevalentInfection if true, than this person was a prevalent infection
+	 * call this to infect person...
+	 * if CEPAC bridge is in place, will call CEPAC to determine the health 
+	 * trajectory of this person
+	 * @params _prevalentInfection if true, than this person was a prevalent 
+	 * infection
 	*/
 	void becomeInfected(int _generationOfInfection, EventParams &_eventParams);
+
+	void seedInfection(int _generationOfInfection, EventParams &_eventParams,
+		bool chronicInfection);
 
 	/*
 	 * Initializes cepacPatient using the persons current age, gender, and infection status.
 	 * Prevalent cases should call "becomeInfected" before calling this function; incident cases will become infected later
 	 */
-	void initialCEPACpatient(EventParams &_eventParams);
+	void initializeCEPACpatient(EventParams &_eventParams);
+
+	void updateCEPACpatient(EventParams &_eventParams);
 
 	virtual double getChanceBecomeCsw() const = 0;
 
@@ -391,6 +400,10 @@ public:
 
 	// Self explanatory I'd say
 	bool isSexuallyActive();
+
+	bool isCSW() const;
+
+	bool isMale() const;
 
 	/**
 	//see whether person dies. If they went through CEPAC, use health trace. else roll against nonAIDS death probs
@@ -658,6 +671,9 @@ public:
 	//sets traceMe to true
 	void setToBeTraced();
 
+	void enableInfectionTrace(int _generationOfInfection,
+				  EventParams &_eventParams);
+
 	const Person::StatsRecord *getStats();
 
 	//prints out person's id information
@@ -679,7 +695,8 @@ public:
 		return cepacPatient && cepacPatient->getARTState()->isOnART;
 	}
 
-    virtual void SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng) = 0;
+	virtual void SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng) = 0;
+	virtual const BetaDist GetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType) = 0;
 
 	virtual void SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, double meanEvents) = 0;
 
@@ -751,42 +768,28 @@ public:
     }
 
 private:
-	//Return the current index of which SimContext should be used to update the health of a patient
-	int getCEPACSimContextIndex(EventParams &_eventParams);
+    // Returns the SimContext the patient should use
+    EventParams::CepacSimContext *getCEPACSimContextIndex(EventParams &_eventParams);
 
-	double monthly_cepac_costs_undiscounted_;
-	double monthly_cepac_costs_discounted_;
-	double monthly_cdm_costs_undiscounted_;
-	double monthly_cdm_costs_discounted_;
+    double updateHealthCosts(EventParams &_eventParams,
+			     CostsTracker *costsTracker,
+			     const RunStats::OverallCosts before,
+			     const RunStats::OverallCosts after);
+    void updateTestingStatus(EventParams &_eventParams,
+			     ArtRolloutTracker *testTracker,
+			     const RunStats::HIVScreening before,
+			     const RunStats::HIVScreening after);
+    void traceTreatmentChange(EventParams &_eventParams, bool after);
+    void traceCD4Change(EventParams &_eventParams, double before, double after);
+    void traceHVLChange(EventParams &_eventParams, HVLStrata before,
+			HVLStrata after);
+    void traceHIVChange(EventParams &_eventParams, HIVStatus before,
+			HIVStatus after);
+
+    double monthly_cepac_costs_undiscounted_;
+    double monthly_cepac_costs_discounted_;
+    double monthly_cdm_costs_undiscounted_;
+    double monthly_cdm_costs_discounted_;
 
     bool using_prep_this_month_;
-
-/*    class PersonDB {
-    	typedef boost::multi_index::multi_index_container<><
-    			Person,
-				indexed_by<
-					ordered_unique<
-						composite_key<
-							Person,
-							member<Person, unsigned_int, &Person::age>,
-							identity<Person>>,
-						composite_key<
-							member<Person, HVLStrata, &Person::hvl>,
-							identity<Person>>,
-
-
-
-    	    hashed_non_unique< // indexed by quadrant coordinates
-    	      composite_key<
-    	        street_entry,
-    	        member<street_entry,int,&street_entry::x>,
-    	        member<street_entry,int,&street_entry::y>
-    	      >
-    	    >,
-    	    hashed_non_unique< // indexed by street name
-    	      member<street_entry,std::string,&street_entry::name>
-    	    >
-    	  >
-    	> street_locator;
-    };*/
 };
