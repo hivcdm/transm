@@ -515,34 +515,34 @@ void SimulationBuilderXml::InitializePopulation()
 
 EventParams::RolloutEligibility SimulationBuilderXml::ReadRolloutEligibility()
 {
-    auto eligibility_node = document_.select_single_node("/simulation/interventions/artRolloutIntervention/rolloutEligibility").node();
+    auto eligibility_node = document_.select_node("/simulation/interventions/artRolloutIntervention/rolloutEligibility").node();
     EventParams::RolloutEligibility eligibility;
 
     // OIHist
-    auto oi_hist_node = eligibility_node.select_single_node("criteria[@name='OIHist']").node();
+    auto oi_hist_node = eligibility_node.select_node("criteria[@name='OIHist']").node();
     eligibility.oiHistRank = Text<int>(oi_hist_node.child("rank"));
     eligibility.oiHistNumToStart = Text<int>(oi_hist_node.child("numOIToStart"));
 
     // CD4
-    auto cd4_node = eligibility_node.select_single_node("criteria[@name='CD4']").node();
+    auto cd4_node = eligibility_node.select_node("criteria[@name='CD4']").node();
     eligibility.cd4Rank = Text<int>(cd4_node.child("rank"));
     eligibility.cd4Bounds.lower = Text<int>(cd4_node.child("CD4Lwr"));
     eligibility.cd4Bounds.upper = Text<int>(cd4_node.child("CD4Upp"));
 
     // CD4OIHist
-    auto cd4_oi_hist_node = eligibility_node.select_single_node("criteria[@name='CD4OIHist']").node();
+    auto cd4_oi_hist_node = eligibility_node.select_node("criteria[@name='CD4OIHist']").node();
     eligibility.cd4OiHistRank = Text<int>(cd4_oi_hist_node.child("rank"));
     eligibility.cd4OiHistCd4Bounds.lower = Text<int>(cd4_oi_hist_node.child("CD4Lwr"));
     eligibility.cd4OiHistCd4Bounds.upper = Text<int>(cd4_oi_hist_node.child("CD4Upp"));
 
     // HVL
-    auto hvl_node = eligibility_node.select_single_node("criteria[@name='HVL']").node();
+    auto hvl_node = eligibility_node.select_node("criteria[@name='HVL']").node();
     eligibility.hvlRank = Text<int>(hvl_node.child("rank"));
     eligibility.hvlBounds.lower = Text<int>(hvl_node.child("HVLLwr"));
     eligibility.hvlBounds.upper = Text<int>(hvl_node.child("HVLUpp"));
 
     // CD4HVL
-    auto cd4_hvl_node = eligibility_node.select_single_node("criteria[@name='CD4HVL']").node();
+    auto cd4_hvl_node = eligibility_node.select_node("criteria[@name='CD4HVL']").node();
     eligibility.cd4HvlRank = Text<int>(cd4_hvl_node.child("rank"));
     eligibility.cd4HvlCd4Bounds.lower = Text<int>(cd4_hvl_node.child("CD4Lwr"));
     eligibility.cd4HvlCd4Bounds.upper = Text<int>(cd4_hvl_node.child("CD4Upp"));
@@ -562,7 +562,7 @@ EventParams::RolloutEligibility SimulationBuilderXml::ReadRolloutEligibility()
 SexualBehavior SimulationBuilderXml::ReadSexualBehavior(SexualPartnership::Type type)
 {
 	auto path = "/simulation/population/entities/entity[@type='Male']/behavior/partnershipTypes/partnership[@type='" + to_string(type) + "']";
-	auto node = document_.select_single_node(path.c_str()).node();
+	auto node = document_.select_node(path.c_str()).node();
 
 	SexualBehavior result(type);
 
@@ -596,7 +596,7 @@ SexualBehavior SimulationBuilderXml::ReadSexualBehavior(SexualPartnership::Type 
 
 Male::SubPopParams SimulationBuilderXml::ReadMaleSubPopParams()
 {
-	auto node = document_.select_single_node("/simulation/population/entities/entity[@type='Male']").node();
+	auto node = document_.select_node("/simulation/population/entities/entity[@type='Male']").node();
 
 	Male::SubPopParams result;
 
@@ -666,7 +666,7 @@ Male::SubPopParams SimulationBuilderXml::ReadMaleSubPopParams()
 
 Female::SubPopParams SimulationBuilderXml::ReadFemaleSubPopParams()
 {
-	auto node = document_.select_single_node("/simulation/population/entities/entity[@type='Female']").node();
+	auto node = document_.select_node("/simulation/population/entities/entity[@type='Female']").node();
 
 	Female::SubPopParams result;
 
@@ -790,7 +790,7 @@ void SimulationBuilderXml::ReadPopulationParameters()
 	    DemographicProfile::Gender::Female, type, false);
     }
 
-    pugi::xml_node costs_node = document_.select_single_node(
+    pugi::xml_node costs_node = document_.select_node(
 	"/simulation/traceFiles/costEffectiveness").node();
 
     //Costs
@@ -1048,7 +1048,7 @@ std::vector<Intervention> SimulationBuilderXml::ParseInterventions(pugi::xml_nod
 std::unordered_map<std::string, TargetGroup> SimulationBuilderXml::ReadGroups()
 {
     pugi::xml_node groups_node = 
-        document_.select_single_node("/simulation/interventions/groups").node();
+        document_.select_node("/simulation/interventions/groups").node();
     std::unordered_map<std::string, TargetGroup> groups;
 
     for(auto group_node : groups_node.children("group"))
