@@ -202,6 +202,13 @@ public :
 	//If we are using rollout use the cepac files specified in the ART rollout section
 	bool useRollout;
 	RolloutEligibility rolloutEligibility;
+
+	enum RolloutDenominator {
+	  POPULATION,
+	  ELIGIBLE,
+	  DEFAULT = ELIGIBLE
+	} rolloutProportionDenom;
+
 	//Cepac files for storing current population groups (only if using rollout)
 	SimContext *untreatedContext;
 	SimContext *treatedContext;

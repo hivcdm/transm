@@ -47,6 +47,7 @@ private:
 	}
 
 	EventParams::RolloutEligibility ReadRolloutEligibility();
+	EventParams::RolloutDenominator ReadRolloutDenominator();
 
 	Female::SubPopParams ReadFemaleSubPopParams();
 

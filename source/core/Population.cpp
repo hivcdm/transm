@@ -1650,11 +1650,20 @@ double InterpolateProportion(const std::map<int, double> &yearly_proportions, in
  */
 int Population::UpdateTreatmentSlots(double rolloutProportion)
 {
-#ifdef USE_POPULATION_PROPORTION_FOR_TREATMENT_SLOTS
-    int eligiblePopulation = GetSize();
-#else
-    int eligiblePopulation = (int)(rolloutTreatedPool.size() + rolloutUntreatedPool.size());
-#endif
+    int eligiblePopulation;
+    switch (parameters_.rolloutProportionDenom) {
+    case (EventParams::RolloutDenominator::POPULATION):
+      eligiblePopulation = GetSize();
+      break;
+    case (EventParams::RolloutDenominator::ELIGIBLE):
+      eligiblePopulation = (int)(rolloutTreatedPool.size() +
+				 rolloutUntreatedPool.size());
+      break;
+    default:
+      eligiblePopulation = (int)(rolloutTreatedPool.size() +
+				 rolloutUntreatedPool.size());
+      break;
+    }
 
     int numAccessingTreatment = (int)rolloutTreatedPool.size();
     double targetTreatmentSlots = eligiblePopulation * rolloutProportion;
