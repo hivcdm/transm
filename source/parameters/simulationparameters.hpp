@@ -128,6 +128,7 @@ private:
     Intervention GetIntervention(pugi::xml_node &node, bool individual) const;
 
     RolloutEligibility GetRolloutEligibility() const;
+    RolloutDenominator GetRolloutDenominator() const;
 
     pugi::xml_document document_;
     std::string name_;

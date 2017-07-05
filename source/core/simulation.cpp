@@ -760,6 +760,7 @@ void Simulation::Initialize(SimulationParameters &parameters)
     parameters_.enableDynamicTreatmentScaling = intervention_params.dynamic_feedback_enabled;
     parameters_.dynamicFeedbackPeriod = intervention_params.dynamic_feedback_period;
     parameters_.rolloutEligibility = intervention_params.eligibility_criteria;
+    parameters_.rolloutProportionDenominator = intervention_params.rollout_proportion_denominator;
 
     auto load_context = [](const std::string &file_name)
     {

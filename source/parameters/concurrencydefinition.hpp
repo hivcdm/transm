@@ -94,6 +94,12 @@ public:
     Bounds<int> cd4HvlHvlBounds;
 };
 
+enum RolloutDenominator {
+	POPULATION,
+	ELIGIBLE,
+	DEFAULT = ELIGIBLE
+};
+
 /**
 this structure stores the Inputs for calibration
 **/
@@ -181,6 +187,7 @@ struct InterventionParameters
     CepacFile default_cepac_file;
     std::vector<CepacFile> cepac_files;
     RolloutEligibility eligibility_criteria;
+    RolloutDenominator rollout_proportion_denominator;
     bool dynamic_feedback_enabled;
     int dynamic_feedback_period;
     std::vector<std::pair<int, double>> target_yearly_rollout_proportions;

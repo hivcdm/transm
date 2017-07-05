@@ -317,6 +317,7 @@ InterventionParameters SimulationParametersXml::GetInterventionParameters() cons
         }
 
         parameters.eligibility_criteria = GetRolloutEligibility();
+	parameters.rollout_proportion_denominator = GetRolloutDenominator();
 
         for(auto target : interventions_node.select_nodes("artRolloutIntervention/targetRolloutProportions/target"))
         {
@@ -444,6 +445,26 @@ RolloutEligibility SimulationParametersXml::GetRolloutEligibility() const
     }
 
     return eligibility;
+}
+
+RolloutDenominator SimulationParametersXml::GetRolloutDenominator() const
+{
+    auto node = document_.select_node("/simulation/interventions/artRolloutIntervention/targetRolloutProportions").node();
+    RolloutDenominator denom = RolloutDenominator::DEFAULT;
+
+    try {
+        std::string value = Attr<std::string>(node, "proportionDenominator");
+
+	if (value == "population") {
+	    denom = RolloutDenominator::POPULATION;
+	} else if (value == "eligible") {
+	    denom = RolloutDenominator::ELIGIBLE;
+	}
+    } catch (std::string err) {
+        // denominator not specified
+    }
+
+    return denom;
 }
 
 SexualBehavior SimulationParametersXml::GetSexualBehavior(const std::string &entity_type, SexualPartnership::Type type) const

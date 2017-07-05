@@ -93,8 +93,10 @@ public:
 	std::vector<SimContext *> cepacSimContexts;
 
 	//CEPAC input files for Rollout
-    std::vector<RolloutContext *> rolloutSimContexts;
+	std::vector<RolloutContext *> rolloutSimContexts;
 	RolloutEligibility rolloutEligibility;
+	RolloutDenominator rolloutProportionDenominator;
+
 	//Cepac files for storing current population groups (only if using rollout)
 	SimContext *untreatedContext;
 	SimContext *treatedContext;
