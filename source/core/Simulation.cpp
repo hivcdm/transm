@@ -6,7 +6,6 @@
 #include "Simulation.h"
 #include "Constants.h"
 #include "Population.h"
-#include "utility/CepacInputParser.h"
 #include "data/EventParams.h"
 #include "entities/classifiers/DemographicProfile.h"
 #include "entities/behaviors/SexualBehavior.h"
@@ -320,6 +319,12 @@ void Simulation::FirstStep()
 {
     run_time_predictor_.SetTotalMonths(duration_);
 
+    // Set nonAIDS deaths to the first cepac file
+    SimContext *sc = parameters_.cepacSimContexts.front()->simContext.get();
+    SetNonAidsDeathFromCepac(*sc,
+	 Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Male],
+	 Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Female]);
+    
 	//No longer creating a CEPAC trace file, but we still need to change over to the results folder before creating any other output files
 	Utility::changeDirectoryToResults();
 

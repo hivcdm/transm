@@ -279,11 +279,6 @@ void SimulationBuilderXml::ParseCepacSimContexts(const pugi::xml_node &intervent
 
     //From the first file only, get the death tables for non-AIDS death
     SimContext *simContext = parameters.cepacSimContexts.front()->simContext.get();
-    CepacInputParser cepacInput(simContext->getRunSpecsInputs()->runName);
-    auto probabilities = cepacInput.parseNonAidsDeathProbabilities();
-    Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Male] = probabilities[0];
-    Person::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Female] = probabilities[1];
-
     // and set the cepac output trace to the first simContext file
     parameters.cepacTracer = new Tracer(parameters.simName, simContext, 1);
     parameters.cepacRunStats = new RunStats(parameters.simName, simContext);

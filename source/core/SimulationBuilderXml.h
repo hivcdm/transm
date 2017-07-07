@@ -6,7 +6,6 @@
 #include "include.h"
 #include "SimulationBuilder.h"
 #include "Simulation.h"
-#include "utility/CepacInputParser.h"
 #include "entities/behaviors/SexualBehavior.h"
 
 class SimulationBuilderXml : public SimulationBuilder

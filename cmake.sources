@@ -25,7 +25,6 @@ set (TRANSM_SOURCE_FILES
 	source/statistics/PopulationStatistics.cpp
 	source/statistics/TabularOutput.cpp
 	source/statistics/TransmissionSummaryStats.cpp
-	source/utility/CepacInputParser.cpp
 	source/utility/filesystem.cpp
 	source/utility/RandomNumberGenerator.cpp
 	source/utility/Utility.cpp
