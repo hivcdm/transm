@@ -38,13 +38,13 @@ def top_fitting_run_names(post_calib_file, max_cumulative_weight):
             break
 
 def extract_top_fitting_runs(top_level_directory, max_cumulative_weight):
-    post_calib_filename = 'post calib.out'
+    post_calib_filename = 'post_calib.out'
     print('Reading from directory ' + top_level_directory + '.')
     
-    passed_runs_directory = path.join(top_level_directory, 'passed runs')
+    passed_runs_directory = path.join(top_level_directory, 'passed_runs')
     passed_runs_results_directory = path.join(passed_runs_directory, 'results')
     
-    output_directory = path.join(top_level_directory, 'top fitting runs')
+    output_directory = path.join(top_level_directory, 'top_fitting_runs')
     if not path.exists(output_directory):
         os.mkdir(output_directory)
     output_results_directory = path.join(output_directory, 'results')

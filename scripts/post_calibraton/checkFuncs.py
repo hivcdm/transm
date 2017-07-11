@@ -24,8 +24,12 @@ class CheckSettings:
         return (self.checkCSWPrev, self.checkHRMalePrev, self.checkHRFemalePrev,
                 self.checkLRMalePrev, self.checkLRFemalePrev,
                 self.checkNumPartCSW, self.checkNumPart, self.checkInc, self.checkCasPrevRatio)
+
     def setChecks(self, checks):
-        self.checkCSWPrev, self.checkHRMalePrev, self.checkHRFemalePrev, self.checkLRMalePrev, self.checkLRFemalePrev, self.checkNumPartCSW, self.checkNumPart, self.checkInc, self.checkCasPrevRatio = checks
+        self.checkCSWPrev, self.checkHRMalePrev, self.checkHRFemalePrev, self.checkLRMalePrev, \
+        self.checkLRFemalePrev, self.checkNumPartCSW, self.checkNumPart, self.checkInc, \
+        self.checkCasPrevRatio = checks
+
     def setBounds(self, lbs, ubs):
         self.prevBounds = [[lbs[i], ubs[i]] for i in range(5)]
         self.numPartCSWBounds = [lbs[5], ubs[5]]
