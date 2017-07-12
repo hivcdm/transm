@@ -39,9 +39,8 @@ void Population::Circumcise(double proportion)
     if(people.empty())
 	return;
 
-    // only circumcise the proportion desired
-    auto number = (int)(proportion * people.size());
-    for (int i = 0; i < number; i++) {
+    int numberToCircumcise = proportion * GetSize(DemographicProfile::Gender::Male);
+    for (int i = 0; i < numberToCircumcise; i++) {
 	Circumcise(people.at(i));
     }
 
@@ -435,7 +434,7 @@ std::vector<Person *> Population::Find(std::function<bool(Person *)> predicate)
 std::vector<Person *> Population::FindNonCircumcised()
 {
     auto match = [&](Person *person) {
-	return person->IsCircumcised();
+	return !person->IsCircumcised();
     };
 
     std::vector<Person *> matches;

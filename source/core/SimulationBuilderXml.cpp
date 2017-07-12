@@ -1240,9 +1240,7 @@ double SimulationBuilderXml::TransformInterventionValue(double target_value,
 }
 
 /*
- * Calculates the current beta distribution used for choosing chance condom use
- * for an intervention. The intervention start time and duration, along with the
- * current beta distribution and target normal distribution are used in the calculation.
+ * Calculates the current normal distribution when transforming an intervention.
  */
 template<>
 NormalDist SimulationBuilderXml::TransformInterventionValue(NormalDist target_dist,
@@ -1327,8 +1325,8 @@ void SimulationBuilderXml::SetProportionCircumcisedCallback(pugi::xml_node &node
 	[=](Population &p) {
 	    double new_value = target_value;
 	    if (transform) {
-		// increase or descrease to the target value over the duration
-		double curr_value = p.popWideParams.getProportionCircumcised();
+	        // increase or descrease to the target value over the duration
+	        double curr_value = p.popWideParams.getProportionCircumcised();
 		new_value = TransformInterventionValue(
 		    target_value, curr_value, time, duration);
 	    }
@@ -1342,33 +1340,33 @@ void SimulationBuilderXml::SetCircumciseCallback(pugi::xml_node &node,
     Intervention &intervention, bool individual)
 {
     if (individual) {
-	intervention.SetPopulationIndividualCallback(
-	    [=](Population &population, Person *person) {
-		population.Circumcise(person);
-	    }
-	);
+      intervention.SetPopulationIndividualCallback(
+        [=](Population &population, Person *person) {
+	    population.Circumcise(person);
+        }
+      );
     } else {
-	bool transform = false;
+        bool transform = false;
 	if (node.child("transform"))
 	    transform = Text<bool>(node.child("transform"));
-	double target_value = Text<double>(node.child("proportion"));
+        double target_value = Text<double>(node.child("proportion"));
 
-	int time = intervention.GetTime();
+        int time = intervention.GetTime();
 	int duration = intervention.GetDuration();
 	intervention.SetPopulationCallback (
-	    [=](Population &p) {
-		double new_value = target_value;
-		if (transform) {
-		    // increase or descrease to the target value over the duration
-		    double curr_value = (double) (p.num_circumcised_sa + p.num_circumcised_na) /
-			(double) p.GetSize(DemographicProfile::Gender::Male);
-		    new_value = TransformInterventionValue(
-			target_value, curr_value, time, duration);
-		}
-
-		p.Circumcise(new_value);
-	    }
-	);
+	  [=](Population &p) {
+	      double curr_value = p.popWideParams.getProportionCircumcised();
+	      double new_value = target_value;
+	      if (transform) {
+	          // increase or descrease to the actual value over the duration
+		  curr_value = (double) (p.num_circumcised_sa + p.num_circumcised_na) /
+		      (double) p.GetSize(DemographicProfile::Gender::Male);
+		  new_value = TransformInterventionValue(
+		      target_value, curr_value, time, duration);
+	      }
+	      p.Circumcise(abs(new_value - curr_value));
+	  }
+        );
     }
 }
 
