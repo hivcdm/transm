@@ -45,9 +45,8 @@ void Population::Circumcise(double proportion)
     if(people.empty())
 	return;
 
-    // only circumcise the proportion desired
-    auto number = (int)(proportion * people.size());
-    for (int i = 0; i < number; i++) {
+    int numberToCircumcise = (int)(proportion * GetSize(DemographicProfile::Gender::Male));
+    for (int i = 0; i < numberToCircumcise; i++) {
 	Circumcise(people.at(i));
     }
 }

@@ -1357,9 +1357,7 @@ double SimulationParametersXml::TransformInterventionValue(double target_value,
 }
 
 /*
- * Calculates the current beta distribution used for choosing chance condom use
- * for an intervention. The intervention start time and duration, along with the
- * current beta distribution and target normal distribution are used in the calculation.
+ * Calculates the current normal distribution when transforming an intervention.
  */
 template<>
 NormalDist SimulationParametersXml::TransformInterventionValue(NormalDist target_dist,
@@ -1474,7 +1472,8 @@ void SimulationParametersXml::SetCircumciseCallback(pugi::xml_node &node,
 	TimeSpan duration = intervention.GetDuration();
 	intervention.SetPopulationCallback (
 	    [=](Time current_time, Population &p) {
-		double new_value = target_value;
+		double curr_value = p.GetParameters().GetProportionCircumcised();
+	        double new_value = target_value;
 		if (transform) {
 		    // increase or descrease to the target value over the duration
 		    double curr_value = (double) p.GetNumberCircumcised() /
@@ -1483,7 +1482,7 @@ void SimulationParametersXml::SetCircumciseCallback(pugi::xml_node &node,
 			target_value, curr_value, time, duration, current_time);
 		}
 
-		p.Circumcise(new_value);
+		p.Circumcise(abs(new_value - curr_value));
 	    }
 	);
     }
