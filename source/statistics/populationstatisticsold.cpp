@@ -668,7 +668,7 @@ void PopulationStatisticsOld::printShiftedOutcomes(std::ostream &_outStream, Tim
 	{
 		_outStream << "Shifted Outcomes" << std::endl;
 		_outStream << Constants::Tab;
-		
+
         for(auto entity_type : {"", "Male", "Male:Hetero", "Male:Msmw", "Male:Msm", "Female"})
         {
             _outStream << entity_type;
@@ -685,6 +685,8 @@ void PopulationStatisticsOld::printShiftedOutcomes(std::ostream &_outStream, Tim
 
         for(std::size_t i = 0; i < 6; i++)
         {
+            _outStream << "Pop Size";
+            _outStream << Constants::Tab;
             _outStream << "SA Pop Size";
             _outStream << Constants::Tab;
             _outStream << "Incident";
@@ -713,9 +715,14 @@ void PopulationStatisticsOld::printShiftedOutcomes(std::ostream &_outStream, Tim
 		_outStream << "Number Eligible for ART";
 		_outStream << Constants::Tab;
 		_outStream << "Number Receiving ART";
+		_outStream << Constants::Tab;
+		_outStream << "Number Treatment Slots";
+		_outStream << Constants::Tab;
+		_outStream << "Number Deaths on ART";
 		_outStream << std::endl;
 	}
 
+    std::size_t sum_year_start_pop_size = 0;
     //std::size_t sum_sa_pop_size = 0;
     std::size_t sum_incident_infections = 0;
     std::size_t sum_prevalent_infections = 0;
@@ -729,6 +736,7 @@ void PopulationStatisticsOld::printShiftedOutcomes(std::ostream &_outStream, Tim
     for(auto entity_type : {"male", "msmw", "msm", "female"})
     {
         //sum_sa_pop_size += yearlyCumulativeSexuallyActivePopSize[entity_type];
+	sum_year_start_pop_size += yearStartPopSize[entity_type];
         sum_year_start_sa_pop_size += yearStartSexuallyActivePopSize[entity_type];
         sum_prevalent_infections += yearStartPrevalentInfections[entity_type];
         sum_incident_infections += yearlyIncidentInfections[entity_type];
@@ -745,6 +753,8 @@ void PopulationStatisticsOld::printShiftedOutcomes(std::ostream &_outStream, Tim
     double yearStartPrevalence = static_cast<double>(sum_prevalent_infections) / sum_year_start_sa_pop_size;
 
 	_outStream << year.get_year();
+	_outStream << Constants::Tab;
+	_outStream << sum_year_start_pop_size;
 	_outStream << Constants::Tab;
 	_outStream << sum_year_start_sa_pop_size;
 	_outStream << Constants::Tab;
@@ -771,7 +781,7 @@ void PopulationStatisticsOld::printShiftedOutcomes(std::ostream &_outStream, Tim
         _outStream << yearStartSexuallyActivePopSize[entity_type] << Constants::Tab;
         _outStream << yearlyIncidentInfections[entity_type] << Constants::Tab;
         _outStream << yearStartPrevalentInfections[entity_type] << Constants::Tab;
-        _outStream << static_cast<double>(yearStartPrevalentInfections[entity_type]) / yearStartSexuallyActivePopSize[entity_type] << Constants::Tab;        
+        _outStream << static_cast<double>(yearStartPrevalentInfections[entity_type]) / yearStartSexuallyActivePopSize[entity_type] << Constants::Tab;
         _outStream << yearlyCumulativeIncidenceByEntityType[entity_type] << Constants::Tab;
     }
 
@@ -940,6 +950,8 @@ void PopulationStatisticsOld::recordEntity(Time time, Entity *e)
         && time >= monthOf1990
         && (int)(time - monthOf1990).in_months() % 12 == 0)
     {
+	yearStartPopSize[e->getEntityType()]++;
+
         if(e->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() == DemographicProfile::SexualActivityStatus::Active)
         {
             yearStartSexuallyActivePopSize[e->getEntityType()]++;
@@ -1010,18 +1022,32 @@ void PopulationStatisticsOld::recordTreatment(Entity *person)
 	artTracker.recordTreatment(person);
 }
 
+void PopulationStatisticsOld::recordTreatmentDeath(Entity *person)
+{
+	uniqueYearlyTreatmentDeaths.insert(person);
+	artTracker.recordTreatmentDeath(person);
+}
+
+void PopulationStatisticsOld::recordTreatmentSlots(int numSlots)
+{
+	yearlyTreatmentSlots += numSlots;
+	artTracker.recordTreatmentSlots(numSlots);
+}
+
 void PopulationStatisticsOld::resetYear(Time newYear)
 {
 	relativeTime = newYear;
 
 	yearStartPrevalentInfections.clear();
+	yearStartPopSize.clear();
 	yearStartSexuallyActivePopSize.clear();
 	yearlyCumulativeIncidenceByEntityType.clear();
     yearlyCumulativeIncidence = 0;
     yearlyCumulativeIncidenceMale = 0;
 	yearlyIncidentInfections.clear();
-      
+
 	yearlyTests = 0;
+	yearlyTreatmentSlots = 0;
 
 	yearlyTestsByResult.assign(yearlyTestsByResult.size(), 0);
 
@@ -1029,6 +1055,8 @@ void PopulationStatisticsOld::resetYear(Time newYear)
 	uniqueYearlyAccessingTreatment.clear();
 	uniqueYearlyEligibleForTreatment.clear();
 	uniqueYearlyTreated.clear();
+	uniqueYearlyTreatmentDeaths.clear();
+
 }
 
 } // namespace transm

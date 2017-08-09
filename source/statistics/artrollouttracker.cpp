@@ -28,7 +28,8 @@ const std::string ArtRolloutTracker::TRACKED_OUTCOMES[] =
     "accessing_treatment",
     "eligible_for_treatment",
     "treated",
-    "prep"
+    "prep",
+    "death_on_treatment"
 };
 
 const std::string BUCKETS[] =
@@ -115,6 +116,16 @@ void ArtRolloutTracker::recordPrEP(Entity *person)
 	counter.Increment(PersonBucket(*person, ageRanges), "prep");
 }
 
+void ArtRolloutTracker::recordTreatmentDeath(Entity *person)
+{
+	counter.Increment(PersonBucket(*person, ageRanges), "death_on_treatment");
+}
+
+void ArtRolloutTracker::recordTreatmentSlots(int numSlots)
+{
+        numTreatmentSlots = numSlots;
+}
+
 void ArtRolloutTracker::printArtRolloutOutcomes(Time time, std::ostream &_outStream, Population *_population)
 {
 	if(time == Time::Zero)
@@ -133,13 +144,14 @@ void ArtRolloutTracker::buildHeader()
 	SetHeaderCell(1, 1, "ART Rollout Outcomes");
 	SetHeaderCell(1, 3, "Time");
 	SetHeaderCell(2, 3, "Population Size");
-	SetHeaderCell(3, 1, "Number of Tests");
-	SetHeaderCell(3, 2, "Totals");
-	SetHeaderCell(3, 3, "Offered");
-	SetHeaderCell(4, 3, "Accepted");
-	SetHeaderCell(5, 3, "Returned For Results");
+	SetHeaderCell(3, 3, "Number Treatment Slots");
+	SetHeaderCell(4, 1, "Number of Tests");
+	SetHeaderCell(4, 2, "Totals");
+	SetHeaderCell(4, 3, "Offered");
+	SetHeaderCell(5, 3, "Accepted");
+	SetHeaderCell(6, 3, "Returned For Results");
 
-	int column = 6;
+	int column = 7;
 
 	for(auto outcome : TRACKED_OUTCOMES)
 	{
@@ -160,10 +172,18 @@ void ArtRolloutTracker::buildHeader()
 		{
 			section_header = "Number Treated";
 		}
-        else if(outcome == "prep")
-        {
-            section_header = "Number Using PrEP";
-        }
+		else if(outcome == "prep")
+		{
+		        section_header = "Number Using PrEP";
+		}
+		else if (outcome == "death_on_treatment")
+		{
+		        section_header = "Deaths on Treatment";
+		}
+		else if (outcome == "num_treatment_slots")
+		{
+		        section_header = "Number Treatment Slots";
+		}
 
 		SetHeaderCell(column, 1, section_header);
 		SetHeaderCell(column, 2, "Gender");
@@ -228,6 +248,7 @@ void ArtRolloutTracker::buildRow(Time time, Population *_population)
 	}
 
 	PushElement(static_cast<int>(_population->GetSize()));
+	PushElement(numTreatmentSlots);
 	PushElement(numTestsOffered);
 	PushElement(numTestsAccepted);
 	PushElement(numTestsReturnedFor);
@@ -302,6 +323,8 @@ void ArtRolloutTracker::Reset()
 	numTestsOffered = 0;
 	numTestsAccepted = 0;
 	numTestsReturnedFor = 0;
+
+	numTreatmentSlots = 0;
 }
 
 } // namespace transm

@@ -296,25 +296,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 			continue;
 		}
 
-		std::list<Entity *> peopleTooOld = currBucket->ageOneTimeStep();
-
-		//Let all the people who have reached max age die gracefully
-		for(p_Iter = peopleTooOld.begin(); p_Iter != peopleTooOld.end(); p_Iter++)
-		{
-			if((*p_Iter)->rollForDeath(parameters_.randomNums))
-			{
-				assert((*p_Iter) != nullptr);
-				assert(!(*p_Iter)->isAlive());
-				//Don't process death until main loop from list so person can be removed from iterator list
-			}
-			else
-			{
-				std::cout << "person didn't die" << std::endl;
-				//throw 1;
-				//(*p_Iter)->print(cerr, "THIS PERSON WOULDN'T DIE!");
-			}
-		}
-
+		currBucket->ageOneTimeStep();
 		currProfileID++;
 	}
 
@@ -327,20 +309,6 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 		{
 			Entity *p = (*p_Iter);
 			assert(p != nullptr);
-
-			auto processDeath = [&](Entity *p) {
-			    //if this person was in a couple, this will push living members to personsToAdd
-			    // to be reinserted into the EntityPool once we have iterated through all buckets
-			    //removePersonFromAll returns iterator to next person in list no need to increment
- 			    p_Iter = entities->removeEntityFromAll(p_Iter);
- 			    ProcessDeath(parameters_, p, calculateLE);
-			};
-
-			// check whether CEPAC considers this person to be dead
-			if (!p->isAlive()) {
-				processDeath(p);
-				continue;
-			}
 
 			Entity::HIVStatus oldStatus = p->hivStatus;
 			//update their health status
@@ -361,12 +329,62 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 				}
 			}
 
-			// roll to see if this person dies this month
+			if(parameters_.useRollout && parameters_.treatedContext && p->isInfected())
+			{
+				if(p->isOnArt())
+				{
+					populationStatistics.recordTreatment(p);
+				}
+			}
+
+			//see whether this person has died.
+			//if this person was a couple, then will push living members to personsToAdd
+			// to be reinserted into the EntityPool once we have iterated through all buckets
 			if(p->rollForDeath(parameters_.randomNums))
 			{
-				processDeath(p);
+				p_Iter = entities->removeEntityFromAll(p_Iter);
+				ProcessDeath(parameters_, p, calculateLE);
+
+				if(parameters_.useRollout)
+				{
+					//Remove people from the treated/untreated pool if they die
+					std::list<Entity *>::iterator poolIterator;
+					poolIterator = std::find(rolloutUntreatedPool.begin(), rolloutUntreatedPool.end(), p);
+
+					if(poolIterator != rolloutUntreatedPool.end())
+					{
+						rolloutUntreatedPool.erase(poolIterator);
+					}
+					else
+					{
+						poolIterator = std::find(rolloutTreatedPool.begin(), rolloutTreatedPool.end(), p);
+
+						if(poolIterator != rolloutTreatedPool.end())
+						{
+							rolloutTreatedPool.erase(poolIterator);
+						}
+					}
+				}
+
+				if(parameters_.useRollout && parameters_.treatedContext &&
+				    p->isInfected() && p->isOnArt()) {
+				    populationStatistics.recordTreatmentDeath(p);
+				}
+
+				//removePersonFromAll returns iterator to next person in list...
+				//no need to increment
 				continue;
 			}
+
+			if(parameters_.useRollout && parameters_.treatedContext && p->isInfected())
+			{
+			    if((p->isOnArt()) ||
+			     (p->isEligibleForTreatment(parameters_.treatedContext->getTreatmentInputs()->startART[0])))
+			    {
+			        populationStatistics.recordTreatmentEligiblity(p);
+			    }
+			}
+
 
 			//if this person wasn't sexually active but is now old enough to
             if((p->getDemographicProfileVal(DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::Active)
@@ -1656,6 +1674,7 @@ void Population::ApplyARTRollout(EventParams &parameters_)
 	double rolloutProportion = InterpolateProportion(parameters_.targetYearlyRolloutProportions,
 		parameters_.currTime, parameters_.monthOf1990);
 	int newSlots = UpdateTreatmentSlots(rolloutProportion);
+	populationStatistics.recordTreatmentSlots(newSlots);
 
 	if(rolloutProportion > 0)
 	{

@@ -136,6 +136,7 @@ private:
 	bool calculateShiftedOutcomes;
 	Time relativeTime;
     std::unordered_map<std::string, std::size_t> yearStartPrevalentInfections;
+    std::unordered_map<std::string, std::size_t> yearStartPopSize;
     std::unordered_map<std::string, std::size_t> yearStartSexuallyActivePopSize;
     double yearlyCumulativeIncidence;
     double yearlyCumulativeIncidenceMale;
@@ -145,11 +146,13 @@ private:
     std::unordered_map<std::string, std::size_t> currentMonthSANegative;
 
 	int yearlyTests;
+	int yearlyTreatmentSlots;
 	std::set<Entity *> uniqueYearlyEligibleForTreatmentAccess;
 	std::set<Entity *> uniqueYearlyAccessingTreatment;
 	std::set<Entity *> uniqueYearlyEligibleForTreatment;
 	std::set<Entity *> uniqueYearlyTreated;
-    std::vector<int> yearlyTestsByResult;
+	std::set<Entity *> uniqueYearlyTreatmentDeaths;
+	std::vector<int> yearlyTestsByResult;
 
 public:
 	SingleLEStats *selectedLEStats;
@@ -205,16 +208,18 @@ public:
 	//returns true if currTime is in timeToRecordPartAcq
 	bool isTimeToRecordPartAcq(Time currTime);
 
-    void recordEntity(Time time, Entity *e);
+	void recordEntity(Time time, Entity *e);
 
 	void enableShiftedOutcomes(Time monthOf1990);
 	void resetYear(Time newYear);
-	void recordYearStartStats(int sexuallyActivePopSize, int prevalentCases);
+	void recordYearStartStats(int popSize, int sexuallyActivePopSize, int prevalentCases);
 	void recordTestStats(int numTests, const std::vector<int> &numTestsByResult);
 	void recordTreatmentAccessEligiblity(Entity *person);
 	void recordTreatmentAccess(Entity *person);
 	void recordTreatmentEligiblity(Entity *person);
 	void recordTreatment(Entity *person);
+	void recordTreatmentDeath(Entity *person);
+	void recordTreatmentSlots(int numSlots);
 
 	void addLifeExpectancyRecordTime(Time time) { timesToRecordLE.push_back(time); }
     void setMedianLECI(double ci) { medianLECI = ci; }
