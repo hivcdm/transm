@@ -134,16 +134,19 @@ private:
 	bool calculateShiftedOutcomes;
 	int relativeYear;
 	int yearStartPrevalentInfections;
+	int yearStartPopSize;
 	int yearStartSexuallyActivePopSize;
 	int yearlyCumulativeSexuallyActivePopSize;
 	int yearlyIncidentInfections;
 	double monthlyIncidenceSum;
 	int yearlyTests;
+	int yearlyTreatmentSlots;
 	std::set<Person *> uniqueYearlyEligibleForTreatmentAccess;
 	std::set<Person *> uniqueYearlyAccessingTreatment;
 	std::set<Person *> uniqueYearlyEligibleForTreatment;
 	std::set<Person *> uniqueYearlyTreated;
-    std::vector<int> yearlyTestsByResult;
+	std::set<Person *> uniqueYearlyTreatedDeath;
+        std::vector<int> yearlyTestsByResult;
 
 public:
 
@@ -200,16 +203,18 @@ public:
 	bool isTimeToRecordPartAcq(long currTime);
 
 	void recordPrevalenceAndIncidence(long currTime, double _prevalence, double _SAprevalence, double _incidence,
-	                                  int saPopSize, int monthlyIncident, int monthlyPrevalent);
+	                                  int popSize, int saPopSize, int monthlyIncident, int monthlyPrevalent);
 
 	void enableShiftedOutcomes(int monthOf1990);
 	void resetYear(int newYear);
-	void recordYearStartStats(int sexuallyActivePopSize, int prevalentCases);
+	void recordYearStartStats(int popSize, int sexuallyActivePopSize, int prevalentCases);
 	void recordTestStats(int numTests, const std::vector<int> &numTestsByResult);
 	void recordTreatmentAccessEligiblity(Person *person);
 	void recordTreatmentAccess(Person *person);
 	void recordTreatmentEligiblity(Person *person);
 	void recordTreatment(Person *person);
+	void recordTreatmentDeath(Person *person);
+	void recordTreatmentSlots(int numSlots);
 
 	void addLifeExpectancyRecordTime(int time) { timesToRecordLE.push_back(time); }
     void setMedianLECI(double ci) { medianLECI = ci; }
