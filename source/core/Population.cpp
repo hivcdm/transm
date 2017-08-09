@@ -276,23 +276,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 			continue;
 		}
 
-		std::list<Person *> peopleTooOld = currBucket->ageOneTimeStep();
-
-		//Let all the people who have reached max age die gracefully
-		for(p_Iter = peopleTooOld.begin(); p_Iter != peopleTooOld.end(); p_Iter++)
-		{
-			if((*p_Iter)->rollForDeath(parameters_.randomNums))
-			{
-				assert((*p_Iter) != nullptr);
-				assert(!(*p_Iter)->isAlive());
-				//Don't process death until main loop from list so person can be removed from iterator list
-			}
-			else
-			{
-				(*p_Iter)->print(cerr, "THIS PERSON WOULDN'T DIE!");
-			}
-		}
-
+		currBucket->ageOneTimeStep();
 		currProfileID++;
 	}
 
@@ -305,22 +289,6 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 		{
 			Person *p = (*p_Iter);
 			assert(p != nullptr);
-
-			auto processDeath = [&](Person *p) {
-			    //if this person was in a couple, this will push living members to personsToAdd
-			    // to be reinserted into the EntityPool once we have iterated through all buckets
-			    //removePersonFromAll returns iterator to next person in list no need to increment
-			    p_Iter = entities->removePersonFromAll(p_Iter);
-			    ProcessDeath(parameters_, p, calculateLE);
-			    totalDied++;
-			};
-
-			// check whether CEPAC considers this person to be dead
-			if(!p->isAlive())
-			{
-			    processDeath(p);
-			    continue;
-			}
 
 			Person::HIVStatus oldStatus = p->hivStatus;
 			//update their health status
@@ -340,11 +308,63 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 			    }
 			}
 
-			// roll to see if this person dies this month
+			if(parameters_.useRollout && parameters_.treatedContext && p->isInfected())
+			{
+				if(p->isOnArt())
+				{
+					populationStatistics.recordTreatment(p);
+				}
+			}
+
+			//see whether this person has died.
+			//if this person was a couple, then will push living members to personsToAdd
+			// to be reinserted into the EntityPool once we have iterated through all buckets
 			if(p->rollForDeath(parameters_.randomNums))
 			{
-			    processDeath(p);
-			    continue;
+			  //				bool wasProcessed = false;
+				p_Iter = entities->removePersonFromAll(p_Iter);
+				//				wasProcessed = true;
+				ProcessDeath(parameters_, p, calculateLE);
+				totalDied++;
+
+				if(parameters_.useRollout)
+				{
+					//Remove people from the treated/untreated pool if they die
+					std::list<Person *>::iterator poolIterator;
+					poolIterator = std::find(rolloutUntreatedPool.begin(), rolloutUntreatedPool.end(), p);
+
+					if(poolIterator != rolloutUntreatedPool.end())
+					{
+						rolloutUntreatedPool.erase(poolIterator);
+					}
+					else
+					{
+						poolIterator = std::find(rolloutTreatedPool.begin(), rolloutTreatedPool.end(), p);
+
+						if(poolIterator != rolloutTreatedPool.end())
+						{
+							rolloutTreatedPool.erase(poolIterator);
+						}
+					}
+				}
+
+				if(parameters_.useRollout && parameters_.treatedContext &&
+				    p->isInfected() && p->isOnArt()) {
+				    populationStatistics.recordTreatmentDeath(p);
+				}
+
+				//removePersonFromAll returns iterator to next person in list...
+				//no need to increment
+				continue;
+			}
+
+			if(parameters_.useRollout && parameters_.treatedContext && p->isInfected())
+			{
+			    if((p->isOnArt()) ||
+			     (p->isEligibleForTreatment(parameters_.treatedContext->getTreatmentInputs()->startART[0])))
+			    {
+			        populationStatistics.recordTreatmentEligiblity(p);
+			    }
 			}
 
 			//if this person wasn't sexually active but is now old enough to
@@ -352,9 +372,9 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 		&& (p->getAge(TimeGranularity::Month) >= popWideParams.ageOfMajority))
 			{
 		// set them as SA and potentially CSWs
-				if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && p->trace())
-				{
-		    if(p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
+	     if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && p->trace())
+	     {
+	           if(p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
 					{
 						parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " % Male ";
 					}
@@ -365,7 +385,6 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 
 					parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << p->getID() << " becomes sexually active" << std::endl;
 				}
-
 				Person::HIVStatus oldStatus = p->hivStatus;
 				p->becomeSexuallyActive(parameters_);
 
@@ -396,21 +415,6 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 			{
 				p->quitSexWork(parameters_);
 				entities->refreshBucketDemographicProfile(p, &p_Iter);
-			}
-
-			if(((parameters_.useRollout && parameters_.treatedContext) || p->HasTargetedCepacContext()) && p->isInfected())
-			{
-		auto context = p->HasTargetedCepacContext() ? p->GetTargetedCepacContext() : parameters_.treatedContext;
-
-				if(p->isOnArt())
-				{
-					populationStatistics.recordTreatmentEligiblity(p); // if they're on treatment, they should be counted as eligible even if the treatment has worked
-					populationStatistics.recordTreatment(p);
-				}
-				else if(p->isEligibleForTreatment(context->getTreatmentInputs()->startART[0]))
-				{
-					populationStatistics.recordTreatmentEligiblity(p);
-				}
 			}
 
 			populationStatistics.costsTracker.RecordLifeMonth(p->getQualityOfLife(), cepacDiscountFactor, p->getHIVStatus());
@@ -1698,6 +1702,7 @@ void Population::ApplyARTRollout(EventParams &parameters_)
 	double rolloutProportion = InterpolateProportion(parameters_.targetYearlyRolloutProportions,
 		parameters_.currTime, parameters_.monthOf1990);
 	int newSlots = UpdateTreatmentSlots(rolloutProportion);
+	populationStatistics.recordTreatmentSlots(newSlots);
 
 	if(rolloutProportion > 0)
 	{
@@ -1726,17 +1731,17 @@ void Population::ApplyARTRollout(EventParams &parameters_)
 
 	for(auto &current_ranking_bucket : rankedForTreatment)
 	{
-		for(auto &person : current_ranking_bucket)
-		{
-			populationStatistics.recordTreatmentAccessEligiblity(person);
-		}
+	    for(auto &person : current_ranking_bucket)
+	    {
+	        populationStatistics.recordTreatmentAccessEligiblity(person);
+	    }
 	}
 
 	for(auto &person : rolloutTreatedPool)
 	{
-		// double counting shouldn't be a problem, they're either in rolloutTreatedPool or rankedForTreatment but not both
-		populationStatistics.recordTreatmentAccessEligiblity(person);
-		populationStatistics.recordTreatmentAccess(person);
+	    // double counting shouldn't be a problem, they're either in rolloutTreatedPool or rankedForTreatment but not both
+	    populationStatistics.recordTreatmentAccessEligiblity(person);
+	    populationStatistics.recordTreatmentAccess(person);
 	}
 }
 
