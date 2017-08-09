@@ -651,6 +651,8 @@ void PopulationStatistics::printShiftedOutcomes(std::ostream &_outStream, int ye
 		_outStream << std::endl;
 		_outStream << "Year";
 		_outStream << Constants::TAB;
+		_outStream << "Pop Size";
+		_outStream << Constants::TAB;
 		_outStream << "SA Pop Size";
 		_outStream << Constants::TAB;
 		_outStream << "Incident";
@@ -677,6 +679,10 @@ void PopulationStatistics::printShiftedOutcomes(std::ostream &_outStream, int ye
 		_outStream << "Number Eligible for ART";
 		_outStream << Constants::TAB;
 		_outStream << "Number Receiving ART";
+		_outStream << Constants::TAB;
+		_outStream << "Number Treatment Slots";
+		_outStream << Constants::TAB;
+		_outStream << "Number Deaths on ART";
 		_outStream << std::endl;
 	}
 
@@ -684,6 +690,8 @@ void PopulationStatistics::printShiftedOutcomes(std::ostream &_outStream, int ye
 //	double yearlyIncidence = static_cast<double>(yearlyIncidentInfections) / (yearStartSexuallyActivePopSize - yearStartPrevalentInfections);
 	double yearlyIncidence = monthlyIncidenceSum;
 	_outStream << year;
+	_outStream << Constants::TAB;
+	_outStream << yearStartPopSize;
 	_outStream << Constants::TAB;
 	_outStream << yearStartSexuallyActivePopSize;
 	_outStream << Constants::TAB;
@@ -711,6 +719,10 @@ void PopulationStatistics::printShiftedOutcomes(std::ostream &_outStream, int ye
 	_outStream << uniqueYearlyEligibleForTreatment.size();
 	_outStream << Constants::TAB;
 	_outStream << uniqueYearlyTreated.size();
+	_outStream << Constants::TAB;
+	_outStream << yearlyTreatmentSlots;
+	_outStream << Constants::TAB;
+	_outStream << uniqueYearlyTreatedDeath.size();
 	_outStream << std::endl;
 }
 
@@ -847,7 +859,7 @@ void PopulationStatistics::enableShiftedOutcomes(int monthOf1990)
 }
 
 void PopulationStatistics::recordPrevalenceAndIncidence(long currTime, double _prevalence, double _SAprevalence, double _incidence,
-        int saPopSize, int monthlyIncident, int monthlyPrevalent)
+							int popSize, int saPopSize, int monthlyIncident, int monthlyPrevalent)
 {
 	for(auto record_time : timesToRecord)
 	{
@@ -869,7 +881,7 @@ void PopulationStatistics::recordPrevalenceAndIncidence(long currTime, double _p
 	{
 		if((currTime - monthOf1990) % 12 == 0)
 		{
-			recordYearStartStats(saPopSize, monthlyPrevalent);
+		  recordYearStartStats(popSize, saPopSize, monthlyPrevalent);
 		}
 
 		yearlyIncidentInfections += monthlyIncident;
@@ -883,8 +895,9 @@ std::vector<PopulationStatistics::SingleTimeStats *> *PopulationStatistics::getS
 	return &(selectedSummaryStats);
 }
 
-void PopulationStatistics::recordYearStartStats(int sexuallyActivePopSize, int prevalentCases)
+void PopulationStatistics::recordYearStartStats(int popSize, int sexuallyActivePopSize, int prevalentCases)
 {
+        yearStartPopSize = popSize;
 	yearStartSexuallyActivePopSize = sexuallyActivePopSize;
 	yearStartPrevalentInfections = prevalentCases;
 }
@@ -923,16 +936,30 @@ void PopulationStatistics::recordTreatment(Person *person)
 	artTracker.recordTreatment(person);
 }
 
+void PopulationStatistics::recordTreatmentDeath(Person *person)
+{
+	uniqueYearlyTreatedDeath.insert(person);
+	artTracker.recordTreatmentDeath(person);
+}
+
+void PopulationStatistics::recordTreatmentSlots(int numSlots)
+{
+        yearlyTreatmentSlots += numSlots;
+	artTracker.recordTreatmentSlots(numSlots);
+}
+
 void PopulationStatistics::resetYear(int newYear)
 {
 	relativeYear = newYear;
 
 	yearStartPrevalentInfections = 0;
+	yearStartPopSize = 0;
 	yearStartSexuallyActivePopSize = 0;
 	yearlyCumulativeSexuallyActivePopSize = 0;
 	yearlyIncidentInfections = 0;
 	monthlyIncidenceSum = 0;
 	yearlyTests = 0;
+	yearlyTreatmentSlots = 0;
 
 	yearlyTestsByResult.assign(yearlyTestsByResult.size(), 0);
 
@@ -940,4 +967,5 @@ void PopulationStatistics::resetYear(int newYear)
 	uniqueYearlyAccessingTreatment.clear();
 	uniqueYearlyEligibleForTreatment.clear();
 	uniqueYearlyTreated.clear();
+	uniqueYearlyTreatedDeath.clear();
 }
