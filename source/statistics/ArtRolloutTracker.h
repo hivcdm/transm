@@ -28,6 +28,8 @@ public:
 	void recordTreatmentAccess(Person *person);
 	void recordTreatmentEligiblity(Person *person);
 	void recordTreatment(Person *person);
+	void recordTreatmentDeath(Person *person);
+	void recordTreatmentSlots(int numSlots);
 
 	void printArtRolloutOutcomes(int time, std::ostream &_outStream, Population *_population);
 
@@ -40,6 +42,8 @@ private:
 	int numTestsReturnedFor;
 	std::vector<int> numTestsByResult;
 	BucketCounter counter;
+
+	int numTreatmentSlots;
 
 	std::vector<AgeRange> ageRanges;
 

@@ -17,7 +17,7 @@ const std::string ArtRolloutTracker::RISK_GROUP_NAMES[] =
 
 const std::string ArtRolloutTracker::TRACKED_OUTCOMES[] =
 {
-"test_result", "eligible_for_access", "accessing_treatment", "eligible_for_treatment", "treated"
+  "test_result", "eligible_for_access", "accessing_treatment", "eligible_for_treatment", "treated", "death_on_treatment"
 };
 
 const std::string BUCKETS[] =
@@ -98,6 +98,16 @@ void ArtRolloutTracker::recordTreatment(Person *person)
 	counter.Increment(PersonBucket(*person, ageRanges), "treated");
 }
 
+void ArtRolloutTracker::recordTreatmentDeath(Person *person)
+{
+	counter.Increment(PersonBucket(*person, ageRanges), "death_on_treatment");
+}
+
+void ArtRolloutTracker::recordTreatmentSlots(int numSlots)
+{
+        numTreatmentSlots = numSlots;
+}
+
 void ArtRolloutTracker::printArtRolloutOutcomes(int time, std::ostream &_outStream, Population *_population)
 {
 	if(time == 0)
@@ -116,13 +126,14 @@ void ArtRolloutTracker::buildHeader()
 	SetHeaderCell(1, 1, "ART Rollout Outcomes");
 	SetHeaderCell(1, 3, "Time");
 	SetHeaderCell(2, 3, "Population Size");
-	SetHeaderCell(3, 1, "Number of Tests");
-	SetHeaderCell(3, 2, "Totals");
-	SetHeaderCell(3, 3, "Offered");
-	SetHeaderCell(4, 3, "Accepted");
-	SetHeaderCell(5, 3, "Returned For Results");
+	SetHeaderCell(3, 3, "Number Treatment Slots");
+	SetHeaderCell(4, 1, "Number of Tests");
+	SetHeaderCell(4, 2, "Totals");
+	SetHeaderCell(4, 3, "Offered");
+	SetHeaderCell(5, 3, "Accepted");
+	SetHeaderCell(6, 3, "Returned For Results");
 
-	int column = 6;
+	int column = 7;
 
 	for(auto outcome : TRACKED_OUTCOMES)
 	{
@@ -142,6 +153,14 @@ void ArtRolloutTracker::buildHeader()
 		else if(outcome == "treated")
 		{
 			section_header = "Number Treated";
+		}
+		else if (outcome == "death_on_treatment")
+		{
+		        section_header = "Deaths on Treatment";
+		}
+		else if (outcome == "num_treatment_slots")
+		{
+		        section_header = "Number Treatment Slots";
 		}
 
 		SetHeaderCell(column, 1, section_header);
@@ -203,6 +222,7 @@ void ArtRolloutTracker::buildRow(int time, Population *_population)
 	}
 
 	PushElement(static_cast<int>(_population->GetSize()));
+	PushElement(numTreatmentSlots);
 	PushElement(numTestsOffered);
 	PushElement(numTestsAccepted);
 	PushElement(numTestsReturnedFor);
@@ -268,4 +288,6 @@ void ArtRolloutTracker::Reset()
 	numTestsOffered = 0;
 	numTestsAccepted = 0;
 	numTestsReturnedFor = 0;
+
+	numTreatmentSlots = 0;
 }
