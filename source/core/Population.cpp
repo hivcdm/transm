@@ -316,6 +316,14 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 				}
 			}
 
+			if(parameters_.useRollout && parameters_.treatedContext && p->isInfected())
+			{
+				if(p->isOnArt())
+				{
+					populationStatistics.recordTreatment(p);
+				}
+			}
+
 			//see whether this person has died.
 			//if this person was a couple, then will push living members to personsToAdd
 			// to be reinserted into the EntityPool once we have iterated through all buckets

@@ -22,8 +22,8 @@ const std::string ArtRolloutTracker::TRACKED_OUTCOMES[] =
     "accessing_treatment",
     "eligible_for_treatment",
     "treated",
-    "prep",
-    "death_on_treatment"
+    "death_on_treatment",
+    "prep"
 };
 
 const std::string BUCKETS[] =
@@ -165,10 +165,10 @@ void ArtRolloutTracker::buildHeader()
 		{
 			section_header = "Number Treated";
 		}
-		else if(outcome == "prep")
-		{
-		        section_header = "Number Using PrEP";
-		}
+        	else if(outcome == "prep")
+	        {
+        		section_header = "Number Using PrEP";
+        	}
 		else if (outcome == "death_on_treatment")
 		{
 		        section_header = "Deaths on Treatment";

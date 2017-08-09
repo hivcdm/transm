@@ -843,8 +843,8 @@ int InfectionsTracker::printInfections(EventParams &_eventParams, long _time, os
 		_eventParams.BatchStatsStream[BatchStatsVariables::PREVALENCESA] << currPrevalenceSA << Constants::TAB;
 	}
 
-//TODO: this should be done somewhere else, so we're not relying on side effects to record information
-	_population->GetPopulationStatistics().recordPrevalenceAndIncidence(_time, currPrevalence, currPrevalenceSA, incidence, static_cast<int>(currPopSize), static_cast<int>(currSAPopSize),
+	//TODO: this should be done somewhere else, so we're not relying on side effects to record information
+    _population->GetPopulationStatistics().recordPrevalenceAndIncidence(_time, currPrevalence, currPrevalenceSA, incidence, static_cast<int>(currPopSize), static_cast<int>(currSAPopSize),
 	        getCurrTimeStepIncidentInfsTotal(), totalInfectedSA);
 	//Multiply by 100 and round to nearest integer for graphical output
 	int intPrevalence = (int)(100 * currPrevalence + 0.5);
