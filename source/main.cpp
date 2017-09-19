@@ -19,29 +19,12 @@ struct ArgumentToken
 	{
 		unknown,
 		option,
+		cepacDirectory,
 		inputDirectory
 	};
 
 	ArgumentTokenType type;
 	std::string value;
-
-	static ArgumentToken FromString(const std::string &tokenString)
-	{
-		ArgumentToken token;
-
-		token.value = tokenString;
-
-		if(token.value.length() > 2 && token.value.substr(0, 1) == "-")
-		{
-			token.type = ArgumentTokenType::option;
-		}
-		else
-		{
-			token.type = ArgumentTokenType::inputDirectory;
-		}
-
-		return token;
-	}
 };
 
 std::vector<ArgumentToken> ParseArgumentTokens(int argc, char *argv[])
@@ -54,7 +37,24 @@ std::vector<ArgumentToken> ParseArgumentTokens(int argc, char *argv[])
 
 		if(tokenString.length() > 0)
 		{
-			tokens.push_back(ArgumentToken::FromString(tokenString));
+			ArgumentToken token;
+			token.value = tokenString;
+			if (token.value == "--cepac")
+			{
+				token.type = ArgumentToken::ArgumentTokenType::cepacDirectory;
+				token.value = argv[i+1];
+				i++;
+			}
+			else if(token.value.length() > 2 && token.value.substr(0, 1) == "-")
+			{
+				token.type = ArgumentToken::ArgumentTokenType::option;
+			}
+			else
+			{
+				token.type = ArgumentToken::ArgumentTokenType::inputDirectory;
+			}
+
+			tokens.push_back(token);
 		}
 	}
 
@@ -63,7 +63,7 @@ std::vector<ArgumentToken> ParseArgumentTokens(int argc, char *argv[])
 
 void PrintUsage()
 {
-	std::cout << "usage: transm [--version] [--help] <input_directory>" << std::endl;
+	std::cout << "usage: transm [--version] [--help] [--cepac <dir>] <input_directory>" << std::endl;
 }
 
 void PrintVersion()
@@ -96,11 +96,11 @@ void Simulate(const std::string &filename, SummaryStats &cepac_summary, Transmis
 	transmission_summary.addPopulationStatistics(simulation.GetPopulationStatistics(), simulation.GetEventParams());
 }
 
-int RunSimulation(const std::string &directory = "")
+int RunSimulation(const std::string &directory = "", const std::string &cepacDirectory = "")
 {
 	auto workingDirectory = boost::filesystem::current_path();
 
-	CepacUtil::inputsDirectory = directory;
+	CepacUtil::inputsDirectory = cepacDirectory;
 	CepacUtil::changeDirectoryToInputs();
 	//Call this so that relative directories can be used as input (i.e. "../")
 	CepacUtil::useCurrentDirectoryForInputs();
@@ -113,9 +113,9 @@ int RunSimulation(const std::string &directory = "")
 	SummaryStats cepacSummaryStats("cepacPopstats.out");
 	TransmissionSummaryStats transSummaryStats("summaryStats.out");
 
-	std::for_each(input_files.begin(), input_files.end(), [&](const std::string &s) 
-	{ 
-		Simulate(s, cepacSummaryStats, transSummaryStats); 
+	std::for_each(input_files.begin(), input_files.end(), [&](const std::string &s)
+	{
+		Simulate(s, cepacSummaryStats, transSummaryStats);
 	});
 
 	//Finalize CEPAC summary stats and print the popstats file
@@ -131,7 +131,10 @@ int RunSimulation(const std::string &directory = "")
 
 int main(int argc, char *argv[])
 {
-	for(const auto &token : ParseArgumentTokens(argc, argv))
+	std::vector<std::string> simulations;
+	std::string cepacDirectory;
+	auto tokens = ParseArgumentTokens(argc, argv);
+	for(const auto &token : tokens)
 	{
 		if(token.type == ArgumentToken::ArgumentTokenType::option)
 		{
@@ -146,15 +149,27 @@ int main(int argc, char *argv[])
 				return 0;
 			}
 		}
+		else if(token.type == ArgumentToken::ArgumentTokenType::cepacDirectory)
+		{
+			cepacDirectory = token.value;
+		}
 		else if(token.type == ArgumentToken::ArgumentTokenType::inputDirectory)
 		{
-			return RunSimulation(token.value);
+			simulations.push_back(token.value);
 		}
-
-		PrintBadOption(token.value);
-		return 1;
+		else
+		{
+			PrintBadOption(token.value);
+			return 1;
+		}
 	}
 
-	PrintUsage();
-    return 0;
+	for (auto simulation : simulations)
+	{
+		if (cepacDirectory.empty())
+			cepacDirectory=simulation;
+		RunSimulation(simulation, cepacDirectory);
+	}
+
+	return 0;
 }
