@@ -20,4 +20,4 @@ build/cmake_install.cmake
 build/third-party/
 scripts/generate_runs/*/
 *cscope*
-source/utility/Version.h
+source/utility/version.h
