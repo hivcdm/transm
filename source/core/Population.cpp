@@ -191,7 +191,7 @@ void Population::Births(EventParams &parameters_)
 	    parameters_.numNewbornsTraced++;
 
 	p = GeneratePerson(parameters_, gender, nullptr, toTrace);
-
+	
 	if(parameters_.debugLevel > DebugLevel::One &&
 	   parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled) {
 	    p->print(parameters_.trace_files[EventParams::TraceFile::Type::Events].file,

@@ -18,10 +18,11 @@ supported_versions = ['3.6', '3.7']
 tabular_outputs = ['Infections', 'Averted', 'Cost-Undiscounted', 'Cost-Discounted',
                    'LMs-Undiscounted', 'LMs-Discounted']
 cepac_outputs = ['Cascade']
-infection_outputs = ['Prevalence', 'Incidence']
+infection_outputs = ['Prevalence', 'Male-Prevalence', 'Female-Prevalence', 'Incidence', 'Male-Incidence', 'Female-Incidence']
 
 # Extra Health State Outputs
 health_state_outputs = ['Pop', 'SA', 'CEPAC-HIV+']
+
 # CEPAC
 ident_state_outputs = ['IdentHIV+', 'UnidentHIV+', 'Dead']
 ART_state_outputs = ['Off-ART', 'On-ART']
@@ -398,6 +399,7 @@ class Run:
 
         num_header_rows = {'CE' : 4,
                            'Infections' : 3,
+                           'Population' : 2,
                            'ShiftedOutcomes' : 3,
                            'ARTRollout' : 3,
                            'cepac' : 0}
@@ -625,34 +627,73 @@ class Run:
         while self.files['ShiftedOutcomes'].has_row(str(year)):
             year += 1
         self.max_year = year - 1
+
+        # From Infections file
         sa_column = 5
         currently_infected_column = 2
         newly_infected_column = 0
+        prevalent_male_column = 17
+        prevalent_female_column = 18
+        incident_male_column = 80
+        incident_female_column = 81
+
+        # From Population file
+        male_sa_column = 9
+        female_sa_column = 10
 
         for year in range(1990, min(self.end_year, self.max_year) + 1):
             first_month = self.month_of_1990 + (year - 1990) * 12
             monthly_sa = 0
+            monthly_sa_male = 0
+            monthly_sa_female = 0
             monthly_prevalent = 0
+            monthly_prevalent_male = 0
+            monthly_prevalent_female = 0
             monthly_incident = 0
-            yearly_incidence = 0
+            monthly_incident_male = 0
+            monthly_incident_female = 0
             yearly_prevalence = 0
-            yearly_incident = 0
+            yearly_prevalence_male = 0
+            yearly_prevalence_female = 0
+            yearly_incidence = 0
+            yearly_incidence_male = 0
+            yearly_incidence_female = 0
 
             for month_in_year in range(first_month, first_month + 12):
                 monthly_sa = self.files['Infections'].get_int(str(month_in_year), \
                                                                      sa_column)
+                monthly_sa_male = self.files['Population'].get_int(str(month_in_year), \
+                                                                     male_sa_column)
+                monthly_sa_female = self.files['Population'].get_int(str(month_in_year), \
+                                                                     female_sa_column)
                 monthly_prevalent = self.files['Infections'].get_int(str(month_in_year), \
                                                                      currently_infected_column)
+                monthly_prevalent_male = self.files['Infections'].get_int(str(month_in_year), \
+                                                                     prevalent_male_column)
+                monthly_prevalent_female = self.files['Infections'].get_int(str(month_in_year), \
+                                                                     prevalent_female_column)
                 monthly_incident = self.files['Infections'].get_int(str(month_in_year), \
                                                                     newly_infected_column)
+                monthly_incident_male = self.files['Infections'].get_int(str(month_in_year), \
+                                                                    incident_male_column)
+                monthly_incident_female = self.files['Infections'].get_int(str(month_in_year), \
+                                                                    incident_female_column)
 
                 yearly_incidence += monthly_incident / (monthly_sa - monthly_prevalent)
+                yearly_incidence_male += monthly_incident_male / (monthly_sa_male - monthly_prevalent_male)
+                yearly_incidence_female += monthly_incident_female / (monthly_sa_female - monthly_prevalent_female)
                 if month_in_year == int(first_month) and monthly_sa > 0:
                     yearly_prevalence = monthly_prevalent / monthly_sa
-                yearly_incident += monthly_incident
+                    yearly_prevalence_male = monthly_prevalent_male / monthly_sa_male
+                    yearly_prevalence_female = monthly_prevalent_female / monthly_sa_female
 
             self.statistics['Prevalence'][year] = yearly_prevalence
+            self.statistics['Male-Prevalence'][year] = yearly_prevalence_male
+            self.statistics['Female-Prevalence'][year] = yearly_prevalence_female
+
             self.statistics['Incidence'][year] = yearly_incidence
+            self.statistics['Male-Incidence'][year] = yearly_incidence_male
+            self.statistics['Female-Incidence'][year] = yearly_incidence_female
 
     def extract_costs_and_lms(self):
         cost_stats = [
@@ -1139,8 +1180,8 @@ class Summary:
 
             last_row = 2 + max_year + 1 -1990
             cell_value =  "{} to {}".format(self.comparison_base_year, max_year)
-            for tab in self.yearly_outputs:
-                self.pages['Prevalence'].ws.cell(column=1,row=last_row).value = cell_value
+            for page in self.yearly_outputs:
+                self.pages[page].ws.cell(column=1,row=last_row).value = cell_value
 
     def summarise(self, out_filename, excludes):
         out_filename = os.path.normpath(out_filename)
@@ -1206,7 +1247,7 @@ class Summary:
                 number_format = '#,0.00'
                 if 'Cost' in page_name:
                     number_format = '$#,0.00'
-                elif page_name in ['Incidence', 'Prevalence']:
+                elif page_name in infection_outputs:
                     number_format = '0.000000'
                 elif page_name in self.full_health_state_outputs and \
                      page_name not in health_state_outputs:
@@ -1225,20 +1266,17 @@ class Summary:
                                                stats.upper_quartile[page_name],
                                                number_format)
 
-                #if page_name == 'Averted':
-                #    self.pages[page_name].add_data('Q1 ' + run_set.name,
-                # stats.lower_quartile[page_name], number_format)
-                #    self.pages[page_name].add_data('MED ' + run_set.name,
-                # stats.median[page_name], number_format)
-                #    self.pages[page_name].add_data('Q3 ' + run_set.name,
-                # stats.upper_quartile[page_name], number_format)
+                if page_name == 'Averted':
+                    self.pages[page_name].add_data('Q1 ' + run_set.name, \
+                                                   stats.lower_quartile[page_name], number_format)
+                    self.pages[page_name].add_data('MED ' + run_set.name, \
+                                                   stats.median[page_name], number_format)
+                    self.pages[page_name].add_data('Q3 ' + run_set.name, \
+                                                   stats.upper_quartile[page_name], number_format)
 
             # If this is true at this point it means we have missing runs
             missing_runs_names = set()
             if self.num_runs != (len(processed_runs) + len(skipped_runs)):
-            #    self.pages['Missing Runs'].add_data("{} ({})".format(run_set.name,
-            #              self.num_runs - len(processed_runs)),
-            #              list(set(self.weights.keys()) - processed_runs))
                 run_set.is_sane = False
                 processed_runs_names = set()
                 skipped_runs_names = set()

@@ -35,6 +35,7 @@ class AgeDistribution
     /// <summary>
     /// the min age that this bucket represents
     /// </summary>
+
     int minAgeMth;
 
     /// <summary>
