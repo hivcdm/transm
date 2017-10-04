@@ -855,8 +855,13 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
 	auto defaultFemaleParams = GetFemaleSubPopParams();
 	parameters.SetFemaleParameters(defaultFemaleParams);
 
-	parameters.SetChanceChronicInfection(
-	    Text<double>(initial_infections_node.child("chanceSeedChronicInfection")));
+	try {
+		parameters.SetChanceChronicInfection(
+		    Text<double>(initial_infections_node.child("chanceSeedChronicInfection")));
+	} catch (std::exception e) {
+		printf("WARNING: Input chanceSeedChronicInfection missing\n");
+		printf("\t Defaulting to all acute infections\n");
+	}
 
 	parameters.SetInitialCswProportion("male", defaultMaleParams.getChanceBecomeCSW());
 	parameters.SetInitialCswProportion("female", defaultFemaleParams.GetChanceBecomeCSW());

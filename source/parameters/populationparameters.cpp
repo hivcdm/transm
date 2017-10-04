@@ -14,8 +14,9 @@ PopulationParameters::PopulationParameters()
 	birthRate = 0.0038;
 	ageOfMajority = Age::from_months(180);
 	birthProportions["hetero-male"] = 0.51;
-    birthProportions["female"] = 1 - birthProportions["hetero-male"];
+	birthProportions["female"] = 1 - birthProportions["hetero-male"];
 	proportionCircumcised = 0.20;
+	chronicInfectionRate = 0.00;
 }
 
 PopulationParameters::~PopulationParameters()
