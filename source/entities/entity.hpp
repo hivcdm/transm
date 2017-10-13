@@ -699,6 +699,10 @@ public:
 
 	virtual void SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng) = 0;
 	virtual const BetaDist GetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType) = 0;
+	bool isIdentified()
+	{
+		return cepacPatient && cepacPatient->getMonitoringState()->isDetectedHIVPositive;
+	}
 
     BetaDist CalculateChanceCondomUse(NormalDist target_dist, BetaDist curr_dist,
 				      int time, int duration);

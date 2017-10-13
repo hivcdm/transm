@@ -340,7 +340,7 @@ InterventionParameters SimulationParametersXml::GetInterventionParameters() cons
                 file.target_population = 0;
                 file.filename = file_name;
                 file.time = time;
-                
+
                 parameters.cepac_files.push_back(file);
 
                 //From the first file only, get the death tables for non-AIDS death
@@ -405,6 +405,14 @@ RolloutEligibility SimulationParametersXml::GetRolloutEligibility() const
 {
     auto eligibility_node = document_.select_node("/simulation/interventions/artRolloutIntervention/rolloutEligibility").node();
     RolloutEligibility eligibility;
+
+    // Identified
+    auto identified_node = eligibility_node.select_node("criteria[@name='Identified']").node();
+    if (identified_node.child("status"))
+	eligibility.isIdentified = Text<bool>(identified_node.child("status"));
+    else
+	eligibility.isIdentified = false;
+
 
     // OIHist
     auto oi_hist_node = eligibility_node.select_node("criteria[@name='OIHist']").node();
@@ -1841,16 +1849,24 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         }
         case KnownIntervention::RolloutEligibility:
         {
-            int new_value = Text<int>(node);
             std::string criterion = Attr<std::string>(node, "criterion");
             std::string parameter_name = Attr<std::string>(node, "parameter");
 
-            if(criterion == "OIHist")
+	    if (criterion == "Identified")
+	    {
+		intervention.SetSimulationCallback(
+		    [=](Time current_time, Simulation &s) {
+			s.GetEventParams().rolloutEligibility.isIdentified = Text<bool>(node);
+		    });
+	    }
+	    else if(criterion == "OIHist")
             {
+		int new_value = Text<int>(node);
                 if(parameter_name == "rank")
                 {
                     intervention.SetSimulationCallback(
-                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.oiHistRank = new_value; });
+                        [=](Time current_time, Simulation &s) {
+				s.GetEventParams().rolloutEligibility.oiHistRank = new_value; });
                 }
                 else if(parameter_name.substr(0, 2) == "OI")
                 {
@@ -1870,6 +1886,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             }
             else if(criterion == "CD4")
             {
+		int new_value = Text<int>(node);
                 if(parameter_name == "rank")
                 {
                     intervention.SetSimulationCallback(
@@ -1892,6 +1909,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             }
             else if(criterion == "CD4OIHist")
             {
+		int new_value = Text<int>(node);
                 if(parameter_name == "rank")
                 {
                     intervention.SetSimulationCallback(
@@ -1920,7 +1938,8 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             }
             else if(criterion == "HVL")
             {
-                if(parameter_name == "rank")
+		int new_value = Text<int>(node);
+		if(parameter_name == "rank")
                 {
                     intervention.SetSimulationCallback(
                         [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.hvlRank = new_value; });
@@ -1942,6 +1961,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             }
             else if(criterion == "CD4HVL")
             {
+		int new_value = Text<int>(node);
                 if(parameter_name == "rank")
                 {
                     intervention.SetSimulationCallback(

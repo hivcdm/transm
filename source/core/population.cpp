@@ -1476,6 +1476,8 @@ void Population::DetermineRankings(const RolloutEligibility &criteria)
 		bool checkCd4Hvl = currentRank == criteria.cd4HvlRank;
 		rankedForTreatment[currentRank - 1].clear();
 
+		bool checkHIVIdentified = criteria.isIdentified;
+
 		if(checkOiHist || checkCd4 || checkCd4OiHist || checkHvl || checkCd4Hvl)
 		{
 			auto untIter = rolloutUntreatedPool.begin();
@@ -1561,8 +1563,11 @@ void Population::DetermineRankings(const RolloutEligibility &criteria)
 
 				if(isEligible)
 				{
-					rankedForTreatment[currentRank - 1].push_back(untPerson);
-					rankedPeople.insert(untPerson);
+					if (!checkHIVIdentified || untPerson->isIdentified())
+					{
+						rankedForTreatment[currentRank - 1].push_back(untPerson);
+						rankedPeople.insert(untPerson);
+					}
 				}
 
 				untIter++;

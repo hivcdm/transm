@@ -75,6 +75,7 @@ this structure stores the eligibility criter used for art rollout
 class RolloutEligibility
 {
 public:
+    bool isIdentified;
     int oiHistRank;
     bool oiHistOIs[Constants::NumberOfOIs];
     int oiHistNumToStart;
