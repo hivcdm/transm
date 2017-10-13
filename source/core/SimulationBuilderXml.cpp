@@ -534,6 +534,13 @@ EventParams::RolloutEligibility SimulationBuilderXml::ReadRolloutEligibility()
     auto eligibility_node = document_.select_single_node("/simulation/interventions/artRolloutIntervention/rolloutEligibility").node();
     EventParams::RolloutEligibility eligibility;
 
+    // Identified
+    auto identified_node = eligibility_node.select_single_node("criteria[@name='Identified']").node();
+    if (identified_node.child("status"))
+	eligibility.isIdentified = Text<bool>(identified_node.child("status"));
+    else
+	eligibility.isIdentified = false;
+
     // OIHist
     auto oi_hist_node = eligibility_node.select_single_node("criteria[@name='OIHist']").node();
     eligibility.oiHistRank = Text<int>(oi_hist_node.child("rank"));
@@ -1479,12 +1486,19 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
         }
         case KnownIntervention::RolloutEligibility:
         {
-            int new_value = Text<int>(node);
             std::string criterion = Attr<std::string>(node, "criterion");
             std::string parameter_name = Attr<std::string>(node, "parameter");
 
-            if(criterion == "OIHist")
+	    if (criterion == "Identified")
+	    {
+		intervention.SetSimulationCallback(
+		    [=](Simulation &s) {
+			s.parameters_.rolloutEligibility.isIdentified = Text<bool>(node);
+		    });
+	    }
+	    else if(criterion == "OIHist")
             {
+		int new_value = Text<int>(node);
                 if(parameter_name == "rank")
                 {
                     intervention.SetSimulationCallback(
@@ -1508,6 +1522,7 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
             }
             else if(criterion == "CD4")
             {
+		int new_value = Text<int>(node);
                 if(parameter_name == "rank")
                 {
                     intervention.SetSimulationCallback(
@@ -1530,6 +1545,7 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
             }
             else if(criterion == "CD4OIHist")
             {
+		int new_value = Text<int>(node);
                 if(parameter_name == "rank")
                 {
                     intervention.SetSimulationCallback(
@@ -1558,6 +1574,7 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
             }
             else if(criterion == "HVL")
             {
+		int new_value = Text<int>(node);
                 if(parameter_name == "rank")
                 {
                     intervention.SetSimulationCallback(
@@ -1580,6 +1597,7 @@ Intervention SimulationBuilderXml::ReadIntervention(pugi::xml_node &node, bool i
             }
             else if(criterion == "CD4HVL")
             {
+		int new_value = Text<int>(node);
                 if(parameter_name == "rank")
                 {
                     intervention.SetSimulationCallback(
