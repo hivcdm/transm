@@ -118,6 +118,7 @@ public :
 	class RolloutEligibility
 	{
 	public:
+		bool isIdentified;
 		int oiHistRank;
 		bool oiHistOIs[Constants::NUMBER_OF_OIS];
 		int oiHistNumToStart;
