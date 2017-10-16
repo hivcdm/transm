@@ -1306,17 +1306,28 @@ void Population::ApplyRolloutContext(EventParams &parameters_, int time)
 			//Switch the cepac file depending on the population the new file is applied to
 			switch(rolloutContext->popOfInterest)
 			{
-			case 0: //All Untreated
+			case 0: // Update all untreated people with the new context
+			{
 				parameters_.untreatedContext = rolloutContext->rolloutSimContext.get();
-				break;
 
-			case 1:  //All Treated
+				//Apply to all current untreated patients
+				std::list<Person *>::iterator personIter;
+				for(personIter = rolloutUntreatedPool.begin(); personIter != rolloutUntreatedPool.end();
+				    personIter++)
+				{
+					(*personIter)->setSimContext(parameters_.untreatedContext);
+				}
+
+				break;
+			}
+			case 1:  // Update all treated people with the new context
 			{
 				parameters_.treatedContext = rolloutContext->rolloutSimContext.get();
+
 				//Apply to all current treated patients
 				std::list<Person *>::iterator personIter;
-
-				for(personIter = rolloutTreatedPool.begin(); personIter != rolloutTreatedPool.end(); personIter++)
+				for(personIter = rolloutTreatedPool.begin(); personIter != rolloutTreatedPool.end();
+				    personIter++)
 				{
 					(*personIter)->setSimContext(parameters_.treatedContext);
 				}
@@ -1324,8 +1335,12 @@ void Population::ApplyRolloutContext(EventParams &parameters_, int time)
 				break;
 			}
 
-			case 2: //Untreated Getting new art
+			case 2: // Only new people added to the treated pool will context this context
 				parameters_.treatedContext = rolloutContext->rolloutSimContext.get();
+				break;
+
+			case 3: // Only newly infected people (added to the untreated pool) will context this context
+				parameters_.untreatedContext = rolloutContext->rolloutSimContext.get();
 				break;
 
 			default:
