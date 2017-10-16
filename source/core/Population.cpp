@@ -1506,7 +1506,6 @@ void Population::ApplyRolloutContext(EventParams &parameters_, int time)
 
 			case 3: // Only newly infected people (added to the untreated pool) will context this context
 				parameters_.untreatedContext = rolloutContext->simContext.get();
-				break;
 
 			default:
 				break;
