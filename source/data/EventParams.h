@@ -6,7 +6,6 @@
 #include <unordered_map>
 #include <vector>
 #include <include.h>
-#include <boost/filesystem.hpp>
 
 #include "../util/enum_iterator.h"
 #include "../core/Constants.h"
@@ -324,7 +323,7 @@ public :
             displayOut("\tReading " + cepac_file + "\n");
 
             //Set the CEPAC simContext from the specified CEPAC .in file
-            auto stem = boost::filesystem::path(cepac_file).stem().string();
+            auto stem = cepac_file.substr(0, cepac_file.find(CepacUtil::FILE_EXTENSION_FOR_INPUT));
             cepac_file_context_map_[cepac_file] = new SimContext(stem);
 
             //Read in the inputs
