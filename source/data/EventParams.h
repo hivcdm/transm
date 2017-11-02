@@ -326,7 +326,7 @@ public :
             displayOut("\tReading " + cepac_file + "\n");
 
             //Set the CEPAC simContext from the specified CEPAC .in file
-            auto stem = transm::path(cepac_file).stem().string();
+            auto stem = cepac_file.substr(0, cepac_file.find(CepacUtil::FILE_EXTENSION_FOR_INPUT));
             cepac_file_context_map_[cepac_file] = new SimContext(stem);
 
             //Read in the inputs
