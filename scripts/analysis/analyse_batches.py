@@ -11,6 +11,7 @@ import os
 import zipfile
 import sys
 import numpy
+import argparse
 
 supported_versions = ['3.6', '3.7']
 
@@ -96,25 +97,9 @@ class CepacOutFile:
     def get_pop_size(self):
         return float(self.month_data[1][5])
 
-    # returns the number of peole who died during the given  month
-    def get_number_deaths_nonAIDS(self):
-        return float(self.month_data[28][18])
-
-    # returns the number of peole who died during the given  month
-    def get_number_deaths_chrAIDS(self):
-        return float(self.month_data[28][17])
-
-    # returns the number of peole who died during the given  month
-    def get_number_deaths_total(self):
-        return sum(map(float, self.month_data[28][2:25]))
-
     # returns the number with HIV during the given month
     def get_number_with_hiv(self):
         return float(self.month_data[1][3]) + int(self.month_data[1][4])
-
-    # returns the number with HIV that were HVL tested during the given month
-    def get_number_with_hiv_hvl_tested(self):
-        return sum(map(float, self.month_data[20][2:9]))
 
     # returns the number with HIV that were HIV tested during the given month
     def get_number_with_hiv_identified(self):
@@ -124,40 +109,55 @@ class CepacOutFile:
     def get_number_with_hiv_unidentified(self):
         return float(self.month_data[1][3])
 
-    # returns the number with HIV that were on treatment during the given month
-    def get_number_with_hiv_on_ART(self):
-        return float(self.month_data[13][9]) + \
-            float(self.month_data[14][9]) + \
-            float(self.month_data[15][9]) + \
-            float(self.month_data[16][9]) + \
-            float(self.month_data[17][9]) + \
-            float(self.month_data[18][9])
-
-
     # returns the number with HIV that were off treatement during the given month
     def get_number_with_hiv_off_ART(self):
-        return float(self.month_data[7][9]) + \
-            float(self.month_data[8][9]) + \
-            float(self.month_data[9][9]) + \
+        return float(self.month_data[9][9]) + \
             float(self.month_data[10][9]) + \
             float(self.month_data[11][9]) + \
-            float(self.month_data[12][9])
+            float(self.month_data[12][9]) + \
+            float(self.month_data[13][9]) + \
+            float(self.month_data[14][9])
+
+    # returns the number with HIV that were on treatment during the given month
+    def get_number_with_hiv_on_ART(self):
+        return float(self.month_data[15][9]) + \
+            float(self.month_data[16][9]) + \
+            float(self.month_data[17][9]) + \
+            float(self.month_data[18][9]) + \
+            float(self.month_data[19][9]) + \
+            float(self.month_data[20][9])
 
     # returns the number with HIV that were virally supressed during the given month
     def get_number_with_hiv_suppressed(self):
-        return float(self.month_data[14][12])
+        return float(self.month_data[16][12])
 
     # returns the number with HIV that are partially suppressed
     def get_number_with_hiv_partially_suppressed(self):
-        return float(self.month_data[15][12])
+        return float(self.month_data[17][12])
 
     # returns the number with HIV that failed ART
     def get_number_failed_ART(self):
-        return float(self.month_data[16][12])
+        return float(self.month_data[18][12])
+
+    # returns the number with HIV that were HVL tested during the given month
+    def get_number_with_hiv_hvl_tested(self):
+        return sum(map(float, self.month_data[21][2:9]))
+
+    # returns the number of peole who died during the given  month
+    def get_number_deaths_nonAIDS(self):
+        return float(self.month_data[30][18])
+
+    # returns the number of peole who died during the given  month
+    def get_number_deaths_chrAIDS(self):
+        return float(self.month_data[30][17])
+
+    # returns the number of peole who died during the given  month
+    def get_number_deaths_total(self):
+        return sum(map(float, self.month_data[30][2:25]))
 
     # returns the number with HIV that were LTFU during the given month
     def get_number_with_hiv_ltfu(self):
-        return sum(map(float, self.month_data[41][2:12]))
+        return sum(map(float, self.month_data[49][2:12]))
 
 # A Page is a page of ordered data in a larger Workbook.
 class Page:
@@ -260,13 +260,14 @@ class Page:
         self.ws.merge_cells(range_string)
 
 class Run:
-    def __init__(self, xml_filename, full_output, full_outputs):
+    def __init__(self, xml_filename, full_output, percent_output, full_outputs):
         self.xml_filename = xml_filename
         self.name = ''
         self.path = ''
         self.is_sane = True
         self.state_msg = str()
         self.full_output = full_output
+        self.percent_output = percent_output
         self.full_health_state_outputs = full_outputs
 
         if xml_filename != '':
@@ -440,7 +441,7 @@ class Run:
             self.extract_cascade()
             self.extract_costs_and_lms()
             self.extract_prevalence_and_incidence()
-            if full_output:
+            if self.full_output:
                 self.extract_health_states()
                 self.extract_sa_proportion()
                 self.extract_eligibility_stats_AR()
@@ -740,12 +741,13 @@ class Run:
                 self.statistics['LMs-Discounted']['total'] += float(self.files['CE'].get_cell(month, column + discounted_offset))
 
 class RunSet:
-    def __init__(self, directory, full_output, full_outputs):
+    def __init__(self, directory, full_output, percent_output, full_outputs):
         self.directory = directory
         self.name = os.path.basename(directory)
         self.is_sane = True
         self.state_msg = str()
         self.full_output = full_output
+        self.percent_output = percent_output
         self.full_health_state_outputs = full_outputs
 
     def load_runs(self, year_range_min, year_range_max, get_month_of_1990):
@@ -757,7 +759,7 @@ class RunSet:
         for batchdir in batchdirs:
             for file in os.listdir(batchdir):
                 if os.path.splitext(file)[1] == '.xml':
-                    run = Run(os.path.join(batchdir, file), self.full_output,
+                    run = Run(os.path.join(batchdir, file), self.full_output, self.percent_output,
                               self.full_health_state_outputs)
                     zip_filename = os.path.join(batchdir, 'results.zip')
                     zip_file = None
@@ -795,11 +797,12 @@ class RunSet:
                     yield run
 
 class Summary:
-    def __init__(self, directory, post_calib_filename, full_output, \
+    def __init__(self, directory, post_calib_filename, full_output, percent_output, \
                  weight_cutoff, year_range, year_comparison, status_quo):
 
         self.directory = directory
         self.full_output = full_output
+        self.percent_output = percent_output
         self.read_calibration_data(post_calib_filename, weight_cutoff)
         self.year_range_min, self.year_range_max = year_range
         self.comparison_base_year = year_comparison
@@ -820,7 +823,7 @@ class Summary:
         self.excluded_run_set = []
         self.processed_run_set = []
         self.skipped_run_set = dict()
-        self.status_quo_stats = Run('', self.full_output, self.full_health_state_outputs)
+        self.status_quo_stats = Run('', self.full_output, self.percent_output, self.full_health_state_outputs)
 
     def construct_headers(self):
         self.headers = [
@@ -995,8 +998,8 @@ class Summary:
                     return [directory]
             else:
                 if not os.path.isdir(full_path): continue
-                if i == 'batch0':
-                    #print('found directory containing batch0 {}'.format(directory))
+                if i == ('batch0'):
+                    print('found directory containing batch0 {}'.format(directory))
                     return [directory]
 
         for i in os.listdir(directory):
@@ -1035,7 +1038,7 @@ class Summary:
         use just a subset of it. In that case, the function can print a warning in the end about all runs
         not being present, but it is not clear to the user that the results are incorrect. G
         '''
-        stats = Run('', self.full_output, self.full_health_state_outputs)
+        stats = Run('', self.full_output, self.percent_output, self.full_health_state_outputs)
         stats.max_year = None
         total_weight = 0
         weights = []
@@ -1101,7 +1104,8 @@ class Summary:
         for stat_category in stats.series:
             if stat_category in self.yearly_outputs:
                 year_range = "{} to {}".format(self.year_range_min, self.year_range_max)
-                stats.differences[stat_category][year_range] = numpy.asarray(stats.series[stat_category][stats.max_year]) - numpy.asarray(stats.series[stat_category][self.comparison_base_year])
+                stats.differences[stat_category][year_range] = numpy.asarray(stats.series[stat_category][stats.max_year]) - \
+                      numpy.asarray(stats.series[stat_category][self.comparison_base_year])
                 stats.percentage_diff[stat_category][year_range] = stats.differences[stat_category][year_range] / stats.series[stat_category][self.comparison_base_year]
                 stats.statistics[stat_category][year_range] = numpy.average(stats.differences[stat_category][year_range], weights=weights)
                 stats.median[stat_category][year_range] = self.wquantile(stats.differences[stat_category][year_range], weights, 0.5)[0]
@@ -1110,7 +1114,6 @@ class Summary:
 
                 stats.statistics[stat_category]["%"] = stats.statistics[stat_category][year_range] / stats.statistics[stat_category][self.comparison_base_year]
                 stats.median[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.5)[0]
-
                 stats.lower_quartile[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.25)[0]
                 stats.upper_quartile[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.75)[0]
 
@@ -1229,7 +1232,7 @@ class Summary:
                 found_directories[0], found_directories[index_SQ] = found_directories[index_SQ], found_directories[0]
 
         for run_set_directory in found_directories:
-            run_set = RunSet(run_set_directory, self.full_output, self.full_health_state_outputs)
+            run_set = RunSet(run_set_directory, self.full_output, self.percent_output, self.full_health_state_outputs)
 
             if run_set.name in excludes and run_set.name != self.status_quo:
                 print('{} is an excluded set, skipping...'.format(run_set.name), file = sys.stderr)
@@ -1363,32 +1366,42 @@ class Summary:
         if len(self.skipped_run_set) > 0:
             print ("For details on skipped run sets check {}.\n".format(logname))
 
-def run(end_year, directory, post_calib, out, full_output):
-    weight = float(0.9) # Weight cutoff for the calibration file
-    year_range = (2014, end_year) # Years of interest for our analysis
-    # base year for computing the differences to rank in  quartiles
-    year_comparison = 2014
-    # run sets to be excluded from our analysis (useful on very large folders)
-    excludes = ["85PerSudDecBef2016_50K", "3PerIncBef2016_50K"]
-    status_quo = "" #"BaseCase_50K"
+def run(args):
+    percent_output = True
+    if args.whole:
+        percent_output = False
 
-    Summary(directory, post_calib, full_output, weight, year_range, year_comparison, \
-            status_quo).summarise(out, excludes)
+	# years of interest for the analysis
+    year_range = (args.start_year, args.end_year)
+    # base year for computing the differences to rank in quartiles
+    year_comparison = int(args.start_year)
+
+    # run sets to be excluded from our analysis (useful on very large folders)
+    excludes = [args.exclude]
+
+    Summary(args.directory, args.post_calib, args.full, percent_output, \
+            args.weight, year_range, year_comparison, args.status_quo).summarise(args.out, excludes)
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 5:
-        print ("usage: analyse_batches.py end_year target_dir post_calib_file "\
-               "output_file <full_output>", file = sys.stderr)
-        exit(1)
+    #Parse arguments from the command line
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--full', action='store_true', default=False, \
+                        help='Output the full cascade in individual tabs')
+    parser.add_argument('--whole', action='store_true', \
+                        help='Output cascade as whole number values')
+    parser.add_argument('-w', '--weight', action='store', type=float, default=0.9, \
+                        help='Weight cutoff from the calibration file')
+    parser.add_argument('-q', '--status_quo', action='store', default='', \
+                        help='Name of the Status Quo run set')
+    parser.add_argument('-s', '--start_year', action='store', type=int, default=2015, \
+                        help='First year to compare')
+    parser.add_argument('-x', '--exclude', nargs='*', action='store', default='', \
+                        help='Run sets to exclude from the analysis')
+    parser.add_argument('end_year', action='store', type=int, help='Analyse until this last year')
+    parser.add_argument('directory', action='store', help='Target directory to analyse')
+    parser.add_argument('post_calib', action='store', help='The post calibration file')
+    parser.add_argument('out', action='store', help='Name of the output file')
+    args = parser.parse_args()
 
-    end_year = int(sys.argv[1])
-    directory = sys.argv[2]
-    post_calib = sys.argv[3]
-    out = sys.argv[4]
-
-    full_output = False
-    if (len(sys.argv) == 6):
-        full_output = bool(sys.argv[5])
-
-    run(end_year, directory, post_calib, out, full_output)
+    run(args)
