@@ -862,8 +862,8 @@ class Summary:
                     'HVL 100000+',
                     'HVL Primary',
                     'HVL Late Stage',
-                    'Total',
                     'Primary %',
+                    'Total',
                     'Total %'
                 ]
             ]),
@@ -1112,10 +1112,10 @@ class Summary:
                 stats.lower_quartile[stat_category][year_range] =  self.wquantile(stats.differences[stat_category][year_range], weights, 0.25)[0]
                 stats.upper_quartile[stat_category][year_range] =  self.wquantile(stats.differences[stat_category][year_range], weights, 0.75)[0]
 
-                stats.statistics[stat_category]["%"] = stats.statistics[stat_category][year_range] / stats.statistics[stat_category][self.comparison_base_year]
-                stats.median[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.5)[0]
-                stats.lower_quartile[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.25)[0]
-                stats.upper_quartile[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.75)[0]
+                #stats.statistics[stat_category]["%"] = stats.statistics[stat_category][year_range] / stats.statistics[stat_category][self.comparison_base_year]
+                #stats.median[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.5)[0]
+                #stats.lower_quartile[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.25)[0]
+                #stats.upper_quartile[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.75)[0]
 
         if run_set.name == self.status_quo:
             self.status_quo_stats = stats
@@ -1134,7 +1134,6 @@ class Summary:
                         stats.median['Averted']['primary-percent'], median_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.5)
                         stats.lower_quartile['Averted']['primary-percent'], q1_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.25)
                         stats.upper_quartile['Averted']['primary-percent'], q3_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.75)
-
                     elif stat == 'total':
                         stats.statistics['Averted']['total-percent'] = stats.statistics['Averted']['total'] / self.status_quo_stats.statistics['Infections']['total']
                         stats.median['Averted']['total-percent'], median_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.5)
@@ -1268,14 +1267,6 @@ class Summary:
                 self.pages[page_name].add_data('Q3 ' + run_set.name,
                                                stats.upper_quartile[page_name],
                                                number_format)
-
-                if page_name == 'Averted':
-                    self.pages[page_name].add_data('Q1 ' + run_set.name, \
-                                                   stats.lower_quartile[page_name], number_format)
-                    self.pages[page_name].add_data('MED ' + run_set.name, \
-                                                   stats.median[page_name], number_format)
-                    self.pages[page_name].add_data('Q3 ' + run_set.name, \
-                                                   stats.upper_quartile[page_name], number_format)
 
             # If this is true at this point it means we have missing runs
             missing_runs_names = set()
