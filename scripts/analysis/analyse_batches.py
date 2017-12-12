@@ -16,16 +16,16 @@ import argparse
 supported_versions = ['3.6', '3.7']
 
 # Original Outputs
-tabular_outputs = ['Infections', 'Averted', 'Cost-Undiscounted', 'Cost-Discounted',
-                   'LMs-Undiscounted', 'LMs-Discounted']
 cepac_outputs = ['Cascade']
+tabular_outputs = ['Infections', 'Infections-Averted', 'Deaths-Averted', 'Cost-Undiscounted', 'Cost-Discounted',
+                   'LMs-Undiscounted', 'LMs-Discounted']
 infection_outputs = ['Prevalence', 'Male-Prevalence', 'Female-Prevalence', 'Incidence', 'Male-Incidence', 'Female-Incidence']
 
 # Extra Health State Outputs
 health_state_outputs = ['Pop', 'SA', 'CEPAC-HIV+']
 
 # CEPAC
-ident_state_outputs = ['IdentHIV+', 'UnidentHIV+', 'Dead']
+ident_state_outputs = ['IdentHIV+', 'UnidentHIV+', 'HIV-Deaths']
 ART_state_outputs = ['Off-ART', 'On-ART']
 off_ART_state_outputs = ['LTFU', 'Waiting-or-Not-Eligible']
 on_ART_state_outputs = ['Suppressed', 'Partially-Suppressed', 'Failed-ART']
@@ -274,7 +274,7 @@ class Run:
             self.name = os.path.splitext(os.path.basename(xml_filename))[0]
             self.path = xml_filename
 
-        base_outputs = tabular_outputs + cepac_outputs + infection_outputs
+        base_outputs = cepac_outputs + tabular_outputs + infection_outputs
         extended_outputs = []
         if self.full_output:
             extended_outputs.extend(
@@ -438,6 +438,7 @@ class Run:
 
         if self.is_sane == True:
             self.extract_infections()
+            self.extract_deaths()
             self.extract_cascade()
             self.extract_costs_and_lms()
             self.extract_prevalence_and_incidence()
@@ -470,6 +471,12 @@ class Run:
                 total += num_infections
 
         self.statistics['Infections']['total'] = total
+
+    def extract_deaths(self):
+        total = 0
+        for i, year in enumerate(self.cepac_data):
+            total += self.cepac_data[year].get_number_deaths_total()
+        self.statistics['Deaths-Averted']['total'] = total
 
     def extract_cascade(self):
         cepac_file = self.cepac_data[self.end_year]
@@ -505,10 +512,11 @@ class Run:
                 # don't divide by zero
                 continue
 
-            # Dead
-            deaths = self.cepac_data[year].get_number_deaths_total()
+            # Deaths
+            #deaths = self.cepac_data[year].get_number_deaths_total()
+            #self.statistics['Deaths'][year] = self.cepac_data[year].get_number_deaths_total()
             deaths_nonAIDS = self.cepac_data[year].get_number_deaths_nonAIDS()
-            self.statistics['Dead'][year] = (deaths - deaths_nonAIDS) / num_with_hiv
+            self.statistics['HIV-Deaths'][year] = (deaths - deaths_nonAIDS) / num_with_hiv
 
             # Untested | Tested
             identified = self.cepac_data[year].get_number_with_hiv_identified()
@@ -846,7 +854,7 @@ class Summary:
                     'Total',
                 ]
             ]),
-            ('Averted', [
+            ('Infections-Averted', [
                 [
                     'Years: {} to {}'.format(self.year_range_min, self.year_range_max),
                     'Infections by HVL (of Infector)'
@@ -864,6 +872,18 @@ class Summary:
                     'HVL Late Stage',
                     'Primary %',
                     'Total',
+                    'Total %'
+                ]
+            ]),
+            ('Deaths-Averted', [
+                [
+                    'Years: {} to {}'.format(self.year_range_min, self.year_range_max),
+                    'Deaths Averted'
+                ],
+                [
+                    '',
+                    'Total',
+                    'Averted',
                     'Total %'
                 ]
             ]),
@@ -1112,10 +1132,10 @@ class Summary:
                 stats.lower_quartile[stat_category][year_range] =  self.wquantile(stats.differences[stat_category][year_range], weights, 0.25)[0]
                 stats.upper_quartile[stat_category][year_range] =  self.wquantile(stats.differences[stat_category][year_range], weights, 0.75)[0]
 
-                #stats.statistics[stat_category]["%"] = stats.statistics[stat_category][year_range] / stats.statistics[stat_category][self.comparison_base_year]
-                #stats.median[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.5)[0]
-                #stats.lower_quartile[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.25)[0]
-                #stats.upper_quartile[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.75)[0]
+                stats.statistics[stat_category]["%"] = stats.statistics[stat_category][year_range] / stats.statistics[stat_category][self.comparison_base_year]
+                stats.median[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.5)[0]
+                stats.lower_quartile[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.25)[0]
+                stats.upper_quartile[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.75)[0]
 
         if run_set.name == self.status_quo:
             self.status_quo_stats = stats
@@ -1123,25 +1143,47 @@ class Summary:
         if self.status_quo_found == 1 and self.status_quo_is_sane == True and len(processed_runs) == self.num_runs:
             for stat in stats.statistics['Infections']:
                 try:
-                    stats.differences['Averted'][stat] = numpy.asarray(self.status_quo_stats.series['Infections'][stat]) - numpy.asarray(stats.series['Infections'][stat])
-                    stats.statistics['Averted'][stat] = numpy.average(stats.differences['Averted'][stat], weights=weights)
-                    stats.percentage_diff['Averted'][stat] = stats.differences['Averted'][stat] / self.status_quo_stats.series['Infections'][stat]
-                    stats.median['Averted'][stat], median_position = self.wquantile(stats.differences['Averted'][stat], weights, 0.5)
-                    stats.lower_quartile['Averted'][stat], q1_position = self.wquantile(stats.differences['Averted'][stat], weights, 0.25)
-                    stats.upper_quartile['Averted'][stat], q3_position = self.wquantile(stats.differences['Averted'][stat], weights, 0.75)
+                    stats.differences['Infections-Averted'][stat] = numpy.asarray(self.status_quo_stats.series['Infections'][stat]) - numpy.asarray(stats.series['Infections'][stat])
+                    stats.statistics['Infections-Averted'][stat] = numpy.average(stats.differences['Infections-Averted'][stat], weights=weights)
+                    stats.percentage_diff['Infections-Averted'][stat] = stats.differences['Infections-Averted'][stat] / self.status_quo_stats.series['Infections'][stat]
+                    stats.median['Infections-Averted'][stat], median_position = self.wquantile(stats.differences['Infections-Averted'][stat], weights, 0.5)
+                    stats.lower_quartile['Infections-Averted'][stat], q1_position = self.wquantile(stats.differences['Infections-Averted'][stat], weights, 0.25)
+                    stats.upper_quartile['Infections-Averted'][stat], q3_position = self.wquantile(stats.differences['Infections-Averted'][stat], weights, 0.75)
                     if stat == 'hvl-primary':
-                        stats.statistics['Averted']['primary-percent'] = stats.statistics['Averted']['hvl-primary'] / self.status_quo_stats.statistics['Infections']['hvl-primary']
-                        stats.median['Averted']['primary-percent'], median_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.5)
-                        stats.lower_quartile['Averted']['primary-percent'], q1_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.25)
-                        stats.upper_quartile['Averted']['primary-percent'], q3_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.75)
+                        stats.statistics['Infections-Averted']['primary-percent'] = stats.statistics['Infections-Averted']['hvl-primary'] / self.status_quo_stats.statistics['Infections']['hvl-primary']
+                        stats.median['Infections-Averted']['primary-percent'], median_position = self.wquantile(stats.percentage_diff['Infections-Averted'][stat], weights, 0.5)
+                        stats.lower_quartile['Infections-Averted']['primary-percent'], q1_position = self.wquantile(stats.percentage_diff['Infections-Averted'][stat], weights, 0.25)
+                        stats.upper_quartile['Infections-Averted']['primary-percent'], q3_position = self.wquantile(stats.percentage_diff['Infections-Averted'][stat], weights, 0.75)
                     elif stat == 'total':
-                        stats.statistics['Averted']['total-percent'] = stats.statistics['Averted']['total'] / self.status_quo_stats.statistics['Infections']['total']
-                        stats.median['Averted']['total-percent'], median_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.5)
-                        stats.lower_quartile['Averted']['total-percent'], q1_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.25)
-                        stats.upper_quartile['Averted']['total-percent'], q3_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.75)
+                        stats.statistics['Infections-Averted']['total-percent'] = stats.statistics['Infections-Averted']['total'] / self.status_quo_stats.statistics['Infections']['total']
+                        stats.median['Infections-Averted']['total-percent'], median_position = self.wquantile(stats.percentage_diff['Infections-Averted'][stat], weights, 0.5)
+                        stats.lower_quartile['Infections-Averted']['total-percent'], q1_position = self.wquantile(stats.percentage_diff['Infections-Averted'][stat], weights, 0.25)
+                        stats.upper_quartile['Infections-Averted']['total-percent'], q3_position = self.wquantile(stats.percentage_diff['Infections-Averted'][stat], weights, 0.75)
                 except ValueError as e:
-                    print ("Couldn't calculate Averted Infections for runset {}. The skipped runs are {}, the processed ones {}, the length of the Infections array is {}.".format(run_set.name, len(skipped_runs), len(processed_runs), len(stats.series['Infections'][stat])), file = sys.stderr)
+                    print ("Couldn't calculate Averted Infections for runset {}. The skipped runs are {}, the processed ones {}, the length of the Infections array is {}.". \
+                          format(run_set.name, len(skipped_runs), len(processed_runs), len(stats.series['Infections'][stat])), file = sys.stderr)
                     print (e)
+ 
+            for stat in stats.statistics['Deaths-Averted']:
+                try:
+                    if stat == 'total':
+                        stats.differences['Deaths-Averted'][stat] = numpy.asarray(self.status_quo_stats.series['Deaths-Averted'][stat]) - numpy.asarray(stats.series['Deaths-Averted'][stat])
+                        stats.percentage_diff['Deaths-Averted'][stat] = stats.differences['Deaths-Averted'][stat] / self.status_quo_stats.series['Deaths-Averted'][stat]
+ 
+                        stats.statistics['Deaths-Averted']['averted'] = numpy.average(stats.differences['Deaths-Averted'][stat], weights=weights)
+                        stats.median['Deaths-Averted']['averted'], median_position = self.wquantile(stats.differences['Deaths-Averted'][stat], weights, 0.5)
+                        stats.lower_quartile['Deaths-Averted']['averted'], q1_position = self.wquantile(stats.differences['Deaths-Averted'][stat], weights, 0.25)
+                        stats.upper_quartile['Deaths-Averted']['averted'], q3_position = self.wquantile(stats.differences['Deaths-Averted'][stat], weights, 0.75)
+
+                        stats.statistics['Deaths-Averted']['total-percent'] = stats.statistics['Deaths-Averted']['averted'] / self.status_quo_stats.statistics['Deaths-Averted'][stat]
+                        stats.median['Deaths-Averted']['total-percent'], median_position = self.wquantile(stats.percentage_diff['Deaths-Averted'][stat], weights, 0.5)
+                        stats.lower_quartile['Deaths-Averted']['total-percent'], q1_position = self.wquantile(stats.percentage_diff['Deaths-Averted'][stat], weights, 0.25)
+                        stats.upper_quartile['Deaths-Averted']['total-percent'], q3_position = self.wquantile(stats.percentage_diff['Deaths-Averted'][stat], weights, 0.75)
+                except ValueError as e:
+                    print ("Couldn't calculate Averted Deaths runset {}. The skipped runs are {}, the processed ones {}, the length of the Deaths array is {}.".format \
+                           (run_set.name, len(skipped_runs), len(processed_runs), len(stats.series['Deaths-Averted'][stat])), file = sys.stderr)
+                    print (e)
+ 
         return stats, processed_runs, skipped_runs
 
     def apply_formatting(self, wb):
@@ -1153,7 +1195,7 @@ class Summary:
             if page not in self.yearly_outputs:
                 self.pages[page].column_width('A', 25)
 
-            if page in ['Infections', 'Averted']:
+            if page in ['Infections', 'Infections-Averted', 'Deaths-Averted']:
                 self.pages[page].row_height(1, 60)
                 self.pages[page].row_height(2, 60)
                 self.pages[page].merge('A1:A2')
@@ -1243,7 +1285,7 @@ class Summary:
             stats, processed_runs, skipped_runs = self.calculate_stats(run_set)
 
             for page_name, header in self.headers:
-                if page_name == 'Averted' and self.status_quo_found != 1:
+                if 'Averted' in page_name and self.status_quo_found != 1:
                     continue
 
                 number_format = '#,0.00'
