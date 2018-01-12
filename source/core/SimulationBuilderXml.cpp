@@ -233,6 +233,10 @@ void SimulationBuilderXml::ReadSimulationParameters()
 		//TODO-GA: this somehow disappeared from the xml files, let's set it to 1 for the moment.
 		//calib.thresholdPrevMult = Text<double>(calibration_node.child("thresholdMultiplier"));
 		calib.thresholdPrevMult = 1.00;
+		if (calibration_node.child("thresholdMultiplier")) {
+		    calib.thresholdPrevMult = Text<double>(calibration_node.child("thresholdMultiplier"));
+		}
+
 	}
 
 	auto interventions_node = simulation_node.child("interventions");
