@@ -1,9 +1,4 @@
-# analyse_batches.py end_year target_dir post_calib_file output_file
-#
-# end_year:   Last year of analysis
-# directory:  Directory with batch files
-# post_calib: Post Calibration file with batch information
-# out:        Output file
+# analyses a set of batch files from CDM
 
 import collections # for OrderedDict
 import openpyxl # for creating xlsx
@@ -12,6 +7,7 @@ import zipfile
 import sys
 import numpy
 import argparse
+import math
 
 supported_versions = ['3.6', '3.7']
 
@@ -430,8 +426,8 @@ class Run:
 
             if file_type == 'cepac':
                  for year in range(1990, self.end_year + 1):
-                     first_month = self.month_of_1990 + (year - 1990) * 12
-                     month_data = CepacOutFile(_file, first_month)
+                     end_month = month_of_1990 + (year - 1990) * 12 + 11
+                     month_data = CepacOutFile(_file, end_month)
                      self.cepac_data.update({ year : month_data })
             else:
                 self.files[file_type] = TabularFile(_file, num_header_rows[file_type])
@@ -464,7 +460,7 @@ class Run:
             self.statistics['Infections'][stat] = 0
 
         total = 0
-        for month in map(str, range(self.start_month, self.end_month + 1)):
+        for month in map(str, range(self.start_month, self.end_month)):
             for stat, column in infections_stats:
                 num_infections = self.files['Infections'].get_float(month, column)
                 self.statistics['Infections'][stat] += num_infections
@@ -625,7 +621,6 @@ class Run:
 
             yearly_pop = self.files['Infections'].get_int(str(first_month), pop_column)
             yearly_sa = self.files['Infections'].get_int(str(first_month), sa_column)
-            yearly_prev = self.files['Infections'].get_int(str(first_month), prev_column)
 
             self.statistics['Pop'][year] = yearly_pop
             self.statistics['SA'][year] = yearly_sa
@@ -690,18 +685,21 @@ class Run:
                 yearly_incidence += monthly_incident / (monthly_sa - monthly_prevalent)
                 yearly_incidence_male += monthly_incident_male / (monthly_sa_male - monthly_prevalent_male)
                 yearly_incidence_female += monthly_incident_female / (monthly_sa_female - monthly_prevalent_female)
-                if month_in_year == int(first_month) and monthly_sa > 0:
-                    yearly_prevalence = monthly_prevalent / monthly_sa
-                    yearly_prevalence_male = monthly_prevalent_male / monthly_sa_male
-                    yearly_prevalence_female = monthly_prevalent_female / monthly_sa_female
+
+            if monthly_sa > 0:
+                # calculate prevalence from the last month of the year
+                yearly_prevalence = monthly_prevalent / monthly_sa
+                yearly_prevalence_male = monthly_prevalent_male / monthly_sa_male
+                yearly_prevalence_female = monthly_prevalent_female / monthly_sa_female
 
             self.statistics['Prevalence'][year] = yearly_prevalence
             self.statistics['Male-Prevalence'][year] = yearly_prevalence_male
             self.statistics['Female-Prevalence'][year] = yearly_prevalence_female
 
-            self.statistics['Incidence'][year] = yearly_incidence
-            self.statistics['Male-Incidence'][year] = yearly_incidence_male
-            self.statistics['Female-Incidence'][year] = yearly_incidence_female
+            # cumulative incidence: 1 - e^sum(-monthly_incidence)
+            self.statistics['Incidence'][year] =  1 - math.exp(-yearly_incidence)
+            self.statistics['Male-Incidence'][year] = 1 - math.exp(-yearly_incidence_male)
+            self.statistics['Female-Incidence'][year] = 1- math.exp(-yearly_incidence_female)
 
     def extract_costs_and_lms(self):
         cost_stats = [
@@ -735,7 +733,7 @@ class Run:
             self.statistics['LMs-Undiscounted'][stat] = 0
             self.statistics['LMs-Discounted'][stat] = 0
 
-        for month in map(str, range(self.start_month, self.end_month + 1)):
+        for month in map(str, range(self.start_month, self.end_month)):
             for stat, column in cost_stats:
                 self.statistics['Cost-Undiscounted'][stat] += float(self.files['CE'].get_cell(month, column))
                 self.statistics['Cost-Discounted'][stat] += float(self.files['CE'].get_cell(month, column + discounted_offset))
@@ -1471,10 +1469,9 @@ if __name__ == '__main__':
                         help='Weight cutoff from the calibration file')
     parser.add_argument('-q', '--status_quo', action='store', default='', \
                         help='Name of the Status Quo run set')
-    parser.add_argument('-s', '--start_year', action='store', type=int, default=2015, \
-                        help='First year to compare')
     parser.add_argument('-x', '--exclude', nargs='*', action='store', default='', \
                         help='Run sets to exclude from the analysis')
+    parser.add_argument('start_year', action='store', type=int, help='Start analysis in this year')
     parser.add_argument('end_year', action='store', type=int, help='Analyse until this last year')
     parser.add_argument('directory', action='store', help='Target directory to analyse')
     parser.add_argument('post_calib', action='store', help='The post calibration file')
