@@ -1,9 +1,4 @@
-# analyse_batches.py end_year target_dir post_calib_file output_file
-#
-# end_year:   Last year of analysis
-# directory:  Directory with batch files
-# post_calib: Post Calibration file with batch information
-# out:        Output file
+# analyses a set of batch files from CDM
 
 import collections # for OrderedDict
 import openpyxl # for creating xlsx
@@ -12,6 +7,7 @@ import zipfile
 import sys
 import numpy
 import argparse
+import math
 
 supported_versions = ['3.6', '3.7']
 
@@ -430,8 +426,8 @@ class Run:
 
             if file_type == 'cepac':
                  for year in range(1990, self.end_year + 1):
-                     first_month = self.month_of_1990 + (year - 1990) * 12
-                     month_data = CepacOutFile(_file, first_month)
+                     end_month = month_of_1990 + (year - 1990) * 12 + 11
+                     month_data = CepacOutFile(_file, end_month)
                      self.cepac_data.update({ year : month_data })
             else:
                 self.files[file_type] = TabularFile(_file, num_header_rows[file_type])
@@ -464,7 +460,7 @@ class Run:
             self.statistics['Infections'][stat] = 0
 
         total = 0
-        for month in map(str, range(self.start_month, self.end_month + 1)):
+        for month in map(str, range(self.start_month, self.end_month)):
             for stat, column in infections_stats:
                 num_infections = self.files['Infections'].get_float(month, column)
                 self.statistics['Infections'][stat] += num_infections
@@ -513,8 +509,7 @@ class Run:
                 continue
 
             # Deaths
-            #deaths = self.cepac_data[year].get_number_deaths_total()
-            #self.statistics['Deaths'][year] = self.cepac_data[year].get_number_deaths_total()
+            deaths = self.cepac_data[year].get_number_deaths_total()
             deaths_nonAIDS = self.cepac_data[year].get_number_deaths_nonAIDS()
             self.statistics['HIV-Deaths'][year] = (deaths - deaths_nonAIDS) / num_with_hiv
 
@@ -626,7 +621,6 @@ class Run:
 
             yearly_pop = self.files['Infections'].get_int(str(first_month), pop_column)
             yearly_sa = self.files['Infections'].get_int(str(first_month), sa_column)
-            yearly_prev = self.files['Infections'].get_int(str(first_month), prev_column)
 
             self.statistics['Pop'][year] = yearly_pop
             self.statistics['SA'][year] = yearly_sa
@@ -691,18 +685,21 @@ class Run:
                 yearly_incidence += monthly_incident / (monthly_sa - monthly_prevalent)
                 yearly_incidence_male += monthly_incident_male / (monthly_sa_male - monthly_prevalent_male)
                 yearly_incidence_female += monthly_incident_female / (monthly_sa_female - monthly_prevalent_female)
-                if month_in_year == int(first_month) and monthly_sa > 0:
-                    yearly_prevalence = monthly_prevalent / monthly_sa
-                    yearly_prevalence_male = monthly_prevalent_male / monthly_sa_male
-                    yearly_prevalence_female = monthly_prevalent_female / monthly_sa_female
+
+            if monthly_sa > 0:
+                # calculate prevalence from the last month of the year
+                yearly_prevalence = monthly_prevalent / monthly_sa
+                yearly_prevalence_male = monthly_prevalent_male / monthly_sa_male
+                yearly_prevalence_female = monthly_prevalent_female / monthly_sa_female
 
             self.statistics['Prevalence'][year] = yearly_prevalence
             self.statistics['Male-Prevalence'][year] = yearly_prevalence_male
             self.statistics['Female-Prevalence'][year] = yearly_prevalence_female
 
-            self.statistics['Incidence'][year] = yearly_incidence
-            self.statistics['Male-Incidence'][year] = yearly_incidence_male
-            self.statistics['Female-Incidence'][year] = yearly_incidence_female
+            # cumulative incidence: 1 - e^sum(-monthly_incidence)
+            self.statistics['Incidence'][year] =  1 - math.exp(-yearly_incidence)
+            self.statistics['Male-Incidence'][year] = 1 - math.exp(-yearly_incidence_male)
+            self.statistics['Female-Incidence'][year] = 1- math.exp(-yearly_incidence_female)
 
     def extract_costs_and_lms(self):
         cost_stats = [
@@ -736,7 +733,7 @@ class Run:
             self.statistics['LMs-Undiscounted'][stat] = 0
             self.statistics['LMs-Discounted'][stat] = 0
 
-        for month in map(str, range(self.start_month, self.end_month + 1)):
+        for month in map(str, range(self.start_month, self.end_month)):
             for stat, column in cost_stats:
                 self.statistics['Cost-Undiscounted'][stat] += float(self.files['CE'].get_cell(month, column))
                 self.statistics['Cost-Discounted'][stat] += float(self.files['CE'].get_cell(month, column + discounted_offset))
@@ -835,6 +832,14 @@ class Summary:
 
     def construct_headers(self):
         self.headers = [
+            ('Cascade', [
+                'Year {}'.format(self.year_range_max),
+                'SA Pop Size', 'Number With HIV',
+                'Number With HIV Tested', 'Number with HIV Treated',
+                'Number With HIV Suppressed',
+                'Number With HIV HVL Tested' ,'Number With HIV LTFU',
+                '% Tested', '% Treated', '% Suppressed', 'Total % Suppressed'
+            ]),
             ('Infections', [
                 [
                     'Years: {} to {}'.format(self.year_range_min, self.year_range_max),
@@ -887,14 +892,6 @@ class Summary:
                     'Total %'
                 ]
             ]),
-            ('Cascade', [
-                'Year {}'.format(self.year_range_max),
-                'SA Pop Size', 'Number With HIV',
-                'Number With HIV Tested', 'Number with HIV Treated',
-                'Number With HIV Suppressed',
-                'Number With HIV HVL Tested' ,'Number With HIV LTFU',
-                '% Tested', '% Treated', '% Suppressed', 'Total % Suppressed'
-            ]),
             ('Cost-Undiscounted', [
                 'Years: {} to {}'.format(self.year_range_min, self.year_range_max),
                 'Total',
@@ -922,7 +919,9 @@ class Summary:
                 'Chronic (Observed',
                 'Chronic (Unobserved)',
                 'Late-Stage (Observed)',
-                'Late-Stage (Unobserved)'
+                'Late-Stage (Unobserved)',
+                'LM-Saved',
+                'LM-Saved %'
             ]),
             ('LMs-Discounted', [
                 'Years: {} to {}'.format(self.year_range_min, self.year_range_max),
@@ -933,7 +932,9 @@ class Summary:
                 'Chronic (Observed',
                 'Chronic (Unobserved)',
                 'Late-Stage (Observed)',
-                'Late-Stage (Unobserved)'
+                'Late-Stage (Unobserved)',
+                'LM-Saved',
+                'LM-Saved %'
             ])
         ]
 
@@ -1184,6 +1185,46 @@ class Summary:
                            (run_set.name, len(skipped_runs), len(processed_runs), len(stats.series['Deaths-Averted'][stat])), file = sys.stderr)
                     print (e)
  
+            for stat in stats.statistics['LMs-Discounted']:
+                try:
+                    if stat == 'total':
+                        stats.differences['LMs-Discounted'][stat] = numpy.asarray(stats.series['LMs-Discounted'][stat]) - numpy.asarray(self.status_quo_stats.series['LMs-Discounted'][stat])
+                        stats.percentage_diff['LMs-Discounted'][stat] = stats.differences['LMs-Discounted'][stat] / self.status_quo_stats.series['LMs-Discounted'][stat]
+
+                        stats.statistics['LMs-Discounted']['saved'] = numpy.average(stats.differences['LMs-Discounted'][stat], weights=weights)
+                        stats.median['LMs-Discounted']['saved'], median_position = self.wquantile(stats.differences['LMs-Discounted'][stat], weights, 0.5)
+                        stats.lower_quartile['LMs-Discounted']['saved'], q1_position = self.wquantile(stats.differences['LMs-Discounted'][stat], weights, 0.25)
+                        stats.upper_quartile['LMs-Discounted']['saved'], q3_position = self.wquantile(stats.differences['LMs-Discounted'][stat], weights, 0.75)
+
+                        stats.statistics['LMs-Discounted']['saved-percent'] = stats.statistics['LMs-Discounted']['saved'] / self.status_quo_stats.statistics['LMs-Discounted'][stat]
+                        stats.median['LMs-Discounted']['saved-percent'], median_position = self.wquantile(stats.percentage_diff['LMs-Discounted'][stat], weights, 0.5)
+                        stats.lower_quartile['LMs-Discounted']['saved-percent'], q1_position = self.wquantile(stats.percentage_diff['LMs-Discounted'][stat], weights, 0.25)
+                        stats.upper_quartile['LMs-Discounted']['saved-percent'], q3_position = self.wquantile(stats.percentage_diff['LMs-Discounted'][stat], weights, 0.75)
+                except ValueError as e:
+                    print ("Couldn't calculate LMs Discounted for runset {}. The skipped runs are {}, the processed ones {}, the length of the LMs array is {}.". \
+                          format(run_set.name, len(skipped_runs), len(processed_runs), len(stats.series['LMs-Discounted'][stat])), file = sys.stderr)
+                    print (e)
+
+            for stat in stats.statistics['LMs-Undiscounted']:
+                try:
+                    if stat == 'total':
+                        stats.differences['LMs-Undiscounted'][stat] = numpy.asarray(stats.series['LMs-Undiscounted'][stat]) - numpy.asarray(self.status_quo_stats.series['LMs-Undiscounted'][stat])
+                        stats.percentage_diff['LMs-Undiscounted'][stat] = stats.differences['LMs-Undiscounted'][stat] / self.status_quo_stats.series['LMs-Undiscounted'][stat]
+
+                        stats.statistics['LMs-Undiscounted']['saved'] = numpy.average(stats.differences['LMs-Undiscounted'][stat], weights=weights)
+                        stats.median['LMs-Undiscounted']['saved'], median_position = self.wquantile(stats.differences['LMs-Undiscounted'][stat], weights, 0.5)
+                        stats.lower_quartile['LMs-Undiscounted']['saved'], q1_position = self.wquantile(stats.differences['LMs-Undiscounted'][stat], weights, 0.25)
+                        stats.upper_quartile['LMs-Undiscounted']['saved'], q3_position = self.wquantile(stats.differences['LMs-Undiscounted'][stat], weights, 0.75)
+
+                        stats.statistics['LMs-Undiscounted']['saved-percent'] = stats.statistics['LMs-Undiscounted']['saved'] / self.status_quo_stats.statistics['LMs-Undiscounted'][stat]
+                        stats.median['LMs-Undiscounted']['saved-percent'], median_position = self.wquantile(stats.percentage_diff['LMs-Undiscounted'][stat], weights, 0.5)
+                        stats.lower_quartile['LMs-Undiscounted']['saved-percent'], q1_position = self.wquantile(stats.percentage_diff['LMs-Undiscounted'][stat], weights, 0.25)
+                        stats.upper_quartile['LMs-Undiscounted']['saved-percent'], q3_position = self.wquantile(stats.percentage_diff['LMs-Undiscounted'][stat], weights, 0.75)
+                except ValueError as e:
+                    print ("Couldn't calculate LMs-Undiscounted for runset {}. The skipped runs are {}, the processed ones {}, the length of the LMs array is {}.". \
+                          format(run_set.name, len(skipped_runs), len(processed_runs), len(stats.series['LMs-Undiscounted'][stat])), file = sys.stderr)
+                    print (e)
+
         return stats, processed_runs, skipped_runs
 
     def apply_formatting(self, wb):
@@ -1222,10 +1263,11 @@ class Summary:
                 for tab in self.yearly_outputs:
                     self.pages[tab].ws.cell(column=1,row=row).value = year
 
-            last_row = 2 + max_year + 1 -1990
+            last_row = 2 + max_year + 1 - 1990
             cell_value =  "{} to {}".format(self.comparison_base_year, max_year)
             for page in self.yearly_outputs:
                 self.pages[page].ws.cell(column=1,row=last_row).value = cell_value
+                self.pages[page].ws.cell(column=1,row=last_row+1).value = cell_value + '%' 
 
     def summarise(self, out_filename, excludes):
         out_filename = os.path.normpath(out_filename)
@@ -1427,10 +1469,9 @@ if __name__ == '__main__':
                         help='Weight cutoff from the calibration file')
     parser.add_argument('-q', '--status_quo', action='store', default='', \
                         help='Name of the Status Quo run set')
-    parser.add_argument('-s', '--start_year', action='store', type=int, default=2015, \
-                        help='First year to compare')
     parser.add_argument('-x', '--exclude', nargs='*', action='store', default='', \
                         help='Run sets to exclude from the analysis')
+    parser.add_argument('start_year', action='store', type=int, help='Start analysis in this year')
     parser.add_argument('end_year', action='store', type=int, help='Analyse until this last year')
     parser.add_argument('directory', action='store', help='Target directory to analyse')
     parser.add_argument('post_calib', action='store', help='The post calibration file')
