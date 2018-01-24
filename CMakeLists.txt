@@ -73,7 +73,7 @@ ExternalProject_Add(
 	cepac_project 
 	PREFIX ${CMAKE_SOURCE_DIR}/build/third-party
 	GIT_REPOSITORY https://github.com/hsphcdm/cepac.git
-	GIT_TAG 90-90-90
+	GIT_TAG 4.4a 
 	UPDATE_COMMAND ""
 	CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 	#CONFIGURE_COMMAND cmake ../cepac_project
