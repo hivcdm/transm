@@ -21,7 +21,7 @@ infection_outputs = ['Prevalence', 'Male-Prevalence', 'Female-Prevalence', 'Inci
 health_state_outputs = ['Pop', 'SA', 'CEPAC-HIV+']
 
 # CEPAC
-ident_state_outputs = ['IdentHIV+', 'UnidentHIV+', 'HIV-Deaths']
+ident_state_outputs = ['IdentHIV+', 'UnidentHIV+', 'HIV-Deaths', 'Total-Suppressed']
 ART_state_outputs = ['Off-ART', 'On-ART']
 off_ART_state_outputs = ['LTFU', 'Waiting-or-Not-Eligible']
 on_ART_state_outputs = ['Suppressed', 'Partially-Suppressed', 'Failed-ART']
@@ -548,6 +548,12 @@ class Run:
             self.statistics['LTFU'][year] = num_ltfu / num_with_hiv
             self.statistics['Waiting-or-Not-Eligible'][year] = num_waiting_or_ne / num_with_hiv
 
+            # Total Suppressed
+            if identified > 0 and num_on_ART > 0 and suppressed > 0:
+                self.statistics['Total-Suppressed'][year] = (identified/num_with_hiv) * (num_on_ART/identified) * (suppressed/num_on_ART)
+            else:
+                self.statistics['Total-Suppressed'][year] = 0
+
     # Calculated for each year from the 'ARTRollout' file
     def extract_eligibility_stats_AR(self):
         year = 1990
@@ -559,14 +565,14 @@ class Run:
         currently_infected_column = 2
 
         # ART Data from ARTRollout file
-        male_eligible_column = 42
-        female_eligible_column = 43
-        male_accessing_column = 76
-        female_accessing_column = 77
-        male_waiting_column = 110
-        female_waiting_column = 111
-        male_receiving_column = 144
-        female_receiving_column = 145
+        male_eligible_column = 43
+        female_eligible_column = 44
+        male_accessing_column = 77
+        female_accessing_column = 78
+        male_waiting_column = 111
+        female_waiting_column = 112
+        male_receiving_column = 145
+        female_receiving_column = 146
 
         for year in range(1990, min(self.end_year, self.max_year) + 1):
             first_month = self.month_of_1990 + (year - 1990) * 12
@@ -632,17 +638,19 @@ class Run:
         self.max_year = year - 1
 
         # From Infections file
-        sa_column = 5
-        currently_infected_column = 2
         newly_infected_column = 0
+        currently_infected_column = 2
+        sa_column = 5
         prevalent_male_column = 17
         prevalent_female_column = 18
         incident_male_column = 80
         incident_female_column = 81
 
         # From Population file
-        male_sa_column = 9
-        female_sa_column = 10
+        male_pop_column = 9
+        female_pop_column = 10
+        male_non_sa_column = 27
+        female_non_sa_column = 37
 
         for year in range(1990, min(self.end_year, self.max_year) + 1):
             first_month = self.month_of_1990 + (year - 1990) * 12
@@ -665,10 +673,12 @@ class Run:
             for month_in_year in range(first_month, first_month + 12):
                 monthly_sa = self.files['Infections'].get_int(str(month_in_year), \
                                                                      sa_column)
-                monthly_sa_male = self.files['Population'].get_int(str(month_in_year), \
-                                                                     male_sa_column)
-                monthly_sa_female = self.files['Population'].get_int(str(month_in_year), \
-                                                                     female_sa_column)
+
+                monthly_sa_male = self.files['Population'].get_int(str(month_in_year), male_pop_column) - \
+                                  self.files['Population'].get_int(str(month_in_year), male_non_sa_column)
+                monthly_sa_female = self.files['Population'].get_int(str(month_in_year), female_pop_column) - \
+                                  self.files['Population'].get_int(str(month_in_year), female_non_sa_column)
+
                 monthly_prevalent = self.files['Infections'].get_int(str(month_in_year), \
                                                                      currently_infected_column)
                 monthly_prevalent_male = self.files['Infections'].get_int(str(month_in_year), \
