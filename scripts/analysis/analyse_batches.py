@@ -21,10 +21,11 @@ infection_outputs = ['Prevalence', 'Male-Prevalence', 'Female-Prevalence', 'Inci
 health_state_outputs = ['Pop', 'SA', 'CEPAC-HIV+']
 
 # CEPAC
-ident_state_outputs = ['IdentHIV+', 'UnidentHIV+', 'HIV-Deaths', 'Total-Suppressed']
+ident_state_outputs = ['IdentHIV+', 'UnidentHIV+', 'HIV-Deaths']
 ART_state_outputs = ['Off-ART', 'On-ART']
-off_ART_state_outputs = ['LTFU', 'Waiting-or-Not-Eligible']
+off_ART_state_outputs = ['LTFU', 'LTFU-Pre-ART', 'LTFU-Post-ART']
 on_ART_state_outputs = ['Suppressed', 'Partially-Suppressed', 'Failed-ART']
+
 # CDM
 eligible_state_outputs = ['Eligible-for-Access', 'Accessing-Treatment',
                           'Eligible-for-ART', 'Receiving-ART']
@@ -75,6 +76,7 @@ class TabularFile:
 class CepacOutFile:
     def __init__(self, _file, target_month):
         self.month_data = []
+        curr_ltfu_pre = 0
         in_target_month = False
         for i, row in enumerate(_file):
             if isinstance(row, bytes):
@@ -87,6 +89,16 @@ class CepacOutFile:
                 break
             else:
                 split = row.rstrip().split('\t')
+                if len(split) < 2:
+                   continue
+                if split[1] == "Num LTFU: ":
+                    new_ltfu = int(split[12])
+                elif split[1] == "Num RTC (continue previous regimen): ":
+                    new_rtc = int(split[12])
+                elif split[1] == "Num Deaths while Lost: ":
+                    new_dead_ltfu = int(split[12])
+                    curr_ltfu_pre += new_ltfu - new_rtc - new_dead_ltfu
+                    self.month_data.append("\tCurr LTFU:\t{}".format(curr_ltfu_pre)) 
                 self.month_data.append(split)
 
     # returns the population size during the given month
@@ -95,15 +107,23 @@ class CepacOutFile:
 
     # returns the number with HIV during the given month
     def get_number_with_hiv(self):
-        return float(self.month_data[1][3]) + int(self.month_data[1][4])
+        return float(self.month_data[1][3]) + float(self.month_data[1][4])
+
+    # returns the number with HIV that were not HIV tested during the given month
+    def get_number_with_hiv_unidentified(self):
+        return float(self.month_data[1][3])
 
     # returns the number with HIV that were HIV tested during the given month
     def get_number_with_hiv_identified(self):
         return float(self.month_data[1][4])
 
-    # returns the number with HIV that were not HIV tested during the given month
-    def get_number_with_hiv_unidentified(self):
-        return float(self.month_data[1][3])
+    # returns the number with HIV that are chronic cases
+    def get_number_with_hiv_chronic(self):
+        return float(self.month_data[3][3]) + float(self.month_data[3][4])
+    
+    # returns the number with HIV that are acute cases
+    def get_number_with_hiv_acute(self):
+        return float(self.month_data[3][5])
 
     # returns the number with HIV that were off treatement during the given month
     def get_number_with_hiv_off_ART(self):
@@ -151,9 +171,19 @@ class CepacOutFile:
     def get_number_deaths_total(self):
         return sum(map(float, self.month_data[30][2:25]))
 
-    # returns the number with HIV that were LTFU during the given month
+    # returns the number with HIV that are newly LTFU during the given month
     def get_number_with_hiv_ltfu(self):
-        return sum(map(float, self.month_data[49][2:12]))
+        return sum(map(float, self.month_data[49][2:14]))
+
+    # returns the number with HIV that are currently LTFU brefore linking to care
+    def get_number_with_hiv_ltfu_pre(self):
+        #return float(self.month_data[49][12])
+        return float(self.month_data[53][2])
+
+    # returns the number with HIV that are currently LTFU after linking to care
+    def get_number_with_hiv_ltfu_post(self):
+        #return float(self.month_data[49][14])
+        return float(self.month_data[54][2])
 
 # A Page is a page of ordered data in a larger Workbook.
 class Page:
@@ -519,14 +549,6 @@ class Run:
             self.statistics['IdentHIV+'][year] = identified / num_with_hiv
             self.statistics['UnidentHIV+'][year] = unidentified / num_with_hiv
 
-            # On-ART | Off-ART | LTFU
-            num_on_ART = self.cepac_data[year].get_number_with_hiv_on_ART()
-            num_off_ART = self.cepac_data[year].get_number_with_hiv_off_ART()
-            num_ltfu = self.cepac_data[year].get_number_with_hiv_ltfu()
-            self.statistics['On-ART'][year] = num_on_ART / num_with_hiv
-            self.statistics['Off-ART'][year] = num_off_ART / num_with_hiv
-            self.statistics['LTFU'][year] = num_ltfu / num_with_hiv
-
             # On_ART | Off_ART
             num_on_ART = self.cepac_data[year].get_number_with_hiv_on_ART()
             num_off_ART = self.cepac_data[year].get_number_with_hiv_off_ART()
@@ -542,17 +564,13 @@ class Run:
             self.statistics['Partially-Suppressed'][year] = partially_suppressed / num_with_hiv
             self.statistics['Failed-ART'][year] = failed_ART / num_with_hiv
 
-            # Off_ART Subsets : LTFU | Waiting-or-Not-Eligible
+            # Off_ART Subsets : Pre-ART | LTFU
             num_ltfu = self.cepac_data[year].get_number_with_hiv_ltfu()
-            num_waiting_or_ne = identified - num_on_ART
+            num_ltfu_pre = self.cepac_data[year].get_number_with_hiv_ltfu_pre()
+            num_ltfu_post = self.cepac_data[year].get_number_with_hiv_ltfu_post()
             self.statistics['LTFU'][year] = num_ltfu / num_with_hiv
-            self.statistics['Waiting-or-Not-Eligible'][year] = num_waiting_or_ne / num_with_hiv
-
-            # Total Suppressed
-            if identified > 0 and num_on_ART > 0 and suppressed > 0:
-                self.statistics['Total-Suppressed'][year] = (identified/num_with_hiv) * (num_on_ART/identified) * (suppressed/num_on_ART)
-            else:
-                self.statistics['Total-Suppressed'][year] = 0
+            self.statistics['LTFU-Pre-ART'][year] = num_ltfu_pre / num_with_hiv
+            self.statistics['LTFU-Post-ART'][year] = num_ltfu_post / num_with_hiv
 
     # Calculated for each year from the 'ARTRollout' file
     def extract_eligibility_stats_AR(self):
