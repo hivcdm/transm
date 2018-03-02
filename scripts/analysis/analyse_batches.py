@@ -74,116 +74,163 @@ class TabularFile:
 # data in the form of a multidimensional array (rows are separated by <newline>
 # and columns are separated by <tab>).
 class CepacOutFile:
-    def __init__(self, _file, target_month):
-        self.month_data = []
-        curr_ltfu_pre = 0
+    def __init__(self, file, start_year, start_month, end_year, end_month):
+        self.year_data = {}
+
+        self.total_deaths_per_year = {}
+        self.total_nonAIDS_deaths_per_year = {}
+
+        last_month_data = []
+        year = start_year
+        month_in_year = 0
         in_target_month = False
+
+        curr_ltfu_pre = 0
+        new_ltfu_pre = 0
+        new_rtc_pre = 0
+        new_dead_ltfu_pre = 0
+
+        curr_ltfu_post = 0
+        new_ltfu_post = 0
+        new_rtc_post = 0
+        new_dead_ltfu_post = 0
+
+        total_deaths_in_year = 0
+        total_nonAIDS_deaths_in_year = 0
+
+        _file = open(file, 'r') 
         for i, row in enumerate(_file):
             if isinstance(row, bytes):
                 row = row.decode('utf8')
             if not in_target_month:
-                if row.rstrip() != 'COHORT SUMMARY FOR MONTH {}'.format(target_month):
+                if row.rstrip() != 'COHORT SUMMARY FOR MONTH {}'.format(start_month):
                     continue
                 in_target_month = True
-            elif row.rstrip() == 'COHORT SUMMARY FOR MONTH {}'.format(target_month + 1):
-                break
+                month_in_year = 0
+            elif row.rstrip().startswith('COHORT SUMMARY FOR MONTH'):
+                month_in_year += 1
+                if month_in_year == 12:
+                    month_in_year = 0
+                    last_month_data.append(['', 'Num Pre LTFU: ', '{}'.format(curr_ltfu_pre)])
+                    last_month_data.append(['', 'Num Post LTFU: ', '{}'.format(curr_ltfu_post)])
+                    last_month_data.append(['', 'Current LTFU: ', '{}'.format(curr_ltfu_pre + curr_ltfu_post)])
+                    self.year_data.update({year : last_month_data})
+                    self.total_deaths_per_year.update({ year : total_deaths_in_year })
+                    self.total_nonAIDS_deaths_per_year.update({ year : total_nonAIDS_deaths_in_year })
+                    
+                    last_month_data = []
+                    total_deaths_in_year = 0
+                    total_nonAIDS_deaths_in_year = 0
+                    year += 1
+                    if year == end_year + 1:
+                        return
+                    
             else:
                 split = row.rstrip().split('\t')
                 if len(split) < 2:
                    continue
                 if split[1] == "Num LTFU: ":
-                    new_ltfu = int(split[12])
+                    new_ltfu_pre = int(split[12])
+                    new_ltfu_post = sum(map(int, split[2:12]))
                 elif split[1] == "Num RTC (continue previous regimen): ":
-                    new_rtc = int(split[12])
+                    new_rtc_pre = int(split[12])
+                    new_rtc_post = sum(map(int, split[2:12]))
                 elif split[1] == "Num Deaths while Lost: ":
-                    new_dead_ltfu = int(split[12])
-                    curr_ltfu_pre += new_ltfu - new_rtc - new_dead_ltfu
-                    self.month_data.append("\tCurr LTFU:\t{}".format(curr_ltfu_pre)) 
-                self.month_data.append(split)
+                    new_dead_ltfu_pre = int(split[12])
+                    new_dead_ltfu_post = sum(map(int, split[2:12]))
+                    curr_ltfu_pre += new_ltfu_pre - new_rtc_pre - new_dead_ltfu_pre
+                    curr_ltfu_post += new_ltfu_post - new_rtc_post - new_dead_ltfu_post
+                elif split[1] == "Dth evts: ":
+                    # sum non-cumulative data not summed in cepac.out
+                    total_deaths_in_year+=sum(map(float, split[2:25]))
+                    total_nonAIDS_deaths_in_year+=float(split[18])
+
+                if month_in_year == 11:
+                    last_month_data.append(split)
 
     # returns the population size during the given month
-    def get_pop_size(self):
-        return float(self.month_data[1][5])
+    def get_cepac_pop_size(self, year):
+        return float(self.year_data[year][1][5])
 
     # returns the number with HIV during the given month
-    def get_number_with_hiv(self):
-        return float(self.month_data[1][3]) + float(self.month_data[1][4])
+    def get_number_with_hiv(self, year):
+        return float(self.year_data[year][1][3]) + float(self.year_data[year][1][4])
 
     # returns the number with HIV that were not HIV tested during the given month
-    def get_number_with_hiv_unidentified(self):
-        return float(self.month_data[1][3])
+    def get_number_with_hiv_unidentified(self, year):
+        return float(self.year_data[year][1][3])
 
     # returns the number with HIV that were HIV tested during the given month
-    def get_number_with_hiv_identified(self):
-        return float(self.month_data[1][4])
+    def get_number_with_hiv_identified(self, year):
+        return float(self.year_data[year][1][4])
 
     # returns the number with HIV that are chronic cases
-    def get_number_with_hiv_chronic(self):
-        return float(self.month_data[3][3]) + float(self.month_data[3][4])
+    def get_number_with_hiv_chronic(self, year):
+        return float(self, year.year_data[year][3][3]) + float(self, year.year_data[year][3][4])
     
     # returns the number with HIV that are acute cases
-    def get_number_with_hiv_acute(self):
-        return float(self.month_data[3][5])
+    def get_number_with_hiv_acute(self, year):
+        return float(self.year_data[year][3][5])
 
     # returns the number with HIV that were off treatement during the given month
-    def get_number_with_hiv_off_ART(self):
-        return float(self.month_data[9][9]) + \
-            float(self.month_data[10][9]) + \
-            float(self.month_data[11][9]) + \
-            float(self.month_data[12][9]) + \
-            float(self.month_data[13][9]) + \
-            float(self.month_data[14][9])
+    def get_number_with_hiv_off_ART(self, year):
+        return float(self.year_data[year][9][9]) + \
+            float(self.year_data[year][10][9]) + \
+            float(self.year_data[year][11][9]) + \
+            float(self.year_data[year][12][9]) + \
+            float(self.year_data[year][13][9]) + \
+            float(self.year_data[year][14][9])
 
     # returns the number with HIV that were on treatment during the given month
-    def get_number_with_hiv_on_ART(self):
-        return float(self.month_data[15][9]) + \
-            float(self.month_data[16][9]) + \
-            float(self.month_data[17][9]) + \
-            float(self.month_data[18][9]) + \
-            float(self.month_data[19][9]) + \
-            float(self.month_data[20][9])
+    def get_number_with_hiv_on_ART(self, year):
+        return float(self.year_data[year][15][9]) + \
+            float(self.year_data[year][16][9]) + \
+            float(self.year_data[year][17][9]) + \
+            float(self.year_data[year][18][9]) + \
+            float(self.year_data[year][19][9]) + \
+            float(self.year_data[year][20][9])
 
     # returns the number with HIV that were virally supressed during the given month
-    def get_number_with_hiv_suppressed(self):
-        return float(self.month_data[16][12])
+    def get_number_with_hiv_suppressed(self, year):
+        return float(self.year_data[year][16][12])
 
     # returns the number with HIV that are partially suppressed
-    def get_number_with_hiv_partially_suppressed(self):
-        return float(self.month_data[17][12])
+    def get_number_with_hiv_partially_suppressed(self, year):
+        return float(self.year_data[year][17][12])
 
     # returns the number with HIV that failed ART
-    def get_number_failed_ART(self):
-        return float(self.month_data[18][12])
+    def get_number_failed_ART(self, year):
+        return float(self.year_data[year][18][12])
 
     # returns the number with HIV that were HVL tested during the given month
-    def get_number_with_hiv_hvl_tested(self):
-        return sum(map(float, self.month_data[21][2:9]))
+    def get_number_with_hiv_hvl_tested(self, year):
+        return sum(map(float, self.year_data[year][21][2:9]))
 
     # returns the number of peole who died during the given  month
-    def get_number_deaths_nonAIDS(self):
-        return float(self.month_data[30][18])
+    def get_number_deaths_nonAIDS(self, year):
+        return self.total_nonAIDS_deaths_per_year[year]
+        #return float(self.year_data[year][30][18])
 
     # returns the number of peole who died during the given  month
-    def get_number_deaths_chrAIDS(self):
-        return float(self.month_data[30][17])
+    #def get_number_deaths_chrAIDS(self, year):
+        #return float(self.year_data[year][30][17])
 
     # returns the number of peole who died during the given  month
-    def get_number_deaths_total(self):
-        return sum(map(float, self.month_data[30][2:25]))
+    def get_number_deaths_total(self, year):
+        return self.total_deaths_per_year[year]
+        #return sum(map(float, self.year_data[year][30][2:25]))
 
     # returns the number with HIV that are newly LTFU during the given month
-    def get_number_with_hiv_ltfu(self):
-        return sum(map(float, self.month_data[49][2:14]))
+    def get_number_with_hiv_ltfu(self, year):
+        return float(self.year_data[year][62][2])
 
     # returns the number with HIV that are currently LTFU brefore linking to care
-    def get_number_with_hiv_ltfu_pre(self):
-        #return float(self.month_data[49][12])
-        return float(self.month_data[53][2])
+    def get_number_with_hiv_ltfu_pre(self, year):
+        return float(self.year_data[year][60][2])
 
     # returns the number with HIV that are currently LTFU after linking to care
-    def get_number_with_hiv_ltfu_post(self):
-        #return float(self.month_data[49][14])
-        return float(self.month_data[54][2])
+    def get_number_with_hiv_ltfu_post(self, year):
+        return float(self.year_data[year][61][2])
 
 # A Page is a page of ordered data in a larger Workbook.
 class Page:
@@ -440,12 +487,13 @@ class Run:
             full_path = os.path.join('results', filename)
             if zip_file == None:
                 full_path = os.path.join(os.path.dirname(self.xml_filename), full_path)
-                try:
-                    _file = open(full_path, 'r')
-                except OSError:
-                    self.is_sane = False
-                    self.state_msg = "CANNOT OPEN FILE " + full_path
-                    break
+                if file_type != 'cepac':
+                    try:
+                        _file = open(full_path, 'r')
+                    except OSError:
+                        self.is_sane = False
+                        self.state_msg = "CANNOT OPEN FILE " + full_path
+                        break
             else:
                 try:
                     _file = zip_file.open('results/' + filename, 'rt')
@@ -455,10 +503,8 @@ class Run:
                     break
 
             if file_type == 'cepac':
-                 for year in range(1990, self.end_year + 1):
-                     end_month = month_of_1990 + (year - 1990) * 12 + 11
-                     month_data = CepacOutFile(_file, end_month)
-                     self.cepac_data.update({ year : month_data })
+                 self.cepac_data = CepacOutFile(full_path, 1990, month_of_1990, 
+                                       self.end_year, self.end_month)
             else:
                 self.files[file_type] = TabularFile(_file, num_header_rows[file_type])
 
@@ -500,24 +546,25 @@ class Run:
 
     def extract_deaths(self):
         total = 0
-        for i, year in enumerate(self.cepac_data):
-            total += self.cepac_data[year].get_number_deaths_total()
+        for i, year in enumerate(self.cepac_data.year_data):
+            total += self.cepac_data.get_number_deaths_total(year)
         self.statistics['Deaths-Averted']['total'] = total
 
     def extract_cascade(self):
-        cepac_file = self.cepac_data[self.end_year]
+        year = self.end_year
+        cepac_data = self.cepac_data
 
-        hiv_pos = cepac_file.get_number_with_hiv()
-        identified = cepac_file.get_number_with_hiv_identified()
-        treated =  cepac_file.get_number_with_hiv_on_ART()
-        suppressed = cepac_file.get_number_with_hiv_suppressed()
-        self.statistics['Cascade']['sa-pop-size'] = cepac_file.get_pop_size()
+        hiv_pos = cepac_data.get_number_with_hiv(year)
+        identified = cepac_data.get_number_with_hiv_identified(year)
+        treated =  cepac_data.get_number_with_hiv_on_ART(year)
+        suppressed = cepac_data.get_number_with_hiv_suppressed(year)
+        self.statistics['Cascade']['sa-pop-size'] = cepac_data.get_cepac_pop_size(year)
         self.statistics['Cascade']['num-positive'] = hiv_pos
         self.statistics['Cascade']['num-hiv-hiv-tested'] = identified
         self.statistics['Cascade']['num-hiv-treated'] = treated
         self.statistics['Cascade']['num-hiv-supressed'] = suppressed
-        self.statistics['Cascade']['num-hiv-hvl-tested'] = cepac_file.get_number_with_hiv_hvl_tested()
-        self.statistics['Cascade']['num-hiv-ltfu'] = cepac_file.get_number_with_hiv_ltfu()
+        self.statistics['Cascade']['num-hiv-hvl-tested'] = cepac_data.get_number_with_hiv_hvl_tested(year)
+        self.statistics['Cascade']['num-hiv-ltfu'] = cepac_data.get_number_with_hiv_ltfu(year)
 
         percent_tested = identified / hiv_pos
         self.statistics['Cascade']['percent-tested'] = percent_tested
@@ -530,47 +577,49 @@ class Run:
 
     # Calculated for health states from the 'cepac.out' file
     def extract_health_states(self):
-        for i, year in enumerate(self.cepac_data):
-            num_with_hiv =  self.cepac_data[year].get_number_with_hiv()
+        for i, year in enumerate(self.cepac_data.year_data):
+            cepac_data = self.cepac_data
+            num_with_hiv =  cepac_data.get_number_with_hiv(year)
             self.statistics['CEPAC-HIV+'][year] = num_with_hiv
 
-            if num_with_hiv == 0:
+            divisor = num_with_hiv
+            if divisor == 0:
                 # don't divide by zero
                 continue
 
             # Deaths
-            deaths = self.cepac_data[year].get_number_deaths_total()
-            deaths_nonAIDS = self.cepac_data[year].get_number_deaths_nonAIDS()
-            self.statistics['HIV-Deaths'][year] = (deaths - deaths_nonAIDS) / num_with_hiv
+            deaths = cepac_data.get_number_deaths_total(year)
+            deaths_nonAIDS = cepac_data.get_number_deaths_nonAIDS(year)
+            self.statistics['HIV-Deaths'][year] = (deaths - deaths_nonAIDS) / divisor
 
             # Untested | Tested
-            identified = self.cepac_data[year].get_number_with_hiv_identified()
-            unidentified =  self.cepac_data[year].get_number_with_hiv_unidentified()
-            self.statistics['IdentHIV+'][year] = identified / num_with_hiv
-            self.statistics['UnidentHIV+'][year] = unidentified / num_with_hiv
+            identified = cepac_data.get_number_with_hiv_identified(year)
+            unidentified =  cepac_data.get_number_with_hiv_unidentified(year)
+            self.statistics['IdentHIV+'][year] = identified / divisor
+            self.statistics['UnidentHIV+'][year] = unidentified / divisor
 
             # On_ART | Off_ART
-            num_on_ART = self.cepac_data[year].get_number_with_hiv_on_ART()
-            num_off_ART = self.cepac_data[year].get_number_with_hiv_off_ART()
-            self.statistics['On-ART'][year] = num_on_ART / num_with_hiv
-            self.statistics['Off-ART'][year] = num_off_ART / num_with_hiv
+            num_on_ART = cepac_data.get_number_with_hiv_on_ART(year)
+            num_off_ART = cepac_data.get_number_with_hiv_off_ART(year)
+            self.statistics['On-ART'][year] = num_on_ART / divisor
+            self.statistics['Off-ART'][year] = num_off_ART / divisor
 
             # On-ART Subsets: Suppressed | Partially-Suppressed | Failed-ART
-            suppressed = self.cepac_data[year].get_number_with_hiv_suppressed()
-            partially_suppressed = self.cepac_data[year].\
-                                   get_number_with_hiv_partially_suppressed()
-            failed_ART = self.cepac_data[year].get_number_failed_ART()
-            self.statistics['Suppressed'][year] = suppressed / num_with_hiv
-            self.statistics['Partially-Suppressed'][year] = partially_suppressed / num_with_hiv
-            self.statistics['Failed-ART'][year] = failed_ART / num_with_hiv
+            suppressed = cepac_data.get_number_with_hiv_suppressed(year)
+            partially_suppressed = cepac_data.\
+                                   get_number_with_hiv_partially_suppressed(year)
+            failed_ART = cepac_data.get_number_failed_ART(year)
+            self.statistics['Suppressed'][year] = suppressed / divisor
+            self.statistics['Partially-Suppressed'][year] = partially_suppressed / divisor
+            self.statistics['Failed-ART'][year] = failed_ART / divisor
 
             # Off_ART Subsets : Pre-ART | LTFU
-            num_ltfu = self.cepac_data[year].get_number_with_hiv_ltfu()
-            num_ltfu_pre = self.cepac_data[year].get_number_with_hiv_ltfu_pre()
-            num_ltfu_post = self.cepac_data[year].get_number_with_hiv_ltfu_post()
-            self.statistics['LTFU'][year] = num_ltfu / num_with_hiv
-            self.statistics['LTFU-Pre-ART'][year] = num_ltfu_pre / num_with_hiv
-            self.statistics['LTFU-Post-ART'][year] = num_ltfu_post / num_with_hiv
+            num_ltfu = cepac_data.get_number_with_hiv_ltfu(year)
+            num_ltfu_pre = cepac_data.get_number_with_hiv_ltfu_pre(year)
+            num_ltfu_post = cepac_data.get_number_with_hiv_ltfu_post(year)
+            self.statistics['LTFU'][year] = num_ltfu / divisor
+            self.statistics['LTFU-Pre-ART'][year] = num_ltfu_pre / divisor
+            self.statistics['LTFU-Post-ART'][year] = num_ltfu_post / divisor
 
     # Calculated for each year from the 'ARTRollout' file
     def extract_eligibility_stats_AR(self):
@@ -596,7 +645,7 @@ class Run:
             first_month = self.month_of_1990 + (year - 1990) * 12
             first_month += 1 # add one month to sync with cepac output
 
-            num_with_hiv =  self.cepac_data[year].get_number_with_hiv()
+            num_with_hiv =  self.cepac_data.get_number_with_hiv(year)
             if num_with_hiv == 0:
                 continue
 
