@@ -1,9 +1,4 @@
-# analyse_batches.py end_year target_dir post_calib_file output_file
-#
-# end_year:   Last year of analysis
-# directory:  Directory with batch files
-# post_calib: Post Calibration file with batch information
-# out:        Output file
+# analyses a set of batch files from CDM
 
 import collections # for OrderedDict
 import openpyxl # for creating xlsx
@@ -11,22 +6,26 @@ import os
 import zipfile
 import sys
 import numpy
+import argparse
+import math
 
 supported_versions = ['3.6', '3.7']
 
 # Original Outputs
-tabular_outputs = ['Infections', 'Averted', 'Cost-Undiscounted', 'Cost-Discounted',
-                   'LMs-Undiscounted', 'LMs-Discounted']
 cepac_outputs = ['Cascade']
-infection_outputs = ['Prevalence', 'Incidence']
+tabular_outputs = ['Infections', 'Infections-Averted', 'Deaths-Averted', 'Cost-Undiscounted', 'Cost-Discounted',
+                   'LMs-Undiscounted', 'LMs-Discounted']
+infection_outputs = ['Prevalence', 'Male-Prevalence', 'Female-Prevalence', 'Incidence', 'Male-Incidence', 'Female-Incidence']
 
 # Extra Health State Outputs
 health_state_outputs = ['Pop', 'SA', 'CEPAC-HIV+']
+
 # CEPAC
-ident_state_outputs = ['IdentHIV+', 'UnidentHIV+', 'Dead']
+ident_state_outputs = ['IdentHIV+', 'UnidentHIV+', 'HIV-Deaths']
 ART_state_outputs = ['Off-ART', 'On-ART']
-off_ART_state_outputs = ['LTFU', 'Waiting-or-Not-Eligible']
+off_ART_state_outputs = ['LTFU', 'LTFU-Pre-ART', 'LTFU-Post-ART']
 on_ART_state_outputs = ['Suppressed', 'Partially-Suppressed', 'Failed-ART']
+
 # CDM
 eligible_state_outputs = ['Eligible-for-Access', 'Accessing-Treatment',
                           'Eligible-for-ART', 'Receiving-ART']
@@ -75,88 +74,163 @@ class TabularFile:
 # data in the form of a multidimensional array (rows are separated by <newline>
 # and columns are separated by <tab>).
 class CepacOutFile:
-    def __init__(self, _file, target_month):
-        self.month_data = []
+    def __init__(self, file, start_year, start_month, end_year, end_month):
+        self.year_data = {}
+
+        self.total_deaths_per_year = {}
+        self.total_nonAIDS_deaths_per_year = {}
+
+        last_month_data = []
+        year = start_year
+        month_in_year = 0
         in_target_month = False
+
+        curr_ltfu_pre = 0
+        new_ltfu_pre = 0
+        new_rtc_pre = 0
+        new_dead_ltfu_pre = 0
+
+        curr_ltfu_post = 0
+        new_ltfu_post = 0
+        new_rtc_post = 0
+        new_dead_ltfu_post = 0
+
+        total_deaths_in_year = 0
+        total_nonAIDS_deaths_in_year = 0
+
+        _file = open(file, 'r') 
         for i, row in enumerate(_file):
             if isinstance(row, bytes):
                 row = row.decode('utf8')
             if not in_target_month:
-                if row.rstrip() != 'COHORT SUMMARY FOR MONTH {}'.format(target_month):
+                if row.rstrip() != 'COHORT SUMMARY FOR MONTH {}'.format(start_month):
                     continue
                 in_target_month = True
-            elif row.rstrip() == 'COHORT SUMMARY FOR MONTH {}'.format(target_month + 1):
-                break
+                month_in_year = 0
+            elif row.rstrip().startswith('COHORT SUMMARY FOR MONTH'):
+                month_in_year += 1
+                if month_in_year == 12:
+                    month_in_year = 0
+                    last_month_data.append(['', 'Num Pre LTFU: ', '{}'.format(curr_ltfu_pre)])
+                    last_month_data.append(['', 'Num Post LTFU: ', '{}'.format(curr_ltfu_post)])
+                    last_month_data.append(['', 'Current LTFU: ', '{}'.format(curr_ltfu_pre + curr_ltfu_post)])
+                    self.year_data.update({year : last_month_data})
+                    self.total_deaths_per_year.update({ year : total_deaths_in_year })
+                    self.total_nonAIDS_deaths_per_year.update({ year : total_nonAIDS_deaths_in_year })
+                    
+                    last_month_data = []
+                    total_deaths_in_year = 0
+                    total_nonAIDS_deaths_in_year = 0
+                    year += 1
+                    if year == end_year + 1:
+                        return
+                    
             else:
                 split = row.rstrip().split('\t')
-                self.month_data.append(split)
+                if len(split) < 2:
+                   continue
+                if split[1] == "Num LTFU: ":
+                    new_ltfu_pre = int(split[12])
+                    new_ltfu_post = sum(map(int, split[2:12]))
+                elif split[1] == "Num RTC (continue previous regimen): ":
+                    new_rtc_pre = int(split[12])
+                    new_rtc_post = sum(map(int, split[2:12]))
+                elif split[1] == "Num Deaths while Lost: ":
+                    new_dead_ltfu_pre = int(split[12])
+                    new_dead_ltfu_post = sum(map(int, split[2:12]))
+                    curr_ltfu_pre += new_ltfu_pre - new_rtc_pre - new_dead_ltfu_pre
+                    curr_ltfu_post += new_ltfu_post - new_rtc_post - new_dead_ltfu_post
+                elif split[1] == "Dth evts: ":
+                    # sum non-cumulative data not summed in cepac.out
+                    total_deaths_in_year+=sum(map(float, split[2:25]))
+                    total_nonAIDS_deaths_in_year+=float(split[18])
+
+                if month_in_year == 11:
+                    last_month_data.append(split)
 
     # returns the population size during the given month
-    def get_pop_size(self):
-        return float(self.month_data[1][5])
-
-    # returns the number of peole who died during the given  month
-    def get_number_deaths_nonAIDS(self):
-        return float(self.month_data[28][18])
-
-    # returns the number of peole who died during the given  month
-    def get_number_deaths_chrAIDS(self):
-        return float(self.month_data[28][17])
-
-    # returns the number of peole who died during the given  month
-    def get_number_deaths_total(self):
-        return sum(map(float, self.month_data[28][2:25]))
+    def get_cepac_pop_size(self, year):
+        return float(self.year_data[year][1][5])
 
     # returns the number with HIV during the given month
-    def get_number_with_hiv(self):
-        return float(self.month_data[1][3]) + int(self.month_data[1][4])
-
-    # returns the number with HIV that were HVL tested during the given month
-    def get_number_with_hiv_hvl_tested(self):
-        return sum(map(float, self.month_data[20][2:9]))
-
-    # returns the number with HIV that were HIV tested during the given month
-    def get_number_with_hiv_identified(self):
-        return float(self.month_data[1][4])
+    def get_number_with_hiv(self, year):
+        return float(self.year_data[year][1][3]) + float(self.year_data[year][1][4])
 
     # returns the number with HIV that were not HIV tested during the given month
-    def get_number_with_hiv_unidentified(self):
-        return float(self.month_data[1][3])
+    def get_number_with_hiv_unidentified(self, year):
+        return float(self.year_data[year][1][3])
 
-    # returns the number with HIV that were on treatment during the given month
-    def get_number_with_hiv_on_ART(self):
-        return float(self.month_data[13][9]) + \
-            float(self.month_data[14][9]) + \
-            float(self.month_data[15][9]) + \
-            float(self.month_data[16][9]) + \
-            float(self.month_data[17][9]) + \
-            float(self.month_data[18][9])
+    # returns the number with HIV that were HIV tested during the given month
+    def get_number_with_hiv_identified(self, year):
+        return float(self.year_data[year][1][4])
 
+    # returns the number with HIV that are chronic cases
+    def get_number_with_hiv_chronic(self, year):
+        return float(self, year.year_data[year][3][3]) + float(self, year.year_data[year][3][4])
+    
+    # returns the number with HIV that are acute cases
+    def get_number_with_hiv_acute(self, year):
+        return float(self.year_data[year][3][5])
 
     # returns the number with HIV that were off treatement during the given month
-    def get_number_with_hiv_off_ART(self):
-        return float(self.month_data[7][9]) + \
-            float(self.month_data[8][9]) + \
-            float(self.month_data[9][9]) + \
-            float(self.month_data[10][9]) + \
-            float(self.month_data[11][9]) + \
-            float(self.month_data[12][9])
+    def get_number_with_hiv_off_ART(self, year):
+        return float(self.year_data[year][9][9]) + \
+            float(self.year_data[year][10][9]) + \
+            float(self.year_data[year][11][9]) + \
+            float(self.year_data[year][12][9]) + \
+            float(self.year_data[year][13][9]) + \
+            float(self.year_data[year][14][9])
+
+    # returns the number with HIV that were on treatment during the given month
+    def get_number_with_hiv_on_ART(self, year):
+        return float(self.year_data[year][15][9]) + \
+            float(self.year_data[year][16][9]) + \
+            float(self.year_data[year][17][9]) + \
+            float(self.year_data[year][18][9]) + \
+            float(self.year_data[year][19][9]) + \
+            float(self.year_data[year][20][9])
 
     # returns the number with HIV that were virally supressed during the given month
-    def get_number_with_hiv_suppressed(self):
-        return float(self.month_data[14][12])
+    def get_number_with_hiv_suppressed(self, year):
+        return float(self.year_data[year][16][12])
 
     # returns the number with HIV that are partially suppressed
-    def get_number_with_hiv_partially_suppressed(self):
-        return float(self.month_data[15][12])
+    def get_number_with_hiv_partially_suppressed(self, year):
+        return float(self.year_data[year][17][12])
 
     # returns the number with HIV that failed ART
-    def get_number_failed_ART(self):
-        return float(self.month_data[16][12])
+    def get_number_failed_ART(self, year):
+        return float(self.year_data[year][18][12])
 
-    # returns the number with HIV that were LTFU during the given month
-    def get_number_with_hiv_ltfu(self):
-        return sum(map(float, self.month_data[41][2:12]))
+    # returns the number with HIV that were HVL tested during the given month
+    def get_number_with_hiv_hvl_tested(self, year):
+        return sum(map(float, self.year_data[year][21][2:9]))
+
+    # returns the number of peole who died during the given  month
+    def get_number_deaths_nonAIDS(self, year):
+        return self.total_nonAIDS_deaths_per_year[year]
+        #return float(self.year_data[year][30][18])
+
+    # returns the number of peole who died during the given  month
+    #def get_number_deaths_chrAIDS(self, year):
+        #return float(self.year_data[year][30][17])
+
+    # returns the number of peole who died during the given  month
+    def get_number_deaths_total(self, year):
+        return self.total_deaths_per_year[year]
+        #return sum(map(float, self.year_data[year][30][2:25]))
+
+    # returns the number with HIV that are newly LTFU during the given month
+    def get_number_with_hiv_ltfu(self, year):
+        return float(self.year_data[year][62][2])
+
+    # returns the number with HIV that are currently LTFU brefore linking to care
+    def get_number_with_hiv_ltfu_pre(self, year):
+        return float(self.year_data[year][60][2])
+
+    # returns the number with HIV that are currently LTFU after linking to care
+    def get_number_with_hiv_ltfu_post(self, year):
+        return float(self.year_data[year][61][2])
 
 # A Page is a page of ordered data in a larger Workbook.
 class Page:
@@ -259,20 +333,21 @@ class Page:
         self.ws.merge_cells(range_string)
 
 class Run:
-    def __init__(self, xml_filename, full_output, full_outputs):
+    def __init__(self, xml_filename, full_output, percent_output, full_outputs):
         self.xml_filename = xml_filename
         self.name = ''
         self.path = ''
         self.is_sane = True
         self.state_msg = str()
         self.full_output = full_output
+        self.percent_output = percent_output
         self.full_health_state_outputs = full_outputs
 
         if xml_filename != '':
             self.name = os.path.splitext(os.path.basename(xml_filename))[0]
             self.path = xml_filename
 
-        base_outputs = tabular_outputs + cepac_outputs + infection_outputs
+        base_outputs = cepac_outputs + tabular_outputs + infection_outputs
         extended_outputs = []
         if self.full_output:
             extended_outputs.extend(
@@ -398,6 +473,7 @@ class Run:
 
         num_header_rows = {'CE' : 4,
                            'Infections' : 3,
+                           'Population' : 2,
                            'ShiftedOutcomes' : 3,
                            'ARTRollout' : 3,
                            'cepac' : 0}
@@ -411,12 +487,13 @@ class Run:
             full_path = os.path.join('results', filename)
             if zip_file == None:
                 full_path = os.path.join(os.path.dirname(self.xml_filename), full_path)
-                try:
-                    _file = open(full_path, 'r')
-                except OSError:
-                    self.is_sane = False
-                    self.state_msg = "CANNOT OPEN FILE " + full_path
-                    break
+                if file_type != 'cepac':
+                    try:
+                        _file = open(full_path, 'r')
+                    except OSError:
+                        self.is_sane = False
+                        self.state_msg = "CANNOT OPEN FILE " + full_path
+                        break
             else:
                 try:
                     _file = zip_file.open('results/' + filename, 'rt')
@@ -426,19 +503,18 @@ class Run:
                     break
 
             if file_type == 'cepac':
-                 for year in range(1990, self.end_year + 1):
-                     first_month = self.month_of_1990 + (year - 1990) * 12
-                     month_data = CepacOutFile(_file, first_month)
-                     self.cepac_data.update({ year : month_data })
+                 self.cepac_data = CepacOutFile(full_path, 1990, month_of_1990, 
+                                       self.end_year, self.end_month)
             else:
                 self.files[file_type] = TabularFile(_file, num_header_rows[file_type])
 
         if self.is_sane == True:
             self.extract_infections()
+            self.extract_deaths()
             self.extract_cascade()
             self.extract_costs_and_lms()
             self.extract_prevalence_and_incidence()
-            if full_output:
+            if self.full_output:
                 self.extract_health_states()
                 self.extract_sa_proportion()
                 self.extract_eligibility_stats_AR()
@@ -460,7 +536,7 @@ class Run:
             self.statistics['Infections'][stat] = 0
 
         total = 0
-        for month in map(str, range(self.start_month, self.end_month + 1)):
+        for month in map(str, range(self.start_month, self.end_month)):
             for stat, column in infections_stats:
                 num_infections = self.files['Infections'].get_float(month, column)
                 self.statistics['Infections'][stat] += num_infections
@@ -468,20 +544,27 @@ class Run:
 
         self.statistics['Infections']['total'] = total
 
-    def extract_cascade(self):
-        cepac_file = self.cepac_data[self.end_year]
+    def extract_deaths(self):
+        total = 0
+        for i, year in enumerate(self.cepac_data.year_data):
+            total += self.cepac_data.get_number_deaths_total(year)
+        self.statistics['Deaths-Averted']['total'] = total
 
-        hiv_pos = cepac_file.get_number_with_hiv()
-        identified = cepac_file.get_number_with_hiv_identified()
-        treated =  cepac_file.get_number_with_hiv_on_ART()
-        suppressed = cepac_file.get_number_with_hiv_suppressed()
-        self.statistics['Cascade']['sa-pop-size'] = cepac_file.get_pop_size()
+    def extract_cascade(self):
+        year = self.end_year
+        cepac_data = self.cepac_data
+
+        hiv_pos = cepac_data.get_number_with_hiv(year)
+        identified = cepac_data.get_number_with_hiv_identified(year)
+        treated =  cepac_data.get_number_with_hiv_on_ART(year)
+        suppressed = cepac_data.get_number_with_hiv_suppressed(year)
+        self.statistics['Cascade']['sa-pop-size'] = cepac_data.get_cepac_pop_size(year)
         self.statistics['Cascade']['num-positive'] = hiv_pos
         self.statistics['Cascade']['num-hiv-hiv-tested'] = identified
         self.statistics['Cascade']['num-hiv-treated'] = treated
         self.statistics['Cascade']['num-hiv-supressed'] = suppressed
-        self.statistics['Cascade']['num-hiv-hvl-tested'] = cepac_file.get_number_with_hiv_hvl_tested()
-        self.statistics['Cascade']['num-hiv-ltfu'] = cepac_file.get_number_with_hiv_ltfu()
+        self.statistics['Cascade']['num-hiv-hvl-tested'] = cepac_data.get_number_with_hiv_hvl_tested(year)
+        self.statistics['Cascade']['num-hiv-ltfu'] = cepac_data.get_number_with_hiv_ltfu(year)
 
         percent_tested = identified / hiv_pos
         self.statistics['Cascade']['percent-tested'] = percent_tested
@@ -494,53 +577,49 @@ class Run:
 
     # Calculated for health states from the 'cepac.out' file
     def extract_health_states(self):
-        for i, year in enumerate(self.cepac_data):
-            num_with_hiv =  self.cepac_data[year].get_number_with_hiv()
+        for i, year in enumerate(self.cepac_data.year_data):
+            cepac_data = self.cepac_data
+            num_with_hiv =  cepac_data.get_number_with_hiv(year)
             self.statistics['CEPAC-HIV+'][year] = num_with_hiv
 
-            if num_with_hiv == 0:
+            divisor = num_with_hiv
+            if divisor == 0:
                 # don't divide by zero
                 continue
 
-            # Dead
-            deaths = self.cepac_data[year].get_number_deaths_total()
-            deaths_nonAIDS = self.cepac_data[year].get_number_deaths_nonAIDS()
-            self.statistics['Dead'][year] = (deaths - deaths_nonAIDS) / num_with_hiv
+            # Deaths
+            deaths = cepac_data.get_number_deaths_total(year)
+            deaths_nonAIDS = cepac_data.get_number_deaths_nonAIDS(year)
+            self.statistics['HIV-Deaths'][year] = (deaths - deaths_nonAIDS) / divisor
 
             # Untested | Tested
-            identified = self.cepac_data[year].get_number_with_hiv_identified()
-            unidentified =  self.cepac_data[year].get_number_with_hiv_unidentified()
-            self.statistics['IdentHIV+'][year] = identified / num_with_hiv
-            self.statistics['UnidentHIV+'][year] = unidentified / num_with_hiv
-
-            # On-ART | Off-ART | LTFU
-            num_on_ART = self.cepac_data[year].get_number_with_hiv_on_ART()
-            num_off_ART = self.cepac_data[year].get_number_with_hiv_off_ART()
-            num_ltfu = self.cepac_data[year].get_number_with_hiv_ltfu()
-            self.statistics['On-ART'][year] = num_on_ART / num_with_hiv
-            self.statistics['Off-ART'][year] = num_off_ART / num_with_hiv
-            self.statistics['LTFU'][year] = num_ltfu / num_with_hiv
+            identified = cepac_data.get_number_with_hiv_identified(year)
+            unidentified =  cepac_data.get_number_with_hiv_unidentified(year)
+            self.statistics['IdentHIV+'][year] = identified / divisor
+            self.statistics['UnidentHIV+'][year] = unidentified / divisor
 
             # On_ART | Off_ART
-            num_on_ART = self.cepac_data[year].get_number_with_hiv_on_ART()
-            num_off_ART = self.cepac_data[year].get_number_with_hiv_off_ART()
-            self.statistics['On-ART'][year] = num_on_ART / num_with_hiv
-            self.statistics['Off-ART'][year] = num_off_ART / num_with_hiv
+            num_on_ART = cepac_data.get_number_with_hiv_on_ART(year)
+            num_off_ART = cepac_data.get_number_with_hiv_off_ART(year)
+            self.statistics['On-ART'][year] = num_on_ART / divisor
+            self.statistics['Off-ART'][year] = num_off_ART / divisor
 
             # On-ART Subsets: Suppressed | Partially-Suppressed | Failed-ART
-            suppressed = self.cepac_data[year].get_number_with_hiv_suppressed()
-            partially_suppressed = self.cepac_data[year].\
-                                   get_number_with_hiv_partially_suppressed()
-            failed_ART = self.cepac_data[year].get_number_failed_ART()
-            self.statistics['Suppressed'][year] = suppressed / num_with_hiv
-            self.statistics['Partially-Suppressed'][year] = partially_suppressed / num_with_hiv
-            self.statistics['Failed-ART'][year] = failed_ART / num_with_hiv
+            suppressed = cepac_data.get_number_with_hiv_suppressed(year)
+            partially_suppressed = cepac_data.\
+                                   get_number_with_hiv_partially_suppressed(year)
+            failed_ART = cepac_data.get_number_failed_ART(year)
+            self.statistics['Suppressed'][year] = suppressed / divisor
+            self.statistics['Partially-Suppressed'][year] = partially_suppressed / divisor
+            self.statistics['Failed-ART'][year] = failed_ART / divisor
 
-            # Off_ART Subsets : LTFU | Waiting-or-Not-Eligible
-            num_ltfu = self.cepac_data[year].get_number_with_hiv_ltfu()
-            num_waiting_or_ne = identified - num_on_ART
-            self.statistics['LTFU'][year] = num_ltfu / num_with_hiv
-            self.statistics['Waiting-or-Not-Eligible'][year] = num_waiting_or_ne / num_with_hiv
+            # Off_ART Subsets : Pre-ART | LTFU
+            num_ltfu = cepac_data.get_number_with_hiv_ltfu(year)
+            num_ltfu_pre = cepac_data.get_number_with_hiv_ltfu_pre(year)
+            num_ltfu_post = cepac_data.get_number_with_hiv_ltfu_post(year)
+            self.statistics['LTFU'][year] = num_ltfu / divisor
+            self.statistics['LTFU-Pre-ART'][year] = num_ltfu_pre / divisor
+            self.statistics['LTFU-Post-ART'][year] = num_ltfu_post / divisor
 
     # Calculated for each year from the 'ARTRollout' file
     def extract_eligibility_stats_AR(self):
@@ -553,20 +632,20 @@ class Run:
         currently_infected_column = 2
 
         # ART Data from ARTRollout file
-        male_eligible_column = 42
-        female_eligible_column = 43
-        male_accessing_column = 76
-        female_accessing_column = 77
-        male_waiting_column = 110
-        female_waiting_column = 111
-        male_receiving_column = 144
-        female_receiving_column = 145
+        male_eligible_column = 43
+        female_eligible_column = 44
+        male_accessing_column = 77
+        female_accessing_column = 78
+        male_waiting_column = 111
+        female_waiting_column = 112
+        male_receiving_column = 145
+        female_receiving_column = 146
 
         for year in range(1990, min(self.end_year, self.max_year) + 1):
             first_month = self.month_of_1990 + (year - 1990) * 12
             first_month += 1 # add one month to sync with cepac output
 
-            num_with_hiv =  self.cepac_data[year].get_number_with_hiv()
+            num_with_hiv =  self.cepac_data.get_number_with_hiv(year)
             if num_with_hiv == 0:
                 continue
 
@@ -615,7 +694,6 @@ class Run:
 
             yearly_pop = self.files['Infections'].get_int(str(first_month), pop_column)
             yearly_sa = self.files['Infections'].get_int(str(first_month), sa_column)
-            yearly_prev = self.files['Infections'].get_int(str(first_month), prev_column)
 
             self.statistics['Pop'][year] = yearly_pop
             self.statistics['SA'][year] = yearly_sa
@@ -625,34 +703,80 @@ class Run:
         while self.files['ShiftedOutcomes'].has_row(str(year)):
             year += 1
         self.max_year = year - 1
-        sa_column = 5
-        currently_infected_column = 2
+
+        # From Infections file
         newly_infected_column = 0
+        currently_infected_column = 2
+        sa_column = 5
+        prevalent_male_column = 17
+        prevalent_female_column = 18
+        incident_male_column = 80
+        incident_female_column = 81
+
+        # From Population file
+        male_pop_column = 9
+        female_pop_column = 10
+        male_non_sa_column = 27
+        female_non_sa_column = 37
 
         for year in range(1990, min(self.end_year, self.max_year) + 1):
             first_month = self.month_of_1990 + (year - 1990) * 12
             monthly_sa = 0
+            monthly_sa_male = 0
+            monthly_sa_female = 0
             monthly_prevalent = 0
+            monthly_prevalent_male = 0
+            monthly_prevalent_female = 0
             monthly_incident = 0
-            yearly_incidence = 0
+            monthly_incident_male = 0
+            monthly_incident_female = 0
             yearly_prevalence = 0
-            yearly_incident = 0
+            yearly_prevalence_male = 0
+            yearly_prevalence_female = 0
+            yearly_incidence = 0
+            yearly_incidence_male = 0
+            yearly_incidence_female = 0
 
             for month_in_year in range(first_month, first_month + 12):
                 monthly_sa = self.files['Infections'].get_int(str(month_in_year), \
                                                                      sa_column)
+
+                monthly_sa_male = self.files['Population'].get_int(str(month_in_year), male_pop_column) - \
+                                  self.files['Population'].get_int(str(month_in_year), male_non_sa_column)
+                monthly_sa_female = self.files['Population'].get_int(str(month_in_year), female_pop_column) - \
+                                  self.files['Population'].get_int(str(month_in_year), female_non_sa_column)
+
                 monthly_prevalent = self.files['Infections'].get_int(str(month_in_year), \
                                                                      currently_infected_column)
+                monthly_prevalent_male = self.files['Infections'].get_int(str(month_in_year), \
+                                                                     prevalent_male_column)
+                monthly_prevalent_female = self.files['Infections'].get_int(str(month_in_year), \
+                                                                     prevalent_female_column)
                 monthly_incident = self.files['Infections'].get_int(str(month_in_year), \
                                                                     newly_infected_column)
+                monthly_incident_male = self.files['Infections'].get_int(str(month_in_year), \
+                                                                    incident_male_column)
+                monthly_incident_female = self.files['Infections'].get_int(str(month_in_year), \
+                                                                    incident_female_column)
 
                 yearly_incidence += monthly_incident / (monthly_sa - monthly_prevalent)
-                if month_in_year == int(first_month) and monthly_sa > 0:
-                    yearly_prevalence = monthly_prevalent / monthly_sa
-                yearly_incident += monthly_incident
+                yearly_incidence_male += monthly_incident_male / (monthly_sa_male - monthly_prevalent_male)
+                yearly_incidence_female += monthly_incident_female / (monthly_sa_female - monthly_prevalent_female)
+
+            if monthly_sa > 0:
+                # calculate prevalence from the last month of the year
+                yearly_prevalence = monthly_prevalent / monthly_sa
+                yearly_prevalence_male = monthly_prevalent_male / monthly_sa_male
+                yearly_prevalence_female = monthly_prevalent_female / monthly_sa_female
 
             self.statistics['Prevalence'][year] = yearly_prevalence
-            self.statistics['Incidence'][year] = yearly_incidence
+            self.statistics['Male-Prevalence'][year] = yearly_prevalence_male
+            self.statistics['Female-Prevalence'][year] = yearly_prevalence_female
+
+            # cumulative incidence: 1 - e^sum(-monthly_incidence)
+            self.statistics['Incidence'][year] =  1 - math.exp(-yearly_incidence)
+            self.statistics['Male-Incidence'][year] = 1 - math.exp(-yearly_incidence_male)
+            self.statistics['Female-Incidence'][year] = 1- math.exp(-yearly_incidence_female)
 
     def extract_costs_and_lms(self):
         cost_stats = [
@@ -686,7 +810,7 @@ class Run:
             self.statistics['LMs-Undiscounted'][stat] = 0
             self.statistics['LMs-Discounted'][stat] = 0
 
-        for month in map(str, range(self.start_month, self.end_month + 1)):
+        for month in map(str, range(self.start_month, self.end_month)):
             for stat, column in cost_stats:
                 self.statistics['Cost-Undiscounted'][stat] += float(self.files['CE'].get_cell(month, column))
                 self.statistics['Cost-Discounted'][stat] += float(self.files['CE'].get_cell(month, column + discounted_offset))
@@ -699,12 +823,13 @@ class Run:
                 self.statistics['LMs-Discounted']['total'] += float(self.files['CE'].get_cell(month, column + discounted_offset))
 
 class RunSet:
-    def __init__(self, directory, full_output, full_outputs):
+    def __init__(self, directory, full_output, percent_output, full_outputs):
         self.directory = directory
         self.name = os.path.basename(directory)
         self.is_sane = True
         self.state_msg = str()
         self.full_output = full_output
+        self.percent_output = percent_output
         self.full_health_state_outputs = full_outputs
 
     def load_runs(self, year_range_min, year_range_max, get_month_of_1990):
@@ -716,7 +841,7 @@ class RunSet:
         for batchdir in batchdirs:
             for file in os.listdir(batchdir):
                 if os.path.splitext(file)[1] == '.xml':
-                    run = Run(os.path.join(batchdir, file), self.full_output,
+                    run = Run(os.path.join(batchdir, file), self.full_output, self.percent_output,
                               self.full_health_state_outputs)
                     zip_filename = os.path.join(batchdir, 'results.zip')
                     zip_file = None
@@ -754,11 +879,12 @@ class RunSet:
                     yield run
 
 class Summary:
-    def __init__(self, directory, post_calib_filename, full_output, \
+    def __init__(self, directory, post_calib_filename, full_output, percent_output, \
                  weight_cutoff, year_range, year_comparison, status_quo):
 
         self.directory = directory
         self.full_output = full_output
+        self.percent_output = percent_output
         self.read_calibration_data(post_calib_filename, weight_cutoff)
         self.year_range_min, self.year_range_max = year_range
         self.comparison_base_year = year_comparison
@@ -779,10 +905,18 @@ class Summary:
         self.excluded_run_set = []
         self.processed_run_set = []
         self.skipped_run_set = dict()
-        self.status_quo_stats = Run('', self.full_output, self.full_health_state_outputs)
+        self.status_quo_stats = Run('', self.full_output, self.percent_output, self.full_health_state_outputs)
 
     def construct_headers(self):
         self.headers = [
+            ('Cascade', [
+                'Year {}'.format(self.year_range_max),
+                'SA Pop Size', 'Number With HIV',
+                'Number With HIV Tested', 'Number with HIV Treated',
+                'Number With HIV Suppressed',
+                'Number With HIV HVL Tested' ,'Number With HIV LTFU',
+                '% Tested', '% Treated', '% Suppressed', 'Total % Suppressed'
+            ]),
             ('Infections', [
                 [
                     'Years: {} to {}'.format(self.year_range_min, self.year_range_max),
@@ -802,7 +936,7 @@ class Summary:
                     'Total',
                 ]
             ]),
-            ('Averted', [
+            ('Infections-Averted', [
                 [
                     'Years: {} to {}'.format(self.year_range_min, self.year_range_max),
                     'Infections by HVL (of Infector)'
@@ -818,18 +952,22 @@ class Summary:
                     'HVL 100000+',
                     'HVL Primary',
                     'HVL Late Stage',
-                    'Total',
                     'Primary %',
+                    'Total',
                     'Total %'
                 ]
             ]),
-            ('Cascade', [
-                'Year {}'.format(self.year_range_max),
-                'SA Pop Size', 'Number With HIV',
-                'Number With HIV Tested', 'Number with HIV Treated',
-                'Number With HIV Suppressed',
-                'Number With HIV HVL Tested' ,'Number With HIV LTFU',
-                '% Tested', '% Treated', '% Suppressed', 'Total % Suppressed'
+            ('Deaths-Averted', [
+                [
+                    'Years: {} to {}'.format(self.year_range_min, self.year_range_max),
+                    'Deaths Averted'
+                ],
+                [
+                    '',
+                    'Total',
+                    'Averted',
+                    'Total %'
+                ]
             ]),
             ('Cost-Undiscounted', [
                 'Years: {} to {}'.format(self.year_range_min, self.year_range_max),
@@ -858,7 +996,9 @@ class Summary:
                 'Chronic (Observed',
                 'Chronic (Unobserved)',
                 'Late-Stage (Observed)',
-                'Late-Stage (Unobserved)'
+                'Late-Stage (Unobserved)',
+                'LM-Saved',
+                'LM-Saved %'
             ]),
             ('LMs-Discounted', [
                 'Years: {} to {}'.format(self.year_range_min, self.year_range_max),
@@ -869,7 +1009,9 @@ class Summary:
                 'Chronic (Observed',
                 'Chronic (Unobserved)',
                 'Late-Stage (Observed)',
-                'Late-Stage (Unobserved)'
+                'Late-Stage (Unobserved)',
+                'LM-Saved',
+                'LM-Saved %'
             ])
         ]
 
@@ -954,8 +1096,8 @@ class Summary:
                     return [directory]
             else:
                 if not os.path.isdir(full_path): continue
-                if i == 'batch0':
-                    #print('found directory containing batch0 {}'.format(directory))
+                if i == ('batch0'):
+                    print('found directory containing batch0 {}'.format(directory))
                     return [directory]
 
         for i in os.listdir(directory):
@@ -994,7 +1136,7 @@ class Summary:
         use just a subset of it. In that case, the function can print a warning in the end about all runs
         not being present, but it is not clear to the user that the results are incorrect. G
         '''
-        stats = Run('', self.full_output, self.full_health_state_outputs)
+        stats = Run('', self.full_output, self.percent_output, self.full_health_state_outputs)
         stats.max_year = None
         total_weight = 0
         weights = []
@@ -1060,7 +1202,8 @@ class Summary:
         for stat_category in stats.series:
             if stat_category in self.yearly_outputs:
                 year_range = "{} to {}".format(self.year_range_min, self.year_range_max)
-                stats.differences[stat_category][year_range] = numpy.asarray(stats.series[stat_category][stats.max_year]) - numpy.asarray(stats.series[stat_category][self.comparison_base_year])
+                stats.differences[stat_category][year_range] = numpy.asarray(stats.series[stat_category][stats.max_year]) - \
+                      numpy.asarray(stats.series[stat_category][self.comparison_base_year])
                 stats.percentage_diff[stat_category][year_range] = stats.differences[stat_category][year_range] / stats.series[stat_category][self.comparison_base_year]
                 stats.statistics[stat_category][year_range] = numpy.average(stats.differences[stat_category][year_range], weights=weights)
                 stats.median[stat_category][year_range] = self.wquantile(stats.differences[stat_category][year_range], weights, 0.5)[0]
@@ -1069,7 +1212,6 @@ class Summary:
 
                 stats.statistics[stat_category]["%"] = stats.statistics[stat_category][year_range] / stats.statistics[stat_category][self.comparison_base_year]
                 stats.median[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.5)[0]
-
                 stats.lower_quartile[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.25)[0]
                 stats.upper_quartile[stat_category]["%"] = self.wquantile(stats.percentage_diff[stat_category][year_range], weights, 0.75)[0]
 
@@ -1079,26 +1221,87 @@ class Summary:
         if self.status_quo_found == 1 and self.status_quo_is_sane == True and len(processed_runs) == self.num_runs:
             for stat in stats.statistics['Infections']:
                 try:
-                    stats.differences['Averted'][stat] = numpy.asarray(self.status_quo_stats.series['Infections'][stat]) - numpy.asarray(stats.series['Infections'][stat])
-                    stats.statistics['Averted'][stat] = numpy.average(stats.differences['Averted'][stat], weights=weights)
-                    stats.percentage_diff['Averted'][stat] = stats.differences['Averted'][stat] / self.status_quo_stats.series['Infections'][stat]
-                    stats.median['Averted'][stat], median_position = self.wquantile(stats.differences['Averted'][stat], weights, 0.5)
-                    stats.lower_quartile['Averted'][stat], q1_position = self.wquantile(stats.differences['Averted'][stat], weights, 0.25)
-                    stats.upper_quartile['Averted'][stat], q3_position = self.wquantile(stats.differences['Averted'][stat], weights, 0.75)
+                    stats.differences['Infections-Averted'][stat] = numpy.asarray(self.status_quo_stats.series['Infections'][stat]) - numpy.asarray(stats.series['Infections'][stat])
+                    stats.statistics['Infections-Averted'][stat] = numpy.average(stats.differences['Infections-Averted'][stat], weights=weights)
+                    stats.percentage_diff['Infections-Averted'][stat] = stats.differences['Infections-Averted'][stat] / self.status_quo_stats.series['Infections'][stat]
+                    stats.median['Infections-Averted'][stat], median_position = self.wquantile(stats.differences['Infections-Averted'][stat], weights, 0.5)
+                    stats.lower_quartile['Infections-Averted'][stat], q1_position = self.wquantile(stats.differences['Infections-Averted'][stat], weights, 0.25)
+                    stats.upper_quartile['Infections-Averted'][stat], q3_position = self.wquantile(stats.differences['Infections-Averted'][stat], weights, 0.75)
                     if stat == 'hvl-primary':
-                        stats.statistics['Averted']['primary-percent'] = stats.statistics['Averted']['hvl-primary'] / self.status_quo_stats.statistics['Infections']['hvl-primary']
-                        stats.median['Averted']['primary-percent'], median_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.5)
-                        stats.lower_quartile['Averted']['primary-percent'], q1_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.25)
-                        stats.upper_quartile['Averted']['primary-percent'], q3_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.75)
-
+                        stats.statistics['Infections-Averted']['primary-percent'] = stats.statistics['Infections-Averted']['hvl-primary'] / self.status_quo_stats.statistics['Infections']['hvl-primary']
+                        stats.median['Infections-Averted']['primary-percent'], median_position = self.wquantile(stats.percentage_diff['Infections-Averted'][stat], weights, 0.5)
+                        stats.lower_quartile['Infections-Averted']['primary-percent'], q1_position = self.wquantile(stats.percentage_diff['Infections-Averted'][stat], weights, 0.25)
+                        stats.upper_quartile['Infections-Averted']['primary-percent'], q3_position = self.wquantile(stats.percentage_diff['Infections-Averted'][stat], weights, 0.75)
                     elif stat == 'total':
-                        stats.statistics['Averted']['total-percent'] = stats.statistics['Averted']['total'] / self.status_quo_stats.statistics['Infections']['total']
-                        stats.median['Averted']['total-percent'], median_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.5)
-                        stats.lower_quartile['Averted']['total-percent'], q1_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.25)
-                        stats.upper_quartile['Averted']['total-percent'], q3_position = self.wquantile(stats.percentage_diff['Averted'][stat], weights, 0.75)
+                        stats.statistics['Infections-Averted']['total-percent'] = stats.statistics['Infections-Averted']['total'] / self.status_quo_stats.statistics['Infections']['total']
+                        stats.median['Infections-Averted']['total-percent'], median_position = self.wquantile(stats.percentage_diff['Infections-Averted'][stat], weights, 0.5)
+                        stats.lower_quartile['Infections-Averted']['total-percent'], q1_position = self.wquantile(stats.percentage_diff['Infections-Averted'][stat], weights, 0.25)
+                        stats.upper_quartile['Infections-Averted']['total-percent'], q3_position = self.wquantile(stats.percentage_diff['Infections-Averted'][stat], weights, 0.75)
                 except ValueError as e:
-                    print ("Couldn't calculate Averted Infections for runset {}. The skipped runs are {}, the processed ones {}, the length of the Infections array is {}.".format(run_set.name, len(skipped_runs), len(processed_runs), len(stats.series['Infections'][stat])), file = sys.stderr)
+                    print ("Couldn't calculate Averted Infections for runset {}. The skipped runs are {}, the processed ones {}, the length of the Infections array is {}.". \
+                          format(run_set.name, len(skipped_runs), len(processed_runs), len(stats.series['Infections'][stat])), file = sys.stderr)
                     print (e)
+ 
+            for stat in stats.statistics['Deaths-Averted']:
+                try:
+                    if stat == 'total':
+                        stats.differences['Deaths-Averted'][stat] = numpy.asarray(self.status_quo_stats.series['Deaths-Averted'][stat]) - numpy.asarray(stats.series['Deaths-Averted'][stat])
+                        stats.percentage_diff['Deaths-Averted'][stat] = stats.differences['Deaths-Averted'][stat] / self.status_quo_stats.series['Deaths-Averted'][stat]
+ 
+                        stats.statistics['Deaths-Averted']['averted'] = numpy.average(stats.differences['Deaths-Averted'][stat], weights=weights)
+                        stats.median['Deaths-Averted']['averted'], median_position = self.wquantile(stats.differences['Deaths-Averted'][stat], weights, 0.5)
+                        stats.lower_quartile['Deaths-Averted']['averted'], q1_position = self.wquantile(stats.differences['Deaths-Averted'][stat], weights, 0.25)
+                        stats.upper_quartile['Deaths-Averted']['averted'], q3_position = self.wquantile(stats.differences['Deaths-Averted'][stat], weights, 0.75)
+
+                        stats.statistics['Deaths-Averted']['total-percent'] = stats.statistics['Deaths-Averted']['averted'] / self.status_quo_stats.statistics['Deaths-Averted'][stat]
+                        stats.median['Deaths-Averted']['total-percent'], median_position = self.wquantile(stats.percentage_diff['Deaths-Averted'][stat], weights, 0.5)
+                        stats.lower_quartile['Deaths-Averted']['total-percent'], q1_position = self.wquantile(stats.percentage_diff['Deaths-Averted'][stat], weights, 0.25)
+                        stats.upper_quartile['Deaths-Averted']['total-percent'], q3_position = self.wquantile(stats.percentage_diff['Deaths-Averted'][stat], weights, 0.75)
+                except ValueError as e:
+                    print ("Couldn't calculate Averted Deaths runset {}. The skipped runs are {}, the processed ones {}, the length of the Deaths array is {}.".format \
+                           (run_set.name, len(skipped_runs), len(processed_runs), len(stats.series['Deaths-Averted'][stat])), file = sys.stderr)
+                    print (e)
+ 
+            for stat in stats.statistics['LMs-Discounted']:
+                try:
+                    if stat == 'total':
+                        stats.differences['LMs-Discounted'][stat] = numpy.asarray(stats.series['LMs-Discounted'][stat]) - numpy.asarray(self.status_quo_stats.series['LMs-Discounted'][stat])
+                        stats.percentage_diff['LMs-Discounted'][stat] = stats.differences['LMs-Discounted'][stat] / self.status_quo_stats.series['LMs-Discounted'][stat]
+
+                        stats.statistics['LMs-Discounted']['saved'] = numpy.average(stats.differences['LMs-Discounted'][stat], weights=weights)
+                        stats.median['LMs-Discounted']['saved'], median_position = self.wquantile(stats.differences['LMs-Discounted'][stat], weights, 0.5)
+                        stats.lower_quartile['LMs-Discounted']['saved'], q1_position = self.wquantile(stats.differences['LMs-Discounted'][stat], weights, 0.25)
+                        stats.upper_quartile['LMs-Discounted']['saved'], q3_position = self.wquantile(stats.differences['LMs-Discounted'][stat], weights, 0.75)
+
+                        stats.statistics['LMs-Discounted']['saved-percent'] = stats.statistics['LMs-Discounted']['saved'] / self.status_quo_stats.statistics['LMs-Discounted'][stat]
+                        stats.median['LMs-Discounted']['saved-percent'], median_position = self.wquantile(stats.percentage_diff['LMs-Discounted'][stat], weights, 0.5)
+                        stats.lower_quartile['LMs-Discounted']['saved-percent'], q1_position = self.wquantile(stats.percentage_diff['LMs-Discounted'][stat], weights, 0.25)
+                        stats.upper_quartile['LMs-Discounted']['saved-percent'], q3_position = self.wquantile(stats.percentage_diff['LMs-Discounted'][stat], weights, 0.75)
+                except ValueError as e:
+                    print ("Couldn't calculate LMs Discounted for runset {}. The skipped runs are {}, the processed ones {}, the length of the LMs array is {}.". \
+                          format(run_set.name, len(skipped_runs), len(processed_runs), len(stats.series['LMs-Discounted'][stat])), file = sys.stderr)
+                    print (e)
+
+            for stat in stats.statistics['LMs-Undiscounted']:
+                try:
+                    if stat == 'total':
+                        stats.differences['LMs-Undiscounted'][stat] = numpy.asarray(stats.series['LMs-Undiscounted'][stat]) - numpy.asarray(self.status_quo_stats.series['LMs-Undiscounted'][stat])
+                        stats.percentage_diff['LMs-Undiscounted'][stat] = stats.differences['LMs-Undiscounted'][stat] / self.status_quo_stats.series['LMs-Undiscounted'][stat]
+
+                        stats.statistics['LMs-Undiscounted']['saved'] = numpy.average(stats.differences['LMs-Undiscounted'][stat], weights=weights)
+                        stats.median['LMs-Undiscounted']['saved'], median_position = self.wquantile(stats.differences['LMs-Undiscounted'][stat], weights, 0.5)
+                        stats.lower_quartile['LMs-Undiscounted']['saved'], q1_position = self.wquantile(stats.differences['LMs-Undiscounted'][stat], weights, 0.25)
+                        stats.upper_quartile['LMs-Undiscounted']['saved'], q3_position = self.wquantile(stats.differences['LMs-Undiscounted'][stat], weights, 0.75)
+
+                        stats.statistics['LMs-Undiscounted']['saved-percent'] = stats.statistics['LMs-Undiscounted']['saved'] / self.status_quo_stats.statistics['LMs-Undiscounted'][stat]
+                        stats.median['LMs-Undiscounted']['saved-percent'], median_position = self.wquantile(stats.percentage_diff['LMs-Undiscounted'][stat], weights, 0.5)
+                        stats.lower_quartile['LMs-Undiscounted']['saved-percent'], q1_position = self.wquantile(stats.percentage_diff['LMs-Undiscounted'][stat], weights, 0.25)
+                        stats.upper_quartile['LMs-Undiscounted']['saved-percent'], q3_position = self.wquantile(stats.percentage_diff['LMs-Undiscounted'][stat], weights, 0.75)
+                except ValueError as e:
+                    print ("Couldn't calculate LMs-Undiscounted for runset {}. The skipped runs are {}, the processed ones {}, the length of the LMs array is {}.". \
+                          format(run_set.name, len(skipped_runs), len(processed_runs), len(stats.series['LMs-Undiscounted'][stat])), file = sys.stderr)
+                    print (e)
+
         return stats, processed_runs, skipped_runs
 
     def apply_formatting(self, wb):
@@ -1110,7 +1313,7 @@ class Summary:
             if page not in self.yearly_outputs:
                 self.pages[page].column_width('A', 25)
 
-            if page in ['Infections', 'Averted']:
+            if page in ['Infections', 'Infections-Averted', 'Deaths-Averted']:
                 self.pages[page].row_height(1, 60)
                 self.pages[page].row_height(2, 60)
                 self.pages[page].merge('A1:A2')
@@ -1137,10 +1340,11 @@ class Summary:
                 for tab in self.yearly_outputs:
                     self.pages[tab].ws.cell(column=1,row=row).value = year
 
-            last_row = 2 + max_year + 1 -1990
+            last_row = 2 + max_year + 1 - 1990
             cell_value =  "{} to {}".format(self.comparison_base_year, max_year)
-            for tab in self.yearly_outputs:
-                self.pages['Prevalence'].ws.cell(column=1,row=last_row).value = cell_value
+            for page in self.yearly_outputs:
+                self.pages[page].ws.cell(column=1,row=last_row).value = cell_value
+                self.pages[page].ws.cell(column=1,row=last_row+1).value = cell_value + '%' 
 
     def summarise(self, out_filename, excludes):
         out_filename = os.path.normpath(out_filename)
@@ -1188,7 +1392,7 @@ class Summary:
                 found_directories[0], found_directories[index_SQ] = found_directories[index_SQ], found_directories[0]
 
         for run_set_directory in found_directories:
-            run_set = RunSet(run_set_directory, self.full_output, self.full_health_state_outputs)
+            run_set = RunSet(run_set_directory, self.full_output, self.percent_output, self.full_health_state_outputs)
 
             if run_set.name in excludes and run_set.name != self.status_quo:
                 print('{} is an excluded set, skipping...'.format(run_set.name), file = sys.stderr)
@@ -1200,13 +1404,13 @@ class Summary:
             stats, processed_runs, skipped_runs = self.calculate_stats(run_set)
 
             for page_name, header in self.headers:
-                if page_name == 'Averted' and self.status_quo_found != 1:
+                if 'Averted' in page_name and self.status_quo_found != 1:
                     continue
 
                 number_format = '#,0.00'
                 if 'Cost' in page_name:
                     number_format = '$#,0.00'
-                elif page_name in ['Incidence', 'Prevalence']:
+                elif page_name in infection_outputs:
                     number_format = '0.000000'
                 elif page_name in self.full_health_state_outputs and \
                      page_name not in health_state_outputs:
@@ -1225,20 +1429,9 @@ class Summary:
                                                stats.upper_quartile[page_name],
                                                number_format)
 
-                #if page_name == 'Averted':
-                #    self.pages[page_name].add_data('Q1 ' + run_set.name,
-                # stats.lower_quartile[page_name], number_format)
-                #    self.pages[page_name].add_data('MED ' + run_set.name,
-                # stats.median[page_name], number_format)
-                #    self.pages[page_name].add_data('Q3 ' + run_set.name,
-                # stats.upper_quartile[page_name], number_format)
-
             # If this is true at this point it means we have missing runs
             missing_runs_names = set()
             if self.num_runs != (len(processed_runs) + len(skipped_runs)):
-            #    self.pages['Missing Runs'].add_data("{} ({})".format(run_set.name,
-            #              self.num_runs - len(processed_runs)),
-            #              list(set(self.weights.keys()) - processed_runs))
                 run_set.is_sane = False
                 processed_runs_names = set()
                 skipped_runs_names = set()
@@ -1325,32 +1518,41 @@ class Summary:
         if len(self.skipped_run_set) > 0:
             print ("For details on skipped run sets check {}.\n".format(logname))
 
-def run(end_year, directory, post_calib, out, full_output):
-    weight = float(0.9) # Weight cutoff for the calibration file
-    year_range = (2014, end_year) # Years of interest for our analysis
-    # base year for computing the differences to rank in  quartiles
-    year_comparison = 2014
-    # run sets to be excluded from our analysis (useful on very large folders)
-    excludes = ["85PerSudDecBef2016_50K", "3PerIncBef2016_50K"]
-    status_quo = "" #"BaseCase_50K"
+def run(args):
+    percent_output = True
+    if args.whole:
+        percent_output = False
 
-    Summary(directory, post_calib, full_output, weight, year_range, year_comparison, \
-            status_quo).summarise(out, excludes)
+	# years of interest for the analysis
+    year_range = (args.start_year, args.end_year)
+    # base year for computing the differences to rank in quartiles
+    year_comparison = int(args.start_year)
+
+    # run sets to be excluded from our analysis (useful on very large folders)
+    excludes = [args.exclude]
+
+    Summary(args.directory, args.post_calib, args.full, percent_output, \
+            args.weight, year_range, year_comparison, args.status_quo).summarise(args.out, excludes)
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 5:
-        print ("usage: analyse_batches.py end_year target_dir post_calib_file "\
-               "output_file <full_output>", file = sys.stderr)
-        exit(1)
+    #Parse arguments from the command line
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--full', action='store_true', default=False, \
+                        help='Output the full cascade in individual tabs')
+    parser.add_argument('--whole', action='store_true', \
+                        help='Output cascade as whole number values')
+    parser.add_argument('-w', '--weight', action='store', type=float, default=0.9, \
+                        help='Weight cutoff from the calibration file')
+    parser.add_argument('-q', '--status_quo', action='store', default='', \
+                        help='Name of the Status Quo run set')
+    parser.add_argument('-x', '--exclude', nargs='*', action='store', default='', \
+                        help='Run sets to exclude from the analysis')
+    parser.add_argument('start_year', action='store', type=int, help='Start analysis in this year')
+    parser.add_argument('end_year', action='store', type=int, help='Analyse until this last year')
+    parser.add_argument('directory', action='store', help='Target directory to analyse')
+    parser.add_argument('post_calib', action='store', help='The post calibration file')
+    parser.add_argument('out', action='store', help='Name of the output file')
+    args = parser.parse_args()
 
-    end_year = int(sys.argv[1])
-    directory = sys.argv[2]
-    post_calib = sys.argv[3]
-    out = sys.argv[4]
-
-    full_output = False
-    if (len(sys.argv) == 6):
-        full_output = bool(sys.argv[5])
-
-    run(end_year, directory, post_calib, out, full_output)
+    run(args)
