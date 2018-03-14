@@ -130,7 +130,7 @@ public:
 
     int rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType);
 
-	void Circumcise();
+    void Circumcise();
 
 	void rerollRiskGroup(EventParams &_eventParams);
 

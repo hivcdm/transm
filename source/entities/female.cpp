@@ -53,7 +53,7 @@ void Female::SetAcquisitionRatePerMonth(RiskLevel, SexualPartnership::Type, LogN
 
 void Female::Circumcise()
 {
-
+    throw std::runtime_error("not implemented for women");
 }
 
 double Female::rollForAgeDifference(SexualPartnership::Type /*_partnershipType*/, RandomNumberGenerator &/*_randomNums*/)

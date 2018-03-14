@@ -45,15 +45,24 @@ void Population::Circumcise(double proportion)
     if(people.empty())
 	return;
 
-    int numberToCircumcise = (int)(proportion * GetSize(DemographicProfile::Gender::Male));
-    for (int i = 0; i < numberToCircumcise; i++) {
-	Circumcise(people.at(i));
+    int males = GetSize(DemographicProfile::Gender::Male);
+    int numCircumcised = males - people.size();
+    double proportionCircumcised = (double) numCircumcised / (double)males;
+    int numberToCircumcise = (int)((proportion - proportionCircumcised) * males);
+
+    assert(numberToCircumcise > 0);
+    
+    for (Entity *p : people) {
+    	Circumcise(p);
+	numberToCircumcise--;
+	if (numberToCircumcise == 0)
+	    break;
     }
 }
 
 void Population::Circumcise(Entity *p)
 {
-    if(!p->IsCircumcised())
+    if (!p->IsCircumcised())
     {
 	double discount = 1.0;
 	if (parameters_.useRollout) {
@@ -342,6 +351,11 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 			// to be reinserted into the EntityPool once we have iterated through all buckets
 			if(p->rollForDeath(parameters_.randomNums))
 			{
+				if(parameters_.useRollout && parameters_.treatedContext &&
+				    p->isInfected() && p->isOnArt()) {
+				    populationStatistics.recordTreatmentDeath(p);
+				}
+			    
 				p_Iter = entities->removeEntityFromAll(p_Iter);
 				ProcessDeath(parameters_, p, calculateLE);
 
@@ -364,11 +378,6 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 							rolloutTreatedPool.erase(poolIterator);
 						}
 					}
-				}
-
-				if(parameters_.useRollout && parameters_.treatedContext &&
-				    p->isInfected() && p->isOnArt()) {
-				    populationStatistics.recordTreatmentDeath(p);
 				}
 
 				//removePersonFromAll returns iterator to next person in list...
@@ -481,7 +490,7 @@ std::vector<Entity *> Population::Find(std::function<bool(Entity *)> predicate)
 std::vector<Entity *> Population::FindNonCircumcised()
 {
     auto match = [&](Entity *person) {
-	return !person->IsCircumcised();
+        return person->isMale() && !person->IsCircumcised();
     };
 
     std::vector<Entity *> matches;
