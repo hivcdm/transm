@@ -666,12 +666,19 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 				//initiator only gets infected once...
 				Entity *wasInfected = (*newlyInfectedIter == person) ? infectedMe : person;
 
-                RecordInfection(wasUninfected, wasInfected, parameters_.currTime);
+				RecordInfection(wasUninfected, wasInfected, parameters_.currTime);
 
 				//Adds person to the untreated pool if using rollout
 				if(parameters_.useRollout)
 				{
 					rolloutUntreatedPool.push_back(wasUninfected);
+				}
+				if(parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
+				{
+					populationStatistics.recordIncidentInfection(parameters_, parameters_.currTime,
+					    SexualPartnership::Type(type),
+					    wasInfected,
+					    wasUninfected);
 				}
 
 				newlyInfectedIter++;
