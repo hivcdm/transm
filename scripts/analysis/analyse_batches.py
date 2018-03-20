@@ -394,6 +394,7 @@ class Run:
                 close_tag = '</{}>'.format(tag)
                 if stripped.startswith(open_tag) and stripped.endswith(close_tag):
                     duration = int(stripped[len(open_tag):-len(close_tag)])
+                    break
         #print ("The duration we found is {}".format(duration), file =sys.stderr)
         return version, duration
 
@@ -838,45 +839,50 @@ class RunSet:
         batchdirs = [i for i in subdirs if os.path.basename(i).startswith('batch')]
         if len(batchdirs) == 0:
             batchdirs = [self.directory]
+
+        files = {}
         for batchdir in batchdirs:
             for file in os.listdir(batchdir):
                 if os.path.splitext(file)[1] == '.xml':
-                    run = Run(os.path.join(batchdir, file), self.full_output, self.percent_output,
-                              self.full_health_state_outputs)
-                    zip_filename = os.path.join(batchdir, 'results.zip')
-                    zip_file = None
-                    if os.path.isfile(zip_filename):
-                        try:
-                            zip_file = zipfile.ZipFile(zip_filename)
-                        except zipfile.BadZipfile:
-                            run.is_sane = False
-                            run.state_msg = "ERROR OPENING ZIP FILE"
-                            continue
-                    try:
-                        version, duration = run.read_xml()
-                    except Exception:
-                        run.is_sane = False
-                        run.state_msg = "ERROR READING XML"
-                        continue
-                    if version not in supported_versions:
-                        self.is_sane = False
-                        self.state_msg = "WRONG XML VERSION"
-                        continue
-                    else:
-                        month_of_1990 = get_month_of_1990(run.name)
-                        # to save time -- create a file called '.skip_sanity_check'
-                        if not (os.path.isfile(".skip_sanity_check")) :
-                                run.sanity_checks(duration, year_range_max, month_of_1990, zip_file)
+                    files[file] = os.path.join(batchdir, file)
 
-                        if run.is_sane == True:
-                            run.read_results(year_range_min, year_range_max, month_of_1990, zip_file)
-                            print('\t{} Sanity checks passed, read result'.format(run.name))
+        for run_name, file in sorted(files.items()):
+            run = Run(file, self.full_output, self.percent_output, self.full_health_state_outputs)
+            #zip_filename = os.path.join(batchdir, 'results.zip')
+            zip_file = None
+            #if os.path.isfile(zip_filename):
+            #    try:
+            #        zip_file = zipfile.ZipFile(zip_filename)
+            #    except zipfile.BadZipfile:
+            #        run.is_sane = False
+            #        run.state_msg = "ERROR OPENING ZIP FILE"
+            #        continue
+            try:
+                version, duration = run.read_xml()
+            except Exception:
+                run.is_sane = False
+                run.state_msg = "ERROR READING XML"
+                continue
+            if version not in supported_versions:
+                self.is_sane = False
+                self.state_msg = "WRONG XML VERSION"
+                continue
+            else:
+                month_of_1990 = get_month_of_1990(run.name)
+                # to save time -- create a file called '.skip_sanity_check'
+                if not (os.path.isfile(".skip_sanity_check")) :
+                    run.sanity_checks(duration, year_range_max, month_of_1990, zip_file)
 
-                        else:
-                            print("\t{} Sanity checks failed: {}".format(run.name, run.state_msg),
-                                  file=sys.stderr)
+                if run.is_sane == True:
+                    run.read_results(year_range_min, year_range_max, month_of_1990, zip_file)
+                    print('\t{} Sanity checks passed, read result'.format(run.name))
 
-                    yield run
+                else:
+                    print("\t{} Sanity checks failed: {}".format(run.name, run.state_msg),
+                          file=sys.stderr)
+
+            yield run
+# enddef Run.load_runs
 
 class Summary:
     def __init__(self, directory, post_calib_filename, full_output, percent_output, \
@@ -1533,7 +1539,6 @@ def run(args):
 
     Summary(args.directory, args.post_calib, args.full, percent_output, \
             args.weight, year_range, year_comparison, args.status_quo).summarise(args.out, excludes)
-
 
 if __name__ == '__main__':
     #Parse arguments from the command line
