@@ -33,44 +33,60 @@ class FertilityRate {
 class PopulationParameters
 {
 public:
-	struct PopulationTarget
-	{
-		template<typename T>
-		using Optional = std::pair<bool, T>;
-
-		Optional<DemographicProfile> profile;
-		Optional<int> min_age;
-		Optional<int> max_age;
-		Optional<Entity::RiskLevel> risk;
-
-		bool match(const Entity *e)
-		{
-			if (profile.first && !e->getDemographicProfile()->match(profile.second))
-			{
-				return false;
-			}
-
-			if (min_age.first && e->getAge() < Age::from_months(min_age.second))
-			{
-				return false;
-			}
-
-			if (max_age.first && e->getAge() > Age::from_months(max_age.second))
-			{
-				return false;
-			}
-
-			if (risk.first && e->getRiskLevel() != risk.second)
-			{
-				return false;
-			}
-
-			return true;
-		}
-	};
 
 	PopulationParameters();
 	~PopulationParameters();
+
+    struct PopulationTarget
+    {
+	template<typename T>
+	using Optional = std::pair<bool, T>;
+
+	Optional<DemographicProfile> profile;
+	Optional<Age> min_age;
+	Optional<Age> max_age;
+	Optional<Entity::RiskLevel> risk;
+
+	bool match(const Entity *e)
+	{
+	  if (profile.first && !e->getDemographicProfile()->match(profile.second))
+	    {
+	      return false;
+	    }
+
+	  if (min_age.first && e->getAge() < min_age.second)
+	    {
+	      return false;
+	    }
+
+	  if (max_age.first && e->getAge() > max_age.second)
+	    {
+	      return false;
+	    }
+
+	  if (risk.first && e->getRiskLevel() != risk.second)
+	    {
+	      return false;
+	    }
+
+	  return true;
+	}
+
+      DemographicProfile::Gender get_gender()
+      {
+	  DemographicProfile::Gender gender = DemographicProfile::Gender::Last;
+	  if (profile.first)
+	    gender = (DemographicProfile::Gender)
+	      profile.second.get(DemographicProfile::Demographic::Gender);
+	  return gender;
+      }
+    };
+    
+    void AddInfectionTarget(const PopulationTarget &target, std::size_t number)
+    {
+	initial_infection_targets_.push_back({target, number});
+    }
+	    
 
 	bool GetUseBirthRate() { return useBirthRate; } const
 	void SetUseBirthRate(bool value) { useBirthRate = value; }
@@ -220,6 +236,11 @@ private:
     /// prevalence parameters stratified by age.
     /// </summary>
 	std::vector<AgeBucketPrevalenceInfo> initialAgeBuckets;
+
+    /// <summary>
+    /// initial infection targets
+    /// </summary>
+    std::vector<std::pair<PopulationTarget, std::size_t>> initial_infection_targets_;
 
     /// <summary>
     /// prevalence parameters stratified by age.

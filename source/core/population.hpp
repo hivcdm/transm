@@ -249,19 +249,11 @@ private:
 
 	/// <summary>
 	/// helper funtions for ApplyIncidentPrevalence()
-	/// <summary>
-	void ApplyPrevalentInfection(Entity *p);
-	void ApplyPrevalentInfections(DemographicProfile::Gender _gender,
-				      std::vector<std::array<int, 3>> bucket);
-
-	/// <summary>
-	/// helper funtions for ApplyIncidentPrevalence()
 	/// </summary>
-	void prevalentInfectionsFromCoefficients(double seedPrevalence);
-	int buildSeedList(std::vector<Entity *> &seedList, AgeBucketPrevalenceInfo seedDistribution);
+	void prevalentInfectionsFromCoefficients();
 	int infectSeedPopulation(std::vector<Entity *> seedList, std::size_t seedPopulation);
 
-	void prevalentInfectionsFromCount(DemographicProfile::Gender _gender);
+	void prevalentInfectionsFromCount();
 	void applyPrevalentInfection(Entity *p);
 	bool rollForChronicInfection(RandomNumberGenerator &_randomNums);
 
