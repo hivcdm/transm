@@ -46,12 +46,10 @@ void Population::Circumcise(double proportion)
 	return;
 
     int males = GetSize(DemographicProfile::Gender::Male);
-    int numCircumcised = males - people.size();
-    double proportionCircumcised = (double) numCircumcised / (double)males;
-    int numberToCircumcise = (int)((proportion - proportionCircumcised) * males);
+    int numberToCircumcise = Utility::round<int>(proportion * males);
 
     assert(numberToCircumcise > 0);
-    
+
     for (Entity *p : people) {
     	Circumcise(p);
 	numberToCircumcise--;

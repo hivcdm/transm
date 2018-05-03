@@ -1468,7 +1468,7 @@ void SimulationParametersXml::SetCircumciseCallback(pugi::xml_node &node,
 	        double new_value = target_value;
 		if (transform) {
 		    // increase or descrease to the target value over the duration
-		    double curr_value = (double) p.GetNumberCircumcised() /
+		    curr_value = (double) p.GetNumberCircumcised() /
 			(double) p.GetSize(DemographicProfile::Gender::Male);
 		    new_value = TransformInterventionValue(
 			target_value, curr_value, time, duration, current_time);
