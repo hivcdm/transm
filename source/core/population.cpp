@@ -3419,7 +3419,7 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, Time _time, std::
     }
 
     _outStream << num_circumcised_na << Constants::Tab;
-    _outStream << num_circumcised_sa << Constants::Tab;
+    _outStream << num_circumcised_sa;
 
 	_outStream << std::endl;
 }
