@@ -847,17 +847,19 @@ Entity *Entity::sexualActivity(Entity *_p, int _numActs,
 
 	for(int i = 0; i < _numActs; i++)
 	{
-		/** Regardless of infection, record the exposure */
-		infTrack->recordExposure(_eventParams.currTime, infected);
 		//force of infection from infected to uninfected
 		double foifPerEvent = infected->getFOI(uninfected, transmission_coefficients, _partnershipType, _eventParams);
 
-		//If a condom was used, increase the number of condoms used for each person by numActs
-		if(infected->getCondomUsedLastFOICalculation())
+		bool condomUsed = infected->getCondomUsedLastFOICalculation();
+		if(condomUsed)
 		{
+			//If a condom was used, increase the number of condoms used for each person by numActs
 			incrementCondomsUsedThisMonth(1);
 			_p->incrementCondomsUsedThisMonth(1);
 		}
+
+		/** Regardless of infection, record the exposure */
+		infTrack->recordExposure(_eventParams.currTime, infected, _partnershipType, condomUsed);
 
 		if(_eventParams.randomNums.chance(foifPerEvent))
 		{
@@ -1249,6 +1251,7 @@ void Entity::incrementNumActsThisMonth(int _numActs)
 {
 	numActsThisMonth += _numActs;
 }
+
 bool Entity::getCondomUsedLastFOICalculation()
 {
 	return condomUsedLastFOICalculation;
@@ -1267,7 +1270,7 @@ bool Entity::setFVindices(std::vector<unsigned int> FVind, FullVector *FV)
 	{
 		//Make sure all members of FVind are indices of FV pointing to this
 		bool FVmatch = true;
-		
+
 		for(auto iter = FVind.begin(); iter != FVind.end(); iter++)
 		{
 			if(FV->at(*iter)->getID() != id)

@@ -123,6 +123,14 @@ private:
     /// This includes exposures that resulted in an infection.
 	/// </summary>
 	HVLArray currTimeExposures;
+	unsigned long currTimeTotalExposures;
+	std::array<unsigned long, (std::size_t)SexualPartnership::Type::ENDType> currTimeExposuresByType;
+
+	/// <summary>
+	/// Number of times a condom was used this time step by partnership type
+	/// </summary>
+	unsigned long currTimeCondomUse;
+	std::array<unsigned long, (std::size_t)SexualPartnership::Type::ENDType> currTimeCondomUseByType;
 
 	/// <summary>
     /// A queue of the last twelve incidence rates, used to generate a yearly incidence
@@ -181,7 +189,8 @@ public :
 	/// <summary>
 	/// Records a new exposure regardless of whether an infection happened or not.
     /// </summary>
-	void recordExposure(Time time, const Entity *_infector);
+	void recordExposure(Time time, const Entity *_infector, SexualPartnership::Type partnershipType,
+	    bool condomUsed);
 
 	/**
 	records a New infection and also prints the infection out to a trace

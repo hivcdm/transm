@@ -27,13 +27,16 @@ InfectionsTracker::InfectionsTracker() :
 			}
 		}
 
-        for(int j = 0; j < 4; j++)
-        {
-            for(int k = 0; k < 4; k++)
-            {
-                incidentInfectionsByEntityType[i][j][k] = 0;
-            }
-        }
+		for(int j = 0; j < 4; j++)
+		{
+			for(int k = 0; k < 4; k++)
+			{
+				incidentInfectionsByEntityType[i][j][k] = 0;
+			}
+		}
+
+		currTimeExposuresByType[i] = 0;
+		currTimeCondomUseByType[i] = 0;
 	}
 
 	for(std::size_t i = 0; i < (std::size_t)Entity::HVLStrata::Last; ++i)
@@ -43,6 +46,7 @@ InfectionsTracker::InfectionsTracker() :
 		currTimeStepIncidentInfs[i] = 0;
 		currTimeExposures[i] = 0;
 	}
+	currTimeTotalExposures = 0;
 
     for(auto entity_type : {"male", "msmw", "msm", "female"})
     {
@@ -190,10 +194,17 @@ void InfectionsTracker::resetIncidentInfections(Time time)
         currTimeStepIncidentInfs[i] = 0;
         currTimeExposures[i] = 0;
     }
-
+    currTimeTotalExposures = 0;
     currTimeStepNumInfected = 0;
     currTimeStepCD4InfectionSum = 0;
     currTimeStepCD4InfectionSumSq = 0;
+    currTimeCondomUse = 0;
+
+    for(int i = 0; i < (int)SexualPartnership::Type::ENDType; ++i)
+    {
+	    currTimeExposuresByType[i] = 0;
+	    currTimeCondomUseByType[i] = 0;
+    }
 
     for(auto entity_type : {"male", "msmw", "msm", "female"})
     {
@@ -241,17 +252,26 @@ void InfectionsTracker::initializeIncidentInfectionsByAge(
 }
 
 // Records a new exposure regardless of whether an infection happened or not
-void InfectionsTracker::recordExposure(Time time, const Entity *_infector)
+void InfectionsTracker::recordExposure(Time time, const Entity *_infector,
+    SexualPartnership::Type partnershipType, bool condomUsed)
 {
-	// Reset counter for incident infections and exposures for current timestep 
-    // if this is the first time an InfectionsTracker function has been called.
+	// Reset counter for incident infections and exposures for current timestep
+	// if this is the first time an InfectionsTracker function has been called.
 	if(time > currTimeStep)
 	{
 		resetIncidentInfections(time);
 	}
 
-    currTimeExposures[(std::size_t)_infector->getHVL()]++;
-    totalExposures[(std::size_t)_infector->getHVL()]++;
+	currTimeExposures[(std::size_t)_infector->getHVL()]++;
+	currTimeTotalExposures++;
+	currTimeExposuresByType[(std::size_t)partnershipType]++;
+	totalExposures[(std::size_t)_infector->getHVL()]++;
+
+	if (condomUsed) {
+		currTimeCondomUse++;
+		currTimeCondomUseByType[(std::size_t)partnershipType]++;
+	}
+
 }
 
 //records a New infection and also prints the infection out to a trace
@@ -685,8 +705,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 		          "CSW Low Risk"  << Constants::Tab << Constants::Tab;
 		thirdRow << "Mean" << Constants::Tab << "SD" << Constants::Tab << "Mean" << Constants::Tab << "SD" << Constants::Tab <<
 		         "Mean" << Constants::Tab << "SD" << Constants::Tab;
-		firstRow << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
-		         Constants::Tab << Constants::Tab;
+		firstRow << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
 
         for(auto entity_type : {"Male:Hetero", "Male:Msmw", "Male:Msm", "Female"})
         {
@@ -702,7 +721,10 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
             thirdRow << "Mean" << Constants::Tab << "SD" << Constants::Tab;
         }
 
-		//write out string buffers to trace file
+	firstRow << "Total Exposures" << Constants::Tab;
+	firstRow << "Condoms Used" << Constants::Tab;
+
+		//Write out string buffers to trace file
 		_outStream << firstRow.str() << std::endl;
 		_outStream << secondRow.str() << std::endl;
 		_outStream << thirdRow.str() << std::endl;
@@ -1152,6 +1174,21 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 				_outStream << "N/A" << Constants::Tab << "N/A" << Constants::Tab;
 			}
 		}
+	}
+
+	// Sex Act and Condom Use Outputs
+	_outStream << currTimeTotalExposures << Constants::Tab;
+	_outStream << currTimeCondomUse << Constants::Tab;
+
+	for(int partnershipType = 0; partnershipType < (std::size_t)SexualPartnership::Type::ENDType; ++partnershipType)
+	{
+		auto exposures =  currTimeExposuresByType[partnershipType];
+		auto condoms_used = currTimeCondomUseByType[partnershipType];
+
+		if (exposures > 0)
+			_outStream << (double)condoms_used / (double)exposures <<  Constants::Tab;
+		else
+			_outStream << 0 << Constants::Tab;
 	}
 
 	_outStream << std::endl;
