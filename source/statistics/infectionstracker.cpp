@@ -690,22 +690,27 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
             secondRow << Constants::Tab;
             thirdRow << "Non-CSW Low Risk " << entity_type << Constants::Tab;
         }
-		firstRow << Constants::Tab;
-		secondRow << Constants::Tab;
-		thirdRow << Constants::Tab;
+
+	firstRow << Constants::Tab;
+	secondRow << Constants::Tab;
+	thirdRow << Constants::Tab;
+
         firstRow << "Age at Infection" << Constants::Tab;
         for(auto entity_type : {"Male:Hetero", "Male:Msmw", "Male:Msm", "Female"})
         {
             firstRow << Constants::Tab << Constants::Tab;
+	    secondRow << entity_type << Constants::Tab << Constants::Tab;
             thirdRow << "Mean" << Constants::Tab << "SD" << Constants::Tab;
-            secondRow << entity_type << Constants::Tab << Constants::Tab;
         }
        
-		secondRow << "CSW" << Constants::Tab << Constants::Tab << "CSW High Risk" << Constants::Tab << Constants::Tab <<
-		          "CSW Low Risk"  << Constants::Tab << Constants::Tab;
-		thirdRow << "Mean" << Constants::Tab << "SD" << Constants::Tab << "Mean" << Constants::Tab << "SD" << Constants::Tab <<
-		         "Mean" << Constants::Tab << "SD" << Constants::Tab;
-		firstRow << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
+	secondRow << "CSW" << Constants::Tab << Constants::Tab <<
+	    "CSW High Risk" << Constants::Tab << Constants::Tab <<
+	    "CSW Low Risk"  << Constants::Tab << Constants::Tab;
+	thirdRow << "Mean" << Constants::Tab << "SD" << Constants::Tab <<
+	    "Mean" << Constants::Tab << "SD" << Constants::Tab <<
+	    "Mean" << Constants::Tab << "SD" << Constants::Tab;
+	firstRow << Constants::Tab << Constants::Tab << Constants::Tab <<
+	    Constants::Tab << Constants::Tab;
 
         for(auto entity_type : {"Male:Hetero", "Male:Msmw", "Male:Msm", "Female"})
         {
@@ -721,13 +726,26 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
             thirdRow << "Mean" << Constants::Tab << "SD" << Constants::Tab;
         }
 
-	firstRow << "Total Exposures" << Constants::Tab;
-	firstRow << "Condoms Used" << Constants::Tab;
+	firstRow << "Condom Use" << Constants::Tab << Constants::Tab;;
+	secondRow << Constants::Tab << Constants::Tab;
+	thirdRow << "Total Exposures" << Constants::Tab;
+	thirdRow << "Total Condoms Used" << Constants::Tab;
 
-		//Write out string buffers to trace file
-		_outStream << firstRow.str() << std::endl;
-		_outStream << secondRow.str() << std::endl;
-		_outStream << thirdRow.str() << std::endl;
+	secondRow << "Condom Use Per Event By Partnership Type";
+
+        for(auto header : {"Steady:Hetero", "Regular:Hetero", "Casual:Hetero", "CSW:Hetero",
+		    "Steady:MSM", "Regular:MSM", "Casual:MSM", "CSW:MSM"})
+	{
+	    firstRow << Constants::Tab;
+	    secondRow << Constants::Tab;
+	    thirdRow << header << Constants::Tab;	    
+	}
+
+	//Write out string buffers to trace file
+	_outStream << firstRow.str() << std::endl;
+	_outStream << secondRow.str() << std::endl;
+	_outStream << thirdRow.str() << std::endl;
+
 	}
 
 	//if no incident infections happened during this time, then make sure that we have 0 in the currTime incident infections and exposures
