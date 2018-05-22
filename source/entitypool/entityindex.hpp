@@ -138,7 +138,7 @@ public:
 		~JavaStyleIterator();
 	};
 
-    using JIterator = auto_ptr<JavaStyleIterator>;
+    using JIterator = unique_ptr<JavaStyleIterator>;
 
 	//returns a EntityIndex<_PSC,_KeyValType>::JIterator
 	typename EntityIndex<_PSC, _KeyValType>::JIterator iterator();
