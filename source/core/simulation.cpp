@@ -472,7 +472,9 @@ void Simulation::Step()
         population_.populationStatistics.costsTracker.PrintCosts(parameters_.currTime, parameters_.trace_files[EventParams::TraceFile::Type::CostEffectiveness].file);
 	}
 
-	if(parameters_.calibrationInputs.useCalibration && parameters_.calibrationInputs.monthOfCalibration == time_)
+    if(parameters_.calibrationInputs.useCalibration)
+    {
+	if (parameters_.calibrationInputs.monthOfCalibration == time_)
 	{
 		passedCalibration_ = population_.PassesPartnershipCalibration(parameters_);
 		string passedCalibrationString = (passedCalibration_ == true ? "true" : "false");
@@ -485,19 +487,21 @@ void Simulation::Step()
 		}
 	}
 
-	if(parameters_.calibrationInputs.useCalibration)
+	std::map<Time, std::pair<double,double>>::iterator incidenceRange;
+	incidenceRange = parameters_.calibrationInputs.yearlyIncidenceRanges.find(time_);
+	if (incidenceRange != parameters_.calibrationInputs.yearlyIncidenceRanges.end())
 	{
-		if(!hasPassedFirstMonthCalibPrev_)
-		{
-            double SAPrev = population_.populationStatistics.infectionsTracker.getSAPrev(population_);
+		double incidence = population_.populationStatistics.infectionsTracker.calculateAnnualIncidence();
 
-			if(SAPrev != -1 && SAPrev >= parameters_.calibrationInputs.thresholdPrevMult * parameters_.calibrationInputs.calendarPrevs[0])
-			{
-				hasPassedFirstMonthCalibPrev_ = true;
-				monthOfFirstMonthCalibPrev_ = parameters_.currTime;
-			}
+		std::pair<double,double> range = incidenceRange->second;
+		if (incidence < range.first || incidence > range.second)
+		{
+			std::cerr << "INCIDENCE CALIBRATION FAILED at time: " << time_.in_months() << endl;
+			passedCalibration_ = false;
+			return;
 		}
 	}
+    }
 
 	population_.ResetMonthlyStats();
 

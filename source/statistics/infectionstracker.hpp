@@ -119,7 +119,7 @@ private:
     std::array<std::size_t, (std::size_t)Entity::RiskLevel::Last> totalIncidentInfsRisk;
 
     /// <summary>
-	/// Exposures in the current time step, stratified by HVL of the infector. 
+	/// Exposures in the current time step, stratified by HVL of the infector.
     /// This includes exposures that resulted in an infection.
 	/// </summary>
 	HVLArray currTimeExposures;
@@ -136,11 +136,6 @@ private:
     /// A queue of the last twelve incidence rates, used to generate a yearly incidence
     /// </summary>
 	std::deque<double> lastTwelveIncidenceRates;
-
-    /// <summary>
-	/// Calculates the current annual incidence based on the sum of the last twelve monthly incidence rates
-    /// </summary>
-	double calculateAnnualIncidence();
 
     /// <summary>
 	/// keeps track of infections that happened as a result of sexual activity-
@@ -185,6 +180,11 @@ public :
 
 	//returns the prevalence rate among sexually active pop
 	double getSAPrev(Population &_population);
+
+    /// <summary>
+	/// Calculates the current annual incidence based on the sum of the last twelve monthly incidence rates
+    /// </summary>
+	double calculateAnnualIncidence();
 
 	/// <summary>
 	/// Records a new exposure regardless of whether an infection happened or not.

@@ -126,9 +126,8 @@ public:
     double femalePropInConcurrentRatio;
     double femaleNumActsLRtoHRRatio;
 
-    //The calendar prevalence values
-    double calendarPrevs[Constants::NumberCalibrationPrevs];
-    double thresholdPrevMult;
+    // List of incidence rannge to test at each year
+    std::map<Time, std::pair<double,double>> yearlyIncidenceRanges;
 };
 
 struct InterventionParameters
