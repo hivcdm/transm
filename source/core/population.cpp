@@ -671,13 +671,9 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 				{
 					rolloutUntreatedPool.push_back(wasUninfected);
 				}
-				if(parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
-				{
-					populationStatistics.recordIncidentInfection(parameters_, parameters_.currTime,
-					    SexualPartnership::Type(type),
-					    wasInfected,
-					    wasUninfected);
-				}
+
+				populationStatistics.recordIncidentInfection(parameters_, parameters_.currTime,
+				    SexualPartnership::Type(type), wasInfected, wasUninfected);
 
 				newlyInfectedIter++;
 			}
