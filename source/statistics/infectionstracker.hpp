@@ -133,9 +133,10 @@ private:
 	std::array<unsigned long, (std::size_t)SexualPartnership::Type::ENDType> currTimeCondomUseByType;
 
 	/// <summary>
-    /// A queue of the last twelve incidence rates, used to generate a yearly incidence
-    /// </summary>
-	std::deque<double> lastTwelveIncidenceRates;
+	/// A queue of the last twelve incidence rates, used to generate a yearly incidence
+	/// </summary>
+	std::deque<double> lastTwelvePopIncidenceRates;
+	std::deque<double> lastTwelveSAPopIncidenceRates;
 
     /// <summary>
 	/// keeps track of infections that happened as a result of sexual activity-
@@ -181,10 +182,11 @@ public :
 	//returns the prevalence rate among sexually active pop
 	double getSAPrev(Population &_population);
 
-    /// <summary>
-	/// Calculates the current annual incidence based on the sum of the last twelve monthly incidence rates
-    /// </summary>
-	double calculateAnnualIncidence();
+	// returns the annual incidence rate for the population
+	double getPopAnnualIncidence();
+
+	// returns the annual incidence rate for the sexually active population
+	double getSAPopAnnualIncidence();
 
 	/// <summary>
 	/// Records a new exposure regardless of whether an infection happened or not.
@@ -233,6 +235,11 @@ public :
     /// current timestep.
     /// </summary>
     std::size_t getCurrTimeStepIncidentInfsTotal();
+
+    /// <summary>
+	/// Calculates the current annual incidence based on the sum of the last twelve monthly incidence rates
+    /// </summary>
+	double calculateAnnualIncidence(std::deque<double> lastTwelveIncidenceRates);
 };
 
 } // namespace transm

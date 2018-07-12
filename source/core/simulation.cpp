@@ -491,19 +491,25 @@ void Simulation::Step()
 	incidenceRange = parameters_.calibrationInputs.yearlyIncidenceRanges.find(time_);
 	if (incidenceRange != parameters_.calibrationInputs.yearlyIncidenceRanges.end())
 	{
-		double incidence = population_.populationStatistics.infectionsTracker.calculateAnnualIncidence();
+		double incidence = population_.populationStatistics.infectionsTracker.getPopAnnualIncidence();
 
 		std::pair<double,double> range = incidenceRange->second;
 		if (incidence < range.first || incidence > range.second)
 		{
-			std::cerr << "INCIDENCE CALIBRATION FAILED at time: " << time_.in_months() << endl;
+			std::cerr << "INCIDENCE CALIBRATION FAILED at time: "
+				  << time_.in_months() << " " << incidence << endl;
 			passedCalibration_ = false;
 			return;
+		}
+		else
+		{
+			std::cerr << "INCIDENCE CALIBRATION PASSED at time: "
+				  << time_.in_months() << " " << incidence << endl;
 		}
 	}
     }
 
-	population_.ResetMonthlyStats();
+    population_.ResetMonthlyStats();
 
     if(time_ > Time(0, 5))
     {

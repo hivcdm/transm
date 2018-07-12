@@ -8,8 +8,9 @@
 
 namespace transm {
 
-InfectionsTracker::InfectionsTracker() : 
-  lastTwelveIncidenceRates(12, 0.0)
+InfectionsTracker::InfectionsTracker() :
+	lastTwelvePopIncidenceRates(12, 0.0),
+	lastTwelveSAPopIncidenceRates(12, 0.0)
 {
 	//zero out all infection tallies
 	for(int i = 0; i < (int)SexualPartnership::Type::ENDType; ++i)
@@ -60,9 +61,9 @@ InfectionsTracker::InfectionsTracker() :
         }
     }
 
-	currTimeStepNumInfected = 0;
-	currTimeStepCD4InfectionSum = 0;
-	currTimeStepCD4InfectionSumSq = 0;
+    currTimeStepNumInfected = 0;
+    currTimeStepCD4InfectionSum = 0;
+    currTimeStepCD4InfectionSumSq = 0;
 
     for(auto entity_type : {"male", "msmw", "msm", "female"})
     {
@@ -104,7 +105,17 @@ std::size_t InfectionsTracker::getCurrTimeStepIncidentInfsTotal()
 	return infections;
 }
 
-double InfectionsTracker::calculateAnnualIncidence()
+double InfectionsTracker::getPopAnnualIncidence()
+{
+	return calculateAnnualIncidence(lastTwelvePopIncidenceRates);
+}
+
+double InfectionsTracker::getSAPopAnnualIncidence()
+{
+	return calculateAnnualIncidence(lastTwelveSAPopIncidenceRates);
+}
+
+double InfectionsTracker::calculateAnnualIncidence(std::deque<double> lastTwelveIncidenceRates)
 {
 	assert(lastTwelveIncidenceRates.size() == 12);
 	deque<double>::iterator it;
@@ -124,7 +135,7 @@ void InfectionsTracker::addToDetailedTrace(DemographicProfile::ProfileID _profil
 }
 
 unsigned int InfectionsTracker::getCurrTimeStepNumInfected()
-{ 
+{
  	return InfectionsTracker::currTimeStepNumInfected;
 }
 
@@ -413,10 +424,10 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 	//total # infections this month
 	std::size_t totalInfected = 0;
 	//current population size
-    std::size_t currPopSize = _population->GetSize();
-    std::size_t currSAPopSize = currPopSize - _population->GetNASize();
+	std::size_t currPopSize = _population->GetSize();
+	std::size_t currSAPopSize = currPopSize - _population->GetNASize();
 	//total # of age ranges to print out
-    auto currSizeByAgeRange = _population->GetAgeRanges();
+	auto currSizeByAgeRange = _population->GetAgeRanges();
 	auto numAgeRanges = currSizeByAgeRange.size();
 
 	//write headers for infections sheet
@@ -446,10 +457,17 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 		thirdRow << "Prevalence" << Constants::Tab;
 		firstRow << Constants::Tab;
 		secondRow << Constants::Tab;
+		thirdRow << "Past-Year Pop Incidence" << Constants::Tab;
+		firstRow << Constants::Tab;
+		secondRow << Constants::Tab;
 		thirdRow << "SA Pop Size" << Constants::Tab;
 		firstRow << Constants::Tab;
 		secondRow << Constants::Tab;
 		thirdRow << "SA Prevalence" << Constants::Tab;
+		firstRow << Constants::Tab;
+		secondRow << Constants::Tab;
+		thirdRow << "Past-Year SAPop Incidence" << Constants::Tab;
+
 		//write out headers for population by age\sexual activity
 		firstRow << "Prevalent Cases" << Constants::Tab;
 		secondRow << "Non-Sexually Active Population" << Constants::Tab;
@@ -702,7 +720,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 	    secondRow << entity_type << Constants::Tab << Constants::Tab;
             thirdRow << "Mean" << Constants::Tab << "SD" << Constants::Tab;
         }
-       
+
 	secondRow << "CSW" << Constants::Tab << Constants::Tab <<
 	    "CSW High Risk" << Constants::Tab << Constants::Tab <<
 	    "CSW Low Risk"  << Constants::Tab << Constants::Tab;
@@ -738,7 +756,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 	{
 	    firstRow << Constants::Tab;
 	    secondRow << Constants::Tab;
-	    thirdRow << header << Constants::Tab;	    
+	    thirdRow << header << Constants::Tab;
 	}
 
 	//Write out string buffers to trace file
@@ -766,7 +784,11 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 	}
 
 	//New Infections
-	_outStream << getCurrTimeStepIncidentInfsTotal() << Constants::Tab;
+	std::size_t newInfections = getCurrTimeStepIncidentInfsTotal();
+	_outStream << newInfections << Constants::Tab;
+
+	//Total Infected in History
+	_outStream << getNumIncidentInfections() << Constants::Tab;
 
 	//Currently Infected
 	//total the current infections
@@ -777,36 +799,32 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 			totalInfected += currPrevalentInfections[j][i];
 		}
 	}
-
-	double monthlyIncidence = 1.0 * (getCurrTimeStepIncidentInfsTotal()) /
-	  ((double)(currPopSize - totalInfected));
-	//Push the monthly incidence onto the deque
-	lastTwelveIncidenceRates.push_back(monthlyIncidence);
-	//Pop off the oldest incidence rate
-	lastTwelveIncidenceRates.pop_front();
-	assert(lastTwelveIncidenceRates.size() == 12);
-
-	//Total Infected in History
-	_outStream << getNumIncidentInfections() << Constants::Tab;
-
-	//Print current infections
 	_outStream << totalInfected << Constants::Tab;
 
 	//Total Population Size
 	_outStream << currPopSize << Constants::Tab;
 
-	//current prevalence
+	//Current Population Prevalence
 	double currPrevalence = totalInfected / (double)currPopSize;
 	_outStream << currPrevalence << Constants::Tab;
 
-	//current pop and prevalence of sexually active population
-	//Need total number of infected for SA population only
+	// Calculate the past-year incidence for the TOTAL POPULATION
+	double monthlyPopIncidence = double(newInfections) / double(currPopSize - totalInfected);
+	//Push the monthly incidence onto the deque
+	lastTwelvePopIncidenceRates.push_back(monthlyPopIncidence);
+	//Pop off the oldest incidence rate
+	lastTwelvePopIncidenceRates.pop_front();
+	assert(lastTwelvePopIncidenceRates.size() == 12);
+	_outStream << calculateAnnualIncidence(lastTwelvePopIncidenceRates) << Constants::Tab;
+
+	// Current pop and prevalence of sexually active population
+	// Need total number of infected for SA population only
 	std::size_t totalInfectedSA = totalInfected;
 	DemographicProfile NAProfile;
-    NAProfile.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::NotActive);
+	NAProfile.set(DemographicProfile::Demographic::SexualActivityStatus,
+	    (std::size_t)DemographicProfile::SexualActivityStatus::NotActive);
 	std::vector<DemographicProfile::ProfileID> NAProfileIDs;
 	NAProfile.selectProfileIDs(NAProfileIDs, nullptr);
-
 	for(size_t i = 0; i < NAProfileIDs.size(); i++)
 	{
 		for(size_t j = 0; j < NUMBER_GENERATIONS_TO_TRACE; j++)
@@ -814,13 +832,21 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 			totalInfectedSA -= currPrevalentInfections[j][NAProfileIDs[i]];
 		}
 	}
-
 	double currPrevalenceSA = (totalInfectedSA) / (double)currSAPopSize;
 	_outStream << currSAPopSize << Constants::Tab;
 	_outStream << currPrevalenceSA << Constants::Tab;
 
+	// Calculate the past-year incidence for the SEXUALLY ACTIVE POPULATION
+	double monthlySAPopIncidence = double(newInfections) / double(currSAPopSize - totalInfectedSA);
+	//Push the monthly incidence onto the deque
+	lastTwelveSAPopIncidenceRates.push_back(monthlySAPopIncidence);
+	//Pop off the oldest incidence rate
+	lastTwelveSAPopIncidenceRates.pop_front();
+	_outStream << calculateAnnualIncidence(lastTwelveSAPopIncidenceRates) << Constants::Tab;
+
 	//Multiply by 100 and round to nearest integer for graphical output
 	int intPrevalence = (int)(100 * currPrevalence + 0.5);
+
 	//prev cases by age\sexual activity
 	auto totalInfectedNA = totalInfected - totalInfectedSA;
 	_outStream << totalInfectedNA << Constants::Tab;
