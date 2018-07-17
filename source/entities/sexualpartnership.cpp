@@ -9,12 +9,12 @@
 
 namespace transm {
 
-const std::map<SexualPartnership::Type, std::string> SexualPartnership::TypeStrings = 
+const std::map<SexualPartnership::Type, std::string> SexualPartnership::TypeStrings =
 {
-	{SexualPartnership::Type::Steady, "Steady"},
-	{SexualPartnership::Type::Regular, "Regular"},
-	{SexualPartnership::Type::Casual, "Casual"},
-	{SexualPartnership::Type::Csw, "Csw"},
+    {SexualPartnership::Type::Steady, "Steady"},
+    {SexualPartnership::Type::Regular, "Regular"},
+    {SexualPartnership::Type::Casual, "Casual"},
+    {SexualPartnership::Type::Csw, "Csw"},
     {SexualPartnership::Type::SteadyMsm, "SteadyMsm"},
     {SexualPartnership::Type::RegularMsm, "RegularMsm"},
     {SexualPartnership::Type::CasualMsm, "CasualMsm"},
@@ -57,17 +57,17 @@ SexualPartnership::SexualPartnership(Entity *_person1, Entity *_person2, EventPa
 
 	//set time for partnership to dissolve
 	timePartnerDissolution = _eventParams.currTime + maxDuration;
+	assert(timePartnerDissolution.in_months() >= 0);
+
 	//save the members of this partnership
 	partners[0] = _person1;
 	partners[1] = _person2;
-	//give each person pointer to this couple so that we can simulate this partnership...
-	// all partnerships are stored within the individual Person objects
-	// We have made it this way to save on the time it takes to insert and delete objects from a large set of partnerships
-	// We give a copy to both of the partners in case one of the partners dies. That way we can end all
-	//   partnerships that person was involved in
-	partners[0]->addPartnership(this);
-	partners[1]->addPartnership(this);
-	assert(timePartnerDissolution.in_months() >= 0);
+}
+
+void dissolvePartnership()
+{
+    partners[0]->dissolvePartnership();
+    partners[1]->dissolvePartnership();
 }
 
 bool SexualPartnership::checkTimeForSplit(Time current_time)

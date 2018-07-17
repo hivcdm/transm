@@ -1,4 +1,6 @@
 #include "sexualpartnership.hpp"
+#include "utility/time.hpp"
+
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/ordered_index.hpp>
@@ -12,69 +14,39 @@
 #define BOOST_MULTI_INDEX_ENABLE_SAFE_MODE
 
 namespace transm {
-	namespace bmi = boost::multi_index;
+    namespace bmi = boost::multi_index;
 
-	class PartnershipDB final {
+    class PartnershipDB final {
 
-	private:
-		struct byKey {};
-		struct byEndDate {};
-/*
-		typedef multi_index_container<
-				SexualPartnership,
-				indexed_by<
-					hashed_unique<
-						tag<
-							byKey
-						>,
-						identity<
-							SexualPartnership>
-						>
-					>,
-					indexed_by<
-						ordered_non_unique<
-							tag<
-								byEndDate
-							>,
-							boost::multi_index::mem_fun<SexualPartnership, int, &SexualPartnership::getDissolutionTime
-							>
-						>
-					>
-				>
-				multi_index_db;*/
-		/*bmi::member<
-			SexualPartnership, const int, &SexualPartnership::prova>
-			SexualPartnership, const int, &SexualPartnership::timePartnerDissolution
-			SexualPartnership, int, &SexualPartnership::getDissolutionTime
-		>*/
-		typedef bmi::multi_index_container<
-				SexualPartnership,
-					bmi::indexed_by<
-						bmi::ordered_non_unique<
-							bmi::tag<
-								byEndDate
-							>,
-							bmi::member<
-								SexualPartnership, int, &SexualPartnership::timePartnerDissolution
-							>
-						>
-					>
-				>
-				partnership_db;
+    private:
+	struct byEndDate {};
+	struct byPartnershipType {};
 
-		partnership_db db;
+	typedef bmi::multi_index_container<
+	    SexualPartnership,
+	    bmi::indexed_by<
+		// Sequence partnerships by type
+		bmi::sequenced<bmi::tag<byPartnershipType>>,
+		// Index in order by end date for quick dissolution
+		bmi::ordered_non_unique<
+		    bmi::tag<byEndDate>,
+		    bmi::mem_fun<SexualPartnership, Time, &SexualPartnership::getTimeOfDissolution>
+		    >
+	    >
+	> partnership_db;
+	partnership_db db;
 
-		// No copying allowed
-		PartnershipDB(const PartnershipDB& that);
-		PartnershipDB& operator=(const PartnershipDB& that);
+	// No copying allowed
+	PartnershipDB(const PartnershipDB& that);
+	PartnershipDB& operator=(const PartnershipDB& that);
 
-	public:
-		PartnershipDB();
-		~PartnershipDB();
-		auto add_partnership(SexualPartnership& partnership);
-		auto remove_partnership(SexualPartnership& partnership);
-		auto find(SexualPartnership& partnership);
-		auto find_expired(int time);
-	};
+    public:
+	PartnershipDB();
+	~PartnershipDB();
+	void add_partnership(SexualPartnership& partnership);
+	void remove_partnership(SexualPartnership& partnership);
+	auto find(SexualPartnership& partnership);
+	auto find_expired(int time);
+    };
 
 } /* namespace transm */

@@ -11,6 +11,7 @@
 #include "entities/female.hpp"
 #include "entities/male.hpp"
 #include "entities/entity.hpp"
+#include "entities/partnershipdb.hpp"
 #include "entitypool/entitypool.hpp"
 #include "parameters/populationparameters.hpp"
 #include "parameters/agebucketprevalenceinfo.hpp"
@@ -133,6 +134,8 @@ public:
     /// </summary>
 	void UpdatePartnerships(EventParams &_eventParams);
 
+    void DissolvePartnerships();
+
     /// <summary>
     /// counts the total size of the population and updates internal state
     /// </summary>
@@ -217,9 +220,13 @@ private:
     friend class SimulationBuilderXml;
     friend class Simulation;
 
+    PartnershipDB partnershipDB;
+
 	/// <summary>
-	/// forms creates partnerships of a particular type for 1 person. Will make sure that each partner is in the correct BucketDemographicProfile
-	/// if _partnershipType == STEADY, then this will remove the partner from the EntityIndex (as they are now NOT_SINGLE)
+	/// Creates partnerships of a particular type for 1 person.
+	/// Will make sure that each partner is in the correct BucketDemographicProfile.
+	/// if _partnershipType == STEADY,
+	/// then this will remove the partner from the EntityIndex (as they are now NOT_SINGLE)
     /// </summary>
     /// <remarks>
 	/// @param _eventParams

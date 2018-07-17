@@ -137,6 +137,8 @@ public :
 	{
 		return timePartnerDissolution;
 	}
+
+	void dissolvePartnership();
 };
 
 } // namespace transm

@@ -577,6 +577,8 @@ public:
 	// if this partnership is STEADY, then will change RelationshipStatus
 	void addPartnership(SexualPartnership *_partnership);
 
+	void dissolvePartnership();
+
 	//returns true if this person is available for steady partnership
 	// however, this does not change the person's DemographicProfile value that corresponds to DemographicProfile::Demographic::RelationshipStatus
 	bool availableForPartnership(SexualPartnership::Type _partnershipType) const;

@@ -504,6 +504,65 @@ void Population::RegisterIntervention(const Intervention &intervention)
     interventions_.push_back(intervention);
 }
 
+void Population::DissolvePartnerships()
+{
+    //iterate through all males
+    std::list<Entity *>::iterator p_Iter;
+
+    //Iterate twice...
+    //First pass: Dissolve ended partnerships
+    for(p_Iter = entities->begin(DemographicProfile::Gender::Male);
+	p_Iter != entities->end(DemographicProfile::Gender::Male); p_Iter++)
+    {
+	auto person = *p_Iter;
+	person->resetNumActs();
+	person->reset_costs();
+	std::list<SexualPartnership *> partnershipsToEnd;
+
+	//Decide who needs to split up
+	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
+	    {
+		//get partnerships of 'type' whose durations have elapsed, i.e. time to split
+		if((*p_Iter)->getEntityType() == "msm")
+		    {
+			endedPartnershipCount[type] += ((Msm *)person)->
+			    getPartnershipsToEnd(parameters_.currTime, SexualPartnership::Type(type),
+						 partnershipsToEnd, false);
+		    }
+		else if((*p_Iter)->getEntityType() == "msmw")
+		    {
+			endedPartnershipCount[type] += ((Msmw *)person)->
+			    getPartnershipsToEnd(parameters_.currTime, SexualPartnership::Type(type),
+						 partnershipsToEnd, false);
+		    }
+		else if((*p_Iter)->getEntityType() == "male")
+		    {
+			endedPartnershipCount[type] += ((Male *)person)->
+			    getPartnershipsToEnd(parameters_.currTime, SexualPartnership::Type(type),
+						 partnershipsToEnd, false);
+		    }
+	    }
+
+	//Now, split them up
+	DissolveSexualPartnerships(parameters_, person, partnershipsToEnd);
+
+	//if this initiator is now single, then make sure they are in singles pool
+	if(!person->inCorrectBucketDemographicProfile())
+	{
+	    entities->refreshBucketDemographicProfile(person, &p_Iter);
+	}
+
+	if((*p_Iter)->getEntityType() == "msm")
+	{
+	    ((Msm *)person)->ResetTimesSelected();
+	}
+	else if((*p_Iter)->getEntityType() == "msmw")
+	{
+	    ((Msmw *)person)->ResetTimesSelected();
+	}
+    }
+}
+
 /*  who initiates flings? it seems that males do for now
 
 This method is mostly designed for speed as this takes up the bulk of processing
@@ -538,54 +597,6 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 	//iterate through all males
 	std::list<Entity *>::iterator p_Iter;
 
-	//Iterate twice...
-	//First pass: Dissolve ended partnerships
-	for(p_Iter = entities->begin(DemographicProfile::Gender::Male); p_Iter != entities->end(DemographicProfile::Gender::Male); p_Iter++)
-	{
-		auto person = *p_Iter;
-		person->resetNumActs();
-		person->reset_costs();
-        std::list<SexualPartnership *> partnershipsToEnd;
-
-		//Decide who needs to split up
-		for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
-		{
-            //get partnerships of 'type' whose durations have elapsed, i.e. time to split
-            if((*p_Iter)->getEntityType() == "msm")
-            {
-                endedPartnershipCount[type] += ((Msm *)person)->getPartnershipsToEnd(parameters_.currTime, SexualPartnership::Type(type), partnershipsToEnd, false);
-            }
-            else if((*p_Iter)->getEntityType() == "msmw")
-            {
-                endedPartnershipCount[type] += ((Msmw *)person)->getPartnershipsToEnd(parameters_.currTime, SexualPartnership::Type(type), partnershipsToEnd, false);
-            }
-            else if((*p_Iter)->getEntityType() == "male")
-            {
-                endedPartnershipCount[type] += ((Male *)person)->getPartnershipsToEnd(parameters_.currTime, SexualPartnership::Type(type), partnershipsToEnd, false);
-            }
-		}
-
-		//Now, split them up... man, it would suck for their kids (if they had any)
-		DissolveSexualPartnerships(parameters_, person, partnershipsToEnd);
-
-		//if this initiator is now single, then make sure they are in singles pool
-		if(!person->inCorrectBucketDemographicProfile())
-		{
-			entities->refreshBucketDemographicProfile(person, &p_Iter);
-		}
-
-        if((*p_Iter)->getEntityType() == "msm")
-        {
-            ((Msm *)person)->ResetTimesSelected();
-        }
-        else if((*p_Iter)->getEntityType() == "msmw")
-        {
-            ((Msmw *)person)->ResetTimesSelected();
-        }
-	}
-
-	//Ending the first pass (dissolving partnerships)
-
 	//reset num acts for females
 	for(p_Iter = entities->begin(DemographicProfile::Gender::Female); p_Iter != entities->end(DemographicProfile::Gender::Female); p_Iter++)
 	{
@@ -595,101 +606,103 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 		((Female *)*p_Iter)->ResetVaginalMicrobicideUsage();
 	}
 
-	//Second pass: Form new partnerships and have sex
-	for(p_Iter = entities->begin(DemographicProfile::Gender::Male); p_Iter != entities->end(DemographicProfile::Gender::Male); p_Iter++)
+    //Second pass: Form new partnerships and have sex
+    for(p_Iter = entities->begin(DemographicProfile::Gender::Male);
+	p_Iter != entities->end(DemographicProfile::Gender::Male); p_Iter++)
+    {
+	auto person = *p_Iter;
+
+	if(!person->isAlive())
 	{
-		auto person = *p_Iter;
+	    continue;
+	}
 
-		if(!person->isAlive())
-		{
-			continue;
-		}
-
-		//Reset the initiator's condom count
-		person->resetCondomUsage();
-		//(The non-initiators (i.e. women) will never have their condom count reset... I don't think we care?)
-		assert(person != nullptr);
+	//Reset the initiator's condom count
+	person->resetCondomUsage();
+	//(The non-initiators (i.e. women) will never have their condom count reset... I don't think we care?)
+	assert(person != nullptr);
 
         if(person->getAge() < popWideParams.ageOfMajority + person->GetSexualActivityDelay())
-        {
-            continue;
-        }
-
-		//Get available partnership types
-		std::vector<SexualPartnership::Type> partnershipTypes =
-		    profilesToPartnershipTypes[person->getCurrBucketProfileID()];
-
-		//iterate through the SexualPartnership::Type that people in the current bucket engage in
-		// form new partnerships
-		for(std::size_t i = 0; i < partnershipTypes.size(); i++)
-		{
-			SexualPartnership::Type type = partnershipTypes.at(i);
-
-			//this method distinguishes between partnerships with and without duration and
-			//  executes different code depending on which. If the partnership has no duration
-			//  associated with it, then the sexual act is done during this method
-			//First, reset the tally of latest unformed partnerships (unformed but intended to form)
-			person->resetLatestUnformedPartnerships(type);
-			//TODO: Get the ratio of numFormed to numIntendedToForm
-			int numFormed = CreatePartnerships(parameters_, person, &p_Iter, type);
-			newPartnershipCount[(std::size_t)type] += numFormed;
-			attemptedPartnershipCount[(std::size_t)type] += numFormed + person->getLatestUnformedPartnerships(type);
-		}
-
-		//for existing partnerships, have sexual activity
-		//Have all the sexual activity with current partners (includes new partners)
-		for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
-		{
-			std::list<Entity *> newlyInfected;
-			//sexual activity among any existing partnerships that have a duration associated with them
-			Entity *infectedMe = person->allPartnerSexualActivity(parameters_, SexualPartnership::Type(type), newlyInfected,
-                &populationStatistics.infectionsTracker, popWideParams.transmission_coefficients_);
-			//TODO: Get a condom use count here!
-			//record all incident infections
-			std::list<Entity *>::iterator newlyInfectedIter = newlyInfected.begin();
-
-			while(newlyInfectedIter != newlyInfected.end())
-			{
-				Entity *wasUninfected = *newlyInfectedIter;
-
-				if(wasUninfected->getDemographicProfile()->get(wasUninfected->getDemographicProfile()->getProfileID(),
-                    DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
-				{
-					((BucketSexualMixing *) entities->getBucket(wasUninfected->getDemographicProfile()->getProfileID()))->changeHIVStatus(
-					    wasUninfected, Entity::HIVStatus::NEGATIVE, wasUninfected->hivStatus);
-				}
-
-				((BucketSexualMixing *) entities->getBucket(wasUninfected->getDemographicProfile()->getProfileID()))->increaseInfected(
-				    wasUninfected);
-				//initiator only gets infected once...
-				Entity *wasInfected = (*newlyInfectedIter == person) ? infectedMe : person;
-
-				RecordInfection(wasUninfected, wasInfected, parameters_.currTime);
-
-				//Adds person to the untreated pool if using rollout
-				if(parameters_.useRollout)
-				{
-					rolloutUntreatedPool.push_back(wasUninfected);
-				}
-				if(parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
-				{
-					populationStatistics.recordIncidentInfection(parameters_, parameters_.currTime,
-					    SexualPartnership::Type(type),
-					    wasInfected,
-					    wasUninfected);
-				}
-
-				newlyInfectedIter++;
-			}
-		}
-
-		auto totalCondomCostUndiscounted = person->getCondomsUsedThisMonth() *
-		    popWideParams.condomCost;
-		populationStatistics.costsTracker.RecordCondomUse(totalCondomCostUndiscounted,
-			totalCondomCostUndiscounted * cepacDiscountFactor);
-		person->add_cdm_cost(totalCondomCostUndiscounted,
-			totalCondomCostUndiscounted * cepacDiscountFactor);
+	{
+	    continue;
 	}
+
+	//Get available partnership types
+	std::vector<SexualPartnership::Type> partnershipTypes =
+	    profilesToPartnershipTypes[person->getCurrBucketProfileID()];
+
+	//iterate through the SexualPartnership::Type that people in the current bucket engage in
+	// form new partnerships
+	for(std::size_t i = 0; i < partnershipTypes.size(); i++)
+	{
+	    SexualPartnership::Type type = partnershipTypes.at(i);
+
+	    //this method distinguishes between partnerships with and without duration and
+	    //  executes different code depending on which. If the partnership has no duration
+	    //  associated with it, then the sexual act is done during this method
+	    //First, reset the tally of latest unformed partnerships (unformed but intended to form)
+	    person->resetLatestUnformedPartnerships(type);
+	    //TODO: Get the ratio of numFormed to numIntendedToForm
+	    int numFormed = CreatePartnerships(parameters_, person, &p_Iter, type);
+	    newPartnershipCount[(std::size_t)type] += numFormed;
+	    attemptedPartnershipCount[(std::size_t)type] +=
+		numFormed + person->getLatestUnformedPartnerships(type);
+	}
+
+	//for existing partnerships, have sexual activity
+	//Have all the sexual activity with current partners (includes new partners)
+	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
+	    {
+		std::list<Entity *> newlyInfected;
+		//sexual activity among any existing partnerships that have a duration associated with them
+		Entity *infectedMe = person->allPartnerSexualActivity(parameters_, SexualPartnership::Type(type), newlyInfected,
+								      &populationStatistics.infectionsTracker, popWideParams.transmission_coefficients_);
+		//TODO: Get a condom use count here!
+		//record all incident infections
+		std::list<Entity *>::iterator newlyInfectedIter = newlyInfected.begin();
+
+		while(newlyInfectedIter != newlyInfected.end())
+		    {
+			Entity *wasUninfected = *newlyInfectedIter;
+
+			if(wasUninfected->getDemographicProfile()->get(wasUninfected->getDemographicProfile()->getProfileID(),
+								       DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
+			    {
+				((BucketSexualMixing *) entities->getBucket(wasUninfected->getDemographicProfile()->getProfileID()))->changeHIVStatus(
+				    wasUninfected, Entity::HIVStatus::NEGATIVE, wasUninfected->hivStatus);
+			    }
+
+			((BucketSexualMixing *) entities->getBucket(wasUninfected->getDemographicProfile()->getProfileID()))->increaseInfected(
+			    wasUninfected);
+			//initiator only gets infected once...
+			Entity *wasInfected = (*newlyInfectedIter == person) ? infectedMe : person;
+
+			RecordInfection(wasUninfected, wasInfected, parameters_.currTime);
+
+			//Adds person to the untreated pool if using rollout
+			if(parameters_.useRollout)
+			    {
+				rolloutUntreatedPool.push_back(wasUninfected);
+			    }
+			if(parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
+			    {
+				populationStatistics.recordIncidentInfection(parameters_, parameters_.currTime,
+									     SexualPartnership::Type(type),
+									     wasInfected,
+									     wasUninfected);
+			    }
+
+			newlyInfectedIter++;
+		    }
+	    }
+
+	auto totalCondomCostUndiscounted = person->getCondomsUsedThisMonth() *
+	    popWideParams.condomCost;
+	populationStatistics.costsTracker.RecordCondomUse(totalCondomCostUndiscounted,
+							  totalCondomCostUndiscounted * cepacDiscountFactor);
+	person->add_cdm_cost(totalCondomCostUndiscounted,
+			     totalCondomCostUndiscounted * cepacDiscountFactor);
+    }
 
 	for (p_Iter = entities->begin(DemographicProfile::Gender::Female);
 	     p_Iter != entities->end(DemographicProfile::Gender::Female); p_Iter++)
@@ -1005,7 +1018,8 @@ void Population::DissolveSexualPartnerships(EventParams &parameters_, Entity *_i
 	{
 		Entity *partner = (*partnerIter)->getOtherPartner(_initiator);
 
-		if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (_initiator->trace() || partner->trace()))
+		if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled &&
+		   (_initiator->trace() || partner->trace()))
 		{
 			if(_initiator->trace())
 			{
@@ -2132,7 +2146,8 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 }
 
 unsigned long Population::CreatePartnerships(EventParams &parameters_, Entity *_initiator,
-        std::list<Entity *>::iterator * /*_p_Iter*/, SexualPartnership::Type _partnershipType, bool _forceNumPartnersOne)
+    std::list<Entity *>::iterator * /*_p_Iter*/, SexualPartnership::Type _partnershipType,
+    bool _forceNumPartnersOne)
 {
 	assert((_initiator != nullptr));
 	assert((_initiator->isAlive()));
@@ -2166,7 +2181,9 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Entity *_
     while(numPartners > 0)
     {
         //Decrement numPartners
+	/* EDS: Should be done below */
         numPartners--;
+
         //pick the bucket that we will attempt to choose from
 		BucketSexualMixing *bucket = potentialPartnerBuckets[_partnershipType].at(parameters_.randomNums.chooseIndex(
             Population::eligibleBucketWeights[_partnershipType]));
@@ -2298,20 +2315,23 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Entity *_
         }
 
         //the pointer to this partnership will be stored within initiator.
-        new SexualPartnership(_initiator, chosenPartner, parameters_, _partnershipType);
+        SexualPartnership *newPartnership = new SexualPartnership(_initiator, chosenPartner, parameters_, _partnershipType);
 
-		if (chosenPartner->getEntityType() == "msm")
-		{
-			((Msm *)chosenPartner)->IncrementTimesSelected();
-		}
-		else if (chosenPartner->getEntityType() == "msmw")
-		{
-			((Msmw *)chosenPartner)->IncrementTimesSelected();
-		}
-		else if (chosenPartner->getEntityType() == "female")
-		{
-			((Female *)chosenPartner)->IncrementTimesSelected();
-		}
+	/* Add partnership to the db */
+	partnershipDB.add_partnership(*newPartnership);
+
+	if (chosenPartner->getEntityType() == "msm")
+	{
+	    ((Msm *)chosenPartner)->IncrementTimesSelected();
+	}
+	else if (chosenPartner->getEntityType() == "msmw")
+	{
+	    ((Msmw *)chosenPartner)->IncrementTimesSelected();
+	}
+	else if (chosenPartner->getEntityType() == "female")
+	{
+	    ((Female *)chosenPartner)->IncrementTimesSelected();
+	}
 
         //add all persons back to entity pool
         for(std::list<Entity *>::iterator it = attemptedPartners.begin(); it != attemptedPartners.end(); it++)

@@ -172,6 +172,7 @@ bool Entity::isEligibleForTreatment(const SimContext::TreatmentInputs::ARTStartP
 	return false;
 }
 
+#if 0
 Entity *Entity::allPartnerSexualActivity(EventParams &_eventParams, SexualPartnership::Type _partnershipType,
     std::list<Entity *> &_newlyInfected, InfectionsTracker *infTrack, 
     const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients)
@@ -208,6 +209,46 @@ Entity *Entity::allPartnerSexualActivity(EventParams &_eventParams, SexualPartne
 
 	return infectedMe;
 }
+#else
+/* With partnership db */
+Entity *Entity::allPartnerSexualActivity(EventParams &_eventParams,
+					 SexualPartnership::Type _partnershipType,
+    std::list<Entity *> &_newlyInfected, InfectionsTracker *infTrack, 
+    const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients)
+{
+	assert(_partnershipType < SexualPartnership::Type::ENDType);
+	//iterate through all partnerships of SexualActivity::Type _partnershipType and have them engage in sexual activity
+	auto iter = partners[(int)_partnershipType].begin();
+	auto iterEnd = partners[(int)_partnershipType].end();
+	//becomes non-nullptr only when this person gets infected. We are saving the partner who infected this person
+	Entity *infectedMe = nullptr;
+
+	while(iter != iterEnd)
+	{
+		//initiate sexual activity only if you are partner1
+		if((*iter)->getPartner1() == this)
+		{
+			Entity *infected = (*iter)->monthlySexualActivity(_eventParams, infTrack, transmission_coefficients);
+
+			//if you or your partners got infected, the infected joins the _newlyInfected list
+			if(infected != nullptr)
+			{
+				_newlyInfected.push_back(infected);
+
+				//if you got infected, then you have to save the person who infected you for record keeping
+				if(infected == this)
+				{
+					infectedMe = (*iter)->getOtherPartner(this);
+				}
+			}
+		}
+
+		iter++;
+	}
+
+	return infectedMe;
+}
+#endif
 
 bool Entity::availableForPartnership(SexualPartnership::Type _partnershipType) const
 {
@@ -242,6 +283,41 @@ void Entity::addPartnership(SexualPartnership *_partnership)
         dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::NonSingle);
 	}
 }
+
+void Entity::removePartnership(SexualPartnership *_partnership)
+{
+	assert(_partnership != nullptr);
+	partners[(int)_partnership->getType()].remove(_partnership);
+
+	//if a STEADY partnership was removed and we have no more, then we should be set to SINGLE
+	if((_partnership->getType() == SexualPartnership::Type::Steady) &&
+		(partners[(int)SexualPartnership::Type::Steady].empty()) &&
+        (getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus) == (std::size_t)DemographicProfile::RelationshipStatus::NonSingle))
+	{
+        dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::Single);
+	}
+}
+
+#if 0
+void dissolvePartnership(SexualPartnership *_partnership)
+{
+    //partners[(int)_partnership->getType()].push_back(_partnership);
+
+    monthOfLatestPartnershipDissolution[(int)_partnership->getType()] =
+	max(monthOfLatestPartnershipDissolution[(int)_partnership->getType()],
+	    _partnership->getTimeOfDissolution());
+
+    //if a STEADY partnership was removed, the we need to change or RELATIONSHIP_STATUS
+    if((_partnership->getType() == SexualPartnership::Type::Steady) &&
+       (!partners[(int)SexualPartnership::Type::Steady].empty()) &&
+       (getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus) ==
+	(std::size_t)DemographicProfile::RelationshipStatus::Single
+    {
+        dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus,
+		       (std::size_t)DemographicProfile::RelationshipStatus::Single);
+    }
+}
+#endif
 
 void Entity::seedInfection(int _generationOfInfection, EventParams &_eventParams,
     bool chronicInfection)
@@ -664,19 +740,6 @@ bool Entity::isMale() const
 	    (std::size_t)DemographicProfile::Gender::Male);
 }
 
-void Entity::removePartnership(SexualPartnership *_partnership)
-{
-	assert(_partnership != nullptr);
-	partners[(int)_partnership->getType()].remove(_partnership);
-
-	//if a STEADY partnership was removed and we have no more, then we should be set to SINGLE
-	if((_partnership->getType() == SexualPartnership::Type::Steady) &&
-		(partners[(int)SexualPartnership::Type::Steady].empty()) &&
-        (getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus) == (std::size_t)DemographicProfile::RelationshipStatus::NonSingle))
-	{
-        dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::Single);
-	}
-}
 
 void Entity::rollForBecomeSexWorker(EventParams &_eventParams, bool _isInit, double initialProb)
 {
@@ -1334,7 +1397,6 @@ bool Entity::addFVindices(int index, FullVector *FV)
 
 		if(!indexAlreadyInFVindices)
 		{
-			//	cout << "doing the adding..." << std::endl;
 			FVindex->push_back(index);
 			return true;
 		}

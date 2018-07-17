@@ -3,18 +3,23 @@
 namespace transm {
 
 	PartnershipDB::PartnershipDB() {
-//		multi_index_db db;
 	}
 
-	auto PartnershipDB::add_partnership(SexualPartnership& partnership) {
-		auto return_tuple = PartnershipDB::db.insert(partnership);
-		return return_tuple;
+	void PartnershipDB::add_partnership(SexualPartnership& partnership) {
+		PartnershipDB::db.insert(partnership);
 	}
 
-	auto PartnershipDB::remove_partnership(SexualPartnership& partnership) {
+	void PartnershipDB::remove_partnership(SexualPartnership& partnership) {
+		PartnershipDB::db.erase(db.iterator_to(partnership));
+	}
+
+#if 0
+	auto PartnershipDB::dissolve_partnership(SexualPartnership& partnership) {
+		partnership->dissolve();
 		auto return_tuple = PartnershipDB::db.erase(db.iterator_to(partnership));
 		return return_tuple;
 	}
+#endif
 
 	auto PartnershipDB::find(SexualPartnership& partnership) {
 		//auto element_ref = db.find<byKey>(partnership);
