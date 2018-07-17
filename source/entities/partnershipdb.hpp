@@ -1,11 +1,4 @@
-/*
- * PartnershipDB.h
- *
- *  Created on: 09 mag 2016
- *      Author: giulio
- */
-
-#include "SexualPartnership.h"
+#include "sexualpartnership.hpp"
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/ordered_index.hpp>
@@ -16,13 +9,9 @@
 #include <boost/multi_index/tag.hpp>
 #include <boost/multi_index/sequenced_index.hpp>
 
-
-#ifndef SOURCE_ENTITIES_CLASSIFIERS_PARTNERSHIPDB_H_
-#define SOURCE_ENTITIES_CLASSIFIERS_PARTNERSHIPDB_H_
-
 #define BOOST_MULTI_INDEX_ENABLE_SAFE_MODE
 
-namespace DB {
+namespace transm {
 	namespace bmi = boost::multi_index;
 
 	class PartnershipDB final {
@@ -88,6 +77,4 @@ namespace DB {
 		auto find_expired(int time);
 	};
 
-} /* namespace DB */
-
-#endif /* SOURCE_ENTITIES_CLASSIFIERS_PARTNERSHIPDB_H_ */
+} /* namespace transm */

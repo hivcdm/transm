@@ -1,13 +1,6 @@
-/*
- * PartnershipDB.cpp
- *
- *  Created on: 09 mag 2016
- *      Author: giulio
- */
+#include "partnershipdb.hpp"
 
-#include "PartnershipDB.h"
-
-namespace DB {
+namespace transm {
 
 	PartnershipDB::PartnershipDB() {
 //		multi_index_db db;
@@ -36,4 +29,4 @@ namespace DB {
 		//return element_ref == db.end<byEndDate>() ? element_ref : nullptr;
 	}
 
-} /* namespace DB */
+} /* namespace transm */
