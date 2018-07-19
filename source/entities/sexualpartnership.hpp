@@ -24,8 +24,7 @@ If this couple is heterosexual, then by default, getPartner1() returns the Male
 ***/
 class SexualPartnership
 {
-
-public :
+public:
 	//this enum is used for when we are matching people
 	//  will type of partnership determines partner criteria
 	//Note: if this enum is modified, then also modify TypeEnumStrs
@@ -43,24 +42,8 @@ public :
 		Last = ENDType,
 		First = Steady
 	};
-	
 	static const std::map<Type, std::string> TypeStrings;
-  
-	//time that this partnership will dissolve
-	Time timePartnerDissolution;
 
-protected :
-
-	//identifies the type of sexual relationship this is
-	Type type;
-
-	//the time that this couple was formed
-	Time timePartnerFormation;
-
-	//this contains copies of pointers of partners
-	Entity *partners[2];
-
-public :
 	SexualPartnership();
 
 	/**
@@ -102,7 +85,6 @@ public :
 	**/
 	Entity *getPartner2();
 
-
 	/**
 	@param _member one of the members of the couple
 	@returns the other member of the couple
@@ -130,15 +112,32 @@ public :
 
 	Time getTimeOfFormation()
 	{
-		return timePartnerFormation;
+		return timeOfFormation;
 	}
 
 	Time getTimeOfDissolution()
 	{
-		return timePartnerDissolution;
+		return timeOfDissolution;
 	}
 
-	void dissolvePartnership();
+	int getTimeOfDissolutionInMonths()
+	{
+		return timeOfDissolution.in_months();
+	}
+
+private:
+
+	//time that this partnership will dissolve
+	Time timeOfDissolution;
+
+	//identifies the type of sexual relationship this is
+	Type type;
+
+	//the time that this couple was formed
+	Time timeOfFormation;
+
+	//this contains copies of pointers of partners
+	Entity *partners[2];
 };
 
 } // namespace transm

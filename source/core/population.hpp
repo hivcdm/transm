@@ -132,9 +132,7 @@ public:
     /// when transmissions occur, run the incident case through CEPAC to get their future life trajectory
     /// returns the # of New people of each type who was infected
     /// </summary>
-	void UpdatePartnerships(EventParams &_eventParams);
-
-    void DissolvePartnerships();
+    void UpdatePartnerships(EventParams &_eventParams);
 
     /// <summary>
     /// counts the total size of the population and updates internal state
@@ -241,10 +239,15 @@ private:
 	                                 SexualPartnership::Type _partnershipType, bool _forceNumPartnersOne = false);
 
     /// <summary>
-	/// dissolves a list of particular sexual partnerships. Removes the pointer to the SexualPartnership from each member and then deletes it
+	/// dissolves a list of sexual partnerships.
     /// </summary>
-	void DissolveSexualPartnerships(EventParams &_eventParams, Entity *_initiator,
-	                                std::list<SexualPartnership *> &_partnershipsToEnd);
+	void DissolveSexualPartnerships();
+
+	void FormSexualPartnerships();
+
+	void AllPartnershipSexualActivity(Entity *person);
+
+	void UpdateCalibrationConcurrency();
 
     /// <summary>
     /// @param _gender gender of person we want to create

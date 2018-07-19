@@ -27,7 +27,7 @@ SexualPartnership::SexualPartnership(Entity *_person1, Entity *_person2, EventPa
 	//save the type of partnership this is
 	type = _partnershipType;
 	//save time of partnership formation
-	timePartnerFormation = _eventParams.currTime;
+	timeOfFormation = _eventParams.currTime;
 	//calculate when this partnership will dissolve. determined by _person1
 	auto maxDuration =  TimeSpan(0, _person1->rollForNewPartnershipDuration(_partnershipType, _eventParams.randomNums, _person2));
 
@@ -56,23 +56,17 @@ SexualPartnership::SexualPartnership(Entity *_person1, Entity *_person2, EventPa
 	}
 
 	//set time for partnership to dissolve
-	timePartnerDissolution = _eventParams.currTime + maxDuration;
-	assert(timePartnerDissolution.in_months() >= 0);
+	timeOfDissolution = _eventParams.currTime + maxDuration;
+	assert(timeOfDissolution.in_months() >= 0);
 
 	//save the members of this partnership
 	partners[0] = _person1;
 	partners[1] = _person2;
 }
 
-void dissolvePartnership()
-{
-    partners[0]->dissolvePartnership();
-    partners[1]->dissolvePartnership();
-}
-
 bool SexualPartnership::checkTimeForSplit(Time current_time)
 {
-	return current_time >= timePartnerDissolution;
+	return current_time >= timeOfDissolution;
 }
 
 Entity *SexualPartnership::getPartner1()

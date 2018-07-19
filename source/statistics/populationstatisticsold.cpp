@@ -831,8 +831,8 @@ void PopulationStatisticsOld::printPartAcqStats(std::ostream &_outStream, Time c
 
 	_outStream << std::endl;
 }
-void PopulationStatisticsOld::recordIncidentInfection(EventParams &_eventParams, Time _time, SexualPartnership::Type _partnershipType,
-                                       const  Entity *_infector, const Entity *_infected)
+void PopulationStatisticsOld::recordIncidentInfection(EventParams &_eventParams, Time _time,
+    const Entity *_infector, const Entity *_infected)
 {
 	assert((_infector != nullptr) && (_infector->isAlive()));
 	assert((_infected != nullptr) && (_infected->isAlive()));

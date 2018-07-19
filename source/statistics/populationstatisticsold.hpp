@@ -191,8 +191,8 @@ public:
 	void printShiftedOutcomes(std::ostream &_outStream, Time currTime);
 
 	//records an incident infection (calls InfectionTracker's method)
-	void recordIncidentInfection(EventParams &_eventParams, Time infection_time, SexualPartnership::Type _partnershipType,
-	                             const Entity *_infector, const Entity *_infected);
+	void recordIncidentInfection(EventParams &_eventParams, Time infection_time,
+	     const Entity *_infector, const Entity *_infected);
 
 	//returns the next time greater than or equal to currTime in the list
 	Time getNextTimeToRecord(Time currTime);
