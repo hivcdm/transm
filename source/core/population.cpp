@@ -769,7 +769,7 @@ void Population::UpdateFinalPhysicalState(EventParams &parameters_)
 	//Used to iterate through persons
 	std::list<Entity *>::iterator p_Iter;
 
-	//Double loop: first iterate through the men, then the women
+	//Double loop: first iterate through the men,  then the women
     for(auto gender : enum_iterator<DemographicProfile::Gender>())
 	{
 		p_Iter = entities->begin(gender);
@@ -874,6 +874,15 @@ void Population::AllPartnershipSexualActivity(Entity *person)
 	newlyInfectedIter++;
     }
 
+    double cepacDiscountFactor = 1.0;
+    if (parameters_.useRollout) {
+	cepacDiscountFactor = Utility::computeCepacDiscountFactor(parameters_.currTime.in_months(),
+            parameters_.untreatedContext->getRunSpecsInputs()->discountFactor);
+    } else {
+	cepacDiscountFactor = Utility::computeCepacDiscountFactor(parameters_.currTime.in_months(),
+            parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor);
+    }
+
     auto totalCondomCostUndiscounted = person->getCondomsUsedThisMonth() *
 	popWideParams.condomCost;
     populationStatistics.costsTracker.RecordCondomUse(totalCondomCostUndiscounted,
@@ -881,8 +890,7 @@ void Population::AllPartnershipSexualActivity(Entity *person)
     person->add_cdm_cost(totalCondomCostUndiscounted,
 	totalCondomCostUndiscounted * cepacDiscountFactor);
 
-
-    for (p_Iter = entities->begin(DemographicProfile::Gender::Female);
+    for (auto p_Iter = entities->begin(DemographicProfile::Gender::Female);
 	 p_Iter != entities->end(DemographicProfile::Gender::Female); p_Iter++)
     {
 	auto p = static_cast<Female *>(*p_Iter);
@@ -896,93 +904,95 @@ void Population::AllPartnershipSexualActivity(Entity *person)
 
 void Population::DissolveSexualPartnerships()
 {
+    std::pair<PartnershipDB::end_date_type::iterator, PartnershipDB::end_date_type::iterator> partnershipsToEnd =
+	partnershipDB.find_expired(parameters_.currTime);
+
+    int endedPartnershipCount[(std::size_t)SexualPartnership::Type::ENDType] = {0};
+
+    for (auto partnerIter = partnershipsToEnd.first; partnerIter != partnershipsToEnd.second; partnerIter++)
+    {
+	Entity *_initiator = partnerIter->getPartner1();
+	Entity *partner = partnerIter->getPartner2();
+
 	bool initiatorMale = _initiator->isMale();
 
-	std::list<SexualPartnership *> partnershipsToEnd = partnership_db.find_expired(parameters_.currTime);
-
-	int endedPartnershipCount[(std::size_t)SexualPartnership::Type::ENDType] = {0};
-
-	//iterate through each partner list
-	std::list<SexualPartnership *>::iterator partnerIter = _partnershipsToEnd.begin();
-
-	while(partnerIter != _partnershipsToEnd.end())
+	if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled &&
+	   (_initiator->trace() || partner->trace()))
 	{
-		Entity *partner = (*partnerIter)->getOtherPartner(_initiator);
-
-		if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled &&
-		   (_initiator->trace() || partner->trace()))
+	    if(_initiator->trace())
+	    {
+		if(initiatorMale)
 		{
-			if(_initiator->trace())
-			{
-				if(initiatorMale)
-				{
-					parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "- Male ";
-				}
-				else
-				{
-					parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "- Female ";
-				}
-
-				parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << _initiator->getID() 
-					<< " ends " << (SexualPartnership::TypeStrings.at((*partnerIter)->getType()));
-				parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " partnership with " << partner->getID();
-			}
-			else
-			{
-				if(initiatorMale)
-				{
-					parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "- Female ";
-				}
-				else
-				{
-					parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "- Male ";
-				}
-
-				parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << partner->getID() << " ends " << (SexualPartnership::TypeStrings.at((*partnerIter)->getType()));
-				parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " partnership with " << _initiator->getID();
-			}
-
-			if(!_initiator->isAlive())
-			{
-				parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " -> " << _initiator->getID() << " has died";
-			}
-
-			if(!partner->isAlive())
-			{
-				parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " -> " << partner->getID() << " has died";
-			}
-
-			parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << std::endl;
+		    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "- Male ";
+		}
+		else
+		{
+		    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "- Female ";
 		}
 
-		//if this initiator is now single, then make sure they are in singles pool
-		if(!person->inCorrectBucketDemographicProfile())
-		    {
-			entities->refreshBucketDemographicProfile(person, &p_Iter);
-		    }
-
-		if((*p_Iter)->getEntityType() == "msm")
-		    {
-			((Msm *)person)->ResetTimesSelected();
-		    }
-		else if((*p_Iter)->getEntityType() == "msmw")
-		    {
-			((Msmw *)person)->ResetTimesSelected();
-		    }
-
-		partnershipdb.remove(partnerIter);
-
-		//if the partnership has any duration, destructor removes the pointer from both members partner lists
-		delete(*partnerIter);
-
-		//refresh BucketDemographicProfile placement if necessary
-		if(!partner->inCorrectBucketDemographicProfile())
+		parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << _initiator->getID() <<
+		    " ends " << (SexualPartnership::TypeStrings.at(partnerIter->getType()));
+		parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " partnership with " <<
+		    partner->getID();
+	    }
+	    else
+	    {
+		if(initiatorMale)
 		{
-			entities->refreshBucketDemographicProfile(partner, nullptr);
+		    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "- Female ";
+		}
+		else
+		{
+		    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "- Male ";
 		}
 
-		partnerIter++;
+		parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << partner->getID() <<
+		    " ends " << (SexualPartnership::TypeStrings.at(partnerIter->getType()));
+		parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " partnership with " <<
+		    _initiator->getID();
+	    }
+
+	    if(!_initiator->isAlive())
+	    {
+		parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " -> " <<
+		    _initiator->getID() << " has died";
+	    }
+
+	    if(!partner->isAlive())
+	    {
+		parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " -> " <<
+		    partner->getID() << " has died";
+	    }
+
+	    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << std::endl;
 	}
+
+	//if this initiator is now single, then make sure they are in singles pool
+	if(!_initiator->inCorrectBucketDemographicProfile())
+	{
+	    entities->refreshBucketDemographicProfile(_initiator, &partnerIter);
+	}
+
+	if(_initiator->getEntityType() == "msm")
+	{
+	    ((Msm *)_initiator)->ResetTimesSelected();
+	}
+	else if(_initiator->getEntityType() == "msmw")
+	{
+	    ((Msmw *)_initiator)->ResetTimesSelected();
+	}
+
+	partnershipDB.remove(partnerIter);
+
+	//if the partnership has any duration, destructor removes the pointer from both members partner lists
+	//delete(*partnerIter);
+
+	//refresh BucketDemographicProfile placement if necessary
+	if(!partner->inCorrectBucketDemographicProfile())
+	{
+	    entities->refreshBucketDemographicProfile(partner, nullptr);
+	}
+    }
 }
 
 void Population::UpdateCalibrationConcurrency()

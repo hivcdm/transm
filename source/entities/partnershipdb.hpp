@@ -52,12 +52,13 @@ namespace transm {
 	PartnershipDB& operator=(const PartnershipDB& that);
 
     public:
+	typedef bmi::index<partnership_db, byEndDate>::type end_date_type;
+
 	PartnershipDB();
 	~PartnershipDB();
 	void add_partnership(SexualPartnership *partnership);
 	void remove_partnership(SexualPartnership *partnership);
-	auto find(SexualPartnership& partnership);
-	auto find_expired(Time time);
+	std::pair<end_date_type::iterator,end_date_type::iterator> find_expired(Time time);
 	auto remove_expired(Time time);
 	auto find_with_entity(Entity *entity);
 	auto remove_entity_partnerships(Entity *entity);

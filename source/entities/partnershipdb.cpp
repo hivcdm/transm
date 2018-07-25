@@ -23,10 +23,8 @@ namespace transm {
 	//return element_ref == db.end<byKey>() ? db.iterator_to<byKey>(partnership) : nullptr;
     }
 
-    auto PartnershipDB::find_expired(Time time) {
-	return std::make_pair(db.equal_range(time.in_months()));
-	//auto element_ref = db.upper_bound<byEndDate>((long)time);
-	//return element_ref == db.end<byEndDate>() ? element_ref : nullptr;
+    std::pair<end_date_type::iterator,end_date_type::iterator> PartnershipDB::find_expired(Time time) {
+	return db.get<byEndType>.equal_range(time.in_months());
     }
 
     auto PartnershipDB::remove_expired_partnerships(Time time)
