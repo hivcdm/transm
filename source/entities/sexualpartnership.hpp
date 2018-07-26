@@ -77,13 +77,13 @@ public:
 	Gets the pointer to partner 1. Should be male if this couple is heterosexual
 	@author schung5
 	**/
-	Entity *getPartner1();
+	Entity *getPartner1() const;
 
 	/**
 	Gets the pointer to partner 2. Should be female if this couple is heterosexual
 	@author schung5
 	**/
-	Entity *getPartner2();
+        Entity *getPartner2() const;
 
 	/**
 	@param _member one of the members of the couple
@@ -95,7 +95,7 @@ public:
 	Gets what the type of this partnership is
 	@author schung5
 	**/
-	Type getType();
+	Type getType() const;
 
 	/**
 	returns true if _p is a member of this partnership
@@ -108,25 +108,13 @@ public:
 	@return returns a pointer to a person who has been newly infected. nullptr if no infection occured
 	@author schung5
 	**/
-    Entity *monthlySexualActivity(EventParams &_eventParams, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, 10ULL>> &transmission_coefficients);
+        Entity *monthlySexualActivity(EventParams &_eventParams, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, 10ULL>> &transmission_coefficients);
 
-	Time getTimeOfFormation()
-	{
-		return timeOfFormation;
-	}
+        Time getTimeOfFormation() const;
 
-	Time getTimeOfDissolution()
-	{
-		return timeOfDissolution;
-	}
-
-	int getTimeOfDissolutionInMonths()
-	{
-		return timeOfDissolution.in_months();
-	}
+        Time getTimeOfDissolution() const;
 
 private:
-
 	//time that this partnership will dissolve
 	Time timeOfDissolution;
 
@@ -138,6 +126,7 @@ private:
 
 	//this contains copies of pointers of partners
 	Entity *partners[2];
+
 };
 
 } // namespace transm

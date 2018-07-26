@@ -53,6 +53,7 @@ public:
 
 	Time() : month_(0) {}
 	Time(int year, int month) : month_(year * 12 + month) {}
+	Time(int month) : month_(month) {}
 
 	int get_year() const { return month_ / 12; }
 	int get_month() const { return month_ % 12; }
@@ -78,10 +79,8 @@ public:
 	bool operator>=(const Time &other) const { return month_ >= other.month_; }
 	bool operator<(const Time &other) const { return month_ < other.month_; }
 	bool operator<=(const Time &other) const { return month_ <= other.month_; }
-
+  
 private:
-	Time(int month) : month_(month) {}
-
 	int month_;
 };
 

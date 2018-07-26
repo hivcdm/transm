@@ -6,31 +6,52 @@ namespace transm {
     }
 
     // add single partnership to the db
-    void PartnershipDB::add_partnership(std::shared_ptr<SexualPartnership> partnership) {
-	db.insert(partnership);
+    void PartnershipDB::add_partnership(Entity *_person1, Entity *_person2, EventParams &_eventParams,
+        SexualPartnership::Type _partnershipType)
+    {
+	//db.insert(db.begin(), std::move(partnership));
+	db.emplace(_person1, _person2, _eventParams, _partnershipType);
     }
 
     // remove single partnership from the db
-    void PartnershipDB::remove_partnership(std::shared_ptr<SexualPartnership> partnership) {
-	db.erase(db.iterator_to(partnership));
+    void PartnershipDB::remove_partnership(SexualPartnership *partnership)
+    {
+        end_date_type& index = db.get<byEndDate>();
+	end_date_type::iterator iter = index.find(partnership);
+
+	index.erase(iter);
+	/*
+typedef index<employee_set,name>::type employee_set_by_name;
+employee_set_by_name& name_index=es.get<name>();
+
+employee_set_by_name::iterator it=name_index.find("Anna Jones");
+employee anna=*it;
+anna.name="Anna Smith";      // she just got married to Calvin Smith
+name_index.replace(it,anna); // update her record
+	 */
     }
 
+    std::pair<PartnershipDB::end_date_type::iterator,PartnershipDB::end_date_type::iterator> PartnershipDB::find_expired(Time time)
+    {
+	end_date_type& index = db.get<byEndDate>();
+	std::pair<end_date_type::iterator, end_date_type::iterator> iter = index.equal_range(time);
+	return iter;
+    }
+
+    void PartnershipDB::remove_expired(Time time)
+    {
+	end_date_type& index = db.get<byEndDate>();
+	std::pair<end_date_type::iterator, end_date_type::iterator> iter = index.equal_range(time);
+	index.erase(iter.first, iter.second);
+    }
+
+#if 0
     auto PartnershipDB::find(SexualPartnership& partnership) {
 	//auto element_ref = db.find<byKey>(partnership);
 	//return std::make_pair(PartnershipDB::db.iterator_to<0>().find(partnership),
 	//    PartnershipDB::db.iterator_to<0>().end());
 	return PartnershipDB::db.end();
 	//return element_ref == db.end<byKey>() ? db.iterator_to<byKey>(partnership) : nullptr;
-    }
-
-    std::pair<end_date_type::iterator,end_date_type::iterator> PartnershipDB::find_expired(Time time) {
-	return db.get<byEndType>.equal_range(time.in_months());
-    }
-
-    auto PartnershipDB::remove_expired_partnerships(Time time)
-    {
-	auto expired_partnerships = std::make_pair(db.equal_range(time.in_months()));
-	db.erase(expired_partnerships);
     }
 
     auto PartnershipDB::find_with_entity(Entity *entity)
@@ -68,6 +89,6 @@ namespace transm {
     {
 	return !(db.get<byEntity>(entity.id).empty());
     }
-
+#endif
 
 } /* namespace transm */

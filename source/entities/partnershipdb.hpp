@@ -31,8 +31,10 @@ namespace transm {
 		// Index ordered by end date for fast monthly dissolution
 		bmi::ordered_non_unique<
 		    bmi::tag<byEndDate>,
-		    bmi::mem_fun<SexualPartnership, int, &SexualPartnership::getTimeOfDissolutionInMonths>
-		>,
+		    bmi::const_mem_fun<SexualPartnership, Time, &SexualPartnership::getTimeOfDissolution>
+		>
+#if 0
+	      ,
 		// Index by partnership type
 		bmi::ordered_non_unique<
 		    bmi::tag<byPartnershipType>,
@@ -43,7 +45,8 @@ namespace transm {
 		    bmi::tag<byEntityId>,
 		    bmi::const_mem_fun<Entity, unsigned long, &Entity::getID>
 		>
-	    >
+#endif
+	      >
 	> partnership_db;
 	partnership_db db;
 
@@ -56,10 +59,13 @@ namespace transm {
 
 	PartnershipDB();
 	~PartnershipDB();
-	void add_partnership(SexualPartnership *partnership);
+	void add_partnership(Entity *_person1, Entity *_person2, EventParams &_eventParams,
+	    SexualPartnership::Type _partnershipType);
 	void remove_partnership(SexualPartnership *partnership);
 	std::pair<end_date_type::iterator,end_date_type::iterator> find_expired(Time time);
-	auto remove_expired(Time time);
+	void remove_expired(Time time);
+
+#if 0
 	auto find_with_entity(Entity *entity);
 	auto remove_entity_partnerships(Entity *entity);
 
@@ -71,6 +77,7 @@ namespace transm {
 
 	// check if the person has any partnerships
 	bool partnership_of_any_type(Entity *partner1);
+#endif     
     };
 
 } /* namespace transm */

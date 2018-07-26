@@ -443,7 +443,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
                 }
 
 				//refresh risk group in dmg bucket and refresh BucketDemographicProfile
-				entities->refreshBucketDemographicProfile(p, &p_Iter, oldRisk != p->getRiskLevel());
+				entities->refreshBucketDemographicProfile(p, oldRisk != p->getRiskLevel());
 			}
 
 			//Check for age to stop becoming CSW
@@ -451,7 +451,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
                 && p->getAge() >= popWideParams.CSWEndAge[p->getEntityType()])
 			{
 				p->quitSexWork(parameters_);
-				entities->refreshBucketDemographicProfile(p, &p_Iter);
+				entities->refreshBucketDemographicProfile(p);
 			}
 
 	    if(((parameters_.useRollout && parameters_.treatedContext) || p->HasTargetedCepacContext()) && p->isInfected())
@@ -828,19 +828,19 @@ void Population::FormSexualPartnerships()
 	    person->resetLatestUnformedPartnerships(type);
 
 	    int numFormed = CreatePartnerships(parameters_, person, &p_Iter, type);
+	    
+	    AllPartnershipSexualActivity(person, type);
 	}
-
-	AllPartnershipSexualActivity(person);
     }
 }
 
 //Have all the sexual activity with current partners (includes new partners)
-void Population::AllPartnershipSexualActivity(Entity *person)
+void Population::AllPartnershipSexualActivity(Entity *person, SexualPartnership::Type type)
 {
     std::list<Entity *> newlyInfected;
 
     //sexual activity among any existing partnerships that have a duration associated with them
-    Entity *infectedMe = person->allPartnerSexualActivity(parameters_, newlyInfected,
+    Entity *infectedMe = person->allPartnerSexualActivity(parameters_, type, newlyInfected,
         &populationStatistics.infectionsTracker, popWideParams.transmission_coefficients_);
 
     //record all incident infections
@@ -904,8 +904,7 @@ void Population::AllPartnershipSexualActivity(Entity *person)
 
 void Population::DissolveSexualPartnerships()
 {
-    std::pair<PartnershipDB::end_date_type::iterator, PartnershipDB::end_date_type::iterator> partnershipsToEnd =
-	partnershipDB.find_expired(parameters_.currTime);
+    auto partnershipsToEnd = partnershipDB.find_expired(parameters_.currTime);
 
     int endedPartnershipCount[(std::size_t)SexualPartnership::Type::ENDType] = {0};
 
@@ -970,7 +969,7 @@ void Population::DissolveSexualPartnerships()
 	//if this initiator is now single, then make sure they are in singles pool
 	if(!_initiator->inCorrectBucketDemographicProfile())
 	{
-	    entities->refreshBucketDemographicProfile(_initiator, &partnerIter);
+	    entities->refreshBucketDemographicProfile(_initiator);
 	}
 
 	if(_initiator->getEntityType() == "msm")
@@ -982,17 +981,16 @@ void Population::DissolveSexualPartnerships()
 	    ((Msmw *)_initiator)->ResetTimesSelected();
 	}
 
-	partnershipDB.remove(partnerIter);
-
 	//if the partnership has any duration, destructor removes the pointer from both members partner lists
 	//delete(*partnerIter);
 
 	//refresh BucketDemographicProfile placement if necessary
 	if(!partner->inCorrectBucketDemographicProfile())
 	{
-	    entities->refreshBucketDemographicProfile(partner, nullptr);
+	    entities->refreshBucketDemographicProfile(partner);
 	}
     }
+    partnershipDB.remove_expired(parameters_.currTime);
 }
 
 void Population::UpdateCalibrationConcurrency()
@@ -2272,12 +2270,9 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Entity *_
                 << ", " << chosenPartner->getSexualActivity() << " marbles, " << ((chosenPartner->getRiskLevel() == Entity::RiskLevel::HIGH) ? "HIGH" : "LOW") << " risk)";
         }
 
-        //the pointer to this partnership will be stored within initiator.
-        SexualPartnership *newPartnership = new SexualPartnership(_initiator, chosenPartner,
+	/* Add partnership to the db -- the object will be stored there */
+	partnershipDB.add_partnership(_initiator, chosenPartner,
             parameters_, _partnershipType);
-
-	/* Add partnership to the db */
-	partnershipDB.add_partnership(std::move(newPartnership));
 
 	if (chosenPartner->getEntityType() == "msm")
 	{
@@ -2304,7 +2299,7 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Entity *_
 
         if(!_initiator->inCorrectBucketDemographicProfile())
         {
-            entities->refreshBucketDemographicProfile(_initiator, nullptr);
+            entities->refreshBucketDemographicProfile(_initiator);
         }
 
         assert(chosenPartner->inCorrectBucketDemographicProfile());
@@ -2336,9 +2331,20 @@ void Population::ProcessDeath(EventParams &parameters_, Entity *_p, bool calcula
 
 	//holds any former steady partners that are widowed after a partner's death
 	// we may need to put the partners back into the singles pool
+	std::list<SexualPartnership *> formerPartnerships;
+
+	//we have to take care of what happens to any ongoing partnerships
+	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
+	{
+	    _p->getPartnershipsToEnd(parameters_.currTime, SexualPartnership::Type(type), formerPartnerships, true);
+	}
+ 
+#if USING_PARTNERSHIP_DB
 	std::list<SexualPartnership *> formerPartnerships = partnershipDB.get<byEntityID>(_p->getID());
-	for (SexualPartnership *partnership : formerPartnerships)
+	for (SexualPartnership *partnership : formerPartnerships) {
 	    _p->dissolvePartnership(partnership);
+	}
+#endif
 
 	currDeathCauses[(std::size_t)_p->deathStatus]++;
 	populationStatistics.processDeath(_p, parameters_);

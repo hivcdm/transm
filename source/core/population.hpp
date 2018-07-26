@@ -241,13 +241,13 @@ private:
     /// <summary>
 	/// dissolves a list of sexual partnerships.
     /// </summary>
-	void DissolveSexualPartnerships();
+    void DissolveSexualPartnerships();
 
-	void FormSexualPartnerships();
+    void FormSexualPartnerships();
 
-	void AllPartnershipSexualActivity(Entity *person);
+    void AllPartnershipSexualActivity(Entity *person, SexualPartnership::Type type);
 
-	void UpdateCalibrationConcurrency();
+    void UpdateCalibrationConcurrency();
 
     /// <summary>
     /// @param _gender gender of person we want to create

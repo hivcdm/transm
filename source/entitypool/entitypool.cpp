@@ -215,7 +215,7 @@ bool EntityPool::removeEntity(Entity *_person)
 }
 
 
-bool EntityPool::refreshBucketDemographicProfile(Entity *_person, list<Entity *>::iterator * /*_p_Iter*/, bool forceRefresh)
+bool EntityPool::refreshBucketDemographicProfile(Entity *_person, bool forceRefresh)
 {
 	assert(_person != nullptr);
 	bool success = false;

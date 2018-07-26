@@ -69,12 +69,12 @@ bool SexualPartnership::checkTimeForSplit(Time current_time)
 	return current_time >= timeOfDissolution;
 }
 
-Entity *SexualPartnership::getPartner1()
+Entity *SexualPartnership::getPartner1() const
 {
 	return partners[0];
 }
 
-Entity *SexualPartnership::getPartner2()
+Entity *SexualPartnership::getPartner2() const
 {
 	return partners[1];
 }
@@ -93,7 +93,7 @@ Entity *SexualPartnership::getOtherPartner(Entity *_member)
 	}
 }
 
-SexualPartnership::Type SexualPartnership::getType()
+SexualPartnership::Type SexualPartnership::getType() const
 {
 	return type;
 }
@@ -123,6 +123,16 @@ SexualPartnership::~SexualPartnership()
 	partners[1]->removePartnership(this);
 	partners[0] = nullptr;
 	partners[1] = nullptr;
+}
+
+Time SexualPartnership::getTimeOfFormation() const
+{
+    return timeOfFormation;
+}
+
+Time SexualPartnership::getTimeOfDissolution() const
+{
+    return timeOfDissolution;
 }
 
 } // namespace transm

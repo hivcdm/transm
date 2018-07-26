@@ -76,9 +76,8 @@ public:
 	/// <summary>
 	/// if someone is a member of the wrong Bucket (based on their DemographicProfile), will remove and place them in the correct one
 	/// @param _person person that we have to move
-	/// @param _p_Iter if this is not nullptr, then use this _iter to remove the person. It will be a faster operation than finding them again within the map
 	/// </summary>
-	bool refreshBucketDemographicProfile(Entity *_person, std::list<Entity *>::iterator *_p_Iter, bool forceRefresh = false);
+	bool refreshBucketDemographicProfile(Entity *_person, bool forceRefresh = false);
 
 	/// <summary>
 	/// calculates the current size of the EntityPool
