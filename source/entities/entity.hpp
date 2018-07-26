@@ -238,6 +238,10 @@ protected:
     //  place in the EntityPool
 	DemographicProfile::ProfileID currentBucketID;
 
+	//Entity's relational state
+	//contains all current partnerships including CSW and Casual
+	std::list<SexualPartnership *> partners[(int)SexualPartnership::Type::ENDType];
+
 	//array of number of partners over persons history stratified by partnership type
 	int numPartnersInHistory[(int)SexualPartnership::Type::ENDType];
 
@@ -372,6 +376,16 @@ public:
 	 */
 
 	int getGenerationOfInfection(bool cap_at_5 = true) const;
+
+	/**
+	*	returns the number of partners by partnership type
+	*/
+	int getNumPartners(SexualPartnership::Type);
+
+	/**
+	*	returns the number of partners by partnership type that are either the samerisk or different
+	*/
+	int getNumPartners(SexualPartnership::Type, bool);
 
 	double getQualityOfLife() const { return cepacPatient != nullptr ? cepacPatient->getGeneralState()->QOLMultiplier : 1; }
 
@@ -563,14 +577,22 @@ public:
 	// if this partnership is STEADY, then will change RelationshipStatus
 	void addPartnership(SexualPartnership *_partnership);
 
-	// Record stats about the desolution of this partnership and
-	// set RelationshipStatus appropriately
-	void dissolvePartnership(SexualPartnership *_partnership);
+	void dissolvePartnership();
 
 	//returns true if this person is available for steady partnership
-	// however, this does not change the person's DemographicProfile value that
-	// corresponds to DemographicProfile::Demographic::RelationshipStatus
+	// however, this does not change the person's DemographicProfile value that corresponds to DemographicProfile::Demographic::RelationshipStatus
 	bool availableForPartnership(SexualPartnership::Type _partnershipType) const;
+
+	/*
+	returns true if this person is already in some sort of REGULAR or STEADY partnership with _p
+	*/
+	bool isPartneredWith(Entity *_p);
+
+	//Return true if the person is in a relationship of the given type
+	bool hasPartnership(SexualPartnership::Type);
+
+	// Return true if person is in ANY partnership
+	bool hasPartnership();
 
 	/*******
 	These enums expose characterstics of a person for the purpose of indexing or to assist for partner selection.
@@ -599,16 +621,23 @@ public:
 	//Returns the age difference (in years) to center around
 	virtual double rollForAgeDifference(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums) = 0;
 
-	using TransmissionCoefficientMap = const std::unordered_map<TransmissionType,
-            std::array<double, (std::size_t)HVLStrata::Last>>;
+	/*
+	checks to see whether the duration limit of any SexualPartnerships have elapsed and will add them to a list to be removed
+	note: this method does not remove any partnerships from this person.
+	@param _fromDeath we are ending b/c this person has died. so will force all partnerships of this type to end
+	@param _partnershipsToEnd when method is complete, _partnershipsToEnd will contain partnerships that should end.
+	@return number of partnerships ended
+	*/
+	long getPartnershipsToEnd(Time currTime, SexualPartnership::Type _partnershipType,
+	                          list<SexualPartnership *> &_partnershipsToEnd, bool _fromDeath);
+
 	/*
 	have sex with all partners where the SexualPartnership has a duration. To prevent double-counting activity (iterator hits both partners)
 	sexual activity will only happen for the SexualPartnerships where this person is partner1
 	@return returns a pointer to the person who infected this person.
 	*/
-	Entity *allPartnerSexualActivity(EventParams &_eventParams,
-	    std::list<Entity *> &_newlyInfected, InfectionsTracker *infTrack,
-	    TransmissionCoefficientMap &transmission_coefficients);
+	Entity *allPartnerSexualActivity(EventParams &_eventParams, SexualPartnership::Type _partnershipType,
+        list<Entity *> &_newlyInfected, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients);
 
 	//returns whether this person could partner with Entity _p
 	//  split this by gender because there might be behaviour differences between them

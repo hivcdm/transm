@@ -172,51 +172,89 @@ bool Entity::isEligibleForTreatment(const SimContext::TreatmentInputs::ARTStartP
 	return false;
 }
 
-Entity *Entity::allPartnerSexualActivity(EventParams &_eventParams,
-    std::list<Entity *> &_newlyInfected, InfectionsTracker *infTrack,
-    TransmissionCoefficientMap &transmission_coefficients)
+#if 0
+Entity *Entity::allPartnerSexualActivity(EventParams &_eventParams, SexualPartnership::Type _partnershipType,
+    std::list<Entity *> &_newlyInfected, InfectionsTracker *infTrack, 
+    const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients)
 {
-    std::list<SexualPartnership *> partnerships = find_with_entity(person);
+	assert(_partnershipType < SexualPartnership::Type::ENDType);
+	//iterate through all partnerships of SexualActivity::Type _partnershipType and have them engage in sexual activity
+	auto iter = partners[(int)_partnershipType].begin();
+	auto iterEnd = partners[(int)_partnershipType].end();
+	//becomes non-nullptr only when this person gets infected. We are saving the partner who infected this person
+	Entity *infectedMe = nullptr;
 
-    //iterate through all partnerships of SexualActivity::Type _partnershipType
-    // and have them engage in sexual activity
-    auto iter = partnerships.begin();
-    auto iterEnd = partnerships.end();
-
-    //becomes non-nullptr only when this person gets infected.
-    // We are saving the partner who infected this person
-    Entity *infectedMe = nullptr;
-
-    while(iter != iterEnd)
-    {
-	//initiate sexual activity only if you are partner1
-	if((*iter)->getPartner1() == this)
+	while(iter != iterEnd)
 	{
-	    Entity *infected = (*iter)->monthlySexualActivity(_eventParams, infTrack, transmission_coefficients);
-
-	    //if you or your partners got infected, the infected joins the _newlyInfected list
-	    if(infected != nullptr)
-	    {
-		_newlyInfected.push_back(infected);
-
-		//if you got infected, then you have to save the person who infected you for record keeping
-		if(infected == this)
+		//initiate sexual activity only if you are partner1
+		if((*iter)->getPartner1() == this)
 		{
-		    infectedMe = (*iter)->getOtherPartner(this);
-		}
-	    }
-	}
-	iter++;
-    }
+			Entity *infected = (*iter)->monthlySexualActivity(_eventParams, infTrack, transmission_coefficients);
 
-    return infectedMe;
+			//if you or your partners got infected, the infected joins the _newlyInfected list
+			if(infected != nullptr)
+			{
+				_newlyInfected.push_back(infected);
+
+				//if you got infected, then you have to save the person who infected you for record keeping
+				if(infected == this)
+				{
+					infectedMe = (*iter)->getOtherPartner(this);
+				}
+			}
+		}
+
+		iter++;
+	}
+
+	return infectedMe;
 }
+#else
+/* With partnership db */
+Entity *Entity::allPartnerSexualActivity(EventParams &_eventParams,
+					 SexualPartnership::Type _partnershipType,
+    std::list<Entity *> &_newlyInfected, InfectionsTracker *infTrack, 
+    const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients)
+{
+	assert(_partnershipType < SexualPartnership::Type::ENDType);
+	//iterate through all partnerships of SexualActivity::Type _partnershipType and have them engage in sexual activity
+	auto iter = partners[(int)_partnershipType].begin();
+	auto iterEnd = partners[(int)_partnershipType].end();
+	//becomes non-nullptr only when this person gets infected. We are saving the partner who infected this person
+	Entity *infectedMe = nullptr;
+
+	while(iter != iterEnd)
+	{
+		//initiate sexual activity only if you are partner1
+		if((*iter)->getPartner1() == this)
+		{
+			Entity *infected = (*iter)->monthlySexualActivity(_eventParams, infTrack, transmission_coefficients);
+
+			//if you or your partners got infected, the infected joins the _newlyInfected list
+			if(infected != nullptr)
+			{
+				_newlyInfected.push_back(infected);
+
+				//if you got infected, then you have to save the person who infected you for record keeping
+				if(infected == this)
+				{
+					infectedMe = (*iter)->getOtherPartner(this);
+				}
+			}
+		}
+
+		iter++;
+	}
+
+	return infectedMe;
+}
+#endif
 
 bool Entity::availableForPartnership(SexualPartnership::Type _partnershipType) const
 {
 	if(_partnershipType == SexualPartnership::Type::Steady)
 	{
-		return !isSingle();
+		return (partners[(int)SexualPartnership::Type::Steady].empty());
 	}
 	else
 	{
@@ -260,8 +298,11 @@ void Entity::removePartnership(SexualPartnership *_partnership)
 	}
 }
 
-void Entity::dissolvePartnership(SexualPartnership *_partnership)
+#if 0
+void dissolvePartnership(SexualPartnership *_partnership)
 {
+    //partners[(int)_partnership->getType()].push_back(_partnership);
+
     monthOfLatestPartnershipDissolution[(int)_partnership->getType()] =
 	max(monthOfLatestPartnershipDissolution[(int)_partnership->getType()],
 	    _partnership->getTimeOfDissolution());
@@ -276,6 +317,7 @@ void Entity::dissolvePartnership(SexualPartnership *_partnership)
 		       (std::size_t)DemographicProfile::RelationshipStatus::Single);
     }
 }
+#endif
 
 void Entity::seedInfection(int _generationOfInfection, EventParams &_eventParams,
     bool chronicInfection)
@@ -435,6 +477,67 @@ int Entity::getGenerationOfInfection(bool cap_at_5) const
 	}
 }
 
+int Entity::getNumPartners(SexualPartnership::Type _type)
+{
+	return (int)partners[(int)_type].size();
+}
+
+int Entity::getNumPartners(SexualPartnership::Type _type, bool sameRisk)
+{
+	int numPartners = 0;
+
+	for(std::list<SexualPartnership *>::iterator partnerIter = partners[(int)_type].begin();
+		partnerIter != partners[(int)_type].end(); partnerIter++)
+	{
+		Entity *partner;
+
+		if((*partnerIter)->getPartner1() == this)
+		{
+			partner = (*partnerIter)->getPartner2();
+		}
+		else
+		{
+			partner = (*partnerIter)->getPartner1();
+		}
+
+		bool isSameRisk = risk == partner->getRiskLevel();
+
+		if(isSameRisk == sameRisk)
+		{
+			numPartners += 1;
+		}
+	}
+
+	return numPartners;
+}
+
+int Entity::getNumPartnersInHistory(SexualPartnership::Type _type)
+{
+	return numPartnersInHistory[(int)_type];
+}
+int Entity::getNumPartnersInHistory()
+{
+	int total = 0;
+
+	for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
+	{
+		total += numPartnersInHistory[i];
+	}
+
+	return total;
+}
+Time Entity::getMonthOfLatestPartnershipDissolution(SexualPartnership::Type _type)
+{
+	return monthOfLatestPartnershipDissolution[(int)_type];
+}
+Time Entity::getTimeOfLatestConcurrent()
+{
+	return monthOfLatestConcurrent;
+}
+void Entity::setTimeOfLatestConcurrent(Time _month)
+{
+	monthOfLatestConcurrent = _month;
+}
 void Entity::becomeSexuallyActive(EventParams &_eventParams)
 {
     dmgProfile.set(DemographicProfile::Demographic::SexualActivityStatus,
@@ -477,39 +580,38 @@ unsigned long Entity::getID() const
 	return id;
 }
 
-int Entity::getNumPartnersInHistory(SexualPartnership::Type _type)
+long Entity::getPartnershipsToEnd(Time _currTime, SexualPartnership::Type _partnershipType,
+                                  std::list<SexualPartnership *> &_partnershipsToEnd, bool _fromDeath)
 {
-	return numPartnersInHistory[(int)_type];
-}
+	assert(_partnershipType < SexualPartnership::Type::ENDType);
+	assert((_currTime >= Time::Zero) || _fromDeath);
 
-int Entity::getNumPartnersInHistory()
-{
-	int total = 0;
-
-	for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
+	if(partners[(int)_partnershipType].size() == 0)
 	{
-		total += numPartnersInHistory[i];
+		return 0;
 	}
 
-	return total;
+	//iterate through all current partnerships that had any duration to them.
+	//The iterator points to class SexualPartnership
+	auto iter = partners[(int)_partnershipType].begin();
+	auto iterEnd = partners[(int)_partnershipType].end();
+	long numEnded = 0;
+
+	//go through all partnerships
+	while(iter != iterEnd)
+	{
+		//if it's time for that partnership to end, then put that partnership is the list for deletion
+		if((*iter)->checkTimeForSplit(_currTime) || _fromDeath)
+		{
+			_partnershipsToEnd.push_back(*iter);
+			numEnded++;
+		}
+
+		iter++;
+	}
+
+	return numEnded;
 }
-
-Time Entity::getMonthOfLatestPartnershipDissolution(SexualPartnership::Type _type)
-{
-	return monthOfLatestPartnershipDissolution[(int)_type];
-}
-
-Time Entity::getTimeOfLatestConcurrent()
-{
-	return monthOfLatestConcurrent;
-}
-
-void Entity::setTimeOfLatestConcurrent(Time _month)
-{
-	monthOfLatestConcurrent = _month;
-}
-
-
 
 //Begin Unformed Partnership helper methods
 int Entity::getTotalUnformedPartnerships(SexualPartnership::Type type)
@@ -564,6 +666,54 @@ bool Entity::inCorrectBucketDemographicProfile()
 bool Entity::isAlive() const
 {
 	return !death;
+}
+
+bool Entity::isPartneredWith(Entity *_p)
+{
+	assert((_p != nullptr));
+	assert(_p->isAlive());
+
+	for(int partnershipType = 0; partnershipType < (int)SexualPartnership::Type::ENDType; ++partnershipType)
+	{
+		//iterate through each partnership and check if _p is a member of one of them
+		auto iter = partners[(int)partnershipType].begin();
+		auto endIter = partners[(int)partnershipType].end();
+
+		while(iter != endIter)
+		{
+			if((*iter)->isMember(_p))
+			{
+				return true;
+			}
+
+			iter++;
+		}
+	}
+
+	return false;
+}
+
+bool Entity::hasPartnership(SexualPartnership::Type partnershipType)
+{
+	//if(partners[(int)partnershipType].size() > 0) // With some compilers this can be O(n). GA
+	if(partners[(int)partnershipType].begin() != partners[(int)partnershipType].end())
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool Entity::hasPartnership()
+{
+	for(int partnershipType = 0; partnershipType < (int)SexualPartnership::Type::ENDType; ++partnershipType)
+	{
+		if(partners[partnershipType].begin() != partners[partnershipType].end())
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 bool Entity::isInfected()
