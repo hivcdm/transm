@@ -172,132 +172,6 @@ bool Entity::isEligibleForTreatment(const SimContext::TreatmentInputs::ARTStartP
 	return false;
 }
 
-#if 0
-Entity *Entity::allPartnerSexualActivity(EventParams &_eventParams, SexualPartnership::Type _partnershipType,
-    std::list<Entity *> &_newlyInfected, InfectionsTracker *infTrack, 
-    const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients)
-{
-	assert(_partnershipType < SexualPartnership::Type::ENDType);
-	//iterate through all partnerships of SexualActivity::Type _partnershipType and have them engage in sexual activity
-	auto iter = partners[(int)_partnershipType].begin();
-	auto iterEnd = partners[(int)_partnershipType].end();
-	//becomes non-nullptr only when this person gets infected. We are saving the partner who infected this person
-	Entity *infectedMe = nullptr;
-
-	while(iter != iterEnd)
-	{
-		//initiate sexual activity only if you are partner1
-		if((*iter)->getPartner1() == this)
-		{
-			Entity *infected = (*iter)->monthlySexualActivity(_eventParams, infTrack, transmission_coefficients);
-
-			//if you or your partners got infected, the infected joins the _newlyInfected list
-			if(infected != nullptr)
-			{
-				_newlyInfected.push_back(infected);
-
-				//if you got infected, then you have to save the person who infected you for record keeping
-				if(infected == this)
-				{
-					infectedMe = (*iter)->getOtherPartner(this);
-				}
-			}
-		}
-
-		iter++;
-	}
-
-	return infectedMe;
-}
-#else
-/* With partnership db */
-Entity *Entity::allPartnerSexualActivity(EventParams &_eventParams,
-    SexualPartnership::Type _partnershipType,
-    std::list<Entity *> &_newlyInfected, InfectionsTracker *infTrack,
-    const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>>
-    &transmission_coefficients)
-{
-	assert(_partnershipType < SexualPartnership::Type::ENDType);
-	//iterate through all partnerships of SexualActivity::Type _partnershipType and have them engage in sexual activity
-	auto iter = partners[(int)_partnershipType].begin();
-	auto iterEnd = partners[(int)_partnershipType].end();
-	//becomes non-nullptr only when this person gets infected. We are saving the partner who infected this person
-	Entity *infectedMe = nullptr;
-
-	while(iter != iterEnd)
-	{
-		//initiate sexual activity only if you are partner1
-		if((*iter)->getPartner1() == this)
-		{
-			Entity *infected = (*iter)->monthlySexualActivity(_eventParams, infTrack, transmission_coefficients);
-
-			//if you or your partners got infected, the infected joins the _newlyInfected list
-			if(infected != nullptr)
-			{
-				_newlyInfected.push_back(infected);
-
-				//if you got infected, then you have to save the person who infected you for record keeping
-				if(infected == this)
-				{
-					infectedMe = (*iter)->getOtherPartner(this);
-				}
-			}
-		}
-
-		iter++;
-	}
-
-	return infectedMe;
-}
-#endif
-
-bool Entity::availableForPartnership(SexualPartnership::Type _partnershipType) const
-{
-	if(_partnershipType == SexualPartnership::Type::Steady)
-	{
-		return (partners[(int)SexualPartnership::Type::Steady].empty());
-	}
-	else
-	{
-		return true;
-	}
-}
-
-void Entity::addPartnership(SexualPartnership *_partnership)
-{
-	assert(_partnership != nullptr);
-	assert((_partnership->getPartner1() != nullptr));
-	assert(_partnership->getPartner1()->isAlive());
-	assert((_partnership->getPartner2() != nullptr));
-	assert((_partnership->getPartner2()->isAlive()));
-	partners[(int)_partnership->getType()].push_back(_partnership);
-	numPartnersInHistory[(int)_partnership->getType()]++;
-
-	monthOfLatestPartnershipDissolution[(int)_partnership->getType()] =
-		max(monthOfLatestPartnershipDissolution[(int)_partnership->getType()], _partnership->getTimeOfDissolution());
-
-	//if a STEADY partnership was added && we are SINGLE, the we need to change or RELATIONSHIP_STATUS
-	if((_partnership->getType() == SexualPartnership::Type::Steady) &&
-		(!partners[(int)SexualPartnership::Type::Steady].empty()) &&
-        (getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus) == (std::size_t)DemographicProfile::RelationshipStatus::Single))
-	{
-        dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::NonSingle);
-	}
-}
-
-void Entity::removePartnership(SexualPartnership *_partnership)
-{
-	assert(_partnership != nullptr);
-	    
-	//if a STEADY partnership was removed and we have no more, then we should be set to SINGLE
-	if((_partnership->getType() == SexualPartnership::Type::Steady) &&
-		(partners[(int)SexualPartnership::Type::Steady].empty()) &&
-        (getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus) == (std::size_t)DemographicProfile::RelationshipStatus::NonSingle))
-	{
-        dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::Single);
-	}
-}
-
 void Entity::seedInfection(int _generationOfInfection, EventParams &_eventParams,
     bool chronicInfection)
 {
@@ -456,6 +330,91 @@ int Entity::getGenerationOfInfection(bool cap_at_5) const
 	}
 }
 
+#if 0
+Entity *Entity::allPartnerSexualActivity(EventParams &_eventParams, SexualPartnership::Type _partnershipType,
+    std::list<Entity *> &_newlyInfected, InfectionsTracker *infTrack, 
+    const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients)
+{
+	assert(_partnershipType < SexualPartnership::Type::ENDType);
+	//iterate through all partnerships of SexualActivity::Type _partnershipType and have them engage in sexual activity
+	auto iter = partners[(int)_partnershipType].begin();
+	auto iterEnd = partners[(int)_partnershipType].end();
+	//becomes non-nullptr only when this person gets infected. We are saving the partner who infected this person
+	Entity *infectedMe = nullptr;
+
+	while(iter != iterEnd)
+	{
+		//initiate sexual activity only if you are partner1
+		if((*iter)->getPartner1() == this)
+		{
+			Entity *infected = (*iter)->monthlySexualActivity(_eventParams, infTrack, transmission_coefficients);
+
+			//if you or your partners got infected, the infected joins the _newlyInfected list
+			if(infected != nullptr)
+			{
+				_newlyInfected.push_back(infected);
+
+				//if you got infected, then you have to save the person who infected you for record keeping
+				if(infected == this)
+				{
+					infectedMe = (*iter)->getOtherPartner(this);
+				}
+			}
+		}
+
+		iter++;
+	}
+
+	return infectedMe;
+}
+
+bool Entity::availableForPartnership(SexualPartnership::Type _partnershipType) const
+{
+	if(_partnershipType == SexualPartnership::Type::Steady)
+	{
+		return (partners[(int)SexualPartnership::Type::Steady].empty());
+	}
+	else
+	{
+		return true;
+	}
+}
+
+void Entity::addPartnership(SexualPartnership *_partnership)
+{
+	assert(_partnership != nullptr);
+	assert((_partnership->getPartner1() != nullptr));
+	assert(_partnership->getPartner1()->isAlive());
+	assert((_partnership->getPartner2() != nullptr));
+	assert((_partnership->getPartner2()->isAlive()));
+	partners[(int)_partnership->getType()].push_back(_partnership);
+	numPartnersInHistory[(int)_partnership->getType()]++;
+
+	monthOfLatestPartnershipDissolution[(int)_partnership->getType()] =
+		max(monthOfLatestPartnershipDissolution[(int)_partnership->getType()], _partnership->getTimeOfDissolution());
+
+	//if a STEADY partnership was added && we are SINGLE, the we need to change or RELATIONSHIP_STATUS
+	if((_partnership->getType() == SexualPartnership::Type::Steady) &&
+		(!partners[(int)SexualPartnership::Type::Steady].empty()) &&
+        (getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus) == (std::size_t)DemographicProfile::RelationshipStatus::Single))
+	{
+        dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::NonSingle);
+	}
+}
+
+void Entity::removePartnership(SexualPartnership *_partnership)
+{
+	assert(_partnership != nullptr);
+	    
+	//if a STEADY partnership was removed and we have no more, then we should be set to SINGLE
+	if((_partnership->getType() == SexualPartnership::Type::Steady) &&
+		(partners[(int)SexualPartnership::Type::Steady].empty()) &&
+        (getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus) == (std::size_t)DemographicProfile::RelationshipStatus::NonSingle))
+	{
+        dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::Single);
+	}
+}
+
 int Entity::getNumPartners(SexualPartnership::Type _type)
 {
 	return (int)partners[(int)_type].size();
@@ -490,6 +449,88 @@ int Entity::getNumPartners(SexualPartnership::Type _type, bool sameRisk)
 	return numPartners;
 }
 
+
+long Entity::getPartnershipsToEnd(Time _currTime, SexualPartnership::Type _partnershipType,
+                                  std::list<SexualPartnership *> &_partnershipsToEnd, bool _fromDeath)
+{
+	assert(_partnershipType < SexualPartnership::Type::ENDType);
+	assert((_currTime >= Time::Zero) || _fromDeath);
+
+	if(partners[(int)_partnershipType].size() == 0)
+	{
+		return 0;
+	}
+
+	//iterate through all current partnerships that had any duration to them.
+	//The iterator points to class SexualPartnership
+	auto iter = partners[(int)_partnershipType].begin();
+	auto iterEnd = partners[(int)_partnershipType].end();
+	long numEnded = 0;
+
+	//go through all partnerships
+	while(iter != iterEnd)
+	{
+		//if it's time for that partnership to end, then put that partnership is the list for deletion
+		if((*iter)->checkTimeForSplit(_currTime) || _fromDeath)
+		{
+			_partnershipsToEnd.push_back(*iter);
+			numEnded++;
+		}
+
+		iter++;
+	}
+
+	return numEnded;
+}
+bool Entity::isPartneredWith(Entity *_p)
+{
+	assert((_p != nullptr));
+	assert(_p->isAlive());
+
+	for(int partnershipType = 0; partnershipType < (int)SexualPartnership::Type::ENDType; ++partnershipType)
+	{
+		//iterate through each partnership and check if _p is a member of one of them
+		auto iter = partners[(int)partnershipType].begin();
+		auto endIter = partners[(int)partnershipType].end();
+
+		while(iter != endIter)
+		{
+			if((*iter)->isMember(_p))
+			{
+				return true;
+			}
+
+			iter++;
+		}
+	}
+
+	return false;
+}
+
+bool Entity::hasPartnership(SexualPartnership::Type partnershipType)
+{
+	//if(partners[(int)partnershipType].size() > 0) // With some compilers this can be O(n). GA
+	if(partners[(int)partnershipType].begin() != partners[(int)partnershipType].end())
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool Entity::hasPartnership()
+{
+	for(int partnershipType = 0; partnershipType < (int)SexualPartnership::Type::ENDType; ++partnershipType)
+	{
+		if(partners[partnershipType].begin() != partners[partnershipType].end())
+		{
+			return true;
+		}
+	}
+	return false;
+}
+#endif
+
 int Entity::getNumPartnersInHistory(SexualPartnership::Type _type)
 {
 	return numPartnersInHistory[(int)_type];
@@ -517,6 +558,7 @@ void Entity::setTimeOfLatestConcurrent(Time _month)
 {
 	monthOfLatestConcurrent = _month;
 }
+
 void Entity::becomeSexuallyActive(EventParams &_eventParams)
 {
     dmgProfile.set(DemographicProfile::Demographic::SexualActivityStatus,
@@ -557,39 +599,6 @@ BaseEnumCls::Enum Entity::getDemographicProfileVal(DemographicProfile::Demograph
 unsigned long Entity::getID() const
 {
 	return id;
-}
-
-long Entity::getPartnershipsToEnd(Time _currTime, SexualPartnership::Type _partnershipType,
-                                  std::list<SexualPartnership *> &_partnershipsToEnd, bool _fromDeath)
-{
-	assert(_partnershipType < SexualPartnership::Type::ENDType);
-	assert((_currTime >= Time::Zero) || _fromDeath);
-
-	if(partners[(int)_partnershipType].size() == 0)
-	{
-		return 0;
-	}
-
-	//iterate through all current partnerships that had any duration to them.
-	//The iterator points to class SexualPartnership
-	auto iter = partners[(int)_partnershipType].begin();
-	auto iterEnd = partners[(int)_partnershipType].end();
-	long numEnded = 0;
-
-	//go through all partnerships
-	while(iter != iterEnd)
-	{
-		//if it's time for that partnership to end, then put that partnership is the list for deletion
-		if((*iter)->checkTimeForSplit(_currTime) || _fromDeath)
-		{
-			_partnershipsToEnd.push_back(*iter);
-			numEnded++;
-		}
-
-		iter++;
-	}
-
-	return numEnded;
 }
 
 //Begin Unformed Partnership helper methods
@@ -647,53 +656,6 @@ bool Entity::isAlive() const
 	return !death;
 }
 
-bool Entity::isPartneredWith(Entity *_p)
-{
-	assert((_p != nullptr));
-	assert(_p->isAlive());
-
-	for(int partnershipType = 0; partnershipType < (int)SexualPartnership::Type::ENDType; ++partnershipType)
-	{
-		//iterate through each partnership and check if _p is a member of one of them
-		auto iter = partners[(int)partnershipType].begin();
-		auto endIter = partners[(int)partnershipType].end();
-
-		while(iter != endIter)
-		{
-			if((*iter)->isMember(_p))
-			{
-				return true;
-			}
-
-			iter++;
-		}
-	}
-
-	return false;
-}
-
-bool Entity::hasPartnership(SexualPartnership::Type partnershipType)
-{
-	//if(partners[(int)partnershipType].size() > 0) // With some compilers this can be O(n). GA
-	if(partners[(int)partnershipType].begin() != partners[(int)partnershipType].end())
-	{
-		return true;
-	}
-
-	return false;
-}
-
-bool Entity::hasPartnership()
-{
-	for(int partnershipType = 0; partnershipType < (int)SexualPartnership::Type::ENDType; ++partnershipType)
-	{
-		if(partners[partnershipType].begin() != partners[partnershipType].end())
-		{
-			return true;
-		}
-	}
-	return false;
-}
 
 bool Entity::isInfected()
 {
@@ -1487,6 +1449,26 @@ int Entity::getSexualActivity()
 	return activityLevel;
 }
 
+void Entity::UsePreExposureProphylaxis(double adherence)
+{
+    preExposureProphylaxisAdherence_ = adherence;
+}
+
+int Entity::getCEPACSimContextIndex(EventParams &_eventParams) const
+{
+	int returnValue = 0;
+
+    for(std::size_t i = 0; i < _eventParams.cepacSimContexts.size(); i++)
+	{
+		if(_eventParams.currTime > _eventParams.timesToSwitchSimContext[i])
+		{
+			returnValue = static_cast<int>(i);
+		}
+	}
+
+	return returnValue;
+}
+
 /**** Start constructors, destructors, initializers *****/
 //this constructor is used by the Male and Female classes
 Entity::Entity(Age _age, unsigned int _populationID) :
@@ -1545,6 +1527,7 @@ Entity::Entity(Age _age, unsigned int _populationID) :
 	currentBucketID = DemographicProfile::END;
 }
 
+
 Entity::~Entity(void)
 {
 	//If this person went through CEPAC, delete their CEPACpatient
@@ -1552,69 +1535,7 @@ Entity::~Entity(void)
 	//Didn't I do this somewhere?
 	delete cepacPatient;
 
-	//take person out of all current relationships
-	std::list<SexualPartnership *>::iterator toDelete;
-
-	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
-	{
-		auto iter = partners[type].begin();
-		auto end = partners[type].end();
-
-		while(iter != end)
-		{
-			toDelete = iter;
-			iter++;
-			delete(*toDelete);
-		}
-	}
-}
-
-void Entity::UsePreExposureProphylaxis(double adherence)
-{
-    preExposureProphylaxisAdherence_ = adherence;
-}
-
-void Entity::deleteEntityWithoutDeleting()
-{
-	//Don't delete the cepacPatient -- this causes a weird exception when you try to delete it at the close of simulation, so keep it around
-	//take person out of all current relationships
-	std::list<SexualPartnership *>::iterator toDelete;
-
-	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
-	{
-        std::list<SexualPartnership *>::iterator iter = partners[type].begin();
-        std::list<SexualPartnership *>::iterator end = partners[type].end();
-
-		while(iter != end)
-		{
-			toDelete = iter;
-			iter++;
-			delete(*toDelete);
-		}
-	}
-
-	auto FViter = FVindices.begin();
-
-	while(FViter != FVindices.end())
-	{
-		FViter->first->remove(this);
-		FViter++;
-	}
-}
-
-int Entity::getCEPACSimContextIndex(EventParams &_eventParams) const
-{
-	int returnValue = 0;
-
-    for(std::size_t i = 0; i < _eventParams.cepacSimContexts.size(); i++)
-	{
-		if(_eventParams.currTime > _eventParams.timesToSwitchSimContext[i])
-		{
-			returnValue = static_cast<int>(i);
-		}
-	}
-
-	return returnValue;
+	// TODO: Remove entity from all partnerships in partnershipsdb
 }
 
 } // namespace transm

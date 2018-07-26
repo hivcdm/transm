@@ -127,7 +127,7 @@ public:
         int getTimeOfDissolutionAsInt() const
 	{
 	    return timeOfDissolutionInt;
-	}	    
+	}
 
 private:
     int timeOfDissolutionInt;

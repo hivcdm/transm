@@ -828,7 +828,7 @@ void Population::FormSexualPartnerships()
 	    person->resetLatestUnformedPartnerships(type);
 
 	    int numFormed = CreatePartnerships(parameters_, person, &p_Iter, type);
-	    
+
 	    AllPartnershipSexualActivity(person, type);
 	}
     }
@@ -839,9 +839,15 @@ void Population::AllPartnershipSexualActivity(Entity *person, SexualPartnership:
 {
     std::list<Entity *> newlyInfected;
 
-    //sexual activity among any existing partnerships that have a duration associated with them
-    Entity *infectedMe = person->allPartnerSexualActivity(parameters_, type, newlyInfected,
-        &populationStatistics.infectionsTracker, popWideParams.transmission_coefficients_);
+    auto partners = partnershipDB.find_with_entity_and_type(person, type);
+
+    for (auto iter = partners.first; iter != partners.second; iter++)
+    {
+	//sexual activity among any existing partnerships that have a duration associated with them
+	Entity *infectedMe = iter->monthlySexualActivity(parameters_,
+            &populationStatistics.infectionsTracker, popWideParams.transmission_coefficients_);
+	newlyInfected.push_back(infectedMe);
+    }
 
     //record all incident infections
     std::list<Entity *>::iterator newlyInfectedIter = newlyInfected.begin();
