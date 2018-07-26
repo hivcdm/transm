@@ -79,7 +79,7 @@ public:
 	bool operator>=(const Time &other) const { return month_ >= other.month_; }
 	bool operator<(const Time &other) const { return month_ < other.month_; }
 	bool operator<=(const Time &other) const { return month_ <= other.month_; }
-  
+
 private:
 	int month_;
 };

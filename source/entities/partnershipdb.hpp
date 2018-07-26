@@ -22,8 +22,8 @@ namespace transm {
 
     private:
 	struct byEndDate {};
-	struct byPartnershipType {};
 	struct byEntityId {};
+	struct byPartnershipType {};
 
 	typedef bmi::multi_index_container<
 	    SexualPartnership,
@@ -32,22 +32,21 @@ namespace transm {
 		bmi::ordered_non_unique<
 		    bmi::tag<byEndDate>,
 		    bmi::const_mem_fun<SexualPartnership, int, &SexualPartnership::getTimeOfDissolutionAsInt>
-		>
-#if 0
-		,
+		>,
+		// Hash by entity id
+		bmi::hashed_non_unique<
+		    bmi::tag<byEntityId>,
+		    bmi::const_mem_fun<SexualPartnership, unsigned long, &SexualPartnership::getInitiatorID>
+		>,
 		// Hash by entity id and partnership type
 		bmi::hashed_non_unique<
+		    bmi::tag<byPartnershipType>,
 		    bmi::composite_key<
 			SexualPartnership,
-			bmi::tag<byPartnershipType>,
-			bmi::const_mem_fun<SexualPartnership, Entity,
-					   &SexualPartnership::getPartner1()>,
-			bmi::const_mem_fun<SexualPartnership, SexualPartnership::Type,
-					   &SexualPartnership::getType>
-
-			>
+			bmi::const_mem_fun<SexualPartnership, unsigned long, &SexualPartnership::getInitiatorID>,
+			bmi::const_mem_fun<SexualPartnership, std::string, &SexualPartnership::getTypeString>
+		    >
 		>
-#endif
 	    >
 	> partnership_db;
 	partnership_db db;
@@ -58,6 +57,7 @@ namespace transm {
 
     public:
 	typedef bmi::index<partnership_db, byEndDate>::type end_date_type;
+	typedef bmi::index<partnership_db, byEntityId>::type entity_type;
 
 	PartnershipDB();
 	~PartnershipDB();

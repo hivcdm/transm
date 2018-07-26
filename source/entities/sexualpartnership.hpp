@@ -78,6 +78,7 @@ public:
 	@author schung5
 	**/
 	Entity *getPartner1() const;
+	unsigned long getInitiatorID() const;
 
 	/**
 	Gets the pointer to partner 2. Should be female if this couple is heterosexual
@@ -96,6 +97,7 @@ public:
 	@author schung5
 	**/
 	Type getType() const;
+	std::string getTypeString() const;
 
 	/**
 	returns true if _p is a member of this partnership

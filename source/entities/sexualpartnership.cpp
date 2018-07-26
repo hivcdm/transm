@@ -75,6 +75,11 @@ Entity *SexualPartnership::getPartner1() const
 	return partners[0];
 }
 
+unsigned long SexualPartnership::getInitiatorID() const
+{
+    return partners[0]->getID();
+}
+
 Entity *SexualPartnership::getPartner2() const
 {
 	return partners[1];
@@ -97,6 +102,11 @@ Entity *SexualPartnership::getOtherPartner(Entity *_member)
 SexualPartnership::Type SexualPartnership::getType() const
 {
 	return type;
+}
+
+std::string SexualPartnership::getTypeString() const
+{
+    return TypeStrings.at(type);
 }
 
 bool SexualPartnership::isMember(Entity *_p)
