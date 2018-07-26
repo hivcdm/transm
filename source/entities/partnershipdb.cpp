@@ -16,17 +16,25 @@ namespace transm {
     }
 
 
-    std::pair<PartnershipDB::end_date_type::iterator,PartnershipDB::end_date_type::iterator> PartnershipDB::find_expired(Time time)
+    PartnershipDB::end_date_pair PartnershipDB::find_expired(Time time)
     {
-	end_date_type& index = db.get<byEndDate>();
-	std::pair<end_date_type::iterator, end_date_type::iterator> iter = index.equal_range(time.in_months());
+	end_date_index& index = db.get<byEndDate>();
+	end_date_pair iter = index.equal_range(time.in_months());
+	return iter;
+    }
+
+    PartnershipDB::entity_type_pair PartnershipDB::find_with_entity_and_type(Entity *entity, SexualPartnership::Type type)
+    {
+	entity_type_index& index = db.get<byPartnershipType>();
+	entity_type_pair iter = index.equal_range(make_tuple(entity->getID(),
+	    SexualPartnership::GetTypeString(type)));
 	return iter;
     }
 
     void PartnershipDB::remove_expired(Time time)
     {
-	end_date_type& index = db.get<byEndDate>();
-	std::pair<end_date_type::iterator, end_date_type::iterator> iter = index.equal_range(time.in_months());
+	end_date_index& index = db.get<byEndDate>();
+	std::pair<end_date_index::iterator, end_date_index::iterator> iter = index.equal_range(time.in_months());
 	index.erase(iter.first, iter.second);
     }
 
@@ -34,8 +42,8 @@ namespace transm {
       // remove single partnership from the db
     void PartnershipDB::remove_partnership(SexualPartnership *partnership)
     {
-        end_date_type& index = db.get<byID>();
-	end_date_type::iterator iter = index.find(partnership);
+        end_date_index& index = db.get<byID>();
+	end_date_index::iterator iter = index.find(partnership);
 
 	index.erase(iter);
 	/*

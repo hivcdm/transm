@@ -43,6 +43,7 @@ public:
 		First = Steady
 	};
 	static const std::map<Type, std::string> TypeStrings;
+	static const std::string GetTypeString(SexualPartnership::Type type);
 
 	SexualPartnership();
 

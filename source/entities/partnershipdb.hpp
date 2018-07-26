@@ -56,15 +56,22 @@ namespace transm {
 	PartnershipDB& operator=(const PartnershipDB& that);
 
     public:
-	typedef bmi::index<partnership_db, byEndDate>::type end_date_type;
-	typedef bmi::index<partnership_db, byEntityId>::type entity_type;
+	typedef bmi::index<partnership_db, byEndDate>::type end_date_index;
+	typedef bmi::index<partnership_db, byEntityId>::type entity_index;
+	typedef bmi::index<partnership_db, byPartnershipType>::type entity_type_index;
+
+	using end_date_pair = std::pair<end_date_index::iterator,end_date_index::iterator>;
+	using entity_pair = std::pair<entity_index::iterator,entity_index::iterator>;
+	using entity_type_pair = std::pair<entity_type_index::iterator,entity_type_index::iterator>;
 
 	PartnershipDB();
 	~PartnershipDB();
 	void add_partnership(Entity *_person1, Entity *_person2, EventParams &_eventParams,
 	    SexualPartnership::Type _partnershipType);
-	std::pair<end_date_type::iterator,end_date_type::iterator> find_expired(Time time);
+	end_date_pair find_expired(Time time);
 	void remove_expired(Time time);
+
+	entity_type_pair find_with_entity_and_type(Entity *entity, SexualPartnership::Type type);
 
 	void info() {
 	    std::cout << "PartnershipDB: " << db.size() << std::endl;
@@ -74,6 +81,7 @@ namespace transm {
       	void remove_partnership(SexualPartnership *partnership);
 
 	auto find_with_entity(Entity *entity);
+	auto find_with_entity_and_type(Entity *entity, SexualPartnership::Type type);
 	auto remove_entity_partnerships(Entity *entity);
 
 	// check if the partnership of this type exists between these entities

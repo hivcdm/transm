@@ -212,9 +212,10 @@ Entity *Entity::allPartnerSexualActivity(EventParams &_eventParams, SexualPartne
 #else
 /* With partnership db */
 Entity *Entity::allPartnerSexualActivity(EventParams &_eventParams,
-					 SexualPartnership::Type _partnershipType,
-    std::list<Entity *> &_newlyInfected, InfectionsTracker *infTrack, 
-    const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients)
+    SexualPartnership::Type _partnershipType,
+    std::list<Entity *> &_newlyInfected, InfectionsTracker *infTrack,
+    const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>>
+    &transmission_coefficients)
 {
 	assert(_partnershipType < SexualPartnership::Type::ENDType);
 	//iterate through all partnerships of SexualActivity::Type _partnershipType and have them engage in sexual activity

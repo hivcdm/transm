@@ -21,6 +21,11 @@ const std::map<SexualPartnership::Type, std::string> SexualPartnership::TypeStri
     {SexualPartnership::Type::CswMsm, "CswMsm"}
 };
 
+const std::string SexualPartnership::GetTypeString(SexualPartnership::Type type)
+{
+    return TypeStrings.at(type);
+}
+
 SexualPartnership::SexualPartnership(Entity *_person1, Entity *_person2, EventParams &_eventParams,
                                      SexualPartnership::Type _partnershipType)
 {
