@@ -287,8 +287,7 @@ void Entity::addPartnership(SexualPartnership *_partnership)
 void Entity::removePartnership(SexualPartnership *_partnership)
 {
 	assert(_partnership != nullptr);
-	partners[(int)_partnership->getType()].remove(_partnership);
-
+	    
 	//if a STEADY partnership was removed and we have no more, then we should be set to SINGLE
 	if((_partnership->getType() == SexualPartnership::Type::Steady) &&
 		(partners[(int)SexualPartnership::Type::Steady].empty()) &&
@@ -297,27 +296,6 @@ void Entity::removePartnership(SexualPartnership *_partnership)
         dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::Single);
 	}
 }
-
-#if 0
-void dissolvePartnership(SexualPartnership *_partnership)
-{
-    //partners[(int)_partnership->getType()].push_back(_partnership);
-
-    monthOfLatestPartnershipDissolution[(int)_partnership->getType()] =
-	max(monthOfLatestPartnershipDissolution[(int)_partnership->getType()],
-	    _partnership->getTimeOfDissolution());
-
-    //if a STEADY partnership was removed, the we need to change or RELATIONSHIP_STATUS
-    if((_partnership->getType() == SexualPartnership::Type::Steady) &&
-       (!partners[(int)SexualPartnership::Type::Steady].empty()) &&
-       (getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus) ==
-	(std::size_t)DemographicProfile::RelationshipStatus::Single
-    {
-        dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus,
-		       (std::size_t)DemographicProfile::RelationshipStatus::Single);
-    }
-}
-#endif
 
 void Entity::seedInfection(int _generationOfInfection, EventParams &_eventParams,
     bool chronicInfection)

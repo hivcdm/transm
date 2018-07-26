@@ -5,18 +5,36 @@ namespace transm {
     PartnershipDB::PartnershipDB() {
     }
 
+    PartnershipDB::~PartnershipDB() {
+    }
+
     // add single partnership to the db
     void PartnershipDB::add_partnership(Entity *_person1, Entity *_person2, EventParams &_eventParams,
         SexualPartnership::Type _partnershipType)
     {
-	//db.insert(db.begin(), std::move(partnership));
 	db.emplace(_person1, _person2, _eventParams, _partnershipType);
     }
 
-    // remove single partnership from the db
+
+    std::pair<PartnershipDB::end_date_type::iterator,PartnershipDB::end_date_type::iterator> PartnershipDB::find_expired(Time time)
+    {
+	end_date_type& index = db.get<byEndDate>();
+	std::pair<end_date_type::iterator, end_date_type::iterator> iter = index.equal_range(time.in_months());
+	return iter;
+    }
+
+    void PartnershipDB::remove_expired(Time time)
+    {
+	end_date_type& index = db.get<byEndDate>();
+	std::pair<end_date_type::iterator, end_date_type::iterator> iter = index.equal_range(time.in_months());
+	index.erase(iter.first, iter.second);
+    }
+
+#if 0
+      // remove single partnership from the db
     void PartnershipDB::remove_partnership(SexualPartnership *partnership)
     {
-        end_date_type& index = db.get<byEndDate>();
+        end_date_type& index = db.get<byID>();
 	end_date_type::iterator iter = index.find(partnership);
 
 	index.erase(iter);
@@ -31,21 +49,6 @@ name_index.replace(it,anna); // update her record
 	 */
     }
 
-    std::pair<PartnershipDB::end_date_type::iterator,PartnershipDB::end_date_type::iterator> PartnershipDB::find_expired(Time time)
-    {
-	end_date_type& index = db.get<byEndDate>();
-	std::pair<end_date_type::iterator, end_date_type::iterator> iter = index.equal_range(time);
-	return iter;
-    }
-
-    void PartnershipDB::remove_expired(Time time)
-    {
-	end_date_type& index = db.get<byEndDate>();
-	std::pair<end_date_type::iterator, end_date_type::iterator> iter = index.equal_range(time);
-	index.erase(iter.first, iter.second);
-    }
-
-#if 0
     auto PartnershipDB::find(SexualPartnership& partnership) {
 	//auto element_ref = db.find<byKey>(partnership);
 	//return std::make_pair(PartnershipDB::db.iterator_to<0>().find(partnership),

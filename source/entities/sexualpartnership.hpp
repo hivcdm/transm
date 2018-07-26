@@ -108,13 +108,26 @@ public:
 	@return returns a pointer to a person who has been newly infected. nullptr if no infection occured
 	@author schung5
 	**/
-        Entity *monthlySexualActivity(EventParams &_eventParams, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, 10ULL>> &transmission_coefficients);
+        Entity *monthlySexualActivity(EventParams &_eventParams, InfectionsTracker *infTrack,
+	    const std::unordered_map<TransmissionType, std::array<double, 10ULL>> &transmission_coefficients);
 
-        Time getTimeOfFormation() const;
+        Time getTimeOfFormation() const
+	{
+	    return timeOfFormation;
+	}
 
-        Time getTimeOfDissolution() const;
+        Time getTimeOfDissolution() const
+	{
+	    return timeOfDissolution;
+	}
+
+        int getTimeOfDissolutionAsInt() const
+	{
+	    return timeOfDissolutionInt;
+	}	    
 
 private:
+    int timeOfDissolutionInt;
 	//time that this partnership will dissolve
 	Time timeOfDissolution;
 
@@ -126,7 +139,6 @@ private:
 
 	//this contains copies of pointers of partners
 	Entity *partners[2];
-
 };
 
 } // namespace transm

@@ -867,7 +867,7 @@ void Population::AllPartnershipSexualActivity(Entity *person, SexualPartnership:
 
 	if(parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
 	{
-	    populationStatistics.recordIncidentInfection(parameters_, parameters_.currTime,
+	  populationStatistics.recordIncidentInfection(parameters_, type, parameters_.currTime,
                 wasInfected, wasUninfected);
 	}
 
@@ -966,6 +966,7 @@ void Population::DissolveSexualPartnerships()
 	    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << std::endl;
 	}
 
+#if 0
 	//if this initiator is now single, then make sure they are in singles pool
 	if(!_initiator->inCorrectBucketDemographicProfile())
 	{
@@ -989,6 +990,7 @@ void Population::DissolveSexualPartnerships()
 	{
 	    entities->refreshBucketDemographicProfile(partner);
 	}
+#endif
     }
     partnershipDB.remove_expired(parameters_.currTime);
 }
@@ -3630,8 +3632,10 @@ void Population::Initialize(const PopulationParameters &parameters)
 
         //try to form partnership, will add Male back to the pool if partnership was formed
         CreatePartnerships(parameters_, drawn, nullptr, SexualPartnership::Type::Steady, true);
+	
         numCouples--;
     }
+    partnershipDB.info();
 
     //number of regular couples -- % married of adult population by DemographicProfile::SexualActivityStatus::ActiveStatus / 2
     //Note that some people may end up in multiple relationships -- this should come out in the wash (?)

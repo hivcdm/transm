@@ -57,6 +57,7 @@ SexualPartnership::SexualPartnership(Entity *_person1, Entity *_person2, EventPa
 
 	//set time for partnership to dissolve
 	timeOfDissolution = _eventParams.currTime + maxDuration;
+	timeOfDissolutionInt = timeOfDissolution.in_months();
 	assert(timeOfDissolution.in_months() >= 0);
 
 	//save the members of this partnership
@@ -123,16 +124,6 @@ SexualPartnership::~SexualPartnership()
 	partners[1]->removePartnership(this);
 	partners[0] = nullptr;
 	partners[1] = nullptr;
-}
-
-Time SexualPartnership::getTimeOfFormation() const
-{
-    return timeOfFormation;
-}
-
-Time SexualPartnership::getTimeOfDissolution() const
-{
-    return timeOfDissolution;
 }
 
 } // namespace transm

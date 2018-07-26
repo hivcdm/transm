@@ -31,22 +31,24 @@ namespace transm {
 		// Index ordered by end date for fast monthly dissolution
 		bmi::ordered_non_unique<
 		    bmi::tag<byEndDate>,
-		    bmi::const_mem_fun<SexualPartnership, Time, &SexualPartnership::getTimeOfDissolution>
+		    bmi::const_mem_fun<SexualPartnership, int, &SexualPartnership::getTimeOfDissolutionAsInt>
 		>
 #if 0
-	      ,
-		// Index by partnership type
-		bmi::ordered_non_unique<
-		    bmi::tag<byPartnershipType>,
-		    bmi::mem_fun<SexualPartnership, SexualPartnership::Type,  &SexualPartnership::getType>
-		>,
-		// Index by entity id for fast dissolution upon entity death
-		bmi::ordered_unique<
-		    bmi::tag<byEntityId>,
-		    bmi::const_mem_fun<Entity, unsigned long, &Entity::getID>
+		,
+		// Hash by entity id and partnership type
+		bmi::hashed_non_unique<
+		    bmi::composite_key<
+			SexualPartnership,
+			bmi::tag<byPartnershipType>,
+			bmi::const_mem_fun<SexualPartnership, Entity,
+					   &SexualPartnership::getPartner1()>,
+			bmi::const_mem_fun<SexualPartnership, SexualPartnership::Type,
+					   &SexualPartnership::getType>
+
+			>
 		>
 #endif
-	      >
+	    >
 	> partnership_db;
 	partnership_db db;
 
@@ -61,11 +63,16 @@ namespace transm {
 	~PartnershipDB();
 	void add_partnership(Entity *_person1, Entity *_person2, EventParams &_eventParams,
 	    SexualPartnership::Type _partnershipType);
-	void remove_partnership(SexualPartnership *partnership);
 	std::pair<end_date_type::iterator,end_date_type::iterator> find_expired(Time time);
 	void remove_expired(Time time);
 
+	void info() {
+	    std::cout << "PartnershipDB: " << db.size() << std::endl;
+	}
+
 #if 0
+      	void remove_partnership(SexualPartnership *partnership);
+
 	auto find_with_entity(Entity *entity);
 	auto remove_entity_partnerships(Entity *entity);
 
