@@ -333,7 +333,7 @@ int Msm::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnershi
     assert(_partnershipType < SexualPartnership::Type::ENDType);
 
     //person can only have 1 steady partner at a time so return 0 if person is already in Steady
-    if((_partnershipType == SexualPartnership::Type::SteadyMsm) && (!partners[(int)_partnershipType].empty()))
+    if((_partnershipType == SexualPartnership::Type::SteadyMsm) && !isSingle())
     {
         return 0;
     }
@@ -343,7 +343,7 @@ int Msm::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnershi
     partnerRate = partnerAcqRates[(int)_partnershipType];
 
     //if this person has a steady partner then adjust acquisition rate
-    if(!partners[(int)SexualPartnership::Type::SteadyMsm].empty())
+    if(!isSingle())
     {
         //if we're thinking of getting another partner, then lower chances if we have a steady partner
         partnerRate *= populationSpecificParams.getPartnerAcqMultWithSteady(getRiskLevel());

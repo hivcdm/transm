@@ -358,7 +358,7 @@ int Male::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnersh
 	assert(_partnershipType < SexualPartnership::Type::ENDType);
 
 	//person can only have 1 steady partner at a time so return 0 if person is already in Steady
-	if((_partnershipType == SexualPartnership::Type::Steady) && (!partners[(int)_partnershipType].empty()))
+	if((_partnershipType == SexualPartnership::Type::Steady) && !isSingle())
 	{
 		return 0;
 	}
@@ -368,7 +368,7 @@ int Male::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnersh
 	partnerRate = partnerAcqRates[(int)_partnershipType];
 
 	//if this person has a steady partner then adjust acquisition rate
-	if(!partners[(int)SexualPartnership::Type::Steady].empty())
+	if(!isSingle())
 	{
 		//if we're thinking of getting another partner, then lower chances if we have a steady partner
 		partnerRate *= populationSpecificParams.getPartnerAcqMultWithSteady(getRiskLevel());

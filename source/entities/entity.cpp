@@ -12,6 +12,8 @@
 #include "statistics/artrollouttracker.hpp"
 #include "statistics/coststracker.hpp"
 
+#include <valarray>
+
 namespace transm {
 
 class EntityPool;
@@ -330,6 +332,40 @@ int Entity::getGenerationOfInfection(bool cap_at_5) const
 	}
 }
 
+
+void Entity::addPartnership(SexualPartnership *_partnership)
+{
+	assert(_partnership->getPartner1());
+	assert(_partnership->getPartner1()->isAlive());
+	assert(_partnership->getPartner2());
+	assert(_partnership->getPartner2()->isAlive());
+
+	partners[(int)_partnership->getType()]++;
+	numPartnersInHistory[(int)_partnership->getType()]++;
+
+	monthOfLatestPartnershipDissolution[(int)_partnership->getType()] =
+		max(monthOfLatestPartnershipDissolution[(int)_partnership->getType()], _partnership->getTimeOfDissolution());
+
+	//if a STEADY partnership was added && we are SINGLE, the we need to change or RELATIONSHIP_STATUS
+	if((_partnership->getType() == SexualPartnership::Type::Steady) && isSingle())
+	{
+	    dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus,
+		(std::size_t)DemographicProfile::RelationshipStatus::NonSingle);
+	}
+}
+
+void Entity::removePartnership(SexualPartnership::Type _partnershipType)
+{
+    partners[(int)_partnershipType]--;
+
+    //if a STEADY partnership was removed and we have no more, then we should be set to SINGLE
+    if((_partnershipType == SexualPartnership::Type::Steady) && !isSingle())
+    {
+        dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus,
+		       (std::size_t)DemographicProfile::RelationshipStatus::Single);
+    }
+}
+
 #if 0
 Entity *Entity::allPartnerSexualActivity(EventParams &_eventParams, SexualPartnership::Type _partnershipType,
     std::list<Entity *> &_newlyInfected, InfectionsTracker *infTrack, 
@@ -379,76 +415,6 @@ bool Entity::availableForPartnership(SexualPartnership::Type _partnershipType) c
 		return true;
 	}
 }
-
-void Entity::addPartnership(SexualPartnership *_partnership)
-{
-	assert(_partnership != nullptr);
-	assert((_partnership->getPartner1() != nullptr));
-	assert(_partnership->getPartner1()->isAlive());
-	assert((_partnership->getPartner2() != nullptr));
-	assert((_partnership->getPartner2()->isAlive()));
-	partners[(int)_partnership->getType()].push_back(_partnership);
-	numPartnersInHistory[(int)_partnership->getType()]++;
-
-	monthOfLatestPartnershipDissolution[(int)_partnership->getType()] =
-		max(monthOfLatestPartnershipDissolution[(int)_partnership->getType()], _partnership->getTimeOfDissolution());
-
-	//if a STEADY partnership was added && we are SINGLE, the we need to change or RELATIONSHIP_STATUS
-	if((_partnership->getType() == SexualPartnership::Type::Steady) &&
-		(!partners[(int)SexualPartnership::Type::Steady].empty()) &&
-        (getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus) == (std::size_t)DemographicProfile::RelationshipStatus::Single))
-	{
-        dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::NonSingle);
-	}
-}
-
-void Entity::removePartnership(SexualPartnership *_partnership)
-{
-	assert(_partnership != nullptr);
-	    
-	//if a STEADY partnership was removed and we have no more, then we should be set to SINGLE
-	if((_partnership->getType() == SexualPartnership::Type::Steady) &&
-		(partners[(int)SexualPartnership::Type::Steady].empty()) &&
-        (getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus) == (std::size_t)DemographicProfile::RelationshipStatus::NonSingle))
-	{
-        dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::Single);
-	}
-}
-
-int Entity::getNumPartners(SexualPartnership::Type _type)
-{
-	return (int)partners[(int)_type].size();
-}
-
-int Entity::getNumPartners(SexualPartnership::Type _type, bool sameRisk)
-{
-	int numPartners = 0;
-
-	for(std::list<SexualPartnership *>::iterator partnerIter = partners[(int)_type].begin();
-		partnerIter != partners[(int)_type].end(); partnerIter++)
-	{
-		Entity *partner;
-
-		if((*partnerIter)->getPartner1() == this)
-		{
-			partner = (*partnerIter)->getPartner2();
-		}
-		else
-		{
-			partner = (*partnerIter)->getPartner1();
-		}
-
-		bool isSameRisk = risk == partner->getRiskLevel();
-
-		if(isSameRisk == sameRisk)
-		{
-			numPartners += 1;
-		}
-	}
-
-	return numPartners;
-}
-
 
 long Entity::getPartnershipsToEnd(Time _currTime, SexualPartnership::Type _partnershipType,
                                   std::list<SexualPartnership *> &_partnershipsToEnd, bool _fromDeath)
@@ -507,34 +473,29 @@ bool Entity::isPartneredWith(Entity *_p)
 	return false;
 }
 
+#endif
+
 bool Entity::hasPartnership(SexualPartnership::Type partnershipType)
 {
-	//if(partners[(int)partnershipType].size() > 0) // With some compilers this can be O(n). GA
-	if(partners[(int)partnershipType].begin() != partners[(int)partnershipType].end())
-	{
-		return true;
-	}
-
-	return false;
+    return (partners[(int)partnershipType] > 0);
 }
 
 bool Entity::hasPartnership()
 {
-	for(int partnershipType = 0; partnershipType < (int)SexualPartnership::Type::ENDType; ++partnershipType)
-	{
-		if(partners[partnershipType].begin() != partners[partnershipType].end())
-		{
-			return true;
-		}
-	}
-	return false;
+    std::valarray<int> valarr (partners,(int)SexualPartnership::Type::ENDType);
+    return (valarr.sum() > 0);
 }
-#endif
+
+int Entity::getNumPartners(SexualPartnership::Type _type)
+{
+	return partners[(int)_type];
+}
 
 int Entity::getNumPartnersInHistory(SexualPartnership::Type _type)
 {
 	return numPartnersInHistory[(int)_type];
 }
+
 int Entity::getNumPartnersInHistory()
 {
 	int total = 0;
@@ -677,10 +638,18 @@ bool Entity::isCSW() const
 
 bool Entity::isMale() const
 {
-    return (getDemographicProfileVal(DemographicProfile::Demographic::Gender) ==
-	    (std::size_t)DemographicProfile::Gender::Male);
+    return (getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus) ==
+	    (std::size_t)DemographicProfile::RelationshipStatus::NonSingle);
 }
 
+// Single meaning has a Steady relationship
+bool Entity::isSingle() const
+{
+    return (getDemographicProfileVal(DemographicProfile::Demographic::Gender) ==
+	    (std::size_t)DemographicProfile::Gender::Male);
+
+}
+    
 
 void Entity::rollForBecomeSexWorker(EventParams &_eventParams, bool _isInit, double initialProb)
 {

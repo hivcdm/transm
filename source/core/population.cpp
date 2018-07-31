@@ -841,40 +841,39 @@ void Population::AllPartnershipSexualActivity(Entity *person, SexualPartnership:
 
     auto partners = partnershipDB.find_with_entity_and_type(person, type);
 
+    Entity *infectedMe;
     for (auto iter = partners.first; iter != partners.second; iter++)
     {
 	//sexual activity among any existing partnerships that have a duration associated with them
-	Entity *infectedMe = iter->monthlySexualActivity(parameters_,
+	infectedMe = iter->monthlySexualActivity(parameters_,
             &populationStatistics.infectionsTracker, popWideParams.transmission_coefficients_);
 	newlyInfected.push_back(infectedMe);
     }
 
     //record all incident infections
     std::list<Entity *>::iterator newlyInfectedIter = newlyInfected.begin();
-
     while(newlyInfectedIter != newlyInfected.end())
     {
-	Entity *wasUninfected = *newlyInfectedIter;
+	Entity *infectee = *newlyInfectedIter;
 
-	assert(wasUninfected->isSexuallyActive());
+	assert(infectee->isSexuallyActive());
 
-	((BucketSexualMixing *) entities->getBucket(wasUninfected->getDemographicProfile()->getProfileID()))->increaseInfected(wasUninfected);
+	((BucketSexualMixing *) entities->getBucket(infectee->getDemographicProfile()->getProfileID()))->increaseInfected(infectee);
 
         //initiator only gets infected once during this loop
-	Entity *wasInfected = (*newlyInfectedIter == person) ? infectedMe : person;
+	Entity *infector = (*newlyInfectedIter == person) ? infectedMe : person;
 
-	RecordInfection(wasUninfected, wasInfected, parameters_.currTime);
+	RecordInfection(infectee, infector, parameters_.currTime);
 
 	//Adds person to the untreated pool if using rollout
 	if(parameters_.useRollout)
 	{
-	    rolloutUntreatedPool.push_back(wasUninfected);
+	    rolloutUntreatedPool.push_back(infectee);
 	}
 
 	if(parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled)
 	{
-	  populationStatistics.recordIncidentInfection(parameters_, type, parameters_.currTime,
-                wasInfected, wasUninfected);
+	    populationStatistics.recordIncidentInfection(parameters_, type, parameters_.currTime, infector, infectee);
 	}
 
 	newlyInfectedIter++;
@@ -1339,7 +1338,7 @@ bool Population::rollForChronicInfection(RandomNumberGenerator &_randomNums)
 }
 
 void Population::RecordInfection(const Entity *infectee, const Entity *infector, Time time)
-{
+{   
     if(individual_summaries_.size() >= NumIndividualSummaries)
     {
         return;
@@ -2141,7 +2140,7 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Entity *_
 		parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "+ Male " << _initiator->getID() << " attempts to form " <<
 		        numPartners << " " << (SexualPartnership::TypeStrings.at(_partnershipType)) << " partnerships:" << std::endl;
 	}
-
+	
     while(numPartners > 0)
     {
         //Decrement numPartners
@@ -2196,7 +2195,7 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Entity *_
             attemptedPartners.push_back(partner);
 
             //if we tried to draw someone we are already seeing, then redraw until we pick someone new
-            if(_initiator->isPartneredWith(partner))
+            if(partnershipDB.partnership_exists(_initiator, partner, _partnershipType))
             {
                 if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (_initiator->trace() || partner->trace()))
                 {
@@ -2339,20 +2338,13 @@ void Population::ProcessDeath(EventParams &parameters_, Entity *_p, bool calcula
 
 	//holds any former steady partners that are widowed after a partner's death
 	// we may need to put the partners back into the singles pool
-	std::list<SexualPartnership *> formerPartnerships;
-
-	//we have to take care of what happens to any ongoing partnerships
-	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
+	auto formerPartnerships = partnershipDB.find_with_entity(_p);
+	for (auto partnerIter = formerPartnerships.first; partnerIter != formerPartnerships.second; partnerIter++)
 	{
-	    _p->getPartnershipsToEnd(parameters_.currTime, SexualPartnership::Type(type), formerPartnerships, true);
+
+	    _p->removePartnership(partnerIter->getType());
 	}
- 
-#if USING_PARTNERSHIP_DB
-	std::list<SexualPartnership *> formerPartnerships = partnershipDB.get<byEntityID>(_p->getID());
-	for (SexualPartnership *partnership : formerPartnerships) {
-	    _p->dissolvePartnership(partnership);
-	}
-#endif
+	partnershipDB.remove_with_entity(_p);
 
 	currDeathCauses[(std::size_t)_p->deathStatus]++;
 	populationStatistics.processDeath(_p, parameters_);
@@ -2708,8 +2700,10 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 
 			auto j = e->getRiskLevel() == Entity::RiskLevel::HIGH ? 0 : 2;
 
-			double_num_partnerships[entity_type][1][(std::size_t)partnership_type] += static_cast<std::size_t>(e->getNumPartners(partnership_type, false));
-			double_num_partnerships[entity_type][j][(std::size_t)partnership_type] += static_cast<std::size_t>(e->getNumPartners(partnership_type, true));
+			double_num_partnerships[entity_type][1][(std::size_t)partnership_type] +=
+			    static_cast<std::size_t>(partnershipDB.num_partners(e, partnership_type, false));
+			double_num_partnerships[entity_type][j][(std::size_t)partnership_type] +=
+			    static_cast<std::size_t>(partnershipDB.num_partners(e, partnership_type, true));
 		}
 
 		if (num_partners >= 2)

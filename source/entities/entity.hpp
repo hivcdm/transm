@@ -238,6 +238,9 @@ protected:
     //  place in the EntityPool
 	DemographicProfile::ProfileID currentBucketID;
 
+    // Contains a count of the current partnerships for fast partnership type checks
+    int partners[(int)SexualPartnership::Type::ENDType];
+
 	//array of number of partners over persons history stratified by partnership type
 	int numPartnersInHistory[(int)SexualPartnership::Type::ENDType];
 
@@ -370,14 +373,9 @@ public:
 	int getGenerationOfInfection(bool cap_at_5 = true) const;
 
 	/**
-	*	returns the number of partners by partnership type
+	*  returns the number of partners by partnership type
 	*/
 	int getNumPartners(SexualPartnership::Type);
-
-	/**
-	*	returns the number of partners by partnership type that are either the samerisk or different
-	*/
-	int getNumPartners(SexualPartnership::Type, bool);
 
 	double getQualityOfLife() const { return cepacPatient != nullptr ? cepacPatient->getGeneralState()->QOLMultiplier : 1; }
 
@@ -435,6 +433,8 @@ public:
 	bool isCSW() const;
 
 	bool isMale() const;
+
+    bool isSingle() const;
 
 	/**
 	//see whether person dies. If they went through CEPAC, use health trace. else roll against nonAIDS death probs
@@ -592,6 +592,20 @@ public:
 	//Returns the age difference (in years) to center around
 	virtual double rollForAgeDifference(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums) = 0;
 
+    // if this partnership is STEADY, then will change RelationshipStatus
+    void addPartnership(SexualPartnership *_partnership);
+    
+    //removes indications that this person is a particular sexual partnership
+    //  this is called when that partnership separates
+    //  will remove pointers to the SexualPartnership from both partners' partner lists
+    void removePartnership(SexualPartnership::Type _partnershipType);
+
+    //Return true if the person is in a relationship of the given type
+    bool hasPartnership(SexualPartnership::Type);
+
+    // Return true if person is in ANY partnership
+    bool hasPartnership();
+
 #if 0
 	/*
 	checks to see whether the duration limit of any SexualPartnerships have elapsed and will add them to a list to be removed
@@ -611,15 +625,6 @@ public:
     Entity *allPartnerSexualActivity(EventParams &_eventParams, SexualPartnership::Type _partnershipType,
         list<Entity *> &_newlyInfected, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients);
 
-	//removes indications that this person is a particular sexual partnership
-	//  this is called when that partnership separates
-	//  will remove pointers to the SexualPartnership from both partners' partner lists
-	void removePartnership(SexualPartnership *_partnership);
-
-	//stores data to indicate that this person is in a sexual partnership
-	// if this partnership is STEADY, then will change RelationshipStatus
-	void addPartnership(SexualPartnership *_partnership);
-
 	//returns true if this person is available for steady partnership
 	// however, this does not change the person's DemographicProfile value that corresponds to DemographicProfile::Demographic::RelationshipStatus
 	bool availableForPartnership(SexualPartnership::Type _partnershipType) const;
@@ -628,12 +633,6 @@ public:
 	returns true if this person is already in some sort of REGULAR or STEADY partnership with _p
 	*/
 	bool isPartneredWith(Entity *_p);
-
-	//Return true if the person is in a relationship of the given type
-	bool hasPartnership(SexualPartnership::Type);
-
-	// Return true if person is in ANY partnership
-	bool hasPartnership();
 
 #endif
 

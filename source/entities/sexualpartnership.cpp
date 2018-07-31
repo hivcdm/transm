@@ -114,14 +114,14 @@ std::string SexualPartnership::getTypeString() const
     return TypeStrings.at(type);
 }
 
-bool SexualPartnership::isMember(Entity *_p)
+bool SexualPartnership::isMember(Entity *_p) const
 {
 	return ((_p == partners[0]) || (_p == partners[1]));
 }
 
 Entity *SexualPartnership::monthlySexualActivity(EventParams &_eventParams, 
     InfectionsTracker *infTrack, 
-    const std::unordered_map<TransmissionType, std::array<double, (std::size_t)Entity::HVLStrata::Last>> &transmission_coefficients)
+    const std::unordered_map<TransmissionType, std::array<double, (std::size_t)Entity::HVLStrata::Last>> &transmission_coefficients) const
 {
 	int eventsThisMonth = partners[0]->rollNumEventsPerPartner(partners[1], _eventParams.randomNums, type);
 
@@ -135,10 +135,10 @@ Entity *SexualPartnership::monthlySexualActivity(EventParams &_eventParams,
 
 SexualPartnership::~SexualPartnership()
 {
-	partners[0]->removePartnership(this);
-	partners[1]->removePartnership(this);
-	partners[0] = nullptr;
-	partners[1] = nullptr;
+    partners[0]->removePartnership(getType());
+    partners[1]->removePartnership(getType());
+    partners[0] = nullptr;
+    partners[1] = nullptr;
 }
 
 } // namespace transm

@@ -23,6 +23,29 @@ namespace transm {
 	return iter;
     }
 
+    void PartnershipDB::remove_expired(Time time)
+    {
+	end_date_index& index = db.get<byEndDate>();
+	std::pair<end_date_index::iterator, end_date_index::iterator> iter =
+	    index.equal_range(time.in_months());
+	index.erase(iter.first, iter.second);
+    }
+
+    PartnershipDB::entity_pair PartnershipDB::find_with_entity(Entity *entity)
+    {
+	entity_index& index = db.get<byEntityId>();
+	entity_pair iter = index.equal_range(entity->getID());
+	return iter;
+    }
+
+    void PartnershipDB::remove_with_entity(Entity *entity)
+    {
+	entity_index& index = db.get<byEntityId>();
+	std::pair<entity_index::iterator, entity_index::iterator> iter = index.equal_range(entity->getID());
+
+	index.erase(iter.first, iter.second);
+    }
+    
     PartnershipDB::entity_type_pair PartnershipDB::find_with_entity_and_type(Entity *entity, SexualPartnership::Type type)
     {
 	entity_type_index& index = db.get<byPartnershipType>();
@@ -31,14 +54,70 @@ namespace transm {
 	return iter;
     }
 
-    void PartnershipDB::remove_expired(Time time)
+    bool PartnershipDB::partnership_exists(Entity *partner1, Entity *partner2, SexualPartnership::Type type)
     {
-	end_date_index& index = db.get<byEndDate>();
-	std::pair<end_date_index::iterator, end_date_index::iterator> iter = index.equal_range(time.in_months());
-	index.erase(iter.first, iter.second);
+	auto partnerships = find_with_entity_and_type(partner1, type);
+	for (auto iter = partnerships.first; iter != partnerships.second; iter++) {
+	    if (iter->isMember(partner2))
+		return true;
+	}
+	return false;
+    }
+
+    size_t PartnershipDB::num_partners(Entity *entity, SexualPartnership::Type _type)
+    {
+	// we could get the number from the db, but it's faster to get it from
+	// the partner counter owned by the entity
+	return entity->getNumPartners(_type);
+    }
+
+    int PartnershipDB::num_partners(Entity *entity, SexualPartnership::Type _type,
+	bool sameRisk)
+    {
+	int numPartners = 0;
+	Entity *partner;
+
+	auto partnerships = find_with_entity_and_type(entity, _type);
+	for (auto iter = partnerships.first; iter != partnerships.second; iter++)
+	{
+	    if(iter->getPartner1() == entity)
+	    {
+		partner = iter->getPartner2();
+	    }
+	    else
+	    {
+		partner = iter->getPartner1();
+	    }
+
+	    bool isSameRisk = (entity->getRiskLevel() == partner->getRiskLevel());
+	    if(isSameRisk == sameRisk)
+	    {
+		numPartners += 1;
+	    }
+	}
+	return numPartners;
     }
 
 #if 0
+    bool partnership_of_type(Entity *partner1, SexualPartnership::Type type)
+    {
+	entity_type_index& index = db.get<byPartnershipType>();
+	entity_type_pair iter = index.equal_range(make_tuple(entity->getID(),
+	    SexualPartnership::GetTypeString(type)));
+	
+	auto entity_partnerships = db.get<byEntity>(entity.id);
+	for (auto partnership : entity_partnerships) {
+	    if (type == partnership.getType(type))
+		return true;
+	}
+	return false;
+    }
+
+    bool partnership_of_any_type(Entity *partner1)
+    {
+	return !(db.get<byEntity>(entity.id).empty());
+    }
+
       // remove single partnership from the db
     void PartnershipDB::remove_partnership(SexualPartnership *partnership)
     {
@@ -65,41 +144,6 @@ name_index.replace(it,anna); // update her record
 	//return element_ref == db.end<byKey>() ? db.iterator_to<byKey>(partnership) : nullptr;
     }
 
-    auto PartnershipDB::find_with_entity(Entity *entity)
-    {
-	auto entity_partnerships = db.get<byEntity>(entity.id);
-    }
-
-    auto PartnershipDB::remove_entity_partnerships(Entity *entity)
-    {
-	auto entity_partnerships = db.get<byEntity>(entity.id);
-	db.erase(entity_partnerships);
-    }
-
-    bool partnership_exists(Entity *partner1, Entity *partner2, SexualPartnership::Type type)
-    {
-	auto entity_partnerships = find_with_entity(partner1);
-	for (auto partnership : entity_partnerships) {
-	    if (partnership.isMember(partner2) && type == partnership.getType(type))
-		return true;
-	}
-	return false;
-    }
-
-    bool partnership_of_type(Entity *partner1, SexualPartnership::Type type)
-    {
-	auto entity_partnerships = db.get<byEntity>(entity.id);
-	for (auto partnership : entity_partnerships) {
-	    if (type == partnership.getType(type))
-		return true;
-	}
-	return false;
-    }
-
-    bool partnership_of_any_type(Entity *partner1)
-    {
-	return !(db.get<byEntity>(entity.id).empty());
-    }
 #endif
 
 } /* namespace transm */

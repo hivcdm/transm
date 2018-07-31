@@ -104,7 +104,7 @@ public:
 	returns true if _p is a member of this partnership
 	@author schung5
 	**/
-	bool isMember(Entity *_p);
+	bool isMember(Entity *_p) const;
 
 	/**
 	//models sexual activity in a couple.
@@ -112,7 +112,7 @@ public:
 	@author schung5
 	**/
         Entity *monthlySexualActivity(EventParams &_eventParams, InfectionsTracker *infTrack,
-	    const std::unordered_map<TransmissionType, std::array<double, 10ULL>> &transmission_coefficients);
+	    const std::unordered_map<TransmissionType, std::array<double, 10ULL>> &transmission_coefficients) const;
 
         Time getTimeOfFormation() const
 	{

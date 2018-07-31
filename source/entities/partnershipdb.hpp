@@ -66,26 +66,35 @@ namespace transm {
 
 	PartnershipDB();
 	~PartnershipDB();
+
 	void add_partnership(Entity *_person1, Entity *_person2, EventParams &_eventParams,
 	    SexualPartnership::Type _partnershipType);
+
 	end_date_pair find_expired(Time time);
 	void remove_expired(Time time);
+	//void remove_expired(end_date_pair index_pair);
 
+	entity_pair find_with_entity(Entity *entity);
+	void remove_with_entity(Entity *entity);
+	//void remove_with_entity(entity_pair index_pair);
+	
 	entity_type_pair find_with_entity_and_type(Entity *entity, SexualPartnership::Type type);
 
 	void info() {
 	    std::cout << "PartnershipDB: " << db.size() << std::endl;
 	}
 
+      	// check if the partnership of this type exists between these entities
+	bool partnership_exists(Entity *partner1, Entity *partner2, SexualPartnership::Type type);
+
+        /*
+	 * returns the number of partners by partnership type that are either the 
+	 * samerisk or different
+	 */
+	size_t num_partners(Entity *entity, SexualPartnership::Type _type, bool sameRisk);
+
 #if 0
       	void remove_partnership(SexualPartnership *partnership);
-
-	auto find_with_entity(Entity *entity);
-	auto find_with_entity_and_type(Entity *entity, SexualPartnership::Type type);
-	auto remove_entity_partnerships(Entity *entity);
-
-	// check if the partnership of this type exists between these entities
-	bool partnership_exists(Entity *partner1, Entity *partner2, SexualPartnership::Type type);
 
 	// check if the person has a relationship of the given type
 	bool partnership_of_type(Entity *partner1, SexualPartnership::Type type);
