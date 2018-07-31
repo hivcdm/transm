@@ -87,6 +87,8 @@ namespace transm {
       	// check if the partnership of this type exists between these entities
 	bool partnership_exists(Entity *partner1, Entity *partner2, SexualPartnership::Type type);
 
+	size_t num_partners(Entity *entity, SexualPartnership::Type _type);
+
         /*
 	 * returns the number of partners by partnership type that are either the 
 	 * samerisk or different

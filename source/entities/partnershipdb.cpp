@@ -66,15 +66,21 @@ namespace transm {
 
     size_t PartnershipDB::num_partners(Entity *entity, SexualPartnership::Type _type)
     {
-	// we could get the number from the db, but it's faster to get it from
-	// the partner counter owned by the entity
-	return entity->getNumPartners(_type);
+	size_t numPartners = 0;
+
+	entity_index& index = db.get<byEntityId>();
+	numPartners = index.count(entity->getID());
+
+	// it's faster to get it from the partner counter owned by the entity
+	assert(numPartners == entity->getNumPartners(_type));
+	
+	return numPartners;
     }
 
-    int PartnershipDB::num_partners(Entity *entity, SexualPartnership::Type _type,
+    size_t PartnershipDB::num_partners(Entity *entity, SexualPartnership::Type _type,
 	bool sameRisk)
     {
-	int numPartners = 0;
+	size_t numPartners = 0;
 	Entity *partner;
 
 	auto partnerships = find_with_entity_and_type(entity, _type);

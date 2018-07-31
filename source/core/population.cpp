@@ -1018,7 +1018,7 @@ void Population::UpdateCalibrationConcurrency()
 
 	    for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
 	    {
-		numPartners[i] = (*p_Iter)->getNumPartners((SexualPartnership::Type) i);
+		numPartners[i] = partnershipDB.num_partners(*p_Iter, (SexualPartnership::Type) i);
 		concurrent = (concurrent << 1) + (numPartners[i] != 0 ? 1 : 0);
 		totalNumPartners += numPartners[i];
 	    }
@@ -2681,7 +2681,7 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 
 		for (auto partnership_type : enum_iterator<SexualPartnership::Type>())
 		{
-			auto num_partners_type = static_cast<std::size_t>(e->getNumPartners(partnership_type));
+		    auto num_partners_type = static_cast<std::size_t>(partnershipDB.num_partners(e, partnership_type));
 			num_partners += num_partners_type;
 
 			if ((int)partnership_type < 4)
