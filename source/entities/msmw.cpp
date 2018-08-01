@@ -207,7 +207,7 @@ bool Msmw::isCircumcised()
 
 //in this case, the msmw is infected and partner is uninfected
 //XXX: we need to change this based on partner type
-double Msmw::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
+double Msmw::getFOI(Entity *_p, const TransmissionCoefficients &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
 {
     //note: in the case of male->female transmission, circumcision makes no difference
     //transmission coeff				1-	(condoms are used and succeed)

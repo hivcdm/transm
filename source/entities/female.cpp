@@ -139,7 +139,7 @@ double Female::GetVaginalMicrobicideEfficacy() const
 
 //in this case, this female is infected and the passed entity is an uninfected male
 // FOI = transmission coeff * (1 - (condoms are used and succeed)) * (1 - (male is circumcised))
-double Female::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
+double Female::getFOI(Entity *_p, const TransmissionCoefficients &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
 {
     assert(_p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male);
 

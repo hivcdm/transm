@@ -418,7 +418,7 @@ public:
 	// @param _p - partner
 	// @param _parteringType - whether this is a fling or steadyCouple */
 	virtual double getFOI(Entity *_p, 
-        const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients,
+        const TransmissionCoefficients &transmission_coefficients,
         SexualPartnership::Type _partnershipType, EventParams &_eventParams) = 0;
 
 	//returns true if person is currently alive
@@ -623,7 +623,8 @@ public:
 	@return returns a pointer to the person who infected this person.
 	*/
     Entity *allPartnerSexualActivity(EventParams &_eventParams, SexualPartnership::Type _partnershipType,
-        list<Entity *> &_newlyInfected, InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients);
+        list<Entity *> &_newlyInfected, InfectionsTracker *infTrack,
+	const TransmissionCoefficients &transmission_coefficients);
 
 	//returns true if this person is available for steady partnership
 	// however, this does not change the person's DemographicProfile value that corresponds to DemographicProfile::Demographic::RelationshipStatus
@@ -661,7 +662,7 @@ public:
 	returns a pointer to a person who has been newly infected. nullptr if no infection occured
 	*/
 	Entity *sexualActivity(Entity *_p, int _numActs, SexualPartnership::Type _partnershipType, EventParams &_eventParams,
-        InfectionsTracker *infTrack, const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients);
+        InfectionsTracker *infTrack, const TransmissionCoefficients &transmission_coefficients);
 
 	//gets the age of the person
 	Age getAge() const;

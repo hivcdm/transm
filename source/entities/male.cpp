@@ -225,7 +225,7 @@ double Male::getCondomProtectEff()
 }
 
 //in this case, the male is infected and female is uninfected
-double Male::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
+double Male::getFOI(Entity *_p, const TransmissionCoefficients &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
 {
 	//note: in the case of male->female transmission, circumcision makes no difference
 	//transmission coeff				1-	(condoms are used and succeed)

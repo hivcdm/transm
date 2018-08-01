@@ -9,6 +9,8 @@
 
 namespace transm {
 
+    using TransmissionCoefficients = std::unordered_map<TransmissionType, std::array<double, 10ULL>>;
+
 class Entity;
 class InfectionsTracker;
 class PopulationStatisticsOld;
@@ -112,7 +114,7 @@ public:
 	@author schung5
 	**/
         Entity *monthlySexualActivity(EventParams &_eventParams, InfectionsTracker *infTrack,
-	    const std::unordered_map<TransmissionType, std::array<double, 10ULL>> &transmission_coefficients) const;
+	    const TransmissionCoefficients &transmission_coefficients) const;
 
         Time getTimeOfFormation() const
 	{

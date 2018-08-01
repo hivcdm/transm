@@ -207,7 +207,7 @@ public:
 	double getChanceBecomeCsw() const;
 
     double getFOI(Entity *_p, 
-        const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients, 
+        const TransmissionCoefficients &transmission_coefficients, 
         SexualPartnership::Type _partnershipType, 
         EventParams &_eventParams);
 

@@ -773,8 +773,7 @@ void Entity::setSimContext(SimContext *newSimContext)
 
 Entity *Entity::sexualActivity(Entity *_p, int _numActs, 
     SexualPartnership::Type _partnershipType, EventParams &_eventParams, 
-    InfectionsTracker *infTrack, 
-    const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients)
+    InfectionsTracker *infTrack, const TransmissionCoefficients &transmission_coefficients)
 {
 	assert((_p != nullptr));
 	assert(_p->isAlive());

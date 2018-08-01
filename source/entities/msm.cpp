@@ -205,7 +205,7 @@ bool Msm::isCircumcised()
 }
 
 //in this case, the male is infected and passed entity is an uninfected male
-double Msm::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
+double Msm::getFOI(Entity *_p, const TransmissionCoefficients &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
 {
     assert(Utility::valid_probability(getCondomProtectEff()));
     assert((_p != nullptr));
