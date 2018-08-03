@@ -638,18 +638,16 @@ bool Entity::isCSW() const
 
 bool Entity::isMale() const
 {
-    return (getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus) ==
-	    (std::size_t)DemographicProfile::RelationshipStatus::NonSingle);
+    return (getDemographicProfileVal(DemographicProfile::Demographic::Gender) ==
+	    (std::size_t)DemographicProfile::Gender::Male);
 }
 
 // Single meaning has a Steady relationship
 bool Entity::isSingle() const
 {
-    return (getDemographicProfileVal(DemographicProfile::Demographic::Gender) ==
-	    (std::size_t)DemographicProfile::Gender::Male);
-
+    return (getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus) ==
+	    (std::size_t)DemographicProfile::RelationshipStatus::Single);
 }
-    
 
 void Entity::rollForBecomeSexWorker(EventParams &_eventParams, bool _isInit, double initialProb)
 {

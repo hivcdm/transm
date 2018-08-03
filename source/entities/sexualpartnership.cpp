@@ -65,9 +65,12 @@ SexualPartnership::SexualPartnership(Entity *_person1, Entity *_person2, EventPa
 	timeOfDissolutionInt = timeOfDissolution.in_months();
 	assert(timeOfDissolution.in_months() >= 0);
 
-	//save the members of this partnership
+	//save a pointer to the members of this partnership
 	partners[0] = _person1;
 	partners[1] = _person2;
+
+	_person1->addPartnership(this);
+	_person2->addPartnership(this);
 }
 
 bool SexualPartnership::checkTimeForSplit(Time current_time)

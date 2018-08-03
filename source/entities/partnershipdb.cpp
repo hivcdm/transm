@@ -68,12 +68,14 @@ namespace transm {
     {
 	size_t numPartners = 0;
 
-	entity_index& index = db.get<byEntityId>();
-	numPartners = index.count(entity->getID());
+	entity_type_index& index = db.get<byPartnershipType>();
+        numPartners = index.count(make_tuple(entity->getID(),
+	    SexualPartnership::GetTypeString(_type)));
 
-	// it's faster to get it from the partner counter owned by the entity
+	// It's faster to get it from the partner counter owned by the entity
+#if 0
 	assert(numPartners == entity->getNumPartners(_type));
-	
+#endif	
 	return numPartners;
     }
 

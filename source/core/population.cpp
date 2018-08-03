@@ -522,16 +522,36 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 
     DissolveSexualPartnerships();
 
-    //reset num acts for females
     std::list<Entity *>::iterator p_Iter;
+    for(p_Iter = entities->begin(DemographicProfile::Gender::Male);
+	p_Iter != entities->end(DemographicProfile::Gender::Male); p_Iter++)
+    {
+	auto person = (*p_Iter);
+	//if this initiator is now single, then make sure they are in singles pool
+	if(!person->inCorrectBucketDemographicProfile())
+	{
+	    entities->refreshBucketDemographicProfile(person);
+	}
+
+	if(person->getEntityType() == "msm")
+	{
+	    ((Msm *)person)->ResetTimesSelected();
+	}
+	else if(person->getEntityType() == "msmw")
+	{
+	    ((Msmw *)person)->ResetTimesSelected();
+	}
+    }
+
+    //reset num acts for females
     for(p_Iter = entities->begin(DemographicProfile::Gender::Female);
 	p_Iter != entities->end(DemographicProfile::Gender::Female); p_Iter++)
-	{
-	    (*p_Iter)->resetNumActs();
-	    ((Female *)(*p_Iter))->ResetTimesSelected();
-	    (*p_Iter)->reset_costs();
-	    ((Female *)*p_Iter)->ResetVaginalMicrobicideUsage();
-	}
+    {
+	(*p_Iter)->resetNumActs();
+	((Female *)(*p_Iter))->ResetTimesSelected();
+	(*p_Iter)->reset_costs();
+	((Female *)*p_Iter)->ResetVaginalMicrobicideUsage();
+    }
 
     FormSexualPartnerships();
 
@@ -828,7 +848,11 @@ void Population::FormSexualPartnerships()
 	    person->resetLatestUnformedPartnerships(type);
 
 	    int numFormed = CreatePartnerships(parameters_, person, &p_Iter, type);
+	}
 
+	for(std::size_t i = 0; i < partnershipTypes.size(); i++)
+	{
+	    SexualPartnership::Type type = partnershipTypes.at(i);
 	    AllPartnershipSexualActivity(person, type);
 	}
     }
@@ -836,18 +860,31 @@ void Population::FormSexualPartnerships()
 
 //Have all the sexual activity with current partners (includes new partners)
 void Population::AllPartnershipSexualActivity(Entity *person, SexualPartnership::Type type)
-{
+{   
     std::list<Entity *> newlyInfected;
+    Entity *infectedMe;
 
     auto partners = partnershipDB.find_with_entity_and_type(person, type);
-
-    Entity *infectedMe;
     for (auto iter = partners.first; iter != partners.second; iter++)
-    {
-	//sexual activity among any existing partnerships that have a duration associated with them
-	infectedMe = iter->monthlySexualActivity(parameters_,
-            &populationStatistics.infectionsTracker, popWideParams.transmission_coefficients_);
-	newlyInfected.push_back(infectedMe);
+    {	
+	//initiate sexual activity only if you are partner1
+	if(iter->getPartner1() == person)
+	{
+	    Entity *infected = iter->monthlySexualActivity(parameters_, &populationStatistics.infectionsTracker,
+	        popWideParams.transmission_coefficients_);
+
+	    //if you or your partners got infected, the infected joins the _newlyInfected list
+	    if(infected != nullptr)
+	    {
+		newlyInfected.push_back(infected);
+
+		//if you got infected, then you have to save the person who infected you for record keeping
+		if(infected == person)
+		{
+		    infectedMe = iter->getPartner2();
+		}
+	    }
+	}
     }
 
     //record all incident infections
@@ -971,31 +1008,11 @@ void Population::DissolveSexualPartnerships()
 	    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << std::endl;
 	}
 
-#if 0
-	//if this initiator is now single, then make sure they are in singles pool
-	if(!_initiator->inCorrectBucketDemographicProfile())
-	{
-	    entities->refreshBucketDemographicProfile(_initiator);
-	}
-
-	if(_initiator->getEntityType() == "msm")
-	{
-	    ((Msm *)_initiator)->ResetTimesSelected();
-	}
-	else if(_initiator->getEntityType() == "msmw")
-	{
-	    ((Msmw *)_initiator)->ResetTimesSelected();
-	}
-
-	//if the partnership has any duration, destructor removes the pointer from both members partner lists
-	//delete(*partnerIter);
-
 	//refresh BucketDemographicProfile placement if necessary
 	if(!partner->inCorrectBucketDemographicProfile())
 	{
 	    entities->refreshBucketDemographicProfile(partner);
 	}
-#endif
     }
     partnershipDB.remove_expired(parameters_.currTime);
 }
