@@ -9,44 +9,59 @@ namespace transm {
     }
 
     // add single partnership to the db
-    void PartnershipDB::add_partnership(Entity *_person1, Entity *_person2, EventParams &_eventParams,
-        SexualPartnership::Type _partnershipType)
+    void PartnershipDB::AddPartnership(std::shared_ptr<SexualPartnership> _partnership)
     {
-	db.emplace(_person1, _person2, _eventParams, _partnershipType);
+	db.insert(_partnership);
     }
 
-
-    PartnershipDB::end_date_pair PartnershipDB::find_expired(Time time)
+    PartnershipDB::end_date_pair PartnershipDB::FindExpired(Time time)
     {
 	end_date_index& index = db.get<byEndDate>();
 	end_date_pair iter = index.equal_range(time.in_months());
+#ifdef PARTNERSHIPDB_DEBUG
+	std::cout << __func__ << "  " << index.size() << std::endl;
+#endif
 	return iter;
     }
 
-    void PartnershipDB::remove_expired(Time time)
+    void PartnershipDB::RemoveExpired(Time time)
     {
 	end_date_index& index = db.get<byEndDate>();
 	std::pair<end_date_index::iterator, end_date_index::iterator> iter =
 	    index.equal_range(time.in_months());
+#ifdef PARTNERSHIPDB_DEBUG
+	std::cout << __func__ << " before " << index.size() << " removing " << index.count(time.in_months()) << std::endl;
+#endif
 	index.erase(iter.first, iter.second);
+#ifdef PARTNERSHIPDB_DEBUG
+	std::cout << __func__ << " after " << index.size() << std::endl;
+#endif
     }
 
-    PartnershipDB::entity_pair PartnershipDB::find_with_entity(Entity *entity)
+    PartnershipDB::entity_pair PartnershipDB::FindWithEntity(Entity *entity)
     {
 	entity_index& index = db.get<byEntityId>();
 	entity_pair iter = index.equal_range(entity->getID());
+#ifdef PARTNERSHIPDB_DEBUG
+	std::cout << __func__ << "  " << index.size() << std::endl;
+#endif
 	return iter;
     }
 
-    void PartnershipDB::remove_with_entity(Entity *entity)
+    void PartnershipDB::RemoveWithEntity(Entity *entity)
     {
 	entity_index& index = db.get<byEntityId>();
 	std::pair<entity_index::iterator, entity_index::iterator> iter = index.equal_range(entity->getID());
-
+#ifdef PARTNERSHIPDB_DEBUG
+	std::cout << __func__ << " before  " << index.size() << " removing " << index.count(entity->getID()) << std::endl;
+#endif
 	index.erase(iter.first, iter.second);
+#ifdef PARTNERSHIPDB_DEBUG
+	std::cout << __func__ << " after " << index.size() << std::endl;
+#endif
     }
-    
-    PartnershipDB::entity_type_pair PartnershipDB::find_with_entity_and_type(Entity *entity, SexualPartnership::Type type)
+
+    PartnershipDB::entity_type_pair PartnershipDB::FindWithEntityAndType(Entity *entity, SexualPartnership::Type type)
     {
 	entity_type_index& index = db.get<byPartnershipType>();
 	entity_type_pair iter = index.equal_range(make_tuple(entity->getID(),
@@ -54,47 +69,46 @@ namespace transm {
 	return iter;
     }
 
-    bool PartnershipDB::partnership_exists(Entity *partner1, Entity *partner2, SexualPartnership::Type type)
+    bool PartnershipDB::PartnershipExists(Entity *partner1, Entity *partner2, SexualPartnership::Type type)
     {
-	auto partnerships = find_with_entity_and_type(partner1, type);
+	auto partnerships = FindWithEntityAndType(partner1, type);
 	for (auto iter = partnerships.first; iter != partnerships.second; iter++) {
-	    if (iter->isMember(partner2))
+	    if ((*iter)->isMember(partner2))
 		return true;
 	}
 	return false;
     }
 
-    size_t PartnershipDB::num_partners(Entity *entity, SexualPartnership::Type _type)
+    size_t PartnershipDB::NumPartners(Entity *entity, SexualPartnership::Type _type)
     {
 	size_t numPartners = 0;
 
-	entity_type_index& index = db.get<byPartnershipType>();
-        numPartners = index.count(make_tuple(entity->getID(),
-	    SexualPartnership::GetTypeString(_type)));
+	entity_index& index = db.get<byEntityId>();
+	numPartners = index.count(entity->getID());
 
-	// It's faster to get it from the partner counter owned by the entity
-#if 0
-	assert(numPartners == entity->getNumPartners(_type));
-#endif	
+	// it's faster to get it from the partner counter owned by the entity, but it's not working!
+	//assert(numPartners == entity->getNumPartners(_type));
+	//numPartners = entity->getNumPartners(_type);
+
 	return numPartners;
     }
 
-    size_t PartnershipDB::num_partners(Entity *entity, SexualPartnership::Type _type,
+    size_t PartnershipDB::NumPartners(Entity *entity, SexualPartnership::Type _type,
 	bool sameRisk)
     {
 	size_t numPartners = 0;
 	Entity *partner;
 
-	auto partnerships = find_with_entity_and_type(entity, _type);
+	auto partnerships = FindWithEntityAndType(entity, _type);
 	for (auto iter = partnerships.first; iter != partnerships.second; iter++)
 	{
-	    if(iter->getPartner1() == entity)
+	    if((*iter)->getPartner1() == entity)
 	    {
-		partner = iter->getPartner2();
+		partner = (*iter)->getPartner2();
 	    }
 	    else
 	    {
-		partner = iter->getPartner1();
+		partner = (*iter)->getPartner1();
 	    }
 
 	    bool isSameRisk = (entity->getRiskLevel() == partner->getRiskLevel());
@@ -112,7 +126,7 @@ namespace transm {
 	entity_type_index& index = db.get<byPartnershipType>();
 	entity_type_pair iter = index.equal_range(make_tuple(entity->getID(),
 	    SexualPartnership::GetTypeString(type)));
-	
+
 	auto entity_partnerships = db.get<byEntity>(entity.id);
 	for (auto partnership : entity_partnerships) {
 	    if (type == partnership.getType(type))

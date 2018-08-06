@@ -15,6 +15,8 @@
 
 #define BOOST_MULTI_INDEX_ENABLE_SAFE_MODE
 
+//#define PARTNERSHIPDB_DEBUG
+
 namespace transm {
     namespace bmi = boost::multi_index;
 
@@ -26,7 +28,7 @@ namespace transm {
 	struct byPartnershipType {};
 
 	typedef bmi::multi_index_container<
-	    SexualPartnership,
+	    std::shared_ptr<SexualPartnership>,
 	    bmi::indexed_by<
 		// Index ordered by end date for fast monthly dissolution
 		bmi::ordered_non_unique<
@@ -67,33 +69,35 @@ namespace transm {
 	PartnershipDB();
 	~PartnershipDB();
 
-	void add_partnership(Entity *_person1, Entity *_person2, EventParams &_eventParams,
-	    SexualPartnership::Type _partnershipType);
+	void AddPartnership(std::shared_ptr<SexualPartnership> _partnership);
 
-	end_date_pair find_expired(Time time);
-	void remove_expired(Time time);
+	end_date_pair FindExpired(Time time);
+	size_t NumExpired(Time time);
+	void RemoveExpired(Time time);
 	//void remove_expired(end_date_pair index_pair);
 
-	entity_pair find_with_entity(Entity *entity);
-	void remove_with_entity(Entity *entity);
+	entity_pair FindWithEntity(Entity *entity);
+	void RemoveWithEntity(Entity *entity);
 	//void remove_with_entity(entity_pair index_pair);
-	
-	entity_type_pair find_with_entity_and_type(Entity *entity, SexualPartnership::Type type);
 
-	void info() {
+	entity_type_pair FindWithEntityAndType(Entity *entity, SexualPartnership::Type type);
+
+	void Info() {
+#ifdef PARTNERSHIPDB_DEBUG
 	    std::cout << "PartnershipDB: " << db.size() << std::endl;
+#endif
 	}
 
       	// check if the partnership of this type exists between these entities
-	bool partnership_exists(Entity *partner1, Entity *partner2, SexualPartnership::Type type);
+	bool PartnershipExists(Entity *partner1, Entity *partner2, SexualPartnership::Type type);
 
-	size_t num_partners(Entity *entity, SexualPartnership::Type _type);
+	size_t NumPartners(Entity *entity, SexualPartnership::Type _type);
 
         /*
-	 * returns the number of partners by partnership type that are either the 
+	 * returns the number of partners by partnership type that are either the
 	 * samerisk or different
 	 */
-	size_t num_partners(Entity *entity, SexualPartnership::Type _type, bool sameRisk);
+	size_t NumPartners(Entity *entity, SexualPartnership::Type _type, bool sameRisk);
 
 #if 0
       	void remove_partnership(SexualPartnership *partnership);
