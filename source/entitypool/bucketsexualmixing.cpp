@@ -306,7 +306,7 @@ Entity *BucketSexualMixing::getRandomPerson(RandomNumberGenerator &_randomNums, 
 			BucketAge *ageBucket = personsByAge->at((std::size_t)currIndex.in_months());
 			Entity *p = ageBucket->drawMember(_randomNums, _risk, _partnershipType, (riskToDraw == Entity::RiskLevel::Last), _remove);
 
-			//we have to tell the person that they are not part of a bucket anymore
+			//we have to tell the person that they are nto part of a bucket anymore
 			if(_remove && p)
 			{
 				p->setCurrBucketProfileID(DemographicProfile::END);

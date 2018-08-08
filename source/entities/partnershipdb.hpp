@@ -15,8 +15,6 @@
 
 #define BOOST_MULTI_INDEX_ENABLE_SAFE_MODE
 
-//#define PARTNERSHIPDB_DEBUG
-
 namespace transm {
     namespace bmi = boost::multi_index;
 
@@ -24,21 +22,27 @@ namespace transm {
 
     private:
 	struct byEndDate {};
-	struct byEntityId {};
+	struct byInitiatorId {};
+	struct byPartnerId {};
 	struct byPartnershipType {};
 
 	typedef bmi::multi_index_container<
-	    std::shared_ptr<SexualPartnership>,
+	    SexualPartnership,
 	    bmi::indexed_by<
 		// Index ordered by end date for fast monthly dissolution
 		bmi::ordered_non_unique<
 		    bmi::tag<byEndDate>,
 		    bmi::const_mem_fun<SexualPartnership, int, &SexualPartnership::getTimeOfDissolutionAsInt>
 		>,
-		// Hash by entity id
+		// Hash by initiator id
 		bmi::hashed_non_unique<
-		    bmi::tag<byEntityId>,
+		    bmi::tag<byInitiatorId>,
 		    bmi::const_mem_fun<SexualPartnership, unsigned long, &SexualPartnership::getInitiatorID>
+		>,
+		// Hash by partner id
+		bmi::hashed_non_unique<
+		    bmi::tag<byPartnerId>,
+		    bmi::const_mem_fun<SexualPartnership, unsigned long, &SexualPartnership::getPartnerID>
 		>,
 		// Hash by entity id and partnership type
 		bmi::hashed_non_unique<
@@ -59,34 +63,35 @@ namespace transm {
 
     public:
 	typedef bmi::index<partnership_db, byEndDate>::type end_date_index;
-	typedef bmi::index<partnership_db, byEntityId>::type entity_index;
+	typedef bmi::index<partnership_db, byInitiatorId>::type initiator_index;
+	typedef bmi::index<partnership_db, byPartnerId>::type partner_index;
 	typedef bmi::index<partnership_db, byPartnershipType>::type entity_type_index;
 
 	using end_date_pair = std::pair<end_date_index::iterator,end_date_index::iterator>;
-	using entity_pair = std::pair<entity_index::iterator,entity_index::iterator>;
+	using initiator_pair = std::pair<initiator_index::iterator,initiator_index::iterator>;
+	using partner_pair = std::pair<partner_index::iterator,partner_index::iterator>;
 	using entity_type_pair = std::pair<entity_type_index::iterator,entity_type_index::iterator>;
 
 	PartnershipDB();
 	~PartnershipDB();
 
-	void AddPartnership(std::shared_ptr<SexualPartnership> _partnership);
+	void AddPartnership(SexualPartnership _partnership);
 
 	end_date_pair FindExpired(Time time);
 	size_t NumExpired(Time time);
 	void RemoveExpired(Time time);
 	//void remove_expired(end_date_pair index_pair);
 
-	entity_pair FindWithEntity(Entity *entity);
-	void RemoveWithEntity(Entity *entity);
+	initiator_pair FindWithInitiator(Entity *entity);
+	void RemoveWithInitiator(Entity *entity);
 	//void remove_with_entity(entity_pair index_pair);
+
+	partner_pair FindWithPartner(Entity *entity);
+	void RemoveWithPartner(Entity *entity);
 
 	entity_type_pair FindWithEntityAndType(Entity *entity, SexualPartnership::Type type);
 
-	void Info() {
-#ifdef PARTNERSHIPDB_DEBUG
-	    std::cout << "PartnershipDB: " << db.size() << std::endl;
-#endif
-	}
+	void Info();
 
       	// check if the partnership of this type exists between these entities
 	bool PartnershipExists(Entity *partner1, Entity *partner2, SexualPartnership::Type type);
@@ -107,7 +112,7 @@ namespace transm {
 
 	// check if the person has any partnerships
 	bool partnership_of_any_type(Entity *partner1);
-#endif     
+#endif
     };
 
 } /* namespace transm */

@@ -142,7 +142,7 @@ unsigned long BucketAge::getNumInfected(Entity::RiskLevel _risk)
 //					key w/ members in it
 //TESTED... without random number generator
 Entity *BucketAge::drawMember(RandomNumberGenerator &_randomNums, Entity::RiskLevel _riskLevel,
-                              SexualPartnership::Type /*_partnershipType*/, bool _use_random, bool _remove)
+    SexualPartnership::Type /*_partnershipType*/, bool _use_random, bool _remove)
 {
 	if(numPersons == 0)
 	{

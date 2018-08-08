@@ -55,10 +55,6 @@ SexualPartnership::SexualPartnership(Entity *_person1, Entity *_person2, EventPa
 		}
 	}
 
-    if((_person1->trace() || _person2->trace()) && _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled)
-	{
-        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " of duration " << maxDuration.in_months() << std::endl;
-	}
 
 	//set time for partnership to dissolve
 	timeOfDissolution = _eventParams.currTime + maxDuration;
@@ -66,11 +62,16 @@ SexualPartnership::SexualPartnership(Entity *_person1, Entity *_person2, EventPa
 	assert(timeOfDissolution.in_months() >= 0);
 
 	//save a pointer to the members of this partnership
-	partners[0] = _person1;
-	partners[1] = _person2;
+	initiator = _person1;
+	partner =_person2;
 
 	_person1->addPartnership(this);
 	_person2->addPartnership(this);
+
+	if((_person1->trace() || _person2->trace()) && _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled)
+	{
+        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " of duration " << maxDuration.in_months() << std::endl;
+	}
 }
 
 bool SexualPartnership::checkTimeForSplit(Time current_time)
@@ -78,32 +79,37 @@ bool SexualPartnership::checkTimeForSplit(Time current_time)
 	return current_time >= timeOfDissolution;
 }
 
-Entity *SexualPartnership::getPartner1() const
+Entity *SexualPartnership::getInitiator() const
 {
-	return partners[0];
+    return initiator;
 }
 
 unsigned long SexualPartnership::getInitiatorID() const
 {
-    return partners[0]->getID();
+    return initiator->getID();
 }
 
-Entity *SexualPartnership::getPartner2() const
+Entity *SexualPartnership::getPartner() const
 {
-	return partners[1];
+    return partner;
+}
+
+unsigned long SexualPartnership::getPartnerID() const
+{
+    return partner->getID();
 }
 
 Entity *SexualPartnership::getOtherPartner(Entity *_member)
 {
 	assert(isMember(_member));
 
-	if(_member == getPartner1())
+	if(_member == getInitiator())
 	{
-		return getPartner2();
+		return getPartner();
 	}
 	else
 	{
-		return getPartner1();
+		return getInitiator();
 	}
 }
 
@@ -119,28 +125,28 @@ std::string SexualPartnership::getTypeString() const
 
 bool SexualPartnership::isMember(Entity *_p) const
 {
-	return ((_p == partners[0]) || (_p == partners[1]));
+	return ((_p == initiator) || (_p == partner));
 }
 
 Entity *SexualPartnership::monthlySexualActivity(EventParams &_eventParams, InfectionsTracker *infTrack,
     const std::unordered_map<TransmissionType, std::array<double, (std::size_t)Entity::HVLStrata::Last>> &transmission_coefficients) const
 {
-	int eventsThisMonth = partners[0]->rollNumEventsPerPartner(partners[1], _eventParams.randomNums, type);
+	int eventsThisMonth = initiator->rollNumEventsPerPartner(partner, _eventParams.randomNums, type);
 
 	if(eventsThisMonth <= 0)
 	{
 		eventsThisMonth = 1;
 	}
 
-	return partners[0]->sexualActivity(partners[1], eventsThisMonth, type, _eventParams, infTrack, transmission_coefficients);
+	return initiator->sexualActivity(partner, eventsThisMonth, type, _eventParams, infTrack, transmission_coefficients);
 }
 
 SexualPartnership::~SexualPartnership()
 {
-    partners[0]->removePartnership(getType());
-    partners[1]->removePartnership(getType());
-    partners[0] = nullptr;
-    partners[1] = nullptr;
+    initiator->removePartnership(getType());
+    partner->removePartnership(getType());
+    initiator = nullptr;
+    partner = nullptr;
 }
 
 } // namespace transm

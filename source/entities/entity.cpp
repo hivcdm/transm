@@ -335,11 +335,6 @@ int Entity::getGenerationOfInfection(bool cap_at_5) const
 
 void Entity::addPartnership(SexualPartnership *_partnership)
 {
-	assert(_partnership->getPartner1());
-	assert(_partnership->getPartner1()->isAlive());
-	assert(_partnership->getPartner2());
-	assert(_partnership->getPartner2()->isAlive());
-
 	partners[(int)_partnership->getType()]++;
 	numPartnersInHistory[(int)_partnership->getType()]++;
 
@@ -813,12 +808,16 @@ Entity *Entity::sexualActivity(Entity *_p, int _numActs,
 	//if infection occurs, return true
 	Entity *infected = isInfected() ? this : _p;
 	Entity *uninfected = isInfected() ? _p : this;
-	bool transmissionOccured = false;
 
+	bool transmissionOccured = false;
 	for(int i = 0; i < _numActs; i++)
 	{
-		//force of infection from infected to uninfected
-		double foifPerEvent = infected->getFOI(uninfected, transmission_coefficients, _partnershipType, _eventParams);
+	    //force of infection from infected to uninfected
+	    double foiPerEvent = 0.0;
+	    if (infected->getEntityType() == "male")
+		foiPerEvent = ((Male *)infected)->getFOI(uninfected, transmission_coefficients, _partnershipType, _eventParams);
+	    else if (infected->getEntityType() == "female")
+		foiPerEvent = ((Female *)infected)->getFOI(uninfected, transmission_coefficients, _partnershipType, _eventParams);
 
 		bool condomUsed = infected->getCondomUsedLastFOICalculation();
 		if(condomUsed)
@@ -831,7 +830,7 @@ Entity *Entity::sexualActivity(Entity *_p, int _numActs,
 		/** Regardless of infection, record the exposure */
 		infTrack->recordExposure(_eventParams.currTime, infected, _partnershipType, condomUsed);
 
-		if(_eventParams.randomNums.chance(foifPerEvent))
+		if(_eventParams.randomNums.chance(foiPerEvent))
 		{
 			transmissionOccured = true;
 		}
@@ -1500,8 +1499,6 @@ Entity::~Entity(void)
 	//TODO: If they're not dead, force kill them (in CEPAC) to log the stats (?)
 	//Didn't I do this somewhere?
 	delete cepacPatient;
-
-	// TODO: Remove entity from all partnerships in partnershipsdb
 }
 
 } // namespace transm

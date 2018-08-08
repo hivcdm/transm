@@ -353,8 +353,8 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 				    p->isInfected() && p->isOnArt()) {
 				    populationStatistics.recordTreatmentDeath(p);
 				}
-			    
-				p_Iter = entities->removeEntityFromAll(p_Iter);
+
+				p_Iter = entities->eraseEntityFromAll(p_Iter);
 				ProcessDeath(parameters_, p, calculateLE);
 
 				if(parameters_.useRollout)
@@ -551,9 +551,16 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 	((Female *)(*p_Iter))->ResetTimesSelected();
 	(*p_Iter)->reset_costs();
 	((Female *)*p_Iter)->ResetVaginalMicrobicideUsage();
+
+        //refresh BucketDemographicProfile placement if necessary
+	if(!(*p_Iter)->inCorrectBucketDemographicProfile())
+	{
+		entities->refreshBucketDemographicProfile((*p_Iter));
+	}
     }
 
     FormSexualPartnerships();
+    partnershipDB.Info();
 
     if (parameters_.calibrationInputs.useCalibration
 	&& parameters_.currTime > (parameters_.calibrationInputs.monthOfCalibration - TimeSpan::Year)
@@ -800,7 +807,7 @@ void Population::UpdateFinalPhysicalState(EventParams &parameters_)
 			assert(p != nullptr);
 
 			//Removing entity because the age is about to change and this will fuck up being able to find the person!
-			entities->removeEntity(p);
+			entities->eraseEntity(p);
 			p->runCEPACtoDeath(parameters_.randomNums);
 			populationStatistics.processPostMaxTimeDeath(p);
 			//Putting them back after age is updated
@@ -847,7 +854,7 @@ void Population::FormSexualPartnerships()
 	    //First, reset the tally of latest unformed partnerships (unformed but intended to form)
 	    person->resetLatestUnformedPartnerships(type);
 
-	    int numFormed = CreatePartnerships(parameters_, person, &p_Iter, type);
+	    CreatePartnerships(parameters_, person, &p_Iter, type);
 	}
 
 	for(std::size_t i = 0; i < partnershipTypes.size(); i++)
@@ -860,17 +867,18 @@ void Population::FormSexualPartnerships()
 
 //Have all the sexual activity with current partners (includes new partners)
 void Population::AllPartnershipSexualActivity(Entity *person, SexualPartnership::Type type)
-{   
+{
     std::list<Entity *> newlyInfected;
     Entity *infectedMe;
 
     auto partners = partnershipDB.FindWithEntityAndType(person, type);
     for (auto iter = partners.first; iter != partners.second; iter++)
     {
+	SexualPartnership partnership = *iter;
 	//initiate sexual activity only if you are partner1
-	if((*iter)->getPartner1() == person)
+	if(partnership.getInitiator() == person)
 	{
-	    Entity *infected = (*iter)->monthlySexualActivity(parameters_, &populationStatistics.infectionsTracker,
+	    Entity *infected = partnership.monthlySexualActivity(parameters_, &populationStatistics.infectionsTracker,
 	        popWideParams.transmission_coefficients_);
 
 	    //if you or your partners got infected, the infected joins the _newlyInfected list
@@ -881,7 +889,7 @@ void Population::AllPartnershipSexualActivity(Entity *person, SexualPartnership:
 		//if you got infected, then you have to save the person who infected you for record keeping
 		if(infected == person)
 		{
-		    infectedMe = (*iter)->getPartner2();
+		    infectedMe = partnership.getPartner();
 		}
 	    }
 	}
@@ -946,75 +954,76 @@ void Population::AllPartnershipSexualActivity(Entity *person, SexualPartnership:
 
 void Population::DissolveSexualPartnerships()
 {
+    // If tracing files, output tracings before dissolving
+    if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled)
+    {
+	TracePartnerships();
+    }
+    partnershipDB.RemoveExpired(parameters_.currTime);
+}
+
+void Population::TracePartnerships()
+{
     auto partnershipsToEnd = partnershipDB.FindExpired(parameters_.currTime);
-
-    int endedPartnershipCount[(std::size_t)SexualPartnership::Type::ENDType] = {0};
-
     for (auto iter = partnershipsToEnd.first; iter != partnershipsToEnd.second; iter++)
     {
-	Entity *_initiator = (*iter)->getPartner1();
-	Entity *partner = (*iter)->getPartner2();
+	SexualPartnership partnership = *iter;
 
-	bool initiatorMale = _initiator->isMale();
+	Entity *initiator = partnership.getInitiator();
+	Entity *partner = partnership.getPartner();
 
-	if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled &&
-	   (_initiator->trace() || partner->trace()))
+	bool initiatorMale = initiator->isMale();
+
+	if(initiator->trace() || partner->trace())
 	{
-	    if(_initiator->trace())
-	    {
-		if(initiatorMale)
+	    if(initiator->trace())
 		{
-		    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "- Male ";
-		}
-		else
-		{
-		    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "- Female ";
-		}
+		    if(initiatorMale)
+			{
+			    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "- Male ";
+			}
+		    else
+			{
+			    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "- Female ";
+			}
 
-		parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << _initiator->getID() <<
-		    " ends " << (SexualPartnership::TypeStrings.at((*iter)->getType()));
-		parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " partnership with " <<
-		    partner->getID();
-	    }
+		    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << initiator->getID() <<
+			" ends " << (SexualPartnership::TypeStrings.at(partnership.getType()));
+		    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " partnership with " <<
+			partner->getID();
+		}
 	    else
-	    {
-		if(initiatorMale)
 		{
-		    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "- Female ";
-		}
-		else
-		{
-		    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "- Male ";
+		    if(initiatorMale)
+			{
+			    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "- Female ";
+			}
+		    else
+			{
+			    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "- Male ";
+			}
+
+		    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << partner->getID() <<
+			" ends " << (SexualPartnership::TypeStrings.at(partnership.getType()));
+		    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " partnership with " <<
+			initiator->getID();
 		}
 
-		parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << partner->getID() <<
-		    " ends " << (SexualPartnership::TypeStrings.at((*iter)->getType()));
-		parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " partnership with " <<
-		    _initiator->getID();
-	    }
-
-	    if(!_initiator->isAlive())
-	    {
-		parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " -> " <<
-		    _initiator->getID() << " has died";
-	    }
+	    if(!initiator->isAlive())
+		{
+		    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " -> " <<
+			initiator->getID() << " has died";
+		}
 
 	    if(!partner->isAlive())
-	    {
-		parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " -> " <<
-		    partner->getID() << " has died";
-	    }
+		{
+		    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " -> " <<
+			partner->getID() << " has died";
+		}
 
 	    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << std::endl;
 	}
-
-	//refresh BucketDemographicProfile placement if necessary
-	if(!partner->inCorrectBucketDemographicProfile())
-	{
-	    entities->refreshBucketDemographicProfile(partner);
-	}
     }
-    partnershipDB.RemoveExpired(parameters_.currTime);
 }
 
 void Population::UpdateCalibrationConcurrency()
@@ -2295,9 +2304,7 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Entity *_
         }
 
 	/* Add partnership to the db -- the object will be stored there */
-        //the pointer to this partnership will be stored within initiator.
-	shared_ptr<SexualPartnership> partnership(new SexualPartnership(_initiator, chosenPartner,
-            parameters_, _partnershipType));
+	SexualPartnership partnership(_initiator, chosenPartner, parameters_, _partnershipType);
 	partnershipDB.AddPartnership(partnership);
 
 	if (chosenPartner->getEntityType() == "msm")
@@ -2355,14 +2362,23 @@ void Population::ProcessDeath(EventParams &parameters_, Entity *_p, bool calcula
         populationStatistics.selectedLEStats->deathsByAge[_p->getAge().year_as_index()]++;
     }
 
-    //holds any former steady partners that are widowed after a partner's death
-    // we may need to put the partners back into the singles pool
-    auto formerPartnerships = partnershipDB.FindWithEntity(_p);
+    // Remove the partnerships intiated by this person
+    PartnershipDB::initiator_pair initiatedPartnerships = partnershipDB.FindWithInitiator(_p);
+    for (auto iter = initiatedPartnerships.first; iter != initiatedPartnerships.second; iter++)
+    {
+	assert(_p->isMale());
+	_p->removePartnership((*iter).getType());
+    }
+    partnershipDB.RemoveWithInitiator(_p);
+
+    // Remove the partnerships that were initiated with this person
+    PartnershipDB::partner_pair formerPartnerships = partnershipDB.FindWithPartner(_p);
     for (auto iter = formerPartnerships.first; iter != formerPartnerships.second; iter++)
     {
-	_p->removePartnership((*iter)->getType());
+	assert(!_p->isMale());
+	_p->removePartnership((*iter).getType());
     }
-    partnershipDB.RemoveWithEntity(_p);
+    partnershipDB.RemoveWithPartner(_p);
 
     currDeathCauses[(std::size_t)_p->deathStatus]++;
     populationStatistics.processDeath(_p, parameters_);

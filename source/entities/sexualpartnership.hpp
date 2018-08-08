@@ -77,17 +77,18 @@ public:
 	bool checkTimeForSplit(Time current_time);
 
 	/**
-	Gets the pointer to partner 1. Should be male if this couple is heterosexual
+	Gets the pointer to the initiator. Should be male if this couple is heterosexual
 	@author schung5
 	**/
-	Entity *getPartner1() const;
+	Entity *getInitiator() const;
 	unsigned long getInitiatorID() const;
 
 	/**
-	Gets the pointer to partner 2. Should be female if this couple is heterosexual
+	Gets the pointer to partner. Should be female if this couple is heterosexual
 	@author schung5
 	**/
-        Entity *getPartner2() const;
+        Entity *getPartner() const;
+	unsigned long getPartnerID() const;
 
 	/**
 	@param _member one of the members of the couple
@@ -132,9 +133,9 @@ public:
 	}
 
 private:
-    int timeOfDissolutionInt;
 	//time that this partnership will dissolve
 	Time timeOfDissolution;
+	int timeOfDissolutionInt;
 
 	//identifies the type of sexual relationship this is
 	Type type;
@@ -142,8 +143,11 @@ private:
 	//the time that this couple was formed
 	Time timeOfFormation;
 
-	//this contains copies of pointers of partners
-	Entity *partners[2];
+	// pointer to the initiating entity
+	Entity *initiator;
+
+	// pointer to the selected entity
+	Entity *partner;
 };
 
 } // namespace transm

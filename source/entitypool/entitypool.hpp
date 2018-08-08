@@ -29,7 +29,7 @@ public:
 
 	~EntityPool();
 
-    void forEach(std::function<void(Entity *)> callback);
+        void forEach(std::function<void(Entity *)> callback);
 
 	/// <summary>
 	/// adds an person to the correct bucket in the pool based on their current DemographicProfile
@@ -37,41 +37,15 @@ public:
 	bool addEntity(Entity *_person);
 
 	/// <summary>
-	/// Return the bucket that matches _profileID
-	/// </summary>
-	BucketDemographicProfile *getBucket(DemographicProfile::ProfileID _profileID);
-
-	/// <summary>
-	/// prints everyone inside the Entitypool. Use sparingly...
-	/// lists out all Buckets and members members of each
-	/// </summary>
-	void print(std::ostream &_outStream);
-
-	/// <summary>
-	/// print out all the labels of all the Buckets in the EntityPool. separate each by TAB
-	/// if _printPropInfected == true, then include a column for #infected for each BucketDemographicProfile
-	/// </summary>
-	void printBucketLabels(std::ostream &_outStream, bool _printPropInfected);
-
-	/// <summary>
-	/// list out all buckets and their size
-	/// </summary>
-	/// <remarks>
-	/// @param _printPropInfected if == true, then print the fraction of people who are infected
-	/// @param _includeLabels if == true, then print out the BucketDemographicProfile label w/ each BucketDemographicProfile size
-	/// @param _totalInfected this will be set to total # infecteds currently in the EntityPool
-	/// @param _totalSize this will be set to total # of people in the population
-	/// @param _includeLabls if == true, then will additionally print BucketDemographicProfile labels on the same line as the size
-	/// </remarks>
-    void printBucketSizes(std::ostream &_outStream, const std::string &_prefix, bool _printPropInfected, unsigned long &_totalInfected,
-	                      unsigned long &_totalSize, unsigned long &_totalSexuallyActive, unsigned long &_totalInSteady,
-	                      unsigned long &_totalInRegular, bool _includeLabels);
-
-	/// <summary>
 	/// remove _person if exists in pool. returns false if _person is not in pool
 	/// We look in the DemographicProfile bucket that the person believes that they are in (_person->getCurrBucketProfileID()) as opposed to their current DemographicProfile
 	/// </summary>
-	bool removeEntity(Entity *_person);
+	bool eraseEntity(Entity *_person);
+
+	/// <summary>
+	/// Return the bucket that matches _profileID
+	/// </summary>
+	BucketDemographicProfile *getBucket(DemographicProfile::ProfileID _profileID);
 
 	/// <summary>
 	/// if someone is a member of the wrong Bucket (based on their DemographicProfile), will remove and place them in the correct one
@@ -135,10 +109,10 @@ public:
 	bool addEntityToAll(Entity *_p);
 
 	/// <summary>
-	/// removes Person from BucketDemographicProfile AND allMales or allFemales depending on gender
+	/// erase Person from BucketDemographicProfile AND allMales or allFemales depending on gender
 	/// should be used only when *(_pIter) dies
 	/// </summary>
-	std::list<Entity *>::iterator removeEntityFromAll(list<Entity *>::iterator _pIter);
+	std::list<Entity *>::iterator eraseEntityFromAll(list<Entity *>::iterator _pIter);
 
 	/// <summary>
 	/// Returns allMales->begin()
@@ -154,6 +128,32 @@ public:
 	/// Updates the tally of males and females per year of age
 	/// </summary>
 	void countEntitiesPerAge();
+
+	/// <summary>
+	/// prints everyone inside the Entitypool. Use sparingly...
+	/// lists out all Buckets and members members of each
+	/// </summary>
+	void print(std::ostream &_outStream);
+
+	/// <summary>
+	/// print out all the labels of all the Buckets in the EntityPool. separate each by TAB
+	/// if _printPropInfected == true, then include a column for #infected for each BucketDemographicProfile
+	/// </summary>
+	void printBucketLabels(std::ostream &_outStream, bool _printPropInfected);
+
+	/// <summary>
+	/// list out all buckets and their size
+	/// </summary>
+	/// <remarks>
+	/// @param _printPropInfected if == true, then print the fraction of people who are infected
+	/// @param _includeLabels if == true, then print out the BucketDemographicProfile label w/ each BucketDemographicProfile size
+	/// @param _totalInfected this will be set to total # infecteds currently in the EntityPool
+	/// @param _totalSize this will be set to total # of people in the population
+	/// @param _includeLabls if == true, then will additionally print BucketDemographicProfile labels on the same line as the size
+	/// </remarks>
+	void printBucketSizes(std::ostream &_outStream, const std::string &_prefix, bool _printPropInfected,
+	    unsigned long &_totalInfected, unsigned long &_totalSize, unsigned long &_totalSexuallyActive,
+	    unsigned long &_totalInSteady, unsigned long &_totalInRegular, bool _includeLabels);
 
 private:
 	/// <summary>

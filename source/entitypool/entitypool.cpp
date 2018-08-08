@@ -178,7 +178,7 @@ void EntityPool::printBucketSizes(std::ostream &_outStream, const std::string &,
 	}
 }
 
-bool EntityPool::removeEntity(Entity *_person)
+bool EntityPool::eraseEntity(Entity *_person)
 {
 	assert(_person != nullptr);
 	bool removed = false;
@@ -228,7 +228,7 @@ bool EntityPool::refreshBucketDemographicProfile(Entity *_person, bool forceRefr
 
 	try
 	{
-		success = removeEntity(_person);
+		success = eraseEntity(_person);
 	}
 	catch(std::out_of_range &e)
 	{
@@ -379,13 +379,12 @@ std::size_t EntityPool::sizeSexuallyActiveByAge(Age minAgeMonths, Age maxAgeMont
  */
 bool EntityPool::addEntityToAll(Entity *_p)
 {
-    if(_p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
+	if(_p->isMale())
 	{
 		allMales.push_back(_p);
 	}
 	else
 	{
-        assert(_p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Female);
 		allFemales.push_back(_p);
 	}
 
@@ -396,24 +395,18 @@ bool EntityPool::addEntityToAll(Entity *_p)
  * removes Person from BucketDemographicProfile AND allMales or allFemales depending on gender
  * should be used only when *(_pIter) dies or when deleting this
  */
-std::list<Entity *>::iterator EntityPool::removeEntityFromAll(std::list<Entity *>::iterator _pIter)
+std::list<Entity *>::iterator EntityPool::eraseEntityFromAll(std::list<Entity *>::iterator _pIter)
 {
 	std::list<Entity *>::iterator toReturn;
-	removeEntity(*_pIter);
+	eraseEntity(*_pIter);
 
-    if((*_pIter)->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
+	if((*_pIter)->isMale())
 	{
 		toReturn = allMales.erase(_pIter);
 	}
-    else if((*_pIter)->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Female)
-	{
-		toReturn = allFemales.erase(_pIter);
-	}
 	else
 	{
-		throw 1;
-		//(*_pIter)->print(cerr, "Not removing person of indiscriminate gender: ");
-		//toReturn = _pIter;
+		toReturn = allFemales.erase(_pIter);
 	}
 
 	return toReturn;
@@ -578,7 +571,7 @@ EntityPool::~EntityPool()
 		{
 			Entity *p = (*p_Iter);
 			//Advances p_Iter one in the list, so no increment is necessary
-			p_Iter = removeEntityFromAll(p_Iter);
+			p_Iter = eraseEntityFromAll(p_Iter);
 			delete p;
 		}
 	}

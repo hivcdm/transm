@@ -1,5 +1,8 @@
 #include "partnershipdb.hpp"
 
+#define PARTNERSHIPDB_DEBUG
+//#define PARTNERSHIPDB_DEBUG_VERBOSE
+
 namespace transm {
 
     PartnershipDB::PartnershipDB() {
@@ -9,7 +12,7 @@ namespace transm {
     }
 
     // add single partnership to the db
-    void PartnershipDB::AddPartnership(std::shared_ptr<SexualPartnership> _partnership)
+    void PartnershipDB::AddPartnership(SexualPartnership _partnership)
     {
 	db.insert(_partnership);
     }
@@ -38,26 +41,52 @@ namespace transm {
 #endif
     }
 
-    PartnershipDB::entity_pair PartnershipDB::FindWithEntity(Entity *entity)
+    PartnershipDB::initiator_pair PartnershipDB::FindWithInitiator(Entity *entity)
     {
-	entity_index& index = db.get<byEntityId>();
-	entity_pair iter = index.equal_range(entity->getID());
-#ifdef PARTNERSHIPDB_DEBUG
+	initiator_index& index = db.get<byInitiatorId>();
+	initiator_pair iter = index.equal_range(entity->getID());
+#ifdef PARTNERSHIPDB_DEBUG_VERBOSE
 	std::cout << __func__ << "  " << index.size() << std::endl;
 #endif
 	return iter;
     }
 
-    void PartnershipDB::RemoveWithEntity(Entity *entity)
+    void PartnershipDB::RemoveWithInitiator(Entity *entity)
     {
-	entity_index& index = db.get<byEntityId>();
-	std::pair<entity_index::iterator, entity_index::iterator> iter = index.equal_range(entity->getID());
-#ifdef PARTNERSHIPDB_DEBUG
+	initiator_index& index = db.get<byInitiatorId>();
+	initiator_pair iter = index.equal_range(entity->getID());
+
+#ifdef PARTNERSHIPDB_DEBUG_VERBOSE
 	std::cout << __func__ << " before  " << index.size() << " removing " << index.count(entity->getID()) << std::endl;
 #endif
 	index.erase(iter.first, iter.second);
-#ifdef PARTNERSHIPDB_DEBUG
-	std::cout << __func__ << " after " << index.size() << std::endl;
+#ifdef PARTNERSHIPDB_DEBUG_VERBOSE
+	std::cout << __func__ << " after  " << index.size() << std::endl;
+
+#endif
+    }
+
+    PartnershipDB::partner_pair PartnershipDB::FindWithPartner(Entity *entity)
+    {
+	partner_index& index = db.get<byPartnerId>();
+	partner_pair iter = index.equal_range(entity->getID());
+#ifdef PARTNERSHIPDB_DEBUG_VERBOSE
+	std::cout << __func__ << "  " << index.size() << std::endl;
+#endif
+	return iter;
+    }
+
+    void PartnershipDB::RemoveWithPartner(Entity *entity)
+    {
+	partner_index& index = db.get<byPartnerId>();
+	partner_pair iter = index.equal_range(entity->getID());
+
+#ifdef PARTNERSHIPDB_DEBUG_VERBOSE
+	std::cout << __func__ << " before  " << index.size() << " removing " << index.count(entity->getID()) << std::endl;
+#endif
+	index.erase(iter.first, iter.second);
+#ifdef PARTNERSHIPDB_DEBUG_VERBOSE
+	std::cout << __func__ << " after  " << index.size() << std::endl;
 #endif
     }
 
@@ -73,7 +102,7 @@ namespace transm {
     {
 	auto partnerships = FindWithEntityAndType(partner1, type);
 	for (auto iter = partnerships.first; iter != partnerships.second; iter++) {
-	    if ((*iter)->isMember(partner2))
+	    if ((*iter).isMember(partner2))
 		return true;
 	}
 	return false;
@@ -83,8 +112,11 @@ namespace transm {
     {
 	size_t numPartners = 0;
 
-	entity_index& index = db.get<byEntityId>();
-	numPartners = index.count(entity->getID());
+	initiator_index& index1 = db.get<byInitiatorId>();
+	numPartners += index1.count(entity->getID());
+
+	partner_index& index2 = db.get<byPartnerId>();
+	numPartners += index2.count(entity->getID());
 
 	// it's faster to get it from the partner counter owned by the entity, but it's not working!
 	//assert(numPartners == entity->getNumPartners(_type));
@@ -102,13 +134,10 @@ namespace transm {
 	auto partnerships = FindWithEntityAndType(entity, _type);
 	for (auto iter = partnerships.first; iter != partnerships.second; iter++)
 	{
-	    if((*iter)->getPartner1() == entity)
+	    SexualPartnership partnership = *iter;
+	    if ((partner = partnership.getInitiator()) != entity)
 	    {
-		partner = (*iter)->getPartner2();
-	    }
-	    else
-	    {
-		partner = (*iter)->getPartner1();
+		partner = partnership.getPartner();
 	    }
 
 	    bool isSameRisk = (entity->getRiskLevel() == partner->getRiskLevel());
@@ -118,6 +147,13 @@ namespace transm {
 	    }
 	}
 	return numPartners;
+    }
+
+    void PartnershipDB::Info()
+    {
+#ifdef PARTNERSHIPDB_DEBUG
+	std::cout << "PartnershipDB: " << db.size() << std::endl;
+#endif
     }
 
 #if 0

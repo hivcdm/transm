@@ -243,6 +243,8 @@ private:
     /// </summary>
     void DissolveSexualPartnerships();
 
+    void TracePartnerships();
+
     void FormSexualPartnerships();
 
     void AllPartnershipSexualActivity(Entity *person, SexualPartnership::Type type);
@@ -434,8 +436,6 @@ private:
 	/// us access all the through a java style iterator interface 
     /// </summary>
 	std::unique_ptr<EntityPool> entities;
-
-
 
     /// <summary>
 	/// fling initiators -- use BucketSexualMixing, not BucketDemographicProfile because all persons
