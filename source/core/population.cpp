@@ -560,7 +560,6 @@ void Population::UpdatePartnerships(EventParams &parameters_)
     }
 
     FormSexualPartnerships();
-    partnershipDB.Info();
 
     if (parameters_.calibrationInputs.useCalibration
 	&& parameters_.currTime > (parameters_.calibrationInputs.monthOfCalibration - TimeSpan::Year)
@@ -819,6 +818,8 @@ void Population::UpdateFinalPhysicalState(EventParams &parameters_)
 
 void Population::FormSexualPartnerships()
 {
+  partnershipDB.Info(__func__);
+
     //Used to iterate through persons
     std::list<Entity *>::iterator p_Iter;
 
@@ -828,6 +829,7 @@ void Population::FormSexualPartnerships()
 	auto person = *p_Iter;
 	assert(person);
 	assert(person->isAlive());
+	assert(person->isMale());
 
         if(person->getAge() < popWideParams.ageOfMajority + person->GetSexualActivityDelay())
 	{
@@ -863,6 +865,7 @@ void Population::FormSexualPartnerships()
 	    AllPartnershipSexualActivity(person, type);
 	}
     }
+    partnershipDB.Info(__func__);
 }
 
 //Have all the sexual activity with current partners (includes new partners)
@@ -872,6 +875,9 @@ void Population::AllPartnershipSexualActivity(Entity *person, SexualPartnership:
     Entity *infectedMe;
 
     auto partners = partnershipDB.FindWithEntityAndType(person, type);
+    if (partners.first == partners.second)
+	return;
+    
     for (auto iter = partners.first; iter != partners.second; iter++)
     {
 	SexualPartnership partnership = *iter;
@@ -959,7 +965,9 @@ void Population::DissolveSexualPartnerships()
     {
 	TracePartnerships();
     }
+    partnershipDB.Info(__func__);
     partnershipDB.RemoveExpired(parameters_.currTime);
+    partnershipDB.Info(__func__);
 }
 
 void Population::TracePartnerships()
@@ -2306,7 +2314,7 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Entity *_
 	/* Add partnership to the db -- the object will be stored there */
 	SexualPartnership partnership(_initiator, chosenPartner, parameters_, _partnershipType);
 	partnershipDB.AddPartnership(partnership);
-
+	
 	if (chosenPartner->getEntityType() == "msm")
 	{
 	    ((Msm *)chosenPartner)->IncrementTimesSelected();
@@ -3672,7 +3680,7 @@ void Population::Initialize(const PopulationParameters &parameters)
 	
         numCouples--;
     }
-    partnershipDB.Info();
+    partnershipDB.Info(__func__);
 
     //number of regular couples -- % married of adult population by DemographicProfile::SexualActivityStatus::ActiveStatus / 2
     //Note that some people may end up in multiple relationships -- this should come out in the wash (?)
@@ -3699,7 +3707,7 @@ void Population::Initialize(const PopulationParameters &parameters)
         CreatePartnerships(parameters_, drawn, nullptr, SexualPartnership::Type::Regular, true);
         numCouples--;
     }
-    partnershipDB.Info();
+    partnershipDB.Info(__func__);
 
     //count the size of the population and store value
     UpdateSize();

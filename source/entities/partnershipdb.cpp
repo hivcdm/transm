@@ -1,7 +1,20 @@
 #include "partnershipdb.hpp"
 
-#define PARTNERSHIPDB_DEBUG
+//#define PARTNERSHIPDB_DEBUG
 //#define PARTNERSHIPDB_DEBUG_VERBOSE
+
+#include <chrono>
+auto benchmark = [](auto&& operation, const char* desc)
+{
+    static const int Iterations = 1e6;
+
+    auto start = std::chrono::steady_clock::now();
+    for (int i = 0; i < Iterations; ++i)
+	operation();
+    auto end = std::chrono::steady_clock::now();
+
+    std::cout << desc << ": " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
+};
 
 namespace transm {
 
@@ -20,9 +33,12 @@ namespace transm {
     PartnershipDB::end_date_pair PartnershipDB::FindExpired(Time time)
     {
 	end_date_index& index = db.get<byEndDate>();
-	end_date_pair iter = index.equal_range(time.in_months());
+	end_date_pair iter;
 #ifdef PARTNERSHIPDB_DEBUG
 	std::cout << __func__ << "  " << index.size() << std::endl;
+	benchmark([&]() { iter = index.equal_range(time.in_months()); }, __func__);
+#else
+	iter = index.equal_range(time.in_months());
 #endif
 	return iter;
     }
@@ -30,10 +46,12 @@ namespace transm {
     void PartnershipDB::RemoveExpired(Time time)
     {
 	end_date_index& index = db.get<byEndDate>();
-	std::pair<end_date_index::iterator, end_date_index::iterator> iter =
-	    index.equal_range(time.in_months());
+	std::pair<end_date_index::iterator, end_date_index::iterator> iter;
 #ifdef PARTNERSHIPDB_DEBUG
+	benchmark([&]() { iter = index.equal_range(time.in_months()); }, __func__);
 	std::cout << __func__ << " before " << index.size() << " removing " << index.count(time.in_months()) << std::endl;
+#else
+	iter = index.equal_range(time.in_months());
 #endif
 	index.erase(iter.first, iter.second);
 #ifdef PARTNERSHIPDB_DEBUG
@@ -44,9 +62,12 @@ namespace transm {
     PartnershipDB::initiator_pair PartnershipDB::FindWithInitiator(Entity *entity)
     {
 	initiator_index& index = db.get<byInitiatorId>();
-	initiator_pair iter = index.equal_range(entity->getID());
+	initiator_pair iter;
+	
 #ifdef PARTNERSHIPDB_DEBUG_VERBOSE
 	std::cout << __func__ << "  " << index.size() << std::endl;
+#else
+	iter = index.equal_range(entity->getID());
 #endif
 	return iter;
     }
@@ -95,6 +116,13 @@ namespace transm {
 	entity_type_index& index = db.get<byPartnershipType>();
 	entity_type_pair iter = index.equal_range(make_tuple(entity->getID(),
 	    SexualPartnership::GetTypeString(type)));
+
+	NumPartners(entity, type);
+
+#ifdef PARTNERSHIPDB_DEBUG_VERBOSE
+	std::cout << __func__ << "  " << index.size() << std::endl;
+#endif
+
 	return iter;
     }
 
@@ -112,16 +140,17 @@ namespace transm {
     {
 	size_t numPartners = 0;
 
+        // it's faster to get it from the partner counter owned by the entity
+	numPartners = entity->getNumPartners(_type);
+
 	initiator_index& index1 = db.get<byInitiatorId>();
 	numPartners += index1.count(entity->getID());
 
 	partner_index& index2 = db.get<byPartnerId>();
 	numPartners += index2.count(entity->getID());
 
-	// it's faster to get it from the partner counter owned by the entity, but it's not working!
-	//assert(numPartners == entity->getNumPartners(_type));
-	//numPartners = entity->getNumPartners(_type);
-
+	assert(numPartners == entity->getNumPartners(_type));
+	
 	return numPartners;
     }
 
@@ -149,10 +178,10 @@ namespace transm {
 	return numPartners;
     }
 
-    void PartnershipDB::Info()
+    void PartnershipDB::Info(std::string func_name)
     {
 #ifdef PARTNERSHIPDB_DEBUG
-	std::cout << "PartnershipDB: " << db.size() << std::endl;
+	std::cout << func_name << " partnershipDB size: " << db.size() << std::endl;
 #endif
     }
 

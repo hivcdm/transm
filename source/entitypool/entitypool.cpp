@@ -334,7 +334,7 @@ std::size_t EntityPool::sizeSexuallyActive(const std::string &entity_type, Entit
 unsigned long EntityPool::sizeSexuallyActiveByAge(Age minAgeMonths, Age maxAgeMonths)
 {
 	BucketDemographicProfile *bucket = nullptr;
-	unsigned long size = 0;		//total of the zie
+	unsigned long size = 0;		//total of the size
 	size_t currBucketIndex = 0;
 
 	//iterate through all buckets

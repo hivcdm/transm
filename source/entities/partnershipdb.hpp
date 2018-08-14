@@ -13,7 +13,7 @@
 #include <boost/multi_index/random_access_index.hpp>
 #include <boost/multi_index/sequenced_index.hpp>
 
-#define BOOST_MULTI_INDEX_ENABLE_SAFE_MODE
+//Enable for debugging #define BOOST_MULTI_INDEX_ENABLE_SAFE_MODE
 
 namespace transm {
     namespace bmi = boost::multi_index;
@@ -91,7 +91,7 @@ namespace transm {
 
 	entity_type_pair FindWithEntityAndType(Entity *entity, SexualPartnership::Type type);
 
-	void Info();
+	void Info(std::string fun_name);
 
       	// check if the partnership of this type exists between these entities
 	bool PartnershipExists(Entity *partner1, Entity *partner2, SexualPartnership::Type type);
