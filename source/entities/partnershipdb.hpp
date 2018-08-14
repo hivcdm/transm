@@ -33,7 +33,9 @@ namespace transm {
 		bmi::ordered_non_unique<
 		    bmi::tag<byEndDate>,
 		    bmi::const_mem_fun<SexualPartnership, int, &SexualPartnership::getTimeOfDissolutionAsInt>
-		>,
+		>
+#if 0
+		    ,
 		// Hash by initiator id
 		bmi::hashed_non_unique<
 		    bmi::tag<byInitiatorId>,
@@ -53,6 +55,7 @@ namespace transm {
 			bmi::const_mem_fun<SexualPartnership, std::string, &SexualPartnership::getTypeString>
 		    >
 		>
+#endif
 	    >
 	> partnership_db;
 	partnership_db db;
@@ -63,17 +66,22 @@ namespace transm {
 
     public:
 	typedef bmi::index<partnership_db, byEndDate>::type end_date_index;
+#if 0
 	typedef bmi::index<partnership_db, byInitiatorId>::type initiator_index;
 	typedef bmi::index<partnership_db, byPartnerId>::type partner_index;
 	typedef bmi::index<partnership_db, byPartnershipType>::type entity_type_index;
+#endif
 
 	using end_date_pair = std::pair<end_date_index::iterator,end_date_index::iterator>;
+#if 0
 	using initiator_pair = std::pair<initiator_index::iterator,initiator_index::iterator>;
 	using partner_pair = std::pair<partner_index::iterator,partner_index::iterator>;
 	using entity_type_pair = std::pair<entity_type_index::iterator,entity_type_index::iterator>;
+#endif
 
 	PartnershipDB();
 	~PartnershipDB();
+	void Info(std::string fun_name);
 
 	void AddPartnership(SexualPartnership _partnership);
 
@@ -81,7 +89,7 @@ namespace transm {
 	size_t NumExpired(Time time);
 	void RemoveExpired(Time time);
 	//void remove_expired(end_date_pair index_pair);
-
+#if 0
 	initiator_pair FindWithInitiator(Entity *entity);
 	void RemoveWithInitiator(Entity *entity);
 	//void remove_with_entity(entity_pair index_pair);
@@ -90,10 +98,8 @@ namespace transm {
 	void RemoveWithPartner(Entity *entity);
 
 	entity_type_pair FindWithEntityAndType(Entity *entity, SexualPartnership::Type type);
-
-	void Info(std::string fun_name);
-
-      	// check if the partnership of this type exists between these entities
+#endif
+	// check if the partnership of this type exists between these entities
 	bool PartnershipExists(Entity *partner1, Entity *partner2, SexualPartnership::Type type);
 
 	size_t NumPartners(Entity *entity, SexualPartnership::Type _type);
@@ -104,15 +110,6 @@ namespace transm {
 	 */
 	size_t NumPartners(Entity *entity, SexualPartnership::Type _type, bool sameRisk);
 
-#if 0
-      	void remove_partnership(SexualPartnership *partnership);
-
-	// check if the person has a relationship of the given type
-	bool partnership_of_type(Entity *partner1, SexualPartnership::Type type);
-
-	// check if the person has any partnerships
-	bool partnership_of_any_type(Entity *partner1);
-#endif
     };
 
 } /* namespace transm */

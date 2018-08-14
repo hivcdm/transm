@@ -874,10 +874,11 @@ void Population::AllPartnershipSexualActivity(Entity *person, SexualPartnership:
     std::list<Entity *> newlyInfected;
     Entity *infectedMe;
 
+#if 0
     auto partners = partnershipDB.FindWithEntityAndType(person, type);
     if (partners.first == partners.second)
 	return;
-    
+
     for (auto iter = partners.first; iter != partners.second; iter++)
     {
 	SexualPartnership partnership = *iter;
@@ -900,6 +901,7 @@ void Population::AllPartnershipSexualActivity(Entity *person, SexualPartnership:
 	    }
 	}
     }
+#endif
 
     //record all incident infections
     std::list<Entity *>::iterator newlyInfectedIter = newlyInfected.begin();
@@ -2370,6 +2372,7 @@ void Population::ProcessDeath(EventParams &parameters_, Entity *_p, bool calcula
         populationStatistics.selectedLEStats->deathsByAge[_p->getAge().year_as_index()]++;
     }
 
+#if 0
     // Remove the partnerships intiated by this person
     PartnershipDB::initiator_pair initiatedPartnerships = partnershipDB.FindWithInitiator(_p);
     for (auto iter = initiatedPartnerships.first; iter != initiatedPartnerships.second; iter++)
@@ -2387,6 +2390,7 @@ void Population::ProcessDeath(EventParams &parameters_, Entity *_p, bool calcula
 	_p->removePartnership((*iter).getType());
     }
     partnershipDB.RemoveWithPartner(_p);
+#endif
 
     currDeathCauses[(std::size_t)_p->deathStatus]++;
     populationStatistics.processDeath(_p, parameters_);
