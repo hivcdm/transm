@@ -125,8 +125,8 @@ public:
 	***/
 	int chooseIndex(const std::vector<double> &_indexProbabilities);
 
-	double rand();						// returns a double between 0 and 1
 	uint32_t randInt();       // integer in [0,n] for n < 2^32
+	double rand();						// returns a double between 0 and 1
 	uint32_t randInt(const uint32_t &_max);        // integer in [0,n] for n < 2^32
 	uint32_t randInt(const uint32_t &_min, const uint32_t &_max);        // integer in [min,max] for n < 2^32
 

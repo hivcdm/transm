@@ -61,18 +61,16 @@ bool RandomNumberGenerator::chance(double _probability)
 	return (d <= _probability);
 }
 
-double RandomNumberGenerator::rand()
-{
-	static int rand_count = 0;
-	rand_count++;
-	return mtRand() * mtRand_OneOverMaxMult;
-}
-
 uint32_t RandomNumberGenerator::randInt()
 {
 	static int rand_count = 0;
 	rand_count++;
 	return mtRand();
+}
+
+double RandomNumberGenerator::rand()
+{
+	return randInt() * mtRand_OneOverMaxMult;
 }
 
 uint32_t RandomNumberGenerator::randInt(const uint32_t &_max)
