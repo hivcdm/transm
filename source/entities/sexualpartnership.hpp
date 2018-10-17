@@ -35,17 +35,12 @@ public :
 		Regular,
 		Casual,
 		Csw,
-		SteadyMsm,
-		RegularMsm,
-		CasualMsm,
-		CswMsm,
 		ENDType,
 		Last = ENDType,
 		First = Steady
 	};
-	
 	static const std::map<Type, std::string> TypeStrings;
-  
+
 	//time that this partnership will dissolve
 	Time timePartnerDissolution;
 

@@ -14,10 +14,6 @@ std::string to_string(SexualPartnership::Type type)
 	case SexualPartnership::Type::Regular: return "regular";
 	case SexualPartnership::Type::Casual: return "casual";
 	case SexualPartnership::Type::Csw: return "csw";
-	case SexualPartnership::Type::SteadyMsm: return "steady-msm";
-	case SexualPartnership::Type::RegularMsm: return "regular-msm";
-	case SexualPartnership::Type::CasualMsm: return "casual-msm";
-	case SexualPartnership::Type::CswMsm: return "csw-msm";
 	default: throw std::runtime_error("unknown type");
 	}
 }

@@ -323,7 +323,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 				    p->isInfected() && p->isOnArt()) {
 				    populationStatistics.recordTreatmentDeath(p);
 				}
-			    
+
 				p_Iter = entities->removeEntityFromAll(p_Iter);
 				ProcessDeath(parameters_, p, calculateLE);
 
@@ -2567,7 +2567,6 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 	std::string riskLabels[] = { "LR", "HR" };
 	std::string relationshipLabels[] = { "Non-Single", "Single" };
 	std::string partnershipLabelsHetero[] = { "Steady", "Regular", "Casual", "CSW" };
-	std::string partnershipLabelsMsm[] = { "SteadyMSM", "RegularMSM", "CasualMSM", "CSWMSM" };
 	std::string riskLabels2[] = { "HR", "Mix", "LR" };
 
 	if(_time == Time::Zero)
@@ -2580,12 +2579,12 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 		thirdRow << "Month" << Constants::Tab;
 		//Partnership Headers
 
-		for (auto hetero : { true, false })
+		for (auto hetero : { true /*, false*/ })
 		{
 			for (int i = 0; i < 4; i++)
 			{
 				firstRow << "Individuals by Partnership";
-				std::string label = hetero ? partnershipLabelsHetero[i] : partnershipLabelsMsm[i];
+				std::string label = partnershipLabelsHetero[i];
 				secondRow << label;
 
 				std::vector<std::string> entity_types;
@@ -2593,7 +2592,7 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 				if (hetero)
 				{
 					entity_types.push_back("Male:Hetero");
-					entity_types.push_back("Male:MSMW");
+					//entity_types.push_back("Male:MSMW");
 					entity_types.push_back("Female");
 				}
 				else
@@ -2631,7 +2630,7 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 			{
 				for (std::string csw : { "Non-CSW", "CSW" })
 				{
-					if (csw == "CSW" && entity_type == "Male:Hetero") continue;
+					if (csw == "CSW" && entity_type == "male") continue;
 
 					firstRow << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
 					secondRow << entity_type << " " << risk << " Risk " << csw << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
@@ -2645,7 +2644,7 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 		//Partnerships by partnership type
 		firstRow << "Partnerships by Partnership Type";
 
-		for (std::string partnership_type : { "Male+Female", "MSMW+Female", "MSMW+MSM", "MSM+MSM" })
+		for (std::string partnership_type : { "Male+Female" /*, "MSMW+Female", "MSMW+MSM", "MSM+MSM"*/ })
 		{
 			auto hetero = partnership_type == "Male+Female" || partnership_type == "MSMW+Female";
 			secondRow << partnership_type;
@@ -2654,7 +2653,7 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 			{
 				for (int j = 0; j < 3; j++)
 				{
-					std::string label = hetero ? partnershipLabelsHetero[i] : partnershipLabelsMsm[i];
+					std::string label = partnershipLabelsHetero[i];
 					firstRow << Constants::Tab;
 					secondRow << Constants::Tab;
 					thirdRow << label << Constants::Space << riskLabels2[j] << Constants::Tab;
@@ -2699,14 +2698,6 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 		if (entity_type == "female")
 		{
 			times_selected_stats[entity_type].insert(((Female *)e)->GetTimesSelected());
-		}
-		else if (entity_type == "msmw")
-		{
-			times_selected_stats[entity_type].insert(((Msmw *)e)->GetTimesSelected());
-		}
-		else if (entity_type == "msm")
-		{
-			times_selected_stats[entity_type].insert(((Msm *)e)->GetTimesSelected());
 		}
 
 		int concurrent = 0;
@@ -2757,7 +2748,7 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 		}
 	});
 
-	for (auto hetero : { true, false })
+	for (auto hetero : { true /*, false*/ })
 	{
 		for (int i = 0; i < 4; i++)
 		{
@@ -2766,7 +2757,7 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 			if (hetero)
 			{
 				entity_types.push_back("male");
-				entity_types.push_back("msmw");
+				//entity_types.push_back("msmw");
 				entity_types.push_back("female");
 			}
 			else
@@ -2807,7 +2798,7 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 		}
 	}
 
-	for (std::string partnership_type : { "Male+Female", "MSMW+Female", "MSMW+MSM", "MSM+MSM" })
+	for (std::string partnership_type : { "Male+Female" /*, "MSMW+Female", "MSMW+MSM", "MSM+MSM" */ })
 	{
 		auto hetero = partnership_type == "Male+Female" || partnership_type == "MSMW+Female";
 
@@ -2871,6 +2862,7 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 	}
 
 	_outStream << std::endl;
+
 }
 
 void Population::PrintClinical(EventParams &/*parameters_*/, Time _time, std::ostream &_outStream)

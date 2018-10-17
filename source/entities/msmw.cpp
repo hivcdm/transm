@@ -348,7 +348,7 @@ int Msmw::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnersh
     assert(_partnershipType < SexualPartnership::Type::ENDType);
 
     //person can only have 1 steady partner at a time so return 0 if person is already in Steady
-    if((_partnershipType == SexualPartnership::Type::Steady || _partnershipType == SexualPartnership::Type::SteadyMsm) && (!partners[(int)_partnershipType].empty()))
+    if(_partnershipType == SexualPartnership::Type::Steady && (!partners[(int)_partnershipType].empty()))
     {
         return 0;
     }
@@ -375,7 +375,7 @@ int Msmw::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnersh
     /** To get the number of partners to draw this month, draw from a Poisson distribution */
     int numPartners = _randomNums.randPoisson(partnerRate);
     //if we are rolling for STEADY, make sure we have max of 1
-    return (_partnershipType != SexualPartnership::Type::Steady && _partnershipType != SexualPartnership::Type::SteadyMsm) ? numPartners : std::min(1, numPartners);
+    return (_partnershipType != SexualPartnership::Type::Steady) ? numPartners : std::min(1, numPartners);
 }
 
 int Msmw::rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType)
