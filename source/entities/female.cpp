@@ -6,7 +6,7 @@
 
 namespace transm {
 
-std::string Female::getEntityType() const
+const std::string Female::getEntityType() const
 {
     return "female";
 }
@@ -150,7 +150,7 @@ double Female::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std
     double condomProtectEff = 0;
     bool circumcised = false;
 
-    if(_p->getEntityType() == "male")
+    if(_p->getEntityType() == "msw")
     {
         circEff = ((Male *)_p)->getCircumProtectEff();
         condomUseProb = ((Male *)_p)->getCondomUseProb(this, _partnershipType);

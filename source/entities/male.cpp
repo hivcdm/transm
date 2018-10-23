@@ -11,9 +11,9 @@
 
 namespace transm {
 
-std::string Male::getEntityType() const
+const std::string Male::getEntityType() const
 {
-    return "male";
+    return "msw";
 }
 
 //each index of the array contains parameters for a different population

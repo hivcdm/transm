@@ -14,12 +14,12 @@ namespace transm {
 //each index of the array contains parameters for a different population
 //(we only have 1 population for now so the size of the vector will default to 1
 
-std::string Msmw::getEntityType() const 
-{ 
+const std::string Msmw::getEntityType() const
+{
     return "msmw";
 }
 
-Msmw::SubPopParams::SubPopParams() : 
+Msmw::SubPopParams::SubPopParams() :
     maxPartnershipRejections(0),
     preExposureProphylaxisEfficacy_(0)
 
@@ -135,7 +135,7 @@ Msmw::Msmw(EventParams &_eventParams, Age _age, bool _circumcised, unsigned int 
 {
 	_age = max(min(Age(Entity::maxYrForDeathStats, 0), _age), Age::Zero);
     dmgProfile.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
-    dmgProfile.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Homosexual);
+    dmgProfile.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Msmw);
     circumcised = _circumcised;
     //Set this male's risk level assume everyone is low risk on creation. Risk is rerolled when they roll for become sex worker
     risk = Entity::RiskLevel::LOW;
@@ -348,7 +348,7 @@ int Msmw::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnersh
     assert(_partnershipType < SexualPartnership::Type::ENDType);
 
     //person can only have 1 steady partner at a time so return 0 if person is already in Steady
-    if(_partnershipType == SexualPartnership::Type::Steady && (!partners[(int)_partnershipType].empty()))
+    if(_partnershipType == SexualPartnership::Type::SteadyMsmw && (!partners[(int)_partnershipType].empty()))
     {
         return 0;
     }
@@ -358,7 +358,7 @@ int Msmw::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnersh
     partnerRate = partnerAcqRates[(int)_partnershipType];
 
     //if this person has a steady partner then adjust acquisition rate
-    if(!partners[(int)SexualPartnership::Type::Steady].empty() || !partners[(int)SexualPartnership::Type::Steady].empty())
+    if(!partners[(int)SexualPartnership::Type::SteadyMsmw].empty())
     {
         //if we're thinking of getting another partner, then lower chances if we have a steady partner
         partnerRate *= populationSpecificParams.getPartnerAcqMultWithSteady(getRiskLevel());
@@ -375,7 +375,7 @@ int Msmw::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnersh
     /** To get the number of partners to draw this month, draw from a Poisson distribution */
     int numPartners = _randomNums.randPoisson(partnerRate);
     //if we are rolling for STEADY, make sure we have max of 1
-    return (_partnershipType != SexualPartnership::Type::Steady) ? numPartners : std::min(1, numPartners);
+    return (_partnershipType != SexualPartnership::Type::SteadyMsmw) ? numPartners : std::min(1, numPartners);
 }
 
 int Msmw::rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType)

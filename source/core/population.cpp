@@ -87,7 +87,7 @@ void Population::InitPartnershipBuckets()
     selector.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::Active);
     selector.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
     selector.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::NonCsw);
-    //selector.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Heterosexual);
+
 	//all SA, non-CSW males can form partnerships of any type
 	std::vector<DemographicProfile::ProfileID> eligibleInitiators;
 	selector.selectProfileIDs(eligibleInitiators, nullptr);
@@ -121,7 +121,15 @@ void Population::InitPartnershipBuckets()
         try
         {
             //get the parameters for current relationship type
-            const SexualBehavior &partneringParams = popWideParams.defaultMaleParams.hasSexualBehavior(partnership_type) ? popWideParams.defaultMaleParams.getSexualBehavior(partnership_type) : popWideParams.defaultMsmParams.getSexualBehavior(partnership_type);
+            const SexualBehavior &partneringParams = nullptr;
+			if (popWideParams.defaultMaleParams.hasSexualBehavior(partnership_type))
+				partneringParams = popWideParams.defaultMaleParams.getSexualBehavior(partnership_type);
+			else if (popWideParams.defaultMsmwParams.hasSexualBehavior(partnership_type))
+				partneringParams = popWideParams.defaultMsmwParams.getSexualBehavior(partnership_type);
+			else if (popWideParams.defaultMsmParams.hasSexualBehavior(partnership_type))
+				partneringParams = popWideParams.defaultMsmParams.getSexualBehavior(partnership_type);
+			else
+				continue;
 
             //get available demographicProfiles that are available for this partnership
             for(unsigned int j = 0; j < partneringParams.getNumAvailableBuckets(); ++j)
@@ -529,7 +537,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
             {
                 endedPartnershipCount[type] += ((Msmw *)person)->getPartnershipsToEnd(parameters_.currTime, SexualPartnership::Type(type), partnershipsToEnd, false);
             }
-            else if((*p_Iter)->getEntityType() == "male")
+            else if((*p_Iter)->getEntityType() == "msw")
             {
                 endedPartnershipCount[type] += ((Male *)person)->getPartnershipsToEnd(parameters_.currTime, SexualPartnership::Type(type), partnershipsToEnd, false);
             }
@@ -739,7 +747,13 @@ void Population::SaveIndividualSummaries(std::ostream &stream) const
         stream << ",\"sexual_activity_status\"" << ":";
         stream << (summary.profile.get(DemographicProfile::Demographic::SexualActivityStatus) == 0 ? "\"sexually-active\"" : "\"not-active\"");
         stream << ",\"sexual_orientation\"" << ":";
-        stream << (summary.profile.get(DemographicProfile::Demographic::SexualOrientation) == 0 ? "\"hetero\"" : "\"homo\"");
+		switch(summary.profile.get(DemographicProfile::Demographic::SexualOrientation))
+		{
+		    case (std::size_t)DemographicProfile::SexualOrientation::Msw: stream << "\"msw\"" << ":"; break;
+			case (std::size_t)DemographicProfile::SexualOrientation::Msmw: stream << "\"msmw\"" << ":"; break;
+			case (std::size_t)DemographicProfile::SexualOrientation::Msm: stream << "\"msm\"" << ":"; break;
+				default: throw std::runtime_error("unknown sexual orientation");
+		}
         stream << ",\"relationship_status\"" << ":";
         stream << (summary.profile.get(DemographicProfile::Demographic::RelationshipStatus) == 0 ? "\"non-single\"" : "\"single\"");
         stream << ",\"risk_group\"" << ":" << (summary.risk_group == Entity::RiskLevel::HIGH ? "\"high\"" : "\"low\"");
@@ -816,7 +830,8 @@ std::size_t Population::UpdateSize()
 
 	//Next tally the women
     GenderProfile.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Female);
-    GenderProfile.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Heterosexual);
+    GenderProfile.set(DemographicProfile::Demographic::SexualOrientation,
+		(std::size_t)DemographicProfile::SexualOrientation::Msw);
 	GenderProfileIDs.clear();
     currSizeGender[(std::size_t)DemographicProfile::Gender::Female] = 0;
 	GenderProfile.selectProfileIDs(GenderProfileIDs, nullptr);
@@ -847,7 +862,7 @@ std::size_t Population::UpdateSize()
 		currSizeRisk[risk] = 0;
 		currSizeRiskCSW[risk] = 0;
 
-        for(auto entity_type : {"male", "msmw", "msm", "female"})
+        for(auto entity_type : {"msw", "msmw", "msm", "female"})
 		{
 			currSizeEntityTypeRiskCSW[entity_type][risk] = 0;
             currSASizeEntityTypeRisk[entity_type][risk] = 0;
@@ -865,7 +880,7 @@ std::size_t Population::UpdateSize()
     num_circumcised_na = 0;
     num_circumcised_sa = 0;
 
-	for (auto entity_type : { "male", "msmw", "msm", "female" })
+	for (auto entity_type : { "msw", "msmw", "msm", "female" })
 	{
 		for (auto &age_range_size_pair : currSizeByEntityTypeAgeRange[entity_type])
 		{
@@ -904,7 +919,7 @@ std::size_t Population::UpdateSize()
         
         if(e->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Male)
         {
-            if((e->getEntityType() == "male" && ((Male *)e)->IsCircumcised())
+            if((e->getEntityType() == "msw" && ((Male *)e)->IsCircumcised())
                || (e->getEntityType() == "msm" && ((Msm *)e)->IsCircumcised())
                || (e->getEntityType() == "msmw" && ((Msmw *)e)->IsCircumcised()))
             {
@@ -1191,7 +1206,7 @@ void Population::InitIncidentInfectionsByAge()
 	{
 		AgeRange ageRange = {ageBucketParams.minAgeMth, ageBucketParams.maxAgeMth};
         totalIncidentInfsAge.push_back({ageRange, 0});
-        for(auto entity_type : {"male", "msmw", "msm", "female"})
+        for(auto entity_type : {"msw", "msmw", "msm", "female"})
         {
             incident_by_entity_type_age[entity_type].push_back({ageRange, 0});
         }
@@ -2195,7 +2210,7 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Entity *_
 
         int maxRejections = 0;
 
-        if(_initiator->getEntityType() == "male") maxRejections = ((Male *)_initiator)->getMaxPartnershipRejections();
+        if(_initiator->getEntityType() == "msw") maxRejections = ((Male *)_initiator)->getMaxPartnershipRejections();
         else if(_initiator->getEntityType() == "msm") maxRejections = ((Msm *)_initiator)->getMaxPartnershipRejections();
         else if(_initiator->getEntityType() == "msmw") maxRejections = ((Msmw *)_initiator)->getMaxPartnershipRejections();
 
@@ -2423,7 +2438,7 @@ std::size_t Population::CalcPrevalentPopulation(Time time)
     for(auto ageBucketParams : popWideParams.GetInitialAgeBuckets())
 	{
 		AgeRange range = {ageBucketParams.minAgeMth, ageBucketParams.maxAgeMth};
-		for(auto entity_type : {"male", "msmw", "msm", "female"})
+		for(auto entity_type : {"msw", "msmw", "msm", "female"})
 		{
 			prevalenceByEntityTypeAge[entity_type].push_back({range, 0});
 		}
@@ -2432,7 +2447,7 @@ std::size_t Population::CalcPrevalentPopulation(Time time)
 	//initialize prevalence tallies to 0
 	for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
 	{
-        for(auto entity_type : {"male", "msmw", "msm", "female"})
+        for(auto entity_type : {"msw", "msmw", "msm", "female"})
         {
             for(int k = 0; k < (int)DemographicProfile::Employment::Last; k++)
             {
@@ -2579,7 +2594,7 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 		thirdRow << "Month" << Constants::Tab;
 		//Partnership Headers
 
-		for (auto hetero : { true /*, false*/ })
+		for (auto hetero : { true , false })
 		{
 			for (int i = 0; i < 4; i++)
 			{
@@ -2591,8 +2606,8 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 
 				if (hetero)
 				{
-					entity_types.push_back("Male:Hetero");
-					//entity_types.push_back("Male:MSMW");
+					entity_types.push_back("Male:MSW");
+					entity_types.push_back("Male:MSMW");
 					entity_types.push_back("Female");
 				}
 				else
@@ -2624,13 +2639,13 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 		firstRow << "Individuals by Concurrent Partnerships";
 
 		// Concurrent by <entity-type> <risk> Non-CSW
-		for (std::string entity_type : { "Male:Hetero", "Male:MSMW", "Male:MSM", "Female" })
+		for (std::string entity_type : { "Male:MSW", "Male:MSMW", "Male:MSM", "Female" })
 		{
 			for (std::string risk : { "High", "Low" })
 			{
 				for (std::string csw : { "Non-CSW", "CSW" })
 				{
-					if (csw == "CSW" && entity_type == "male") continue;
+					if (csw == "CSW" && entity_type == "msw") continue;
 
 					firstRow << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
 					secondRow << entity_type << " " << risk << " Risk " << csw << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
@@ -2644,7 +2659,7 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 		//Partnerships by partnership type
 		firstRow << "Partnerships by Partnership Type";
 
-		for (std::string partnership_type : { "Male+Female" /*, "MSMW+Female", "MSMW+MSM", "MSM+MSM"*/ })
+		for (std::string partnership_type : { "Male+Female" , "MSMW+Female", "MSMW+MSM", "MSM+MSM" })
 		{
 			auto hetero = partnership_type == "Male+Female" || partnership_type == "MSMW+Female";
 			secondRow << partnership_type;
@@ -2748,16 +2763,16 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 		}
 	});
 
-	for (auto hetero : { true /*, false*/ })
+	for (auto hetero : { true , false })
 	{
-		for (int i = 0; i < 4; i++)
+		for (auto partnership_type : enum_iterator<SexualPartnership::Type>())
 		{
 			std::vector<std::string> entity_types;
 
 			if (hetero)
 			{
-				entity_types.push_back("male");
-				//entity_types.push_back("msmw");
+				entity_types.push_back("msw");
+				entity_types.push_back("msmw");
 				entity_types.push_back("female");
 			}
 			else
@@ -2774,7 +2789,7 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 					{
 						for (int m = (int)Entity::RiskLevel::HIGH; m >= 0; m--)
 						{
-							_outStream << num_in_partnership[hetero ? i : i + 4][entity_type][k][l][m] << Constants::Tab;
+							_outStream << num_in_partnership[(std::size_t)partnership_type][entity_type][k][l][m] << Constants::Tab;
 						}
 					}
 				}
@@ -2782,13 +2797,13 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 		}
 	}
 
-	for (std::string entity_type : { "male", "msmw", "msm", "female" })
+	for (std::string entity_type : { "msw", "msmw", "msm", "female" })
 	{
 		for (int risk = (int)Entity::RiskLevel::HIGH; risk >= 0; risk--)
 		{
 			for (int csw = 0; csw < (int)DemographicProfile::Employment::Last; csw++)
 			{
-				if (csw == (int)DemographicProfile::Employment::Csw && entity_type == "male") continue;
+				if (csw == (int)DemographicProfile::Employment::Csw && entity_type == "msw") continue;
 
 				for (int i = 0; i < 5; i++)
 				{
@@ -2798,7 +2813,7 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 		}
 	}
 
-	for (std::string partnership_type : { "Male+Female" /*, "MSMW+Female", "MSMW+MSM", "MSM+MSM" */ })
+	for (std::string partnership_type : { "Male+Female" , "MSMW+Female", "MSMW+MSM", "MSM+MSM" })
 	{
 		auto hetero = partnership_type == "Male+Female" || partnership_type == "MSMW+Female";
 
@@ -2807,7 +2822,7 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 
 		if (partnership_type == "Male+Female")
 		{
-			partner1 = "male";
+			partner1 = "msw";
 			partner2 = "female";
 		}
 		else if (partnership_type == "MSMW+Female")
@@ -2826,19 +2841,19 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 			partner2 = "msm";
 		}
 
-		for (int i = 0; i < 4; i++)
+		for (auto partnership_type : enum_iterator<SexualPartnership::Type>())
 		{
 			for (int j = 0; j < 3; j++)
 			{
-				if (double_num_partnerships[partner1][j][hetero ? i : i + 4] == 0
-					|| double_num_partnerships[partner2][j][hetero ? i : i + 4] == 0)
+				if (double_num_partnerships[partner1][j][(std::size_t)partnership_type] == 0
+					|| double_num_partnerships[partner2][j][(std::size_t)partnership_type] == 0)
 				{
 					_outStream << 0 << Constants::Tab;
 					continue;
 				}
 
-				auto count = (double_num_partnerships[partner1][j][hetero ? i : i + 4] 
-					+ double_num_partnerships[partner2][j][hetero ? i : i + 4]) / 2;
+				auto count = (double_num_partnerships[partner1][j][(std::size_t)partnership_type]
+					+ double_num_partnerships[partner2][j][(std::size_t)partnership_type]) / 2;
 				_outStream << count << Constants::Tab;
 			}
 		}
@@ -2917,18 +2932,18 @@ void Population::PrintClinical(EventParams &/*parameters_*/, Time _time, std::os
 		thirdRow << "HIV-" << Constants::Tab << "Observed Acute" << Constants::Tab << "Unobserved Acute" << Constants::Tab <<
 		         "Observed Chronic" << Constants::Tab << "Unobserved Chronic" << Constants::Tab << "Observed Latestage" << Constants::Tab
 		         << "Unobserved Latestage" << Constants::Tab;
-        //Male(hetero) High Risk
+        //Msw High Risk
         firstRow << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
             Constants::Tab;
-        secondRow << "HIV Status Among High Risk Male:Hetero SA Population" << Constants::Tab << Constants::Tab << Constants::Tab <<
+        secondRow << "HIV Status Among High Risk Male:Msw SA Population" << Constants::Tab << Constants::Tab << Constants::Tab <<
             Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
         thirdRow << "HIV-" << Constants::Tab << "Observed Acute" << Constants::Tab << "Unobserved Acute" << Constants::Tab <<
             "Observed Chronic" << Constants::Tab << "Unobserved Chronic" << Constants::Tab << "Observed Latestage" << Constants::Tab
             << "Unobserved Latestage" << Constants::Tab;
-        //Male(hetero) Low Risk
+        //Msw Low Risk
         firstRow << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
             Constants::Tab;
-        secondRow << "HIV Status Among Low Risk Male:Hetero SA Population" << Constants::Tab << Constants::Tab << Constants::Tab <<
+        secondRow << "HIV Status Among Low Risk Male:Msw SA Population" << Constants::Tab << Constants::Tab << Constants::Tab <<
             Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
         thirdRow << "HIV-" << Constants::Tab << "Observed Acute" << Constants::Tab << "Unobserved Acute" << Constants::Tab <<
             "Observed Chronic" << Constants::Tab << "Unobserved Chronic" << Constants::Tab << "Observed Latestage" << Constants::Tab
@@ -3010,7 +3025,7 @@ void Population::PrintClinical(EventParams &/*parameters_*/, Time _time, std::os
 
     std::unordered_map<std::string, std::array<std::array<std::array<unsigned long, (std::size_t)Entity::HIVStatus::Last>, (std::size_t)DemographicProfile::Employment::Last>, (std::size_t)Entity::RiskLevel::Last>> numWithHIVStatus;
 
-    for(auto entity_type : {"male", "msmw", "msm", "female"})
+    for(auto entity_type : {"msw", "msmw", "msm", "female"})
     {
         for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
         {
@@ -3037,7 +3052,7 @@ void Population::PrintClinical(EventParams &/*parameters_*/, Time _time, std::os
 		hivStatusSA[m] = 0;
 	}
 
-    for(auto entity_type : {"male", "msmw", "msm", "female"})
+    for(auto entity_type : {"msw", "msmw", "msm", "female"})
     {
         for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
         {
@@ -3064,7 +3079,7 @@ void Population::PrintClinical(EventParams &/*parameters_*/, Time _time, std::os
 		hivStatusCSW[m] = 0;
 	}
 
-    for(auto entity_type : {"male", "msmw", "msm", "female"})
+    for(auto entity_type : {"msw", "msmw", "msm", "female"})
     {
         for(std::size_t i = 0; i < (std::size_t)Entity::RiskLevel::Last; i++)
         {
@@ -3090,7 +3105,7 @@ void Population::PrintClinical(EventParams &/*parameters_*/, Time _time, std::os
 			hivStatusRisk[m] = 0;
 		}
 
-        for(auto entity_type : {"male", "msmw", "msm", "female"})
+        for(auto entity_type : {"msw", "msmw", "msm", "female"})
         {
 		    for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
 			{
@@ -3114,7 +3129,7 @@ void Population::PrintClinical(EventParams &/*parameters_*/, Time _time, std::os
 
     for(int i = (int)Entity::RiskLevel::HIGH; i >= 0; i--)
     {
-        for(auto entity_type : {"male", "msmw", "msm"})
+        for(auto entity_type : {"msw", "msmw", "msm"})
         {
             for(std::size_t m = 0; m < (std::size_t)Entity::HIVStatus::Last; m++)
             {
@@ -3129,7 +3144,7 @@ void Population::PrintClinical(EventParams &/*parameters_*/, Time _time, std::os
     }
 
 	//HIV Status of SA population by Gender and Risk
-    for(auto entity_type : {"male", "msmw", "msm", "female"})
+    for(auto entity_type : {"msw", "msmw", "msm", "female"})
 	{
 		unsigned long hivStatusGender[(std::size_t)Entity::HIVStatus::Last];
 		unsigned long hivStatusGenderRisk[(std::size_t)Entity::RiskLevel::Last][(std::size_t)Entity::HIVStatus::Last];
@@ -3207,7 +3222,7 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, Time _time, std::
 		          Constants::Tab;
 		firstRow << "Gender" << Constants::Tab;
 		secondRow << "Males" << Constants::Tab;
-        secondRow << "Male:Hetero" << Constants::Tab;
+        secondRow << "Male:Msw" << Constants::Tab;
         secondRow << "Male:Msmw" << Constants::Tab;
         secondRow << "Male:Msm" << Constants::Tab;
 		firstRow << Constants::Tab;
@@ -3219,13 +3234,13 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, Time _time, std::
 		secondRow << "CSW HR" << Constants::Tab << "CSW LR" << Constants::Tab;
 		firstRow << Constants::Tab << Constants::Tab;
         firstRow << Constants::Tab << Constants::Tab;
-        secondRow << "Non-CSW High Risk Male:Hetero" << Constants::Tab;
+        secondRow << "Non-CSW High Risk Male:Msw" << Constants::Tab;
         secondRow << "Non-CSW High Risk Male:Msmw" << Constants::Tab;
         secondRow << "Non-CSW High Risk Male:Msm" << Constants::Tab;
         secondRow << "Non-CSW High Risk Female" << Constants::Tab;
 		firstRow << Constants::Tab << Constants::Tab;
         firstRow << Constants::Tab << Constants::Tab;
-        secondRow << "Non-CSW Low Risk Male:Hetero" << Constants::Tab;
+        secondRow << "Non-CSW Low Risk Male:Msw" << Constants::Tab;
         secondRow << "Non-CSW Low Risk Male:Msmw" << Constants::Tab;
         secondRow << "Non-CSW Low Risk Male:Msm" << Constants::Tab;
         secondRow << "Non-CSW Low Risk Female" << Constants::Tab;
@@ -3258,7 +3273,7 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, Time _time, std::
             secondRow << age_ranges.at(i) << Constants::Tab;
 		}
 
-        firstRow << "Male:Hetero (By Age)" << Constants::Tab;
+        firstRow << "Male:Msw (By Age)" << Constants::Tab;
         secondRow << "Non-SA" << Constants::Tab;
 
         for(std::size_t i = 0; i < age_ranges.size(); i++)
@@ -3357,7 +3372,7 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, Time _time, std::
 	_outStream << totalDeaths << Constants::Tab;
 	//output size of male and female populations
     _outStream << GetSize(DemographicProfile::Gender::Male) << Constants::Tab;
-    for(auto entity_type : {"male", "msmw", "msm"})
+    for(auto entity_type : {"msw", "msmw", "msm"})
     {
         _outStream << GetSize(entity_type) << Constants::Tab;
     }
@@ -3370,7 +3385,7 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, Time _time, std::
 
     for(auto risk : {Entity::RiskLevel::HIGH, Entity::RiskLevel::LOW})
 	{
-        for(auto entity_type : {"male", "msmw", "msm", "female"})
+        for(auto entity_type : {"msw", "msmw", "msm", "female"})
         {
             _outStream << GetSASize(entity_type, risk) - currSizeEntityTypeRiskCSW[entity_type][(std::size_t)risk] << Constants::Tab;
         }
@@ -3382,7 +3397,7 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, Time _time, std::
     auto size_by_age_range = currSizeByEntityTypeAgeRange["female"];
     AgeRangeSizeContainer size_by_age_range_male;
 
-    for(auto entity_type : {"male", "msmw", "msm"})
+    for(auto entity_type : {"msw", "msmw", "msm"})
     {
         total_na += currNASizeByEntityType[entity_type];
         total_na_male += currNASizeByEntityType[entity_type];
@@ -3417,7 +3432,7 @@ void Population::PrintPopulation(EventParams &/*parameters_*/, Time _time, std::
         _outStream << ageRangeSize.second << Constants::Tab;
     }
 
-    for(auto entity_type : {"male", "msmw", "msm", "female"})
+    for(auto entity_type : {"msw", "msmw", "msm", "female"})
     {
         _outStream << currNASizeByEntityType[entity_type] << Constants::Tab;
 

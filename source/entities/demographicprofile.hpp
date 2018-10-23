@@ -63,10 +63,11 @@ public:
 
     enum class SexualOrientation
     {
-        Heterosexual,
-        Homosexual,
+        Msw,
+        Msmw,
+		Msm,
         Last,
-        First = Heterosexual
+        First = Msw
     };
 
 

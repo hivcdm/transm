@@ -14,6 +14,14 @@ std::string to_string(SexualPartnership::Type type)
 	case SexualPartnership::Type::Regular: return "regular";
 	case SexualPartnership::Type::Casual: return "casual";
 	case SexualPartnership::Type::Csw: return "csw";
+	case SexualPartnership::Type::SteadyMsm: return "steady-msm";
+	case SexualPartnership::Type::RegularMsm: return "Regular-msm";
+	case SexualPartnership::Type::CasualMsm: return "casual-msm";
+	case SexualPartnership::Type::CswMsm: return "csw-msm";
+	case SexualPartnership::Type::SteadyMsmw: return "steady-msmw";
+	case SexualPartnership::Type::RegularMsmw: return "regular-msmw";
+	case SexualPartnership::Type::CasualMsmw: return "casual-msmw";
+	case SexualPartnership::Type::CswMsmw: return "csw-msmw";
 	default: throw std::runtime_error("unknown type");
 	}
 }
@@ -518,7 +526,7 @@ SexualBehavior SimulationParametersXml::GetSexualBehavior(const std::string &ent
 
 Male::SubPopParams SimulationParametersXml::GetMaleSubPopParams() const
 {
-	auto node = document_.select_node("/simulation/population/entities/entity[@type='hetero-male']").node();
+	auto node = document_.select_node("/simulation/population/entities/entity[@type='msw']").node();
 
 	Male::SubPopParams result;
 
@@ -539,7 +547,7 @@ Male::SubPopParams SimulationParametersXml::GetMaleSubPopParams() const
 	{
         try
         {
-            auto params = GetSexualBehavior("hetero-male", partnership_type);
+            auto params = GetSexualBehavior("msw", partnership_type);
 
             if(use_high_risk_multiplier)
             {
@@ -849,7 +857,7 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
 
     //normalize %population values for each age bucket
     double totalFemaleProportion = 0;
-    double totalHeteroMaleProportion = 0;
+    double totalMswMaleProportion = 0;
     double totalMsmwProportion = 0;
     double totalMsmProportion = 0;
 
@@ -857,7 +865,7 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
     for(auto &age_bucket : parameters.GetInitialAgeBuckets())
     {
 	    totalFemaleProportion += age_bucket.entityProportions["female"];
-            totalHeteroMaleProportion += age_bucket.entityProportions["hetero-male"];
+            totalMswMaleProportion += age_bucket.entityProportions["msw"];
             totalMsmwProportion += age_bucket.entityProportions["msmw"];
             totalMsmProportion += age_bucket.entityProportions["msm"];
     }
@@ -866,7 +874,7 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
     for(auto &age_bucket : parameters.GetInitialAgeBuckets())
     {
 	    if(totalFemaleProportion != 0) age_bucket.entityProportions["female"] /= totalFemaleProportion;
-            if(totalHeteroMaleProportion != 0) age_bucket.entityProportions["hetero-male"] /= totalHeteroMaleProportion;
+            if(totalMswMaleProportion != 0) age_bucket.entityProportions["msw"] /= totalMswMaleProportion;
             if(totalMsmwProportion != 0) age_bucket.entityProportions["msmw"] /= totalMsmwProportion;
             if(totalMsmProportion != 0) age_bucket.entityProportions["msm"] /= totalMsmProportion;
     }
@@ -1092,13 +1100,17 @@ Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node cri
         {
             target.value.sexual_orientation.has_value = true;
 
-            if(value == "hetero")
+            if(value == "msw")
             {
-                target.value.sexual_orientation.value = DemographicProfile::SexualOrientation::Heterosexual;
+                target.value.sexual_orientation.value = DemographicProfile::SexualOrientation::Msw;
             }
-            else if(value == "homo")
+            else if(value == "msmw")
             {
-                target.value.sexual_orientation.value = DemographicProfile::SexualOrientation::Homosexual;
+                target.value.sexual_orientation.value = DemographicProfile::SexualOrientation::Msmw;
+            }
+			else if(value == "msm")
+            {
+                target.value.sexual_orientation.value = DemographicProfile::SexualOrientation::Msm;
             }
             else
             {

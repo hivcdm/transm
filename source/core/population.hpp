@@ -432,15 +432,13 @@ private:
     /// <summary>
 	/// a container for all the people. This is a compartmentalized container that lets us
 	/// access different types of people based on criteria. It also has an iterator that lets
-	/// us access all the through a java style iterator interface 
+	/// us access all the through a java style iterator interface
     /// </summary>
 	std::unique_ptr<EntityPool> entities;
 
-
-
     /// <summary>
 	/// fling initiators -- use BucketSexualMixing, not BucketDemographicProfile because all persons
-	/// participating in partnerships are sexually active by definition 
+	/// participating in partnerships are sexually active by definition
     /// </summary>
 	std::map<BucketSexualMixing *, std::vector<SexualPartnership::Type>> partneringInitiators;
 

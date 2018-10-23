@@ -16,7 +16,7 @@ namespace transm {
 class Msm : public Entity
 {
 public:
-    /*virtual*/ std::string getEntityType() const;
+    /*virtual*/ const std::string getEntityType() const;
     void Circumcise();
     bool IsCircumcised() const { return circumcised; }
 

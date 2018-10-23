@@ -531,7 +531,7 @@ public:
 	 */
 	int getSexualActivity();
 
-    virtual std::string getEntityType() const = 0;
+    virtual const std::string getEntityType() const = 0;
 
 	/*
 	changes this person to sexually active

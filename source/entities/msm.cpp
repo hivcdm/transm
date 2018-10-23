@@ -10,7 +10,7 @@
 
 namespace transm {
 
-std::string Msm::getEntityType() const
+const std::string Msm::getEntityType() const
 {
     return "msm";
 }
@@ -134,7 +134,7 @@ Msm::Msm(EventParams &_eventParams, Age _age, bool _circumcised, unsigned int _p
 {
 	_age = max(min(Age(Entity::maxYrForDeathStats, 0), _age), Age::Zero);
     dmgProfile.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
-    dmgProfile.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Homosexual);
+    dmgProfile.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Msm);
     circumcised = _circumcised;
     //Set this male's risk level assume everyone is low risk on creation. Risk is rerolled when they roll for become sex worker
     risk = Entity::RiskLevel::LOW;

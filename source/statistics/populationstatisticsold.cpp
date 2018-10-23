@@ -628,7 +628,7 @@ void PopulationStatisticsOld::UpdateIncidenceCalculations()
     std::size_t sum_male_incident = 0;
     std::size_t sum_male_negative_sa = 0;
 
-    for(auto entity_type : {"male", "msmw", "msm", "female"})
+    for(auto entity_type : {"msw", "msmw", "msm", "female"})
     {
         sum_incident += currentMonthIncident[entity_type];
         sum_negative_sa += currentMonthSANegative[entity_type];
@@ -673,7 +673,7 @@ void PopulationStatisticsOld::printShiftedOutcomes(std::ostream &_outStream, Tim
 		_outStream << Constants::Tab; // Year
 		_outStream << Constants::Tab; // Pop Size
 
-        for(auto entity_type : {"", "Male", "Male:Hetero", "Male:Msmw", "Male:Msm", "Female"})
+        for(auto entity_type : {"", "Male", "Male:Msw", "Male:Msmw", "Male:Msm", "Female"})
         {
             _outStream << entity_type << Constants::Tab; // SA Pop Size
             _outStream << Constants::Tab; // Incident
@@ -744,7 +744,7 @@ void PopulationStatisticsOld::printShiftedOutcomes(std::ostream &_outStream, Tim
     std::size_t sum_prevalent_infections_male = 0;
     std::size_t sum_year_start_sa_pop_size_male = 0;
 
-    for(auto entity_type : {"male", "msmw", "msm", "female"})
+    for(auto entity_type : {"msw", "msmw", "msm", "female"})
     {
         //sum_sa_pop_size += yearlyCumulativeSexuallyActivePopSize[entity_type];
         sum_year_start_pop_size += yearStartPopSize[entity_type];
@@ -787,7 +787,7 @@ void PopulationStatisticsOld::printShiftedOutcomes(std::ostream &_outStream, Tim
     _outStream << yearStartPrevalenceMale << Constants::Tab;
     _outStream << yearlyCumulativeIncidenceMale << Constants::Tab;
 
-    for(auto entity_type : {"male", "msmw", "msm", "female"})
+    for(auto entity_type : {"msw", "msmw", "msm", "female"})
     {
         _outStream << yearStartSexuallyActivePopSize[entity_type] << Constants::Tab;
         _outStream << yearlyIncidentInfections[entity_type] << Constants::Tab;

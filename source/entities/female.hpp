@@ -12,7 +12,7 @@ namespace transm {
 class Female : public Entity
 {
 public:
-    /*virtual*/ std::string getEntityType() const;
+    /*virtual*/ const std::string getEntityType() const;
 	/// <summary>
 	/// These are parameters that describe the population of females.
 	/// Each Population in the Sim will have a separate one of these referenced by the population's ID.

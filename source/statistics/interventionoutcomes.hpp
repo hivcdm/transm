@@ -44,7 +44,7 @@ public:
                     current_row.push_back((int)std::get<2>(age_range));
                 }
 
-                for(auto entity_type : {"male", "msmw", "msm", "female"})
+                for(auto entity_type : {"msw", "msmw", "msm", "female"})
                 {
                     current_row.push_back((int)summary.pop_size_na_entity_type[entity_type]);
                     for(auto &age_range : summary.sa_size_by_age_range_entity_type[entity_type])
@@ -65,7 +65,7 @@ public:
                     current_row.push_back((int)std::get<2>(age_range));
                 }
 
-                for(auto entity_type : {"male", "msmw", "msm", "female"})
+                for(auto entity_type : {"msw", "msmw", "msm", "female"})
                 {
                     current_row.push_back((int)summary.incident_entity_type[entity_type]);
                     for(auto &age_range : summary.incident_by_age_range_entity_type[entity_type])
@@ -86,7 +86,7 @@ public:
                     current_row.push_back((int)std::get<2>(age_range));
                 }
 
-                for(auto entity_type : {"male", "msmw", "msm", "female"})
+                for(auto entity_type : {"msw", "msmw", "msm", "female"})
                 {
                     current_row.push_back((int)summary.prevalent_entity_type[entity_type]);
                     for(auto &age_range : summary.prevalent_by_age_range_entity_type[entity_type])
@@ -157,7 +157,7 @@ public:
         {
             for(auto partition : group.GetPartitionNames())
             {
-				file << "Population Sizes			Male Population Sizes										Male : Hetero Population Sizes										Male : Msmw Population Sizes										Male : Msm Population Sizes										Female Population Sizes																				Incident Cases																																																													Prevalent Cases																																																													Costs/LMs						";
+				file << "Population Sizes			Male Population Sizes										Male : Msw Population Sizes										Male : Msmw Population Sizes										Male : Msm Population Sizes										Female Population Sizes																				Incident Cases																																																													Prevalent Cases																																																													Costs/LMs						";
             }
         }
 
@@ -168,7 +168,7 @@ public:
         {
             for(auto partition : group.GetPartitionNames())
             {
-				file << "			Non-Sexually Active Population	Sexually Active Population									Non-Sexually Active Population	Sexually Active Population									Non-Sexually Active Population	Sexually Active Population									Non-Sexually Active Population	Sexually Active Population									Non-Sexually Active Population	Sexually Active Population									Risk Group											Male Incident Cases										Male:Hetero Incident Cases										Male:Msmw Incident Cases										Male:Msm Incident Cases										Female Incident Cases										Risk Group											Male Prevalent Cases										Male:Hetero Prevalent Cases										Male:Msmw Prevalent Cases										Male:Msm Prevalent Cases										Female Prevalent Cases										Risk Group										Undiscounted			Discounted			";
+				file << "			Non-Sexually Active Population	Sexually Active Population									Non-Sexually Active Population	Sexually Active Population									Non-Sexually Active Population	Sexually Active Population									Non-Sexually Active Population	Sexually Active Population									Non-Sexually Active Population	Sexually Active Population									Risk Group											Male Incident Cases										Male:Msw Incident Cases										Male:Msmw Incident Cases										Male:Msm Incident Cases										Female Incident Cases										Risk Group											Male Prevalent Cases										Male:Msw Prevalent Cases										Male:Msmw Prevalent Cases										Male:Msm Prevalent Cases										Female Prevalent Cases										Risk Group										Undiscounted			Discounted			";
             }
         }
 

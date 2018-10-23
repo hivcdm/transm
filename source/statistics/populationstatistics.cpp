@@ -39,7 +39,7 @@ void PopulationStatistics::RecordEntity(int month, const Entity *entity)
 
     if (gender == DemographicProfile::Gender::Male)
     {
-        if (entity->getEntityType() == "male" && ((Male *)entity)->IsCircumcised()) month_stats.num_circumcised[sexual_activity_status]++;
+        if (entity->getEntityType() == "msw" && ((Male *)entity)->IsCircumcised()) month_stats.num_circumcised[sexual_activity_status]++;
         else if (entity->getEntityType() == "msm" && ((Msm *)entity)->IsCircumcised()) month_stats.num_circumcised[sexual_activity_status]++;
         else if (entity->getEntityType() == "msmw" && ((Msmw *)entity)->IsCircumcised()) month_stats.num_circumcised[sexual_activity_status]++;
     }

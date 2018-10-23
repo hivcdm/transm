@@ -9,11 +9,11 @@ namespace transm {
 
 const std::string ArtRolloutTracker::RISK_GROUP_NAMES[] =
 {
-	"Non-CSW Low-Risk Male:Hetero",
+	"Non-CSW Low-Risk Male:Msw",
     "Non-CSW Low-Risk Male:Msmw",
     "Non-CSW Low-Risk Male:Msm",
 	"Non-CSW Low-Risk Female",
-	"Non-CSW High-Risk Male:Hetero",
+	"Non-CSW High-Risk Male:Msw",
     "Non-CSW High-Risk Male:Msmw",
     "Non-CSW High-Risk Male:Msm",
 	"Non-CSW High-Risk Female",
@@ -188,12 +188,12 @@ void ArtRolloutTracker::buildHeader()
 		SetHeaderCell(column, 1, section_header);
 		SetHeaderCell(column, 2, "Gender");
 		SetHeaderCell(column++, 3, "Males");
-        SetHeaderCell(column++, 3, "Males:Hetero");
+        SetHeaderCell(column++, 3, "Males:Msw");
         SetHeaderCell(column++, 3, "Males:Msmw");
         SetHeaderCell(column++, 3, "Males:Msm");
 		SetHeaderCell(column++, 3, "Females");
 
-		for(auto gender : {"Males", "Males:Hetero", "Males:Msmw", "Males:Msm", "Females"})
+		for(auto gender : {"Males", "Males:Msw", "Males:Msmw", "Males:Msm", "Females"})
 		{
 			SetHeaderCell(column, 1, gender);
 			SetHeaderCell(column, 2, "Non-Sexually Active Population");

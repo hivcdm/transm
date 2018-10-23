@@ -243,7 +243,7 @@ public:
     int rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType);
     int rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums, Entity *_p);
 
-    /*virtual*/ std::string getEntityType() const;
+    /*virtual*/ const std::string getEntityType() const;
 
     void rerollRiskGroup(EventParams &_eventParams);
 

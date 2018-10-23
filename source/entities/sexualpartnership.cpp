@@ -9,12 +9,20 @@
 
 namespace transm {
 
-const std::map<SexualPartnership::Type, std::string> SexualPartnership::TypeStrings = 
+const std::map<SexualPartnership::Type, std::string> SexualPartnership::TypeStrings =
 {
 	{SexualPartnership::Type::Steady, "Steady"},
 	{SexualPartnership::Type::Regular, "Regular"},
 	{SexualPartnership::Type::Casual, "Casual"},
-	{SexualPartnership::Type::Csw, "Csw"}
+	{SexualPartnership::Type::Csw, "Csw"},
+    {SexualPartnership::Type::SteadyMsm, "SteadyMsm"},
+    {SexualPartnership::Type::RegularMsm, "RegularMsm"},
+    {SexualPartnership::Type::CasualMsm, "CasualMsm"},
+    {SexualPartnership::Type::CswMsm, "CswMsm"},
+    {SexualPartnership::Type::SteadyMsmw, "SteadyMsmw"},
+    {SexualPartnership::Type::RegularMsmw, "RegularMsmw"},
+    {SexualPartnership::Type::CasualMsmw, "CasualMsmw"},
+    {SexualPartnership::Type::CswMsmw, "CswMsmw"}
 };
 
 SexualPartnership::SexualPartnership(Entity *_person1, Entity *_person2, EventParams &_eventParams,

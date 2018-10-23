@@ -174,7 +174,7 @@ void CostsTracker::BuildHeader()
 
 		SetHeaderCell(column, 3, "Gender");
         SetHeaderCell(column++, 4, "Male");
-		SetHeaderCell(column++, 4, "Male:Hetero");
+		SetHeaderCell(column++, 4, "Male:Msw");
 		SetHeaderCell(column++, 4, "Male:Msmw");
         SetHeaderCell(column++, 4, "Male:Msm");
         SetHeaderCell(column++, 4, "Female");
@@ -290,7 +290,7 @@ void CostsTracker::BuildRow(Time time)
 
         double sum_male_costs = 0;
 
-        for(auto entity_type : {"male", "msmw", "msm"})
+        for(auto entity_type : {"msw", "msmw", "msm"})
         {
             if(costs.totalCostsByEntityType.find(entity_type) != costs.totalCostsByEntityType.end())
             {
@@ -300,7 +300,7 @@ void CostsTracker::BuildRow(Time time)
 
         PushElement(sum_male_costs);
 
-        for(auto entity_type : {"male", "msmw", "msm", "female"})
+        for(auto entity_type : {"msw", "msmw", "msm", "female"})
 		{
             if(costs.totalCostsByEntityType.find(entity_type) != costs.totalCostsByEntityType.end())
             {
