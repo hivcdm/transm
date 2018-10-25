@@ -14,14 +14,6 @@ std::string to_string(SexualPartnership::Type type)
 	case SexualPartnership::Type::Regular: return "regular";
 	case SexualPartnership::Type::Casual: return "casual";
 	case SexualPartnership::Type::Csw: return "csw";
-	case SexualPartnership::Type::SteadyMsm: return "steady-msm";
-	case SexualPartnership::Type::RegularMsm: return "Regular-msm";
-	case SexualPartnership::Type::CasualMsm: return "casual-msm";
-	case SexualPartnership::Type::CswMsm: return "csw-msm";
-	case SexualPartnership::Type::SteadyMsmw: return "steady-msmw";
-	case SexualPartnership::Type::RegularMsmw: return "regular-msmw";
-	case SexualPartnership::Type::CasualMsmw: return "casual-msmw";
-	case SexualPartnership::Type::CswMsmw: return "csw-msmw";
 	default: throw std::runtime_error("unknown type");
 	}
 }
@@ -596,7 +588,7 @@ Male::SubPopParams SimulationParametersXml::GetMaleSubPopParams() const
 Msm::SubPopParams SimulationParametersXml::GetMsmSubPopParams() const
 {
     auto node = document_.select_node("/simulation/population/entities/entity[@type='msm']").node();
-    
+
     Msm::SubPopParams result;
 
     if(node == nullptr)

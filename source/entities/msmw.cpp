@@ -186,7 +186,7 @@ double Msmw::getCondomUseProb(Entity *_p, SexualPartnership::Type _partnershipTy
 {
     assert((_p != nullptr));
     assert(_p->isAlive());
-    assert(_partnershipType < SexualPartnership::Type::ENDType);
+    assert(_partnershipType < SexualPartnership::Type::Last);
     return chanceCondomUsePerEvent[(int)_partnershipType];
 }
 
@@ -214,7 +214,7 @@ double Msmw::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::
     assert(Utility::valid_probability(getCondomProtectEff()));
     assert((_p != nullptr));
     assert(_p->isAlive());
-    assert(_partnershipType < SexualPartnership::Type::ENDType);
+    assert(_partnershipType < SexualPartnership::Type::Last);
     //Determine if a condom was used and record
     double chanceCondomUse = getCondomUseProb(_p, _partnershipType);
     if(_p->HasOverrideChanceCondomUse())
@@ -334,7 +334,7 @@ bool Msmw::possibleMatch(SexualPartnership::Type _partnershipType, Entity *_p)
 {
     assert((_p != nullptr));
     assert(_p->isAlive());
-    assert(_partnershipType < SexualPartnership::Type::ENDType);
+    assert(_partnershipType < SexualPartnership::Type::Last);
     assert(false);  // check if we are using years instead of Month
     auto minAge = Age::from_months(static_cast<int>(getMinPartnerSelectVal(Entity::AGE, _partnershipType)));
 	auto maxAge = Age::from_months(static_cast<int>(getMaxPartnerSelectVal(Entity::AGE, _partnershipType)));
@@ -345,10 +345,10 @@ int Msmw::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnersh
 {
     if(!populationSpecificParams.hasSexualBehavior(_partnershipType)) return 0;
 
-    assert(_partnershipType < SexualPartnership::Type::ENDType);
+    assert(_partnershipType < SexualPartnership::Type::Last);
 
     //person can only have 1 steady partner at a time so return 0 if person is already in Steady
-    if(_partnershipType == SexualPartnership::Type::SteadyMsmw && (!partners[(int)_partnershipType].empty()))
+    if(_partnershipType == SexualPartnership::Type::Steady && (!partners[(int)_partnershipType].empty()))
     {
         return 0;
     }
@@ -358,7 +358,7 @@ int Msmw::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnersh
     partnerRate = partnerAcqRates[(int)_partnershipType];
 
     //if this person has a steady partner then adjust acquisition rate
-    if(!partners[(int)SexualPartnership::Type::SteadyMsmw].empty())
+    if(!partners[(int)SexualPartnership::Type::Steady].empty())
     {
         //if we're thinking of getting another partner, then lower chances if we have a steady partner
         partnerRate *= populationSpecificParams.getPartnerAcqMultWithSteady(getRiskLevel());
@@ -375,7 +375,7 @@ int Msmw::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnersh
     /** To get the number of partners to draw this month, draw from a Poisson distribution */
     int numPartners = _randomNums.randPoisson(partnerRate);
     //if we are rolling for STEADY, make sure we have max of 1
-    return (_partnershipType != SexualPartnership::Type::SteadyMsmw) ? numPartners : std::min(1, numPartners);
+    return (_partnershipType != SexualPartnership::Type::Steady) ? numPartners : std::min(1, numPartners);
 }
 
 int Msmw::rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType)
@@ -409,7 +409,7 @@ int Msmw::rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType
 {
     assert((_p != nullptr));
     assert(_p->isAlive());
-    assert(_partnershipType < SexualPartnership::Type::ENDType);
+    assert(_partnershipType < SexualPartnership::Type::Last);
     ShiftedLogNormalDist duration = populationSpecificParams.getSexualBehavior(_partnershipType).getPartnershipDurationMth(risk);
     return (int)(_randomNums.randShiftedLogNormal(duration) + .5);
 }

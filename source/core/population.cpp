@@ -82,24 +82,21 @@ The method determines who are the partnership initiators and who are available t
 **/
 void Population::InitPartnershipBuckets()
 {
-	//this is used to select ProfileID's of eligible initiators
+	// Select ProfileID's of eligible initiators
+	//all SA, non-CSW males can initiate partnerships of any type
 	DemographicProfile selector;
+	std::vector<DemographicProfile::ProfileID> eligibleInitiators;
     selector.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::Active);
     selector.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
     selector.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::NonCsw);
-
-	//all SA, non-CSW males can form partnerships of any type
-	std::vector<DemographicProfile::ProfileID> eligibleInitiators;
 	selector.selectProfileIDs(eligibleInitiators, nullptr);
-	//men can form all types of partnerships
-	std::vector<SexualPartnership::Type> availPartnershipTypes;
 
-	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
+	//For each initiator demographic profile, store the fact that they can have any partner type
+	std::vector<SexualPartnership::Type> availPartnershipTypes;
+	for(int type = 0; type < (int)SexualPartnership::Type::Last; ++type)
 	{
 		availPartnershipTypes.push_back(SexualPartnership::Type(type));
 	}
-
-	//For each initiator demographic profile, store the fact that they can have any partner type
 	for(std::size_t i = 0; i < eligibleInitiators.size(); i++)
 	{
 		BucketSexualMixing *bucket = (BucketSexualMixing *)entities->getBucket(eligibleInitiators.at(i));
@@ -115,67 +112,170 @@ void Population::InitPartnershipBuckets()
 	DemographicProfile currProfileSelector;
 	std::vector<DemographicProfile::ProfileID> selectedIDs;
 
-	//iterate through all partnership types. the available Buckets are different by partnership
-	for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
+	for (auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
 	{
-        try
-        {
-            //get the parameters for current relationship type
-            const SexualBehavior &partneringParams = nullptr;
-			if (popWideParams.defaultMaleParams.hasSexualBehavior(partnership_type))
-				partneringParams = popWideParams.defaultMaleParams.getSexualBehavior(partnership_type);
-			else if (popWideParams.defaultMsmwParams.hasSexualBehavior(partnership_type))
-				partneringParams = popWideParams.defaultMsmwParams.getSexualBehavior(partnership_type);
-			else if (popWideParams.defaultMsmParams.hasSexualBehavior(partnership_type))
-				partneringParams = popWideParams.defaultMsmParams.getSexualBehavior(partnership_type);
-			else
+		//iterate through all partnership types. the available Buckets are different by partnership
+		for(auto type : enum_iterator<SexualPartnership::Type>())
+		{
+			try
+			{
+				BehaviorPair behaviorPair(orientation, type);
+				if (orientation == DemographicProfile::SexualOrientation::Msw)
+				{
+					//get the parameters for current relationship type
+					if (popWideParams.defaultMaleParams.hasSexualBehavior(type))
+					{
+						const SexualBehavior &partneringParams =
+						  popWideParams.defaultMaleParams.getSexualBehavior(type);
+
+						//get available demographicProfiles that are available for this partnership
+						for(unsigned int j = 0; j < partneringParams.getNumAvailableBuckets(); ++j)
+						{
+							selectedIDs.clear();
+							//contains profile ID's that were selected from
+							currProfileSelector.set(partneringParams.getAvailableBucket(j).dmgProfileSelector);
+							currProfileSelector.selectProfileIDs(selectedIDs, nullptr);
+
+							//TODO:eventually, we should change this.
+							//assert(selectedIDs.size() == 1);	//we don't want any wild cards in the DemographicProfile string.
+
+							//check to see whether we have a repeat Bucket.
+							for(size_t i = 0; i < potentialPartnerBuckets[behaviorPair].size(); ++i)
+							{
+								if(potentialPartnerBuckets[behaviorPair].at(i)->getProfileID() == selectedIDs.at(0))
+								{
+									throw std::runtime_error("For available buckets for partnership type '"
+										+ SexualPartnership::TypeStrings.at(SexualPartnership::Type(type))
+										+ "', " + *DemographicProfile::toString(selectedIDs.at(0))
+										+ " is listed multiple times either via repeat or wildcard overlaps");
+								}
+							}
+
+							BucketSexualMixing *bucket = (BucketSexualMixing *)entities->getBucket(selectedIDs.at(0));
+
+							if(bucket == nullptr)
+							{
+								throw std::runtime_error("This Demographic Profile "
+									+ *DemographicProfile::toString(selectedIDs.at(0))
+									+ " has not been instantiated and so cannot be used");
+							}
+							else
+							{
+								potentialPartnerBuckets[behaviorPair].push_back(bucket);
+								eligibleBucketWeights[behaviorPair].push_back(partneringParams.getAvailableBucket(j).weight);
+							}
+						}
+
+						//make sure that the weights sum to 1
+						Utility::normalize(eligibleBucketWeights[behaviorPair]);
+					}
+				}
+				else if (orientation == DemographicProfile::SexualOrientation::Msmw)
+				{
+					//get the parameters for current relationship type
+					if (popWideParams.defaultMsmwParams.hasSexualBehavior(type))
+					{
+						const SexualBehavior &partneringParams =
+						  popWideParams.defaultMsmwParams.getSexualBehavior(type);
+
+						//get available demographicProfiles that are available for this partnership
+						for(unsigned int j = 0; j < partneringParams.getNumAvailableBuckets(); ++j)
+						{
+							selectedIDs.clear();
+							//contains profile ID's that were selected from
+							currProfileSelector.set(partneringParams.getAvailableBucket(j).dmgProfileSelector);
+							currProfileSelector.selectProfileIDs(selectedIDs, nullptr);
+
+							//TODO:eventually, we should change this.
+							//assert(selectedIDs.size() == 1);	//we don't want any wild cards in the DemographicProfile string.
+
+							//check to see whether we have a repeat Bucket.
+							for(size_t i = 0; i < potentialPartnerBuckets[behaviorPair].size(); ++i)
+							{
+								if(potentialPartnerBuckets[behaviorPair].at(i)->getProfileID() == selectedIDs.at(0))
+								{
+									throw std::runtime_error("For available buckets for partnership type '"
+										+ SexualPartnership::TypeStrings.at(SexualPartnership::Type(type))
+										+ "', " + *DemographicProfile::toString(selectedIDs.at(0))
+										+ " is listed multiple times either via repeat or wildcard overlaps");
+								}
+							}
+
+							BucketSexualMixing *bucket = (BucketSexualMixing *)entities->getBucket(selectedIDs.at(0));
+
+							if(bucket == nullptr)
+							{
+								throw std::runtime_error("This Demographic Profile "
+									+ *DemographicProfile::toString(selectedIDs.at(0))
+									+ " has not been instantiated and so cannot be used");
+							}
+							else
+							{
+								potentialPartnerBuckets[behaviorPair].push_back(bucket);
+								eligibleBucketWeights[behaviorPair].push_back(partneringParams.getAvailableBucket(j).weight);
+							}
+						}
+
+						//make sure that the weights sum to 1
+						Utility::normalize(eligibleBucketWeights[behaviorPair]);
+					}
+				}
+				else if (orientation == DemographicProfile::SexualOrientation::Msm)
+				{
+					//get the parameters for current relationship type
+					if (popWideParams.defaultMsmParams.hasSexualBehavior(type))
+					{
+						const SexualBehavior &partneringParams =
+						  popWideParams.defaultMsmParams.getSexualBehavior(type);
+
+						//get available demographicProfiles that are available for this partnership
+						for(unsigned int j = 0; j < partneringParams.getNumAvailableBuckets(); ++j)
+						{
+							selectedIDs.clear();
+							//contains profile ID's that were selected from
+							currProfileSelector.set(partneringParams.getAvailableBucket(j).dmgProfileSelector);
+							currProfileSelector.selectProfileIDs(selectedIDs, nullptr);
+
+							//TODO:eventually, we should change this.
+							//assert(selectedIDs.size() == 1);	//we don't want any wild cards in the DemographicProfile string.
+
+							//check to see whether we have a repeat Bucket.
+							for(size_t i = 0; i < potentialPartnerBuckets[behaviorPair].size(); ++i)
+							{
+								if(potentialPartnerBuckets[behaviorPair].at(i)->getProfileID() == selectedIDs.at(0))
+								{
+									throw std::runtime_error("For available buckets for partnership type '"
+										+ SexualPartnership::TypeStrings.at(SexualPartnership::Type(type))
+										+ "', " + *DemographicProfile::toString(selectedIDs.at(0))
+										+ " is listed multiple times either via repeat or wildcard overlaps");
+								}
+							}
+
+							BucketSexualMixing *bucket = (BucketSexualMixing *)entities->getBucket(selectedIDs.at(0));
+
+							if(bucket == nullptr)
+							{
+								throw std::runtime_error("This Demographic Profile "
+									+ *DemographicProfile::toString(selectedIDs.at(0))
+									+ " has not been instantiated and so cannot be used");
+							}
+							else
+							{
+								potentialPartnerBuckets[behaviorPair].push_back(bucket);
+								eligibleBucketWeights[behaviorPair].push_back(partneringParams.getAvailableBucket(j).weight);
+							}
+						}
+
+						//make sure that the weights sum to 1
+						Utility::normalize(eligibleBucketWeights[behaviorPair]);
+					}
+				}
+			}
+			catch(const std::exception &/*e*/)
+			{
 				continue;
-
-            //get available demographicProfiles that are available for this partnership
-            for(unsigned int j = 0; j < partneringParams.getNumAvailableBuckets(); ++j)
-            {
-                selectedIDs.clear();
-                //contains profile ID's that were selected from
-                currProfileSelector.set(partneringParams.getAvailableBucket(j).dmgProfileSelector);
-                currProfileSelector.selectProfileIDs(selectedIDs, nullptr);
-
-                //TODO:eventually, we should change this.
-                //assert(selectedIDs.size() == 1);	//we don't want any wild cards in the DemographicProfile string.
-
-                //check to see whether we have a repeat Bucket.
-                for(size_t i = 0; i < potentialPartnerBuckets[partnership_type].size(); ++i)
-                {
-                    if(potentialPartnerBuckets[partnership_type].at(i)->getProfileID() == selectedIDs.at(0))
-                    {
-                        throw std::runtime_error("For available buckets for partnership type '"
-                            + SexualPartnership::TypeStrings.at(SexualPartnership::Type(partnership_type))
-                            + "', " + *DemographicProfile::toString(selectedIDs.at(0))
-                            + " is listed multiple times either via repeat or wildcard overlaps");
-                    }
-                }
-
-                BucketSexualMixing *bucket = (BucketSexualMixing *)entities->getBucket(selectedIDs.at(0));
-
-                if(bucket == nullptr)
-                {
-                    throw std::runtime_error("This Demographic Profile "
-                        + *DemographicProfile::toString(selectedIDs.at(0))
-                        + " has not been instantiated and so cannot be used");
-                }
-                else
-                {
-                    potentialPartnerBuckets[partnership_type].push_back(bucket);
-                    eligibleBucketWeights[partnership_type].push_back(partneringParams.getAvailableBucket(j).weight);
-                }
-            }
-
-            //make sure that the weights sum to 1
-            Utility::normalize(eligibleBucketWeights[partnership_type]);
-        }
-        catch(const std::exception &/*e*/)
-        {
-            continue;
-        }
+			}
+		}
 	}
 }
 
@@ -490,13 +590,13 @@ We hopefully only iterate through each initiator once.
 void Population::UpdatePartnerships(EventParams &parameters_)
 {
 	//holds the tallies for any New partnerships that were made and ended this month
-	int newPartnershipCount[(std::size_t)SexualPartnership::Type::ENDType];
+	int newPartnershipCount[(std::size_t)SexualPartnership::Type::Last];
 	//Number of attemptedPartnerships may be higher than the actual partnerships formed if there weren't enough females/males tried to repartner with current partners
-	int attemptedPartnershipCount[(std::size_t)SexualPartnership::Type::ENDType];
-	int	endedPartnershipCount[(std::size_t)SexualPartnership::Type::ENDType];
+	int attemptedPartnershipCount[(std::size_t)SexualPartnership::Type::Last];
+	int	endedPartnershipCount[(std::size_t)SexualPartnership::Type::Last];
 
 	//initialize counters
-	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
+	for(int type = 0; type < (int)SexualPartnership::Type::Last; ++type)
 	{
 		newPartnershipCount[type] = 0;
 		attemptedPartnershipCount[type] = 0;
@@ -526,7 +626,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
         std::list<SexualPartnership *> partnershipsToEnd;
 
 		//Decide who needs to split up
-		for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
+		for(int type = 0; type < (int)SexualPartnership::Type::Last; ++type)
 		{
             //get partnerships of 'type' whose durations have elapsed, i.e. time to split
             if((*p_Iter)->getEntityType() == "msm")
@@ -616,7 +716,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 
 		//for existing partnerships, have sexual activity
 		//Have all the sexual activity with current partners (includes new partners)
-		for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
+		for(int type = 0; type < (int)SexualPartnership::Type::Last; ++type)
 		{
 			std::list<Entity *> newlyInfected;
 			//sexual activity among any existing partnerships that have a duration associated with them
@@ -696,10 +796,10 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 				//e.g. if person has partnerships steady and casual concurrent will equal 8+2=10
 				//Whoever wrote this deserves a special place in C programmer's hell. GA
 				int concurrent = 0;
-				int numPartners[(std::size_t)SexualPartnership::Type::ENDType];
+				int numPartners[(std::size_t)SexualPartnership::Type::Last];
 				int totalNumPartners = 0;
 
-				for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
+				for(int i = 0; i < (int)SexualPartnership::Type::Last; i++)
 				{
 					numPartners[i] = (*p_Iter)->getNumPartners((SexualPartnership::Type) i);
 					concurrent = (concurrent << 1) + (numPartners[i] != 0 ? 1 : 0);
@@ -1770,7 +1870,7 @@ void Population::RecordShiftedOutcomes(EventParams &parameters_, std::ostream &_
 bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 {
 	//calculate partnership prevalence values
-    unsigned long numInPartnership[(std::size_t)SexualPartnership::Type::ENDType][(std::size_t)DemographicProfile::Gender::Last];
+    unsigned long numInPartnership[(std::size_t)SexualPartnership::Type::Last][(std::size_t)DemographicProfile::Gender::Last];
     unsigned long numInConcurrent[(std::size_t)DemographicProfile::Gender::Last];
     unsigned long numActsMonth[(std::size_t)DemographicProfile::Gender::Last];
     unsigned long numActsMonthRisk[(std::size_t)DemographicProfile::Gender::Last][(std::size_t)Entity::RiskLevel::Last];
@@ -1797,7 +1897,7 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 	          << "Casual Partnership Prev Ratio (FtM)" << Constants::Tab << "Prop in Concurrent Ratio (FtM)" << Constants::Tab <<
 	          "Avg Num Acts Ratio (LR to HR Females)" << Constants::Tab;
 
-    for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
+    for(int i = 0; i < (int)SexualPartnership::Type::Last; i++)
 	{
         for(int j = 0; j < (int)DemographicProfile::Gender::Last; j++)
 		{
@@ -1836,7 +1936,7 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
             numActsMonth[(std::size_t)gender] += (*p_Iter)->getNumActsThisMonth();
             numActsMonthRisk[(std::size_t)gender][(std::size_t)risk] += (*p_Iter)->getNumActsThisMonth();
 
-			for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
+			for(int i = 0; i < (int)SexualPartnership::Type::Last; i++)
 			{
 				if((*p_Iter)->getMonthOfLatestPartnershipDissolution((SexualPartnership::Type) i) > max(parameters_.currTime - TimeSpan::Year, Time::Zero))
 				{
@@ -2200,9 +2300,12 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Entity *_
         //Decrement numPartners
         numPartners--;
         //pick the bucket that we will attempt to choose from
-		BucketSexualMixing *bucket = potentialPartnerBuckets[_partnershipType].at(parameters_.randomNums.chooseIndex(
-            Population::eligibleBucketWeights[_partnershipType]));
+		auto orientation = _initiator->getDemographicProfileVal<DemographicProfile::SexualOrientation>();
+		BehaviorPair behaviorPair(orientation, _partnershipType);
+		BucketSexualMixing *bucket = potentialPartnerBuckets[behaviorPair].at(parameters_.randomNums.chooseIndex(
+            Population::eligibleBucketWeights[behaviorPair]));
         assert(bucket != nullptr);
+
         std::list<Entity *> attemptedPartners;
         bool foundPartner = false;
         Entity *chosenPartner = nullptr;
@@ -2392,7 +2495,7 @@ void Population::ProcessDeath(EventParams &parameters_, Entity *_p, bool calcula
 	std::list<SexualPartnership *> formerPartnerships;
 
 	//we have to take care of what happens to any ongoing partnerships
-	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
+	for(int type = 0; type < (int)SexualPartnership::Type::Last; ++type)
 	{
 		_p->getPartnershipsToEnd(parameters_.currTime, SexualPartnership::Type(type), formerPartnerships, true);
 	}

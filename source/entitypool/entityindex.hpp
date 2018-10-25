@@ -274,7 +274,7 @@ Entity *EntityIndex<_PSC, _KeyValType>::drawMember(RandomNumberGenerator &_rando
 		return nullptr;
 	}
 
-	return drawMember(_randomNums, nullptr, SexualPartnership::Type::ENDType, _remove);
+	return drawMember(_randomNums, nullptr, SexualPartnership::Type::Last, _remove);
 }
 
 template <Entity::SelectingCriteria _PSC, class _KeyValType>
@@ -290,7 +290,7 @@ Entity *EntityIndex<_PSC, _KeyValType>::drawMember(RandomNumberGenerator &_rando
 	//if there is a specific choose then make sure they want a specific kind of partnership
 	if(_chooser != nullptr)
 	{
-		assert(_partnershipType != SexualPartnership::Type::ENDType);
+		assert(_partnershipType != SexualPartnership::Type::Last);
 		minDesired = (_KeyValType)_chooser->getMinPartnerSelectVal(_PSC, _partnershipType);
 		maxDesired = (_KeyValType)_chooser->getMaxPartnerSelectVal(_PSC, _partnershipType);
 		assert(minDesired <= maxDesired);

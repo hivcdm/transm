@@ -95,6 +95,13 @@ DemographicProfile::Gender Entity::getDemographicProfileVal() const
 }
 
 template<>
+DemographicProfile::SexualOrientation Entity::getDemographicProfileVal() const
+{
+    return (DemographicProfile::SexualOrientation)getDemographicProfileVal(
+	    DemographicProfile::Demographic::SexualOrientation);
+}
+
+template<>
 DemographicProfile::SexualActivityStatus Entity::getDemographicProfileVal() const
 {
     return (DemographicProfile::SexualActivityStatus)getDemographicProfileVal(
@@ -176,7 +183,7 @@ Entity *Entity::allPartnerSexualActivity(EventParams &_eventParams, SexualPartne
     std::list<Entity *> &_newlyInfected, InfectionsTracker *infTrack, 
     const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients)
 {
-	assert(_partnershipType < SexualPartnership::Type::ENDType);
+	assert(_partnershipType < SexualPartnership::Type::Last);
 	//iterate through all partnerships of SexualActivity::Type _partnershipType and have them engage in sexual activity
 	auto iter = partners[(int)_partnershipType].begin();
 	auto iterEnd = partners[(int)_partnershipType].end();
@@ -443,7 +450,7 @@ int Entity::getNumPartnersInHistory()
 {
 	int total = 0;
 
-	for(int i = 0; i < (int)SexualPartnership::Type::ENDType; i++)
+	for(int i = 0; i < (int)SexualPartnership::Type::Last; i++)
 	{
 		total += numPartnersInHistory[i];
 	}
@@ -507,7 +514,7 @@ unsigned long Entity::getID() const
 long Entity::getPartnershipsToEnd(Time _currTime, SexualPartnership::Type _partnershipType,
                                   std::list<SexualPartnership *> &_partnershipsToEnd, bool _fromDeath)
 {
-	assert(_partnershipType < SexualPartnership::Type::ENDType);
+	assert(_partnershipType < SexualPartnership::Type::Last);
 	assert((_currTime >= Time::Zero) || _fromDeath);
 
 	if(partners[(int)_partnershipType].size() == 0)
@@ -597,7 +604,7 @@ bool Entity::isPartneredWith(Entity *_p)
 	assert((_p != nullptr));
 	assert(_p->isAlive());
 
-	for(int partnershipType = 0; partnershipType < (int)SexualPartnership::Type::ENDType; ++partnershipType)
+	for(int partnershipType = 0; partnershipType < (int)SexualPartnership::Type::Last; ++partnershipType)
 	{
 		//iterate through each partnership and check if _p is a member of one of them
 		auto iter = partners[(int)partnershipType].begin();
@@ -630,7 +637,7 @@ bool Entity::hasPartnership(SexualPartnership::Type partnershipType)
 
 bool Entity::hasPartnership()
 {
-	for(int partnershipType = 0; partnershipType < (int)SexualPartnership::Type::ENDType; ++partnershipType)
+	for(int partnershipType = 0; partnershipType < (int)SexualPartnership::Type::Last; ++partnershipType)
 	{
 		if(partners[partnershipType].begin() != partners[partnershipType].end())
 		{
@@ -807,7 +814,7 @@ Entity *Entity::sexualActivity(Entity *_p, int _numActs,
 {
 	assert((_p != nullptr));
 	assert(_p->isAlive());
-	assert(_partnershipType < SexualPartnership::Type::ENDType);
+	assert(_partnershipType < SexualPartnership::Type::Last);
 	//TODO: CONDOM STUFF!
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled)
@@ -1479,7 +1486,7 @@ Entity::Entity(Age _age, unsigned int _populationID) :
 	stats.init(&Entity::StatsEnum);
 	traceMe = false;
 
-	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
+	for(int type = 0; type < (int)SexualPartnership::Type::Last; ++type)
 	{
 		unformedPartnershipsLatestTime[type] = 0;
 		unformedPartnershipsTotal[type] = 0;
@@ -1514,7 +1521,7 @@ Entity::~Entity(void)
 	//take person out of all current relationships
 	std::list<SexualPartnership *>::iterator toDelete;
 
-	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
+	for(int type = 0; type < (int)SexualPartnership::Type::Last; ++type)
 	{
 		auto iter = partners[type].begin();
 		auto end = partners[type].end();
@@ -1539,7 +1546,7 @@ void Entity::deleteEntityWithoutDeleting()
 	//take person out of all current relationships
 	std::list<SexualPartnership *>::iterator toDelete;
 
-	for(int type = 0; type < (int)SexualPartnership::Type::ENDType; ++type)
+	for(int type = 0; type < (int)SexualPartnership::Type::Last; ++type)
 	{
         std::list<SexualPartnership *>::iterator iter = partners[type].begin();
         std::list<SexualPartnership *>::iterator end = partners[type].end();

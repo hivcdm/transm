@@ -153,16 +153,16 @@ private:
     bool circumcised;
 
     //the rate at which this male acquires various partners -- this value is drawn from lognormal, but the male's number of partners each month will be drawn from poisson`
-    double partnerAcqRates[(int)SexualPartnership::Type::ENDType];
+    double partnerAcqRates[(int)SexualPartnership::Type::Last];
 
     //the  acts per month (fits a poisson distribution with minimum value of 1)
-    double numActsPerMonth[(int)SexualPartnership::Type::ENDType];
+    double numActsPerMonth[(int)SexualPartnership::Type::Last];
 
     //chance that this male will use condom w/ different partner types
-    double chanceCondomUsePerEvent[(int)SexualPartnership::Type::ENDType];
+    double chanceCondomUsePerEvent[(int)SexualPartnership::Type::Last];
 
     // The distribution the males will draw from to determine how many years younger their partner should be (resulting difference may be negative for older women)
-    NormalDist averageYearsYounger[(int)SexualPartnership::Type::ENDType];
+    NormalDist averageYearsYounger[(int)SexualPartnership::Type::Last];
 
     std::size_t times_selected_;
 

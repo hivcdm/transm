@@ -14,15 +14,7 @@ const std::map<SexualPartnership::Type, std::string> SexualPartnership::TypeStri
 	{SexualPartnership::Type::Steady, "Steady"},
 	{SexualPartnership::Type::Regular, "Regular"},
 	{SexualPartnership::Type::Casual, "Casual"},
-	{SexualPartnership::Type::Csw, "Csw"},
-    {SexualPartnership::Type::SteadyMsm, "SteadyMsm"},
-    {SexualPartnership::Type::RegularMsm, "RegularMsm"},
-    {SexualPartnership::Type::CasualMsm, "CasualMsm"},
-    {SexualPartnership::Type::CswMsm, "CswMsm"},
-    {SexualPartnership::Type::SteadyMsmw, "SteadyMsmw"},
-    {SexualPartnership::Type::RegularMsmw, "RegularMsmw"},
-    {SexualPartnership::Type::CasualMsmw, "CasualMsmw"},
-    {SexualPartnership::Type::CswMsmw, "CswMsmw"}
+	{SexualPartnership::Type::Csw, "Csw"}
 };
 
 SexualPartnership::SexualPartnership(Entity *_person1, Entity *_person2, EventParams &_eventParams,
@@ -123,6 +115,10 @@ Entity *SexualPartnership::monthlySexualActivity(EventParams &_eventParams,
 	{
 		eventsThisMonth = 1;
 	}
+
+	if ((partners[0]->getEntityType() == "female" && partners[1]->getEntityType() == "msm") ||
+		(partners[1]->getEntityType() == "female" && partners[0]->getEntityType() == "msm"))
+		assert(0);
 
 	return partners[0]->sexualActivity(partners[1], eventsThisMonth, type, _eventParams, infTrack, transmission_coefficients);
 }

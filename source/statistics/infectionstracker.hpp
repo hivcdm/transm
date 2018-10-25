@@ -124,13 +124,13 @@ private:
 	/// </summary>
 	HVLArray currTimeExposures;
 	unsigned long currTimeTotalExposures;
-	std::array<unsigned long, (std::size_t)SexualPartnership::Type::ENDType> currTimeExposuresByType;
+	std::array<unsigned long, (std::size_t)SexualPartnership::Type::Last> currTimeExposuresByType;
 
 	/// <summary>
 	/// Number of times a condom was used this time step by partnership type
 	/// </summary>
 	unsigned long currTimeCondomUse;
-	std::array<unsigned long, (std::size_t)SexualPartnership::Type::ENDType> currTimeCondomUseByType;
+	std::array<unsigned long, (std::size_t)SexualPartnership::Type::Last> currTimeCondomUseByType;
 
 	/// <summary>
 	/// A queue of the last twelve incidence rates, used to generate a yearly incidence
@@ -145,9 +145,9 @@ private:
 	///  the third dimension represents demographic profiles of people who were infected
 	/// so you can use this to track infection patterns. e.g. how many SINGLE_MALEs were infected by CSW_FEMALE
     /// </summary>
-    std::array<DemographicToDemographicArray, (std::size_t)SexualPartnership::Type::ENDType> incidentInfectionsByDemographic;
+    std::array<DemographicToDemographicArray, (std::size_t)SexualPartnership::Type::Last> incidentInfectionsByDemographic;
 
-    std::array<std::array<std::array<std::size_t, 4>, 4>, (std::size_t)SexualPartnership::Type::ENDType> incidentInfectionsByEntityType;
+    std::array<std::array<std::array<std::size_t, 4>, 4>, (std::size_t)SexualPartnership::Type::Last> incidentInfectionsByEntityType;
 
 public :
 

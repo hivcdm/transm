@@ -280,7 +280,7 @@ private:
 	/// this is a quick way to check whether a partnership is technically a fling or not
 	/// right now, behavior for males is the only one that has been coded
     /// </summary>
-    bool partnershipsHaveDuration[(std::size_t)DemographicProfile::Gender::Last][(std::size_t)SexualPartnership::Type::ENDType];
+    bool partnershipsHaveDuration[(std::size_t)DemographicProfile::Gender::Last][(std::size_t)SexualPartnership::Type::Last];
 
     /// <summary>
     /// cost per condom in dollars

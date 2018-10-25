@@ -451,13 +451,14 @@ private:
 	/// not BucketDemographicProfile because all persons participating in partnerships are sexually
 	/// active by definition
     /// </summary>
-	std::map<SexualPartnership::Type, std::vector<BucketSexualMixing *>> potentialPartnerBuckets;
+	using BehaviorPair = std::pair<DemographicProfile::SexualOrientation, SexualPartnership::Type>;
+	std::map<BehaviorPair, std::vector<BucketSexualMixing *>> potentialPartnerBuckets;
 
 	/// <summary>
     /// stores weights of each eligible bucket. we keep this as a separate vector so we can
 	/// use pre-existing normalization and random index chooser functions.
     /// </summary>
-	std::map<SexualPartnership::Type, std::vector<double>> eligibleBucketWeights;
+	std::map<BehaviorPair, std::vector<double>> eligibleBucketWeights;
 
     /// <summary>
     /// </summary>

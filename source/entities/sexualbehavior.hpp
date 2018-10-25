@@ -13,7 +13,7 @@ namespace transm {
 /// type of partnership.
 /// </summary>
 /// <remarks>
-/// So far, only males have detailed sexual behavior. There should be 1 XML - 
+/// So far, only males have detailed sexual behavior. There should be 1 XML -
 /// subtree for every SexualPartnership::Type for each entity type.
 /// </remarks>
 class SexualBehavior

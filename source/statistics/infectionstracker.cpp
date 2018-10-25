@@ -13,7 +13,7 @@ InfectionsTracker::InfectionsTracker() :
 	lastTwelveSAPopIncidenceRates(12, 0.0)
 {
 	//zero out all infection tallies
-	for(int i = 0; i < (int)SexualPartnership::Type::ENDType; ++i)
+	for(int i = 0; i < (int)SexualPartnership::Type::Last; ++i)
 	{
 		for(unsigned int j = 0; j < DemographicProfile::TotalNumBuckets; ++j)
 		{
@@ -211,7 +211,7 @@ void InfectionsTracker::resetIncidentInfections(Time time)
     currTimeStepCD4InfectionSumSq = 0;
     currTimeCondomUse = 0;
 
-    for(int i = 0; i < (int)SexualPartnership::Type::ENDType; ++i)
+    for(int i = 0; i < (int)SexualPartnership::Type::Last; ++i)
     {
 	    currTimeExposuresByType[i] = 0;
 	    currTimeCondomUseByType[i] = 0;
@@ -296,7 +296,7 @@ void InfectionsTracker::recordIncidentInfection(Time time,
         && (Utility::within_range(_infector->getDemographicProfile()->getProfileID(), DemographicProfile::MIN, DemographicProfile::MAX)));
     assert((_infected != nullptr) && (_infected->isAlive())
         && (Utility::within_range(_infected->getDemographicProfile()->getProfileID(), DemographicProfile::MIN, DemographicProfile::MAX)));
-    assert(_partnershipType < SexualPartnership::Type::ENDType);
+    assert(_partnershipType < SexualPartnership::Type::Last);
 
     //reset counter for incident infections and exposures for current timestep
     if(time > currTimeStep)
@@ -1067,7 +1067,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 			//tally all the infections that happened from curr infectorProfileID -> curr infectedProfileID
             std::size_t infs = 0;
 
-			for(int partnershipType = 0; partnershipType < (int)SexualPartnership::Type::ENDType; ++partnershipType)
+			for(int partnershipType = 0; partnershipType < (int)SexualPartnership::Type::Last; ++partnershipType)
 			{
 				infs += incidentInfectionsByDemographic[partnershipType][*infectorProfileID][*infectedProfileID];
 			}
@@ -1224,7 +1224,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 	_outStream << currTimeTotalExposures << Constants::Tab;
 	_outStream << currTimeCondomUse << Constants::Tab;
 
-	for(int partnershipType = 0; partnershipType < (std::size_t)SexualPartnership::Type::ENDType; ++partnershipType)
+	for(int partnershipType = 0; partnershipType < (std::size_t)SexualPartnership::Type::Last; ++partnershipType)
 	{
 		auto exposures =  currTimeExposuresByType[partnershipType];
 		auto condoms_used = currTimeCondomUseByType[partnershipType];

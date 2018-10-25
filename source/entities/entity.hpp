@@ -240,21 +240,21 @@ protected:
 
 	//Entity's relational state
 	//contains all current partnerships including CSW and Casual
-	std::list<SexualPartnership *> partners[(int)SexualPartnership::Type::ENDType];
+	std::list<SexualPartnership *> partners[(int)SexualPartnership::Type::Last];
 
 	//array of number of partners over persons history stratified by partnership type
-	int numPartnersInHistory[(int)SexualPartnership::Type::ENDType];
+	int numPartnersInHistory[(int)SexualPartnership::Type::Last];
 
 	//array of month of their farthest current partnership dissolution time for each partnership type.  initialized to zero
-	Time monthOfLatestPartnershipDissolution[(int)SexualPartnership::Type::ENDType];
+	Time monthOfLatestPartnershipDissolution[(int)SexualPartnership::Type::Last];
 
 	//array of month of latest concurrent relationship for each partnership type. Only updated for 12 months before calibration
 	Time monthOfLatestConcurrent;
 
 	// Contains the number of partnerships the person tried to form over time, but didn't
 	// (usually due to no partners available or re-hooking up with a current partner)
-	int unformedPartnershipsTotal[(int)SexualPartnership::Type::ENDType];
-	int unformedPartnershipsLatestTime[(int)SexualPartnership::Type::ENDType];
+	int unformedPartnershipsTotal[(int)SexualPartnership::Type::Last];
+	int unformedPartnershipsLatestTime[(int)SexualPartnership::Type::Last];
 
     //relative risky behavior level
 	double sexualActivityLevel;

@@ -185,7 +185,7 @@ double Msm::getCondomUseProb(Entity *_p, SexualPartnership::Type _partnershipTyp
 {
     assert((_p != nullptr));
     assert(_p->isAlive());
-    assert(_partnershipType < SexualPartnership::Type::ENDType);
+    assert(_partnershipType < SexualPartnership::Type::Last);
     return chanceCondomUsePerEvent[(int)_partnershipType];
 }
 
@@ -210,7 +210,7 @@ double Msm::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::a
     assert(Utility::valid_probability(getCondomProtectEff()));
     assert((_p != nullptr));
     assert(_p->isAlive());
-    assert(_partnershipType < SexualPartnership::Type::ENDType);
+    assert(_partnershipType < SexualPartnership::Type::Last);
     //Determine if a condom was used and record
     double chanceCondomUse = getCondomUseProb(_p, _partnershipType);
     if(_p->HasOverrideChanceCondomUse())
@@ -319,7 +319,7 @@ bool Msm::possibleMatch(SexualPartnership::Type _partnershipType, Entity *_p)
 {
     assert((_p != nullptr));
     assert(_p->isAlive());
-    assert(_partnershipType < SexualPartnership::Type::ENDType);
+    assert(_partnershipType < SexualPartnership::Type::Last);
     assert(false);  // check if we are using years instead of Month
     auto minAge = Age(0, static_cast<int>(getMinPartnerSelectVal(Entity::AGE, _partnershipType)));
     auto maxAge = Age(0, static_cast<int>(getMaxPartnerSelectVal(Entity::AGE, _partnershipType)));
@@ -330,7 +330,7 @@ int Msm::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnershi
 {
     if(!populationSpecificParams.hasSexualBehavior(_partnershipType)) return 0;
 
-    assert(_partnershipType < SexualPartnership::Type::ENDType);
+    assert(_partnershipType < SexualPartnership::Type::Last);
 
     //person can only have 1 steady partner at a time so return 0 if person is already in Steady
     if((_partnershipType == SexualPartnership::Type::Steady) && (!partners[(int)_partnershipType].empty()))
@@ -394,7 +394,7 @@ int Msm::rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType,
 {
     assert((_p != nullptr));
     assert(_p->isAlive());
-    assert(_partnershipType < SexualPartnership::Type::ENDType);
+    assert(_partnershipType < SexualPartnership::Type::Last);
     ShiftedLogNormalDist duration = populationSpecificParams.getSexualBehavior(_partnershipType).getPartnershipDurationMth(risk);
     return (int)(_randomNums.randShiftedLogNormal(duration) + .5);
 }
