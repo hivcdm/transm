@@ -178,61 +178,40 @@ Population::~Population()
 void Population::Births(EventParams &parameters_)
 {
     unsigned long numBorn = 0;
-    if (GetParameters().GetUseBirthRate()) {
-	// get numBorn from birth rate
-	numBorn = Utility::round<unsigned long>(currSize * popWideParams.birthRate);
-    } else {
-	// get numBorn from fertility rates
-	// numBorn = sum((rate*females) / 1000
-	double sumRates = 0.0;
-	for ( auto rate : popWideParams.GetFertilityRates()) {
-	    int numFemales = entities->sizeByAgeFemales(rate.Lower(), rate.Upper());
-	    sumRates += rate.Rate() * numFemales;
+    if (GetParameters().GetUseBirthRate())
+	{
+		// get numBorn from birth rate
+		numBorn = Utility::round<unsigned long>(currSize * popWideParams.birthRate);
+    }
+	else
+	{
+		// get numBorn from fertility rates
+		// numBorn = sum((rate*females) / 1000
+		double sumRates = 0.0;
+		for ( auto rate : popWideParams.GetFertilityRates()) {
+			int numFemales = entities->sizeByAgeFemales(rate.Lower(), rate.Upper());
+			sumRates += rate.Rate() * numFemales;
+		}
+		numBorn = Utility::round<unsigned long>(sumRates / 1000);
+    }
+
+	for (auto entity_type : { "male", "msmw", "msm", "female" })
+	{
+	    std::string xml_entity_type = (std::strcmp(entity_type, "male") == 0) ? "hetero-male" : entity_type;
+		unsigned long numToCreate = Utility::round<unsigned long>(numBorn *
+			popWideParams.birthProportions[xml_entity_type]);
+		for (auto i = 0; i < numToCreate; i++)
+		{
+			bool toTrace = parameters_.currTime >= parameters_.monthTraceNewborns
+			  && parameters_.numNewbornsTraced < parameters_.numNewbornsToTrace;
+			if(toTrace) parameters_.numNewbornsTraced++;
+
+			auto person = GenerateEntity(parameters_, entity_type, nullptr, toTrace);
+
+			//add the created person to the EntityPool
+			entities->addEntityToAll(person);
+		}
 	}
-	numBorn = Utility::round<unsigned long>(sumRates / 1000);
-    }
-
-    unsigned long numHeteroMales = static_cast<unsigned long>(popWideParams.birthProportions["hetero-male"] * numBorn);
-    unsigned long numMsmws = static_cast<unsigned long>(popWideParams.birthProportions["msmw"] * numBorn);
-    unsigned long numMsms = static_cast<unsigned long>(popWideParams.birthProportions["msm"] * numBorn);
-    unsigned long numMales = numHeteroMales + numMsmws + numMsms;
-    //unsigned long numFemales = static_cast<unsigned long>(popWideParams.proportionFemale * numBorn);
-
-    //create currSize * birthRate New people
-    for(unsigned long i = 0; i < numBorn; ++i)
-    {
-	    //determine gender
-	    std::string entity_type = (i < numMales) ? "male" : "female";
-
-	    if(entity_type == "male")
-	    {
-		    if(i > numHeteroMales)
-		    {
-			    if(i > numMsmws + numHeteroMales)
-			    {
-				    entity_type = "msm";
-			    }
-			    else
-			    {
-				    entity_type = "msmw";
-			    }
-		    }
-	    }
-
-	    bool toTrace = parameters_.currTime >= parameters_.monthTraceNewborns 
-		&& parameters_.numNewbornsTraced < parameters_.numNewbornsToTrace;
-
-	    if(toTrace)
-	    {
-		    parameters_.numNewbornsTraced++;
-	    }
-
-	    auto p = GenerateEntity(parameters_, entity_type, nullptr, toTrace);
-
-	    //add the newborn to the EntityPool
-	    //Use addEntityToAll here (initial entrance into population)
-	    entities->addEntityToAll(p);
-    }
 }
 
 //Updates the age buckets for use with life expectancy
@@ -3462,30 +3441,6 @@ void Population::Initialize(const PopulationParameters &parameters)
 {
     popWideParams = parameters;
 
-    //Get the initial marriage prevalence based on percent male high risk and rate and duration of steady relationships
-    double pHigh = popWideParams.GetMaleParameters().getProportionHighRisk(DemographicProfile::Employment::NonCsw);
-    double marriageRateH = popWideParams.GetMaleParameters().getSexualBehavior(SexualPartnership::Type::Steady).getAcquisitionRatePerMonth(
-        Entity::RiskLevel::HIGH).getMean();
-    double marriageRateL = popWideParams.GetMaleParameters().getSexualBehavior(SexualPartnership::Type::Steady).getAcquisitionRatePerMonth(
-        Entity::RiskLevel::LOW).getMean();
-    double marriageDurationH = popWideParams.GetMaleParameters().getSexualBehavior(
-        SexualPartnership::Type::Steady).getPartnershipDurationMth(Entity::RiskLevel::HIGH).getMean();
-    double marriageDurationL = popWideParams.GetMaleParameters().getSexualBehavior(
-        SexualPartnership::Type::Steady).getPartnershipDurationMth(Entity::RiskLevel::LOW).getMean();
-    auto proportion_married = (1 - pHigh) * (marriageRateL * marriageDurationL) / (1 + marriageRateL *
-        marriageDurationL) + pHigh * (marriageRateH * marriageDurationH) / (1 + marriageRateH * marriageDurationH);
-    //Get the initial regular prevalence based on percent male high risk and rate and duration of regular relationships
-    double regularRateH = popWideParams.GetMaleParameters().getSexualBehavior(SexualPartnership::Type::Regular).getAcquisitionRatePerMonth(
-        Entity::RiskLevel::HIGH).getMean();
-    double regularRateL = popWideParams.GetMaleParameters().getSexualBehavior(SexualPartnership::Type::Regular).getAcquisitionRatePerMonth(
-        Entity::RiskLevel::LOW).getMean();
-    double regularDurationH = popWideParams.GetMaleParameters().getSexualBehavior(
-        SexualPartnership::Type::Regular).getPartnershipDurationMth(Entity::RiskLevel::HIGH).getMean();
-    double regularDurationL = popWideParams.GetMaleParameters().getSexualBehavior(
-        SexualPartnership::Type::Regular).getPartnershipDurationMth(Entity::RiskLevel::LOW).getMean();
-    auto proportion_regular = (1 - pHigh) * (regularRateL * regularDurationL) + pHigh *
-        (regularRateH * regularDurationH);
-
     std::map<SexualPartnership::Type, double> assort;
 
     for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
@@ -3522,158 +3477,34 @@ void Population::Initialize(const PopulationParameters &parameters)
         ApplyRolloutContext(parameters_, Time::Zero);
     }
 
-    // Create the people in the population
-    auto totalNumHeteroMales = Utility::round<std::size_t>(popWideParams.GetInitialSize() * popWideParams.GetBirthProportion("hetero-male"));
-    auto totalNumMsmws = Utility::round<std::size_t>(popWideParams.GetInitialSize() * popWideParams.GetBirthProportion("msmw"));
-    auto totalNumMsms = Utility::round<std::size_t>(popWideParams.GetInitialSize() * popWideParams.GetBirthProportion("msm"));
-    auto totalNumMales = totalNumMsmws + totalNumHeteroMales + totalNumMsms;
-    auto totalNumFemales = std::max<std::size_t>(popWideParams.GetInitialSize() - totalNumMales, 0);
-
-    std::size_t createdHeteroMales = 0, createdMsmws = 0, createdMsms = 0;
-
-    //the params.xml file should have detailed the prevalent characteristics of each age bucket
-    //  we will go through each age bucket and create the part of the prevalent population that falls within the bucket
     std::vector<AgeRange> ageRanges;
-
     for(auto &ageBucketParams : popWideParams.GetInitialAgeBuckets())
     {
-        auto last = totalNumMsms + totalNumMsmws > 0 ? ageBucketParams.minAgeMth == popWideParams.GetInitialAgeBuckets().back().minAgeMth
-            && ageBucketParams.maxAgeMth == popWideParams.GetInitialAgeBuckets().back().maxAgeMth : false;
-
-        auto numHeteroMalesInCurrentBucket = last ? totalNumHeteroMales - createdHeteroMales : Utility::round<std::size_t>(totalNumHeteroMales * ageBucketParams.entityProportions["hetero-male"]);
-        auto numMsmsInCurrentBucket = last ? totalNumMsms - createdMsms : Utility::round<std::size_t>(totalNumMsms * ageBucketParams.entityProportions["msm"]);
-        auto numMsmwsInCurrentBucket = last ? totalNumMsmws - createdMsmws : Utility::round<std::size_t>(totalNumMsmws * ageBucketParams.entityProportions["msmw"]);
-        auto numMalesInCurrentBucket = numHeteroMalesInCurrentBucket + numMsmsInCurrentBucket + numMsmwsInCurrentBucket;
-        auto numFemalesInCurrentBucket = Utility::round<std::size_t>(totalNumFemales * ageBucketParams.entityProportions["female"]);
-
-        //calc how many people are in the current age range
-        auto currentBucketSize = numHeteroMalesInCurrentBucket + numMsmsInCurrentBucket + numMsmwsInCurrentBucket + numFemalesInCurrentBucket;
-
-        //Number of persons of each gender to be traced in detailed output file
-        auto numToTrace = static_cast<std::size_t>(GetNumberToTrace());
-
-        for(std::size_t count = 0; count < currentBucketSize; count++)
-        {
-            //Determine whether or not person should be traced in SinglePersonTrace
-            bool tracePerson = (count < numToTrace || (count >= numHeteroMalesInCurrentBucket && (count - numHeteroMalesInCurrentBucket) < numToTrace));
-
-            //create a person, males first and females second
-            std::string entity_type = count < numMalesInCurrentBucket ? "male" : "female";
-
-            if(entity_type == "male")
-            {
-                if(count > numHeteroMalesInCurrentBucket)
-                {
-                    if(count > numHeteroMalesInCurrentBucket + numMsmsInCurrentBucket)
-                    {
-                        entity_type = "msmw";
-                        createdMsmws++;
-                    }
-                    else
-                    {
-                        entity_type = "msm";
-                        createdMsms++;
-                    }
-                }
-                else
-                {
-                    createdHeteroMales++;
-                }
-            }
-
-            auto person = GenerateEntity(parameters_, entity_type, &ageBucketParams, tracePerson);
-
-            //add the created person to the EntityPool
-            entities->addEntityToAll(person);
-        }
-
         AgeRange ageRange = {ageBucketParams.minAgeMth, ageBucketParams.maxAgeMth};
-        
-        //Add a tuple to the currSizeByAgeRange vector along with the initial size of the age range
         ageRanges.push_back(ageRange);
-        
-        currSizeByEntityTypeAgeRange["male"].push_back({ageRange, numHeteroMalesInCurrentBucket});
-        currSizeByEntityTypeAgeRange["msmw"].push_back({ageRange, numMsmwsInCurrentBucket});
-        currSizeByEntityTypeAgeRange["msm"].push_back({ageRange, numMsmsInCurrentBucket});
-        currSizeByEntityTypeAgeRange["female"].push_back({ageRange, numFemalesInCurrentBucket});
-    }
+		for (auto entity_type : { "male", "msmw", "msm", "female" })
+		{
+		    std::string xml_entity_type = (std::strcmp(entity_type, "male") == 0) ? "hetero-male" : entity_type;
+			double value = ageBucketParams.entityProportions[xml_entity_type] *
+			  popWideParams.GetInitialSize() * popWideParams.GetBirthProportion(xml_entity_type);
+			unsigned long numToCreate = Utility::round<unsigned long>(value);
+			for (auto i = 0; i < numToCreate; i++)
+			{
+				bool toTrace = parameters_.currTime >= parameters_.monthTraceNewborns
+				  && parameters_.numNewbornsTraced < parameters_.numNewbornsToTrace;
+				if(toTrace) parameters_.numNewbornsTraced++;
 
+				auto person = GenerateEntity(parameters_, entity_type, &ageBucketParams, toTrace);
+
+				//add the created person to the EntityPool
+				entities->addEntityToAll(person);
+			}
+
+			//Add a tuple to the currSizeByAgeRange vector along with the initial size of the age range
+			currSizeByEntityTypeAgeRange[entity_type].push_back({ageRange, numToCreate});
+		}
+    }
     populationStatistics.artTracker.SetAgeRanges(ageRanges);
-
-    if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled)
-    {
-        parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << std::endl << "Now creating initial partnerships... " << std::endl;
-    }
-
-    // create prevalent Regular Partnerships (time = 0) before creating prevalent marriages
-    //the demographics that we are pulling the eligibles from
-    DemographicProfile selector;
-    selector.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::Active);
-    selector.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
-    selector.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Heterosexual);
-    selector.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::Single);
-    selector.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::NonCsw);
-    std::vector<DemographicProfile::ProfileID> bucketIDs;
-    //TODO:fix code below, i've put placeholders for multiple singles buckets, but right now we only use 1 of each gender
-    //errhode: Is this taken care of with the whole agebucket inside SexualMixingBucket thing?
-    selector.selectProfileIDs(bucketIDs, nullptr);
-    BucketDemographicProfile *singleMales = entities->getBucket(bucketIDs.at(0));
-    selector.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Female);
-    bucketIDs.clear();
-    selector.selectProfileIDs(bucketIDs, nullptr);
-    BucketDemographicProfile *singleFemales = entities->getBucket(bucketIDs.at(0));
-    // create prevalent formSteadyPartnerships (time = 0)
-    //the demographics that we are pulling the eligibles from -- same as for regular;
-    //can just use the previous singleMales and singleFemales buckets
-    //number of couples -- % married of adult population by DemographicProfile::SexualActivityStatus::ActiveStatus / 2
-    int numCouples = Utility::round<long>(proportion_married * (singleMales->size() + singleFemales->size()) * 0.5);
-
-    while(numCouples > 0)
-    {
-        //break if there are no more people to marry...
-        if(!singleFemales->size() || !singleMales->size())
-        {
-            break;
-        }
-
-        //choose a random male from the pool
-        auto drawn = singleMales->drawMember(parameters_.randomNums, SexualPartnership::Type::Steady, false);
-
-        if(drawn == nullptr)
-        {
-            break;
-        }
-
-        //try to form partnership, will add Male back to the pool if partnership was formed
-        CreatePartnerships(parameters_, drawn, nullptr, SexualPartnership::Type::Steady, true);
-        numCouples--;
-    }
-
-    //number of regular couples -- % married of adult population by DemographicProfile::SexualActivityStatus::ActiveStatus / 2
-    //Note that some people may end up in multiple relationships -- this should come out in the wash (?)
-    numCouples = Utility::round<int>(proportion_regular * (singleMales->size() + singleFemales->size()) * 0.5);
-
-    while(numCouples > 0)
-    {
-        //break if there are no more people to pair off...
-        //this shouldn't be a problem unless we start with no men or no women as we are not shifting the pairs to non_single status
-        if(!singleFemales->size() || !singleMales->size())
-        {
-            break;
-        }
-
-        //choose a random male from the pool
-        auto drawn = singleMales->drawMember(parameters_.randomNums, SexualPartnership::Type::Regular, false);
-
-        if(drawn == nullptr)
-        {
-            break;
-        }
-
-        //form partnership, will add Male back to the pool if partnership was formed
-        CreatePartnerships(parameters_, drawn, nullptr, SexualPartnership::Type::Regular, true);
-        numCouples--;
-    }
 
     //count the size of the population and store value
     UpdateSize();
