@@ -678,15 +678,21 @@ void PopulationStatisticsOld::printShiftedOutcomes(std::ostream &_outStream, Tim
             _outStream << Constants::Tab;
             _outStream << Constants::Tab;
         }
-		_outStream << "Screening Results";
-		_outStream << std::endl;
-		_outStream << "Year";
-		_outStream << Constants::Tab;
+	_outStream << "Screening Results" << Constants::Tab;
+	_outStream << Constants::Tab;
+	_outStream << Constants::Tab;
+	_outStream << Constants::Tab;
+	_outStream << Constants::Tab;
+	_outStream << "ART Eligibility";
+	_outStream << std::endl;
+
+	_outStream << "Year";
+	_outStream << Constants::Tab;
+	_outStream << "Pop Size";
+	_outStream << Constants::Tab;
 
         for(std::size_t i = 0; i < 6; i++)
         {
-            _outStream << "Pop Size";
-            _outStream << Constants::Tab;
             _outStream << "SA Pop Size";
             _outStream << Constants::Tab;
             _outStream << "Incident";
@@ -699,27 +705,23 @@ void PopulationStatisticsOld::printShiftedOutcomes(std::ostream &_outStream, Tim
             _outStream << Constants::Tab;
         }
 
-		_outStream << "Total Tests";
-		_outStream << Constants::Tab;
+	_outStream << "Total Tests";
+	_outStream << Constants::Tab;
 
-		for(int i = 0; i < SimContext::TEST_RESULT_NUM; i++)
-		{
-			_outStream << testTypes[i];
-			_outStream << Constants::Tab;
-		}
+	for(int i = 0; i < SimContext::TEST_RESULT_NUM; i++)
+	    {
+		_outStream << testTypes[i];
+		_outStream << Constants::Tab;
+	    }
 
-		_outStream << "Number Eligible for Access to Treatment";
-		_outStream << Constants::Tab;
-		_outStream << "Number Acessing Treatment";
-		_outStream << Constants::Tab;
-		_outStream << "Number Eligible for ART";
-		_outStream << Constants::Tab;
-		_outStream << "Number Receiving ART";
-		_outStream << Constants::Tab;
-		_outStream << "Number Treatment Slots";
-		_outStream << Constants::Tab;
-		_outStream << "Number Deaths on ART";
-		_outStream << std::endl;
+	_outStream << "Number Eligible for Access to Treatment";
+	_outStream << Constants::Tab;
+	_outStream << "Number Acessing Treatment";
+	_outStream << Constants::Tab;
+	_outStream << "Number Eligible for ART";
+	_outStream << Constants::Tab;
+	_outStream << "Number Receiving ART";
+	_outStream << Constants::Tab;
 	}
 
     std::size_t sum_year_start_pop_size = 0;
