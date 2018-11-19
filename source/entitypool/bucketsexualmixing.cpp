@@ -77,8 +77,8 @@ unsigned int BucketSexualMixing::getCorrectBufferIndex(Entity *_p)
 
 	if(pAge < minAge || pAge > maxAge)
 	{
-		throw std::runtime_error("Age is " + std::to_string(pAge.get_month()) + " but minAge is "
-			+ std::to_string(minAge.get_month()) + " and max age is " + std::to_string(maxAge.get_month()));
+		throw std::runtime_error("Age is " + std::to_string(pAge.in_months()) + " but minAge is "
+			+ std::to_string(minAge.in_months()) + " and max age is " + std::to_string(maxAge.in_months()));
 	}
 
 	return static_cast<unsigned int>((pAge - minAge).in_months());

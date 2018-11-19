@@ -3,7 +3,8 @@
 #include <string>
 #include <unordered_map>
 
-#include "entities/entity.hpp"
+#include "entities/demographicprofile.hpp"
+#include "utility/time.hpp"
 
 namespace transm {
 
@@ -16,8 +17,15 @@ public:
     AgeBucketPrevalenceInfo();
 
     AgeBucketPrevalenceInfo(Age _minAgeMth, Age _maxAgeMth,
-	const std::unordered_map<std::string, double> &entity_proportions);
+		const std::vector<DemographicProfile::DoublePair> &entity_proportions);
 
+    Age GetMinAge() { return minAgeMth; }
+    Age GetMaxAge() { return maxAgeMth; }
+
+    const std::vector<DemographicProfile::DoublePair> &GetEntityProportions();
+	void SetEntityProportion(DemographicProfile profile, double value);
+
+private:
     /// <summary>
     /// the min age that this bucket represents
     /// </summary>
@@ -31,7 +39,7 @@ public:
     /// <summary>
     /// determines size as proportion of the population
     /// </summary>
-    std::unordered_map<std::string, double> entityProportions;
+	std::vector<DemographicProfile::DoublePair> entityProportions;
 };
-  
+
 } // namespace transm

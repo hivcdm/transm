@@ -7,7 +7,20 @@
 
 namespace transm {
 
-class Entity;
+    //declare strings of Enums
+	const std::vector<std::string> DemographicStrs =
+	{"SEXUAL_ACTIVITY_STATUS", "GENDER", "SEXUAL_ORIENTATION", "RELATIONSHIP_STATUS", "EMPLOYMENT"};
+
+	const std::vector<std::vector<std::string>> DemographicEnumStrs =
+	{
+		{"SA", "NA"},
+		{"MALE", "FEMALE"},
+		{"MSW", "MSM", "MSMW" },
+		{"NON_SINGLE", "SINGLE"},
+		{"NON_CSW", "CSW"}
+	};
+
+//class Entity;
 
 /// <summary>
 /// This class corresponds to a Person's demographic profile.
@@ -17,10 +30,9 @@ class Entity;
 /// </summary>
 class DemographicProfile
 {
-
 public:
     /*
-    Unfortunately, when we want to change enum Demographic, we also need to change:
+    When we want to change enum Demographic, we also need to change:
     void initEnums()
     fields/variables: demographicStrs,enumStrs,TotalNumBuckets
 
@@ -53,8 +65,7 @@ public:
     };
 
     //Every Person is one of these genders
-    enum class Gender
-    {
+  enum class Gender /* : std::size_t */  {
         Male,
         Female,
         Last,
@@ -65,11 +76,10 @@ public:
     {
         Msw,
         Msmw,
-		Msm,
+	Msm,
         Last,
         First = Msw
     };
-
 
     //The ordering of the RelationshipStatus enums matter b/c of deaths.
     //we actually need to check death in NON_SINGLEs before singles. B/c there is a chance that both
@@ -95,7 +105,8 @@ public:
 
 	static Demographic MaxDemographic;
 	//we have to statically define this here, b/c we  use this value elsewhere to statically declare arrays...
-    static const std::size_t TotalNumBuckets = (std::size_t)SexualActivityStatus::Last
+    static const std::size_t TotalNumBuckets =
+	(std::size_t)SexualActivityStatus::Last
         * (std::size_t)Gender::Last
         * (std::size_t)SexualOrientation::Last
         * (std::size_t)RelationshipStatus::Last
@@ -104,6 +115,7 @@ public:
 	//each unique profile has a unique integer value assigned to it.
 	// tuples that have wildcard values do not have a profileID
 	using ProfileID = int;
+    using DoublePair = std::pair<DemographicProfile, double>;
 
 	// functor for operator <. This is used in maps.
 	struct less
@@ -123,25 +135,6 @@ public:
     //this is the ProfileID when all enums are at their wildcard value
 	static const ProfileID END;
 
-private:
-	//storage of actual enum values for a DemographicProfile object. It's basically a tuple.
-    std::array<BaseEnumCls::Enum, (std::size_t)DemographicProfile::Demographic::Last> enums;
-
-	//these hold class wrappers of each enum to allow for easy printing and iterating of demographic vals
-	static std::vector<BaseEnumCls> DemographicEnumCls;
-
-	//allows for quick look-up of ProfileID given a tuple
-	static std::map<DemographicProfile, ProfileID, DemographicProfile::less> ProfileToProfileID;
-	//allows for quick look-up of tuple given the dmgProfileID
-	static std::vector<std::unique_ptr<const DemographicProfile>> ProfileIDtoProfile;
-	static std::vector <std::string> ProfileIDtoStr;
-
-	//is called if initProfileIDMapCalled == false
-	static void initProfileIDMap();
-	//is called if initEnumsCalled == false
-	static void initEnums();
-
-public:
 	//TODO: All these are implemented less efficiently b/c I couldn't figure out why memcmp wouldn't work.
 	bool operator==(const DemographicProfile) const;
 	bool operator!=(const DemographicProfile) const;
@@ -229,13 +222,11 @@ public:
 	/**
 	//appends the string representation to this profile
 	We return a pointer to save compute speed. We don't want a
-	new string to be allocated cor each call
+	new string to be allocated for each call
 
 	@author schung5
 	**/
 	const std::string *toString() const;
-
-public :
 
 	//deallocates the statically stored strings we generated for fast lookup
 	//this is to prevent any memory leaks
@@ -247,7 +238,10 @@ public :
 	static BaseEnumCls::Enum get(ProfileID _profileID, Demographic _demographic);
 
 	//given a ProfileID, returns a tuple of dmgProfile
-	static const DemographicProfile *getDemographics(ProfileID _profileID);
+	static const DemographicProfile getDemographics(ProfileID _profileID);
+
+	// given a Profile, returns a ProfileID
+	static const ProfileID getProfileID(DemographicProfile _profile);
 
 	/*
 	gets a concatenated string of the string representation of all demographic values
@@ -259,6 +253,24 @@ public :
 
 	//gets a string representation of the _demographic value of the tuple that corresponds to _profileID
 	static const std::string *getString(ProfileID _profileID, Demographic _demographic);
+
+private:
+	//storage of actual enum values for a DemographicProfile object. It's basically a tuple.
+    std::array<BaseEnumCls::Enum, (std::size_t)DemographicProfile::Demographic::Last> enums;
+
+	//these hold class wrappers of each enum to allow for easy printing and iterating of demographic vals
+	static std::vector<BaseEnumCls> DemographicEnumCls;
+
+	//allows for quick look-up of ProfileID given a tuple
+	static std::map<DemographicProfile, ProfileID, DemographicProfile::less> ProfileToProfileID;
+	//allows for quick look-up of tuple given the dmgProfileID
+	static std::vector<std::unique_ptr<const DemographicProfile>> ProfileIDtoProfile;
+	static std::vector <std::string> ProfileIDtoStr;
+
+	//is called if initProfileIDMapCalled == false
+	static void initProfileIDMap();
+	//is called if initEnumsCalled == false
+	static void initEnums();
 };
 
 } // namespace transm

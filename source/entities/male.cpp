@@ -13,7 +13,9 @@ namespace transm {
 
 const std::string Male::getEntityType() const
 {
-    return "msw";
+	const BaseEnumCls *currCategoryCls = dmgProfile.getEnumCls(DemographicProfile::Demographic::SexualOrientation);
+	BaseEnumCls::Enum dmgProfileEnum = dmgProfile.get(DemographicProfile::Demographic::SexualOrientation);
+	return *currCategoryCls->toString(dmgProfileEnum);
 }
 
 //each index of the array contains parameters for a different population
@@ -153,16 +155,23 @@ void Male::Circumcise()
 	circumcised = true;
 }
 
-Male::Male(EventParams &_eventParams, Age _age, bool _circumcised, unsigned int _populationID,
-    const Male::SubPopParams &params) :
-	Entity(_age, _populationID),
-	populationSpecificParams(params)
+Male::Male(EventParams &_eventParams, Age _age, bool _circumcised, const DemographicProfile &profile,
+    unsigned int _populationID, const Male::SubPopParams &params) :
+    Entity(_age, _populationID),
+    populationSpecificParams(params)
 {
-	_age = max(min(Age(Entity::maxYrForDeathStats, 0), _age), Age::Zero);
-    dmgProfile.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
+	// Only set the gender and sexual orientation
+	// The other demographic profiles values get set in the Entity constructor -- don't overwrite the entire profile
+    assert(profile.get(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male);
+    dmgProfile.set(DemographicProfile::Demographic::Gender, profile.get(DemographicProfile::Demographic::Gender));
+    dmgProfile.set(DemographicProfile::Demographic::SexualOrientation,
+		profile.get(DemographicProfile::Demographic::SexualOrientation));
+
 	circumcised = _circumcised;
-	//Set this male's risk level assume everyone is low risk on creation. Risk is rerolled when they roll for become sex worker
-	risk = Entity::RiskLevel::LOW;
+
+    //Set this male's risk level assume everyone is low risk on creation.
+    //Risk is rerolled when they reach the age of sexual maturity
+    risk = Entity::RiskLevel::LOW;
 
 	for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
 	{
@@ -173,7 +182,6 @@ Male::Male(EventParams &_eventParams, Age _age, bool _circumcised, unsigned int 
 		auto acquisition_rate_dist = sexualBehaviorParams.getAcquisitionRatePerMonth(risk);
 		auto acquisition_rate = _eventParams.randomNums.randLogNormal(acquisition_rate_dist);
 		partnerAcqRates[(int)partnership_type] = acquisition_rate;
-			
 		numActsPerMonth[(int)partnership_type] = sexualBehaviorParams.getCoitalEventsPerMonth(risk);
 
 		auto chance_condom_use_dist = sexualBehaviorParams.getChanceCondomUsePerEvent(risk);
@@ -194,6 +202,11 @@ Male::Male(EventParams &_eventParams, Age _age, bool _circumcised, unsigned int 
 
 Male::~Male()
 {
+}
+
+std::size_t Male::GetSexualOrientation()
+{
+    return ((std::size_t)getDemographicProfileVal(DemographicProfile::Demographic::SexualOrientation));
 }
 
 /*virtual*/ void Male::SetPreExposureProphylaxisEfficacy(double efficacy)

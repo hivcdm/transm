@@ -163,11 +163,13 @@ public:
 		LOW,
 		HIGH,
 		Last,
-        First = LOW
+		First = LOW
 	};
+	static const std::array<std::string, (std::size_t)RiskLevel::Last> RiskStrings;
 
     virtual void SetPartnershipRejectionChance(RiskLevel risk, SexualPartnership::Type partnershipType, double chance) = 0;
     virtual double GetPartnershipRejectionChance(RiskLevel risk, SexualPartnership::Type partnershipType) const = 0;
+
     virtual void SetOverrideChanceCondomUse(double chance) = 0;
     virtual double GetOverrideChanceCondomUse() const = 0;
     bool HasOverrideChanceCondomUse() const { return GetOverrideChanceCondomUse() != -1; }
@@ -370,6 +372,7 @@ public:
 	void updateCEPACpatient(EventParams &_eventParams);
 
 	virtual double getChanceBecomeCsw() const = 0;
+	virtual bool PassedCSWEndAge() const = 0;
 
 	/**
 	 * @return generationOfInfection
@@ -541,6 +544,7 @@ public:
 
 	//returns structure that holds current DemographicProfile
 	const DemographicProfile *getDemographicProfile() const;
+
 	BaseEnumCls::Enum getDemographicProfileVal(DemographicProfile::Demographic _demographic) const;
 
     template<typename D>
@@ -556,7 +560,7 @@ public:
 	/*
 	changes isSexWorker with probability taken from population prevalence of CSW (or initial csw chance if prevalent population)
 	*/
-	void rollForBecomeSexWorker(EventParams &_eventParams, bool _isInit, double initialProb = 0.0);
+	void rollForBecomeSexWorker(EventParams &_eventParams);
 
 	/*
 	stop being csw
@@ -656,6 +660,10 @@ public:
 
 	//for a particular partner, choose how many events this male will have
 	virtual int rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType) = 0;
+
+    virtual std::size_t GetTimesSelected() const = 0;
+    virtual void IncrementTimesSelected() = 0;
+    virtual void ResetTimesSelected() = 0;
 
 	/*
 	sexual activity with person _p. This can happen within context of class SexualPartnership or just between to Entitys

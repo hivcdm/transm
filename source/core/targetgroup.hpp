@@ -163,15 +163,15 @@ public:
             }
             if(risk_string == "Non-CSW High Risk Male:Msw")
             {
-                return p.first->getEntityType() == "msw" && p.first->getRiskLevel() == Entity::RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
+                return p.first->getEntityType() == "MSW" && p.first->getRiskLevel() == Entity::RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
             }
             if(risk_string == "Non-CSW High Risk Male:Msmw")
             {
-                return p.first->getEntityType() == "msmw" && p.first->getRiskLevel() == Entity::RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
+                return p.first->getEntityType() == "MSMW" && p.first->getRiskLevel() == Entity::RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
             }
             if(risk_string == "Non-CSW High Risk Male:Msm")
             {
-                return p.first->getEntityType() == "msm" && p.first->getRiskLevel() == Entity::RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
+                return p.first->getEntityType() == "MSM" && p.first->getRiskLevel() == Entity::RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
             }
             if(risk_string == "Non-CSW High Risk Female")
             {
@@ -179,15 +179,15 @@ public:
             }
             if(risk_string == "Non-CSW Low Risk Male:Msw")
             {
-                return p.first->getEntityType() == "msw" && p.first->getRiskLevel() == Entity::RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
+                return p.first->getEntityType() == "MSW" && p.first->getRiskLevel() == Entity::RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
             }
             if(risk_string == "Non-CSW Low Risk Male:Msmw")
             {
-                return p.first->getEntityType() == "msmw" && p.first->getRiskLevel() == Entity::RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
+                return p.first->getEntityType() == "MSMW" && p.first->getRiskLevel() == Entity::RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
             }
             if(risk_string == "Non-CSW Low Risk Male:Msm")
             {
-                return p.first->getEntityType() == "msm" && p.first->getRiskLevel() == Entity::RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
+                return p.first->getEntityType() == "MSM" && p.first->getRiskLevel() == Entity::RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
             }
             if(risk_string == "Non-CSW Low Risk Female")
             {
@@ -216,7 +216,7 @@ public:
                 summary.incident_male = std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_incident_gender, std::placeholders::_1, DemographicProfile::Gender::Male));
                 summary.pop_size_na_male = std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_na_gender, std::placeholders::_1, DemographicProfile::Gender::Male));
 
-                for(auto entity_type : {"msw", "msmw", "msm", "female"})
+                for(auto entity_type : {"MSW", "MSMW", "MSM", "female"})
                 {
                     summary.pop_size_sa_entity_type[entity_type] = std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_sa_entity_type, std::placeholders::_1, entity_type));
                     summary.prevalent_entity_type[entity_type] = std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_prev_entity_type, std::placeholders::_1, entity_type));
@@ -231,8 +231,7 @@ public:
                     summary.sa_size_by_age_range_male.push_back(std::make_tuple(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_sa_in_age_range_gender, std::placeholders::_1, age_range.first, age_range.second, DemographicProfile::Gender::Male))));
                     summary.prevalent_by_age_range_male.push_back(std::make_tuple(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_prev_in_age_range_gender, std::placeholders::_1, age_range.first, age_range.second, DemographicProfile::Gender::Male))));
                     summary.incident_by_age_range_male.push_back(std::make_tuple(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_incident_in_age_range_gender, std::placeholders::_1, age_range.first, age_range.second, DemographicProfile::Gender::Male))));
-
-                    for(auto entity_type : {"msw", "msmw", "msm", "female"})
+		    for(auto entity_type : {"MSW", "MSMW", "MSM", "female"})
                     {
                         summary.sa_size_by_age_range_entity_type[entity_type].push_back(std::make_tuple(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_sa_in_age_range_entity_type, std::placeholders::_1, age_range.first, age_range.second, entity_type))));
                         summary.prevalent_by_age_range_entity_type[entity_type].push_back(std::make_tuple(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_prev_in_age_range_entity_type, std::placeholders::_1, age_range.first, age_range.second, entity_type))));

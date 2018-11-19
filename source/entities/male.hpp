@@ -16,11 +16,6 @@ namespace transm {
 class Male : public Entity
 {
 public :
-    /*virtual*/ const std::string getEntityType() const;
-	void Circumcise();
-    bool IsCircumcised() const { return circumcised; }
-
-    void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) { populationSpecificParams.SetProportionHighRisk(employment, proportion); }
 
 	/// <summary>
 	/// These are parameters that describe the population of males.
@@ -98,14 +93,17 @@ public :
 		int GetMaxPartnershipRejections() const { return maxPartnershipRejections; }
 		void SetMaxPartnershipRejections(int rejections) { maxPartnershipRejections = rejections; }
 
-        void SetCswEndAge(Age end_age) { cswEndAge = end_age; }
-        Age GetCswEndAge() const { return cswEndAge; }
+	    void SetCswEndAge(Age end_age) { cswEndAge = end_age; }
+	    Age GetCswEndAge() const { return cswEndAge; }
 
-        void SetPreExposureProphylaxisEfficacy(double efficacy) { preExposureProphylaxisEfficacy_ = efficacy; }
-        double GetPreExposureProphylaxisEfficacy() const { return preExposureProphylaxisEfficacy_; }
+	    void SetPreExposureProphylaxisEfficacy(double efficacy) { preExposureProphylaxisEfficacy_ = efficacy; }
+	    double GetPreExposureProphylaxisEfficacy() const { return preExposureProphylaxisEfficacy_; }
 
-	private:
-        Age cswEndAge;
+	    double GetProportionCircumcised() const { return proportionCircumcised; }
+	    void SetProportionCircumcised(double value) { proportionCircumcised = value; }
+
+        private:
+	    Age cswEndAge;
 
 		//chance that a male will become a CSW
 		double chanceBecomeCSW;
@@ -117,6 +115,8 @@ public :
 
 		//proportion of male population that is in the "high risk" lists based on csw status
 		double proportionHighRisk[(std::size_t)DemographicProfile::Employment::Last];
+
+	        double proportionCircumcised;
 
 		//Distribution of activity level (i.e. marbles)
 		NormalDist activityLevel;
@@ -160,12 +160,12 @@ private:
 	//whether they are circumcised
 	bool circumcised;
 
-	//the rate at which this male acquires various partners -- this value is drawn from lognormal, but the male's number of partners each month will be drawn from poisson`
+	//the rate at which this male acquires various partners -- this value is drawn from lognormal, but the male's number of partners each month will be drawn from poisson
 	double partnerAcqRates[(int)SexualPartnership::Type::Last];
-	
+
 	//the  acts per month (fits a poisson distribution with minimum value of 1)
-	double numActsPerMonth[(int)SexualPartnership::Type::Last];	
-	
+        double numActsPerMonth[(int)SexualPartnership::Type::Last];
+
 	//chance that this male will use condom w/ different partner types
 	double chanceCondomUsePerEvent[(int)SexualPartnership::Type::Last];
 
@@ -173,10 +173,21 @@ private:
 	NormalDist averageYearsYounger[(int)SexualPartnership::Type::Last];
 
 public:
-	/**
-	this constructor creates a Male that can be simulated
-	constructor should set the CD4, HVL, and HVLsetpoint from age and gender **/
-	Male(EventParams &_eventParams, Age age, bool _circumcised, unsigned int _populationID, const Male::SubPopParams &params);
+    /*
+	 * This constructor creates a Male that can be simulated
+     * constructor should set the CD4, HVL, and HVLsetpoint from age and gender.
+	 */
+    Male(EventParams &_eventParams, Age age, bool circumcised, const DemographicProfile &profile,
+	 unsigned int _populationID, const Male::SubPopParams &params);
+    ~Male();
+
+    /*virtual*/ std::string const getEntityType() const;
+    void Circumcise();
+    bool IsCircumcised() const { return circumcised; }
+
+    void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) { populationSpecificParams.SetProportionHighRisk(employment, proportion); }
+
+    std::size_t GetSexualOrientation();
 
 	/** Start: Inherited from Entity, comments found there **/
 
@@ -204,7 +215,9 @@ public:
 
     void SetAssortativeness(SexualPartnership::Type partnership_type, double assortativeness) { populationSpecificParams.getSexualBehavior(partnership_type).setAssortativeness(assortativeness); }
 
-	double getChanceBecomeCsw() const;
+    double getChanceBecomeCsw() const;
+
+    bool PassedCSWEndAge() const { return (getAge() >= populationSpecificParams.GetCswEndAge()); }
 
     double getFOI(Entity *_p, 
         const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients, 
@@ -227,7 +240,9 @@ public:
 	/** End: Inherited from Entity **/
 
 	/** Start: functions for Males only **/
-    int getMaxPartnershipRejections() const { return populationSpecificParams.GetMaxPartnershipRejections(); }
+    int GetMaxPartnershipRejections() const
+	{ return populationSpecificParams.GetMaxPartnershipRejections(); }
+
 	//calculates the likelihood of using a condom based on the partnering type
 	double getCondomUseProb(Entity *_p, SexualPartnership::Type _partnershipType);
 	//gets the efficacy of using a condom on preventing the spread of HIV
@@ -241,7 +256,17 @@ public:
 	void SetOverrideChanceCondomUse(double) { }
 	double GetOverrideChanceCondomUse() const { return -1; }
 
-	~Male();
+	std::size_t GetTimesSelected() const { return times_selected_; }
+	void IncrementTimesSelected() {
+	    assert(dmgProfile.get(DemographicProfile::Demographic::SexualOrientation) !=
+			(std::size_t) DemographicProfile::SexualOrientation::Msw);
+	    times_selected_++;
+	}
+	void ResetTimesSelected() { times_selected_ = 0; }
+
+private:
+	std::size_t times_selected_;
+
 };
 
 } // namespace transm

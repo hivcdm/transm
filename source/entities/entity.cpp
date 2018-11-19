@@ -1,8 +1,6 @@
 #include "entity.hpp"
 #include "male.hpp"
 #include "female.hpp"
-#include "msm.hpp"
-#include "msmw.hpp"
 #include "sexualpartnership.hpp"
 #include "core/constants.hpp"
 #include "parameters/eventparams.hpp"
@@ -15,6 +13,9 @@
 namespace transm {
 
 class EntityPool;
+
+const std::array<std::string, (std::size_t)Entity::RiskLevel::Last> Entity::RiskStrings =
+{ "Low", "High" };
 
 long Entity::idCounter = 0;
 int Entity::numTracesSoFar = 0;
@@ -685,29 +686,20 @@ void Entity::removePartnership(SexualPartnership *_partnership)
 	}
 }
 
-void Entity::rollForBecomeSexWorker(EventParams &_eventParams, bool _isInit, double initialProb)
+void Entity::rollForBecomeSexWorker(EventParams &_eventParams)
 {
-	//see whether this person will become a CSW when they make their sexual debut
-	double currGenderChanceBecomeCSW;
-
-    if(_isInit) {
-		currGenderChanceBecomeCSW = initialProb;
-    } else {
-		currGenderChanceBecomeCSW = getChanceBecomeCsw();
-	}
-
-    if(_eventParams.randomNums.chance(currGenderChanceBecomeCSW)) {
+    if(_eventParams.randomNums.chance(getChanceBecomeCsw())) {
 	if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson]
 	   .enabled && trace()) {
 	    _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
 		(isMale() ? " % Male " : " % Female ");
 	    _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
 		getID() << " becomes CSW" << std::endl;
-		}
+	}
 
 	dmgProfile.set(DemographicProfile::Demographic::Employment,
 		       (std::size_t)DemographicProfile::Employment::Csw);
-	}
+    }
 }
 
 void Entity::quitSexWork(EventParams &_eventParams)

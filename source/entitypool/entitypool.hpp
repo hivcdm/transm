@@ -37,6 +37,11 @@ public:
 	bool addEntity(Entity *_person);
 
 	/// <summary>
+	/// Return the profileIDs for all buckets
+	/// </summary>
+	std::vector<DemographicProfile::ProfileID> getProfileIDs();
+
+	/// <summary>
 	/// Return the bucket that matches _profileID
 	/// </summary>
 	BucketDemographicProfile *getBucket(DemographicProfile::ProfileID _profileID);
@@ -164,6 +169,11 @@ private:
 	/// a unique combucketation of DemographicProfile enum values
 	/// </summary>
 	std::vector<BucketDemographicProfile *> entityBuckets;
+
+	/// <summary>
+	/// List of profile ids for all the buckets in the pool
+	/// </summary>
+	std::vector<DemographicProfile::ProfileID> validProfileIDs;
 
 	/// <summary>
 	/// Master list of males for iterating

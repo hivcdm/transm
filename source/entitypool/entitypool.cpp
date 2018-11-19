@@ -8,6 +8,121 @@
 
 namespace transm {
 
+//creates a New EntityPool
+EntityPool::EntityPool(Age _ageOfMajority, unsigned int _popID, const std::map<SexualPartnership::Type, double> &_assort)
+{
+	//allocate space for Buckets and set to nullptr
+	entityBuckets = std::vector<BucketDemographicProfile *>(DemographicProfile::TotalNumBuckets, nullptr);
+
+	//contains the BucketID's of the buckets we want to use in this simulation
+	std::vector<DemographicProfile::ProfileID> validBucketIDs;
+
+	// Instantiate the Male Not-Sexually Active Buckets = (NA, Male, *, Single, nonCSW) -- adds three buckets
+	DemographicProfile naMaleSelector;
+	naMaleSelector.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
+    naMaleSelector.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::NotActive);
+    naMaleSelector.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::Single);
+    naMaleSelector.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::NonCsw);
+	naMaleSelector.selectProfileIDs(validBucketIDs, nullptr);
+    assert(validBucketIDs.size() == 3);
+
+	// Instantiate the Female Not-Sexually Active Buckets = (NA, Female, Msw, Single, nonCSW) -- adds one bucket
+	DemographicProfile naFemaleSelector;
+	naFemaleSelector.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Female);
+	naFemaleSelector.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Msw);
+    naFemaleSelector.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::NotActive);
+    naFemaleSelector.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::Single);
+    naFemaleSelector.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::NonCsw);
+	naFemaleSelector.selectProfileIDs(validBucketIDs, nullptr);
+    assert(validBucketIDs.size() == 4);
+
+	// Instantiate the Male Sexually Active Buckets = (SA, Male, *, *, nonCSW) -- adds six buckets
+	DemographicProfile saMaleSelector;
+	saMaleSelector.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
+    saMaleSelector.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::Active);
+    saMaleSelector.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::NonCsw);
+	saMaleSelector.selectProfileIDs(validBucketIDs, nullptr);
+    assert(validBucketIDs.size() == 10);
+
+	// Instantiate the Female Sexually Active Buckets = (SA, Female, Msw, *, *) -- adds four buckets
+	DemographicProfile saFemaleSelector;
+	saFemaleSelector.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Female);
+	saFemaleSelector.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Msw);
+    saFemaleSelector.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::Active);
+	saFemaleSelector.selectProfileIDs(validBucketIDs, nullptr);
+    assert(validBucketIDs.size() == 14);
+
+	//instantiate the spaces for all our buckets. The # of buckets depends on class BucketClassifiers
+	//these people are stored in a more complicated BucketDemographicProfile b/c they are involved in sexual mixing
+	for(unsigned int i = 0; i < validBucketIDs.size(); ++i)
+	{
+		DemographicProfile::ProfileID currBucketID = validBucketIDs.at(i);
+
+		//at this index into validBucketIDs, we are still making NA buckets
+        if((std::size_t)DemographicProfile::SexualActivityStatus::NotActive ==
+			DemographicProfile::get(validBucketIDs.at(i), DemographicProfile::Demographic::SexualActivityStatus))
+		{
+			// make a Non-Active bucket
+			entityBuckets.at(currBucketID) = new BucketDemographicProfile(currBucketID, DemographicProfile::toString(currBucketID), true);
+			validProfileIDs.push_back(currBucketID);
+		}
+		else
+		{
+			//Special case: CSW can't be in STEADY relationships
+            bool invalidCombo = ((std::size_t)DemographicProfile::Employment::Csw ==
+				DemographicProfile::get(validBucketIDs.at(i), DemographicProfile::Demographic::Employment)) &&
+                ((std::size_t)DemographicProfile::RelationshipStatus::NonSingle == DemographicProfile::get(validBucketIDs.at(i),
+					DemographicProfile::Demographic::RelationshipStatus));
+
+			if(!invalidCombo)
+			{
+				entityBuckets.at(currBucketID) = new BucketSexualMixing(currBucketID, DemographicProfile::toString(currBucketID), _popID,
+                    _ageOfMajority, Age::from_months(12 * Entity::maxYrForDeathStats + 1), _assort);
+				validProfileIDs.push_back(currBucketID);
+
+			}
+		}
+	}
+}
+
+EntityPool::~EntityPool()
+{
+	//Delete all people in allFemales and allMales in order to prevent memory leaks
+	std::list<Entity *>::iterator p_Iter;
+
+	for(auto gender : enum_iterator<DemographicProfile::Gender>())
+	{
+		p_Iter = begin(gender);
+
+		while(p_Iter != end(gender))
+		{
+			Entity *p = (*p_Iter);
+			//Advances p_Iter one in the list, so no increment is necessary
+			p_Iter = removeEntityFromAll(p_Iter);
+			delete p;
+		}
+	}
+
+	allMales.clear();
+	allFemales.clear();
+
+	//iterate through all buckets and delete them
+	for(BaseEnumCls::Enum j = 0; j < entityBuckets.size(); ++j)
+	{
+		if(entityBuckets.at(j) != nullptr)
+		{
+            if((std::size_t)DemographicProfile::SexualActivityStatus::NotActive != DemographicProfile::get(entityBuckets.at(j)->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus))
+			{
+				delete(BucketSexualMixing *)entityBuckets.at(j);
+			}
+			else
+			{
+				delete entityBuckets.at(j);
+			}
+		}
+	}
+}
+
 void EntityPool::forEach(std::function<void(Entity *)> callback)
 {
     for(auto bucket : entityBuckets)
@@ -19,6 +134,11 @@ void EntityPool::forEach(std::function<void(Entity *)> callback)
 
         bucket->forEach(callback);
     }
+}
+
+std::vector<DemographicProfile::ProfileID> EntityPool::getProfileIDs()
+{
+	return validProfileIDs;
 }
 
 bool EntityPool::addEntity(Entity *_person)
@@ -465,12 +585,14 @@ void EntityPool::countEntitiesPerAge()
 	std::list<Entity *>::iterator p_Iter;
 
 	// We count everyone's age in years and store it in two gender-specific arrays
-	for (p_Iter = this->begin(DemographicProfile::Gender::Male); p_Iter != this->end(DemographicProfile::Gender::Male); p_Iter++)
+	for (p_Iter = this->begin(DemographicProfile::Gender::Male); p_Iter !=
+            this->end(DemographicProfile::Gender::Male); p_Iter++)
 	{
 		malesPerAge[(*p_Iter)->getAge().in_months()]++;
 	}
 
-	for (p_Iter = this->begin(DemographicProfile::Gender::Female); p_Iter != this->end(DemographicProfile::Gender::Female); p_Iter++)
+	for (p_Iter = this->begin(DemographicProfile::Gender::Female); p_Iter !=
+            this->end(DemographicProfile::Gender::Female); p_Iter++)
 	{
 		femalesPerAge[(*p_Iter)->getAge().in_months()]++;
 	}
@@ -510,97 +632,6 @@ unsigned long EntityPool::sizeByAge(Age minAgeMonths, Age maxAgeMonths)
 
 	}
 	return ageCount;
-}
-
-//creates a New EntityPool
-// @param _SAEntAgeMths age of sexual debut
-EntityPool::EntityPool(Age ageOfMajority, unsigned int _popID, const std::map<SexualPartnership::Type, double> &_assort)
-{
-	//allocate space for Buckets and set to nullptr
-	entityBuckets = std::vector<BucketDemographicProfile *>(DemographicProfile::TotalNumBuckets, nullptr);
-	//this helps us select the buckets we want to use in the sim
-	// initializing to END values will select all buckets
-	DemographicProfile selector;
-	//contains the BucketID's of the buckets we want to use in this simulation
-	std::vector<DemographicProfile::ProfileID> validBucketIDs;
-	//we only want 2 NA buckets (male, female)  b/c they aren't involved in sexual mixing
-	//so instantiate 2 of the NA Buckets (NA, Hetero, nonCSW
-    selector.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::NotActive);
-    //selector.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Heterosexual);
-    selector.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::Single);
-    selector.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::NonCsw);
-	selector.selectProfileIDs(validBucketIDs, nullptr);
-	//check if we only have 2 buckets
-    assert(validBucketIDs.size() == (std::size_t)DemographicProfile::Gender::Last * (std::size_t)DemographicProfile::SexualOrientation::Last);
-	//We want to instantiate all heterosexual SA Buckets
-	selector.set(DemographicProfile::END);
-    selector.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::Active);
-    //selector.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Heterosexual);
-	selector.selectProfileIDs(validBucketIDs, nullptr);
-
-	//instantiate the spaces for all our buckets. The # of buckets depends on class BucketClassifiers
-	//these people are stored in a more complicated BucketDemographicProfile b/c they are involved in sexual mixing
-	for(unsigned int i = 0; i < validBucketIDs.size(); ++i)
-	{
-		DemographicProfile::ProfileID currBucketID = validBucketIDs.at(i);
-
-		//at this point, DemographicProfile still matches the DemographicProfile::SexualActivityStatus::Active
-        if((std::size_t)DemographicProfile::SexualActivityStatus::NotActive == DemographicProfile::get(validBucketIDs.at(i), DemographicProfile::Demographic::SexualActivityStatus))
-		{
-			//make an NA bucket
-			entityBuckets.at(currBucketID) = new BucketDemographicProfile(currBucketID, DemographicProfile::toString(currBucketID), true);
-		}
-		else
-		{
-			//CSW can't be in STEADY relationships
-            bool invalidCombo = ((std::size_t)DemographicProfile::Employment::Csw == DemographicProfile::get(validBucketIDs.at(i), DemographicProfile::Demographic::Employment)) &&
-                ((std::size_t)DemographicProfile::RelationshipStatus::NonSingle == DemographicProfile::get(validBucketIDs.at(i), DemographicProfile::Demographic::RelationshipStatus));
-
-			if(!invalidCombo)
-			{
-				entityBuckets.at(currBucketID) = new BucketSexualMixing(currBucketID, DemographicProfile::toString(currBucketID), _popID,
-                    ageOfMajority, Age::from_months(12 * Entity::maxYrForDeathStats + 1), _assort);
-			}
-		}
-	}
-}
-
-EntityPool::~EntityPool()
-{
-	//Delete all people in allFemales and allMales in order to prevent memory leaks
-	std::list<Entity *>::iterator p_Iter;
-
-	for(auto gender : enum_iterator<DemographicProfile::Gender>())
-	{
-		p_Iter = begin(gender);
-
-		while(p_Iter != end(gender))
-		{
-			Entity *p = (*p_Iter);
-			//Advances p_Iter one in the list, so no increment is necessary
-			p_Iter = removeEntityFromAll(p_Iter);
-			delete p;
-		}
-	}
-
-	allMales.clear();
-	allFemales.clear();
-
-	//iterate through all buckets and delete them
-	for(BaseEnumCls::Enum j = 0; j < entityBuckets.size(); ++j)
-	{
-		if(entityBuckets.at(j) != nullptr)
-		{
-            if((std::size_t)DemographicProfile::SexualActivityStatus::NotActive != DemographicProfile::get(entityBuckets.at(j)->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus))
-			{
-				delete(BucketSexualMixing *)entityBuckets.at(j);
-			}
-			else
-			{
-				delete entityBuckets.at(j);
-			}
-		}
-	}
 }
 
 } // namespace transm

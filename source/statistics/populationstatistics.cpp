@@ -3,8 +3,6 @@
 
 #include "populationstatistics.hpp"
 #include "entities/male.hpp"
-#include "entities/msm.hpp"
-#include "entities/msmw.hpp"
 
 namespace transm {
 
@@ -37,12 +35,7 @@ void PopulationStatistics::RecordEntity(int month, const Entity *entity)
     auto bucket = std::make_tuple(age_group, sexual_activity_status, gender, risk, employment);
     month_stats.pop_size[bucket]++;
 
-    if (gender == DemographicProfile::Gender::Male)
-    {
-        if (entity->getEntityType() == "msw" && ((Male *)entity)->IsCircumcised()) month_stats.num_circumcised[sexual_activity_status]++;
-        else if (entity->getEntityType() == "msm" && ((Msm *)entity)->IsCircumcised()) month_stats.num_circumcised[sexual_activity_status]++;
-        else if (entity->getEntityType() == "msmw" && ((Msmw *)entity)->IsCircumcised()) month_stats.num_circumcised[sexual_activity_status]++;
-    }
+    if (((Male *)entity)->IsCircumcised()) month_stats.num_circumcised[sexual_activity_status]++;
 }
 
 void PopulationStatistics::RecordDeath(int month, Entity::DeathStatus cause_of_death)

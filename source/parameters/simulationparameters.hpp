@@ -7,13 +7,14 @@
 #include "populationparameters.hpp"
 #include "core/intervention.hpp"
 #include "core/targetgroup.hpp"
+#include "entities/demographicprofile.hpp"
 
 namespace transm {
 
 class SimulationParameters
 {
 public:
-    using EntityDistributions = std::unordered_map<std::string, double>;
+    using EntityDistributions = std::vector<DemographicProfile::DoublePair>;
     using TransmissionCoefficients = std::array<double, (std::size_t)Entity::HVLStrata::Last>;
     using TransmissionCoefficientsMap = std::unordered_map<TransmissionType, TransmissionCoefficients>;
     using InterventionsContainer = std::vector<Intervention>;
@@ -53,8 +54,6 @@ public:
     virtual TransmissionCoefficientsMap GetTransmissionCoefficients() const = 0;
     virtual Female::SubPopParams GetFemaleSubPopParams() const = 0;
     virtual Male::SubPopParams GetMaleSubPopParams() const = 0;
-    virtual Msm::SubPopParams GetMsmSubPopParams() const = 0;
-    virtual Msmw::SubPopParams GetMsmwSubPopParams() const = 0;
     virtual InterventionsContainer GetPopulationInterventions() const = 0;
 
 private:
@@ -84,8 +83,6 @@ public:
     /*virtual*/ TransmissionCoefficientsMap GetTransmissionCoefficients() const;
     /*virtual*/ Female::SubPopParams GetFemaleSubPopParams() const;
     /*virtual*/ Male::SubPopParams GetMaleSubPopParams() const;
-    /*virtual*/ Msm::SubPopParams GetMsmSubPopParams() const;
-    /*virtual*/ Msmw::SubPopParams GetMsmwSubPopParams() const;
     /*virtual*/ InterventionsContainer GetPopulationInterventions() const;
 
 private:
@@ -113,13 +110,13 @@ private:
     void SetProportionCircumcisedCallback(pugi::xml_node &node, Intervention &intervention) const;
     void SetCircumciseCallback(pugi::xml_node &node, Intervention &intervention, bool individual) const;
 
-
     // template function for returning different values when calculating transform
     // values in interventions (transform meaning increase or decrease)
     template<typename V>
     V TransformInterventionValue(V target, V curr, Time time, TimeSpan duration, Time current_time) const;
 
     EntityDistributions GetEntityDistributions(pugi::xml_node node) const;
+	inline void NormalizeEntityDistributions(PopulationParameters &parameters) const;
 
     InterventionsContainer GetInterventions(pugi::xml_node interventions_node, bool individual) const;
 

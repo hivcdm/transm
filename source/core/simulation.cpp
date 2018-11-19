@@ -283,14 +283,14 @@ void Simulation::RegisterPopulationIntervention(const Intervention &intervention
     interventions_.push_back(intervention);
 }
 
-Simulation::Simulation(BatchStatus &batch_status)
-	: parameters_(),
-      population_(parameters_),
-      passedCalibration_(true),
-      hasPassedFirstMonthCalibPrev_(false),
-      incidence_(0),
-      prevalence_(0),
-      batch_status_(batch_status)
+Simulation::Simulation(BatchStatus &batch_status) :
+    parameters_(),
+    population_(parameters_),
+    passedCalibration_(true),
+    hasPassedFirstMonthCalibPrev_(false),
+    incidence_(0),
+    prevalence_(0),
+    batch_status_(batch_status)
 {
 }
 

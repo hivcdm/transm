@@ -18,9 +18,11 @@ class Population;
 class InfectionsTracker
 {
 public:
-    template<typename T>
-    using EntityTypeMap = std::unordered_map<std::string, T>;
+	template<typename T>
+    using EntityTypeArray = std::array<T, (std::size_t)DemographicProfile::Gender::Last>;
     using HVLArray = std::array<std::size_t, (std::size_t)Entity::HVLStrata::Last>;
+	using RiskArray = std::array<std::size_t, (std::size_t)Entity::RiskLevel::Last>;
+	using PartnershipArray = std::array<unsigned long, (std::size_t)SexualPartnership::Type::Last>;
     using RiskEmploymentArray = std::array<std::array<std::size_t, (std::size_t)DemographicProfile::Employment::Last>, (std::size_t)Entity::RiskLevel::Last>;
     using DemographicArray = std::array<std::size_t, DemographicProfile::TotalNumBuckets>;
     using DemographicToDemographicArray = std::array<std::array<std::size_t, DemographicProfile::TotalNumBuckets>, DemographicProfile::TotalNumBuckets>;
@@ -49,24 +51,24 @@ private:
     /// </summary>
     std::array<DemographicArray, NUMBER_GENERATIONS_TO_TRACE> currPrevalentInfections;
 
-    EntityTypeMap<RiskEmploymentArray> currPrevalentInfectionsEntityTypeRiskEmployment;
+    EntityTypeArray<RiskEmploymentArray> currPrevalentInfectionsEntityTypeRiskEmployment;
 
 	/// <summary>
     /// This contains prevalent infections of all buckets in an EntityPool 
     /// stratified by age and gender. Should be sync'd w/ curr timestep
     /// </summary>
-	EntityTypeMap<AgeRangeSizeContainer> currPrevalentInfectionsEntityTypeAge;
+	EntityTypeArray<AgeRangeSizeContainer> currPrevalentInfectionsEntityTypeAge;
 
     /// <summary>
     /// This contains prevalent infections of all buckets in an EntityPool 
     /// stratified by entity type. Should be sync'd w/ curr timestep
     /// </summary>
-    EntityTypeMap<std::size_t> currPrevalentInfectionsEntityType;
+    EntityTypeArray<std::size_t> currPrevalentInfectionsEntityType;
 
     /// <summary>
 	/// This contains profileID's that we will include in our traces.
     /// </summary>
-	std::list<DemographicProfile::ProfileID> profileIDsForDetailedTrace;
+	std::vector<DemographicProfile::ProfileID> profileIDsForDetailedTrace;
 
     /// <summary>
 	/// This is a copy of the sim clock. We keep a copy to know when the time has advanced
@@ -82,23 +84,23 @@ private:
 	/// <summary>
     /// Infections in the current time step, stratified by risk and CSW status
     /// </summary>
-    EntityTypeMap<RiskEmploymentArray> currTimeStepIncidentInfsEntityTypeRiskEmployment;
+    EntityTypeArray<RiskEmploymentArray> currTimeStepIncidentInfsEntityTypeRiskEmployment;
 
     /// <summary>
 	/// Infections in the current time step stratified by Age and Gender
     /// </summary>
-    EntityTypeMap<AgeRangeSizeContainer> currTimeStepIncidentInfsEntityTypeAge;
+    EntityTypeArray<AgeRangeSizeContainer> currTimeStepIncidentInfsEntityTypeAge;
 
     /// <summary>
 	/// sum of age of infection and diagnosis for incident infections in current time step
     /// </summary>
-    EntityTypeMap<std::size_t> currTimeStepAgeInfectionSumEntityType;
-    EntityTypeMap<std::size_t> currTimeStepAgeInfectionSumSqEntityType;
-    EntityTypeMap<std::size_t> currTimeStepNumInfectedEntityType;
+    EntityTypeArray<std::size_t> currTimeStepAgeInfectionSumEntityType;
+    EntityTypeArray<std::size_t> currTimeStepAgeInfectionSumSqEntityType;
+    EntityTypeArray<std::size_t> currTimeStepNumInfectedEntityType;
 
-    EntityTypeMap<RiskEmploymentArray> currTimeStepAgeInfectionSumEntityTypeRiskEmployment;
-    EntityTypeMap<RiskEmploymentArray> currTimeStepAgeInfectionSumSqEntityTypeRiskEmployment;
-    EntityTypeMap<RiskEmploymentArray> currTimeStepNumInfectedEntityTypeRiskEmployment;
+    EntityTypeArray<RiskEmploymentArray> currTimeStepAgeInfectionSumEntityTypeRiskEmployment;
+    EntityTypeArray<RiskEmploymentArray> currTimeStepAgeInfectionSumSqEntityTypeRiskEmployment;
+    EntityTypeArray<RiskEmploymentArray> currTimeStepNumInfectedEntityTypeRiskEmployment;
 
     /// <summary>
     /// sum of cd4 at transmission for incident infection in current time step
@@ -112,11 +114,11 @@ private:
     /// </summary>
 	AgeRangeSizeContainer totalIncidentInfsAge;
 
-    EntityTypeMap<std::size_t> totalIncidentInfsEntityType;
-    EntityTypeMap<RiskEmploymentArray> totalIncidentInfsEntityTypeRiskEmployment;
+    EntityTypeArray<std::size_t> totalIncidentInfsEntityType;
+    EntityTypeArray<RiskEmploymentArray> totalIncidentInfsEntityTypeRiskEmployment;
 
-    std::array<std::size_t, (std::size_t)Entity::RiskLevel::Last> totalIncidentInfsRiskCSW;
-    std::array<std::size_t, (std::size_t)Entity::RiskLevel::Last> totalIncidentInfsRisk;
+    RiskArray totalIncidentInfsRiskCSW;
+    RiskArray totalIncidentInfsRisk;
 
     /// <summary>
 	/// Exposures in the current time step, stratified by HVL of the infector.
@@ -124,13 +126,13 @@ private:
 	/// </summary>
 	HVLArray currTimeExposures;
 	unsigned long currTimeTotalExposures;
-	std::array<unsigned long, (std::size_t)SexualPartnership::Type::Last> currTimeExposuresByType;
+	PartnershipArray currTimeExposuresByType;
 
 	/// <summary>
 	/// Number of times a condom was used this time step by partnership type
 	/// </summary>
 	unsigned long currTimeCondomUse;
-	std::array<unsigned long, (std::size_t)SexualPartnership::Type::Last> currTimeCondomUseByType;
+	PartnershipArray currTimeCondomUseByType;
 
 	/// <summary>
 	/// A queue of the last twelve incidence rates, used to generate a yearly incidence
@@ -147,7 +149,7 @@ private:
     /// </summary>
     std::array<DemographicToDemographicArray, (std::size_t)SexualPartnership::Type::Last> incidentInfectionsByDemographic;
 
-    std::array<std::array<std::array<std::size_t, 4>, 4>, (std::size_t)SexualPartnership::Type::Last> incidentInfectionsByEntityType;
+    std::array<EntityTypeArray<EntityTypeArray<std::size_t>>, (std::size_t)SexualPartnership::Type::Last> incidentInfectionsByEntityType;
 
 public :
 
@@ -155,6 +157,9 @@ public :
 	/// @param _profileIDsToPrint this determines which ProfileID's will be printed in traces. If a ProfileID is not in this vector, then no infections involving them will be printed in traces
     /// </summary>
 	InfectionsTracker();
+
+	/* This happens after we parse the active demographic profiles so the arrays can be zero-ed out*/
+	void Initialize();
 
 	/**
 	This will add any _profileID's that we would like to know about. any _profileID's added by this function
@@ -214,13 +219,13 @@ public :
 	initializes the counters for incident infections by age and gender
 	**/
     void initializeIncidentInfectionsByAge(
-        const std::unordered_map<std::string, AgeRangeSizeContainer> &incident_by_entity_type_age,
+        const EntityTypeArray<AgeRangeSizeContainer> &incident_by_entity_type_age,
         const AgeRangeSizeContainer &incident_by_age);
 
 	//takes values of _prevalence and copies into internal prevalence representation BucketDemographicProfile (keyed by _classifierVal)
 	void setPrevalentInfections(std::array<DemographicArray, NUMBER_GENERATIONS_TO_TRACE> _prevalenceByBucket,
-								const EntityTypeMap<AgeRangeSizeContainer> &_prevalenceByEntityTypeAge,
-	                            EntityTypeMap<RiskEmploymentArray> _PrevalenceByRiskGenderEmployment);
+								const EntityTypeArray<AgeRangeSizeContainer> &_prevalenceByEntityTypeAge,
+	                            EntityTypeArray<RiskEmploymentArray> _PrevalenceByRiskGenderEmployment);
 
 	//prints both flings and couple infections (who infected whom) 1 row = 1 month
 	/**
@@ -231,7 +236,7 @@ public :
 	int printInfections(EventParams &_eventParams, Time time, std::ostream &_outStream, Population *_population);
 
     /// <summary>
-    /// Returns total number of incident infections that have occurred during 
+    /// Returns total number of incident infections that have occurred during
     /// current timestep.
     /// </summary>
     std::size_t getCurrTimeStepIncidentInfsTotal();

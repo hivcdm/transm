@@ -26,6 +26,7 @@ public:
 
     void Update(EventParams &parameters)
     {
+		auto entityTypes =  {"MSW", "MSMW", "MSM", "female"};
         std::vector<double> current_row;
 
         for(auto &group : *group_container_)
@@ -44,7 +45,7 @@ public:
                     current_row.push_back((int)std::get<2>(age_range));
                 }
 
-                for(auto entity_type : {"msw", "msmw", "msm", "female"})
+                for(auto entity_type : entityTypes)
                 {
                     current_row.push_back((int)summary.pop_size_na_entity_type[entity_type]);
                     for(auto &age_range : summary.sa_size_by_age_range_entity_type[entity_type])
@@ -64,8 +65,7 @@ public:
                 {
                     current_row.push_back((int)std::get<2>(age_range));
                 }
-
-                for(auto entity_type : {"msw", "msmw", "msm", "female"})
+                for(auto entity_type : entityTypes)
                 {
                     current_row.push_back((int)summary.incident_entity_type[entity_type]);
                     for(auto &age_range : summary.incident_by_age_range_entity_type[entity_type])
@@ -86,7 +86,7 @@ public:
                     current_row.push_back((int)std::get<2>(age_range));
                 }
 
-                for(auto entity_type : {"msw", "msmw", "msm", "female"})
+                for(auto entity_type : entityTypes)
                 {
                     current_row.push_back((int)summary.prevalent_entity_type[entity_type]);
                     for(auto &age_range : summary.prevalent_by_age_range_entity_type[entity_type])
@@ -157,7 +157,8 @@ public:
         {
             for(auto partition : group.GetPartitionNames())
             {
-				file << "Population Sizes			Male Population Sizes										Male : Msw Population Sizes										Male : Msmw Population Sizes										Male : Msm Population Sizes										Female Population Sizes																				Incident Cases																																																													Prevalent Cases																																																													Costs/LMs						";
+
+				file << "Population Sizes			Male Population Sizes										Male:Msw Population Sizes										Male:Msmw Population Sizes										Male:Msm Population Sizes										Female Population Sizes																				Incident Cases																																																													Prevalent Cases																																																													Costs/LMs						";
             }
         }
 

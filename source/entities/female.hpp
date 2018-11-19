@@ -58,7 +58,8 @@ public:
 	//the parameters match the ones in Person(...)
 	@author schung5
 	**/
-	Female(EventParams &_eventParams, Age age, unsigned int _populationID, const Female::SubPopParams &params);
+	Female(EventParams &_eventParams, Age age, const DemographicProfile &profile,
+	    unsigned int _populationID, const Female::SubPopParams &params);
 	~Female(void);
 
     bool IsCircumcised() const { return false; }
@@ -111,7 +112,6 @@ public:
 	/** Start: Inherited from Person, comments found there **/
 
 	/**
-	As of 9/8/08, this only assumes heterosexual relationships.
 	@return the force of infection for this female infecting an uninfected male
 	@author schung5
 	**/
@@ -132,9 +132,11 @@ public:
 
     void Circumcise();
 
-	void rerollRiskGroup(EventParams &_eventParams);
+    void rerollRiskGroup(EventParams &_eventParams);
 
-	double getChanceBecomeCsw() const;
+    double getChanceBecomeCsw() const;
+
+    bool PassedCSWEndAge() const { return (getAge() >= populationSpecificParams.GetCswEndAge()); }
 
     void SetChanceCondomUsePerEvent(Entity::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng);
 	void SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, double meanEvents);

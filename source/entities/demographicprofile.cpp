@@ -9,17 +9,6 @@
 
 namespace transm {
 
-//declare strings of Enums
-const std::vector<std::string> demographicStrs = {"SEXUAL_ACTIVITY_STATUS", "GENDER", "SEXUAL_ORIENTATION", "RELATIONSHIP_STATUS", "EMPLOYMENT"};
-
-const std::vector<std::vector<std::string>> enumStrs =
-{
-	{"SA", "NA"},
-	{"MALE", "FEMALE"},
-	{"MSW", "MSMW", "MSM"},
-	{"NON_SINGLE", "SINGLE"},
-	{"NON_CSW", "CSW"}
-};
 DemographicProfile::Demographic DemographicProfile::MaxDemographic = DemographicProfile::Demographic((std::size_t)DemographicProfile::Demographic::Last - 1);
 
 std::vector<BaseEnumCls> DemographicProfile::DemographicEnumCls;
@@ -321,7 +310,6 @@ void DemographicProfile::set(DemographicProfile::Demographic _demographic, BaseE
     enums[(std::size_t)_demographic] = _enum;
 }
 
-
 void DemographicProfile::set(DemographicProfile::ProfileID _profileID)
 {
 	assert((_profileID == DemographicProfile::END) || Utility::within_range(_profileID, DemographicProfile::MIN, DemographicProfile::MAX));
@@ -394,6 +382,17 @@ const BaseEnumCls *DemographicProfile::getEnumCls(DemographicProfile::Demographi
     return &(DemographicProfile::DemographicEnumCls.at((std::size_t)_demographic));
 }
 
+const DemographicProfile DemographicProfile::getDemographics(ProfileID _profileID)
+{
+	assert(Utility::within_range(_profileID, DemographicProfile::MIN, DemographicProfile::MAX));
+	return *DemographicProfile::ProfileIDtoProfile[_profileID];
+}
+
+const DemographicProfile::ProfileID DemographicProfile::getProfileID(DemographicProfile _profile)
+{
+	return DemographicProfile::ProfileToProfileID[_profile];
+}
+
 const string *DemographicProfile::getString(ProfileID _profileID, Demographic _demographic)
 {
 	assert(Utility::within_range(_profileID, DemographicProfile::MIN, DemographicProfile::MAX));
@@ -416,11 +415,16 @@ const string *DemographicProfile::toString(ProfileID _profileID)
 
 void DemographicProfile::initEnums()
 {
-	DemographicProfile::DemographicEnumCls.push_back(EnumCls<SexualActivityStatus>(enumStrs[(std::size_t)DemographicProfile::Demographic::SexualActivityStatus]));
-    DemographicProfile::DemographicEnumCls.push_back(EnumCls<Gender>(enumStrs[(std::size_t)DemographicProfile::Demographic::Gender]));
-    DemographicProfile::DemographicEnumCls.push_back(EnumCls<SexualOrientation>(enumStrs[(std::size_t)DemographicProfile::Demographic::SexualOrientation]));
-    DemographicProfile::DemographicEnumCls.push_back(EnumCls<RelationshipStatus>(enumStrs[(std::size_t)DemographicProfile::Demographic::RelationshipStatus]));
-    DemographicProfile::DemographicEnumCls.push_back(EnumCls<Employment>(enumStrs[(std::size_t)DemographicProfile::Demographic::Employment]));
+    DemographicProfile::DemographicEnumCls.push_back(EnumCls<SexualActivityStatus>(
+	  DemographicEnumStrs[(std::size_t)DemographicProfile::Demographic::SexualActivityStatus]));
+    DemographicProfile::DemographicEnumCls.push_back(EnumCls<Gender>(
+	  DemographicEnumStrs[(std::size_t)DemographicProfile::Demographic::Gender]));
+    DemographicProfile::DemographicEnumCls.push_back(EnumCls<SexualOrientation>(
+	  DemographicEnumStrs[(std::size_t)DemographicProfile::Demographic::SexualOrientation]));
+    DemographicProfile::DemographicEnumCls.push_back(EnumCls<RelationshipStatus>(
+	  DemographicEnumStrs[(std::size_t)DemographicProfile::Demographic::RelationshipStatus]));
+    DemographicProfile::DemographicEnumCls.push_back(EnumCls<Employment>(
+	  DemographicEnumStrs[(std::size_t)DemographicProfile::Demographic::Employment]));
 }
 
 void DemographicProfile::initProfileIDMap()
@@ -458,7 +462,7 @@ void DemographicProfile::initProfileIDMap()
         for(Demographic category = DemographicProfile::Demographic((std::size_t)DemographicProfile::Demographic::Last - 1);
             category >= DemographicProfile::Demographic(0); category = DemographicProfile::Demographic((std::size_t)category - 1))
 		{
-			//Don't print out SA and HETERO (for now -- too redundant)
+			//Don't print out SA (for now -- too redundant)
 			if(category != DemographicProfile::Demographic::SexualActivityStatus)
 			{
                 currEnumStr << *(DemographicProfile::DemographicEnumCls.at((std::size_t)category).toString(currDemographicProfile.get(category)));

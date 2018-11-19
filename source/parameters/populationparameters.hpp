@@ -1,12 +1,12 @@
 #pragma once
 
-#include "entities/msmw.hpp"
+#include "entities/demographicprofile.hpp"
 #include "entities/female.hpp"
 #include "entities/male.hpp"
-#include "entities/msm.hpp"
 #include "entities/transmissiontype.hpp"
-#include "statistics/coststracker.hpp"
 #include "parameters/agebucketprevalenceinfo.hpp"
+#include "parameters/agerangesizecontainer.hpp"
+#include "statistics/coststracker.hpp"
 #include "utility/time.hpp"
 
 namespace transm {
@@ -81,29 +81,26 @@ public:
 	  return gender;
       }
     };
-    
+
     void AddInfectionTarget(const PopulationTarget &target, std::size_t number)
     {
 	initial_infection_targets_.push_back({target, number});
     }
-	    
 
-	bool GetUseBirthRate() { return useBirthRate; } const
-	void SetUseBirthRate(bool value) { useBirthRate = value; }
-	double GetBirthRate() { return birthRate; } const
-	void SetBirthRate(double birth_rate) { birthRate = birth_rate; }
+    bool GetUseBirthRate() { return useBirthRate; } const
+    void SetUseBirthRate(bool value) { useBirthRate = value; }
+    double GetBirthRate() { return birthRate; } const
+    void SetBirthRate(double birth_rate) { birthRate = birth_rate; }
 
-	std::vector<FertilityRate> GetFertilityRates() const { return fertilityRates; }
-	void ClearFertilityRates() { fertilityRates.clear(); }
-	void PushFertilityRate(FertilityRate rate) { fertilityRates.push_back(rate); }
+    std::vector<FertilityRate> GetFertilityRates() const { return fertilityRates; }
+    void ClearFertilityRates() { fertilityRates.clear(); }
+    void PushFertilityRate(FertilityRate rate) { fertilityRates.push_back(rate); }
 
-	double GetProportionCircumcised() const { return proportionCircumcised; }
-	void SetProportionCircumcised(double value) { proportionCircumcised = value; }
-
-	double GetBirthProportion(const std::string &entity_type) const
-		{ return birthProportions.at(entity_type); }
-	void SetBirthProportion(const std::string &entity_type, double proportion)
-		{ birthProportions[entity_type] = proportion; }
+	const std::vector<DemographicProfile::DoublePair> &GetBirthProportions() const
+	{ return birthProportions; }
+	double GetBirthProportion(DemographicProfile profile);
+    void SetBirthProportion(DemographicProfile profile, double proportion)
+	{ birthProportions.push_back(DemographicProfile::DoublePair(profile, proportion)); }
 
 	Age GetAgeOfMajority() const { return ageOfMajority; }
 	void SetAgeOfMajority(Age age) { ageOfMajority = age; }
@@ -116,8 +113,6 @@ public:
 
 	const Male::SubPopParams &GetMaleParameters() const { return defaultMaleParams; }
 	void SetMaleParameters(Male::SubPopParams &params) { defaultMaleParams = params; }
-    void SetMsmParameters(Msm::SubPopParams &params) { defaultMsmParams = params; }
-    void SetBiMaleParameters(Msmw::SubPopParams &params) { defaultMsmwParams = params; }
 	const Female::SubPopParams &GetFemaleParameters() const { return defaultFemaleParams; }
 	void SetFemaleParameters(Female::SubPopParams &params) { defaultFemaleParams = params; }
 
@@ -129,7 +124,8 @@ public:
     void SetSexualActivityDelay(TimeSpan delay) { sexualActivityDelay = delay; }
     TimeSpan GetSexualActivityDelay() const { return sexualActivityDelay; }
 
-    void SetAssortativeness(SexualPartnership::Type partnership_type, double assortativeness) { defaultMaleParams.getSexualBehavior(partnership_type).setAssortativeness(assortativeness); }
+    void SetAssortativeness(SexualPartnership::Type partnership_type, double assortativeness)
+		{ defaultMaleParams.getSexualBehavior(partnership_type).setAssortativeness(assortativeness); }
 
 	int GetInitialSize() const { return initSize; }
 	void SetInitialSize(int size) { initSize = size; }
@@ -140,6 +136,10 @@ public:
 	const std::vector<AgeBucketPrevalenceInfo> &GetInitialAgeBuckets() const { return initialAgeBuckets; }
 	std::vector<AgeBucketPrevalenceInfo> &GetInitialAgeBuckets() { return initialAgeBuckets; }
 
+	// create a list of age ranges from the initial age buckets
+	void SetAgeRanges();
+	std::vector<AgeRange> GetAgeRanges() const { return ageRanges; }
+
 	void SetSeedDelay(int delay) { seedDelay = Time().from_months(delay); }
 	Time GetSeedDelay() { return seedDelay; }
 	void SetSeedPrevalence(double prev) { seedPrevalence = prev; }
@@ -147,38 +147,32 @@ public:
 	void SetUseSeedCoefficients(bool useCoeffs) { useSeedCoefficients = useCoeffs; }
 	bool UseSeedCoefficients() { return useSeedCoefficients; }
 
-	void SetInitialCswProportion(const std::string &entity_type, double proportion) { initProbCSW[entity_type] = proportion; }
-    void SetCswEndAge(const std::string &entity_type, Age age) { CSWEndAge[entity_type] = age; }
-
-	void SetChanceBecomeCsw(DemographicProfile::Gender gender, double chance)
-	{
-		switch(gender)
-		{
-        case DemographicProfile::Gender::Male: 
-            defaultMaleParams.SetChanceBecomeCsw(chance);
-            break;
-        case DemographicProfile::Gender::Female:
-            defaultFemaleParams.SetChanceBecomeCsw(chance);
-            break;
-		default: 
-           throw std::runtime_error("bad gender");
-		}
+    void SetChanceBecomeCsw(DemographicProfile::Gender gender, double chance) {
+	switch(gender) {
+	case DemographicProfile::Gender::Male:
+	    defaultMaleParams.SetChanceBecomeCsw(chance);
+	    break;
+	case DemographicProfile::Gender::Female:
+	    defaultFemaleParams.SetChanceBecomeCsw(chance);
+	    break;
+	default:
+	    throw std::runtime_error("bad gender");
 	}
+    }
 
-	void SetProportionHighRisk(DemographicProfile::Gender gender, DemographicProfile::Employment employment, double proportion)
-	{
-		switch(gender)
-		{
-		case DemographicProfile::Gender::Male:
-            defaultMaleParams.SetProportionHighRisk(employment, proportion);
-            break;
-		case DemographicProfile::Gender::Female:
-           defaultFemaleParams.SetProportionHighRisk(employment, proportion);
-           break;
-		default:
-            throw std::runtime_error("bad gender");
-		}
+    void SetProportionHighRisk(DemographicProfile::Gender gender, DemographicProfile::Employment employment, double proportion)
+    {
+	switch(gender) {
+	case DemographicProfile::Gender::Male:
+	    defaultMaleParams.SetProportionHighRisk(employment, proportion);
+	    break;
+	case DemographicProfile::Gender::Female:
+	    defaultFemaleParams.SetProportionHighRisk(employment, proportion);
+	    break;
+	default:
+	    throw std::runtime_error("bad gender");
 	}
+    }
 
 	void SetAverageYearsYounger(SexualPartnership::Type type, NormalDist dist) { defaultMaleParams.SetAverageYearsYounger(type, dist); }
 
@@ -188,6 +182,9 @@ public:
 	const BetaDist GetChanceCondomUsePerEvent(Entity::RiskLevel risk, SexualPartnership::Type type)
 	{ return defaultMaleParams.getSexualBehavior(type).getChanceCondomUsePerEvent(risk); }
 	void SetPartnershipDuration(Entity::RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { defaultMaleParams.SetPartnershipDuration(risk, type, dist); }
+
+    double GetProportionCircumcised() const { return defaultMaleParams.GetProportionCircumcised(); }
+    void SetProportionCircumcised(double value) { defaultMaleParams.SetProportionCircumcised(value); }
 
 	void SetPartnerAcquisitionSteadyMultiplier(Entity::RiskLevel risk, double multiplier) { defaultMaleParams.SetPartnerAcqMultWithSteady(risk, multiplier); }
 
@@ -218,24 +215,13 @@ private:
 
     TimeSpan sexualActivityDelay;
 
-    std::unordered_map<std::string, double> birthProportions;
-
-	double proportionCircumcised;
+    std::vector<DemographicProfile::DoublePair> birthProportions;
 
     /// <summary>
-    /// initial proportion of pop as CSW
-    /// </summary>
-    std::unordered_map<std::string, double> initProbCSW;
-
-    /// <summary>
-    /// max age of csw in months
-    /// </summary>
-    std::unordered_map<std::string, Age> CSWEndAge;
-
-    /// <summary>
-    /// prevalence parameters stratified by age.
+    /// popilation proportions stratified by age.
     /// </summary>
 	std::vector<AgeBucketPrevalenceInfo> initialAgeBuckets;
+	std::vector<AgeRange> ageRanges;
 
     /// <summary>
     /// initial infection targets
@@ -260,16 +246,6 @@ private:
     /// holds the population-level parameters for population of heterosexual males
     /// </summary>
 	Male::SubPopParams defaultMaleParams;
-
-    /// <summary>
-    /// holds the population-level parameters for population of msms
-    /// </summary>
-    Msm::SubPopParams defaultMsmParams;
-
-    /// <summary>
-    /// holds the population-level parameters for population of msmws
-    /// </summary>
-    Msmw::SubPopParams defaultMsmwParams;
 
     /// <summary>
     /// holds the population-level parameters for population of females

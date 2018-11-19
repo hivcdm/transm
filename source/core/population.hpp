@@ -110,11 +110,6 @@ public:
 	bool PassesPartnershipCalibration(EventParams &_eventParams);
 
     /// <summary>
-    /// create birthRate * currSize people who are age 0 and add them to the DemographicProfile::SexualActivityStatus::NotActive population
-    /// </summary>
-	void Births(EventParams &_eventParams);
-
-    /// <summary>
     /// everyone in population ages one year
     /// infected persons age another month in CEPAC
     /// </summary>
@@ -179,17 +174,17 @@ public:
     /// <summary>
     /// returns internal count of how big the current population is
     /// </summary>
-    std::size_t GetSize(const std::string &entity_type);
+    std::size_t GetSize(DemographicProfile::ProfileID profileID);
 
     /// <summary>
     /// returns internal count of how big the current population is
     /// </summary>
-    std::size_t GetSASize(const std::string &entity_type, Entity::RiskLevel _risk);
+    std::size_t GetSASize(DemographicProfile::ProfileID profileID, Entity::RiskLevel _risk);
 
     /// <summary>
     /// returns internal count of how big the current population is
     /// </summary>
-    std::size_t GetCSWSize(const std::string &entity_type, Entity::RiskLevel _risk);
+    std::size_t GetCSWSize(DemographicProfile::ProfileID profileID, Entity::RiskLevel _risk);
 
     /// <summary>
     ///
@@ -216,6 +211,8 @@ private:
     friend class Intervention;
     friend class SimulationBuilderXml;
     friend class Simulation;
+    friend class PopulationStatistics;
+    friend class InfectionsTracker;
 
 	/// <summary>
 	/// forms creates partnerships of a particular type for 1 person. Will make sure that each partner is in the correct BucketDemographicProfile
@@ -230,7 +227,8 @@ private:
 	/// @param _forceNumPartnersOne if true will force _initiator to create just one partnership of type _partnership type (useful for initial regular partnerships
 	/// @return number of partnerships formed
     /// </remarks>
-	unsigned long CreatePartnerships(EventParams &_eventParams, Entity *_initiator, std::list<Entity *>::iterator *_p_Iter,
+	unsigned long CreatePartnerships(EventParams &_eventParams, Male *_initiator,
+					 std::list<Entity *>::iterator *_p_Iter,
 	                                 SexualPartnership::Type _partnershipType, bool _forceNumPartnersOne = false);
 
     /// <summary>
@@ -238,25 +236,32 @@ private:
     /// </summary>
 	void DissolveSexualPartnerships(EventParams &_eventParams, Entity *_initiator,
 	                                std::list<SexualPartnership *> &_partnershipsToEnd);
+    
     /// <summary>
+    /// create birthRate * currSize people who are age 0 and add them to the DemographicProfile::SexualActivityStatus::NotActive population
+    /// </summary>
+    void Births(EventParams &_eventParams);
+
+	/// <summary>
     /// create the initial people in the population
     /// </summary>
     void GenerateInitialEntities();
 
-    /// <summary>
+	/// <summary>
     /// function used by both GenerateInitialEntities and Births to create the
-    /// people in the population
+	/// people in the population
     /// </summary>
-    void GenerateEntities(const std::string &entity_type, unsigned long numToCreate,
-	AgeRange *ageRange);
+	void GenerateEntities(const DemographicProfile &profile, unsigned long numInProfileToCreate,
+		AgeRange *ageRange);
 
     /// <summary>
     /// @param _gender gender of person we want to create
-    /// @param _ageBucketParams	parameters that determine a prevalent person's characteristics. If this is nullptr, then this method will create a newborn
+    /// @param _ageBucketParams	parameters that determine a prevalent person's characteristics.
+	///  If this is nullptr, then this method will create a newborn
     /// @return a newly formed person
     /// </summary>
-    Entity *GenerateEntity(EventParams &_eventParams, const std::string &entity_type,
-        Age age, bool toTrace);
+	Entity *GenerateEntity(EventParams &_eventParams, const DemographicProfile &profile,
+	                       Age age, bool toTrace);
 
 	/// <summary>
 	/// helper funtions for ApplyIncidentPrevalence()
@@ -305,7 +310,8 @@ private:
 	/// @param _time the current time in the simulation
 	/// @param _outStream the stream to print
     /// </summary>
-	void PrintPopulation(EventParams &_eventParams, Time _time, std::ostream &_outStream);
+    void PrintPopulationHeaders(Time _time, std::ostream &_outStream);
+    void PrintPopulation(EventParams &_eventParams, Time _time, std::ostream &_outStream);
 
     /// <summary>
     /// this is called at end of each month to print statistics about the behavior of the population to the Behavior.out file
@@ -375,12 +381,12 @@ private:
     /// <summary>
 	/// Size of CSW's by Risk
     /// </summary>
-    std::size_t currSizeRiskCSW[(std::size_t)Entity::RiskLevel::Last];
+    RiskArray currSizeRiskCSW;
 
     /// <summary>
 	/// Size of CSW's by Risk and gender
     /// </summary>
-    std::unordered_map<std::string, RiskArray> currSizeEntityTypeRiskCSW;
+    std::unordered_map<DemographicProfile::ProfileID, RiskArray> currSizeEntityTypeRiskCSW;
 
     /// <summary>
 	/// Size by gender
@@ -390,17 +396,17 @@ private:
     /// <summary>
     /// Size by entity type.
     /// </summary>
-    std::unordered_map<std::string, std::size_t> currSizeEntityType;
+    std::unordered_map<DemographicProfile::ProfileID, std::size_t> currSizeEntityType;
 
     /// <summary>
 	/// non-sexually active by gender
     /// </summary>
-    std::unordered_map<std::string, std::size_t> currNASizeByEntityType;
+    std::unordered_map<DemographicProfile::ProfileID, std::size_t> currNASizeByEntityType;
 
     /// <summary>
 	/// sexually active by risk and gender
     /// </summary>
-    std::unordered_map<std::string, RiskArray> currSASizeEntityTypeRisk;
+    std::unordered_map<DemographicProfile::ProfileID, RiskArray> currSASizeEntityTypeRisk;
 
     /// <summary>
 	/// Num Died this month by Death Cause
@@ -409,7 +415,7 @@ private:
 
     /// <summary>
     /// </summary>
-	std::unordered_map<std::string, AgeRangeSizeContainer> currSizeByEntityTypeAgeRange;
+    std::unordered_map<DemographicProfile::ProfileID, AgeRangeSizeContainer> currSizeByEntityTypeAgeRange;
 
     /// <summary>
 	/// The people who are infected but still untreated (Only used for rollout)
@@ -436,6 +442,9 @@ private:
     /// </summary>
 	std::unique_ptr<EntityPool> entities;
 
+    // List of available demograhpic profile generated by EntityPool
+    std::vector<DemographicProfile::ProfileID> demographicProfileIDs;
+
     /// <summary>
 	/// fling initiators -- use BucketSexualMixing, not BucketDemographicProfile because all persons
 	/// participating in partnerships are sexually active by definition
@@ -451,14 +460,13 @@ private:
 	/// not BucketDemographicProfile because all persons participating in partnerships are sexually
 	/// active by definition
     /// </summary>
-	using BehaviorPair = std::pair<DemographicProfile::SexualOrientation, SexualPartnership::Type>;
-	std::map<BehaviorPair, std::vector<BucketSexualMixing *>> potentialPartnerBuckets;
+	std::map<SexualPartnership::Type, std::vector<BucketSexualMixing *>> potentialPartnerBuckets;
 
 	/// <summary>
     /// stores weights of each eligible bucket. we keep this as a separate vector so we can
 	/// use pre-existing normalization and random index chooser functions.
     /// </summary>
-	std::map<BehaviorPair, std::vector<double>> eligibleBucketWeights;
+	std::map<SexualPartnership::Type, std::vector<double>> eligibleBucketWeights;
 
     /// <summary>
     /// </summary>

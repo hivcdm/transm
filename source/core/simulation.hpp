@@ -19,8 +19,6 @@
 
 namespace transm {
 
-class InfectionsTracker;
-
 class Simulation
 {
 public:

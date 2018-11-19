@@ -17,7 +17,7 @@ public:
 	using pointer = enum_type*;
     using iterator_category = std::random_access_iterator_tag;
 
-	enum_iterator() :value() {}
+	enum_iterator() : value() {}
 	enum_iterator(const enum_iterator& rhs) : value(rhs.value) {}
 	explicit enum_iterator(enum_type value_) : value(value_) {}
 	~enum_iterator() {}

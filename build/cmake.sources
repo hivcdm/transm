@@ -9,8 +9,6 @@ set(TRANSM_SOURCE_FILES
 ../source/entities/entity.hpp
 ../source/entities/female.hpp
 ../source/entities/male.hpp
-../source/entities/msm.hpp
-../source/entities/msmw.hpp
 ../source/entities/sexualbehavior.hpp
 ../source/entities/sexualpartnership.hpp
 ../source/entities/transmissiontype.hpp
@@ -61,8 +59,6 @@ set(TRANSM_SOURCE_FILES
 ../source/entities/entity.cpp
 ../source/entities/female.cpp
 ../source/entities/male.cpp
-../source/entities/msm.cpp
-../source/entities/msmw.cpp
 ../source/entities/sexualbehavior.cpp
 ../source/entities/sexualpartnership.cpp
 ../source/entitypool/bucketage.cpp
