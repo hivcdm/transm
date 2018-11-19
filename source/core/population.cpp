@@ -179,39 +179,30 @@ void Population::Births(EventParams &parameters_)
 {
     unsigned long numBorn = 0;
     if (GetParameters().GetUseBirthRate())
-	{
-		// get numBorn from birth rate
-		numBorn = Utility::round<unsigned long>(currSize * popWideParams.birthRate);
+    {
+	// get numBorn from birth rate
+	numBorn = Utility::round<unsigned long>(currSize * popWideParams.birthRate);
     }
-	else
-	{
-		// get numBorn from fertility rates
-		// numBorn = sum((rate*females) / 1000
-		double sumRates = 0.0;
-		for ( auto rate : popWideParams.GetFertilityRates()) {
-			int numFemales = entities->sizeByAgeFemales(rate.Lower(), rate.Upper());
-			sumRates += rate.Rate() * numFemales;
-		}
-		numBorn = Utility::round<unsigned long>(sumRates / 1000);
-    }
-
-	for (auto entity_type : { "male", "msmw", "msm", "female" })
-	{
-	    std::string xml_entity_type = (std::strcmp(entity_type, "male") == 0) ? "hetero-male" : entity_type;
-		unsigned long numToCreate = Utility::round<unsigned long>(numBorn *
-			popWideParams.birthProportions[xml_entity_type]);
-		for (auto i = 0; i < numToCreate; i++)
-		{
-			bool toTrace = parameters_.currTime >= parameters_.monthTraceNewborns
-			  && parameters_.numNewbornsTraced < parameters_.numNewbornsToTrace;
-			if(toTrace) parameters_.numNewbornsTraced++;
-
-			auto person = GenerateEntity(parameters_, entity_type, nullptr, toTrace);
-
-			//add the created person to the EntityPool
-			entities->addEntityToAll(person);
-		}
+    else
+    {
+	// get numBorn from fertility rates
+	// numBorn = sum((rate*females) / 1000
+	double sumRates = 0.0;
+	for ( auto rate : popWideParams.GetFertilityRates()) {
+	    int numFemales = entities->sizeByAgeFemales(rate.Lower(), rate.Upper());
+	    sumRates += rate.Rate() * numFemales;
 	}
+	numBorn = Utility::round<unsigned long>(sumRates / 1000);
+    }
+
+    for (std::string entity_type : { "male", "msmw", "msm", "female" })
+    {
+	std::string xml_entity_type = (entity_type == "male") ?
+	    "hetero-male" : entity_type;
+	double value = popWideParams.birthProportions[xml_entity_type];
+	unsigned long numToCreate = Utility::round<unsigned long>(numBorn * value);
+	GenerateEntities(entity_type, numToCreate, nullptr);
+    }
 }
 
 //Updates the age buckets for use with life expectancy
@@ -1038,53 +1029,104 @@ void Population::DissolveSexualPartnerships(EventParams &parameters_, Entity *_i
 	}
 }
 
-Entity *Population::GenerateEntity(EventParams &parameters_, const std::string &entity_type,
-                                   AgeBucketPrevalenceInfo *_ageBucketParams, bool toTrace)
+/*
+ * The params.xml file should have detailed the  characteristics of each age bucket.
+ * We will go through each age bucket and create the part of the prevalent population that
+ * falls within the bucket.
+ */
+void Population::GenerateInitialEntities()
 {
-	Entity *toReturn = nullptr;	//pointer to the person that was just generated
-	//determine age of current person. If we have no age _ageBucketParams, then this is a newborn.
-	//Otherwise, generate an age from a uniform distribution bounded by _ageBucketParams
-	auto age = Age::from_months((_ageBucketParams == nullptr) ? 0 : parameters_.randomNums.randInt(_ageBucketParams->minAgeMth.in_months(),
-	             _ageBucketParams->maxAgeMth.in_months()));
+    std::vector<AgeRange> ageRanges;
+    for(auto &ageBucketParams : popWideParams.GetInitialAgeBuckets())
+    {
+        AgeRange ageRange = {ageBucketParams.minAgeMth, ageBucketParams.maxAgeMth};
+	ageRanges.push_back(ageRange);
 
-	//create the person
-	if(entity_type != "female")
-	    {
-		auto circumcised = parameters_.randomNums.chance(popWideParams.proportionCircumcised);
-		if(entity_type == "male")
-		    {
-			toReturn = new Male(parameters_, age, circumcised,
-					    populationID, popWideParams.defaultMaleParams);
-		    }
-		else if(entity_type == "msm")
-		    {
-			toReturn = new Msm(parameters_, age, circumcised,
-					   populationID, popWideParams.defaultMsmParams);
-		    }
-		else if(entity_type == "msmw")
-		    {
-			toReturn = new Msmw(parameters_, age, circumcised,
-					    populationID, popWideParams.defaultMsmwParams);
-		    }
-		else
-		    {
-			throw std::runtime_error("unsupported entity type");
-		    }
+	for (std::string entity_type : { "male", "msmw", "msm", "female" })
+	{
+	    std::string xml_entity_type = (entity_type == "male") ?
+		"hetero-male" : entity_type;
+	    double entityProp = ageBucketParams.entityProportions[xml_entity_type];
+	    double birthProp = popWideParams.birthProportions[xml_entity_type];
+	    unsigned long numToCreate = Utility::round<unsigned long>(
+		popWideParams.GetInitialSize() * entityProp  * birthProp); 
+	    GenerateEntities(entity_type, numToCreate, &ageRange);
+	}
+    }
 
-		if(circumcised) {
-			auto discount = parameters_.useRollout ?
-			    parameters_.untreatedContext->getRunSpecsInputs()->discountFactor
-			    : parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor;
-			populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost,
-			    popWideParams.circumcisionCost * discount);
-			toReturn->add_cdm_cost(popWideParams.circumcisionCost,
-			    popWideParams.circumcisionCost * discount);
+    GetPopulationStatistics().artTracker.SetAgeRanges(ageRanges);
+}
 
-		}
 
-	    } else {
-		toReturn = new Female(parameters_, age, populationID, popWideParams.defaultFemaleParams);
-	    }
+void Population::GenerateEntities(const std::string &entity_type,
+    unsigned long numToCreate, AgeRange *ageRange)
+{
+    for (unsigned long count = 0; count < numToCreate; count++)
+    {
+	bool toTrace = parameters_.currTime >= parameters_.monthTraceNewborns
+	    && parameters_.numNewbornsTraced < parameters_.numNewbornsToTrace;
+	if(toTrace) parameters_.numNewbornsTraced++;
+
+	auto age = Age::from_months(0);
+	if (ageRange) {
+	    // Generate an age from a uniform distribution bounded by _ageBucketParams
+	    auto randAge = parameters_.randomNums.randInt(ageRange->lower.in_months(),
+							  ageRange->upper.in_months());
+	    age = Age::from_months(randAge);
+	}
+	auto p = GenerateEntity(parameters_, entity_type, age, toTrace);
+
+	// add the newborn to the EntityPool
+	// use addEntityToAll here (initial entrance into population)
+	entities->addEntityToAll(p);
+    }
+}
+
+
+Entity *Population::GenerateEntity(EventParams &parameters_, const std::string &entity_type,
+    Age age, bool toTrace)
+{
+    //pointer to the person that was just generated
+    Entity *toReturn = nullptr;
+
+    //create the person
+    if(entity_type != "female")
+    {
+	auto circumcised = parameters_.randomNums.chance(popWideParams.proportionCircumcised);
+	if(entity_type == "male")
+	{
+	    toReturn = new Male(parameters_, age, circumcised,
+				populationID, popWideParams.defaultMaleParams);
+	}
+	else if(entity_type == "msm")
+	{
+	    toReturn = new Msm(parameters_, age, circumcised,
+			       populationID, popWideParams.defaultMsmParams);
+	}
+	else if(entity_type == "msmw")
+	{
+	    toReturn = new Msmw(parameters_, age, circumcised,
+				populationID, popWideParams.defaultMsmwParams);
+	}
+	else
+	{
+	    throw std::runtime_error("unsupported entity type");
+	}
+
+	if(circumcised) {
+	    auto discount = parameters_.useRollout ?
+		parameters_.untreatedContext->getRunSpecsInputs()->discountFactor
+		: parameters_.cepacSimContexts.front()->getRunSpecsInputs()->discountFactor;
+	    populationStatistics.costsTracker.RecordCircumcision(popWideParams.circumcisionCost,
+								 popWideParams.circumcisionCost * discount);
+	    toReturn->add_cdm_cost(popWideParams.circumcisionCost,
+				   popWideParams.circumcisionCost * discount);
+
+	}
+
+    } else {
+	toReturn = new Female(parameters_, age, populationID, popWideParams.defaultFemaleParams);
+    }
 
 	toReturn->SetSexualActivityDelay(popWideParams.sexualActivityDelay);
 
@@ -3468,7 +3510,7 @@ void Population::Initialize(const PopulationParameters &parameters)
 
         currProfileID++;
     }
-
+    
     //initialize structures that hold people who can initiate and 'agree' to relationships.
     InitPartnershipBuckets();
 
@@ -3476,35 +3518,7 @@ void Population::Initialize(const PopulationParameters &parameters)
     {
         ApplyRolloutContext(parameters_, Time::Zero);
     }
-
-    std::vector<AgeRange> ageRanges;
-    for(auto &ageBucketParams : popWideParams.GetInitialAgeBuckets())
-    {
-        AgeRange ageRange = {ageBucketParams.minAgeMth, ageBucketParams.maxAgeMth};
-        ageRanges.push_back(ageRange);
-		for (auto entity_type : { "male", "msmw", "msm", "female" })
-		{
-		    std::string xml_entity_type = (std::strcmp(entity_type, "male") == 0) ? "hetero-male" : entity_type;
-			double value = ageBucketParams.entityProportions[xml_entity_type] *
-			  popWideParams.GetInitialSize() * popWideParams.GetBirthProportion(xml_entity_type);
-			unsigned long numToCreate = Utility::round<unsigned long>(value);
-			for (auto i = 0; i < numToCreate; i++)
-			{
-				bool toTrace = parameters_.currTime >= parameters_.monthTraceNewborns
-				  && parameters_.numNewbornsTraced < parameters_.numNewbornsToTrace;
-				if(toTrace) parameters_.numNewbornsTraced++;
-
-				auto person = GenerateEntity(parameters_, entity_type, &ageBucketParams, toTrace);
-
-				//add the created person to the EntityPool
-				entities->addEntityToAll(person);
-			}
-
-			//Add a tuple to the currSizeByAgeRange vector along with the initial size of the age range
-			currSizeByEntityTypeAgeRange[entity_type].push_back({ageRange, numToCreate});
-		}
-    }
-    populationStatistics.artTracker.SetAgeRanges(ageRanges);
+    GenerateInitialEntities();
 
     //count the size of the population and store value
     UpdateSize();

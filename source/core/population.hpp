@@ -238,14 +238,25 @@ private:
     /// </summary>
 	void DissolveSexualPartnerships(EventParams &_eventParams, Entity *_initiator,
 	                                std::list<SexualPartnership *> &_partnershipsToEnd);
+    /// <summary>
+    /// create the initial people in the population
+    /// </summary>
+    void GenerateInitialEntities();
+
+    /// <summary>
+    /// function used by both GenerateInitialEntities and Births to create the
+    /// people in the population
+    /// </summary>
+    void GenerateEntities(const std::string &entity_type, unsigned long numToCreate,
+	AgeRange *ageRange);
 
     /// <summary>
     /// @param _gender gender of person we want to create
     /// @param _ageBucketParams	parameters that determine a prevalent person's characteristics. If this is nullptr, then this method will create a newborn
     /// @return a newly formed person
     /// </summary>
-	Entity *GenerateEntity(EventParams &_eventParams, const std::string &entity_type,
-	                       AgeBucketPrevalenceInfo *_ageBucketParams, bool toTrace);
+    Entity *GenerateEntity(EventParams &_eventParams, const std::string &entity_type,
+        Age age, bool toTrace);
 
 	/// <summary>
 	/// helper funtions for ApplyIncidentPrevalence()
