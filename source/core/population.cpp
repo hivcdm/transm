@@ -97,6 +97,7 @@ void Population::InitPartnershipBuckets()
 	{
 		availPartnershipTypes.push_back(SexualPartnership::Type(type));
 	}
+
 	for(std::size_t i = 0; i < eligibleInitiators.size(); i++)
 	{
 		BucketSexualMixing *bucket = (BucketSexualMixing *)entities->getBucket(eligibleInitiators.at(i));
@@ -109,6 +110,7 @@ void Population::InitPartnershipBuckets()
 		}
 	}
 
+#if 0
 	DemographicProfile currProfileSelector;
 	std::vector<DemographicProfile::ProfileID> selectedIDs;
 
@@ -117,12 +119,12 @@ void Population::InitPartnershipBuckets()
         try
         {
             //get the parameters for current relationship type
-	    assert(popWideParams.defaultMaleParams.hasSexualBehavior(partnership_type));
+            assert(popWideParams.defaultMaleParams.hasSexualBehavior(partnership_type));
             const SexualBehavior &partneringParams = popWideParams.defaultMaleParams.getSexualBehavior(partnership_type);
 
-	    //get available demographicProfiles that are available for this partnership
-	    for(unsigned int j = 0; j < partneringParams.getNumAvailableBuckets(); ++j)
-	    {
+            //get available demographicProfiles that are available for this partnership
+            for(unsigned int j = 0; j < partneringParams.getNumAvailableBuckets(); ++j)
+            {
 		    selectedIDs.clear();
 		    //contains profile ID's that were selected from
 		    currProfileSelector.set(partneringParams.getAvailableBucket(j).dmgProfileSelector);
@@ -166,6 +168,7 @@ void Population::InitPartnershipBuckets()
 		continue;
 	}
     }
+#endif
 }
 
 Population::~Population()
@@ -557,9 +560,9 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 		assert(person != nullptr);
 
 		if(person->getAge() < popWideParams.ageOfMajority + person->GetSexualActivityDelay())
-		    {
+        {
 			continue;
-		    }
+        }
 
 		//Get available partnership types
 		std::vector<SexualPartnership::Type> partnershipTypes =
@@ -570,6 +573,11 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 		for(std::size_t i = 0; i < partnershipTypes.size(); i++)
 		{
 			SexualPartnership::Type type = partnershipTypes.at(i);
+
+            // skip MSM CSW partnerships for now
+            if ((person->getDemographicProfileVal<DemographicProfile::SexualOrientation>() ==
+                DemographicProfile::SexualOrientation::Msm) &&
+                type == SexualPartnership::Type::Csw) continue;
 
 			//this method distinguishes between partnerships with and without duration and
 			//  executes different code depending on which. If the partnership has no duration
@@ -2137,9 +2145,10 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Male *_in
     {
         //Decrement numPartners
         numPartners--;
+
         //pick the bucket that we will attempt to choose from
-	BucketSexualMixing *bucket = potentialPartnerBuckets[_partnershipType].at(
-	    parameters_.randomNums.chooseIndex(Population::eligibleBucketWeights[_partnershipType]));
+        DemographicProfile::ProfileID profileID = _initiator->ChoosePartnerDemographic(parameters_.randomNums, _partnershipType);
+        BucketSexualMixing *bucket = (BucketSexualMixing *)entities->getBucket(profileID);
         assert(bucket != nullptr);
 
         std::list<Entity *> attemptedPartners;
@@ -2265,7 +2274,7 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Male *_in
 
         //the pointer to this partnership will be stored within initiator.
         new SexualPartnership(_initiator, chosenPartner, parameters_, _partnershipType);
-	chosenPartner->IncrementTimesSelected();
+        chosenPartner->IncrementTimesSelected();
 
         //add all persons back to entity pool
         for(std::list<Entity *>::iterator it = attemptedPartners.begin(); it != attemptedPartners.end(); it++)

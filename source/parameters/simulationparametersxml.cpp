@@ -8,14 +8,14 @@ namespace transm {
 namespace {
 std::string to_string(SexualPartnership::Type type)
 {
-	switch(type)
-	{
-	case SexualPartnership::Type::Steady: return "steady";
-	case SexualPartnership::Type::Regular: return "regular";
-	case SexualPartnership::Type::Casual: return "casual";
-	case SexualPartnership::Type::Csw: return "csw";
-	default: throw std::runtime_error("unknown type");
-	}
+    switch(type)
+    {
+    case SexualPartnership::Type::Steady: return "steady";
+    case SexualPartnership::Type::Regular: return "regular";
+    case SexualPartnership::Type::Casual: return "casual";
+    case SexualPartnership::Type::Csw: return "csw";
+    default: throw std::runtime_error("unknown type");
+    }
 }
 }
 
@@ -37,31 +37,31 @@ bool SimulationParametersXml::from_string(const std::string &value_string)
 template<>
 int SimulationParametersXml::from_string(const std::string &value_string)
 {
-	return std::stoi(value_string);
+    return std::stoi(value_string);
 }
 
 template<>
 double SimulationParametersXml::from_string(const std::string &value_string)
 {
-	return std::stod(value_string);
+    return std::stod(value_string);
 }
 
 template<>
 std::string SimulationParametersXml::from_string(const std::string &value)
 {
-	return value;
+    return value;
 }
 
 template<>
 std::array<double, 7> SimulationParametersXml::from_string(const std::string &value_string)
 {
-	std::array<double, 7> values;
-	std::stringstream ss(value_string);
-	for(int i = 0; i < 7; i++)
-	{
-		ss >> values[i];
-	}
-	return values;
+    std::array<double, 7> values;
+    std::stringstream ss(value_string);
+    for(int i = 0; i < 7; i++)
+    {
+        ss >> values[i];
+    }
+    return values;
 }
 
 NormalDist SimulationParametersXml::GetNormalDist(const pugi::xml_node node) const
@@ -95,8 +95,8 @@ ShiftedLogNormalDist SimulationParametersXml::GetShiftedLogNormalDist(const pugi
 SimulationParametersXml::SimulationParametersXml(const path &filename)
 {
     //XXX: verify that it's safe to give a c_str of a temporary
-	document_.load_file(filename.string().c_str());
-	name_ = filename.stem().string();
+    document_.load_file(filename.string().c_str());
+    name_ = filename.stem().string();
 }
 
 SimulationParametersXml::~SimulationParametersXml()
@@ -117,13 +117,13 @@ SimulationParametersXml::InterventionsContainer SimulationParametersXml::GetPopu
 
 Version SimulationParametersXml::GetVersion() const
 {
-	auto version_string = Attr<std::string>(document_.child("simulation"), "version");
-	auto version = Version::from_string(version_string);
+    auto version_string = Attr<std::string>(document_.child("simulation"), "version");
+    auto version = Version::from_string(version_string);
 
-	if(Version::compare(version, Utility::get_model_version(), true) != 0)
-	{
-		throw std::runtime_error("bad input version");
-	}
+    if(Version::compare(version, Utility::get_model_version(), true) != 0)
+    {
+        throw std::runtime_error("bad input version");
+    }
 
     return version;
 }
@@ -165,16 +165,16 @@ SimulationParameters::ConcurrencyDefinition SimulationParametersXml::GetConcurre
         auto definition_node = concurrency_node.find_child_by_attribute("definition", "id", std::to_string(i).c_str());
         auto &definition = definitions[i];
 
-		if (definition_node == nullptr)
-		{
-			definition.minPartnershipsNeeded = 2;
-			definition.useDefinition = false;
-		}
-		else
-		{
-			definition.minPartnershipsNeeded = Text<int>(definition_node.child("minNeeded"));
-			definition.useDefinition = Text<bool>(definition_node.child("allow"));
-		}
+        if (definition_node == nullptr)
+        {
+            definition.minPartnershipsNeeded = 2;
+            definition.useDefinition = false;
+        }
+        else
+        {
+            definition.minPartnershipsNeeded = Text<int>(definition_node.child("minNeeded"));
+            definition.useDefinition = Text<bool>(definition_node.child("allow"));
+        }
     }
 
     return definitions;
@@ -209,10 +209,9 @@ SimulationParameters::TracingParameters SimulationParametersXml::GetTracingParam
 
     for(auto time_node : simulation_node.child("traceFiles").child("partnerAcquisition").children("time"))
     {
-	parameters.partner_acquisition_record_times.push_back(Text<int>(time_node));
+    parameters.partner_acquisition_record_times.push_back(Text<int>(time_node));
     }
-  
-    
+
     return parameters;
 }
 
@@ -228,39 +227,39 @@ CalibrationInputs SimulationParametersXml::GetCalibrationParameters() const
     {
         calib.monthOfCalibration = Time::from_months(Text<int>(calibration_node.child("monthOfCalibration")));
 
-	auto partnerships_node = calibration_node.child("partnershipOutcomes");
-	if (partnerships_node)
-	{
-	    calib.steadyPrevPopulation = Text<int>(partnerships_node.child("steadyPrev").child("popOfInterest"));
-	    calib.steadyPrevBounds.lower = Text<double>(partnerships_node.child("steadyPrev").child("lwrBound"));
-	    calib.steadyPrevBounds.upper = Text<double>(partnerships_node.child("steadyPrev").child("uprBound"));
-	    calib.casualPrevPopulation = Text<int>(partnerships_node.child("casualPrev").child("popOfInterest"));
-	    calib.casualPrevBounds.lower = Text<double>(partnerships_node.child("casualPrev").child("lwrBound"));
-	    calib.casualPrevBounds.upper = Text<double>(partnerships_node.child("casualPrev").child("uprBound"));
-	    calib.CSWPrevPopulation = Text<int>(partnerships_node.child("cswPrev").child("popOfInterest"));
-	    calib.CSWPrevBounds.lower = Text<double>(partnerships_node.child("cswPrev").child("lwrBound"));
-	    calib.CSWPrevBounds.upper = Text<double>(partnerships_node.child("cswPrev").child("uprBound"));
-	    calib.propInConcurrentPopulation = Text<int>(partnerships_node.child("propInCon").child("popOfInterest"));
-	    calib.propInConcurrentBounds.lower = Text<double>(partnerships_node.child("propInCon").child("lwrBound"));
-	    calib.propInConcurrentBounds.upper = Text<double>(partnerships_node.child("propInCon").child("uprBound"));
-	    calib.numActsPopulation = Text<int>(partnerships_node.child("numActs").child("popOfInterest"));
-	    calib.numActsBounds.lower = Text<double>(partnerships_node.child("numActs").child("lwrBound"));
-	    calib.numActsBounds.upper = Text<double>(partnerships_node.child("numActs").child("uprBound"));
-	    calib.femaleCasualPrevRatio = Text<double>(partnerships_node.child("femaleCasualPrev").child("ratio"));
-	    calib.femalePropInConcurrentRatio = Text<double>(partnerships_node.child("femalePropInCon").child("ratio"));
-	    calib.femaleNumActsLRtoHRRatio = Text<double>(partnerships_node.child("femaleNumActsLRtoHR").child("ratio"));
-	}
+    auto partnerships_node = calibration_node.child("partnershipOutcomes");
+    if (partnerships_node)
+    {
+        calib.steadyPrevPopulation = Text<int>(partnerships_node.child("steadyPrev").child("popOfInterest"));
+        calib.steadyPrevBounds.lower = Text<double>(partnerships_node.child("steadyPrev").child("lwrBound"));
+        calib.steadyPrevBounds.upper = Text<double>(partnerships_node.child("steadyPrev").child("uprBound"));
+        calib.casualPrevPopulation = Text<int>(partnerships_node.child("casualPrev").child("popOfInterest"));
+        calib.casualPrevBounds.lower = Text<double>(partnerships_node.child("casualPrev").child("lwrBound"));
+        calib.casualPrevBounds.upper = Text<double>(partnerships_node.child("casualPrev").child("uprBound"));
+        calib.CSWPrevPopulation = Text<int>(partnerships_node.child("cswPrev").child("popOfInterest"));
+        calib.CSWPrevBounds.lower = Text<double>(partnerships_node.child("cswPrev").child("lwrBound"));
+        calib.CSWPrevBounds.upper = Text<double>(partnerships_node.child("cswPrev").child("uprBound"));
+        calib.propInConcurrentPopulation = Text<int>(partnerships_node.child("propInCon").child("popOfInterest"));
+        calib.propInConcurrentBounds.lower = Text<double>(partnerships_node.child("propInCon").child("lwrBound"));
+        calib.propInConcurrentBounds.upper = Text<double>(partnerships_node.child("propInCon").child("uprBound"));
+        calib.numActsPopulation = Text<int>(partnerships_node.child("numActs").child("popOfInterest"));
+        calib.numActsBounds.lower = Text<double>(partnerships_node.child("numActs").child("lwrBound"));
+        calib.numActsBounds.upper = Text<double>(partnerships_node.child("numActs").child("uprBound"));
+        calib.femaleCasualPrevRatio = Text<double>(partnerships_node.child("femaleCasualPrev").child("ratio"));
+        calib.femalePropInConcurrentRatio = Text<double>(partnerships_node.child("femalePropInCon").child("ratio"));
+        calib.femaleNumActsLRtoHRRatio = Text<double>(partnerships_node.child("femaleNumActsLRtoHR").child("ratio"));
+    }
 
-	auto yearly_incidence_ranges_node = calibration_node.child("yearlyIncidenceRanges");
-	for (auto incidence_range_node : yearly_incidence_ranges_node.children("yearlyIncidenceRange"))
-	{
-	    // Add a check that sa population incidence is within the range at time
-	    Time time = Time::from_months(incidence_range_node.attribute("time").as_int());
-	    double lower = incidence_range_node.attribute("lower").as_double();
-	    double upper = incidence_range_node.attribute("upper").as_double();
-	    std::pair<double,double> range(lower, upper);
+    auto yearly_incidence_ranges_node = calibration_node.child("yearlyIncidenceRanges");
+    for (auto incidence_range_node : yearly_incidence_ranges_node.children("yearlyIncidenceRange"))
+    {
+        // Add a check that sa population incidence is within the range at time
+        Time time = Time::from_months(incidence_range_node.attribute("time").as_int());
+        double lower = incidence_range_node.attribute("lower").as_double();
+        double upper = incidence_range_node.attribute("upper").as_double();
+        std::pair<double,double> range(lower, upper);
 
-	    calib.yearlyIncidenceRanges[time] = range;
+        calib.yearlyIncidenceRanges[time] = range;
         }
     }
 
@@ -292,7 +291,7 @@ InterventionParameters SimulationParametersXml::GetInterventionParameters() cons
 
         for(auto treatment_file_node : interventions_node.select_nodes("artRolloutIntervention/rolloutTreatmentFiles/rolloutFile"))
         {
-			auto time = Time::from_months(treatment_file_node.node().child("time").text().as_int());
+            auto time = Time::from_months(treatment_file_node.node().child("time").text().as_int());
 
             if(time >= Time::Zero)
             {
@@ -320,7 +319,7 @@ InterventionParameters SimulationParametersXml::GetInterventionParameters() cons
         }
 
         parameters.eligibility_criteria = GetRolloutEligibility();
-	parameters.rollout_proportion_denominator = GetRolloutDenominator();
+    parameters.rollout_proportion_denominator = GetRolloutDenominator();
 
         for(auto target : interventions_node.select_nodes("artRolloutIntervention/targetRolloutProportions/target"))
         {
@@ -412,9 +411,9 @@ RolloutEligibility SimulationParametersXml::GetRolloutEligibility() const
     // Identified
     auto identified_node = eligibility_node.select_node("criteria[@name='Identified']").node();
     if (identified_node.child("status"))
-	eligibility.isIdentified = Text<bool>(identified_node.child("status"));
+    eligibility.isIdentified = Text<bool>(identified_node.child("status"));
     else
-	eligibility.isIdentified = false;
+    eligibility.isIdentified = false;
 
 
     // OIHist
@@ -466,11 +465,11 @@ RolloutDenominator SimulationParametersXml::GetRolloutDenominator() const
     try {
         std::string value = Attr<std::string>(node, "proportionDenominator");
 
-	if (value == "population") {
-	    denom = RolloutDenominator::POPULATION;
-	} else if (value == "eligible") {
-	    denom = RolloutDenominator::ELIGIBLE;
-	}
+    if (value == "population") {
+        denom = RolloutDenominator::POPULATION;
+    } else if (value == "eligible") {
+        denom = RolloutDenominator::ELIGIBLE;
+    }
     } catch (std::string err) {
         // denominator not specified
     }
@@ -480,66 +479,62 @@ RolloutDenominator SimulationParametersXml::GetRolloutDenominator() const
 
 SexualBehavior SimulationParametersXml::GetSexualBehavior(const std::string &entity_type, SexualPartnership::Type type) const
 {
-	auto path = "/simulation/population/entities/entity[@type='" + entity_type + "']/behavior/partnershipTypes/partnership[@type='" + to_string(type) + "']";
-	auto node = document_.select_node(path.c_str()).node();
+    auto path = "/simulation/population/entities/entity[@type='" + entity_type + "']/behavior/partnershipTypes/partnership[@type='" + to_string(type) + "']";
+    auto node = document_.select_node(path.c_str()).node();
 
     if(node == nullptr)
     {
         throw std::runtime_error("behavior not defined for entity type " + entity_type + " and partnership type " + to_string(type));
     }
 
-	SexualBehavior result(type);
+    SexualBehavior result(type);
 
-    result.setAssortativeness(Text<double>(node.child("assortativeness")));
+    auto assortivityNode = node.child("selectionCriteria").child("assortivity");
+    result.setAssortativeness(Text<double>(assortivityNode.child("riskAssortivity")));
+    result.setChanceChooseWithSteady(Text<double>(assortivityNode.child("chanceChooseWithSteady")));
+    result.setChanceMsmwChooseMale(Text<double>(assortivityNode.child("chanceMsmwChooseMale")));
+    result.setChanceMsmChooseMsmw(Text<double>(assortivityNode.child("chanceMsmChooseMsmw")));
 
-	auto bucket_path = "selectionCriteria/availableBuckets/bucket";
-	for(const auto &bucket_settings : node.select_nodes(bucket_path))
-	{
-		SexualBehavior::AvailableBucket bucket;
-		bucket.dmgProfileSelector.parse(Text<std::string>(bucket_settings.node().child("profile")));
-		bucket.weight = Text<double>(bucket_settings.node().child("weight"));
-		result.AddAvailableBucket(bucket);
-	}
+    result.setAverageYearsYounger(GetNormalDist(node.child("selectionCriteria").child("averageYearsYounger")));
 
-	result.setAverageYearsYounger(GetNormalDist(node.child("selectionCriteria").child("averageYearsYounger")));
-
-	for(auto risk : {Entity::RiskLevel::LOW, Entity::RiskLevel::HIGH})
-	{
+    for(auto risk : {Entity::RiskLevel::LOW, Entity::RiskLevel::HIGH})
+    {
         auto risk_node = node.child(risk == Entity::RiskLevel::LOW ? "lowRisk" : "highRisk");
 
-		result.setAcquisitionRatePerMonth(risk, GetLogNormalDist(risk_node.child("acquisitionRate")));
+        result.setAcquisitionRatePerMonth(risk, GetLogNormalDist(risk_node.child("acquisitionRate")));
         result.setCoitalEventsPerMonth(risk, Text<double>(risk_node.child("coitalEventsPerMonth").child("distribution").child("mean")));
         result.setChanceCondomUsePerEvent(risk, GetBetaDist(risk_node.child("chanceCondomUsePerEvent")));
         result.setPartnershipDuration(risk, GetShiftedLogNormalDist(risk_node.child("partnershipDurationMth")));
-	}
+    }
 
-	return result;
+    return result;
 }
 
 Male::SubPopParams SimulationParametersXml::GetMaleSubPopParams() const
 {
-	auto node = document_.select_node("/simulation/population/entities/entity[@type='msw']").node();
+    auto node = document_.select_node("/simulation/population/entities/entity[@type='male']").node();
 
-	Male::SubPopParams result;
+    Male::SubPopParams result;
 
-	auto behavior_node = node.child("behavior");
+    auto behavior_node = node.child("behavior");
     result.SetCswEndAge(Age(Text<int>(behavior_node.child("cswEndAge")), 0));
     result.SetChanceBecomeCsw(Text<double>(behavior_node.child("chanceBecomeSexWorker")));
-	result.SetPartnerAcqMultWithSteady(Entity::RiskLevel::HIGH, Text<double>(behavior_node.child("partnerAcqMultWithSteadyHighRisk")));
-	result.SetPartnerAcqMultWithSteady(Entity::RiskLevel::LOW, Text<double>(behavior_node.child("partnerAcqMultWithSteadyLowRisk")));
+    result.SetPartnerAcqMultWithSteady(Entity::RiskLevel::HIGH, Text<double>(behavior_node.child("partnerAcqMultWithSteadyHighRisk")));
+    result.SetPartnerAcqMultWithSteady(Entity::RiskLevel::LOW, Text<double>(behavior_node.child("partnerAcqMultWithSteadyLowRisk")));
 
-	bool use_high_risk_multiplier = Attr<bool>(behavior_node.child("highRiskAcqRateMultiplier"), "enabled");
-	double high_risk_multiplier = Text<double>(behavior_node.child("highRiskAcqRateMultiplier"));
-	bool use_csw_high_risk_multiplier = Attr<bool>(behavior_node.child("highRiskCswAcqRateMultiplier"), "enabled");
-	double csw_high_risk_multiplier = Text<double>(behavior_node.child("highRiskCswAcqRateMultiplier"));
+    bool use_high_risk_multiplier = Attr<bool>(behavior_node.child("highRiskAcqRateMultiplier"), "enabled");
+    double high_risk_multiplier = Text<double>(behavior_node.child("highRiskAcqRateMultiplier"));
+    bool use_csw_high_risk_multiplier = Attr<bool>(behavior_node.child("highRiskCswAcqRateMultiplier"), "enabled");
+    double csw_high_risk_multiplier = Text<double>(behavior_node.child("highRiskCswAcqRateMultiplier"));
 
-	result.SetCoefficientVariation(false, 0);
+    result.SetCoefficientVariation(false, 0);
 
 	for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
 	{
         try
         {
-            auto params = GetSexualBehavior("msw", partnership_type);
+            // for each initiating DemographicProfile type
+			auto params = GetSexualBehavior("male", partnership_type);
 
             if(use_high_risk_multiplier)
             {
@@ -590,9 +585,9 @@ Male::SubPopParams SimulationParametersXml::GetMaleSubPopParams() const
 
 Female::SubPopParams SimulationParametersXml::GetFemaleSubPopParams() const
 {
-	auto node = document_.select_node("/simulation/population/entities/entity[@type='female']").node();
+    auto node = document_.select_node("/simulation/population/entities/entity[@type='female']").node();
 
-	Female::SubPopParams result;
+    Female::SubPopParams result;
 
 	auto behavior_node = node.child("behavior");
 	result.SetCswEndAge(Age(Text<int>(behavior_node.child("cswEndAge")), 0));
@@ -605,9 +600,9 @@ Female::SubPopParams SimulationParametersXml::GetFemaleSubPopParams() const
 	activityLevel.stddev = 0;
 	result.SetActivityLevel(activityLevel);
 
-       auto health_node = node.child("health");
-       result.SetPreExposureProphylaxisEfficacy(Text<double>(health_node.child("preExposureProphylaxisEfficacy")));
-       result.SetVaginalMicrobicideEfficacy(Text<double>(health_node.child("vaginalMicrobicideEfficacy")));
+	auto health_node = node.child("health");
+	result.SetPreExposureProphylaxisEfficacy(Text<double>(health_node.child("preExposureProphylaxisEfficacy")));
+	result.SetVaginalMicrobicideEfficacy(Text<double>(health_node.child("vaginalMicrobicideEfficacy")));
 
 	return result;
 }
@@ -622,7 +617,7 @@ SimulationParametersXml::EntityDistributions SimulationParametersXml::GetEntityD
 
     for(auto distribution_node : node.children("distribution"))
     {
-		DemographicProfile profile;
+	    DemographicProfile profile;
 
         std::string entity_type = distribution_node.attribute("type").as_string();
 		if (entity_type == "female") {
@@ -637,7 +632,7 @@ SimulationParametersXml::EntityDistributions SimulationParametersXml::GetEntityD
 			// no male csw's in the population -- for now
 			profile.set(DemographicProfile::Demographic::Employment,
 				(std::size_t)DemographicProfile::Employment::NonCsw);
-			if (entity_type == "hetero-male") {
+			if (entity_type == "msw") {
 				profile.set(DemographicProfile::Demographic::SexualOrientation,
 					(std::size_t)DemographicProfile::SexualOrientation::Msw);
 			} else if (entity_type == "msm") {

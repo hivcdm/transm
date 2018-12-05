@@ -145,6 +145,113 @@ void Male::SetAcquisitionRatePerMonth(RiskLevel risk, SexualPartnership::Type pa
 	behavior.setAcquisitionRatePerMonth(risk, dist);
 }
 
+DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerator &_randomNums,
+    SexualPartnership::Type _partnershipType)
+{
+    SexualBehavior behavior = populationSpecificParams.getSexualBehavior(_partnershipType);
+    DemographicProfile selector;
+
+    // only sexually active partners allowed
+    selector.set(DemographicProfile::Demographic::SexualActivityStatus,
+        (std::size_t)DemographicProfile::SexualActivityStatus::Active);
+
+    // choose CSW status
+    if (_partnershipType == SexualPartnership::Type::Csw)
+    {
+        // only SA:Female:MSW:Single:CSW allowed for CSW partnerships
+        selector.set(DemographicProfile::Demographic::Employment,
+            (std::size_t)DemographicProfile::Employment::Csw);
+        selector.set(DemographicProfile::Demographic::Gender,
+            (std::size_t)DemographicProfile::Gender::Female);
+        selector.set(DemographicProfile::Demographic::SexualOrientation,
+            (std::size_t)DemographicProfile::SexualOrientation::Msw);
+        selector.set(DemographicProfile::Demographic::RelationshipStatus,
+            (std::size_t)DemographicProfile::RelationshipStatus::Single);
+        goto out;
+    }
+    else
+    {
+        selector.set(DemographicProfile::Demographic::Employment,
+            (std::size_t)DemographicProfile::Employment::NonCsw);
+    }
+
+    //choose steady partner -- base on percentWithSteady
+    if (_randomNums.chance(behavior.getChanceChooseWithSteady()))
+    {
+        selector.set(DemographicProfile::Demographic::RelationshipStatus,
+            (std::size_t)DemographicProfile::RelationshipStatus::NonSingle);
+    }
+    else
+    {
+        selector.set(DemographicProfile::Demographic::RelationshipStatus,
+            (std::size_t)DemographicProfile::RelationshipStatus::Single);
+    }
+    //choose partner gender and orientation -- based on orientation and, if msmw, percentMsmwChooseMale
+    if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() == DemographicProfile::SexualOrientation::Msw)
+    {
+        selector.set(DemographicProfile::Demographic::Gender,
+            (std::size_t)DemographicProfile::Gender::Female);
+        selector.set(DemographicProfile::Demographic::SexualOrientation,
+            (std::size_t)DemographicProfile::SexualOrientation::Msw);
+    }
+    else if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() == DemographicProfile::SexualOrientation::Msm)
+    {
+        selector.set(DemographicProfile::Demographic::Gender,
+            (std::size_t)DemographicProfile::Gender::Male);
+
+        if (_randomNums.chance(behavior.getChanceMsmChooseMsmw()))
+        {
+            selector.set(DemographicProfile::Demographic::SexualOrientation,
+                (std::size_t)DemographicProfile::SexualOrientation::Msmw);
+        }
+        else
+        {
+        selector.set(DemographicProfile::Demographic::SexualOrientation,
+            (std::size_t)DemographicProfile::SexualOrientation::Msm);
+        }
+    }
+    else if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() == DemographicProfile::SexualOrientation::Msmw)
+    {
+        if (_randomNums.chance(behavior.getChanceMsmwChooseMale()))
+        {
+            selector.set(DemographicProfile::Demographic::Gender,
+                (std::size_t)DemographicProfile::Gender::Male);
+
+            if (_randomNums.chance(behavior.getChanceMsmChooseMsmw()))
+            {
+                selector.set(DemographicProfile::Demographic::SexualOrientation,
+                    (std::size_t)DemographicProfile::SexualOrientation::Msmw);
+            }
+            else
+            {
+                selector.set(DemographicProfile::Demographic::SexualOrientation,
+                    (std::size_t)DemographicProfile::SexualOrientation::Msm);
+            }
+
+        }
+        else
+        {
+            selector.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Female);
+            selector.set(DemographicProfile::Demographic::SexualOrientation,
+                (std::size_t)DemographicProfile::SexualOrientation::Msw);
+        }
+    }
+    else
+    {
+        throw std::runtime_error("Unknown sexual orientation");
+    }
+
+    //choose race -- based on raceAssort
+    //choose ethnicity -- based on ethnicAssort
+
+  out:
+	std::vector<DemographicProfile::ProfileID> validBucketIDs;
+    selector.selectProfileIDs(validBucketIDs, nullptr);
+
+    assert(validBucketIDs.size() == 1);
+    return validBucketIDs.at(0);
+}
+
 double Male::getChanceBecomeCsw() const
 {
 	return populationSpecificParams.getChanceBecomeCSW();
@@ -262,19 +369,27 @@ double Male::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::
 		condomEff = getCondomProtectEff();
 	}
 
-    assert(_p->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Female);
-    double microbicideEfficacy = 
-      dynamic_cast<Female *>(_p)->RollForVaginalMicrobicideUse(_eventParams.randomNums) 
-      ? dynamic_cast<Female *>(_p)->GetVaginalMicrobicideEfficacy() : 0;
+    double microbicideEfficacy = 0;
+    double baseFoi = 0;
+    if (_p->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Female)
+    {
+        baseFoi = transmission_coefficients.at(TransmissionType::male_to_female)[(std::size_t)getHVL()];
+        microbicideEfficacy =
+          dynamic_cast<Female *>(_p)->RollForVaginalMicrobicideUse(_eventParams.randomNums)
+          ? dynamic_cast<Female *>(_p)->GetVaginalMicrobicideEfficacy() : 0;
+    }
+    else
+    {
+        baseFoi = transmission_coefficients.at(TransmissionType::male_to_male)[(std::size_t)getHVL()];
+    }
 
     double prepEfficacy = _p->UsingPrEP() ? _p->GetPreExposureProphylaxisEfficacy() : 0;
-    double base_foi = transmission_coefficients.at(TransmissionType::male_to_female)[(std::size_t)getHVL()];
-    double FOI = base_foi * (1 - condomEff) * (1 - microbicideEfficacy) * (1 - prepEfficacy);
+    double FOI = baseFoi * (1 - condomEff) * (1 - microbicideEfficacy) * (1 - prepEfficacy);
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (trace() || _p->trace()))
 	{
         _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " !Transmission coefficient from " << getID() << " to " <<
-		        _p->getID() << " is " << base_foi;
+		        _p->getID() << " is " << baseFoi;
         _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << ";" << std::endl << " !A condom was ";
 
 		if(!condomUsedLastFOICalculation)

@@ -107,6 +107,7 @@ public :
 
 		//chance that a male will become a CSW
 		double chanceBecomeCSW;
+
 		//the rate multiplier for partner acquisition when a male has a Steady partner
 		double partnerAcqMultWithSteady[(std::size_t)Entity::RiskLevel::Last];
 
@@ -233,6 +234,8 @@ public:
 	int rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType);
 	int rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType);
 	int rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums, Entity *_p);
+    DemographicProfile::ProfileID ChoosePartnerDemographic(RandomNumberGenerator &_randomNums, SexualPartnership::Type partnershipType);
+
 
 	void rerollRiskGroup(EventParams &_eventParams);
 	//writes state of person to file

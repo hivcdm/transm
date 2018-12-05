@@ -20,30 +20,11 @@ class SexualBehavior
 {
 
 public :
-	/// <summary>
-	/// Different SexualPartnership can only involve certain categories of people.
-	/// </summary>
-	struct AvailableBucket
-	{
-		/// <summary>
-		/// Specifies an eligible type of person
-		/// </summary>
-		DemographicProfile dmgProfileSelector;
-
-		/// <summary>
-		/// Will weight the chance that someone with these BucketDemographicProfile dmgProfile will be chosen.
-		/// </summary>
-		double weight;
-	};
-
     SexualBehavior() : SexualBehavior(SexualPartnership::Type::Last) { }
 
 	SexualBehavior(SexualPartnership::Type type) : partnershipType(type) { }
 
-	void AddAvailableBucket(const AvailableBucket &bucket) { availableBuckets.push_back(bucket); }
-
 	void SetHighRiskMultiplier(double multiplier);
-	void ApplyCoefficientVariation(double coefficient);
 
 	/// <summary>
 	/// Returns number of Buckets that are available for this kind of partnership.
@@ -52,8 +33,6 @@ public :
 	unsigned int getNumAvailableBuckets() const;
 
 	const LogNormalDist getAcquisitionRatePerMonth(Entity::RiskLevel risk) const;
-
-	const AvailableBucket getAvailableBucket(int _bucket) const;
 
 	double getCoitalEventsPerMonth(Entity::RiskLevel risk) const;
 
@@ -79,22 +58,34 @@ public :
 
     void setAssortativeness(double assortativeness) { this->assortativeness = assortativeness; }
 
+    void setChanceChooseWithSteady(double chance) { chanceChooseWithSteady = chance; }
+    double getChanceChooseWithSteady() { return chanceChooseWithSteady; }
+
+    void setChanceMsmwChooseMale(double chance) { chanceMsmwChooseMale = chance; }
+    double getChanceMsmwChooseMale() { return chanceMsmwChooseMale; }
+
+    void setChanceMsmChooseMsmw(double chance) { chanceMsmChooseMsmw = chance; }
+    double getChanceMsmChooseMsmw() { return chanceMsmChooseMsmw; }
+
 private:
 	friend class SimulationBuilder;
 
     double assortativeness;
+
+    double chanceChooseWithSteady;
+
+    double chanceMsmwChooseMale;
+
+    double chanceMsmChooseMsmw;
 
 	//the partnership type that these parameters represent
 	SexualPartnership::Type partnershipType;
 
 	//LogNormal distribution from which the people draw a rate to acquire this type of partner
 	LogNormalDist acquisitionRatePerMonth[(std::size_t)Entity::RiskLevel::Last];
+
 	//average number of partners men acquire at a time
 	//double averagePartnersAtATime[(std::size_t)Entity::RiskLevel::Last];
-
-	//selection criteria
-	//particular buckets that are available for this kind of sexual partnership
-	std::vector<AvailableBucket> availableBuckets;
 
 	//The distribution the males will draw from to determine how many years younger their partner should be (resulting difference may be negative for older women)
 	NormalDist averageYearsYounger;

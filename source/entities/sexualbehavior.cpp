@@ -9,17 +9,6 @@ void SexualBehavior::SetHighRiskMultiplier(double multiplier)
     acquisitionRatePerMonth[(std::size_t)Entity::RiskLevel::HIGH].mu += log(multiplier);
 }
 
-void SexualBehavior::ApplyCoefficientVariation(double /*coefficient*/)
-{
-	throw std::runtime_error("not implemented");
-}
-
-unsigned int SexualBehavior::getNumAvailableBuckets()  const
-{
-	return (unsigned int)availableBuckets.size();
-}
-
-
 SexualPartnership::Type SexualBehavior::getPartnershipType() const
 {
 	return partnershipType;
@@ -28,11 +17,6 @@ SexualPartnership::Type SexualBehavior::getPartnershipType() const
 const LogNormalDist SexualBehavior::getAcquisitionRatePerMonth(Entity::RiskLevel risk) const
 {
     return acquisitionRatePerMonth[(std::size_t)risk];
-}
-
-const SexualBehavior::AvailableBucket SexualBehavior::getAvailableBucket(int _bucket) const
-{
-	return availableBuckets.at(_bucket);
 }
 
 const NormalDist SexualBehavior::getAverageYearsYounger() const
