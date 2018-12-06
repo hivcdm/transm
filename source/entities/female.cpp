@@ -77,10 +77,6 @@ double Female::SubPopParams::GetProportionHighRisk(DemographicProfile::Employmen
 {
     return proportionHighRisk[(std::size_t)_cswStatus];
 }
-NormalDist Female::SubPopParams::GetActivityLevel() const
-{
-	return activityLevel;
-}
 
 Female::Female(EventParams &_eventParams, Age _age, const DemographicProfile &profile,
     unsigned int _populationID, const Female::SubPopParams &params)
@@ -96,14 +92,6 @@ Female::Female(EventParams &_eventParams, Age _age, const DemographicProfile &pr
     // The other demographic profiles values get set in the Entity constructor -- don't overwrite the entire profile
     assert(profile.get(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Female);
 	dmgProfile.set(DemographicProfile::Demographic::Gender, profile.get(DemographicProfile::Demographic::Gender));
-
-    activityLevel = _eventParams.randomNums.randNorm_NaturalNum(populationSpecificParams.GetActivityLevel());
-
-	//activity level should not ever be 0
-	if(activityLevel == 0)
-	{
-		activityLevel = 1;
-	}
 
 	risk = Entity::RiskLevel::LOW;
 

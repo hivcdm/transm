@@ -557,11 +557,6 @@ Male::SubPopParams SimulationParametersXml::GetMaleSubPopParams() const
         }
 	}
 
-	NormalDist activityLevel;
-	activityLevel.mean = 1;
-	activityLevel.stddev = 0;
-	result.SetActivityLevel(activityLevel);
-
 	result.SetProportionHighRisk(DemographicProfile::Employment::Csw, Text<double>(behavior_node.child("proportionHighRiskCsw")));
     result.SetProportionHighRisk(DemographicProfile::Employment::NonCsw, Text<double>(behavior_node.child("proportionHighRiskNonCsw")));
 
@@ -594,11 +589,6 @@ Female::SubPopParams SimulationParametersXml::GetFemaleSubPopParams() const
 	result.SetChanceBecomeCsw(Text<double>(behavior_node.child("chanceBecomeSexWorker")));
 	result.SetProportionHighRisk(DemographicProfile::Employment::NonCsw, Text<double>(behavior_node.child("proportionHighRiskNonCsw")));
 	result.SetProportionHighRisk(DemographicProfile::Employment::Csw, Text<double>(behavior_node.child("proportionHighRiskCsw")));
-
-	NormalDist activityLevel;
-	activityLevel.mean = 1;
-	activityLevel.stddev = 0;
-	result.SetActivityLevel(activityLevel);
 
 	auto health_node = node.child("health");
 	result.SetPreExposureProphylaxisEfficacy(Text<double>(health_node.child("preExposureProphylaxisEfficacy")));

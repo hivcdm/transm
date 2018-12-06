@@ -260,15 +260,12 @@ bool BucketAge::insert(Entity *_person)
 		return false;
 	}
 
-	int marbles = _person->getSexualActivity();
 	//Using Mark Lipsitch's sexual mixing algorithm based on the assortativeness value
 	//Update: Mark says this is double counting the assortativeness!
 	//Just put the same amount of marbles in each box
-	//Update again: Mathematically proved that the two methods are the same... putting the same number of marbles in each box has less potential for bugs`
-	int marblesInRandomFV = marbles;
-	//int marblesInRandomFV = (int)((1 - assort) * marbles + 0.5);
-	int marblesInRiskFV = marbles;
-	//int marblesInRiskFV = marbles - marblesInRandomFV;
+	//Update again: Mathematically proved that the two methods are the same... putting the same number of marbles in each box has less potential for bugs
+	int marblesInRandomFV = 1;
+	int marblesInRiskFV = 1;
 
 	if(_person->getRiskLevel() == Entity::RiskLevel::HIGH)
 	{

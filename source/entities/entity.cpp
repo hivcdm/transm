@@ -1440,11 +1440,6 @@ Entity::HIVStatus Entity::getHIVStatus() const
 	return hivStatus;
 }
 
-int Entity::getSexualActivity()
-{
-	return activityLevel;
-}
-
 /**** Start constructors, destructors, initializers *****/
 //this constructor is used by the Male and Female classes
 Entity::Entity(Age _age, unsigned int _populationID) :
@@ -1470,7 +1465,6 @@ Entity::Entity(Age _age, unsigned int _populationID) :
 
 	death = false;
 	deathStatus = DeathStatus::ALIVE;
-	sexualActivityLevel = 1.0;
 	cepacPatient = nullptr;
 	CEPACcosts = 0;
 	wentThroughCEPAC = false;

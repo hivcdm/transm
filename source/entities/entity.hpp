@@ -258,9 +258,6 @@ protected:
 	int unformedPartnershipsTotal[(int)SexualPartnership::Type::Last];
 	int unformedPartnershipsLatestTime[(int)SexualPartnership::Type::Last];
 
-    //relative risky behavior level
-	double sexualActivityLevel;
-
     //Which generation was the person infected in
 	int generationOfInfection;
 
@@ -284,9 +281,6 @@ protected:
 
 	//currently defaults to "LOW" and 1
 	RiskLevel risk;
-
-    //sexual activity level of person -- relates to number of "marbles" in selection pool
-	int activityLevel;
 
 	//statistical information from this individual
 	EntityStatsRecord stats;
@@ -741,7 +735,6 @@ public:
 			switch(_PSC)
 			{
 			case AGE: return (_KeyValType)(static_cast<unsigned long>(_p->age.in_months()));
-			case SEXUAL_ACTIVITY_LEVEL: return (_KeyValType)_p->sexualActivityLevel;
 			case ID: return (_KeyValType)_p->id;
 			}
 

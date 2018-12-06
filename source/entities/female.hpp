@@ -24,8 +24,6 @@ public:
 
 		double GetChanceBecomeCSW() const;
 		double GetProportionHighRisk(DemographicProfile::Employment) const;
-		NormalDist GetActivityLevel() const;
-		void SetActivityLevel(NormalDist &dist) { activityLevel = dist; }
 		void SetChanceBecomeCsw(double chance) { chanceBecomeCSW = chance; }
         void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) { proportionHighRisk[(std::size_t)employment] = proportion; }
         void SetPreExposureProphylaxisEfficacy(double efficacy) { preExposureProphylaxisEfficacy_ = efficacy; }
@@ -44,8 +42,6 @@ public:
 		double chanceBecomeCSW;
         //proportion of female population that is in the "high risk" lists
         std::array<double, (std::size_t)DemographicProfile::Employment::Last> proportionHighRisk;
-        //Distribution of activity level (i.e. marbles)
-		NormalDist activityLevel;
 
         //chance of infection for women->men, w/o circumcision or condoms
         double preExposureProphylaxisEfficacy_;

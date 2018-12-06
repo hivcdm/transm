@@ -58,10 +58,6 @@ double Male::SubPopParams::getProportionHighRisk(DemographicProfile::Employment 
 {
     return proportionHighRisk[(std::size_t)_cswStatus];
 }
-NormalDist Male::SubPopParams::getActivityLevel() const
-{
-	return activityLevel;
-}
 
 double Male::SubPopParams::getCircumProtectEff()  const
 {
@@ -297,14 +293,6 @@ Male::Male(EventParams &_eventParams, Age _age, bool _circumcised, const Demogra
 
 		averageYearsYounger[(int)partnership_type] = sexualBehaviorParams.getAverageYearsYounger();
 	}
-
-	activityLevel = _eventParams.randomNums.randNorm_NaturalNum(populationSpecificParams.getActivityLevel());
-
-	//activity level should not ever be 0
-	if(activityLevel == 0)
-	{
-		activityLevel = 1;
-	}
 }
 
 Male::~Male()
@@ -426,8 +414,6 @@ double Male::getMinPartnerSelectVal(Entity::SelectingCriteria _PSC, SexualPartne
 	{
 		return numeric_limits<double>::min();
 	}
-	case SEXUAL_ACTIVITY_LEVEL:
-	    throw std::runtime_error("not implemented");
 	case ENDSelectingCriteria:
 	    throw std::runtime_error("Invalid Sorting key");
 	}
@@ -456,7 +442,6 @@ double Male::getMaxPartnerSelectVal(Entity::SelectingCriteria _PSC, SexualPartne
 	{
 		return numeric_limits<double>::max();
 	}
-	case SEXUAL_ACTIVITY_LEVEL:
 	default:
 	    throw std::runtime_error("Invalid Sorting key");
 	}

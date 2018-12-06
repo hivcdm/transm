@@ -37,7 +37,6 @@ public :
         bool hasSexualBehavior(SexualPartnership::Type type) const { return sexualBehaviorParams.find(type) != sexualBehaviorParams.end(); }
 
 		double getProportionHighRisk(DemographicProfile::Employment _cswStatus) const;
-		NormalDist getActivityLevel() const;
 
 		double getCircumProtectEff() const;
 		double getCondomProtectEff() const;
@@ -88,8 +87,6 @@ public :
 	const BetaDist GetChanceCondomUsePerEvent(Entity::RiskLevel risk, SexualPartnership::Type type) const
 		{ return getSexualBehavior(type).getChanceCondomUsePerEvent(risk); }
 
-		void SetActivityLevel(NormalDist activity_level) { activityLevel = activity_level; }
-
 		int GetMaxPartnershipRejections() const { return maxPartnershipRejections; }
 		void SetMaxPartnershipRejections(int rejections) { maxPartnershipRejections = rejections; }
 
@@ -117,10 +114,7 @@ public :
 		//proportion of male population that is in the "high risk" lists based on csw status
 		double proportionHighRisk[(std::size_t)DemographicProfile::Employment::Last];
 
-	        double proportionCircumcised;
-
-		//Distribution of activity level (i.e. marbles)
-		NormalDist activityLevel;
+        double proportionCircumcised;
 
 		//the age that partnering discount will start
 		Age partneringDiscStartAgeYrs;
