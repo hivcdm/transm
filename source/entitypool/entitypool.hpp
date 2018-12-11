@@ -8,6 +8,7 @@
 #include "bucketsexualmixing.hpp"
 #include "entities/demographicprofile.hpp"
 #include "entities/sexualpartnership.hpp"
+#include "parameters/populationparameters.hpp"
 
 namespace transm {
 
@@ -25,7 +26,7 @@ public:
 	/// <summary>
 	/// Creates a new EntityPool
 	/// </summary>
-	EntityPool(Age ageOfMajority, unsigned int _popID, const std::map<SexualPartnership::Type, double> &_assort);
+	EntityPool(const PopulationParameters &parameters, unsigned int _popID, const std::map<SexualPartnership::Type, double> &_assort);
 
 	~EntityPool();
 

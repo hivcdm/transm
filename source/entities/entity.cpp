@@ -689,16 +689,16 @@ void Entity::removePartnership(SexualPartnership *_partnership)
 void Entity::rollForBecomeSexWorker(EventParams &_eventParams)
 {
     if(_eventParams.randomNums.chance(getChanceBecomeCsw())) {
-	if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson]
-	   .enabled && trace()) {
-	    _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
-		(isMale() ? " % Male " : " % Female ");
-	    _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
-		getID() << " becomes CSW" << std::endl;
-	}
+        if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson]
+            .enabled && trace()) {
+            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
+              (isMale() ? " % Male " : " % Female ");
+            _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
+              getID() << " becomes CSW" << std::endl;
+        }
 
-	dmgProfile.set(DemographicProfile::Demographic::Employment,
-		       (std::size_t)DemographicProfile::Employment::Csw);
+        dmgProfile.set(DemographicProfile::Demographic::Employment,
+            (std::size_t)DemographicProfile::Employment::Csw);
     }
 }
 

@@ -3426,7 +3426,7 @@ void Population::Initialize(const PopulationParameters &parameters)
     }
 
     //create EntityPool - this will contain all Entities
-    entities.reset(new EntityPool(popWideParams.GetAgeOfMajority(), GetId(), assort));
+    entities.reset(new EntityPool(popWideParams, GetId(), assort));
 
 	// initialize the list of demographic profile ids used in the simulation
 	demographicProfileIDs = entities->getProfileIDs();

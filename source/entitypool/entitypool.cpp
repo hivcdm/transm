@@ -9,7 +9,7 @@
 namespace transm {
 
 //creates a New EntityPool
-EntityPool::EntityPool(Age _ageOfMajority, unsigned int _popID, const std::map<SexualPartnership::Type, double> &_assort)
+EntityPool::EntityPool(const PopulationParameters &parameters, unsigned int _popID, const std::map<SexualPartnership::Type, double> &_assort)
 {
 	//allocate space for Buckets and set to nullptr
 	entityBuckets = std::vector<BucketDemographicProfile *>(DemographicProfile::TotalNumBuckets, nullptr);
@@ -36,21 +36,30 @@ EntityPool::EntityPool(Age _ageOfMajority, unsigned int _popID, const std::map<S
 	naFemaleSelector.selectProfileIDs(validBucketIDs, nullptr);
     assert(validBucketIDs.size() == 4);
 
-	// Instantiate the Male Sexually Active Buckets = (SA, Male, *, *, nonCSW) -- adds six buckets
+	// Instantiate the Male Sexually Active Buckets = (SA, Male, *, *, [param dependant])
 	DemographicProfile saMaleSelector;
 	saMaleSelector.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
     saMaleSelector.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::Active);
-    saMaleSelector.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::NonCsw);
+    if (parameters.GetMaleParameters().getChanceBecomeCSW() == 0.0)
+    {
+        saMaleSelector.set(DemographicProfile::Demographic::Employment,
+            (std::size_t)DemographicProfile::Employment::NonCsw);
+    }
 	saMaleSelector.selectProfileIDs(validBucketIDs, nullptr);
-    assert(validBucketIDs.size() == 10);
 
-	// Instantiate the Female Sexually Active Buckets = (SA, Female, Msw, *, *) -- adds four buckets
+	// Instantiate the Female Sexually Active Buckets = (SA, Female, Msw, *, [param dependant])
 	DemographicProfile saFemaleSelector;
 	saFemaleSelector.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Female);
 	saFemaleSelector.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Msw);
     saFemaleSelector.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::Active);
+    if (parameters.GetFemaleParameters().GetChanceBecomeCSW() == 0.0)
+    {
+        saMaleSelector.set(DemographicProfile::Demographic::Employment,
+            (std::size_t)DemographicProfile::Employment::NonCsw);
+    }
 	saFemaleSelector.selectProfileIDs(validBucketIDs, nullptr);
-    assert(validBucketIDs.size() == 14);
+
+    Age _ageOfMajority = parameters.GetAgeOfMajority();
 
 	//instantiate the spaces for all our buckets. The # of buckets depends on class BucketClassifiers
 	//these people are stored in a more complicated BucketDemographicProfile b/c they are involved in sexual mixing
@@ -63,7 +72,8 @@ EntityPool::EntityPool(Age _ageOfMajority, unsigned int _popID, const std::map<S
 			DemographicProfile::get(validBucketIDs.at(i), DemographicProfile::Demographic::SexualActivityStatus))
 		{
 			// make a Non-Active bucket
-			entityBuckets.at(currBucketID) = new BucketDemographicProfile(currBucketID, DemographicProfile::toString(currBucketID), true);
+			entityBuckets.at(currBucketID) = new BucketDemographicProfile(currBucketID,
+                DemographicProfile::toString(currBucketID), true);
 			validProfileIDs.push_back(currBucketID);
 		}
 		else
