@@ -2525,47 +2525,29 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 		firstRow << Constants::Tab;
 		secondRow << Constants::Tab;
 		thirdRow << "Month" << Constants::Tab;
-		//Partnership Headers
 
-		for (auto hetero : { true , false })
-		{
-			for (int i = 0; i < 4; i++)
-			{
-				firstRow << "Individuals by Partnership";
-				std::string label = partnershipLabelsHetero[i];
-				secondRow << label;
+        //Partnership Headers
+        for (auto partnership_type : enum_iterator<SexualPartnership::Type>())
+        {
+            firstRow << "Individuals by Partnership";
+            secondRow << SexualPartnership::TypeStrings.at(partnership_type);
 
-				std::vector<std::string> entity_types;
-
-				if (hetero)
-				{
-					entity_types.push_back("MSW");
-					entity_types.push_back("MSMW");
-					entity_types.push_back("Female");
-				}
-				else
-				{
-					entity_types.push_back("MSMW");
-					entity_types.push_back("MSM");
-				}
-
-				for (int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
-				{
-					for (int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
-					{
-						for (auto entity_type : entity_types)
-						{
-							for (int m = (int)Entity::RiskLevel::HIGH; m >= 0; m--)
-							{
-								firstRow << Constants::Tab;
-								secondRow << Constants::Tab;
-								thirdRow << entity_type << Constants::Space << relationshipLabels[k] << Constants::Space << employmentLabels[l] <<
-									Constants::Space << riskLabels[m] << Constants::Tab;
-							}
-						}
-					}
-				}
-			}
+            for (int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
+            {
+                for (int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
+                {
+                    for (auto entity_type :  { "MSW", "MSMW", "MSM", "female" })
+                    {
+                        for (int m = (int)Entity::RiskLevel::HIGH; m >= 0; m--)
+                        {
+                            firstRow << Constants::Tab;
+                            secondRow << Constants::Tab;
+                            thirdRow << entity_type << Constants::Space << relationshipLabels[k] << Constants::Space << employmentLabels[l] <<
+                              Constants::Space << riskLabels[m] << Constants::Tab;
+                        }
+                    }
+                }
+            }
 		}
 
 		//Concurrent Partnerships
@@ -2594,14 +2576,13 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 
 		for (std::string partnership_type : { "Male+Female" , "MSMW+Female", "MSMW+MSM", "MSM+MSM" })
 		{
-			auto hetero = partnership_type == "Male+Female" || partnership_type == "MSMW+Female";
 			secondRow << partnership_type;
 
-			for (int i = 0; i < 4; i++)
+            for (auto partnership_type : enum_iterator<SexualPartnership::Type>())
 			{
 				for (int j = 0; j < 3; j++)
 				{
-					std::string label = partnershipLabelsHetero[i];
+					std::string label = SexualPartnership::TypeStrings.at(partnership_type);
 					firstRow << Constants::Tab;
 					secondRow << Constants::Tab;
 					thirdRow << label << Constants::Space << riskLabels2[j] << Constants::Tab;
@@ -2715,38 +2696,23 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 		}
 	});
 
-	for (auto hetero : { true , false })
-	{
-		for (auto partnership_type : enum_iterator<SexualPartnership::Type>())
-		{
-			std::vector<std::string> entity_types;
 
-			if (hetero)
-			{
-				entity_types.push_back("msw");
-				entity_types.push_back("msmw");
-				entity_types.push_back("female");
-			}
-			else
-			{
-				entity_types.push_back("msmw");
-				entity_types.push_back("msm");
-			}
+    for (auto partnership_type : enum_iterator<SexualPartnership::Type>())
+    {
 
-			for (int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
-			{
-				for (int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
-				{
-					for (auto entity_type : entity_types)
-					{
-						for (int m = (int)Entity::RiskLevel::HIGH; m >= 0; m--)
-						{
-							_outStream << num_in_partnership[(std::size_t)partnership_type][entity_type][k][l][m] << Constants::Tab;
-						}
-					}
-				}
-			}
-		}
+        for (int l = 0; l < (int)DemographicProfile::Employment::Last; l++)
+        {
+            for (int k = 0; k < (int)DemographicProfile::RelationshipStatus::Last; k++)
+            {
+                for (auto entity_type :  { "MSW", "MSMW", "MSM", "female" })
+                {
+                    for (int m = (int)Entity::RiskLevel::HIGH; m >= 0; m--)
+                    {
+                        _outStream << num_in_partnership[(std::size_t)partnership_type][entity_type][k][l][m] << Constants::Tab;
+                    }
+                }
+            }
+        }
 	}
 
 	for (std::string entity_type : { "MSW", "MSM", "MSMW", "female" })
@@ -2756,7 +2722,6 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 			for (int csw = 0; csw < (int)DemographicProfile::Employment::Last; csw++)
 			{
 				if (csw == (int)DemographicProfile::Employment::Csw && entity_type == "MSW") continue;
-
 				for (int i = 0; i < 5; i++)
 				{
 					_outStream << num_in_concurrent[entity_type][i][csw][risk] << Constants::Tab;
@@ -2767,8 +2732,6 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 
 	for (std::string partnership_type : { "MSW+Female" , "MSMW+Female", "MSMW+MSM", "MSM+MSM" })
 	{
-		auto hetero = partnership_type == "MSW+Female" || partnership_type == "MSMW+Female";
-
 		std::string partner1;
 		std::string partner2;
 
@@ -3209,15 +3172,21 @@ void Population::PrintPopulationHeaders(Time _time, std::ostream &_outStream)
 		secondRow << age_ranges.at(i) << Constants::Tab;
     }
 
-    //write out string buffers to trace file
     firstRow << "Number circumcised" << Constants::Tab << Constants::Tab;
     secondRow << "NA" << Constants::Tab << "SA" << Constants::Tab;
+
+    // By Orientation
+    firstRow << "By Orientation (Males)" << Constants::Tab << Constants::Tab
+             << Constants::Tab;
+	for (std::string label : { "MSW", "MSMW", "MSM" })
+    {
+        secondRow << label << Constants::Tab;
+    }
 
     // By Risk
 	DemographicProfile SAProfile;
     std::vector<DemographicProfile::ProfileID> SAProfileIDs;
 
-    //First tally the men
     SAProfile.set(DemographicProfile::Demographic::SexualActivityStatus,
 		(std::size_t)DemographicProfile::SexualActivityStatus::Active);
     SAProfile.selectProfileIDs(SAProfileIDs, &demographicProfileIDs);
@@ -3366,10 +3335,30 @@ void Population::PrintPopulation(EventParams &/*_paramters*/, Time _time, std::o
     _outStream << num_circumcised_na << Constants::Tab;
     _outStream << num_circumcised_sa << Constants::Tab;
 
-	DemographicProfile SAProfile;
-    std::vector<DemographicProfile::ProfileID> SAProfileIDs;
+    // output size by orientation
+    std::array<std::size_t, (std::size_t)DemographicProfile::SexualOrientation::Last> orientationTotals;
+    orientationTotals.fill(0);
+	for (auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
+	{
+        DemographicProfile profile;
+        std::vector<DemographicProfile::ProfileID> profileIDs;
+        profile.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
+
+        profile.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)orientation);
+        profile.selectProfileIDs(profileIDs, &demographicProfileIDs);
+        for (auto profileID : profileIDs)
+        {
+            orientationTotals[(std::size_t)orientation] += entities->size(profileID);
+        }
+    }
+    for (auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
+	{
+        _outStream << orientationTotals[(std::size_t)orientation] << Constants::Tab;
+    }
 
     //output size by risk
+    DemographicProfile SAProfile;
+    std::vector<DemographicProfile::ProfileID> SAProfileIDs;
     SAProfile.set(DemographicProfile::Demographic::SexualActivityStatus,
 		(std::size_t)DemographicProfile::SexualActivityStatus::Active);
     SAProfile.selectProfileIDs(SAProfileIDs, &demographicProfileIDs);
