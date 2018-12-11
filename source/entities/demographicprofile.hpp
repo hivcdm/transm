@@ -15,7 +15,7 @@ namespace transm {
 	{
 		{"SA", "NA"},
 		{"MALE", "FEMALE"},
-		{"MSW", "MSM", "MSMW" },
+		{"MSW", "MSMW", "MSM" },
 		{"NON_SINGLE", "SINGLE"},
 		{"NON_CSW", "CSW"}
 	};
@@ -76,7 +76,7 @@ public:
     {
         Msw,
         Msmw,
-	Msm,
+        Msm,
         Last,
         First = Msw
     };
