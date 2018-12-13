@@ -17,16 +17,16 @@ EntityPool::EntityPool(const PopulationParameters &parameters, unsigned int _pop
 	//contains the BucketID's of the buckets we want to use in this simulation
 	std::vector<DemographicProfile::ProfileID> validBucketIDs;
 
-	// Instantiate the Male Not-Sexually Active Buckets = (NA, Male, *, Single, nonCSW) -- adds three buckets
+	// Instantiate the Male Not-Sexually Active Buckets = (NA, Male, *, Single, nonCSW, *, *) -- adds three buckets
 	DemographicProfile naMaleSelector;
 	naMaleSelector.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
     naMaleSelector.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::NotActive);
     naMaleSelector.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::Single);
     naMaleSelector.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::NonCsw);
 	naMaleSelector.selectProfileIDs(validBucketIDs, nullptr);
-    assert(validBucketIDs.size() == 3);
+    assert(validBucketIDs.size() == 12);
 
-	// Instantiate the Female Not-Sexually Active Buckets = (NA, Female, Msw, Single, nonCSW) -- adds one bucket
+	// Instantiate the Female Not-Sexually Active Buckets = (NA, Female, Msw, Single, nonCSW, *, *) -- adds one bucket
 	DemographicProfile naFemaleSelector;
 	naFemaleSelector.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Female);
 	naFemaleSelector.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Msw);
@@ -34,12 +34,13 @@ EntityPool::EntityPool(const PopulationParameters &parameters, unsigned int _pop
     naFemaleSelector.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::Single);
     naFemaleSelector.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::NonCsw);
 	naFemaleSelector.selectProfileIDs(validBucketIDs, nullptr);
-    assert(validBucketIDs.size() == 4);
+    assert(validBucketIDs.size() == 16);
 
-	// Instantiate the Male Sexually Active Buckets = (SA, Male, *, *, [param dependant])
+	// Instantiate the Male Sexually Active Buckets = (SA, Male, *, *, [param dependant], *, *)
 	DemographicProfile saMaleSelector;
 	saMaleSelector.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
-    saMaleSelector.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::Active);
+    saMaleSelector.set(DemographicProfile::Demographic::SexualActivityStatus,
+        (std::size_t)DemographicProfile::SexualActivityStatus::Active);
     if (parameters.GetMaleParameters().getChanceBecomeCSW() == 0.0)
     {
         saMaleSelector.set(DemographicProfile::Demographic::Employment,
@@ -47,14 +48,15 @@ EntityPool::EntityPool(const PopulationParameters &parameters, unsigned int _pop
     }
 	saMaleSelector.selectProfileIDs(validBucketIDs, nullptr);
 
-	// Instantiate the Female Sexually Active Buckets = (SA, Female, Msw, *, [param dependant])
+	// Instantiate the Female Sexually Active Buckets = (SA, Female, Msw, *, [param dependant], *, *)
 	DemographicProfile saFemaleSelector;
 	saFemaleSelector.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Female);
 	saFemaleSelector.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)DemographicProfile::SexualOrientation::Msw);
-    saFemaleSelector.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::Active);
+    saFemaleSelector.set(DemographicProfile::Demographic::SexualActivityStatus,
+        (std::size_t)DemographicProfile::SexualActivityStatus::Active);
     if (parameters.GetFemaleParameters().GetChanceBecomeCSW() == 0.0)
     {
-        saMaleSelector.set(DemographicProfile::Demographic::Employment,
+        saFemaleSelector.set(DemographicProfile::Demographic::Employment,
             (std::size_t)DemographicProfile::Employment::NonCsw);
     }
 	saFemaleSelector.selectProfileIDs(validBucketIDs, nullptr);
@@ -86,8 +88,8 @@ EntityPool::EntityPool(const PopulationParameters &parameters, unsigned int _pop
 
 			if(!invalidCombo)
 			{
-				entityBuckets.at(currBucketID) = new BucketSexualMixing(currBucketID, DemographicProfile::toString(currBucketID), _popID,
-                    _ageOfMajority, Age::from_months(12 * Entity::maxYrForDeathStats + 1), _assort);
+				entityBuckets.at(currBucketID) = new BucketSexualMixing(currBucketID, DemographicProfile::toString(currBucketID),
+                    _popID, _ageOfMajority, Age::from_months(12 * Entity::maxYrForDeathStats + 1), _assort);
 				validProfileIDs.push_back(currBucketID);
 
 			}
@@ -155,7 +157,7 @@ bool EntityPool::addEntity(Entity *_person)
 {
 	//gets the BucketDemographicProfile that this person is supposed to be a part of based on their DemographicProfile
 	BucketDemographicProfile *bucket = entityBuckets.at(_person->getDemographicProfile()->getProfileID());
-	assert(bucket != nullptr);
+	assert(bucket);
 	//bucket's insert method should take care of the _person->setCurrBucketProfileID(...)
 	return bucket->insert(_person);
 }

@@ -609,33 +609,31 @@ SimulationParametersXml::EntityDistributions SimulationParametersXml::GetEntityD
     {
 	    DemographicProfile profile;
 
-        std::string entity_type = distribution_node.attribute("type").as_string();
-		if (entity_type == "female") {
-			profile.set(DemographicProfile::Demographic::Gender,
-				(std::size_t)DemographicProfile::Gender::Female);
-			// females are only msw (well, wsm)
-			profile.set(DemographicProfile::Demographic::SexualOrientation,
+        if (distribution_node.attribute("type"))
+        {
+            std::string entity_type = distribution_node.attribute("type").as_string();
+            if (entity_type == "female")
+            {
+                profile.set(DemographicProfile::Demographic::Gender,
+                    (std::size_t)DemographicProfile::Gender::Female);
+                // females are only msw (well, wsm)
+                profile.set(DemographicProfile::Demographic::SexualOrientation,
 					(std::size_t)DemographicProfile::SexualOrientation::Msw);
-		} else {
-			profile.set(DemographicProfile::Demographic::Gender,
-				(std::size_t)DemographicProfile::Gender::Male);
-			// no male csw's in the population -- for now
-			profile.set(DemographicProfile::Demographic::Employment,
-				(std::size_t)DemographicProfile::Employment::NonCsw);
-			if (entity_type == "msw") {
-				profile.set(DemographicProfile::Demographic::SexualOrientation,
-					(std::size_t)DemographicProfile::SexualOrientation::Msw);
-			} else if (entity_type == "msm") {
-				profile.set(DemographicProfile::Demographic::SexualOrientation,
-					(std::size_t)DemographicProfile::SexualOrientation::Msm);
-			} else if (entity_type == "msmw") {
-				profile.set(DemographicProfile::Demographic::SexualOrientation,
-					(std::size_t)DemographicProfile::SexualOrientation::Msmw);
-			} else {
-				throw std::runtime_error("Unknown entity_type in xml node " +
-					std::string(distribution_node.name()));
-			}
-		}
+            }
+            else if (entity_type == "male")
+            {
+                profile.set(DemographicProfile::Demographic::Gender,
+                    (std::size_t)DemographicProfile::Gender::Male);
+            } else {
+                throw std::runtime_error("Unknown entity type in xml node " +
+                    std::string(distribution_node.name()));
+            }
+        }
+        else if (distribution_node.attribute("bucket"))
+        {
+            std::string bucketString = distribution_node.attribute("bucket").as_string();
+            profile.parse(bucketString);
+        }
         distributions.push_back(DemographicProfile::DoublePair(profile,
 			distribution_node.text().as_double()));
     }

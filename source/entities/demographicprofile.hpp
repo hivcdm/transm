@@ -9,7 +9,7 @@ namespace transm {
 
     //declare strings of Enums
 	const std::vector<std::string> DemographicStrs =
-	{"SEXUAL_ACTIVITY_STATUS", "GENDER", "SEXUAL_ORIENTATION", "RELATIONSHIP_STATUS", "EMPLOYMENT"};
+	{"SEXUAL_ACTIVITY_STATUS", "GENDER", "SEXUAL_ORIENTATION", "RELATIONSHIP_STATUS", "EMPLOYMENT", "RACE", "ETHNICITY"};
 
 	const std::vector<std::vector<std::string>> DemographicEnumStrs =
 	{
@@ -17,7 +17,9 @@ namespace transm {
 		{"MALE", "FEMALE"},
 		{"MSW", "MSMW", "MSM" },
 		{"NON_SINGLE", "SINGLE"},
-		{"NON_CSW", "CSW"}
+		{"NON_CSW", "CSW"},
+        {"BLACK", "WHITE"},
+        {"NON_HISPANIC", "HISPANIC"}
 	};
 
 //class Entity;
@@ -45,7 +47,8 @@ public:
         SexualOrientation,
         RelationshipStatus,
         Employment,
-        //Location,	 this was proposed at one point and might come back someday
+        Race,
+        Ethnicity,
         Last,
         First = SexualActivityStatus
     };
@@ -103,14 +106,32 @@ public:
         First = NonCsw
     };
 
+    enum class Race
+    {
+        Black,
+        White,
+        Last,
+        First = Black
+    };
+
+    enum class Ethnicity
+    {
+        NonHispanic,
+        Hispanic,
+        Last,
+        First = NonHispanic
+    };
+
 	static Demographic MaxDemographic;
 	//we have to statically define this here, b/c we  use this value elsewhere to statically declare arrays...
     static const std::size_t TotalNumBuckets =
-	(std::size_t)SexualActivityStatus::Last
+        (std::size_t)SexualActivityStatus::Last
         * (std::size_t)Gender::Last
         * (std::size_t)SexualOrientation::Last
         * (std::size_t)RelationshipStatus::Last
-        * (std::size_t)Employment::Last;
+        * (std::size_t)Employment::Last
+        * (std::size_t)Race::Last
+        * (std::size_t)Ethnicity::Last;
 
 	//each unique profile has a unique integer value assigned to it.
 	// tuples that have wildcard values do not have a profileID

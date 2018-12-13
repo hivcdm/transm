@@ -91,7 +91,7 @@ Female::Female(EventParams &_eventParams, Age _age, const DemographicProfile &pr
 	// Only set the gender
     // The other demographic profiles values get set in the Entity constructor -- don't overwrite the entire profile
     assert(profile.get(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Female);
-	dmgProfile.set(DemographicProfile::Demographic::Gender, profile.get(DemographicProfile::Demographic::Gender));
+	dmgProfile = profile;
 
 	risk = Entity::RiskLevel::LOW;
 

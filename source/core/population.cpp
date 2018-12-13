@@ -1026,11 +1026,18 @@ void Population::GenerateInitialEntities()
         AgeRange ageRange = {ageBucketParams.GetMinAge(), ageBucketParams.GetMaxAge()};
 		for (auto profileDoublePair : ageBucketParams.GetEntityProportions())
 		{
-			DemographicProfile profile = profileDoublePair.first;
-			double value = profileDoublePair.second * popWideParams.GetBirthProportion(profile);
-			unsigned long numToCreate = Utility::round<unsigned long>(
-			    popWideParams.GetInitialSize() * value);
-			GenerateEntities(profile, numToCreate, &ageRange);
+            auto gender = profileDoublePair.first.get(DemographicProfile::Demographic::Gender);
+            double ageRangeValue = profileDoublePair.second;
+
+            for (auto birthProfile : popWideParams.GetBirthProportions())
+            {
+                if (gender == birthProfile.first.get(DemographicProfile::Demographic::Gender))
+                {
+                    unsigned long numToCreate = Utility::round<unsigned long>(
+                      popWideParams.GetInitialSize() * ageRangeValue * birthProfile.second);
+                    GenerateEntities(birthProfile.first, numToCreate, &ageRange);
+                }
+            }
 		}
     }
 }
@@ -3128,9 +3135,23 @@ void Population::PrintPopulationHeaders(Time _time, std::ostream &_outStream)
 	"ART Toxicity" << Constants::Tab << "Proph Toxicity" << Constants::Tab << "Other" << Constants::Tab << "Total" <<
 	Constants::Tab;
     firstRow << "Gender" << Constants::Tab;
-    secondRow << "Males" << Constants::Tab;
-	firstRow << Constants::Tab;
     secondRow << "Females" << Constants::Tab;
+	firstRow << Constants::Tab;
+    secondRow << "All Males" << Constants::Tab;
+    // By Orientation
+    firstRow << "Male By Orientation" << Constants::Tab << Constants::Tab
+             << Constants::Tab;
+	for (std::string label : { "MSW", "MSMW", "MSM" })
+    {
+        secondRow << label << Constants::Tab;
+    }
+    // By Race and Ethnicity
+    firstRow << "Race and Ethnicity" << Constants::Tab
+             << Constants::Tab << Constants::Tab << Constants::Tab;
+	for (std::string label : { "Black:NonHispanic", "Black:Hispanic", "White:NonHispanic", "White:Hispanic"})
+    {
+        secondRow << label << Constants::Tab;
+    }
 
     //write out headers for population by age
     firstRow << "Non-SA Pop (All Ages)" << Constants::Tab;
@@ -3174,14 +3195,6 @@ void Population::PrintPopulationHeaders(Time _time, std::ostream &_outStream)
 
     firstRow << "Number circumcised" << Constants::Tab << Constants::Tab;
     secondRow << "NA" << Constants::Tab << "SA" << Constants::Tab;
-
-    // By Orientation
-    firstRow << "By Orientation (Males)" << Constants::Tab << Constants::Tab
-             << Constants::Tab;
-	for (std::string label : { "MSW", "MSMW", "MSM" })
-    {
-        secondRow << label << Constants::Tab;
-    }
 
     // By Risk
 	DemographicProfile SAProfile;
@@ -3244,8 +3257,60 @@ void Population::PrintPopulation(EventParams &/*_paramters*/, Time _time, std::o
     _outStream << totalDeaths << Constants::Tab;
 
     //output size of male and female populations
-    _outStream << GetSize(DemographicProfile::Gender::Male) << Constants::Tab;
     _outStream << GetSize(DemographicProfile::Gender::Female) << Constants::Tab;
+    _outStream << GetSize(DemographicProfile::Gender::Male) << Constants::Tab;
+
+    // output size by orientation
+    std::array<std::size_t, (std::size_t)DemographicProfile::SexualOrientation::Last> orientationTotals;
+    orientationTotals.fill(0);
+	for (auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
+	{
+        DemographicProfile profile;
+        std::vector<DemographicProfile::ProfileID> profileIDs;
+        profile.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
+
+        profile.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)orientation);
+        profile.selectProfileIDs(profileIDs, &demographicProfileIDs);
+        for (auto profileID : profileIDs)
+        {
+            orientationTotals[(std::size_t)orientation] += entities->size(profileID);
+        }
+    }
+    for (auto total : orientationTotals)
+	{
+        _outStream << total << Constants::Tab;
+    }
+
+    // by race and ethnicity
+    // output size by orientation
+    const std::size_t raceEthnicCount = (std::size_t)DemographicProfile::Race::Last *
+      (std::size_t)DemographicProfile::Ethnicity::Last;
+    std::array<std::size_t, raceEthnicCount> raceEthnicTotals;
+    raceEthnicTotals.fill(0);
+
+    int index = 0;
+	for (auto race : enum_iterator<DemographicProfile::Race>())
+	{
+        for (auto ethnicity : enum_iterator<DemographicProfile::Ethnicity>())
+        {
+            DemographicProfile profile;
+            std::vector<DemographicProfile::ProfileID> profileIDs;
+
+            profile.set(DemographicProfile::Demographic::Race, (std::size_t)race);
+            profile.set(DemographicProfile::Demographic::Ethnicity, (std::size_t)ethnicity);
+
+            profile.selectProfileIDs(profileIDs, &demographicProfileIDs);
+            for (auto profileID : profileIDs)
+            {
+                raceEthnicTotals[index] += entities->size(profileID);
+            }
+            index++;
+        }
+    }
+    for (auto total : raceEthnicTotals)
+	{
+        _outStream << total << Constants::Tab;
+    }
 
     // tally the size of non-sexually actives by gender
 	std::size_t total_na = 0;
@@ -3334,27 +3399,6 @@ void Population::PrintPopulation(EventParams &/*_paramters*/, Time _time, std::o
 
     _outStream << num_circumcised_na << Constants::Tab;
     _outStream << num_circumcised_sa << Constants::Tab;
-
-    // output size by orientation
-    std::array<std::size_t, (std::size_t)DemographicProfile::SexualOrientation::Last> orientationTotals;
-    orientationTotals.fill(0);
-	for (auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
-	{
-        DemographicProfile profile;
-        std::vector<DemographicProfile::ProfileID> profileIDs;
-        profile.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Male);
-
-        profile.set(DemographicProfile::Demographic::SexualOrientation, (std::size_t)orientation);
-        profile.selectProfileIDs(profileIDs, &demographicProfileIDs);
-        for (auto profileID : profileIDs)
-        {
-            orientationTotals[(std::size_t)orientation] += entities->size(profileID);
-        }
-    }
-    for (auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
-	{
-        _outStream << orientationTotals[(std::size_t)orientation] << Constants::Tab;
-    }
 
     //output size by risk
     DemographicProfile SAProfile;

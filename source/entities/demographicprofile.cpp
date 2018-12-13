@@ -9,21 +9,23 @@
 
 namespace transm {
 
-DemographicProfile::Demographic DemographicProfile::MaxDemographic = DemographicProfile::Demographic((std::size_t)DemographicProfile::Demographic::Last - 1);
-
 std::vector<BaseEnumCls> DemographicProfile::DemographicEnumCls;
 std::vector<std::unique_ptr<const DemographicProfile>> DemographicProfile::ProfileIDtoProfile;
 std::vector<string> DemographicProfile::ProfileIDtoStr;
 std::map<DemographicProfile, DemographicProfile::ProfileID, DemographicProfile::less> DemographicProfile::ProfileToProfileID;
 
 //declare fields of class DemographicProfile
+DemographicProfile::Demographic DemographicProfile::MaxDemographic = DemographicProfile::Demographic((std::size_t)DemographicProfile::Demographic::Last - 1);
 DemographicProfile::ProfileID NOT_UNIQUE = -1;
 const DemographicProfile::ProfileID DemographicProfile::NOT_UNIQUE = DemographicProfile::ProfileID(
             -1);	//used as a return value to getProfileID to signify that the current tuple of enums inside this class contain a wildcard
 const DemographicProfile::ProfileID DemographicProfile::MIN = DemographicProfile::ProfileID(0);
 const DemographicProfile::ProfileID DemographicProfile::MAX = DemographicProfile::TotalNumBuckets - 1;
-const DemographicProfile::ProfileID DemographicProfile::END = DemographicProfile::ProfileID((1 + (std::size_t)SexualActivityStatus::Last) * (1 + (std::size_t)Gender::Last) *
-    (1 + (std::size_t)SexualOrientation::Last) * (1 + (std::size_t)RelationshipStatus::Last) * (1 + (std::size_t)Employment::Last));
+const DemographicProfile::ProfileID DemographicProfile::END = DemographicProfile::ProfileID(
+    (1 + (std::size_t)SexualActivityStatus::Last) * (1 + (std::size_t)Gender::Last) *
+    (1 + (std::size_t)SexualOrientation::Last) * (1 + (std::size_t)RelationshipStatus::Last) *
+    (1 + (std::size_t)Employment::Last) *
+    (1 + (std::size_t)Race::Last) * (1 + (std::size_t)Ethnicity::Last));
 
 DemographicProfile::DemographicProfile()
 {
@@ -425,6 +427,10 @@ void DemographicProfile::initEnums()
 	  DemographicEnumStrs[(std::size_t)DemographicProfile::Demographic::RelationshipStatus]));
     DemographicProfile::DemographicEnumCls.push_back(EnumCls<Employment>(
 	  DemographicEnumStrs[(std::size_t)DemographicProfile::Demographic::Employment]));
+    DemographicProfile::DemographicEnumCls.push_back(EnumCls<Race>(
+	  DemographicEnumStrs[(std::size_t)DemographicProfile::Demographic::Race]));
+    DemographicProfile::DemographicEnumCls.push_back(EnumCls<Ethnicity>(
+	  DemographicEnumStrs[(std::size_t)DemographicProfile::Demographic::Ethnicity]));
 }
 
 void DemographicProfile::initProfileIDMap()
@@ -462,16 +468,12 @@ void DemographicProfile::initProfileIDMap()
         for(Demographic category = DemographicProfile::Demographic((std::size_t)DemographicProfile::Demographic::Last - 1);
             category >= DemographicProfile::Demographic(0); category = DemographicProfile::Demographic((std::size_t)category - 1))
 		{
-			//Don't print out SA (for now -- too redundant)
-			if(category != DemographicProfile::Demographic::SexualActivityStatus)
-			{
-                currEnumStr << *(DemographicProfile::DemographicEnumCls.at((std::size_t)category).toString(currDemographicProfile.get(category)));
+            currEnumStr << *(DemographicProfile::DemographicEnumCls.at((std::size_t)category).toString(currDemographicProfile.get(category)));
 
-				if(category > DemographicProfile::Demographic(1))
-				{
-					currEnumStr << Constants::Colon;
-				}
-			}
+            if(category > DemographicProfile::Demographic(0))
+            {
+                currEnumStr << Constants::Colon;
+            }
 		}
 
 		//map ProfileID->string

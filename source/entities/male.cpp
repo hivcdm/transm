@@ -237,10 +237,31 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
         throw std::runtime_error("Unknown sexual orientation");
     }
 
+out:
     //choose race -- based on raceAssort
-    //choose ethnicity -- based on ethnicAssort
+    if (_randomNums.chance(0.5))
+    {
+        selector.set(DemographicProfile::Demographic::Race,
+            (std::size_t)DemographicProfile::Race::Black);
+    }
+    else
+    {
+        selector.set(DemographicProfile::Demographic::Race,
+            (std::size_t)DemographicProfile::Race::White);
+    }
 
-  out:
+    //choose ethnicity -- based on ethnicAssort
+    if (_randomNums.chance(0.5))
+    {
+        selector.set(DemographicProfile::Demographic::Ethnicity,
+            (std::size_t)DemographicProfile::Ethnicity::NonHispanic);
+    }
+    else
+    {
+        selector.set(DemographicProfile::Demographic::Ethnicity,
+            (std::size_t)DemographicProfile::Ethnicity::Hispanic);
+    }
+
 	std::vector<DemographicProfile::ProfileID> validBucketIDs;
     selector.selectProfileIDs(validBucketIDs, nullptr);
 
@@ -266,9 +287,7 @@ Male::Male(EventParams &_eventParams, Age _age, bool _circumcised, const Demogra
 	// Only set the gender and sexual orientation
 	// The other demographic profiles values get set in the Entity constructor -- don't overwrite the entire profile
     assert(profile.get(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male);
-    dmgProfile.set(DemographicProfile::Demographic::Gender, profile.get(DemographicProfile::Demographic::Gender));
-    dmgProfile.set(DemographicProfile::Demographic::SexualOrientation,
-		profile.get(DemographicProfile::Demographic::SexualOrientation));
+    dmgProfile = profile;
 
 	circumcised = _circumcised;
 
