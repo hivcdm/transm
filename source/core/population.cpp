@@ -3466,7 +3466,7 @@ void Population::Initialize(const PopulationParameters &parameters)
     {
         if(!popWideParams.GetMaleParameters().hasSexualBehavior(partnership_type)) continue;
         assort[partnership_type] = popWideParams.GetMaleParameters().
-		  getSexualBehavior(partnership_type).getAssortativeness();
+		  getSexualBehavior(partnership_type).getRiskAssortativeness();
     }
 
     //create EntityPool - this will contain all Entities

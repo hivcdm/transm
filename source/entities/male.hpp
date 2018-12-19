@@ -208,7 +208,12 @@ public:
 
     void SetChanceBecomeSexWorker(double chance) { populationSpecificParams.SetChanceBecomeCsw(chance); }
 
-    void SetAssortativeness(SexualPartnership::Type partnership_type, double assortativeness) { populationSpecificParams.getSexualBehavior(partnership_type).setAssortativeness(assortativeness); }
+    void SetRiskAssortativeness(SexualPartnership::Type partnership_type, double assortativeness)
+        { populationSpecificParams.getSexualBehavior(partnership_type).setRiskAssortativeness(assortativeness); }
+    void SetRaceAssortativeness(SexualPartnership::Type partnership_type, double assortativeness)
+        { populationSpecificParams.getSexualBehavior(partnership_type).setRaceAssortativeness(assortativeness); }
+    void SetEthnicAssortativeness(SexualPartnership::Type partnership_type, double assortativeness)
+        { populationSpecificParams.getSexualBehavior(partnership_type).setEthnicAssortativeness(assortativeness); }
 
     double getChanceBecomeCsw() const;
 

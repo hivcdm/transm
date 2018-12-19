@@ -490,7 +490,10 @@ SexualBehavior SimulationParametersXml::GetSexualBehavior(const std::string &ent
     SexualBehavior result(type);
 
     auto assortivityNode = node.child("selectionCriteria").child("assortivity");
-    result.setAssortativeness(Text<double>(assortivityNode.child("riskAssortivity")));
+    result.setRiskAssortativeness(Text<double>(assortivityNode.child("riskAssortivity")));
+    result.setRaceAssortativeness(Text<double>(assortivityNode.child("raceAssortivity")));
+    result.setEthnicAssortativeness(Text<double>(assortivityNode.child("ethnicAssortivity")));
+
     result.setChanceChooseWithSteady(Text<double>(assortivityNode.child("chanceChooseWithSteady")));
     result.setChanceMsmwChooseMale(Text<double>(assortivityNode.child("chanceMsmwChooseMale")));
     result.setChanceMsmChooseMsmw(Text<double>(assortivityNode.child("chanceMsmChooseMsmw")));

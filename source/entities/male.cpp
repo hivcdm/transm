@@ -232,7 +232,7 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
     }
 
     //choose race -- based on raceAssort
-    if (_randomNums.chance(0.5))
+    if (_randomNums.chance(behavior.getRaceAssortativeness()))
     {
         selector.set(DemographicProfile::Demographic::Race,
             (std::size_t)DemographicProfile::Race::Black);
@@ -244,7 +244,7 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
     }
 
     //choose ethnicity -- based on ethnicAssort
-    if (_randomNums.chance(0.5))
+    if (_randomNums.chance(behavior.getEthnicAssortativeness()))
     {
         selector.set(DemographicProfile::Demographic::Ethnicity,
             (std::size_t)DemographicProfile::Ethnicity::NonHispanic);

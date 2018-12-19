@@ -54,9 +54,14 @@ public :
 
     void setAcquisitionRatePerMonth(Entity::RiskLevel risk, LogNormalDist dist) { acquisitionRatePerMonth[static_cast<std::size_t>(risk)] = dist; }
 
-    double getAssortativeness() const { return assortativeness; }
+    double getRiskAssortativeness() const { return riskAssortativeness; }
+    void setRiskAssortativeness(double riskAssortativeness) { this->riskAssortativeness = riskAssortativeness; }
 
-    void setAssortativeness(double assortativeness) { this->assortativeness = assortativeness; }
+    double getRaceAssortativeness() const { return raceAssortativeness; }
+    void setRaceAssortativeness(double raceAssortativeness) { this->raceAssortativeness = raceAssortativeness; }
+
+    double getEthnicAssortativeness() const { return ethnicAssortativeness; }
+    void setEthnicAssortativeness(double ethnicAssortativeness) { this->ethnicAssortativeness = ethnicAssortativeness; }
 
     void setChanceChooseWithSteady(double chance) { chanceChooseWithSteady = chance; }
     double getChanceChooseWithSteady() { return chanceChooseWithSteady; }
@@ -70,7 +75,9 @@ public :
 private:
 	friend class SimulationBuilder;
 
-    double assortativeness;
+    double riskAssortativeness;
+    double raceAssortativeness;
+    double ethnicAssortativeness;
 
     double chanceChooseWithSteady;
 

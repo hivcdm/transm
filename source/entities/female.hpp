@@ -64,7 +64,12 @@ public:
 
     void SetChanceBecomeSexWorker(double chance) { populationSpecificParams.SetChanceBecomeCsw(chance); }
 
-    void SetAssortativeness(SexualPartnership::Type /*partnership_type*/, double /*assortativeness*/) { throw std::runtime_error("not implemented for women"); }
+    void SetRiskAssortativeness(SexualPartnership::Type /*partnership_type*/, double /*assortativeness*/)
+        { throw std::runtime_error("not implemented for women"); }
+    void SetRaceAssortativeness(SexualPartnership::Type /*partnership_type*/, double /*assortativeness*/)
+        { throw std::runtime_error("not implemented for women"); }
+    void SetEthnicAssortativeness(SexualPartnership::Type /*partnership_type*/, double /*assortativeness*/)
+        { throw std::runtime_error("not implemented for women"); }
 
     void SetVaginalMicrobicideAdherence(double adherence);
 
