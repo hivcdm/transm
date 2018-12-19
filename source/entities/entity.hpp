@@ -605,7 +605,6 @@ public:
 	enum SelectingCriteria
 	{
 		AGE,		//unsigned int
-		SEXUAL_ACTIVITY_LEVEL,	//double between 0 and 1
 		ID,						//unsigned int
 		ENDSelectingCriteria
 	};

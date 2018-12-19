@@ -2697,7 +2697,7 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 			num_in_concurrent[entity_type][0][employment_index][risk_index]++;
 		}
 
-		if (entity_type != "MSW")
+		if ((std::strcmp(entity_type, "MSW")) != 0)
 		{
 			times_selected_stats[entity_type].insert(e->GetTimesSelected());
 		}
