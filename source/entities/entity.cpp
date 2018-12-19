@@ -688,6 +688,14 @@ void Entity::removePartnership(SexualPartnership *_partnership)
 
 void Entity::rollForBecomeSexWorker(EventParams &_eventParams)
 {
+    auto gender = dmgProfile.get(DemographicProfile::Demographic::Gender);
+    auto orientation = dmgProfile.get(DemographicProfile::Demographic::SexualOrientation);
+
+    if(gender == (std::size_t)DemographicProfile::Gender::Male &&
+        orientation ==  (std::size_t)DemographicProfile::SexualOrientation::Msw) {
+        return;
+    }
+
     if(_eventParams.randomNums.chance(getChanceBecomeCsw())) {
         if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson]
             .enabled && trace()) {

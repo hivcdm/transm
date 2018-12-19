@@ -154,34 +154,28 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
     // choose CSW status
     if (_partnershipType == SexualPartnership::Type::Csw)
     {
-        // only SA:Female:MSW:Single:CSW allowed for CSW partnerships
         selector.set(DemographicProfile::Demographic::Employment,
             (std::size_t)DemographicProfile::Employment::Csw);
-        selector.set(DemographicProfile::Demographic::Gender,
-            (std::size_t)DemographicProfile::Gender::Female);
-        selector.set(DemographicProfile::Demographic::SexualOrientation,
-            (std::size_t)DemographicProfile::SexualOrientation::Msw);
         selector.set(DemographicProfile::Demographic::RelationshipStatus,
             (std::size_t)DemographicProfile::RelationshipStatus::Single);
-        goto out;
     }
     else
     {
         selector.set(DemographicProfile::Demographic::Employment,
             (std::size_t)DemographicProfile::Employment::NonCsw);
+        //choose steady partner -- base on percentWithSteady
+        if (_randomNums.chance(behavior.getChanceChooseWithSteady()))
+        {
+            selector.set(DemographicProfile::Demographic::RelationshipStatus,
+                (std::size_t)DemographicProfile::RelationshipStatus::NonSingle);
+        }
+        else
+        {
+            selector.set(DemographicProfile::Demographic::RelationshipStatus,
+                (std::size_t)DemographicProfile::RelationshipStatus::Single);
+        }
     }
 
-    //choose steady partner -- base on percentWithSteady
-    if (_randomNums.chance(behavior.getChanceChooseWithSteady()))
-    {
-        selector.set(DemographicProfile::Demographic::RelationshipStatus,
-            (std::size_t)DemographicProfile::RelationshipStatus::NonSingle);
-    }
-    else
-    {
-        selector.set(DemographicProfile::Demographic::RelationshipStatus,
-            (std::size_t)DemographicProfile::RelationshipStatus::Single);
-    }
     //choose partner gender and orientation -- based on orientation and, if msmw, percentMsmwChooseMale
     if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() == DemographicProfile::SexualOrientation::Msw)
     {
@@ -237,7 +231,6 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
         throw std::runtime_error("Unknown sexual orientation");
     }
 
-out:
     //choose race -- based on raceAssort
     if (_randomNums.chance(0.5))
     {
