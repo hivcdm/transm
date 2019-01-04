@@ -2581,7 +2581,7 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 		//Partnerships by partnership type
 		firstRow << "Partnerships by Partnership Type";
 
-		for (std::string partnership_type : { "Male+Female" , "MSMW+Female", "MSMW+MSM", "MSM+MSM" })
+		for (std::string partnership_type : { "MSW+Female" , "MSMW+Female", "MSMW+MSM", "MSM+MSM" })
 		{
 			secondRow << partnership_type;
 
@@ -2597,7 +2597,7 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 			}
 		}
 
-		for (auto entity_type : { "MSMW", "MSM", "Female" })
+		for (auto entity_type : { "MSMW", "MSM", "female" })
 		{
 			secondRow << entity_type << " Selection Statistics" << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
 			thirdRow << "Min" << Constants::Tab << "Max" << Constants::Tab << "Mean" << Constants::Tab << "Std. Dev." << Constants::Tab << "Median" << Constants::Tab << "Mode" << Constants::Tab;
@@ -2742,25 +2742,25 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 		std::string partner1;
 		std::string partner2;
 
-		if (partnership_type == "Male+Female")
+		if (partnership_type == "MSW+Female")
 		{
-			partner1 = "msw";
+			partner1 = "MSW";
 			partner2 = "female";
 		}
 		else if (partnership_type == "MSMW+Female")
 		{
-			partner1 = "msmw";
+			partner1 = "MSMW";
 			partner2 = "female";
 		}
 		else if (partnership_type == "MSMW+MSM")
 		{
-			partner1 = "msmw";
-			partner2 = "msm";
+			partner1 = "MSMW";
+			partner2 = "MSM";
 		}
 		else if (partnership_type == "MSM+MSM")
 		{
-			partner1 = "msm";
-			partner2 = "msm";
+			partner1 = "MSM";
+			partner2 = "MSM";
 		}
 
 		for (auto partnership_type : enum_iterator<SexualPartnership::Type>())
@@ -2781,7 +2781,7 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 		}
 	}
 
-	for (auto entity_type : { "msmw", "msm", "female" })
+	for (auto entity_type : { "MSMW", "MSM", "female" })
 	{
 		if (times_selected_stats[entity_type].get_num_samples() > 0)
 		{
