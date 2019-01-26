@@ -544,13 +544,10 @@ void Simulation::LastStep()
 	}
 
 	//Run every infected person left through CEPAC until they die
-	if(!passedCalibration_) {
-	    //parameters_.displayOut("Partnership Calibration Failed..." \
-	    //		   "Deleting specified trace files...\n");
-	} else {
-	    //parameters_.displayOut("Running all remaining persons through CEPAC until they die...\n");
+	if(passedCalibration_) {
+        // save the graph-tool partnership network -- done before
+        population_.UpdatePartnershipNetwork();
 	    population_.UpdateFinalPhysicalState(parameters_);
-	    //parameters_.displayOut("Done!\n");
 	}
 
     if(parameters_.trace_files[EventParams::TraceFile::Type::Infection].enabled)

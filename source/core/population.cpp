@@ -698,6 +698,22 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 	}
 }
 
+void Population::UpdatePartnershipNetwork()
+{
+    Network network;
+
+    entities->forEach([&](Entity *entity)
+    {
+        auto entityId = entity->getID();
+        for (auto partnership : entity->GetPartnerships())
+        {
+            network.UpdatePartnership(entityId, partnership->getPartner2()->getID(),
+                (int)partnership->getType());
+        }
+    });
+    network.Write();
+}
+
 void Population::SaveIndividualSummaries(std::ostream &stream) const
 {
     std::vector<EntitySummary> ordered_(individual_summaries_.size());

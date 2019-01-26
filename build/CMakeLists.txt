@@ -146,7 +146,12 @@ if(GOOGLE_PERFTOOLS_FOUND)
 	target_link_libraries(transm ${TCMALLOC_LIBRARY} ${PROFILER_LIBRARY})
 endif(GOOGLE_PERFTOOLS_FOUND)
 
-target_link_libraries(transm cepac pugixml ${SQLITE3_LIBRARIES}) # ${Boost_LIBRARIES})
+set(GRAPH_TOOL "/opt/local/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/graph_tool")
+include_directories(${GRAPH_TOOL}/include)
+set(PYTHON_FRAMEWORK_3.7 "/opt/local/Library/Frameworks/Python.framework/Versions/3.7")
+include_directories(${PYTHON_FRAMEWORK_3.7}/include/python3.7m)
+
+target_link_libraries(transm cepac pugixml ${SQLITE3_LIBRARIES} ${GRAPH_TOOL}) # ${Boost_LIBRARIES})
 
 # If the build is successful we remind the user of the location of the binary
 
