@@ -42,10 +42,72 @@ class Network {
     typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS,
                                   EntityVertex, PartnershipEdge> Graph;
     typedef boost::graph_traits<Graph>::vertex_descriptor vertex_t;
+    typedef boost::graph_traits<Graph>::vertex_iterator vertex_iter_t;
     typedef boost::graph_traits<Graph>::edge_descriptor edge_t;
+
+    vertex_iter_t FindVertex(const Graph& g, int id)
+    {
+        vertex_iter_t vi, vi_end;
+        for (boost::tie(vi, vi_end) = boost::vertices(g); vi != vi_end; ++vi)
+        {
+            if(g[*vi].id == id)
+                return vi;
+        }
+        return vi_end;
+    }
 
 public:
     Network() {}
+
+    void UpdatePartnership(int entityId, int partnerId, int type)
+    {
+        vertex_t entity_vertex, partner_vertex;
+        edge_t partnership;
+        bool inserted;
+
+        vertex_iter_t vertex_iter;
+        vertex_iter = FindVertex(G, entityId);
+        if (vertex_iter == boost::vertices(G).second)
+        {
+            entity_vertex = add_vertex(G);
+            G[entity_vertex].id = entityId;
+        } else {
+            entity_vertex = *vertex_iter;
+        }
+
+        vertex_iter = FindVertex(G, partnerId);
+        if (vertex_iter == boost::vertices(G).second)
+        {
+            partner_vertex = add_vertex(G);
+            G[partner_vertex].id = partnerId;
+        } else {
+            partner_vertex = *vertex_iter;
+        }
+
+        assert(entity_vertex != partner_vertex);
+        boost::tie(partnership, inserted) = add_edge(entity_vertex,
+            partner_vertex, G);
+        G[partnership].type = type;
+    }
+
+    void Write()
+    {
+        boost::dynamic_properties dp;
+        dp.property("id", get(&EntityVertex::id, G));
+        dp.property("type", get(&PartnershipEdge::type, G));
+
+        std::ofstream ofs("ParntershipNetwork.graphml");
+        boost::write_graphml(ofs, G, dp, true);
+#if 0
+        boost::python::object ovprops;
+        boost::python::object oeprops;
+        boost::python::object vorder;
+
+        GraphInterface network(G, true, ovprops, oeprops, vorder);
+        network.write_to_file("ParternshipNetwork.gt", nullptr,
+            "gt", graph.get_graph_index());
+#endif
+    }
 
 #if 0
     // Edges are added when a partnership is formed
@@ -86,35 +148,6 @@ public:
         //AddEdges();
     }
 #endif
-
-    void UpdatePartnership(int entityId, int partnerId, int type)
-    {
-        // Create two vertices in that graph
-        vertex_t u = boost::add_vertex(EntityVertex{entityId}, G);
-        vertex_t v = boost::add_vertex(EntityVertex{partnerId}, G);
-
-        // Create an edge conecting those two vertices
-        boost::add_edge(u, v, PartnershipEdge{type}, G);
-    }
-
-    void Write()
-    {
-        boost::dynamic_properties dp;
-        dp.property("id", get(&EntityVertex::id, G));
-        dp.property("type", get(&PartnershipEdge::type, G));
-
-        std::ofstream ofs("ParntershipNetwork.graphml");
-        boost::write_graphml(ofs, G, dp, true);
-#if 0
-        boost::python::object ovprops;
-        boost::python::object oeprops;
-        boost::python::object vorder;
-
-        GraphInterface network(G, true, ovprops, oeprops, vorder);
-        network.write_to_file("ParternshipNetwork.gt", nullptr,
-            "gt", graph.get_graph_index());
-#endif
-    }
 
 private:
     Graph G;
