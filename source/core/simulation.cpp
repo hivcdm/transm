@@ -529,6 +529,10 @@ void Simulation::Step()
 	run_time_predictor_.Update(std::make_pair(time_.in_months(), timer_.GetTime() - start_time_));
     }
 
+    // save the graph-tool partnership network every year
+    if (time_.in_months() % 12 == 0)
+        population_.WritePartnershipNetwork(parameters_);
+
     start_time_ = timer_.GetTime();
 
     prevalence_ = population_.GetPopulationStatistics().infectionsTracker.getSAPrev(population_);
@@ -545,8 +549,7 @@ void Simulation::LastStep()
 
 	//Run every infected person left through CEPAC until they die
 	if(passedCalibration_) {
-        // save the graph-tool partnership network -- done before
-        population_.UpdatePartnershipNetwork();
+        population_.WritePartnershipNetwork(parameters_);
 	    population_.UpdateFinalPhysicalState(parameters_);
 	}
 

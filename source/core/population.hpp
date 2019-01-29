@@ -129,7 +129,7 @@ public:
     /// </summary>
 	void UpdatePartnerships(EventParams &_eventParams);
 
-    void UpdatePartnershipNetwork();
+    void WritePartnershipNetwork(EventParams &_eventParams);
 
     /// <summary>
     /// counts the total size of the population and updates internal state

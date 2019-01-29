@@ -698,7 +698,8 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 	}
 }
 
-void Population::UpdatePartnershipNetwork()
+// Write out the current partnership network
+void Population::WritePartnershipNetwork(EventParams &parameters_)
 {
     Network network;
 
@@ -707,11 +708,11 @@ void Population::UpdatePartnershipNetwork()
         auto entityId = entity->getID();
         for (auto partnership : entity->GetPartnerships())
         {
-            network.UpdatePartnership(entityId, partnership->getPartner2()->getID(),
+            network.UpdatePartnership(entityId, partnership->getOtherPartner(entity)->getID(),
                 (int)partnership->getType());
         }
     });
-    network.Write();
+    network.Write(parameters_.currTime.in_months());
 }
 
 void Population::SaveIndividualSummaries(std::ostream &stream) const

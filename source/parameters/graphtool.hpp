@@ -90,13 +90,14 @@ public:
         G[partnership].type = type;
     }
 
-    void Write()
+    void Write(int month)
     {
         boost::dynamic_properties dp;
         dp.property("id", get(&EntityVertex::id, G));
         dp.property("type", get(&PartnershipEdge::type, G));
 
-        std::ofstream ofs("ParntershipNetwork.graphml");
+        std::string filename = "PartnershipNetwork_" + std::to_string(month) + ".graphml";
+        std::ofstream ofs(filename);
         boost::write_graphml(ofs, G, dp, true);
 #if 0
         boost::python::object ovprops;
