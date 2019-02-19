@@ -4,6 +4,7 @@
 
 #include "entities/entity.hpp"
 #include "entities/demographicprofile.hpp"
+#include "entities/sexualpartnership.hpp"
 #include "utility/time.hpp"
 
 //using namespace graph_tool;
@@ -28,6 +29,8 @@ class Network {
     struct EntityVertex
     {
         int id;
+        bool hiv_pos;
+        bool on_prep;
         //boost::vertex_orientation_t orientation;
     };
 
@@ -59,41 +62,49 @@ class Network {
 public:
     Network() {}
 
-    void UpdatePartnership(int entityId, int partnerId, int type)
+    void UpdatePartnership(transm::Entity *entity, transm::Entity *partner,
+        transm::SexualPartnership *partnership)
     {
         vertex_t entity_vertex, partner_vertex;
-        edge_t partnership;
+        edge_t partnership_edge;
         bool inserted;
 
         vertex_iter_t vertex_iter;
-        vertex_iter = FindVertex(G, entityId);
+        vertex_iter = FindVertex(G, entity->getID());
         if (vertex_iter == boost::vertices(G).second)
         {
             entity_vertex = add_vertex(G);
-            G[entity_vertex].id = entityId;
+            G[entity_vertex].id = entity->getID();
+            G[entity_vertex].hiv_pos = (entity->getHIVStatus() != transm::Entity::HIVStatus::NEGATIVE);
+            G[entity_vertex].on_prep = entity->UsingPrEP();
         } else {
             entity_vertex = *vertex_iter;
         }
 
-        vertex_iter = FindVertex(G, partnerId);
+        vertex_iter = FindVertex(G, partner->getID());
         if (vertex_iter == boost::vertices(G).second)
         {
             partner_vertex = add_vertex(G);
-            G[partner_vertex].id = partnerId;
+            G[partner_vertex].id = partner->getID();
+            G[partner_vertex].hiv_pos = (partner->getHIVStatus() != transm::Entity::HIVStatus::NEGATIVE);
+            G[partner_vertex].on_prep = partner->UsingPrEP();
         } else {
             partner_vertex = *vertex_iter;
         }
 
         assert(entity_vertex != partner_vertex);
-        boost::tie(partnership, inserted) = add_edge(entity_vertex,
+        boost::tie(partnership_edge, inserted) = add_edge(entity_vertex,
             partner_vertex, G);
-        G[partnership].type = type;
+        G[partnership_edge].type = (int)partnership->getType();
     }
 
     void Write(int month)
     {
         boost::dynamic_properties dp;
         dp.property("id", get(&EntityVertex::id, G));
+        dp.property("hiv_pos", get(&EntityVertex::hiv_pos, G));
+        dp.property("on_prep", get(&EntityVertex::on_prep, G));
+
         dp.property("type", get(&PartnershipEdge::type, G));
 
         std::string filename = "PartnershipNetwork_" + std::to_string(month) + ".graphml";
@@ -154,4 +165,3 @@ private:
     Graph G;
 
 };
-

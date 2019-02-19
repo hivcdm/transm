@@ -705,11 +705,9 @@ void Population::WritePartnershipNetwork(EventParams &parameters_)
 
     entities->forEach([&](Entity *entity)
     {
-        auto entityId = entity->getID();
         for (auto partnership : entity->GetPartnerships())
         {
-            network.UpdatePartnership(entityId, partnership->getOtherPartner(entity)->getID(),
-                (int)partnership->getType());
+            network.UpdatePartnership(entity, partnership->getOtherPartner(entity), partnership);
         }
     });
     network.Write(parameters_.currTime.in_months());
