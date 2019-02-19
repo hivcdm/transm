@@ -666,30 +666,38 @@ void PopulationStatisticsOld::printShiftedOutcomes(std::ostream &_outStream, Tim
 
 	if(year.get_year() == 1990)
 	{
+        // First Row Headers
 		_outStream << "Shifted Outcomes" << std::endl;
-		_outStream << Constants::Tab;
+
+        // Second Row Headers
+		_outStream << Constants::Tab; // Year
+		_outStream << Constants::Tab; // Pop Size
 
         for(auto entity_type : {"", "Male", "Male:Hetero", "Male:Msmw", "Male:Msm", "Female"})
         {
-            _outStream << entity_type;
-            _outStream << Constants::Tab;
-            _outStream << Constants::Tab;
-            _outStream << Constants::Tab;
-            _outStream << Constants::Tab;
-            _outStream << Constants::Tab;
+            _outStream << entity_type << Constants::Tab; // SA Pop Size
+            _outStream << Constants::Tab; // Incident
+            _outStream << Constants::Tab; // Prevalent
+            _outStream << Constants::Tab; // SA Prevalence
+            _outStream << Constants::Tab; // Annual Incidence
         }
-	_outStream << "Screening Results" << Constants::Tab;
-	_outStream << Constants::Tab;
-	_outStream << Constants::Tab;
-	_outStream << Constants::Tab;
-	_outStream << Constants::Tab;
-	_outStream << "ART Eligibility";
-	_outStream << std::endl;
+        _outStream << "Screening Results" << Constants::Tab;
+        _outStream << Constants::Tab;
+        _outStream << Constants::Tab;
+        _outStream << Constants::Tab;
+        _outStream << Constants::Tab;
+        _outStream << "ART Eligibility" << Constants::Tab;
+        _outStream << Constants::Tab;
+        _outStream << Constants::Tab;
+        _outStream << Constants::Tab;
+        _outStream << Constants::Tab;
+        _outStream << std::endl;
 
-	_outStream << "Year";
-	_outStream << Constants::Tab;
-	_outStream << "Pop Size";
-	_outStream << Constants::Tab;
+        // Third Row Headers
+        _outStream << "Year";
+        _outStream << Constants::Tab;
+        _outStream << "Pop Size";
+        _outStream << Constants::Tab;
 
         for(std::size_t i = 0; i < 6; i++)
         {
@@ -705,23 +713,24 @@ void PopulationStatisticsOld::printShiftedOutcomes(std::ostream &_outStream, Tim
             _outStream << Constants::Tab;
         }
 
-	_outStream << "Total Tests";
-	_outStream << Constants::Tab;
+        _outStream << "Total Tests";
+        _outStream << Constants::Tab;
 
-	for(int i = 0; i < SimContext::TEST_RESULT_NUM; i++)
+        for(int i = 0; i < SimContext::TEST_RESULT_NUM; i++)
 	    {
-		_outStream << testTypes[i];
-		_outStream << Constants::Tab;
+            _outStream << testTypes[i];
+            _outStream << Constants::Tab;
 	    }
 
-	_outStream << "Number Eligible for Access to Treatment";
-	_outStream << Constants::Tab;
-	_outStream << "Number Acessing Treatment";
-	_outStream << Constants::Tab;
-	_outStream << "Number Eligible for ART";
-	_outStream << Constants::Tab;
-	_outStream << "Number Receiving ART";
-	_outStream << Constants::Tab;
+        _outStream << "Number Eligible for Access to Treatment";
+        _outStream << Constants::Tab;
+        _outStream << "Number Acessing Treatment";
+        _outStream << Constants::Tab;
+        _outStream << "Number Eligible for ART";
+        _outStream << Constants::Tab;
+        _outStream << "Number Receiving ART";
+
+        _outStream << std::endl;
 	}
 
     std::size_t sum_year_start_pop_size = 0;
@@ -738,7 +747,7 @@ void PopulationStatisticsOld::printShiftedOutcomes(std::ostream &_outStream, Tim
     for(auto entity_type : {"male", "msmw", "msm", "female"})
     {
         //sum_sa_pop_size += yearlyCumulativeSexuallyActivePopSize[entity_type];
-	sum_year_start_pop_size += yearStartPopSize[entity_type];
+        sum_year_start_pop_size += yearStartPopSize[entity_type];
         sum_year_start_sa_pop_size += yearStartSexuallyActivePopSize[entity_type];
         sum_prevalent_infections += yearStartPrevalentInfections[entity_type];
         sum_incident_infections += yearlyIncidentInfections[entity_type];
