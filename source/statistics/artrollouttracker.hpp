@@ -45,6 +45,7 @@ private:
 	std::vector<int> numTestsByResult;
 	BucketCounter counter;
 	int numTreatmentSlots;
+    int numOnPrEP;
 
 	std::vector<AgeRange> ageRanges;
 

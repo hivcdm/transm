@@ -49,7 +49,8 @@ ArtRolloutTracker::ArtRolloutTracker() :
 	numTestsOffered(0),
 	numTestsAccepted(0),
 	numTestsReturnedFor(0),
-	numTestsByResult(SimContext::TEST_RESULT_NUM)
+	numTestsByResult(SimContext::TEST_RESULT_NUM),
+    numOnPrEP(0)
 {
 	std::vector<std::string> tracked;
 	for(auto outcome : TRACKED_OUTCOMES)
@@ -113,6 +114,7 @@ void ArtRolloutTracker::recordTreatment(Entity *person)
 
 void ArtRolloutTracker::recordPrEP(Entity *person)
 {
+    numOnPrEP++;
 	counter.Increment(PersonBucket(*person, ageRanges), "prep");
 }
 
@@ -150,8 +152,9 @@ void ArtRolloutTracker::buildHeader()
 	SetHeaderCell(4, 3, "Offered");
 	SetHeaderCell(5, 3, "Accepted");
 	SetHeaderCell(6, 3, "Returned For Results");
+    SetHeaderCell(7, 3, "On PrEP");
 
-	int column = 7;
+	int column = 8;
 
 	for(auto outcome : TRACKED_OUTCOMES)
 	{
@@ -252,6 +255,7 @@ void ArtRolloutTracker::buildRow(Time time, Population *_population)
 	PushElement(numTestsOffered);
 	PushElement(numTestsAccepted);
 	PushElement(numTestsReturnedFor);
+    PushElement(numOnPrEP);
 
 	for(auto outcome : TRACKED_OUTCOMES)
 	{
@@ -323,8 +327,8 @@ void ArtRolloutTracker::Reset()
 	numTestsOffered = 0;
 	numTestsAccepted = 0;
 	numTestsReturnedFor = 0;
-
 	numTreatmentSlots = 0;
+    numOnPrEP = 0;
 }
 
 } // namespace transm
