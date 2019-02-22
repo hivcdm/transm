@@ -31,6 +31,8 @@ class Network {
         int id;
         bool hiv_pos;
         bool on_prep;
+        bool on_ART;
+        bool risk_level;
         //boost::vertex_orientation_t orientation;
     };
 
@@ -77,6 +79,9 @@ public:
             G[entity_vertex].id = entity->getID();
             G[entity_vertex].hiv_pos = (entity->getHIVStatus() != transm::Entity::HIVStatus::NEGATIVE);
             G[entity_vertex].on_prep = entity->UsingPrEP();
+            G[entity_vertex].on_ART = entity->isOnArt();
+            G[entity_vertex].risk_level = (int)entity->getRiskLevel();
+
         } else {
             entity_vertex = *vertex_iter;
         }
@@ -88,6 +93,8 @@ public:
             G[partner_vertex].id = partner->getID();
             G[partner_vertex].hiv_pos = (partner->getHIVStatus() != transm::Entity::HIVStatus::NEGATIVE);
             G[partner_vertex].on_prep = partner->UsingPrEP();
+            G[partner_vertex].on_ART = partner->isOnArt();
+            G[partner_vertex].risk_level = (int)partner->getRiskLevel();
         } else {
             partner_vertex = *vertex_iter;
         }
@@ -104,6 +111,8 @@ public:
         dp.property("id", get(&EntityVertex::id, G));
         dp.property("hiv_pos", get(&EntityVertex::hiv_pos, G));
         dp.property("on_prep", get(&EntityVertex::on_prep, G));
+        dp.property("on_ART", get(&EntityVertex::on_ART, G));
+        dp.property("risk_level", get(&EntityVertex::risk_level, G));
 
         dp.property("type", get(&PartnershipEdge::type, G));
 
