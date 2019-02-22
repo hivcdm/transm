@@ -33,6 +33,8 @@ class Network {
         bool on_prep;
         bool on_ART;
         bool risk_level;
+        int viral_load;
+        int composite; // on_prep=-1,hiv_neg=0,hiv_pos=viral_load
         //boost::vertex_orientation_t orientation;
     };
 
@@ -61,6 +63,22 @@ class Network {
         return vi_end;
     }
 
+    void AddEntity(vertex_t entity_vertex, transm::Entity *entity)
+    {
+        bool hiv_pos = (entity->getHIVStatus() != transm::Entity::HIVStatus::NEGATIVE);
+        bool on_PrEP = entity->UsingPrEP();
+        bool on_ART = entity->isOnArt();
+        int viral_load = hiv_pos ? (int)entity->getHvlStratum() : 0;
+
+        G[entity_vertex].id = entity->getID();
+        G[entity_vertex].risk_level = (bool)entity->getRiskLevel();
+        G[entity_vertex].hiv_pos = hiv_pos;
+        G[entity_vertex].on_prep = on_PrEP;
+        G[entity_vertex].on_ART = on_ART;
+        G[entity_vertex].viral_load = viral_load;
+        G[entity_vertex].composite = (!on_PrEP) ? viral_load : -1;
+    }
+
 public:
     Network() {}
 
@@ -76,12 +94,7 @@ public:
         if (vertex_iter == boost::vertices(G).second)
         {
             entity_vertex = add_vertex(G);
-            G[entity_vertex].id = entity->getID();
-            G[entity_vertex].hiv_pos = (entity->getHIVStatus() != transm::Entity::HIVStatus::NEGATIVE);
-            G[entity_vertex].on_prep = entity->UsingPrEP();
-            G[entity_vertex].on_ART = entity->isOnArt();
-            G[entity_vertex].risk_level = (int)entity->getRiskLevel();
-
+            AddEntity(entity_vertex, entity);
         } else {
             entity_vertex = *vertex_iter;
         }
@@ -90,11 +103,7 @@ public:
         if (vertex_iter == boost::vertices(G).second)
         {
             partner_vertex = add_vertex(G);
-            G[partner_vertex].id = partner->getID();
-            G[partner_vertex].hiv_pos = (partner->getHIVStatus() != transm::Entity::HIVStatus::NEGATIVE);
-            G[partner_vertex].on_prep = partner->UsingPrEP();
-            G[partner_vertex].on_ART = partner->isOnArt();
-            G[partner_vertex].risk_level = (int)partner->getRiskLevel();
+            AddEntity(partner_vertex, partner);
         } else {
             partner_vertex = *vertex_iter;
         }
@@ -108,12 +117,17 @@ public:
     void Write(int month)
     {
         boost::dynamic_properties dp;
+
+        // node properties
         dp.property("id", get(&EntityVertex::id, G));
         dp.property("hiv_pos", get(&EntityVertex::hiv_pos, G));
         dp.property("on_prep", get(&EntityVertex::on_prep, G));
         dp.property("on_ART", get(&EntityVertex::on_ART, G));
         dp.property("risk_level", get(&EntityVertex::risk_level, G));
+        dp.property("viral_load", get(&EntityVertex::viral_load, G));
+        dp.property("composite", get(&EntityVertex::composite, G));
 
+        // edge properties
         dp.property("type", get(&PartnershipEdge::type, G));
 
         std::string filename = "PartnershipNetwork_" + std::to_string(month) + ".graphml";
