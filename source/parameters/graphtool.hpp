@@ -29,6 +29,8 @@ class Network {
     struct EntityVertex
     {
         int id;
+        std::string gender;
+        bool is_CSW;
         bool hiv_pos;
         bool on_prep;
         bool on_ART;
@@ -41,8 +43,12 @@ class Network {
     struct PartnershipEdge
     {
         int type;
+        int start;
+        int end;
+        int duration;
+        std::string gender_to_gender; //e.g msw+female,msm+msm,etc
+        int sero_pos; // both_hiv-=0,one_hiv+=1,both_hiv+=2
         //boost::edge_type_t type;
-        //Time duration;
     };
 
     // Adjacency List
@@ -71,12 +77,34 @@ class Network {
         int viral_load = hiv_pos ? (int)entity->getHvlStratum() : 0;
 
         G[entity_vertex].id = entity->getID();
+        G[entity_vertex].gender = entity->getEntityType();
+        G[entity_vertex].is_CSW = entity->isCSW();
         G[entity_vertex].risk_level = (bool)entity->getRiskLevel();
         G[entity_vertex].hiv_pos = hiv_pos;
         G[entity_vertex].on_prep = on_PrEP;
         G[entity_vertex].on_ART = on_ART;
         G[entity_vertex].viral_load = viral_load;
         G[entity_vertex].composite = (!on_PrEP) ? viral_load : -1;
+    }
+
+    void AddPartnership(edge_t partnership_edge, transm::Entity *entity, transm::Entity *partner,
+        transm::SexualPartnership *partnership)
+    {
+        std::string entity_gender =  entity->getEntityType();
+        std::string partner_gender = partner->getEntityType();
+
+        bool entity_hiv_pos = (entity->getHIVStatus() != transm::Entity::HIVStatus::NEGATIVE);
+        bool partner_hiv_pos = (partner->getHIVStatus() != transm::Entity::HIVStatus::NEGATIVE);
+
+        int time_of_formation = (int)partnership->getTimeOfFormation().in_months();
+        int time_of_dissolution = (int)partnership->getTimeOfDissolution().in_months();
+
+        G[partnership_edge].type = (int)partnership->getType();
+        G[partnership_edge].start = time_of_formation;
+        G[partnership_edge].end = time_of_dissolution;
+        G[partnership_edge].duration = time_of_dissolution - time_of_formation;
+        G[partnership_edge].gender_to_gender = entity_gender + "+" + partner_gender;
+        G[partnership_edge].sero_pos = (int)entity_hiv_pos + (int)partner_hiv_pos;
     }
 
 public:
@@ -111,7 +139,7 @@ public:
         assert(entity_vertex != partner_vertex);
         boost::tie(partnership_edge, inserted) = add_edge(entity_vertex,
             partner_vertex, G);
-        G[partnership_edge].type = (int)partnership->getType();
+        AddPartnership(partnership_edge, entity, partner, partnership);
     }
 
     void Write(int month)
@@ -120,6 +148,8 @@ public:
 
         // node properties
         dp.property("id", get(&EntityVertex::id, G));
+        dp.property("gender", get(&EntityVertex::gender, G));
+        dp.property("is_CSW", get(&EntityVertex::is_CSW, G));
         dp.property("hiv_pos", get(&EntityVertex::hiv_pos, G));
         dp.property("on_prep", get(&EntityVertex::on_prep, G));
         dp.property("on_ART", get(&EntityVertex::on_ART, G));
@@ -129,6 +159,11 @@ public:
 
         // edge properties
         dp.property("type", get(&PartnershipEdge::type, G));
+        dp.property("start", get(&PartnershipEdge::start, G));
+        dp.property("end", get(&PartnershipEdge::end, G));
+        dp.property("duration", get(&PartnershipEdge::duration, G));
+        dp.property("genders", get(&PartnershipEdge::gender_to_gender, G));
+        dp.property("sero_pos", get(&PartnershipEdge::sero_pos, G));
 
         std::string filename = "PartnershipNetwork_" + std::to_string(month) + ".graphml";
         std::ofstream ofs(filename);

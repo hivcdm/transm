@@ -530,7 +530,7 @@ void Simulation::Step()
     }
 
     // save the graph-tool partnership network every year
-    if (time_.in_months() % 12 == 0)
+    if (time_.in_months() >= 600 && time_.in_months() % 12 == 0)
         population_.WritePartnershipNetwork(parameters_);
 
     start_time_ = timer_.GetTime();
