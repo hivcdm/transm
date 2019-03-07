@@ -14,10 +14,16 @@ class Network {
 
     struct EntityVertex
     {
-        int id;
+        int id;;
         std::string gender;
+
+        bool is_alive = true;
+        int time_of_SA = 0;
+        int time_of_death = 1020;
+
         bool is_CSW;
         bool hiv_pos;
+        int time_infected;
         bool on_prep;
         bool on_ART;
         bool risk_level;
@@ -41,6 +47,7 @@ class Network {
     typedef boost::graph_traits<Graph>::vertex_descriptor vertex_t;
     typedef boost::graph_traits<Graph>::vertex_iterator vertex_iter_t;
     typedef boost::graph_traits<Graph>::edge_descriptor edge_t;
+    typedef boost::graph_traits<Graph>::edge_iterator edge_iter_t;
 
     vertex_iter_t FindVertex(const Graph& g, int id)
     {
@@ -53,8 +60,18 @@ class Network {
         return vi_end;
     }
 
-    void AddEntity(vertex_t entity_vertex, transm::Entity *entity)
+    void SetVertexAttributes(vertex_t entity_vertex, transm::Entity *entity, bool inserted, int month)
     {
+        if (inserted)
+        {
+            G[entity_vertex].time_of_SA = month;
+        }
+
+        if (!entity->isAlive())
+        {
+            G[entity_vertex].time_of_death = month;
+        }
+
         bool hiv_pos = (entity->getHIVStatus() != transm::Entity::HIVStatus::NEGATIVE);
         bool on_PrEP = entity->UsingPrEP();
         bool on_ART = entity->isOnArt();
@@ -64,14 +81,19 @@ class Network {
         G[entity_vertex].gender = entity->getEntityType();
         G[entity_vertex].is_CSW = entity->isCSW();
         G[entity_vertex].risk_level = (bool)entity->getRiskLevel();
-        G[entity_vertex].hiv_pos = hiv_pos;
         G[entity_vertex].on_prep = on_PrEP;
         G[entity_vertex].on_ART = on_ART;
         G[entity_vertex].viral_load = viral_load;
         G[entity_vertex].composite = (!on_PrEP) ? viral_load : -1;
+
+        if (!G[entity_vertex].hiv_pos)
+        {
+            G[entity_vertex].hiv_pos = hiv_pos;
+            G[entity_vertex].time_infected = month;
+        }
     }
 
-    void AddPartnership(edge_t partnership_edge, transm::Entity *entity, transm::Entity *partner,
+    void SetEdgeAttributes(edge_t partnership_edge, transm::Entity *entity, transm::Entity *partner,
         transm::SexualPartnership *partnership)
     {
         std::string entity_gender =  entity->getEntityType();
@@ -94,36 +116,50 @@ class Network {
 public:
     Network() {}
 
-    void UpdatePartnership(transm::Entity *entity, transm::Entity *partner,
-        transm::SexualPartnership *partnership)
+    void AddPartnership(transm::Entity *entity, transm::Entity *partner,
+        transm::SexualPartnership *partnership, int month)
     {
+        vertex_iter_t entity_itr, partner_itr;
         vertex_t entity_vertex, partner_vertex;
         edge_t partnership_edge;
         bool inserted;
 
-        vertex_iter_t vertex_iter;
-        vertex_iter = FindVertex(G, entity->getID());
-        if (vertex_iter == boost::vertices(G).second)
+        entity_itr = FindVertex(G, entity->getID());
+        if (entity_itr == boost::vertices(G).second)
         {
             entity_vertex = add_vertex(G);
-            AddEntity(entity_vertex, entity);
+            SetVertexAttributes(entity_vertex, entity, true, month);
         } else {
-            entity_vertex = *vertex_iter;
+            entity_vertex = *entity_itr;
         }
 
-        vertex_iter = FindVertex(G, partner->getID());
-        if (vertex_iter == boost::vertices(G).second)
+        partner_itr = FindVertex(G, partner->getID());
+        if (partner_itr == boost::vertices(G).second)
         {
             partner_vertex = add_vertex(G);
-            AddEntity(partner_vertex, partner);
+            SetVertexAttributes(partner_vertex, partner, true, month);
         } else {
-            partner_vertex = *vertex_iter;
+            partner_vertex = *partner_itr;
         }
 
         assert(entity_vertex != partner_vertex);
         boost::tie(partnership_edge, inserted) = add_edge(entity_vertex,
             partner_vertex, G);
-        AddPartnership(partnership_edge, entity, partner, partnership);
+        SetEdgeAttributes(partnership_edge, entity, partner, partnership);
+    }
+
+    void UpdateEntity(transm::Entity *entity, int month)
+    {
+        vertex_iter_t entity_itr;
+        vertex_t entity_vertex;
+
+        entity_itr = FindVertex(G, entity->getID());
+        if (entity_itr == boost::vertices(G).second)
+        {
+            return;
+        }
+        entity_vertex = *entity_itr;
+        SetVertexAttributes(entity_vertex, entity, false, month);
     }
 
     void Write(int month)
@@ -133,8 +169,11 @@ public:
         // node properties
         dp.property("id", get(&EntityVertex::id, G));
         dp.property("gender", get(&EntityVertex::gender, G));
+        dp.property("time_SA", get(&EntityVertex::time_of_SA, G));
+        dp.property("time_death", get(&EntityVertex::time_of_death, G));
         dp.property("is_CSW", get(&EntityVertex::is_CSW, G));
         dp.property("hiv_pos", get(&EntityVertex::hiv_pos, G));
+        dp.property("time_infected", get(&EntityVertex::time_infected, G));
         dp.property("on_prep", get(&EntityVertex::on_prep, G));
         dp.property("on_ART", get(&EntityVertex::on_ART, G));
         dp.property("risk_level", get(&EntityVertex::risk_level, G));

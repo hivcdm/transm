@@ -472,17 +472,6 @@ void Simulation::Step()
         population_.populationStatistics.costsTracker.PrintCosts(parameters_.currTime, parameters_.trace_files[EventParams::TraceFile::Type::CostEffectiveness].file);
 	}
 
-    if (parameters_.trace_files[EventParams::TraceFile::Type::PartnerNetwork].enabled)
-    {
-        if (std::find(parameters_.partnerNetworkRecordTimes.begin(),
-            parameters_.partnerNetworkRecordTimes.end(), time_.in_months()) !=
-            parameters_.partnerNetworkRecordTimes.end())
-        {
-            // save the partnership network data in the user specified month
-            population_.WritePartnershipNetwork(parameters_);
-        }
-    }
-
     if(parameters_.calibrationInputs.useCalibration)
     {
 	if (parameters_.calibrationInputs.monthOfCalibration == time_)
@@ -559,6 +548,11 @@ void Simulation::LastStep()
 	if(passedCalibration_) {
 	    population_.UpdateFinalPhysicalState(parameters_);
 	}
+
+    if (parameters_.trace_files[EventParams::TraceFile::Type::PartnerNetwork].enabled)
+    {
+        population_.WritePartnershipNetwork(parameters_);
+    }
 
     if(parameters_.trace_files[EventParams::TraceFile::Type::Infection].enabled)
 	{

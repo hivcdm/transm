@@ -14,7 +14,6 @@
 #include "entities/sexualbehavior.hpp"
 #include "statistics/coststracker.hpp"
 #include "statistics/infectionstracker.hpp"
-#include "statistics/partnernetwork.hpp"
 #include "utility/descriptive_stats_container.hpp"
 #include "utility/utility.hpp"
 #include "utility/randomnumbergenerator.hpp"
@@ -287,6 +286,8 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 			Entity *p = (*p_Iter);
 			assert(p != nullptr);
 
+            bool updateEntity = false;
+
 			Entity::HIVStatus oldStatus = p->hivStatus;
 			//update their health status
 			p->updateHealthStatus(parameters_, &populationStatistics.artTracker, &populationStatistics.costsTracker);
@@ -295,6 +296,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 			    populationStatistics.costsTracker.RecordPrEPCost(popWideParams.prEPCost,
 				popWideParams.prEPCost * cepacDiscountFactor);
 			    p->add_cdm_cost(popWideParams.prEPCost, popWideParams.prEPCost * cepacDiscountFactor);
+                updateEntity = true;
 			}
 
 			if(oldStatus != p->hivStatus)
@@ -304,6 +306,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 					((BucketSexualMixing *) entities->getBucket(p->getDemographicProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
 					        p->hivStatus);
 				}
+                updateEntity = true;
 			}
 
 			if(parameters_.useRollout && parameters_.treatedContext && p->isInfected())
@@ -311,6 +314,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 				if(p->isOnArt())
 				{
 					populationStatistics.recordTreatment(p);
+                    updateEntity = true;
 				}
 			}
 
@@ -324,6 +328,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 				    populationStatistics.recordTreatmentDeath(p);
 				}
 
+                network.UpdateEntity(p, parameters_.currTime.in_months());
 				p_Iter = entities->removeEntityFromAll(p_Iter);
 				ProcessDeath(parameters_, p, calculateLE);
 
@@ -352,6 +357,8 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 				//no need to increment
 				continue;
 			}
+
+            
 
 			if(parameters_.useRollout && parameters_.treatedContext && p->isInfected())
 			{
@@ -401,6 +408,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 				if (!p->PassedCSWEndAge())
 				{
 					p->rollForBecomeSexWorker(parameters_);
+                    updateEntity = true;
 				}
 
 				Entity::RiskLevel oldRisk = p->getRiskLevel();
@@ -408,41 +416,48 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 				p->rerollRiskGroup(parameters_);
 
 				if(oldRisk != p->getRiskLevel())
-				    {
+                {
 					OnRiskGroupChanged(p);
-				    }
+                    updateEntity = true;
+                }
 
 				//refresh risk group in dmg bucket and refresh BucketDemographicProfile
 				entities->refreshBucketDemographicProfile(p, &p_Iter, oldRisk != p->getRiskLevel());
 			}
 
-	    //Check for age to stop becoming CSW
+            //Check for age to stop becoming CSW
             if(p->isCSW() && p->PassedCSWEndAge()) {
-		p->quitSexWork(parameters_);
-		entities->refreshBucketDemographicProfile(p, &p_Iter);
-	    }
+                p->quitSexWork(parameters_);
+                entities->refreshBucketDemographicProfile(p, &p_Iter);
+                updateEntity = true;
+            }
 
-	    if(((parameters_.useRollout && parameters_.treatedContext) || p->HasTargetedCepacContext()) &&
-	       p->isInfected())
-	    {
-                 auto context = p->HasTargetedCepacContext() ? p->GetTargetedCepacContext() : parameters_.treatedContext;
+            if(((parameters_.useRollout && parameters_.treatedContext) || p->HasTargetedCepacContext()) &&
+                p->isInfected())
+            {
+                auto context = p->HasTargetedCepacContext() ? p->GetTargetedCepacContext() : parameters_.treatedContext;
 
-		 if(p->isOnArt())
-		 {
-		     // if they're on treatment, they should be counted as eligible even if the treatment has worked  
-		     populationStatistics.recordTreatmentEligiblity(p);
-		     populationStatistics.recordTreatment(p);
-		 }
-		 else if(p->isEligibleForTreatment(context->getTreatmentInputs()->startART[0]))
-		 {
-		     populationStatistics.recordTreatmentEligiblity(p);
-		 }
-	    }
+                if(p->isOnArt())
+                {
+                    // if they're on treatment, they should be counted as eligible even if the treatment has worked
+                    populationStatistics.recordTreatmentEligiblity(p);
+                    populationStatistics.recordTreatment(p);
+                }
+                else if(p->isEligibleForTreatment(context->getTreatmentInputs()->startART[0]))
+                {
+                    populationStatistics.recordTreatmentEligiblity(p);
+                }
+            }
 
-	    populationStatistics.costsTracker.RecordLifeMonth(p->getQualityOfLife(),
-		cepacDiscountFactor, p->getHIVStatus());
+            populationStatistics.costsTracker.RecordLifeMonth(p->getQualityOfLife(),
+                cepacDiscountFactor, p->getHIVStatus());
 
-	    p_Iter++;
+            if (updateEntity && parameters_.trace_files[EventParams::TraceFile::Type::PartnerNetwork].enabled)
+            {
+                network.UpdateEntity(p, parameters_.currTime.in_months());
+            }
+
+            p_Iter++;
 		}
 	}
 }
@@ -522,7 +537,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 		    endedPartnershipCount[type] += ((Male *)person)->getPartnershipsToEnd(parameters_.currTime, SexualPartnership::Type(type), partnershipsToEnd, false);
 		}
 
-		//Now, split them up... man, it would suck for their kids (if they had any)
+        //Now, split them up... man, it would suck for their kids (if they had any)
 		DissolveSexualPartnerships(parameters_, person, partnershipsToEnd);
 
 		//if this initiator is now single, then make sure they are in singles pool
@@ -702,15 +717,6 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 // Write out the current partnership network
 void Population::WritePartnershipNetwork(EventParams &parameters_)
 {
-    Network network;
-
-    entities->forEach([&](Entity *entity)
-    {
-        for (auto partnership : entity->GetPartnerships())
-        {
-            network.UpdatePartnership(entity, partnership->getOtherPartner(entity), partnership);
-        }
-    });
     network.Write(parameters_.currTime.in_months());
 }
 
@@ -1063,22 +1069,22 @@ void Population::GenerateEntities(const DemographicProfile &profile,
 {
 	for (unsigned long count = 0; count < numInProfileToCreate; count++)
 	{
-			bool toTrace = parameters_.currTime >= parameters_.monthTraceNewborns
-			  && parameters_.numNewbornsTraced < parameters_.numNewbornsToTrace;
-			if(toTrace) parameters_.numNewbornsTraced++;
+        bool toTrace = parameters_.currTime >= parameters_.monthTraceNewborns
+          && parameters_.numNewbornsTraced < parameters_.numNewbornsToTrace;
+        if(toTrace) parameters_.numNewbornsTraced++;
 
-			auto age = Age::from_months(0);
-			if (ageRange) {
-				// Generate an age from a uniform distribution bounded by _ageBucketParams
-				auto randAge = parameters_.randomNums.randInt(ageRange->lower.in_months(),
-					ageRange->upper.in_months());
-				age = Age::from_months(randAge);
-			}
-			auto p = GenerateEntity(parameters_, profile, age, toTrace);
+        auto age = Age::from_months(0);
+        if (ageRange) {
+            // Generate an age from a uniform distribution bounded by _ageBucketParams
+            auto randAge = parameters_.randomNums.randInt(ageRange->lower.in_months(),
+                ageRange->upper.in_months());
+            age = Age::from_months(randAge);
+        }
+        auto p = GenerateEntity(parameters_, profile, age, toTrace);
 
-			// add the newborn to the EntityPool
-			// use addEntityToAll here (initial entrance into population)
-			entities->addEntityToAll(p);
+        // add the newborn to the EntityPool
+        // use addEntityToAll here (initial entrance into population)
+        entities->addEntityToAll(p);
 	}
 }
 
@@ -2296,8 +2302,14 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Male *_in
         }
 
         //the pointer to this partnership will be stored within initiator.
-        new SexualPartnership(_initiator, chosenPartner, parameters_, _partnershipType);
+        SexualPartnership *partnership = new SexualPartnership(_initiator, chosenPartner, parameters_, _partnershipType);
         chosenPartner->IncrementTimesSelected();
+
+        if (parameters_.trace_files[EventParams::TraceFile::Type::PartnerNetwork].enabled)
+        {
+            network.AddPartnership(_initiator, chosenPartner, partnership,
+                parameters_.currTime.in_months());
+        }
 
         //add all persons back to entity pool
         for(std::list<Entity *>::iterator it = attemptedPartners.begin(); it != attemptedPartners.end(); it++)
@@ -2352,6 +2364,7 @@ void Population::ProcessDeath(EventParams &parameters_, Entity *_p, bool calcula
 	}
 
 	DissolveSexualPartnerships(parameters_, _p, formerPartnerships);
+
     currDeathCauses[(std::size_t)_p->deathStatus]++;
 	populationStatistics.processDeath(_p, parameters_);
 

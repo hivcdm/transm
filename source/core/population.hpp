@@ -16,6 +16,7 @@
 #include "parameters/concurrencydefinition.hpp"
 #include "parameters/agerangesizecontainer.hpp"
 #include "statistics/monthlystats.hpp"
+#include "statistics/partnernetwork.hpp"
 #include "statistics/populationstatisticsold.hpp"
 #include "utility/randomnumbergenerator.hpp"
 #include "utility/nullable.hpp"
@@ -515,6 +516,8 @@ private:
     std::unordered_map<std::string, MonthlyStats> trace_files_;
 
     std::size_t debug_num_on_prep_;
+
+    Network network;
 };
 
 } // namespace transm
