@@ -1,28 +1,14 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graphml.hpp>
-//#include <graph.hh>
 
 #include "entities/entity.hpp"
 #include "entities/demographicprofile.hpp"
 #include "entities/sexualpartnership.hpp"
 #include "utility/time.hpp"
 
-//using namespace graph_tool;
-
 /**
-   This is the interface with graph_tool https://graph-tool.skewed.de/
+   This class outputs the partnership network in graphml format
  **/
-
-// define enums in Boost
-#if 0
-namespace boost {
-    enum vertex_orientation_t { vertex_orientation_msw, vertex_orientaiton_msmw, vertex_orientaiton_msm };
-    enum edge_type_t { edge_type_steady, edge_type_regular, edge_type_casual, edge_type_csw };
-
-    BOOST_INSTALL_PROPERTY(vertex, orientation);
-    BOOST_INSTALL_PROPERTY(edge, type);
-}
-#endif
 
 class Network {
 
@@ -37,7 +23,6 @@ class Network {
         bool risk_level;
         int viral_load;
         int composite; // on_prep=-1,hiv_neg=0,hiv_pos=viral_load
-        //boost::vertex_orientation_t orientation;
     };
 
     struct PartnershipEdge
@@ -48,7 +33,6 @@ class Network {
         int duration;
         std::string gender_to_gender; //e.g msw+female,msm+msm,etc
         int sero_pos; // both_hiv-=0,one_hiv+=1,both_hiv+=2
-        //boost::edge_type_t type;
     };
 
     // Adjacency List
@@ -168,56 +152,7 @@ public:
         std::string filename = "PartnershipNetwork_" + std::to_string(month) + ".graphml";
         std::ofstream ofs(filename);
         boost::write_graphml(ofs, G, dp, true);
-#if 0
-        boost::python::object ovprops;
-        boost::python::object oeprops;
-        boost::python::object vorder;
-
-        GraphInterface network(G, true, ovprops, oeprops, vorder);
-        network.write_to_file("ParternshipNetwork.gt", nullptr,
-            "gt", graph.get_graph_index());
-#endif
     }
-
-#if 0
-    // Edges are added when a partnership is formed
-    void AddEdges(/*sexualPartnership*/)
-    {
-        PartnershipEdge edge(/*edge_properties, entityId, partnerId*/);
-        boost::add_edge(edge);
-    }
-
-    // Edges are removed when a partnership ends
-    void RemoveEdges()
-    {
-        PartnershipEdge edge(/*edge_properties, entityId, partnerId*/);
-        boost::remove_edge(edge);
-    }
-
-    // New Vertices are added for entities that reach age of majority
-    void AddVertices()
-    {
-        // for new vertices:
-        EntityVertex vertex(/*vertex_properties*/);
-        boost::add_vertex(vertex);
-    }
-
-    // Vertices are removed when an entity dies or ages out of the sexually active population
-    void RemoveVertices(/*entityId*/)
-    {
-        // IndexMap index = get(vertex_index, g);
-        EntityVertex vertex = get(/*entityId*/);
-        boost::remove_vertex(vertex);
-    }
-
-    void UpdateNetwork()
-    {
-        //RemoveEdges();
-        //RemoveVertices();
-        //AddVertices();
-        //AddEdges();
-    }
-#endif
 
 private:
     Graph G;

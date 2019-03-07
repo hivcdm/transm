@@ -472,6 +472,17 @@ void Simulation::Step()
         population_.populationStatistics.costsTracker.PrintCosts(parameters_.currTime, parameters_.trace_files[EventParams::TraceFile::Type::CostEffectiveness].file);
 	}
 
+    if (parameters_.trace_files[EventParams::TraceFile::Type::PartnerNetwork].enabled)
+    {
+        if (std::find(parameters_.partnerNetworkRecordTimes.begin(),
+            parameters_.partnerNetworkRecordTimes.end(), time_.in_months()) !=
+            parameters_.partnerNetworkRecordTimes.end())
+        {
+            // save the partnership network data in the user specified month
+            population_.WritePartnershipNetwork(parameters_);
+        }
+    }
+
     if(parameters_.calibrationInputs.useCalibration)
     {
 	if (parameters_.calibrationInputs.monthOfCalibration == time_)
@@ -526,17 +537,14 @@ void Simulation::Step()
     }
     else if(time_ > Time(0, 1))
     {
-	run_time_predictor_.Update(std::make_pair(time_.in_months(), timer_.GetTime() - start_time_));
+        run_time_predictor_.Update(std::make_pair(time_.in_months(), timer_.GetTime() - start_time_));
     }
-
-    // save the graph-tool partnership network every year
-    if (time_.in_months() >= 600 && time_.in_months() % 12 == 0)
-        population_.WritePartnershipNetwork(parameters_);
 
     start_time_ = timer_.GetTime();
 
     prevalence_ = population_.GetPopulationStatistics().infectionsTracker.getSAPrev(population_);
-    incidence_ = population_.GetPopulationStatistics().infectionsTracker.getCurrTimeStepIncidentInfsTotal() / ((double)(population_.GetSize()) - population_.GetNASize());
+    incidence_ = population_.GetPopulationStatistics().infectionsTracker.getCurrTimeStepIncidentInfsTotal() /
+      ((double)(population_.GetSize()) - population_.GetNASize());
 }
 
 void Simulation::LastStep()
@@ -549,7 +557,6 @@ void Simulation::LastStep()
 
 	//Run every infected person left through CEPAC until they die
 	if(passedCalibration_) {
-        population_.WritePartnershipNetwork(parameters_);
 	    population_.UpdateFinalPhysicalState(parameters_);
 	}
 
@@ -831,6 +838,7 @@ void Simulation::Initialize(SimulationParameters &parameters)
     parameters_.numNewbornsTraced = 0;
     parameters_.numNewbornsToTrace = tracing_parameters.num_newborns_to_trace;
     parameters_.monthTraceNewborns = tracing_parameters.month_trace_newborns;
+    parameters_.partnerNetworkRecordTimes = tracing_parameters.partner_network_record_times;
 
     Utility::changeDirectoryToResults();
 
@@ -847,6 +855,7 @@ void Simulation::Initialize(SimulationParameters &parameters)
             if(type_string == "infection") return EventParams::TraceFile::Type::Infection;
             if(type_string == "lifeExpectancy") return EventParams::TraceFile::Type::LifeExpectancy;
             if(type_string == "partnerAcquisition") return EventParams::TraceFile::Type::PartnerAcquisition;
+            if(type_string == "partnerNetwork") return EventParams::TraceFile::Type::PartnerNetwork;
             if(type_string == "partnership") return EventParams::TraceFile::Type::Partnership;
             if(type_string == "population") return EventParams::TraceFile::Type::Population;
             if(type_string == "shiftedOutcomes") return EventParams::TraceFile::Type::ShiftedOutcomes;

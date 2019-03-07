@@ -15,7 +15,6 @@
 #include "parameters/agebucketprevalenceinfo.hpp"
 #include "parameters/concurrencydefinition.hpp"
 #include "parameters/agerangesizecontainer.hpp"
-#include "parameters/graphtool.hpp"
 #include "statistics/monthlystats.hpp"
 #include "statistics/populationstatisticsold.hpp"
 #include "utility/randomnumbergenerator.hpp"
