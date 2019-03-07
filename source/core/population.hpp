@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "intervention.hpp"
-#include "parameters/agerangesizecontainer.hpp"
 #include "entities/female.hpp"
 #include "entities/male.hpp"
 #include "entities/entity.hpp"
@@ -15,6 +14,7 @@
 #include "parameters/populationparameters.hpp"
 #include "parameters/agebucketprevalenceinfo.hpp"
 #include "parameters/concurrencydefinition.hpp"
+#include "parameters/agerangesizecontainer.hpp"
 #include "statistics/monthlystats.hpp"
 #include "statistics/populationstatisticsold.hpp"
 #include "utility/randomnumbergenerator.hpp"
@@ -127,6 +127,8 @@ public:
     /// returns the # of New people of each type who was infected
     /// </summary>
 	void UpdatePartnerships(EventParams &_eventParams);
+
+    void WritePartnershipNetwork(EventParams &_eventParams);
 
     /// <summary>
     /// counts the total size of the population and updates internal state

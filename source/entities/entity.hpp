@@ -780,6 +780,24 @@ public:
         return using_prep_this_month_;
     }
 
+    std::list<SexualPartnership *> GetPartnerships()
+    {
+        std::list<SexualPartnership *> partnerships;
+
+        for (auto type : enum_iterator<SexualPartnership::Type>())
+        {
+            auto iter = partners[(int)type].begin();
+            auto iterEnd = partners[(int)type].end();
+
+            while (iter != iterEnd)
+            {
+                partnerships.push_back(*iter);
+                iter++;
+            }
+        }
+        return partnerships;
+    }
+
 private:
     //Return the current index of which SimContext should be used to update the
     //health of a patient

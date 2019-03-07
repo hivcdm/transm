@@ -12,8 +12,9 @@
 #include "entities/female.hpp"
 #include "entities/male.hpp"
 #include "entities/sexualbehavior.hpp"
-#include "statistics/infectionstracker.hpp"
 #include "statistics/coststracker.hpp"
+#include "statistics/infectionstracker.hpp"
+#include "statistics/partnernetwork.hpp"
 #include "utility/descriptive_stats_container.hpp"
 #include "utility/utility.hpp"
 #include "utility/randomnumbergenerator.hpp"
@@ -696,6 +697,21 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 			}
 		}
 	}
+}
+
+// Write out the current partnership network
+void Population::WritePartnershipNetwork(EventParams &parameters_)
+{
+    Network network;
+
+    entities->forEach([&](Entity *entity)
+    {
+        for (auto partnership : entity->GetPartnerships())
+        {
+            network.UpdatePartnership(entity, partnership->getOtherPartner(entity), partnership);
+        }
+    });
+    network.Write(parameters_.currTime.in_months());
 }
 
 void Population::SaveIndividualSummaries(std::ostream &stream) const
