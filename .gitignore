@@ -6,7 +6,8 @@ x64/
 *.vcxproj.user
 *.o
 *.d
-#*#
+.\#*
+\#*
 *~
 .DS_Store
 runs/*
