@@ -760,17 +760,17 @@ void Simulation::Initialize(SimulationParameters &parameters)
     parameters_.monthOf1990 = Time::from_months(parameters.GetMonthOf1990());
     parameters_.calibrationInputs = parameters.GetCalibrationParameters();
     parameters_.delayPrevalence = Time::from_months(parameters.GetInitialInfectionDelay());
-    auto intervention_params = parameters.GetInterventionParameters();
-    for(const auto &prop : intervention_params.target_yearly_rollout_proportions)
+    auto cepac_params = parameters.GetCepacParameters();
+    for(const auto &prop : cepac_params.target_yearly_rollout_proportions)
     {
         parameters_.targetYearlyRolloutProportions[prop.first] = prop.second;
     }
 	parameters_.concurrencyDef = parameters.GetConcurrencyDefinition();
-    parameters_.useRollout = intervention_params.intervention_type == InterventionParameters::InterventionType::Art;
-    parameters_.enableDynamicTreatmentScaling = intervention_params.dynamic_feedback_enabled;
-    parameters_.dynamicFeedbackPeriod = intervention_params.dynamic_feedback_period;
-    parameters_.rolloutEligibility = intervention_params.eligibility_criteria;
-    parameters_.rolloutProportionDenominator = intervention_params.rollout_proportion_denominator;
+    parameters_.useRollout = (cepac_params.file_type == CepacParameters::FileType::Art);
+    parameters_.enableDynamicTreatmentScaling = cepac_params.dynamic_feedback_enabled;
+    parameters_.dynamicFeedbackPeriod = cepac_params.dynamic_feedback_period;
+    parameters_.rolloutEligibility = cepac_params.eligibility_criteria;
+    parameters_.rolloutProportionDenominator = cepac_params.rollout_proportion_denominator;
 
     auto load_context = [](const std::string &file_name)
     {
@@ -795,9 +795,9 @@ void Simulation::Initialize(SimulationParameters &parameters)
 
     if(parameters_.useRollout)
     {
-        parameters_.untreatedContext = load_context(intervention_params.default_cepac_file.filename);
+        parameters_.untreatedContext = load_context(cepac_params.default_cepac_file.filename);
 
-        for(auto &cepac_file : intervention_params.cepac_files)
+        for(auto &cepac_file : cepac_params.cepac_files)
         {
             if(cepac_file.time == Time::Zero && cepac_file.target_population == 0) continue; // skip untreated context
             auto context = load_context(cepac_file.filename);
@@ -811,9 +811,9 @@ void Simulation::Initialize(SimulationParameters &parameters)
     }
     else
     {
-        parameters_.cepacSimContexts.push_back(load_context(intervention_params.default_cepac_file.filename));
+        parameters_.cepacSimContexts.push_back(load_context(cepac_params.default_cepac_file.filename));
 
-        for(auto &cepac_file : intervention_params.cepac_files)
+        for(auto &cepac_file : cepac_params.cepac_files)
         {
             auto context = load_context(cepac_file.filename);
             parameters_.timesToSwitchSimContext.push_back(cepac_file.time);

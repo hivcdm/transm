@@ -30,7 +30,7 @@ public:
         Time month_trace_newborns;
         double life_expectancy_ci = 0;
         std::vector<int> life_expectancy_record_times;
-        std::vector<int> partner_acquisition_record_times; 
+        std::vector<int> partner_acquisition_record_times;
     };
 
     SimulationParameters() : rng_(nullptr) { }
@@ -48,13 +48,13 @@ public:
     virtual ConcurrencyDefinition GetConcurrencyDefinition() const = 0;
     virtual TracingParameters GetTracingParameters() const = 0;
     virtual CalibrationInputs GetCalibrationParameters() const = 0;
-    virtual InterventionParameters GetInterventionParameters() const = 0;
     virtual PopulationParameters GetPopulationParameters() const = 0;
     virtual std::unordered_map<std::string, TargetGroup> GetTargetGroups() const = 0;
     virtual TransmissionCoefficientsMap GetTransmissionCoefficients() const = 0;
     virtual Female::SubPopParams GetFemaleSubPopParams() const = 0;
     virtual Male::SubPopParams GetMaleSubPopParams() const = 0;
     virtual InterventionsContainer GetPopulationInterventions() const = 0;
+    virtual CepacParameters GetCepacParameters() const = 0;
 
 private:
     RandomNumberGenerator *rng_;
@@ -77,13 +77,13 @@ public:
     /*virtual*/ ConcurrencyDefinition GetConcurrencyDefinition() const;
     /*virtual*/ TracingParameters GetTracingParameters() const;
     /*virtual*/ CalibrationInputs GetCalibrationParameters() const;
-    /*virtual*/ InterventionParameters GetInterventionParameters() const;
     /*virtual*/ PopulationParameters GetPopulationParameters() const;
     /*virtual*/ std::unordered_map<std::string, TargetGroup> GetTargetGroups() const;
     /*virtual*/ TransmissionCoefficientsMap GetTransmissionCoefficients() const;
     /*virtual*/ Female::SubPopParams GetFemaleSubPopParams() const;
     /*virtual*/ Male::SubPopParams GetMaleSubPopParams() const;
     /*virtual*/ InterventionsContainer GetPopulationInterventions() const;
+    /*virtual*/ CepacParameters GetCepacParameters() const;
 
 private:
     template<typename T>

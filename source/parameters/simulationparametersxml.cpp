@@ -266,23 +266,23 @@ CalibrationInputs SimulationParametersXml::GetCalibrationParameters() const
     return calib;
 }
 
-InterventionParameters SimulationParametersXml::GetInterventionParameters() const
+CepacParameters SimulationParametersXml::GetCepacParameters() const
 {
     auto simulation_node = document_.child("simulation");
     auto interventions_node = simulation_node.child("interventions");
 
-    InterventionParameters parameters;
+    CepacParameters parameters;
 
     if(Attr<bool>(interventions_node.child("artRolloutIntervention"), "enabled"))
     {
-        parameters.intervention_type = InterventionParameters::InterventionType::Art;
+        parameters.file_type = CepacParameters::FileType::Art;
     }
     else
     {
-        parameters.intervention_type = InterventionParameters::InterventionType::Cepac;
+        parameters.file_type = CepacParameters::FileType::Cepac;
     }
 
-    if(parameters.intervention_type == InterventionParameters::InterventionType::Art)
+    if(parameters.file_type == CepacParameters::FileType::Art)
     {
         auto scaling_node = interventions_node.child("artRolloutIntervention").child("dynamicTreatmentScaling");
 
@@ -299,7 +299,7 @@ InterventionParameters SimulationParametersXml::GetInterventionParameters() cons
                 int file_number = treatment_file_node.node().child("fileNumber").text().as_int();
                 int target_population = treatment_file_node.node().child("popToApply").text().as_int();
 
-                InterventionParameters::CepacFile file;
+                CepacParameters::CepacFile file;
                 file.target_population = target_population;
                 file.filename = file_name;
                 file.time = time;
@@ -319,7 +319,7 @@ InterventionParameters SimulationParametersXml::GetInterventionParameters() cons
         }
 
         parameters.eligibility_criteria = GetRolloutEligibility();
-    parameters.rollout_proportion_denominator = GetRolloutDenominator();
+        parameters.rollout_proportion_denominator = GetRolloutDenominator();
 
         for(auto target : interventions_node.select_nodes("artRolloutIntervention/targetRolloutProportions/target"))
         {
@@ -338,7 +338,7 @@ InterventionParameters SimulationParametersXml::GetInterventionParameters() cons
                 std::string file_name = treatment_file_node.node().child("fileName").text().as_string();
                 int file_number = treatment_file_node.node().child("fileNumber").text().as_int();
 
-                InterventionParameters::CepacFile file;
+                CepacParameters::CepacFile file;
                 file.target_population = 0;
                 file.filename = file_name;
                 file.time = time;

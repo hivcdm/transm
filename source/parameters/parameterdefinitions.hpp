@@ -35,6 +35,50 @@ struct TraceFileParameters
 };
 
 /**
+this structure stores the definintion fo concurrency
+*/
+class ConcurrencyDef
+{
+public:
+    int minPartnershipsNeeded;
+    bool useDefinition;
+    ConcurrencyDef(int min = -1, bool def = false)
+    {
+        minPartnershipsNeeded = min;
+        useDefinition = def;
+    }
+};
+
+/**
+this structure stores the Inputs for calibration
+**/
+class CalibrationInputs
+{
+public:
+    bool useCalibration;
+    Time monthOfCalibration;
+
+    //outcomes used for the cutoff
+    //The partnership prevalence is for a year duration
+    int steadyPrevPopulation;
+    Bounds<double> steadyPrevBounds;
+    int casualPrevPopulation;
+    Bounds<double> casualPrevBounds;
+    int CSWPrevPopulation;
+    Bounds<double> CSWPrevBounds;
+    int propInConcurrentPopulation;
+    Bounds<double> propInConcurrentBounds;
+    int numActsPopulation;
+    Bounds<double> numActsBounds;
+    double femaleCasualPrevRatio;
+    double femalePropInConcurrentRatio;
+    double femaleNumActsLRtoHRRatio;
+
+    // List of incidence rannge to test at each year
+    std::map<Time, std::pair<double,double>> yearlyIncidenceRanges;
+};
+
+/**
 this structure gives information about the rollout file to use and when to apply it if ART Rollout intervention is turned on
 */
 class RolloutContext
@@ -51,21 +95,6 @@ public:
     }
     ~RolloutContext()
     {
-    }
-};
-
-/**
-this structure stores the definintion fo concurrency
-*/
-class ConcurrencyDef
-{
-public:
-    int minPartnershipsNeeded;
-    bool useDefinition;
-    ConcurrencyDef(int min = -1, bool def = false)
-    {
-        minPartnershipsNeeded = min;
-        useDefinition = def;
     }
 };
 
@@ -101,42 +130,13 @@ enum RolloutDenominator {
 	DEFAULT = ELIGIBLE
 };
 
-/**
-this structure stores the Inputs for calibration
-**/
-class CalibrationInputs
+struct CepacParameters
 {
-public:
-    bool useCalibration;
-    Time monthOfCalibration;
-
-    //outcomes used for the cutoff
-    //The partnership prevalence is for a year duration
-    int steadyPrevPopulation;
-    Bounds<double> steadyPrevBounds;
-    int casualPrevPopulation;
-    Bounds<double> casualPrevBounds;
-    int CSWPrevPopulation;
-    Bounds<double> CSWPrevBounds;
-    int propInConcurrentPopulation;
-    Bounds<double> propInConcurrentBounds;
-    int numActsPopulation;
-    Bounds<double> numActsBounds;
-    double femaleCasualPrevRatio;
-    double femalePropInConcurrentRatio;
-    double femaleNumActsLRtoHRRatio;
-
-    // List of incidence rannge to test at each year
-    std::map<Time, std::pair<double,double>> yearlyIncidenceRanges;
-};
-
-struct InterventionParameters
-{
-    enum class InterventionType
+    enum class FileType
     {
         Cepac,
         Art
-    } intervention_type;
+    } file_type;
 
     struct CepacFile
     {
@@ -145,15 +145,15 @@ struct InterventionParameters
         std::string filename = "";
     };
 
-    InterventionParameters() :
-        intervention_type(InterventionType::Cepac),
+    CepacParameters() :
+        file_type(FileType::Cepac),
         dynamic_feedback_enabled(false),
         dynamic_feedback_period(0)
     {
     }
 
-    InterventionParameters(const InterventionParameters &other) :
-        intervention_type(other.intervention_type),
+    CepacParameters(const CepacParameters &other) :
+        file_type(other.file_type),
         default_cepac_file(other.default_cepac_file),
         cepac_files(other.cepac_files),
         eligibility_criteria(other.eligibility_criteria),
@@ -163,17 +163,17 @@ struct InterventionParameters
     {
     }
 
-    ~InterventionParameters()
+    ~CepacParameters()
     {
     }
 
-    InterventionParameters &operator=(InterventionParameters other)
+    CepacParameters &operator=(CepacParameters other)
     {
         swap(other);
-	return *this;
+        return *this;
     }
 
-    void swap(InterventionParameters &other)
+    void swap(CepacParameters &other)
     {
         using std::swap;
         swap(default_cepac_file, other.default_cepac_file);
