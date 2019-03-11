@@ -14,7 +14,7 @@
 #include "entitypool/entitypool.hpp"
 #include "parameters/populationparameters.hpp"
 #include "parameters/agebucketprevalenceinfo.hpp"
-#include "parameters/concurrencydefinition.hpp"
+#include "parameters/parameterdefinitions.hpp"
 #include "statistics/monthlystats.hpp"
 #include "statistics/populationstatisticsold.hpp"
 #include "utility/randomnumbergenerator.hpp"

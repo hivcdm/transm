@@ -3,7 +3,7 @@
 #include <pugixml.hpp>
 #include <rana/rana.hpp>
 
-#include "concurrencydefinition.hpp"
+#include "parameterdefinitions.hpp"
 #include "populationparameters.hpp"
 #include "core/intervention.hpp"
 #include "core/targetgroup.hpp"

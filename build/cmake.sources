@@ -20,7 +20,7 @@ set(TRANSM_SOURCE_FILES
 ../source/entitypool/fullvector.hpp
 ../source/parameters/agebucketprevalenceinfo.hpp
 ../source/parameters/agerangesizecontainer.hpp
-../source/parameters/concurrencydefinition.hpp
+../source/parameters/parameterdefinitions.hpp
 ../source/parameters/eventparams.hpp
 ../source/parameters/populationparameters.hpp
 ../source/parameters/simulationparameters.hpp
