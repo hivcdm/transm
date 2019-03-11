@@ -7,9 +7,28 @@
 #include "populationparameters.hpp"
 #include "core/intervention.hpp"
 #include "core/targetgroup.hpp"
+#include "entities/entity.hpp"
 #include "entities/demographicprofile.hpp"
 
 namespace transm {
+
+struct PrepEligibility
+{
+    int currentPartnerCount;
+    Entity::HIVStatus partnerStatus;
+    Entity::RiskLevel partnerRiskLevel;
+    Time monthsSinceUnprotectedAct;
+};
+
+struct PrepParameters
+{
+public:
+
+    PrepEligibility prepEligibility;
+    std::vector<DemographicProfile::DoublePair> prepAccess;
+    std::vector<DemographicProfile::DoublePair> prepAdherence;
+    std::vector<DemographicProfile::DoublePair> prepRetention;
+};
 
 class SimulationParameters
 {
@@ -55,6 +74,7 @@ public:
     virtual Male::SubPopParams GetMaleSubPopParams() const = 0;
     virtual InterventionsContainer GetPopulationInterventions() const = 0;
     virtual CepacParameters GetCepacParameters() const = 0;
+    virtual PrepParameters GetPrepParameters() const = 0;
 
 private:
     RandomNumberGenerator *rng_;
@@ -84,6 +104,7 @@ public:
     /*virtual*/ Male::SubPopParams GetMaleSubPopParams() const;
     /*virtual*/ InterventionsContainer GetPopulationInterventions() const;
     /*virtual*/ CepacParameters GetCepacParameters() const;
+    /*virtual*/ PrepParameters GetPrepParameters() const;
 
 private:
     template<typename T>
@@ -119,6 +140,9 @@ private:
 	inline void NormalizeEntityDistributions(PopulationParameters &parameters) const;
 
     InterventionsContainer GetInterventions(pugi::xml_node interventions_node, bool individual) const;
+
+    Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node criteria_node) const;
+
 
     SexualBehavior GetSexualBehavior(const std::string &entity_type, SexualPartnership::Type type) const;
 

@@ -64,6 +64,99 @@ std::array<double, 7> SimulationParametersXml::from_string(const std::string &va
     return values;
 }
 
+template<>
+Entity::RiskLevel SimulationParametersXml::from_string(const std::string &risk)
+{
+    if(risk == "high") return Entity::RiskLevel::HIGH;
+    if(risk == "low") return Entity::RiskLevel::LOW;
+
+    throw std::runtime_error("unknown risk level: " + risk);
+}
+
+template<>
+DemographicProfile::Gender SimulationParametersXml::from_string(const std::string &gender)
+{
+    if(gender == "male") return DemographicProfile::Gender::Male;
+    if(gender == "female") return DemographicProfile::Gender::Female;
+
+    throw std::runtime_error("unknown gender: " + gender);
+}
+
+template<>
+DemographicProfile::Employment SimulationParametersXml::from_string(const std::string &employment)
+{
+    if(employment == "csw") return DemographicProfile::Employment::Csw;
+    if(employment == "non-csw") return DemographicProfile::Employment::NonCsw;
+
+    throw std::runtime_error("unknown employment: " + employment);
+}
+
+template<>
+Entity::HVLStrata SimulationParametersXml::from_string(const std::string &hvl_string)
+{
+    if(hvl_string == "-1" || hvl_string == "uninfected") return Entity::HVLStrata::UNINFECTED;
+    if(hvl_string == "0") return Entity::HVLStrata::HVL_ZERO;
+    if(hvl_string == "1") return Entity::HVLStrata::HVL_ONE;
+    if(hvl_string == "2") return Entity::HVLStrata::HVL_TWO;
+    if(hvl_string == "3") return Entity::HVLStrata::HVL_THREE;
+    if(hvl_string == "4") return Entity::HVLStrata::HVL_FOUR;
+    if(hvl_string == "5") return Entity::HVLStrata::HVL_FIVE;
+    if(hvl_string == "6") return Entity::HVLStrata::HVL_SIX;
+    if(hvl_string == "7" || hvl_string == "primary") return Entity::HVLStrata::HVL_PRIMARY;
+    if(hvl_string == "8" || hvl_string == "late-stage") return Entity::HVLStrata::HVL_LATESTAGE;
+
+    throw std::runtime_error("unknown hvl stratum: " + hvl_string);
+}
+
+template<>
+Entity::HIVStatus SimulationParametersXml::from_string(const std::string &value)
+{
+    if(value == "negative")
+    {
+        return Entity::HIVStatus::NEGATIVE;
+    }
+    else if(value == "observed-acute")
+    {
+        return Entity::HIVStatus::OBSERVED_ACUTE;
+    }
+    else if(value == "unobserved-acute")
+    {
+        return Entity::HIVStatus::UNOBSERVED_ACUTE;
+    }
+    else if(value == "observed-chronic")
+    {
+        return Entity::HIVStatus::OBSERVED_CHRONIC;
+    }
+    else if(value == "unobserved-chronic")
+    {
+        return Entity::HIVStatus::UNOBSERVED_CHRONIC;
+    }
+    else if(value == "observed-latestage")
+    {
+        return Entity::HIVStatus::OBSERVED_LATESTAGE;
+    }
+    else if(value == "unobserved-latestage")
+    {
+        return Entity::HIVStatus::UNOBSERVED_LATESTAGE;
+    }
+    else if (value == "any-positive")
+    {
+        return Entity::HIVStatus::ANY_POSITIVE;
+    }
+    else if (value == "not-observed-positive")
+    {
+        return Entity::HIVStatus::ANY_NOT_OBSERVED_POSITIVE;
+    }
+    else if (value == "observed-positive")
+    {
+        return Entity::HIVStatus::ANY_OBSERVED_POSITIVE;
+    }
+    else
+    {
+        throw std::runtime_error("invalid group target value for hiv-status: " + value);
+    }
+}
+
 NormalDist SimulationParametersXml::GetNormalDist(const pugi::xml_node node) const
 {
     NormalDist dist;
@@ -266,6 +359,95 @@ CalibrationInputs SimulationParametersXml::GetCalibrationParameters() const
     return calib;
 }
 
+PrepParameters SimulationParametersXml::GetPrepParameters() const
+{
+    PrepParameters parameters;
+
+    pugi::xml_node prep_node;
+    if (document_.select_node("/simulation/interventions/prepIntervention"))
+    {
+        prep_node = document_.select_node("/simulation/interventions/prepIntervention").node();
+
+        if (prep_node.child("prepEligibility"))
+        {
+            auto eligibility = prep_node.child("prepEligibility");
+            if (eligibility.child("currentPartnerCount"))
+            {
+                parameters.prepEligibility.currentPartnerCount =
+                  Text<int>(eligibility.child("currentPartnerCount"));
+            }
+            if (eligibility.child("partnerStatus"))
+            {
+                std::string value = Text<std::string>(eligibility.child("partnerStatus"));
+                parameters.prepEligibility.partnerStatus =  from_string<Entity::HIVStatus>(value);
+            }
+            if (eligibility.child("partnerRiskLevel"))
+            {
+                std::string value = Text<std::string>(eligibility.child("partnerRiskLevel"));
+                parameters.prepEligibility.partnerRiskLevel = from_string<Entity::RiskLevel>(value);
+            }
+            if (eligibility.child("monthsSinceUnprotectedAct"))
+            {
+                parameters.prepEligibility.monthsSinceUnprotectedAct = Time::from_months(
+                  Text<int>(eligibility.child("monthsSinceUnprotectedAct")));
+            }
+        }
+
+        if (prep_node.child("prepAccess"))
+        {
+            auto access = prep_node.child("prepAccess");
+            for(auto node : access.children("demographic"))
+            {
+                DemographicProfile profile;
+
+                if (node.attribute("bucket"))
+                {
+                    std::string bucketString = node.attribute("bucket").as_string();
+                    profile.parse(bucketString);
+                }
+                parameters.prepAccess.push_back(DemographicProfile::DoublePair(profile,
+                    node.text().as_double()));
+            }
+        }
+
+        if (prep_node.child("prepAdherence"))
+        {
+            auto adherence = prep_node.child("prepAccess");
+            for(auto node : adherence.children("demographic"))
+            {
+                DemographicProfile profile;
+
+                if (node.attribute("bucket"))
+                {
+                    std::string bucketString = node.attribute("bucket").as_string();
+                    profile.parse(bucketString);
+                }
+                parameters.prepAdherence.push_back(DemographicProfile::DoublePair(profile,
+                    node.text().as_double()));
+            }
+        }
+
+        if (prep_node.child("prepRetention"))
+        {
+            auto retention = prep_node.child("prepAccess");
+            for(auto node : retention.children("demographic"))
+            {
+                DemographicProfile profile;
+
+                if (node.attribute("bucket"))
+                {
+                    std::string bucketString = node.attribute("bucket").as_string();
+                    profile.parse(bucketString);
+                }
+                parameters.prepRetention.push_back(DemographicProfile::DoublePair(profile,
+                    node.text().as_double()));
+            }
+        }
+    }
+
+    return parameters;
+}
+
 CepacParameters SimulationParametersXml::GetCepacParameters() const
 {
     auto simulation_node = document_.child("simulation");
@@ -291,7 +473,7 @@ CepacParameters SimulationParametersXml::GetCepacParameters() const
 
         for(auto treatment_file_node : interventions_node.select_nodes("artRolloutIntervention/rolloutTreatmentFiles/rolloutFile"))
         {
-            auto time = Time::from_months(treatment_file_node.node().child("time").text().as_int());
+            auto time = Time::from_months(Text<int>(treatment_file_node.node().child("time")));
 
             if(time >= Time::Zero)
             {
@@ -365,7 +547,7 @@ std::unordered_map<TransmissionType, std::array<double, (std::size_t)Entity::HVL
 {
     std::unordered_map<TransmissionType, std::array<double, (std::size_t)Entity::HVLStrata::Last>> coefficient_map;
 
-    auto read_coefficients = [](pugi::xml_node node) 
+    auto read_coefficients = [](pugi::xml_node node)
     {
         std::array<double, (std::size_t)Entity::HVLStrata::Last> coefficients = {{0}};
         double value;
@@ -809,7 +991,7 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
     return parameters;
 }
 
-Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node criteria_node)
+Nullable<TargetGroup::PopulationTarget> SimulationParametersXml::ParseGroupEligibility(pugi::xml_node criteria_node) const
 {
     Nullable<TargetGroup::PopulationTarget> target;
 
@@ -857,51 +1039,7 @@ Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node cri
         else if(name == "hiv-status")
         {
             target.value.observed_hiv_status.has_value = true;
-
-            if(value == "negative")
-            {
-                target.value.observed_hiv_status.value = Entity::HIVStatus::NEGATIVE;
-            }
-            else if(value == "observed-acute")
-            {
-                target.value.observed_hiv_status.value = Entity::HIVStatus::OBSERVED_ACUTE;
-            }
-            else if(value == "unobserved-acute")
-            {
-                target.value.observed_hiv_status.value = Entity::HIVStatus::UNOBSERVED_ACUTE;
-            }
-            else if(value == "observed-chronic")
-            {
-                target.value.observed_hiv_status.value = Entity::HIVStatus::OBSERVED_CHRONIC;
-            }
-            else if(value == "unobserved-chronic")
-            {
-                target.value.observed_hiv_status.value = Entity::HIVStatus::UNOBSERVED_CHRONIC;
-            }
-            else if(value == "observed-latestage")
-            {
-                target.value.observed_hiv_status.value = Entity::HIVStatus::OBSERVED_LATESTAGE;
-            }
-            else if(value == "unobserved-latestage")
-            {
-                target.value.observed_hiv_status.value = Entity::HIVStatus::UNOBSERVED_LATESTAGE;
-            }
-	    else if (value == "any-positive")
-	    {
-		target.value.observed_hiv_status.value = Entity::HIVStatus::ANY_POSITIVE;
-	    }
-	    else if (value == "not-observed-positive")
-            {
-                target.value.observed_hiv_status.value = Entity::HIVStatus::ANY_NOT_OBSERVED_POSITIVE;
-            }
-            else if (value == "observed-positive")
-            {
-                target.value.observed_hiv_status.value = Entity::HIVStatus::ANY_OBSERVED_POSITIVE;
-            }
-            else
-            {
-                throw std::runtime_error("invalid group target value for " + name + ": " + value);
-            }
+            target.value.observed_hiv_status.value = from_string<Entity::HIVStatus>(value);
         }
         else if(name == "age")
         {
@@ -949,19 +1087,7 @@ Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node cri
         else if(name == "risk-group")
         {
             target.value.risk_level.has_value = true;
-
-            if(value == "high")
-            {
-                target.value.risk_level.value = Entity::RiskLevel::HIGH;
-            }
-            else if(value == "low")
-            {
-                target.value.risk_level.value = Entity::RiskLevel::LOW;
-            }
-            else
-            {
-                throw std::runtime_error("invalid group target value for " + name + ": " + value);
-            }
+            target.value.risk_level.value = from_string<Entity::RiskLevel>(value);
         }
         else if(name == "sexual-activity-status")
         {
@@ -1176,11 +1302,11 @@ const std::map<KnownIntervention, std::string> KnownInterventionStrings =
 template<>
 KnownIntervention SimulationParametersXml::from_string(const std::string &intervention)
 {
-    auto match = std::find_if(KnownInterventionStrings.begin(), 
-        KnownInterventionStrings.end(), 
-        [&](const std::pair<KnownIntervention, std::string> &e) 
-    { 
-        return e.second == intervention; 
+    auto match = std::find_if(KnownInterventionStrings.begin(),
+        KnownInterventionStrings.end(),
+        [&](const std::pair<KnownIntervention, std::string> &e)
+    {
+        return e.second == intervention;
     });
 
     if (match == KnownInterventionStrings.end()) {
@@ -1188,50 +1314,6 @@ KnownIntervention SimulationParametersXml::from_string(const std::string &interv
     }
 
     return match->first;
-}
-
-template<>
-Entity::RiskLevel SimulationParametersXml::from_string(const std::string &risk)
-{
-    if(risk == "high") return Entity::RiskLevel::HIGH;
-    if(risk == "low") return Entity::RiskLevel::LOW;
-
-    throw std::runtime_error("unknown risk level: " + risk);
-}
-
-template<>
-DemographicProfile::Gender SimulationParametersXml::from_string(const std::string &gender)
-{
-    if(gender == "male") return DemographicProfile::Gender::Male;
-    if(gender == "female") return DemographicProfile::Gender::Female;
-
-    throw std::runtime_error("unknown gender: " + gender);
-}
-
-template<>
-DemographicProfile::Employment SimulationParametersXml::from_string(const std::string &employment)
-{
-    if(employment == "csw") return DemographicProfile::Employment::Csw;
-    if(employment == "non-csw") return DemographicProfile::Employment::NonCsw;
-
-    throw std::runtime_error("unknown employment: " + employment);
-}
-
-template<>
-Entity::HVLStrata SimulationParametersXml::from_string(const std::string &hvl_string)
-{
-    if(hvl_string == "-1" || hvl_string == "uninfected") return Entity::HVLStrata::UNINFECTED;
-    if(hvl_string == "0") return Entity::HVLStrata::HVL_ZERO;
-    if(hvl_string == "1") return Entity::HVLStrata::HVL_ONE;
-    if(hvl_string == "2") return Entity::HVLStrata::HVL_TWO;
-    if(hvl_string == "3") return Entity::HVLStrata::HVL_THREE;
-    if(hvl_string == "4") return Entity::HVLStrata::HVL_FOUR;
-    if(hvl_string == "5") return Entity::HVLStrata::HVL_FIVE;
-    if(hvl_string == "6") return Entity::HVLStrata::HVL_SIX;
-    if(hvl_string == "7" || hvl_string == "primary") return Entity::HVLStrata::HVL_PRIMARY;
-    if(hvl_string == "8" || hvl_string == "late-stage") return Entity::HVLStrata::HVL_LATESTAGE;
-
-    throw std::runtime_error("unknown hvl stratum: " + hvl_string);
 }
 
 template<>
