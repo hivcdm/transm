@@ -13,7 +13,7 @@
 
 namespace transm {
 
-class Entity;
+//class Entity;
 class Population;
 
 class ArtRolloutTracker : protected TabularOutput

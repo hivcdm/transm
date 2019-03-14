@@ -28,7 +28,7 @@ public :
 		~SubPopParams();
 
 		double getChanceBecomeCSW() const;
-		double getPartnerAcqMultWithSteady(Entity::RiskLevel _risk) const;
+		double getPartnerAcqMultWithSteady(RiskLevel _risk) const;
 
 		//sexual behavior params for each type as specified by SexualPartnership::Type
 		const SexualBehavior &getSexualBehavior(SexualPartnership::Type _type) const;
@@ -69,7 +69,7 @@ public :
 		void SetCircucmsionProtectEfficacy(double efficacy) { circumProtectEff = efficacy; }
 		void SetCondomProtectEff(double efficacy) { condomProtectEff = efficacy; }
 
-		void SetPartnerAcqMultWithSteady(Entity::RiskLevel risk, double multiplier) { partnerAcqMultWithSteady[(std::size_t)risk] = multiplier; }
+		void SetPartnerAcqMultWithSteady(RiskLevel risk, double multiplier) { partnerAcqMultWithSteady[(std::size_t)risk] = multiplier; }
 
 		void SetChanceBecomeCsw(double chance) { chanceBecomeCSW = chance; }
 
@@ -80,11 +80,11 @@ public :
         void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) { proportionHighRisk[(std::size_t)employment] = proportion; }
 
 		void SetAverageYearsYounger(SexualPartnership::Type type, NormalDist dist) { sexualBehaviorParams[type].setAverageYearsYounger(dist); }
-		void SetAcquisitionRatePerMonth(Entity::RiskLevel risk, SexualPartnership::Type type, LogNormalDist dist) { sexualBehaviorParams[type].setAcquisitionRatePerMonth(risk, dist); }
-		void SetCoitalEventsPerMonth(Entity::RiskLevel risk, SexualPartnership::Type type, double mean) { sexualBehaviorParams[type].setCoitalEventsPerMonth(risk, mean); }
-		void SetChanceCondomUsePerEvent(Entity::RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { sexualBehaviorParams[type].setChanceCondomUsePerEvent(risk, dist); }
-		void SetPartnershipDuration(Entity::RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { sexualBehaviorParams[type].setPartnershipDuration(risk, dist); }
-	const BetaDist GetChanceCondomUsePerEvent(Entity::RiskLevel risk, SexualPartnership::Type type) const
+		void SetAcquisitionRatePerMonth(RiskLevel risk, SexualPartnership::Type type, LogNormalDist dist) { sexualBehaviorParams[type].setAcquisitionRatePerMonth(risk, dist); }
+		void SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type type, double mean) { sexualBehaviorParams[type].setCoitalEventsPerMonth(risk, mean); }
+		void SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { sexualBehaviorParams[type].setChanceCondomUsePerEvent(risk, dist); }
+		void SetPartnershipDuration(RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { sexualBehaviorParams[type].setPartnershipDuration(risk, dist); }
+	const BetaDist GetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type type) const
 		{ return getSexualBehavior(type).getChanceCondomUsePerEvent(risk); }
 
 		int GetMaxPartnershipRejections() const { return maxPartnershipRejections; }
@@ -106,7 +106,7 @@ public :
 		double chanceBecomeCSW;
 
 		//the rate multiplier for partner acquisition when a male has a Steady partner
-		double partnerAcqMultWithSteady[(std::size_t)Entity::RiskLevel::Last];
+		double partnerAcqMultWithSteady[(std::size_t)RiskLevel::Last];
 
 		//sexual behavior params for each type as specified by SexualPartnership::Type
 		std::unordered_map<SexualPartnership::Type, SexualBehavior> sexualBehaviorParams;
@@ -189,13 +189,13 @@ public:
 	Entity *choosePartner(RandomNumberGenerator &_randomNums, EntityPool *_availableEntities,
 	                      SexualPartnership::Type _partnershipType, bool _remove);
 
-    void SetChanceCondomUsePerEvent(Entity::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng);
+    void SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng);
 
     virtual void SetPreExposureProphylaxisEfficacy(double efficacy);
 
 	virtual double GetPreExposureProphylaxisEfficacy() const;
 
-	const BetaDist GetChanceCondomUsePerEvent(Entity::RiskLevel risk, SexualPartnership::Type type)
+	const BetaDist GetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type type)
 	{ return populationSpecificParams.getSexualBehavior(type).getChanceCondomUsePerEvent(risk); }
 
 	void SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, double meanEvents);

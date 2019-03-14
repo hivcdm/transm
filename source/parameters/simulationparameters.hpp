@@ -7,7 +7,7 @@
 #include "populationparameters.hpp"
 #include "core/intervention.hpp"
 #include "core/targetgroup.hpp"
-#include "entities/entity.hpp"
+#include "entities/entitytypes.hpp"
 #include "entities/demographicprofile.hpp"
 
 namespace transm {
@@ -15,8 +15,8 @@ namespace transm {
 struct PrepEligibility
 {
     int currentPartnerCount;
-    Entity::HIVStatus partnerStatus;
-    Entity::RiskLevel partnerRiskLevel;
+    HIVStatus partnerStatus;
+    RiskLevel partnerRiskLevel;
     Time monthsSinceUnprotectedAct;
 };
 
@@ -34,7 +34,7 @@ class SimulationParameters
 {
 public:
     using EntityDistributions = std::vector<DemographicProfile::DoublePair>;
-    using TransmissionCoefficients = std::array<double, (std::size_t)Entity::HVLStrata::Last>;
+    using TransmissionCoefficients = std::array<double, (std::size_t)HVLStrata::Last>;
     using TransmissionCoefficientsMap = std::unordered_map<TransmissionType, TransmissionCoefficients>;
     using InterventionsContainer = std::vector<Intervention>;
     using ConcurrencyDefinition = std::array<ConcurrencyDef, Constants::NumberConcurrencyDefs>;

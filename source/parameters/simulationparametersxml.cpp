@@ -1,6 +1,7 @@
 #include "simulationparameters.hpp"
 #include "core/population.hpp"
 #include "core/simulation.hpp"
+#include "entities/entity.hpp"
 #include "utility/cepacinputparser.hpp"
 
 namespace transm {
@@ -65,10 +66,10 @@ std::array<double, 7> SimulationParametersXml::from_string(const std::string &va
 }
 
 template<>
-Entity::RiskLevel SimulationParametersXml::from_string(const std::string &risk)
+RiskLevel SimulationParametersXml::from_string(const std::string &risk)
 {
-    if(risk == "high") return Entity::RiskLevel::HIGH;
-    if(risk == "low") return Entity::RiskLevel::LOW;
+    if(risk == "high") return RiskLevel::HIGH;
+    if(risk == "low") return RiskLevel::LOW;
 
     throw std::runtime_error("unknown risk level: " + risk);
 }
@@ -92,64 +93,64 @@ DemographicProfile::Employment SimulationParametersXml::from_string(const std::s
 }
 
 template<>
-Entity::HVLStrata SimulationParametersXml::from_string(const std::string &hvl_string)
+HVLStrata SimulationParametersXml::from_string(const std::string &hvl_string)
 {
-    if(hvl_string == "-1" || hvl_string == "uninfected") return Entity::HVLStrata::UNINFECTED;
-    if(hvl_string == "0") return Entity::HVLStrata::HVL_ZERO;
-    if(hvl_string == "1") return Entity::HVLStrata::HVL_ONE;
-    if(hvl_string == "2") return Entity::HVLStrata::HVL_TWO;
-    if(hvl_string == "3") return Entity::HVLStrata::HVL_THREE;
-    if(hvl_string == "4") return Entity::HVLStrata::HVL_FOUR;
-    if(hvl_string == "5") return Entity::HVLStrata::HVL_FIVE;
-    if(hvl_string == "6") return Entity::HVLStrata::HVL_SIX;
-    if(hvl_string == "7" || hvl_string == "primary") return Entity::HVLStrata::HVL_PRIMARY;
-    if(hvl_string == "8" || hvl_string == "late-stage") return Entity::HVLStrata::HVL_LATESTAGE;
+    if(hvl_string == "-1" || hvl_string == "uninfected") return HVLStrata::UNINFECTED;
+    if(hvl_string == "0") return HVLStrata::HVL_ZERO;
+    if(hvl_string == "1") return HVLStrata::HVL_ONE;
+    if(hvl_string == "2") return HVLStrata::HVL_TWO;
+    if(hvl_string == "3") return HVLStrata::HVL_THREE;
+    if(hvl_string == "4") return HVLStrata::HVL_FOUR;
+    if(hvl_string == "5") return HVLStrata::HVL_FIVE;
+    if(hvl_string == "6") return HVLStrata::HVL_SIX;
+    if(hvl_string == "7" || hvl_string == "primary") return HVLStrata::HVL_PRIMARY;
+    if(hvl_string == "8" || hvl_string == "late-stage") return HVLStrata::HVL_LATESTAGE;
 
     throw std::runtime_error("unknown hvl stratum: " + hvl_string);
 }
 
 template<>
-Entity::HIVStatus SimulationParametersXml::from_string(const std::string &value)
+HIVStatus SimulationParametersXml::from_string(const std::string &value)
 {
     if(value == "negative")
     {
-        return Entity::HIVStatus::NEGATIVE;
+        return HIVStatus::NEGATIVE;
     }
     else if(value == "observed-acute")
     {
-        return Entity::HIVStatus::OBSERVED_ACUTE;
+        return HIVStatus::OBSERVED_ACUTE;
     }
     else if(value == "unobserved-acute")
     {
-        return Entity::HIVStatus::UNOBSERVED_ACUTE;
+        return HIVStatus::UNOBSERVED_ACUTE;
     }
     else if(value == "observed-chronic")
     {
-        return Entity::HIVStatus::OBSERVED_CHRONIC;
+        return HIVStatus::OBSERVED_CHRONIC;
     }
     else if(value == "unobserved-chronic")
     {
-        return Entity::HIVStatus::UNOBSERVED_CHRONIC;
+        return HIVStatus::UNOBSERVED_CHRONIC;
     }
     else if(value == "observed-latestage")
     {
-        return Entity::HIVStatus::OBSERVED_LATESTAGE;
+        return HIVStatus::OBSERVED_LATESTAGE;
     }
     else if(value == "unobserved-latestage")
     {
-        return Entity::HIVStatus::UNOBSERVED_LATESTAGE;
+        return HIVStatus::UNOBSERVED_LATESTAGE;
     }
     else if (value == "any-positive")
     {
-        return Entity::HIVStatus::ANY_POSITIVE;
+        return HIVStatus::ANY_POSITIVE;
     }
     else if (value == "not-observed-positive")
     {
-        return Entity::HIVStatus::ANY_NOT_OBSERVED_POSITIVE;
+        return HIVStatus::ANY_NOT_OBSERVED_POSITIVE;
     }
     else if (value == "observed-positive")
     {
-        return Entity::HIVStatus::ANY_OBSERVED_POSITIVE;
+        return HIVStatus::ANY_OBSERVED_POSITIVE;
     }
     else
     {
@@ -379,12 +380,12 @@ PrepParameters SimulationParametersXml::GetPrepParameters() const
             if (eligibility.child("partnerStatus"))
             {
                 std::string value = Text<std::string>(eligibility.child("partnerStatus"));
-                parameters.prepEligibility.partnerStatus =  from_string<Entity::HIVStatus>(value);
+                parameters.prepEligibility.partnerStatus =  from_string<HIVStatus>(value);
             }
             if (eligibility.child("partnerRiskLevel"))
             {
                 std::string value = Text<std::string>(eligibility.child("partnerRiskLevel"));
-                parameters.prepEligibility.partnerRiskLevel = from_string<Entity::RiskLevel>(value);
+                parameters.prepEligibility.partnerRiskLevel = from_string<RiskLevel>(value);
             }
             if (eligibility.child("monthsSinceUnprotectedAct"))
             {
@@ -543,27 +544,27 @@ CepacParameters SimulationParametersXml::GetCepacParameters() const
     return parameters;
 }
 
-std::unordered_map<TransmissionType, std::array<double, (std::size_t)Entity::HVLStrata::Last>> SimulationParametersXml::GetTransmissionCoefficients() const
+std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> SimulationParametersXml::GetTransmissionCoefficients() const
 {
-    std::unordered_map<TransmissionType, std::array<double, (std::size_t)Entity::HVLStrata::Last>> coefficient_map;
+    std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> coefficient_map;
 
     auto read_coefficients = [](pugi::xml_node node)
     {
-        std::array<double, (std::size_t)Entity::HVLStrata::Last> coefficients = {{0}};
+        std::array<double, (std::size_t)HVLStrata::Last> coefficients = {{0}};
         double value;
 
-        for(auto hvl : enum_iterator<Entity::HVLStrata>())
+        for(auto hvl : enum_iterator<HVLStrata>())
         {
-            if(hvl == Entity::HVLStrata::UNINFECTED) continue;
+            if(hvl == HVLStrata::UNINFECTED) continue;
 
             switch(hvl)
             {
-            case Entity::HVLStrata::UNINFECTED:
+            case HVLStrata::UNINFECTED:
                 continue;
-            case Entity::HVLStrata::HVL_PRIMARY:
+            case HVLStrata::HVL_PRIMARY:
                 value = node.child("primary").text().as_double();
                 break;
-            case Entity::HVLStrata::HVL_LATESTAGE:
+            case HVLStrata::HVL_LATESTAGE:
                 value = node.child("lateStage").text().as_double();
                 break;
             default: 
@@ -682,9 +683,9 @@ SexualBehavior SimulationParametersXml::GetSexualBehavior(const std::string &ent
 
     result.setAverageYearsYounger(GetNormalDist(node.child("selectionCriteria").child("averageYearsYounger")));
 
-    for(auto risk : {Entity::RiskLevel::LOW, Entity::RiskLevel::HIGH})
+    for(auto risk : {RiskLevel::LOW, RiskLevel::HIGH})
     {
-        auto risk_node = node.child(risk == Entity::RiskLevel::LOW ? "lowRisk" : "highRisk");
+        auto risk_node = node.child(risk == RiskLevel::LOW ? "lowRisk" : "highRisk");
 
         result.setAcquisitionRatePerMonth(risk, GetLogNormalDist(risk_node.child("acquisitionRate")));
         result.setCoitalEventsPerMonth(risk, Text<double>(risk_node.child("coitalEventsPerMonth").child("distribution").child("mean")));
@@ -704,8 +705,8 @@ Male::SubPopParams SimulationParametersXml::GetMaleSubPopParams() const
     auto behavior_node = node.child("behavior");
     result.SetCswEndAge(Age(Text<int>(behavior_node.child("cswEndAge")), 0));
     result.SetChanceBecomeCsw(Text<double>(behavior_node.child("chanceBecomeSexWorker")));
-    result.SetPartnerAcqMultWithSteady(Entity::RiskLevel::HIGH, Text<double>(behavior_node.child("partnerAcqMultWithSteadyHighRisk")));
-    result.SetPartnerAcqMultWithSteady(Entity::RiskLevel::LOW, Text<double>(behavior_node.child("partnerAcqMultWithSteadyLowRisk")));
+    result.SetPartnerAcqMultWithSteady(RiskLevel::HIGH, Text<double>(behavior_node.child("partnerAcqMultWithSteadyHighRisk")));
+    result.SetPartnerAcqMultWithSteady(RiskLevel::LOW, Text<double>(behavior_node.child("partnerAcqMultWithSteadyLowRisk")));
 
     bool use_high_risk_multiplier = Attr<bool>(behavior_node.child("highRiskAcqRateMultiplier"), "enabled");
     double high_risk_multiplier = Text<double>(behavior_node.child("highRiskAcqRateMultiplier"));
@@ -955,7 +956,7 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
 		{
 			std::string risk_string = infection_target_node.attribute("risk").as_string();
 			assert(risk_string == "high" || risk_string == "low");
-			target.risk = { true, risk_string == "high" ? Entity::RiskLevel::HIGH : Entity::RiskLevel::LOW };
+			target.risk = { true, risk_string == "high" ? RiskLevel::HIGH : RiskLevel::LOW };
 		}
 
 		parameters.AddInfectionTarget(target, infection_target_node.text().as_int());
@@ -974,8 +975,8 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
     for(auto type : enum_iterator<SexualPartnership::Type>()) {
         if(!defaultMaleParams.hasSexualBehavior(type)) continue;
 		auto has_duration =
-		  !(defaultMaleParams.getSexualBehavior(SexualPartnership::Type(type)).getPartnershipDurationMth(Entity::RiskLevel::LOW).isZeroDistrib) &&
-		  !(defaultMaleParams.getSexualBehavior(SexualPartnership::Type(type)).getPartnershipDurationMth(Entity::RiskLevel::HIGH).isZeroDistrib);
+		  !(defaultMaleParams.getSexualBehavior(SexualPartnership::Type(type)).getPartnershipDurationMth(RiskLevel::LOW).isZeroDistrib) &&
+		  !(defaultMaleParams.getSexualBehavior(SexualPartnership::Type(type)).getPartnershipDurationMth(RiskLevel::HIGH).isZeroDistrib);
 		parameters.SetPartnershipHasDuration(DemographicProfile::Gender::Male, type, has_duration);
 		parameters.SetPartnershipHasDuration(DemographicProfile::Gender::Female, type, false);
     }
@@ -1039,7 +1040,7 @@ Nullable<TargetGroup::PopulationTarget> SimulationParametersXml::ParseGroupEligi
         else if(name == "hiv-status")
         {
             target.value.observed_hiv_status.has_value = true;
-            target.value.observed_hiv_status.value = from_string<Entity::HIVStatus>(value);
+            target.value.observed_hiv_status.value = from_string<HIVStatus>(value);
         }
         else if(name == "age")
         {
@@ -1087,7 +1088,7 @@ Nullable<TargetGroup::PopulationTarget> SimulationParametersXml::ParseGroupEligi
         else if(name == "risk-group")
         {
             target.value.risk_level.has_value = true;
-            target.value.risk_level.value = from_string<Entity::RiskLevel>(value);
+            target.value.risk_level.value = from_string<RiskLevel>(value);
         }
         else if(name == "sexual-activity-status")
         {
@@ -1351,7 +1352,7 @@ NormalDist SimulationParametersXml::TransformInterventionValue(NormalDist target
 void SimulationParametersXml::SetChanceCondomUseCallback(pugi::xml_node &node,
     Intervention &intervention, bool individual) const
 {
-    auto risk = Attr<Entity::RiskLevel>(node, "risk");
+    auto risk = Attr<RiskLevel>(node, "risk");
     auto type = Attr<SexualPartnership::Type>(node, "type");
     bool transform = false;
     if (node.child("transform"))
@@ -1509,7 +1510,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         case KnownIntervention::TransmissionCoefficient:
         {
             /*
-            auto hvl_stratum = Attr<Entity::HVLStrata>(node, "hvl");
+            auto hvl_stratum = Attr<HVLStrata>(node, "hvl");
             auto coefficient = Text<double>(node);
             intervention.SetIndividualCallback(
                 [=](Time current_time, Entity *person) { 
@@ -1529,7 +1530,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         }
         case KnownIntervention::PartnerAcquisitionRate:
         {
-            auto risk = Attr<Entity::RiskLevel>(node, "risk");
+            auto risk = Attr<RiskLevel>(node, "risk");
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = GetLogNormalDist(node);
             intervention.SetIndividualCallback(
@@ -1539,7 +1540,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         }
         case KnownIntervention::CoitalEventsPerMonth:
         {
-            auto risk = Attr<Entity::RiskLevel>(node, "risk");
+            auto risk = Attr<RiskLevel>(node, "risk");
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = Text<double>(node.child("distribution").child("mean"));
             intervention.SetIndividualCallback(
@@ -1553,7 +1554,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         }
         case KnownIntervention::PartnershipDuration:
         {
-            auto risk = Attr<Entity::RiskLevel>(node, "risk");
+            auto risk = Attr<RiskLevel>(node, "risk");
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = GetShiftedLogNormalDist(node);
             intervention.SetIndividualCallback(
@@ -1563,7 +1564,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         }
         case KnownIntervention::PartnershipRejectionChance:
         {
-            auto risk = Attr<Entity::RiskLevel>(node, "risk");
+            auto risk = Attr<RiskLevel>(node, "risk");
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto chance = Text<double>(node);
             intervention.SetIndividualCallback(
@@ -1614,9 +1615,9 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
              auto adherence = Text<double>(node);
              intervention.SetIndividualCallback([=](Time current_time, Entity *person) 
              {
-                if (person->getHIVStatus() == Entity::HIVStatus::OBSERVED_ACUTE
-                    || person->getHIVStatus() == Entity::HIVStatus::OBSERVED_LATESTAGE
-                    || person->getHIVStatus() == Entity::HIVStatus::OBSERVED_CHRONIC)
+                if (person->getHIVStatus() == HIVStatus::OBSERVED_ACUTE
+                    || person->getHIVStatus() == HIVStatus::OBSERVED_LATESTAGE
+                    || person->getHIVStatus() == HIVStatus::OBSERVED_CHRONIC)
 		{
 		  return;
                 }
@@ -1716,7 +1717,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         {
             /*
             auto gender = Attr<DemographicProfile::Gender>(node, "gender");
-            auto hvl_stratum = Attr<Entity::HVLStrata>(node, "hvl");
+            auto hvl_stratum = Attr<HVLStrata>(node, "hvl");
             auto coefficient = Text<double>(node);
             intervention.SetPopulationCallback(
                 [=](Time current_time, Population &p) { p.popWideParams.SetTransmissionCoefficient(gender, hvl_stratum, coefficient); });
@@ -1764,7 +1765,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         }
         case KnownIntervention::PartnerAcquisitionRate:
         {
-            auto risk = Attr<Entity::RiskLevel>(node, "risk");
+            auto risk = Attr<RiskLevel>(node, "risk");
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = GetLogNormalDist(node);
             intervention.SetPopulationCallback(
@@ -1780,7 +1781,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         }
         case KnownIntervention::CoitalEventsPerMonth:
         {
-            auto risk = Attr<Entity::RiskLevel>(node, "risk");
+            auto risk = Attr<RiskLevel>(node, "risk");
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = Text<double>(node.child("distribution").child("mean"));
             intervention.SetPopulationCallback(
@@ -1801,7 +1802,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         }
         case KnownIntervention::PartnershipDuration:
         {
-            auto risk = Attr<Entity::RiskLevel>(node, "risk");
+            auto risk = Attr<RiskLevel>(node, "risk");
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = GetShiftedLogNormalDist(node);
             intervention.SetPopulationCallback(

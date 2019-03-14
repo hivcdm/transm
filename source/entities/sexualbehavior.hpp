@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "entity.hpp"
+#include "entitytypes.hpp"
 #include "demographicprofile.hpp"
 #include "sexualpartnership.hpp"
 
@@ -32,27 +32,27 @@ public :
 	/// </summary>
 	unsigned int getNumAvailableBuckets() const;
 
-	const LogNormalDist getAcquisitionRatePerMonth(Entity::RiskLevel risk) const;
+	const LogNormalDist getAcquisitionRatePerMonth(RiskLevel risk) const;
 
-	double getCoitalEventsPerMonth(Entity::RiskLevel risk) const;
+	double getCoitalEventsPerMonth(RiskLevel risk) const;
 
-	const BetaDist getChanceCondomUsePerEvent(Entity::RiskLevel risk) const;
+	const BetaDist getChanceCondomUsePerEvent(RiskLevel risk) const;
 
 	const NormalDist getAverageYearsYounger() const;
 
-	const ShiftedLogNormalDist getPartnershipDurationMth(Entity::RiskLevel risk) const;
+	const ShiftedLogNormalDist getPartnershipDurationMth(RiskLevel risk) const;
 
 	SexualPartnership::Type getPartnershipType() const;
 
-	void setChanceCondomUsePerEvent(Entity::RiskLevel risk, BetaDist dist) { chanceCondomUsePerEvent[static_cast<std::size_t>(risk)] = dist; }
+	void setChanceCondomUsePerEvent(RiskLevel risk, BetaDist dist) { chanceCondomUsePerEvent[static_cast<std::size_t>(risk)] = dist; }
 
-    void setCoitalEventsPerMonth(Entity::RiskLevel risk, double meanEvents) { coitalEventsPerMonth[static_cast<std::size_t>(risk)] = meanEvents; }
+    void setCoitalEventsPerMonth(RiskLevel risk, double meanEvents) { coitalEventsPerMonth[static_cast<std::size_t>(risk)] = meanEvents; }
 
-    void setPartnershipDuration(Entity::RiskLevel risk, ShiftedLogNormalDist dist) { partnershipDurationMth[static_cast<std::size_t>(risk)] = dist; }
+    void setPartnershipDuration(RiskLevel risk, ShiftedLogNormalDist dist) { partnershipDurationMth[static_cast<std::size_t>(risk)] = dist; }
 
 	void setAverageYearsYounger(NormalDist dist) { averageYearsYounger = dist; }
 
-    void setAcquisitionRatePerMonth(Entity::RiskLevel risk, LogNormalDist dist) { acquisitionRatePerMonth[static_cast<std::size_t>(risk)] = dist; }
+    void setAcquisitionRatePerMonth(RiskLevel risk, LogNormalDist dist) { acquisitionRatePerMonth[static_cast<std::size_t>(risk)] = dist; }
 
     double getRiskAssortativeness() const { return riskAssortativeness; }
     void setRiskAssortativeness(double riskAssortativeness) { this->riskAssortativeness = riskAssortativeness; }
@@ -89,22 +89,22 @@ private:
 	SexualPartnership::Type partnershipType;
 
 	//LogNormal distribution from which the people draw a rate to acquire this type of partner
-	LogNormalDist acquisitionRatePerMonth[(std::size_t)Entity::RiskLevel::Last];
+	LogNormalDist acquisitionRatePerMonth[(std::size_t)RiskLevel::Last];
 
 	//average number of partners men acquire at a time
-	//double averagePartnersAtATime[(std::size_t)Entity::RiskLevel::Last];
+	//double averagePartnersAtATime[(std::size_t)RiskLevel::Last];
 
 	//The distribution the males will draw from to determine how many years younger their partner should be (resulting difference may be negative for older women)
 	NormalDist averageYearsYounger;
 
 	//avg events per month across all Couples; will be used as a mean in Poisson distribution
-    double coitalEventsPerMonth[(std::size_t)Entity::RiskLevel::Last];
+    double coitalEventsPerMonth[(std::size_t)RiskLevel::Last];
 
 	//chance per event that this person will use a condom
-    BetaDist chanceCondomUsePerEvent[(std::size_t)Entity::RiskLevel::Last];
+    BetaDist chanceCondomUsePerEvent[(std::size_t)RiskLevel::Last];
 
 	//avg duration if partnerships across all Couples
-    ShiftedLogNormalDist partnershipDurationMth[(std::size_t)Entity::RiskLevel::Last];
+    ShiftedLogNormalDist partnershipDurationMth[(std::size_t)RiskLevel::Last];
 };
 
 } // namespace transm

@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "fullvector.hpp"
+#include "entities/entitytypes.hpp"
 #include "entities/demographicprofile.hpp"
 
 namespace transm {
@@ -33,14 +34,14 @@ public:
 	unsigned long getNumInfected();
 
 	unsigned long getNumInfected(int generation);
-	unsigned long getNumInfected(Entity::RiskLevel _risk);
+	unsigned long getNumInfected(RiskLevel _risk);
 
 	/*
 	 * Uses the random number generator (_randomNums) to randomly draw a person
 	 * -- Either draws from the FV related to _riskLevel or the random FV if _use_random == true
 	 * -- Removes returned person from this is _remove == true
 	 */
-	Entity *drawMember(RandomNumberGenerator &_randomNums, Entity::RiskLevel _riskLevel, SexualPartnership::Type _partnershipType,
+	Entity *drawMember(RandomNumberGenerator &_randomNums, RiskLevel _riskLevel, SexualPartnership::Type _partnershipType,
 	                   bool _use_random, bool _remove);
 
 	/* @function: erase
@@ -84,17 +85,17 @@ public:
 	/* @function: getNumRisk
 	 * @returns: The integer number of unique Persons in the bucket with a given risk
 	 */
-	unsigned long getNumRisk(Entity::RiskLevel _risk);
+	unsigned long getNumRisk(RiskLevel _risk);
 
 	/* @function: getNumRiskCSW
 	 * @returns: The integer number of unique Persons in the bucket with a given risk that is CSW
 	 */
-	unsigned long getNumRiskCSW(Entity::RiskLevel _risk);
+	unsigned long getNumRiskCSW(RiskLevel _risk);
 
 	/* @function: getNumRiskHIVStatus
 	 * @returns: The integer number of unique Persons in the bucket with a given risk and hivStatus
 	 */
-	unsigned long getNumRiskHIVStatus(Entity::RiskLevel _risk, Entity::HIVStatus _hivStatus);
+	unsigned long getNumRiskHIVStatus(RiskLevel _risk, HIVStatus _hivStatus);
 
 	/* @function: numHighRiskChoices
 	 * @returns: The integer number of (non-unique) Persons in the high risk bucket
@@ -116,10 +117,10 @@ public:
 
 	/* @function: numChoices
 	 * @returns: The integer number of (non-unique) Persons in the risk bucket associated with _risk
-	 * If _risk = (std::size_t)Entity::RiskLevel::Last, returns the number of persons in the random risk bucket
+	 * If _risk = (std::size_t)RiskLevel::Last, returns the number of persons in the random risk bucket
 	 */
 
-	int numChoices(Entity::RiskLevel _risk);
+	int numChoices(RiskLevel _risk);
 
 	/* @function: increaseInfected
 	 * @effects: if person is in this BucketAge and is infected, increases the tally of numInfected
@@ -131,7 +132,7 @@ public:
 	/* @function: changeHIVstatus
 	 * @effects: if person is in this BucketAge and thier hiv status changes decrement the old status and increment new status
 	 */
-	void changeHIVStatus(Entity *_p, Entity::HIVStatus _orig, Entity::HIVStatus _new);
+	void changeHIVStatus(Entity *_p, HIVStatus _orig, HIVStatus _new);
 
     void printAll(ostream &_outStream, const std::string &_prefix);
 
@@ -160,11 +161,11 @@ private:
 	unsigned int populationID;
 	unsigned long numPersons;
 	unsigned long numInfected;
-	unsigned long numRisk[(std::size_t)Entity::RiskLevel::Last];
-	unsigned long numRiskCSW[(std::size_t)Entity::RiskLevel::Last]; // number of csw persons by risk bucket
-	unsigned long numInfectedRisk[(std::size_t)Entity::RiskLevel::Last];
-	unsigned long numRiskHIVStatus[(std::size_t)Entity::RiskLevel::Last]
-	    [(std::size_t)Entity::HIVStatus::Last];
+	unsigned long numRisk[(std::size_t)RiskLevel::Last];
+	unsigned long numRiskCSW[(std::size_t)RiskLevel::Last]; // number of csw persons by risk bucket
+	unsigned long numInfectedRisk[(std::size_t)RiskLevel::Last];
+	unsigned long numRiskHIVStatus[(std::size_t)RiskLevel::Last]
+	    [(std::size_t)HIVStatus::Last];
 };
 
 } // namespace transm

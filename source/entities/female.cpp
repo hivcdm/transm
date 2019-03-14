@@ -93,7 +93,7 @@ Female::Female(EventParams &_eventParams, Age _age, const DemographicProfile &pr
     assert(profile.get(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Female);
 	dmgProfile = profile;
 
-	risk = Entity::RiskLevel::LOW;
+	risk = RiskLevel::LOW;
 
     for(auto risk : {RiskLevel::LOW, RiskLevel::HIGH})
     {
@@ -205,7 +205,7 @@ double Female::getChanceBecomeCsw() const
 	return populationSpecificParams.GetChanceBecomeCSW();
 }
 
-void Female::SetChanceCondomUsePerEvent(Entity::RiskLevel /*risk*/, SexualPartnership::Type /*partnershipType*/, BetaDist /*dist*/, RandomNumberGenerator &/*rng*/)
+void Female::SetChanceCondomUsePerEvent(RiskLevel /*risk*/, SexualPartnership::Type /*partnershipType*/, BetaDist /*dist*/, RandomNumberGenerator &/*rng*/)
 {
 
 }

@@ -3,7 +3,6 @@
 #include <fstream>
 
 #include "core/targetgroup.hpp"
-#include "entities/entity.hpp"
 
 namespace transm {
 

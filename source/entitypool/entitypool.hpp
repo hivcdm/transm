@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "bucketsexualmixing.hpp"
+#include "entities/entitytypes.hpp"
 #include "entities/demographicprofile.hpp"
 #include "entities/sexualpartnership.hpp"
 #include "parameters/populationparameters.hpp"
@@ -104,7 +105,7 @@ public:
 	/// <summary>
 	/// calculate the current number of sexually active persons by risk and gender
 	/// </summary>
-	std::size_t sizeSexuallyActive(const std::string &entity_type, Entity::RiskLevel risk);
+	std::size_t sizeSexuallyActive(const std::string &entity_type, RiskLevel risk);
 
 	/// <summary>
 	/// calculate the current number of persons that are not sexually active in the entity pool with a given gender

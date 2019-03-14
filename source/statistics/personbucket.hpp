@@ -28,7 +28,7 @@ public:
         DemographicProfile::Employment employment = static_cast<DemographicProfile::Employment>(demographicProfile->get(
                                                 DemographicProfile::Demographic::Employment));
         values_.push_back((std::size_t)employment);
-        Entity::RiskLevel riskLevel = person.getRiskLevel();
+        RiskLevel riskLevel = person.getRiskLevel();
         values_.push_back((std::size_t)riskLevel);
         int ageGroup = -1;
 		auto age = person.getAge();
@@ -43,7 +43,7 @@ public:
 
         assert(ageGroup != -1);
 		values_.push_back(ageGroup);
-        Entity::CD4Strata cd4Stratum = person.getCd4Stratum();
+        CD4Strata cd4Stratum = person.getCd4Stratum();
         values_.push_back((std::size_t)cd4Stratum);
 
         if(person.getEntityType() == "MSW") values_.push_back(0);

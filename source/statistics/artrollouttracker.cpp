@@ -3,7 +3,6 @@
 #include "artrollouttracker.hpp"
 #include "personbucket.hpp"
 #include "core/population.hpp"
-#include "entities/entity.hpp"
 
 namespace transm {
 
@@ -214,7 +213,7 @@ void ArtRolloutTracker::buildHeader()
 
 		SetHeaderCell(column, 2, "CD4 Stratum");
 
-		for(auto cd4stratum : enum_iterator<Entity::CD4Strata>())
+		for(auto cd4stratum : enum_iterator<CD4Strata>())
 		{
 			SetHeaderCell(column++, 3, SimContext::CD4_STRATA_STRS[(std::size_t)cd4stratum]);
 		}
@@ -283,14 +282,14 @@ void ArtRolloutTracker::buildRow(Time time, Population *_population)
 			}
 		}
 
-        for(std::size_t i = 0; i < (std::size_t)Entity::CD4Strata::Last; ++i)
+        for(std::size_t i = 0; i < (std::size_t)CD4Strata::Last; ++i)
 		{
 			PushElement(counter.GetCount(outcome, std::make_pair("cd4Stratum", (int)i)));
 		}
 
 		for(auto employment : enum_iterator<DemographicProfile::Employment>())
 		{
-			for(auto riskLevel : enum_iterator<Entity::RiskLevel>())
+			for(auto riskLevel : enum_iterator<RiskLevel>())
 			{
                 for(auto entity_type : {0, 1, 2, 3})
 				{

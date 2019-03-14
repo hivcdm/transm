@@ -268,8 +268,8 @@ void EntityPool::printBucketSizes(std::ostream &_outStream, const std::string &,
 
         if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
 		{
-			long bucketSizeHR = ((BucketSexualMixing *) bucket)->sizeRisk(Entity::RiskLevel::HIGH);
-			long bucketSizeLR = ((BucketSexualMixing *) bucket)->sizeRisk(Entity::RiskLevel::LOW);
+			long bucketSizeHR = ((BucketSexualMixing *) bucket)->sizeRisk(RiskLevel::HIGH);
+			long bucketSizeLR = ((BucketSexualMixing *) bucket)->sizeRisk(RiskLevel::LOW);
 			_outStream << bucketSizeHR << Constants::Tab << bucketSizeLR << Constants::Tab;
 		}
 
@@ -464,7 +464,7 @@ std::size_t EntityPool::sizeNotSexuallyActive(const std::string &entity_type)
 }
 
 //calculate the current number of persons that are sexually active in the entity pool with a given demographic
-std::size_t EntityPool::sizeSexuallyActive(const std::string &entity_type, Entity::RiskLevel _risk)
+std::size_t EntityPool::sizeSexuallyActive(const std::string &entity_type, RiskLevel _risk)
 {
     std::size_t count = 0;
     forEach([&](Entity *e) { if(e->getEntityType() == entity_type && _risk == e->getRiskLevel()) count++; });

@@ -139,7 +139,7 @@ public:
 
     bool PassedCSWEndAge() const { return (getAge() >= populationSpecificParams.GetCswEndAge()); }
 
-    void SetChanceCondomUsePerEvent(Entity::RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng);
+    void SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng);
 	void SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, double meanEvents);
 	void SetPartnershipDuration(RiskLevel risk, SexualPartnership::Type partnershipType, ShiftedLogNormalDist dist);
 	void SetAverageYearsYounger(SexualPartnership::Type partnershipType, NormalDist dist);
@@ -153,7 +153,7 @@ public:
     void IncrementTimesSelected() { times_selected_++; }
     void ResetTimesSelected() { times_selected_ = 0; }
 
-    const BetaDist GetChanceCondomUsePerEvent(Entity::RiskLevel risk,
+    const BetaDist GetChanceCondomUsePerEvent(RiskLevel risk,
 	SexualPartnership::Type type) { BetaDist dist; return dist; }
 
 private:

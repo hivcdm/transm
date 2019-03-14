@@ -10,6 +10,7 @@
 #include "population.hpp"
 #include "utility/cepacinputparser.hpp"
 #include "parameters/eventparams.hpp"
+#include "entities/entitytypes.hpp"
 #include "entities/demographicprofile.hpp"
 #include "entities/sexualbehavior.hpp"
 #include "utility/highresolutiontimer.hpp"
@@ -138,30 +139,30 @@ void TargetGroup::Update(Population &population, Time current_time,
             {
                 switch (target_.value.observed_hiv_status.value)
                 {
-                case Entity::HIVStatus::ANY_POSITIVE:
-		    if (person->getHIVStatus() == Entity::HIVStatus::NEGATIVE)
+                case HIVStatus::ANY_POSITIVE:
+		    if (person->getHIVStatus() == HIVStatus::NEGATIVE)
 	            {
 			return false;
 	            }
 
                     break;
-                case Entity::HIVStatus::ANY_NOT_OBSERVED_POSITIVE:
+                case HIVStatus::ANY_NOT_OBSERVED_POSITIVE:
                 {
-                    if (person->getHIVStatus() == Entity::HIVStatus::OBSERVED_ACUTE
-                        || person->getHIVStatus() == Entity::HIVStatus::OBSERVED_LATESTAGE
-                        || person->getHIVStatus() == Entity::HIVStatus::OBSERVED_CHRONIC)
+                    if (person->getHIVStatus() == HIVStatus::OBSERVED_ACUTE
+                        || person->getHIVStatus() == HIVStatus::OBSERVED_LATESTAGE
+                        || person->getHIVStatus() == HIVStatus::OBSERVED_CHRONIC)
                     {
                         return false;
                     }
 
                     break;
                 }
-                case Entity::HIVStatus::ANY_OBSERVED_POSITIVE:
+                case HIVStatus::ANY_OBSERVED_POSITIVE:
                 {
-                    if (person->getHIVStatus() == Entity::HIVStatus::NEGATIVE
-                        || person->getHIVStatus() == Entity::HIVStatus::UNOBSERVED_LATESTAGE
-                        || person->getHIVStatus() == Entity::HIVStatus::UNOBSERVED_CHRONIC
-                        || person->getHIVStatus() == Entity::HIVStatus::UNOBSERVED_ACUTE)
+                    if (person->getHIVStatus() == HIVStatus::NEGATIVE
+                        || person->getHIVStatus() == HIVStatus::UNOBSERVED_LATESTAGE
+                        || person->getHIVStatus() == HIVStatus::UNOBSERVED_CHRONIC
+                        || person->getHIVStatus() == HIVStatus::UNOBSERVED_ACUTE)
                     {
                         return false;
                     }

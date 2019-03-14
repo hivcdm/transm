@@ -1,5 +1,6 @@
 #pragma once
 
+#include "entities/entitytypes.hpp"
 #include "entities/demographicprofile.hpp"
 #include "entities/female.hpp"
 #include "entities/male.hpp"
@@ -45,7 +46,7 @@ public:
 	Optional<DemographicProfile> profile;
 	Optional<Age> min_age;
 	Optional<Age> max_age;
-	Optional<Entity::RiskLevel> risk;
+	Optional<RiskLevel> risk;
 
 	bool match(const Entity *e)
 	{
@@ -116,7 +117,7 @@ public:
 	const Female::SubPopParams &GetFemaleParameters() const { return defaultFemaleParams; }
 	void SetFemaleParameters(Female::SubPopParams &params) { defaultFemaleParams = params; }
 
-	void SetTransmissionCoefficients(const std::unordered_map<TransmissionType, std::array<double, (std::size_t)Entity::HVLStrata::Last>> &coefficients)
+	void SetTransmissionCoefficients(const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &coefficients)
 	{
         transmission_coefficients_ = coefficients;
 	}
@@ -180,17 +181,17 @@ public:
 
 	void SetAverageYearsYounger(SexualPartnership::Type type, NormalDist dist) { defaultMaleParams.SetAverageYearsYounger(type, dist); }
 
-	void SetAcquisitionRatePerMonth(Entity::RiskLevel risk, SexualPartnership::Type type, LogNormalDist dist) { defaultMaleParams.SetAcquisitionRatePerMonth(risk, type, dist); }
-	void SetCoitalEventsPerMonth(Entity::RiskLevel risk, SexualPartnership::Type type, double mean) { defaultMaleParams.SetCoitalEventsPerMonth(risk, type, mean); }
-	void SetChanceCondomUsePerEvent(Entity::RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { defaultMaleParams.SetChanceCondomUsePerEvent(risk, type, dist); }
-	const BetaDist GetChanceCondomUsePerEvent(Entity::RiskLevel risk, SexualPartnership::Type type)
+	void SetAcquisitionRatePerMonth(RiskLevel risk, SexualPartnership::Type type, LogNormalDist dist) { defaultMaleParams.SetAcquisitionRatePerMonth(risk, type, dist); }
+	void SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type type, double mean) { defaultMaleParams.SetCoitalEventsPerMonth(risk, type, mean); }
+	void SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { defaultMaleParams.SetChanceCondomUsePerEvent(risk, type, dist); }
+	const BetaDist GetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type type)
 	{ return defaultMaleParams.getSexualBehavior(type).getChanceCondomUsePerEvent(risk); }
-	void SetPartnershipDuration(Entity::RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { defaultMaleParams.SetPartnershipDuration(risk, type, dist); }
+	void SetPartnershipDuration(RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { defaultMaleParams.SetPartnershipDuration(risk, type, dist); }
 
     double GetProportionCircumcised() const { return defaultMaleParams.GetProportionCircumcised(); }
     void SetProportionCircumcised(double value) { defaultMaleParams.SetProportionCircumcised(value); }
 
-	void SetPartnerAcquisitionSteadyMultiplier(Entity::RiskLevel risk, double multiplier) { defaultMaleParams.SetPartnerAcqMultWithSteady(risk, multiplier); }
+	void SetPartnerAcquisitionSteadyMultiplier(RiskLevel risk, double multiplier) { defaultMaleParams.SetPartnerAcqMultWithSteady(risk, multiplier); }
 
     void SetCondomCost(double condom_cost) { condomCost = condom_cost; }
     void SetCircumcisionCost(double circumcision_cost) { circumcisionCost = circumcision_cost; }
@@ -244,7 +245,7 @@ private:
     /// <summary>
     /// Base FOI for different transmission types at various viral loads.
     /// </summary>
-    std::unordered_map<TransmissionType, std::array<double, (std::size_t)Entity::HVLStrata::Last>> transmission_coefficients_;
+    std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> transmission_coefficients_;
 
     /// <summary>
     /// holds the population-level parameters for population of heterosexual males

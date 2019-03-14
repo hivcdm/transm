@@ -2,6 +2,7 @@
 
 #include "entityindex.hpp"
 #include "entities/demographicprofile.hpp"
+#include "entities/entity.hpp"
 
 namespace transm {
 

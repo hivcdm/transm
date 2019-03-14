@@ -73,7 +73,7 @@ PopulationStatisticsOld::SurvivalStats::SurvivalStats()
 
     for(std::size_t i = 0; i < (std::size_t)DemographicProfile::Employment::Last; i++)
 	{
-	    for(std::size_t j = 0; j < (std::size_t)Entity::RiskLevel::Last; j++)
+	    for(std::size_t j = 0; j < (std::size_t)RiskLevel::Last; j++)
 		{
 			numDeathEmplRisk[i][j] = 0;
 			timeToDeathEmplRiskSum[i][j] = 0;
@@ -108,7 +108,7 @@ void PopulationStatisticsOld::processDeath(Entity *_p, EventParams &_eventParams
 	assert((!_p->isAlive()));
 	DemographicProfile::Gender gend = (DemographicProfile::Gender) _p->getDemographicProfileVal(DemographicProfile::Demographic::Gender);
 	DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) _p->getDemographicProfileVal(DemographicProfile::Demographic::Employment);
-	Entity::RiskLevel risk = _p->getRiskLevel();
+	RiskLevel risk = _p->getRiskLevel();
 	auto prevDelay = _eventParams.delayPrevalence;
 
 	if(_eventParams.currTime > prevDelay)
@@ -295,15 +295,15 @@ void PopulationStatisticsOld::printSurvivalStats(std::ostream &_outStream)
 	firstRow << Constants::Tab << Constants::Tab << Constants::Tab;
 	secondRow << "Risk Group" << Constants::Tab << "Non-CSW" << Constants::Tab << "Non-CSW" << Constants::Tab;
 	thirdRow << "CSW" << Constants::Tab << "High Risk" << Constants::Tab << "Low Risk" << Constants::Tab;
-    unsigned int numCSW = survivalStats->numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::HIGH] +
-        survivalStats->numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::LOW];
+    unsigned int numCSW = survivalStats->numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)RiskLevel::HIGH] +
+        survivalStats->numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)RiskLevel::LOW];
 
 	if(numCSW != 0)
 	{
-        double timeMean = (survivalStats->timeToInfOrDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::HIGH] +
-            survivalStats->timeToInfOrDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::LOW]) / (double)numCSW;
-        double timeSD = sqrt((survivalStats->timeToInfOrDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::HIGH] +
-            survivalStats->timeToInfOrDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::LOW]) /
+        double timeMean = (survivalStats->timeToInfOrDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)RiskLevel::HIGH] +
+            survivalStats->timeToInfOrDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)RiskLevel::LOW]) / (double)numCSW;
+        double timeSD = sqrt((survivalStats->timeToInfOrDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)RiskLevel::HIGH] +
+            survivalStats->timeToInfOrDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)RiskLevel::LOW]) /
 		                     (double) numCSW - timeMean * timeMean);
 		fourthRow << timeMean << Constants::Tab;
 		fifthRow << timeSD << Constants::Tab;
@@ -314,7 +314,7 @@ void PopulationStatisticsOld::printSurvivalStats(std::ostream &_outStream)
 		fifthRow << "N/A" << Constants::Tab;
 	}
 
-	for(std::size_t j = 0; j < (std::size_t)Entity::RiskLevel::Last; j++)
+	for(std::size_t j = 0; j < (std::size_t)RiskLevel::Last; j++)
 	{
         if(survivalStats->numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::NonCsw][j] != 0)
 		{
@@ -374,15 +374,15 @@ void PopulationStatisticsOld::printSurvivalStats(std::ostream &_outStream)
 	firstRow << Constants::Tab << Constants::Tab << Constants::Tab;
 	secondRow << "Risk Group" << Constants::Tab << "Non-CSW" << Constants::Tab << "Non-CSW" << Constants::Tab;
 	thirdRow << "CSW" << Constants::Tab << "High Risk" << Constants::Tab << "Low Risk" << Constants::Tab;
-    numCSW = survivalStats->numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::HIGH] +
-        survivalStats->numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::LOW];
+    numCSW = survivalStats->numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)RiskLevel::HIGH] +
+        survivalStats->numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)RiskLevel::LOW];
 
 	if(numCSW != 0)
 	{
-        double timeMean = (survivalStats->timeToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::HIGH] +
-            survivalStats->timeToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::LOW]) / (double)numCSW;
-        double timeSD = sqrt((survivalStats->timeToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::HIGH] +
-            survivalStats->timeToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::LOW]) / (double)numCSW - timeMean *
+        double timeMean = (survivalStats->timeToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)RiskLevel::HIGH] +
+            survivalStats->timeToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)RiskLevel::LOW]) / (double)numCSW;
+        double timeSD = sqrt((survivalStats->timeToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)RiskLevel::HIGH] +
+            survivalStats->timeToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)RiskLevel::LOW]) / (double)numCSW - timeMean *
 		                     timeMean);
 		fourthRow << timeMean << Constants::Tab;
 		fifthRow << timeSD << Constants::Tab;
@@ -393,7 +393,7 @@ void PopulationStatisticsOld::printSurvivalStats(std::ostream &_outStream)
 		fifthRow << "N/A" << Constants::Tab;
 	}
 
-	for(std::size_t j = 0; j < (std::size_t)Entity::RiskLevel::Last; j++)
+	for(std::size_t j = 0; j < (std::size_t)RiskLevel::Last; j++)
 	{
         if(survivalStats->numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::NonCsw][j] != 0)
 		{
@@ -475,15 +475,15 @@ void PopulationStatisticsOld::printSurvivalStats(std::ostream &_outStream)
 	firstRow << Constants::Tab << Constants::Tab << Constants::Tab;
 	secondRow << "Risk Group" << Constants::Tab << "Non-CSW" << Constants::Tab << "Non-CSW" << Constants::Tab;
 	thirdRow << "CSW" << Constants::Tab << "High Risk" << Constants::Tab << "Low Risk" << Constants::Tab;
-    numCSW = survivalStats->numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::HIGH] +
-        survivalStats->numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::LOW];
+    numCSW = survivalStats->numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)RiskLevel::HIGH] +
+        survivalStats->numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)RiskLevel::LOW];
 
 	if(numCSW != 0)
 	{
-        double timeMean = (survivalStats->timeFromInfToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::HIGH] +
-            survivalStats->timeFromInfToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::LOW]) / (double)numCSW;
-        double timeSD = sqrt((survivalStats->timeFromInfToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::HIGH] +
-            survivalStats->timeFromInfToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)Entity::RiskLevel::LOW]) /
+        double timeMean = (survivalStats->timeFromInfToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)RiskLevel::HIGH] +
+            survivalStats->timeFromInfToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)RiskLevel::LOW]) / (double)numCSW;
+        double timeSD = sqrt((survivalStats->timeFromInfToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)RiskLevel::HIGH] +
+            survivalStats->timeFromInfToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Csw][(std::size_t)RiskLevel::LOW]) /
 		                     (double) numCSW - timeMean * timeMean);
 		fourthRow << timeMean << Constants::Tab;
 		fifthRow << timeSD << Constants::Tab;
@@ -494,7 +494,7 @@ void PopulationStatisticsOld::printSurvivalStats(std::ostream &_outStream)
 		fifthRow << "N/A" << Constants::Tab;
 	}
 
-	for(std::size_t j = 0; j < (std::size_t)Entity::RiskLevel::Last; j++)
+	for(std::size_t j = 0; j < (std::size_t)RiskLevel::Last; j++)
 	{
         if(survivalStats->numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::NonCsw][j] != 0)
 		{
@@ -850,7 +850,7 @@ void PopulationStatisticsOld::recordIncidentInfection(EventParams &_eventParams,
 	assert(_time.in_months() >= 0);
 	DemographicProfile::Gender gend = (DemographicProfile::Gender) _infected->getDemographicProfileVal(DemographicProfile::Demographic::Gender);
 	DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) _infected->getDemographicProfileVal(DemographicProfile::Demographic::Employment);
-	Entity::RiskLevel risk = _infected->getRiskLevel();
+	RiskLevel risk = _infected->getRiskLevel();
 	auto prevDelay = _eventParams.delayPrevalence;
 
 	if(_eventParams.currTime > prevDelay)

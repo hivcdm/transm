@@ -18,7 +18,7 @@ void MonthlyStats::RecordRiskGroupChanged(int /*month*/, const Entity * /*entity
 {
 }
 
-void MonthlyStats::RecordDeath(int /*month*/, Entity::DeathStatus /*cause_of_death*/)
+void MonthlyStats::RecordDeath(int /*month*/, DeathStatus /*cause_of_death*/)
 {
 }
 

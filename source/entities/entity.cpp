@@ -14,7 +14,7 @@ namespace transm {
 
 class EntityPool;
 
-const std::array<std::string, (std::size_t)Entity::RiskLevel::Last> Entity::RiskStrings =
+const std::array<std::string, (std::size_t)RiskLevel::Last> Entity::RiskStrings =
 { "Low", "High" };
 
 long Entity::idCounter = 0;
@@ -43,7 +43,7 @@ void Entity::ageOneTimeUnit()
 	age++;
 }
 
-Entity::CD4Strata Entity::getCd4Stratum() const
+CD4Strata Entity::getCd4Stratum() const
 {
 	switch(cepacPatient->getDiseaseState()->currTrueCD4Strata)
 	{
@@ -64,7 +64,7 @@ Entity::CD4Strata Entity::getCd4Stratum() const
 	}
 }
 
-Entity::HVLStrata Entity::getHvlStratum() const
+HVLStrata Entity::getHvlStratum() const
 {
     SimContext::HVL_STRATA hvl = cepacPatient->getDiseaseState()->currTrueHVLStrata;
     switch (hvl) {
@@ -921,50 +921,50 @@ T Scale(const T &t, double factor)
 	return r;
 }
 
-Entity::HVLStrata HvlFromCepacHvl(SimContext::HVL_STRATA stratum)
+HVLStrata HvlFromCepacHvl(SimContext::HVL_STRATA stratum)
 {
     switch(stratum)
     {
-    case SimContext::HVL_VLO: return Entity::HVLStrata::HVL_ZERO;
-    case SimContext::HVL__LO: return Entity::HVLStrata::HVL_ONE;
-    case SimContext::HVL_MLO: return Entity::HVLStrata::HVL_TWO;
-    case SimContext::HVL_MED: return Entity::HVLStrata::HVL_THREE;
-    case SimContext::HVL_MHI: return Entity::HVLStrata::HVL_FOUR;
-    case SimContext::HVL__HI: return Entity::HVLStrata::HVL_FIVE;
-    case SimContext::HVL_VHI: return Entity::HVLStrata::HVL_SIX;
+    case SimContext::HVL_VLO: return HVLStrata::HVL_ZERO;
+    case SimContext::HVL__LO: return HVLStrata::HVL_ONE;
+    case SimContext::HVL_MLO: return HVLStrata::HVL_TWO;
+    case SimContext::HVL_MED: return HVLStrata::HVL_THREE;
+    case SimContext::HVL_MHI: return HVLStrata::HVL_FOUR;
+    case SimContext::HVL__HI: return HVLStrata::HVL_FIVE;
+    case SimContext::HVL_VHI: return HVLStrata::HVL_SIX;
     default: throw std::runtime_error("invalid hvl");
     }
 }
 
-std::string to_string(Entity::HVLStrata stratum)
+std::string to_string(HVLStrata stratum)
 {
     switch(stratum)
     {
-    case Entity::HVLStrata::UNINFECTED: return "uninfected";
-    case Entity::HVLStrata::HVL_ZERO: return "0-20";
-    case Entity::HVLStrata::HVL_ONE: return "21-500";
-    case Entity::HVLStrata::HVL_TWO: return "501-3000";
-    case Entity::HVLStrata::HVL_THREE: return "3001-10000";
-    case Entity::HVLStrata::HVL_FOUR: return "10001-30000";
-    case Entity::HVLStrata::HVL_FIVE: return "30001-100000";
-    case Entity::HVLStrata::HVL_SIX: return "100000+";
-    case Entity::HVLStrata::HVL_PRIMARY: return "primary";
-    case Entity::HVLStrata::HVL_LATESTAGE: return "late-stage";
+    case HVLStrata::UNINFECTED: return "uninfected";
+    case HVLStrata::HVL_ZERO: return "0-20";
+    case HVLStrata::HVL_ONE: return "21-500";
+    case HVLStrata::HVL_TWO: return "501-3000";
+    case HVLStrata::HVL_THREE: return "3001-10000";
+    case HVLStrata::HVL_FOUR: return "10001-30000";
+    case HVLStrata::HVL_FIVE: return "30001-100000";
+    case HVLStrata::HVL_SIX: return "100000+";
+    case HVLStrata::HVL_PRIMARY: return "primary";
+    case HVLStrata::HVL_LATESTAGE: return "late-stage";
     default: throw std::runtime_error("invalid hvl");
     }
 }
 
-std::string to_string(Entity::HIVStatus status)
+std::string to_string(HIVStatus status)
 {
     switch(status)
     {
-    case Entity::HIVStatus::NEGATIVE: return "negative";
-    case Entity::HIVStatus::OBSERVED_ACUTE: return "acute (observed)";
-    case Entity::HIVStatus::OBSERVED_CHRONIC: return "chronic (observed)";
-    case Entity::HIVStatus::OBSERVED_LATESTAGE: return "late-stage (observed)";
-    case Entity::HIVStatus::UNOBSERVED_ACUTE: return "acute (unobserved)";
-    case Entity::HIVStatus::UNOBSERVED_CHRONIC: return "chronic (unobserved)";
-    case Entity::HIVStatus::UNOBSERVED_LATESTAGE: return "late-stage (unobserved)";
+    case HIVStatus::NEGATIVE: return "negative";
+    case HIVStatus::OBSERVED_ACUTE: return "acute (observed)";
+    case HIVStatus::OBSERVED_CHRONIC: return "chronic (observed)";
+    case HIVStatus::OBSERVED_LATESTAGE: return "late-stage (observed)";
+    case HIVStatus::UNOBSERVED_ACUTE: return "acute (unobserved)";
+    case HIVStatus::UNOBSERVED_CHRONIC: return "chronic (unobserved)";
+    case HIVStatus::UNOBSERVED_LATESTAGE: return "late-stage (unobserved)";
     default: throw std::runtime_error("invalid hiv status");
     }
 }
@@ -1189,8 +1189,8 @@ void Entity::traceHVLChange(EventParams &_eventParams, HVLStrata before,
     }
 }
 
-void Entity::traceHIVChange(EventParams &_eventParams,Entity::HIVStatus before,
-			    Entity::HIVStatus after)
+void Entity::traceHIVChange(EventParams &_eventParams,HIVStatus before,
+			    HIVStatus after)
 {
     if (_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled &&
 	trace()) {
@@ -1438,12 +1438,12 @@ std::vector<unsigned int> Entity::getFVindices(FullVector *FV)
 	return vcopy;
 }
 
-Entity::RiskLevel Entity::getRiskLevel() const
+RiskLevel Entity::getRiskLevel() const
 {
 	return risk;
 }
 
-Entity::HIVStatus Entity::getHIVStatus() const
+HIVStatus Entity::getHIVStatus() const
 {
 	return hivStatus;
 }

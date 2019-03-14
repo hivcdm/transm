@@ -36,7 +36,7 @@ double Male::SubPopParams::getChanceBecomeCSW() const
 	return chanceBecomeCSW;
 }
 
-double Male::SubPopParams::getPartnerAcqMultWithSteady(Entity::RiskLevel _risk) const
+double Male::SubPopParams::getPartnerAcqMultWithSteady(RiskLevel _risk) const
 {
     return partnerAcqMultWithSteady[(std::size_t)_risk];
 }
@@ -286,7 +286,7 @@ Male::Male(EventParams &_eventParams, Age _age, bool _circumcised, const Demogra
 
     //Set this male's risk level assume everyone is low risk on creation.
     //Risk is rerolled when they reach the age of sexual maturity
-    risk = Entity::RiskLevel::LOW;
+    risk = RiskLevel::LOW;
 
 	for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
 	{
@@ -554,7 +554,7 @@ void Male::rerollRiskGroup(EventParams &_eventParams)
 {
 	DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) getDemographicProfileVal(DemographicProfile::Demographic::Employment);
 	double chanceHighRisk = populationSpecificParams.getProportionHighRisk(cswStatus);
-	Entity::RiskLevel oldRisk = risk;
+	RiskLevel oldRisk = risk;
 
 	if(_eventParams.randomNums.chance(chanceHighRisk))
 	{

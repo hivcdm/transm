@@ -12,9 +12,9 @@ class worksheet;
 
 namespace std {
 template<>
-struct hash<transm::Entity::DeathStatus>
+struct hash<transm::DeathStatus>
 {
-    size_t operator()(const transm::Entity::DeathStatus &g) const
+    size_t operator()(const transm::DeathStatus &g) const
     {
       return hash<std::size_t>()(static_cast<std::size_t>(g));
     }
@@ -48,9 +48,9 @@ struct hash<transm::DemographicProfile::Employment>
 };
 
 template<>
-struct hash<transm::Entity::RiskLevel>
+struct hash<transm::RiskLevel>
 {
-  size_t operator()(const transm::Entity::RiskLevel &g) const
+  size_t operator()(const transm::RiskLevel &g) const
     {
       return hash<std::size_t>()(static_cast<std::size_t>(g));
     }
@@ -58,14 +58,14 @@ struct hash<transm::Entity::RiskLevel>
 } // namespace std
 
 namespace transm {
-using DeathCauseCount = std::unordered_map<Entity::DeathStatus, std::size_t>;
+using DeathCauseCount = std::unordered_map<DeathStatus, std::size_t>;
 struct AgeGroup
 {
     bool operator==(const AgeGroup &other) const { return other.lower == lower && other.upper == upper; }
     int lower;
     int upper;
 };
-using AgeActivityGenderRiskEmpl = std::tuple<AgeGroup, DemographicProfile::SexualActivityStatus, DemographicProfile::Gender, Entity::RiskLevel, DemographicProfile::Employment>;
+using AgeActivityGenderRiskEmpl = std::tuple<AgeGroup, DemographicProfile::SexualActivityStatus, DemographicProfile::Gender, RiskLevel, DemographicProfile::Employment>;
 } // namespace transm
 
 namespace std {
@@ -96,7 +96,7 @@ public:
 
     virtual void RecordEntity(int month, const Entity *entity);
     virtual void RecordRiskGroupChanged(int month, const Entity *entity);
-    virtual void RecordDeath(int month, Entity::DeathStatus cause_of_death);
+    virtual void RecordDeath(int month, DeathStatus cause_of_death);
 
     virtual std::vector<std::string> BuildMonthSummary(int month) const;
 

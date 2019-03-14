@@ -8,9 +8,10 @@
 
 #include "intervention.hpp"
 #include "parameters/agerangesizecontainer.hpp"
+#include "entities/entity.hpp"
+#include "entities/entitytypes.hpp"
 #include "entities/female.hpp"
 #include "entities/male.hpp"
-#include "entities/entity.hpp"
 #include "entitypool/entitypool.hpp"
 #include "parameters/populationparameters.hpp"
 #include "parameters/agebucketprevalenceinfo.hpp"
@@ -36,7 +37,7 @@ public:
     /// </summary>
     using BucketAllAges = boost::circular_buffer_space_optimized<BucketAge *>;
 
-    using RiskArray = std::array<std::size_t, (std::size_t)Entity::RiskLevel::Last>;
+    using RiskArray = std::array<std::size_t, (std::size_t)RiskLevel::Last>;
 
 	/// <summary>
     /// Creates a new population object given an XML input subtree which contains the parameters
@@ -179,12 +180,12 @@ public:
     /// <summary>
     /// returns internal count of how big the current population is
     /// </summary>
-    std::size_t GetSASize(DemographicProfile::ProfileID profileID, Entity::RiskLevel _risk);
+    std::size_t GetSASize(DemographicProfile::ProfileID profileID, RiskLevel _risk);
 
     /// <summary>
     /// returns internal count of how big the current population is
     /// </summary>
-    std::size_t GetCSWSize(DemographicProfile::ProfileID profileID, Entity::RiskLevel _risk);
+    std::size_t GetCSWSize(DemographicProfile::ProfileID profileID, RiskLevel _risk);
 
     /// <summary>
     ///
@@ -411,7 +412,7 @@ private:
     /// <summary>
 	/// Num Died this month by Death Cause
     /// </summary>
-    std::size_t currDeathCauses[(std::size_t)Entity::DeathStatus::Last];
+    std::size_t currDeathCauses[(std::size_t)DeathStatus::Last];
 
     /// <summary>
     /// </summary>
@@ -500,7 +501,7 @@ private:
         Age age_at_infection;
         Time time_of_death;
         DemographicProfile profile;
-        Entity::RiskLevel risk_group;
+        RiskLevel risk_group;
     };
 
     private:

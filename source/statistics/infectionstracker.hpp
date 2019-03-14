@@ -20,10 +20,10 @@ class InfectionsTracker
 public:
 	template<typename T>
     using EntityTypeArray = std::array<T, (std::size_t)DemographicProfile::Gender::Last>;
-    using HVLArray = std::array<std::size_t, (std::size_t)Entity::HVLStrata::Last>;
-	using RiskArray = std::array<std::size_t, (std::size_t)Entity::RiskLevel::Last>;
+    using HVLArray = std::array<std::size_t, (std::size_t)HVLStrata::Last>;
+	using RiskArray = std::array<std::size_t, (std::size_t)RiskLevel::Last>;
 	using PartnershipArray = std::array<unsigned long, (std::size_t)SexualPartnership::Type::Last>;
-    using RiskEmploymentArray = std::array<std::array<std::size_t, (std::size_t)DemographicProfile::Employment::Last>, (std::size_t)Entity::RiskLevel::Last>;
+    using RiskEmploymentArray = std::array<std::array<std::size_t, (std::size_t)DemographicProfile::Employment::Last>, (std::size_t)RiskLevel::Last>;
     using DemographicArray = std::array<std::size_t, DemographicProfile::TotalNumBuckets>;
     using DemographicToDemographicArray = std::array<std::array<std::size_t, DemographicProfile::TotalNumBuckets>, DemographicProfile::TotalNumBuckets>;
 

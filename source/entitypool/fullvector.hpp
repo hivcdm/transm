@@ -5,7 +5,7 @@
 
 namespace transm {
 
-class Entity;
+// class Entity;
 
 /// <summary>
 /// This provides a std::vector< Person > that is guaranteed to always be densely
