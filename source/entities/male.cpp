@@ -272,9 +272,10 @@ void Male::Circumcise()
 	circumcised = true;
 }
 
-Male::Male(EventParams &_eventParams, Age _age, bool _circumcised, const DemographicProfile &profile,
-    unsigned int _populationID, const Male::SubPopParams &params) :
-    Entity(_age, _populationID),
+Male::Male(EventParams &_eventParams, Age _age, bool _circumcised,
+    const DemographicProfile &profile, unsigned int _populationID,
+    const Male::SubPopParams &params, const PrepParameters &prepParams) :
+    Entity(_age, _populationID, prepParams),
     populationSpecificParams(params)
 {
 	// Only set the gender and sexual orientation
@@ -314,16 +315,6 @@ Male::~Male()
 std::size_t Male::GetSexualOrientation()
 {
     return ((std::size_t)getDemographicProfileVal(DemographicProfile::Demographic::SexualOrientation));
-}
-
-/*virtual*/ void Male::SetPreExposureProphylaxisEfficacy(double efficacy)
-{
-    populationSpecificParams.SetPreExposureProphylaxisEfficacy(efficacy);
-}
-
-/*virtual*/ double Male::GetPreExposureProphylaxisEfficacy() const
-{
-    return populationSpecificParams.GetPreExposureProphylaxisEfficacy();
 }
 
 double Male::getCondomUseProb(Entity *_p, SexualPartnership::Type _partnershipType)

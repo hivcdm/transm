@@ -1,6 +1,7 @@
 #pragma once
 
 #include "entity.hpp"
+#include "prep.hpp"
 #include "parameters/eventparams.hpp"
 #include "utility/randomnumbergenerator.hpp"
 
@@ -26,8 +27,7 @@ public:
 		double GetProportionHighRisk(DemographicProfile::Employment) const;
 		void SetChanceBecomeCsw(double chance) { chanceBecomeCSW = chance; }
         void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) { proportionHighRisk[(std::size_t)employment] = proportion; }
-        void SetPreExposureProphylaxisEfficacy(double efficacy) { preExposureProphylaxisEfficacy_ = efficacy; }
-        double GetPreExposureProphylaxisEfficacy() const { return preExposureProphylaxisEfficacy_; }
+
         void SetVaginalMicrobicideEfficacy(double efficacy) { vaginalMicrobicideEfficacy_ = efficacy; }
         double GetVaginalMicrobicideEfficacy() const { return vaginalMicrobicideEfficacy_; }
 
@@ -55,7 +55,8 @@ public:
 	@author schung5
 	**/
 	Female(EventParams &_eventParams, Age age, const DemographicProfile &profile,
-	    unsigned int _populationID, const Female::SubPopParams &params);
+	    unsigned int _populationID, const Female::SubPopParams &params,
+        const PrepParameters &prepParams);
 	~Female(void);
 
     bool IsCircumcised() const { return false; }
@@ -76,10 +77,6 @@ public:
     void SetVaginalMicrobicideEfficacy(double efficacy) { populationSpecificParams.SetVaginalMicrobicideEfficacy(efficacy); }
 
     double GetVaginalMicrobicideEfficacy() const;
-
-    virtual void SetPreExposureProphylaxisEfficacy(double efficacy);
-
-    virtual double GetPreExposureProphylaxisEfficacy() const;
 
     bool RollForVaginalMicrobicideUse(RandomNumberGenerator &rng)
     {

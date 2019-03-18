@@ -79,8 +79,9 @@ double Female::SubPopParams::GetProportionHighRisk(DemographicProfile::Employmen
 }
 
 Female::Female(EventParams &_eventParams, Age _age, const DemographicProfile &profile,
-    unsigned int _populationID, const Female::SubPopParams &params)
-	: Entity(_age, _populationID),
+    unsigned int _populationID, const Female::SubPopParams &params,
+    const PrepParameters &prepParams)
+	: Entity(_age, _populationID, prepParams),
 	  populationSpecificParams(params),
 	  overrideChanceCondomUse_(-1),
 	  times_selected_(0),
@@ -106,17 +107,6 @@ Female::Female(EventParams &_eventParams, Age _age, const DemographicProfile &pr
 
 Female::~Female(void)
 {
-}
-
-
-/*virtual*/ void Female::SetPreExposureProphylaxisEfficacy(double efficacy)
-{
-    populationSpecificParams.SetPreExposureProphylaxisEfficacy(efficacy);
-}
-
-/*virtual*/ double Female::GetPreExposureProphylaxisEfficacy() const
-{
-    return populationSpecificParams.GetPreExposureProphylaxisEfficacy();
 }
 
 void Female::SetVaginalMicrobicideAdherence(double adherence)

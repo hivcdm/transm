@@ -4,6 +4,7 @@
 #include "entities/demographicprofile.hpp"
 #include "entities/female.hpp"
 #include "entities/male.hpp"
+#include "entities/prep.hpp"
 #include "entities/transmissiontype.hpp"
 #include "parameters/agebucketprevalenceinfo.hpp"
 #include "parameters/agerangesizecontainer.hpp"
@@ -111,6 +112,9 @@ public:
 		{
 			partnershipsHaveDuration[(std::size_t)gender][(std::size_t)type] = has_duration;
 		}
+
+    const PrepParameters &GetPrepParameters() const { return defaultPrepParams; }
+    void SetPrepParameters(PrepParameters &params) { defaultPrepParams = params; }
 
 	const Male::SubPopParams &GetMaleParameters() const { return defaultMaleParams; }
 	void SetMaleParameters(Male::SubPopParams &params) { defaultMaleParams = params; }
@@ -256,6 +260,11 @@ private:
     /// holds the population-level parameters for population of females
     /// </summary>
 	Female::SubPopParams defaultFemaleParams;
+
+    /// <summary>
+    /// holds the population-level (default) prep parameters
+    /// </summary>
+	PrepParameters defaultPrepParams;
 
     /// <summary>
 	/// this is a quick way to check whether a partnership is technically a fling or not

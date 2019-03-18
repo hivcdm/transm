@@ -1004,18 +1004,11 @@ double Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
     costThisMonthDiscounted = updateHealthCosts(_eventParams, costsTracker,
 						costsBefore, costsAfter);
 
-    bool not_observed_postitive = hivStatus == HIVStatus::NEGATIVE 
-        || hivStatus == HIVStatus::UNOBSERVED_ACUTE 
-        || hivStatus == HIVStatus::UNOBSERVED_CHRONIC 
-        || hivStatus == HIVStatus::UNOBSERVED_LATESTAGE;
-
-    if (not_observed_postitive
-	&& preExposureProphylaxisAdherence_ > 0
-	&& _eventParams.randomNums.chance(preExposureProphylaxisAdherence_)) {
-	using_prep_this_month_ = true;
-	testTracker->recordPrEP(this);
-    } else {
-	using_prep_this_month_ = false;
+    // update the prep status for this entity
+    updatePrepStatus(_eventParams);
+    if (UsingPrEP())
+    {
+        testTracker->recordPrEP(this);
     }
 
     //update HVL and CD4 for this Person if they are infected
@@ -1154,6 +1147,54 @@ void Entity::updateTestingStatus(EventParams &_eventParams,
 	    testTracker->recordTest(this, acceptedTest, returnedForResults,
 				    testResult);
 	}
+    }
+}
+
+void Entity::updatePrepStatus(EventParams &_eventParams)
+{
+    if (!prepParameters.Enabled())
+        return;
+
+    bool unobserved_or_negative = (hivStatus == HIVStatus::NEGATIVE)
+      || (hivStatus == HIVStatus::UNOBSERVED_ACUTE)
+      || (hivStatus == HIVStatus::UNOBSERVED_CHRONIC)
+      || (hivStatus == HIVStatus::UNOBSERVED_LATESTAGE);
+    if (!unobserved_or_negative)
+        return;
+
+    if (prepStatus == PrepStatus::OFF_PREP)
+    {
+        double access = prepParameters.GetAccess(*getDemographicProfile());
+        if (!_eventParams.randomNums.chance(access))
+        {
+            return;
+        }
+    }
+    else if (prepStatus == PrepStatus::WAS_ON_PREP)
+    {
+        double returnToCare = prepParameters.GetReturnToCare(*getDemographicProfile());
+        if (!_eventParams.randomNums.chance(returnToCare))
+        {
+            return;
+        }
+    }
+    else
+    {
+        double retention = prepParameters.GetRetention(*getDemographicProfile());
+        if (!_eventParams.randomNums.chance(retention))
+        {
+            prepStatus = PrepStatus::WAS_ON_PREP;
+            return;
+        }
+    }
+
+adherence:
+    double adherence = prepParameters.GetAdherence(*getDemographicProfile());
+    if (_eventParams.randomNums.chance(adherence))
+    {
+        prepStatus = PrepStatus::PREP_ADHERENT;
+    } else {
+        prepStatus = PrepStatus::PREP_INADHERENT;
     }
 }
 
@@ -1450,14 +1491,14 @@ HIVStatus Entity::getHIVStatus() const
 
 /**** Start constructors, destructors, initializers *****/
 //this constructor is used by the Male and Female classes
-Entity::Entity(Age _age, unsigned int _populationID) :
-    preExposureProphylaxisAdherence_(0),
+Entity::Entity(Age _age, unsigned int _populationID, const PrepParameters &prepParams) :
     targetedCepacContext_(nullptr),
     monthly_cepac_costs_undiscounted_(0),
     monthly_cepac_costs_discounted_(0),
     monthly_cdm_costs_undiscounted_(0),
     monthly_cdm_costs_discounted_(0),
-    using_prep_this_month_(false)
+    prepParameters(prepParams),
+    prepStatus(PrepStatus::OFF_PREP)
 {
 	id = Entity::idCounter++;
 	populationID = _populationID;
@@ -1531,7 +1572,12 @@ Entity::~Entity(void)
 
 void Entity::UsePreExposureProphylaxis(double adherence)
 {
-    preExposureProphylaxisAdherence_ = adherence;
+    prepParameters.SetDefaultAdherence(adherence);
+}
+
+double Entity::GetPreExposureProphylaxisEfficacy() const
+{
+    return prepParameters.GetEfficacy();
 }
 
 void Entity::deleteEntityWithoutDeleting()

@@ -8,6 +8,7 @@
 
 #include "entitytypes.hpp"
 #include "demographicprofile.hpp"
+#include "prep.hpp"
 #include "sexualpartnership.hpp"
 #include "transmissiontype.hpp"
 #include "core/constants.hpp"
@@ -59,11 +60,7 @@ public:
 
 	virtual void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) = 0;
 
-	void SetPreExposureProphylaxisAdherence(double adherence) { preExposureProphylaxisAdherence_ = adherence; }
-
-	virtual void SetPreExposureProphylaxisEfficacy(double efficacy) = 0;
-
-	virtual double GetPreExposureProphylaxisEfficacy() const = 0;
+	double GetPreExposureProphylaxisEfficacy() const;
 
 	static const std::array<std::string, (std::size_t)RiskLevel::Last> RiskStrings;
 
@@ -127,8 +124,6 @@ protected:
 
     //person's unique id number
 	unsigned long id;
-
-    double preExposureProphylaxisAdherence_;
 
     SimContext *targetedCepacContext_;
 
@@ -202,7 +197,7 @@ public:
 
 	//this constructor creates an actual person that can be simulated. It is generally called by Male and Female
 	// we pass in _eventParams because becomeInfected() needs it...
-	Entity(Age age, unsigned int _populationID);
+	Entity(Age age, unsigned int _populationID, const PrepParameters &prepParameters);
 
 	virtual ~Entity();
 
@@ -677,7 +672,7 @@ public:
 
     bool UsingPrEP()
     {
-        return using_prep_this_month_;
+        return (prepStatus == PrepStatus::PREP_ADHERENT);
     }
 
 private:
@@ -693,6 +688,7 @@ private:
 			     ArtRolloutTracker *testTracker,
 			     const RunStats::HIVScreening before,
 			     const RunStats::HIVScreening after);
+    void updatePrepStatus(EventParams &_eventParams);
     void traceTreatmentChange(EventParams &_eventParams, bool after);
     void traceCD4Change(EventParams &_eventParams, double before, double after);
     void traceHVLChange(EventParams &_eventParams, HVLStrata before,
@@ -705,7 +701,8 @@ private:
     double monthly_cdm_costs_undiscounted_;
     double monthly_cdm_costs_discounted_;
 
-    bool using_prep_this_month_;
+    PrepParameters prepParameters;
+    PrepStatus prepStatus;
 };
 
 } // namespace transm

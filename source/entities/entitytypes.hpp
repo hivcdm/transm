@@ -103,4 +103,14 @@ namespace transm {
 		Last,
 		First = LOW
 	};
+
+    enum class PrepStatus
+    {
+        OFF_PREP,
+        PREP_ADHERENT,
+        PREP_INADHERENT,
+        WAS_ON_PREP,
+        Last,
+        First = OFF_PREP
+    };
 }

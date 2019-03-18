@@ -1,7 +1,6 @@
 #pragma once
 
 #include <map>
-#include <pugixml.hpp>
 
 #include "entity.hpp"
 #include "sexualbehavior.hpp"
@@ -93,13 +92,10 @@ public :
 	    void SetCswEndAge(Age end_age) { cswEndAge = end_age; }
 	    Age GetCswEndAge() const { return cswEndAge; }
 
-	    void SetPreExposureProphylaxisEfficacy(double efficacy) { preExposureProphylaxisEfficacy_ = efficacy; }
-	    double GetPreExposureProphylaxisEfficacy() const { return preExposureProphylaxisEfficacy_; }
-
 	    double GetProportionCircumcised() const { return proportionCircumcised; }
 	    void SetProportionCircumcised(double value) { proportionCircumcised = value; }
 
-        private:
+    private:
 	    Age cswEndAge;
 
 		//chance that a male will become a CSW
@@ -149,31 +145,13 @@ public :
                 double preExposureProphylaxisEfficacy_;
 	};
 
-private:
-	SubPopParams populationSpecificParams;
-
-	//whether they are circumcised
-	bool circumcised;
-
-	//the rate at which this male acquires various partners -- this value is drawn from lognormal, but the male's number of partners each month will be drawn from poisson
-	double partnerAcqRates[(int)SexualPartnership::Type::Last];
-
-	//the  acts per month (fits a poisson distribution with minimum value of 1)
-        double numActsPerMonth[(int)SexualPartnership::Type::Last];
-
-	//chance that this male will use condom w/ different partner types
-	double chanceCondomUsePerEvent[(int)SexualPartnership::Type::Last];
-
-	// The distribution the males will draw from to determine how many years younger their partner should be (resulting difference may be negative for older women)
-	NormalDist averageYearsYounger[(int)SexualPartnership::Type::Last];
-
 public:
     /*
 	 * This constructor creates a Male that can be simulated
      * constructor should set the CD4, HVL, and HVLsetpoint from age and gender.
 	 */
     Male(EventParams &_eventParams, Age age, bool circumcised, const DemographicProfile &profile,
-	 unsigned int _populationID, const Male::SubPopParams &params);
+        unsigned int _populationID, const Male::SubPopParams &params, const PrepParameters &prepParams);
     ~Male();
 
     /*virtual*/ std::string const getEntityType() const;
@@ -190,10 +168,6 @@ public:
 	                      SexualPartnership::Type _partnershipType, bool _remove);
 
     void SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng);
-
-    virtual void SetPreExposureProphylaxisEfficacy(double efficacy);
-
-	virtual double GetPreExposureProphylaxisEfficacy() const;
 
 	const BetaDist GetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type type)
 	{ return populationSpecificParams.getSexualBehavior(type).getChanceCondomUsePerEvent(risk); }
@@ -219,9 +193,9 @@ public:
 
     bool PassedCSWEndAge() const { return (getAge() >= populationSpecificParams.GetCswEndAge()); }
 
-    double getFOI(Entity *_p, 
-        const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients, 
-        SexualPartnership::Type _partnershipType, 
+    double getFOI(Entity *_p,
+        const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients,
+        SexualPartnership::Type _partnershipType,
         EventParams &_eventParams);
 
 	double getMinPartnerSelectVal(Entity::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
@@ -267,8 +241,24 @@ public:
 	void ResetTimesSelected() { times_selected_ = 0; }
 
 private:
-	std::size_t times_selected_;
+	SubPopParams populationSpecificParams;
 
+	//whether they are circumcised
+	bool circumcised;
+
+	//the rate at which this male acquires various partners -- this value is drawn from lognormal, but the male's number of partners each month will be drawn from poisson
+	double partnerAcqRates[(int)SexualPartnership::Type::Last];
+
+	//the  acts per month (fits a poisson distribution with minimum value of 1)
+    double numActsPerMonth[(int)SexualPartnership::Type::Last];
+
+	//chance that this male will use condom w/ different partner types
+	double chanceCondomUsePerEvent[(int)SexualPartnership::Type::Last];
+
+	// The distribution the males will draw from to determine how many years younger their partner should be (resulting difference may be negative for older women)
+	NormalDist averageYearsYounger[(int)SexualPartnership::Type::Last];
+
+	std::size_t times_selected_;
 };
 
 } // namespace transm

@@ -12,24 +12,6 @@
 
 namespace transm {
 
-struct PrepEligibility
-{
-    int currentPartnerCount;
-    HIVStatus partnerStatus;
-    RiskLevel partnerRiskLevel;
-    Time monthsSinceUnprotectedAct;
-};
-
-struct PrepParameters
-{
-public:
-
-    PrepEligibility prepEligibility;
-    std::vector<DemographicProfile::DoublePair> prepAccess;
-    std::vector<DemographicProfile::DoublePair> prepAdherence;
-    std::vector<DemographicProfile::DoublePair> prepRetention;
-};
-
 class SimulationParameters
 {
 public:

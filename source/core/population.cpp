@@ -1077,7 +1077,7 @@ Entity *Population::GenerateEntity(EventParams &parameters_, const DemographicPr
     if(gender == (std::size_t)DemographicProfile::Gender::Male) {
 		auto circumcised = parameters_.randomNums.chance(popWideParams.GetProportionCircumcised());
 
-		toReturn = new Male(parameters_, age, circumcised, profile, populationID, popWideParams.defaultMaleParams);
+		toReturn = new Male(parameters_, age, circumcised, profile, populationID, popWideParams.defaultMaleParams, popWideParams.defaultPrepParams);
 
 		if (toReturn->IsCircumcised()) {
 			auto discount = parameters_.useRollout ?
@@ -1090,7 +1090,7 @@ Entity *Population::GenerateEntity(EventParams &parameters_, const DemographicPr
 		}
 
     } else {
-		toReturn = new Female(parameters_, age, profile, populationID, popWideParams.defaultFemaleParams);
+		toReturn = new Female(parameters_, age, profile, populationID, popWideParams.defaultFemaleParams, popWideParams.defaultPrepParams);
     }
 
 	toReturn->SetSexualActivityDelay(popWideParams.sexualActivityDelay);

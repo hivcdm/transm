@@ -364,84 +364,107 @@ PrepParameters SimulationParametersXml::GetPrepParameters() const
 {
     PrepParameters parameters;
 
-    pugi::xml_node prep_node;
-    if (document_.select_node("/simulation/interventions/prepIntervention"))
+    if (!document_.select_node("/simulation/population/preExposureProphylaxis").node())
+        return parameters;
+
+    pugi::xml_node prep_node = document_.select_node("/simulation/population/preExposureProphylaxis").node();
+
+    parameters.SetEnabled(true);
+
+    try
     {
-        prep_node = document_.select_node("/simulation/interventions/prepIntervention").node();
+        parameters.SetEfficacy(Text<double>(prep_node.child("prepEfficacy")));
+    }
+    catch(std::string errorString)
+	{
+        throw std::runtime_error("Prep xml found but efficacy is missing:" + errorString);
+	}
 
-        if (prep_node.child("prepEligibility"))
+    if (prep_node.child("prepDefaults"))
+    {
+        auto defaults_node = prep_node.child("prepDefaults");
+        // the default prep values are required
+        if (defaults_node.child("prepEligibility"))
         {
-            auto eligibility = prep_node.child("prepEligibility");
-            if (eligibility.child("currentPartnerCount"))
+            PrepEligibility eligibility;
+
+            auto eligibility_node = defaults_node.child("prepEligibility");
+            if (eligibility_node.child("currentPartnerCount"))
             {
-                parameters.prepEligibility.currentPartnerCount =
-                  Text<int>(eligibility.child("currentPartnerCount"));
+                eligibility.currentPartnerCount = Text<int>(eligibility_node.child("currentPartnerCount"));
             }
-            if (eligibility.child("partnerStatus"))
+            if (eligibility_node.child("partnerStatus"))
             {
-                std::string value = Text<std::string>(eligibility.child("partnerStatus"));
-                parameters.prepEligibility.partnerStatus =  from_string<HIVStatus>(value);
+                std::string value = Text<std::string>(eligibility_node.child("partnerStatus"));
+                eligibility.partnerStatus = from_string<HIVStatus>(value);
             }
-            if (eligibility.child("partnerRiskLevel"))
+            if (eligibility_node.child("partnerRiskLevel"))
             {
-                std::string value = Text<std::string>(eligibility.child("partnerRiskLevel"));
-                parameters.prepEligibility.partnerRiskLevel = from_string<RiskLevel>(value);
+                std::string value = Text<std::string>(eligibility_node.child("partnerRiskLevel"));
+                eligibility.partnerRiskLevel = from_string<RiskLevel>(value);
             }
-            if (eligibility.child("monthsSinceUnprotectedAct"))
+            if (eligibility_node.child("monthsSinceUnprotectedAct"))
             {
-                parameters.prepEligibility.monthsSinceUnprotectedAct = Time::from_months(
-                  Text<int>(eligibility.child("monthsSinceUnprotectedAct")));
+                eligibility.monthsSinceUnprotectedAct = Time::from_months(
+                  Text<int>(eligibility_node.child("monthsSinceUnprotectedAct")));
             }
+            parameters.SetEligibility(eligibility);
         }
 
-        if (prep_node.child("prepAccess"))
+        if (defaults_node.child("prepAccess"))
         {
-            auto access = prep_node.child("prepAccess");
-            for(auto node : access.children("demographic"))
-            {
-                DemographicProfile profile;
-
-                if (node.attribute("bucket"))
-                {
-                    std::string bucketString = node.attribute("bucket").as_string();
-                    profile.parse(bucketString);
-                }
-                parameters.prepAccess.push_back(DemographicProfile::DoublePair(profile,
-                    node.text().as_double()));
-            }
+            parameters.SetDefaultAccess(Text<double>(defaults_node.child("prepAccess")));
         }
-
-        if (prep_node.child("prepAdherence"))
+        if (defaults_node.child("prepAdherence"))
         {
-            auto adherence = prep_node.child("prepAccess");
-            for(auto node : adherence.children("demographic"))
-            {
-                DemographicProfile profile;
-
-                if (node.attribute("bucket"))
-                {
-                    std::string bucketString = node.attribute("bucket").as_string();
-                    profile.parse(bucketString);
-                }
-                parameters.prepAdherence.push_back(DemographicProfile::DoublePair(profile,
-                    node.text().as_double()));
-            }
+            parameters.SetDefaultAdherence(Text<double>(defaults_node.child("prepAdherence")));
         }
-
-        if (prep_node.child("prepRetention"))
+        if (defaults_node.child("prepRetention"))
         {
-            auto retention = prep_node.child("prepAccess");
-            for(auto node : retention.children("demographic"))
-            {
-                DemographicProfile profile;
+            parameters.SetDefaultRetention(Text<double>(defaults_node.child("prepRetention")));
+        }
+        if (defaults_node.child("prepReturnToCare"))
+        {
+            parameters.SetDefaultReturnToCare(Text<double>(defaults_node.child("prepReturnToCare")));
+        }
+    }
+    else
+    {
+        throw std::runtime_error("Prep xml found but defaults are missing");
+    }
 
-                if (node.attribute("bucket"))
-                {
-                    std::string bucketString = node.attribute("bucket").as_string();
-                    profile.parse(bucketString);
-                }
-                parameters.prepRetention.push_back(DemographicProfile::DoublePair(profile,
-                    node.text().as_double()));
+    // Add the profile specific prep settings -- these are optional
+    if (prep_node.child("prepProfiles"))
+    {
+        auto profiles_node = prep_node.child("prepProfiles");
+        for(auto node : profiles_node.children("demographic"))
+        {
+            DemographicProfile profile;
+
+            if (node.attribute("bucket"))
+            {
+                std::string bucketString = node.attribute("bucket").as_string();
+                profile.parse(bucketString);
+            }
+            if (prep_node.child("prepAccess"))
+            {
+                parameters.SetProfileAccess(profile,
+                    Text<double>(prep_node.child("prepAccess")));
+            }
+            if (prep_node.child("prepAdherence"))
+            {
+                parameters.SetProfileAdherence(profile,
+                    Text<double>(prep_node.child("prepAdherence")));
+            }
+            if (prep_node.child("prepRetention"))
+            {
+                parameters.SetProfileRetention(profile,
+                    Text<double>(prep_node.child("prepRetention")));
+            }
+            if (prep_node.child("prepReturnToCare"))
+            {
+                parameters.SetProfileReturnToCare(profile,
+                    Text<double>(prep_node.child("prepReturnToCare")));
             }
         }
     }
@@ -755,7 +778,6 @@ Male::SubPopParams SimulationParametersXml::GetMaleSubPopParams() const
 	auto health_node = node.child("health");
 	result.SetCircucmsionProtectEfficacy(Text<double>(health_node.child("circumcisionProtectEfficacy")));
 	result.SetCondomProtectEff(Text<double>(health_node.child("condomProtectEfficacy")));
-	result.SetPreExposureProphylaxisEfficacy(Text<double>(health_node.child("preExposureProphylaxisEfficacy")));
 
 	// This will be moved in the xml to /simulation/population/entities [@type='male']/health
 	auto circumcision_node = document_.select_node("/simulation/population/proportionMaleCircumcised").node();
@@ -777,7 +799,6 @@ Female::SubPopParams SimulationParametersXml::GetFemaleSubPopParams() const
 	result.SetProportionHighRisk(DemographicProfile::Employment::Csw, Text<double>(behavior_node.child("proportionHighRiskCsw")));
 
 	auto health_node = node.child("health");
-	result.SetPreExposureProphylaxisEfficacy(Text<double>(health_node.child("preExposureProphylaxisEfficacy")));
 	result.SetVaginalMicrobicideEfficacy(Text<double>(health_node.child("vaginalMicrobicideEfficacy")));
 
 	return result;
@@ -963,6 +984,9 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
     }
 
     parameters.SetTransmissionCoefficients(GetTransmissionCoefficients());
+
+    auto defaultPrepParams = GetPrepParameters();
+    parameters.SetPrepParameters(defaultPrepParams);
 
     parameters.SetAgeOfMajority(Age(Text<int>(population_node.child("ageOfMajority")), 0));
 
@@ -1550,7 +1574,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         }
         case KnownIntervention::ChanceCondomUse:
         {
-	    SetChanceCondomUseCallback(node, intervention, individual);
+            SetChanceCondomUseCallback(node, intervention, individual);
         }
         case KnownIntervention::PartnershipDuration:
         {
