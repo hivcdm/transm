@@ -7,6 +7,7 @@
 #include "artrollouttracker.hpp"
 #include "coststracker.hpp"
 #include "infectionstracker.hpp"
+#include "preptracker.hpp"
 #include "statsrecord.hpp"
 #include "entities/entity.hpp"
 #include "entities/sexualpartnership.hpp"
@@ -165,6 +166,8 @@ public:
 	CostsTracker costsTracker;			//tallies all costs
 
 	ArtRolloutTracker artTracker; // records art rollout outcomes
+
+	PrepTracker prepTracker; // records art rollout outcomes
 
 	EnumCls<PopulationStatisticsOld::LifeStats> *enumClass; //used in lifeStats; declared here so that deletion is possible
 

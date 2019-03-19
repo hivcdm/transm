@@ -34,12 +34,12 @@ public:
             CostEffectiveness,
             Clinical,
             Events,
-            Health,
             SinglePerson,
             LifeExpectancy,
             PartnerAcquisition,
             CalibrationStatistics,
             ArtRollout,
+            PrepOutcomes,
             ShiftedOutcomes,
             Last,
             First = Population

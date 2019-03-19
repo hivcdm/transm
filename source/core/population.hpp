@@ -329,6 +329,10 @@ private:
 	void PrintARTRolloutOutcomes(EventParams &_eventParams, std::ostream &_outStream);
 
     /// <summary>
+    /// </summary>
+	void PrintPrepOutcomes(EventParams &_eventParams, std::ostream &_outStream);
+
+    /// <summary>
 	/// this is called at specified time points to record the partner frequency
     /// </summary>
 	void RecordPartAcqFreq();

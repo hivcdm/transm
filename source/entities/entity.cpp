@@ -8,6 +8,7 @@
 #include "utility/randomnumbergenerator.hpp"
 #include "statistics/infectionstracker.hpp"
 #include "statistics/artrollouttracker.hpp"
+#include "statistics/preptracker.hpp"
 #include "statistics/coststracker.hpp"
 
 namespace transm {
@@ -969,7 +970,8 @@ std::string to_string(HIVStatus status)
     }
 }
 
-double Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTracker, CostsTracker *costsTracker)
+double Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTracker,
+    PrepTracker *prepTracker, CostsTracker *costsTracker)
 {
     double costThisMonthDiscounted = 0.0;
 
@@ -1008,32 +1010,32 @@ double Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
     updatePrepStatus(_eventParams);
     if (UsingPrEP())
     {
-        testTracker->recordPrEP(this);
+        prepTracker->recordAdherence(this);
     }
 
     //update HVL and CD4 for this Person if they are infected
     if(isInfected()) {
-	double cd4Before = cd4;
-	cd4 = cepacPatient->getDiseaseState()->currTrueCD4;
+        double cd4Before = cd4;
+        cd4 = cepacPatient->getDiseaseState()->currTrueCD4;
 
-	if(cd4Before != cd4)
-	    traceCD4Change(_eventParams, cd4Before, cd4);
+        if(cd4Before != cd4)
+            traceCD4Change(_eventParams, cd4Before, cd4);
 
         auto hvlBefore = hvl;
         auto hivStatusBefore = hivStatus;
 
-	hvl = HvlFromCepacHvl(cepacPatient->getDiseaseState()->currTrueHVLStrata);
-	currentTrueHvl = hvl;
+        hvl = HvlFromCepacHvl(cepacPatient->getDiseaseState()->currTrueHVLStrata);
+        currentTrueHvl = hvl;
 
-	updateCEPACpatient(_eventParams);
+        updateCEPACpatient(_eventParams);
 
-	if(hvl != hvlBefore)
-	    traceHVLChange(_eventParams, hvlBefore, hvl);
-	if (hivStatus != hivStatusBefore)
-	    traceHIVChange(_eventParams, hivStatusBefore, hivStatus);
+        if(hvl != hvlBefore)
+            traceHVLChange(_eventParams, hvlBefore, hvl);
+        if (hivStatus != hivStatusBefore)
+            traceHIVChange(_eventParams, hivStatusBefore, hivStatus);
 
-	updateTestingStatus(_eventParams, testTracker,
-			    hivScreeningBefore, hivScreeningAfter);
+        updateTestingStatus(_eventParams, testTracker,
+            hivScreeningBefore, hivScreeningAfter);
     }
 
     return costThisMonthDiscounted;
@@ -1143,10 +1145,10 @@ void Entity::updateTestingStatus(EventParams &_eventParams,
     }
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::ArtRollout].enabled) {
-	if(offeredTest) {
-	    testTracker->recordTest(this, acceptedTest, returnedForResults,
-				    testResult);
-	}
+        if(offeredTest) {
+            testTracker->recordTest(this, acceptedTest, returnedForResults,
+                testResult);
+        }
     }
 }
 

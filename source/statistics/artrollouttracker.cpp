@@ -27,7 +27,6 @@ const std::string ArtRolloutTracker::TRACKED_OUTCOMES[] =
     "accessing_treatment",
     "eligible_for_treatment",
     "treated",
-    "prep",
     "death_on_treatment"
 };
 
@@ -48,8 +47,7 @@ ArtRolloutTracker::ArtRolloutTracker() :
 	numTestsOffered(0),
 	numTestsAccepted(0),
 	numTestsReturnedFor(0),
-	numTestsByResult(SimContext::TEST_RESULT_NUM),
-    numOnPrEP(0)
+	numTestsByResult(SimContext::TEST_RESULT_NUM)
 {
 	std::vector<std::string> tracked;
 	for(auto outcome : TRACKED_OUTCOMES)
@@ -111,12 +109,6 @@ void ArtRolloutTracker::recordTreatment(Entity *person)
 	counter.Increment(PersonBucket(*person, ageRanges), "treated");
 }
 
-void ArtRolloutTracker::recordPrEP(Entity *person)
-{
-    numOnPrEP++;
-	counter.Increment(PersonBucket(*person, ageRanges), "prep");
-}
-
 void ArtRolloutTracker::recordTreatmentDeath(Entity *person)
 {
 	counter.Increment(PersonBucket(*person, ageRanges), "death_on_treatment");
@@ -151,7 +143,6 @@ void ArtRolloutTracker::buildHeader()
 	SetHeaderCell(4, 3, "Offered");
 	SetHeaderCell(5, 3, "Accepted");
 	SetHeaderCell(6, 3, "Returned For Results");
-    SetHeaderCell(7, 3, "On PrEP");
 
 	int column = 8;
 
@@ -173,10 +164,6 @@ void ArtRolloutTracker::buildHeader()
 		else if(outcome == "treated")
 		{
 			section_header = "Number Treated";
-		}
-		else if(outcome == "prep")
-		{
-		        section_header = "Number Using PrEP";
 		}
 		else if (outcome == "death_on_treatment")
 		{
@@ -254,7 +241,6 @@ void ArtRolloutTracker::buildRow(Time time, Population *_population)
 	PushElement(numTestsOffered);
 	PushElement(numTestsAccepted);
 	PushElement(numTestsReturnedFor);
-    PushElement(numOnPrEP);
 
 	for(auto outcome : TRACKED_OUTCOMES)
 	{
@@ -327,7 +313,6 @@ void ArtRolloutTracker::Reset()
 	numTestsAccepted = 0;
 	numTestsReturnedFor = 0;
 	numTreatmentSlots = 0;
-    numOnPrEP = 0;
 }
 
 } // namespace transm

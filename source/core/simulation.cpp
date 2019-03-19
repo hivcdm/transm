@@ -387,6 +387,11 @@ void Simulation::FirstStep()
         population_.PrintARTRolloutOutcomes(parameters_, parameters_.trace_files[EventParams::TraceFile::Type::ArtRollout].file);
 	}
 
+    if(parameters_.trace_files[EventParams::TraceFile::Type::PrepOutcomes].enabled)
+	{
+        population_.PrintPrepOutcomes(parameters_, parameters_.trace_files[EventParams::TraceFile::Type::PrepOutcomes].file);
+	}
+
     if(parameters_.trace_files[EventParams::TraceFile::Type::CostEffectiveness].enabled)
 	{
         population_.populationStatistics.costsTracker.PrintCosts(parameters_.currTime, parameters_.trace_files[EventParams::TraceFile::Type::CostEffectiveness].file);
@@ -466,6 +471,11 @@ void Simulation::Step()
     if(parameters_.trace_files[EventParams::TraceFile::Type::ArtRollout].enabled)
 	{
         population_.PrintARTRolloutOutcomes(parameters_, parameters_.trace_files[EventParams::TraceFile::Type::ArtRollout].file);
+	}
+
+    if(parameters_.trace_files[EventParams::TraceFile::Type::PrepOutcomes].enabled)
+	{
+        population_.PrintPrepOutcomes(parameters_, parameters_.trace_files[EventParams::TraceFile::Type::PrepOutcomes].file);
 	}
 
     if(parameters_.trace_files[EventParams::TraceFile::Type::CostEffectiveness].enabled)
@@ -844,12 +854,12 @@ void Simulation::Initialize(SimulationParameters &parameters)
             if(type_string == "clinical") return EventParams::TraceFile::Type::Clinical;
             if(type_string == "costEffectiveness") return EventParams::TraceFile::Type::CostEffectiveness;
             if(type_string == "events") return EventParams::TraceFile::Type::Events;
-            if(type_string == "health") return EventParams::TraceFile::Type::Health;
             if(type_string == "infection") return EventParams::TraceFile::Type::Infection;
             if(type_string == "lifeExpectancy") return EventParams::TraceFile::Type::LifeExpectancy;
             if(type_string == "partnerAcquisition") return EventParams::TraceFile::Type::PartnerAcquisition;
             if(type_string == "partnership") return EventParams::TraceFile::Type::Partnership;
             if(type_string == "population") return EventParams::TraceFile::Type::Population;
+            if(type_string == "prepOutcomes") return EventParams::TraceFile::Type::PrepOutcomes;
             if(type_string == "shiftedOutcomes") return EventParams::TraceFile::Type::ShiftedOutcomes;
             if(type_string == "singlePerson") return EventParams::TraceFile::Type::SinglePerson;
             if(type_string == "survival") return EventParams::TraceFile::Type::Survival;

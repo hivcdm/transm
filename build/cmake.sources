@@ -35,6 +35,7 @@ set(TRANSM_SOURCE_FILES
 ../source/statistics/personbucket.hpp
 ../source/statistics/populationstatistics.hpp
 ../source/statistics/populationstatisticsold.hpp
+../source/statistics/preptracker.hpp
 ../source/statistics/statsrecord.hpp
 ../source/statistics/tabularoutput.hpp
 ../source/statistics/transmissionsummarystats.hpp
@@ -78,6 +79,7 @@ set(TRANSM_SOURCE_FILES
 ../source/statistics/monthlystats.cpp
 ../source/statistics/populationstatistics.cpp
 ../source/statistics/populationstatisticsold.cpp
+../source/statistics/preptracker.cpp
 ../source/statistics/tabularoutput.cpp
 ../source/statistics/transmissionsummarystats.cpp
 ../source/utility/cepacinputparser.cpp

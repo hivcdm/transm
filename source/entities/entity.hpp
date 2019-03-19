@@ -26,6 +26,7 @@
 namespace transm {
 
 class ArtRolloutTracker;
+class PrepTracker;
 class CostsTracker;
 class EntityPool;
 class EventParams;
@@ -346,7 +347,8 @@ public:
 	//update health status of HIV infected people -- i.e. cd4, hvl, art, etc.
 	//  in version 1, this information is taken from CEPAC model
 	// @returns: costs (accrued in CEPAC) of updating health
-	double updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTracker, CostsTracker *costsTracker);
+	double updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTracker,
+        PrepTracker *prepTracker, CostsTracker *costsTracker);
 
 	//Call this after all transmission/population dynamics are done.
 	//Runs infected through CEPAC until they die and adds their LM etc to CEPAC stats

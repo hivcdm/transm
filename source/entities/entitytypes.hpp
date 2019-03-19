@@ -13,7 +13,8 @@ namespace transm {
 		CD4_THREE,
 		CD4_FOUR,
 		CD4_FIVE,
-		Last,
+        ENDType,
+		Last = ENDType,
         First = CD4_ZERO
 	};
 
@@ -62,7 +63,8 @@ namespace transm {
 		/// Final stage of disease progression
 		/// </summary>
 		HVL_LATESTAGE,
-        Last,
+        ENDType,
+		Last = ENDType,
         First = UNINFECTED
 	};
 
@@ -79,7 +81,8 @@ namespace transm {
 		ANY_POSITIVE,
 		ANY_OBSERVED_POSITIVE,
 		ANY_NOT_OBSERVED_POSITIVE,
-		Last,
+        ENDType,
+		Last = ENDType,
 		First = NEGATIVE
 	};
 
@@ -92,7 +95,8 @@ namespace transm {
 		DTH_TOX_ART,
 		DTH_TOX_PROPH,
 		DTH_OTHER,
-        Last,
+        ENDType,
+		Last = ENDType,
         First = ALIVE
 	};
 
@@ -100,7 +104,8 @@ namespace transm {
 	{
 		LOW,
 		HIGH,
-		Last,
+        ENDType,
+		Last = ENDType,
 		First = LOW
 	};
 
@@ -110,7 +115,8 @@ namespace transm {
         PREP_ADHERENT,
         PREP_INADHERENT,
         WAS_ON_PREP,
-        Last,
+        ENDType,
+		Last = ENDType,
         First = OFF_PREP
     };
 }

@@ -288,7 +288,8 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 
 			HIVStatus oldStatus = p->hivStatus;
 			//update their health status
-			p->updateHealthStatus(parameters_, &populationStatistics.artTracker, &populationStatistics.costsTracker);
+			p->updateHealthStatus(parameters_, &populationStatistics.artTracker,
+                &populationStatistics.prepTracker, &populationStatistics.costsTracker);
 
 			if (p->UsingPrEP()) {
 			    populationStatistics.costsTracker.RecordPrEPCost(popWideParams.prEPCost,
@@ -3424,6 +3425,11 @@ void Population::PrintARTRolloutOutcomes(EventParams &parameters_, std::ostream 
 	populationStatistics.artTracker.printArtRolloutOutcomes(parameters_.currTime, _outStream, this);
 }
 
+void Population::PrintPrepOutcomes(EventParams &parameters_, std::ostream &_outStream)
+{
+	populationStatistics.prepTracker.printPrepOutcomes(parameters_.currTime, _outStream, this);
+}
+
 /**
 this is called at specified time points to record the partner history frequency
 **/
@@ -3512,6 +3518,7 @@ void Population::Initialize(const PopulationParameters &parameters)
         ApplyRolloutContext(parameters_, Time::Zero);
     }
     GetPopulationStatistics().artTracker.SetAgeRanges(popWideParams.GetAgeRanges());
+    GetPopulationStatistics().prepTracker.SetAgeRanges(popWideParams.GetAgeRanges());
 
 	GenerateInitialEntities();
 

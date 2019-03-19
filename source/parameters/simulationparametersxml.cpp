@@ -288,7 +288,7 @@ SimulationParameters::TracingParameters SimulationParametersXml::GetTracingParam
         parameters.files[name].extension = Text<std::string>(trace_file_node.child("extension"));
         parameters.files[name].toss = Attr<bool>(trace_file_node, "tossIfCalibFail");
     }
-    
+
     parameters.num_to_trace = Text<int>(simulation_node.child("traceFiles").child("singlePerson").child("numberToTracePerAgeRange"));
     parameters.num_newborns_to_trace = Text<int>(simulation_node.child("traceFiles").child("singlePerson").child("numberNewbornsToTrace"));
     parameters.month_trace_newborns = Time::from_months(Text<int>(simulation_node.child("traceFiles").child("singlePerson").child("monthTraceNewborns")));
@@ -303,7 +303,7 @@ SimulationParameters::TracingParameters SimulationParametersXml::GetTracingParam
 
     for(auto time_node : simulation_node.child("traceFiles").child("partnerAcquisition").children("time"))
     {
-    parameters.partner_acquisition_record_times.push_back(Text<int>(time_node));
+        parameters.partner_acquisition_record_times.push_back(Text<int>(time_node));
     }
 
     return parameters;
