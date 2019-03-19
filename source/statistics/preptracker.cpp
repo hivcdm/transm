@@ -22,7 +22,7 @@ const std::string PrepTracker::RISK_GROUP_NAMES[] =
     "Non-CSW High-Risk Male:Msm",
     "CSW High-Risk Male:Msw",
     "CSW High-Risk Male:Msmw",
-    "CSW High-Risk Male:Msm",
+    "CSW High-Risk Male:Msm"
 };
 
 const std::string PrepTracker::TRACKED_OUTCOMES[] =
