@@ -8,16 +8,21 @@ namespace transm {
 
 const std::string ArtRolloutTracker::RISK_GROUP_NAMES[] =
 {
-	"Non-CSW Low-Risk Male:Msw",
+    "Non-CSW Low-Risk Male",
+    "Non-CSW High-Risk Male",
+    "CSW High-Risk Male",
+    "Non-CSW Low-Risk Female",
+    "Non-CSW High-Risk Female",
+    "CSW High-Risk Female",
+    "Non-CSW Low-Risk Male:Msw",
     "Non-CSW Low-Risk Male:Msmw",
     "Non-CSW Low-Risk Male:Msm",
-	"Non-CSW Low-Risk Female",
-	"Non-CSW High-Risk Male:Msw",
+    "Non-CSW High-Risk Male:Msw",
     "Non-CSW High-Risk Male:Msmw",
     "Non-CSW High-Risk Male:Msm",
-	"Non-CSW High-Risk Female",
-	"CSW Low-Risk Female",
-	"CSW High-Risk Female"
+    "CSW High-Risk Male:Msw",
+    "CSW High-Risk Male:Msmw",
+    "CSW High-Risk Male:Msm"
 };
 
 const std::string ArtRolloutTracker::TRACKED_OUTCOMES[] =
@@ -39,8 +44,7 @@ const std::string BUCKETS[] =
 	"employment",
 	"riskLevel",
 	"ageGroup",
-	"cd4Stratum",
-    "entityType"
+	"cd4Stratum"
 };
 
 ArtRolloutTracker::ArtRolloutTracker() :
@@ -174,29 +178,30 @@ void ArtRolloutTracker::buildHeader()
 		        section_header = "Number Treatment Slots";
 		}
 
-		SetHeaderCell(column, 1, section_header);
-		SetHeaderCell(column, 2, "Gender");
-		SetHeaderCell(column++, 3, "Males");
+        SetHeaderCell(column, 1, section_header);
+        SetHeaderCell(column, 2, "Gender");
+        SetHeaderCell(column++, 3, "Males");
+        SetHeaderCell(column++, 3, "Females");
+        SetHeaderCell(column, 2, "Orientation");
         SetHeaderCell(column++, 3, "Males:Msw");
         SetHeaderCell(column++, 3, "Males:Msmw");
         SetHeaderCell(column++, 3, "Males:Msm");
-		SetHeaderCell(column++, 3, "Females");
 
-		for(auto gender : {"Males", "Males:Msw", "Males:Msmw", "Males:Msm", "Females"})
-		{
-			SetHeaderCell(column, 1, gender);
-			SetHeaderCell(column, 2, "Non-Sexually Active Population");
-			SetHeaderCell(column, 3, "All ages");
-			SetHeaderCell(column + 1, 2, "Sexually Active Population");
-			column++;
+        for(auto gender : {"Males", "Females", "Males:Msw", "Males:Msmw", "Males:Msm", })
+        {
+            SetHeaderCell(column, 1, gender);
+            SetHeaderCell(column, 2, "Non-Sexually Active Population");
+            SetHeaderCell(column, 3, "All ages");
+            SetHeaderCell(column+1, 2, "Sexually Active Population");
+            column++;
 
-			for(const auto &age_range : ageRanges)
-			{
-				std::stringstream rangeString;
-				rangeString << age_range;
-				SetHeaderCell(column++, 3, rangeString.str());
-			}
-		}
+            for(const auto &age_range : ageRanges)
+            {
+                std::stringstream rangeString;
+                rangeString << age_range;
+                SetHeaderCell(column++, 3, rangeString.str());
+            }
+        }
 
 		SetHeaderCell(column, 2, "CD4 Stratum");
 
@@ -244,51 +249,103 @@ void ArtRolloutTracker::buildRow(Time time, Population *_population)
 
 	for(auto outcome : TRACKED_OUTCOMES)
 	{
-        PushElement(counter.GetCount(outcome, std::make_pair("gender", (int)DemographicProfile::Gender::Male)));
-
-        for(auto entity_type : {0, 1, 2, 3})
-		{
-            PushElement(counter.GetCount(outcome, std::make_pair("entityType", entity_type)));
-		}
-
-        PushElement(counter.GetCount(outcome, std::make_pair("gender", (int)DemographicProfile::Gender::Male), std::make_pair("sexualActivityStatus", (int)DemographicProfile::SexualActivityStatus::NotActive)));
-
-        for(std::size_t ageGroup = 0; ageGroup < ageRanges.size(); ++ageGroup)
+        // Add the count by Gender
+        for(auto gender : enum_iterator<DemographicProfile::Gender>())
         {
-            PushElement(counter.GetCount(outcome, std::make_pair("gender", (int)DemographicProfile::Gender::Male), std::make_pair("sexualActivityStatus", (int)DemographicProfile::SexualActivityStatus::Active), std::make_pair("ageGroup", (int)ageGroup)));
+            PushElement(counter.GetCount(outcome, std::make_pair("gender", (int)gender)));
         }
 
-        for(auto entity_type : {0, 1, 2, 3})
-		{
-            PushElement(counter.GetCount(outcome, std::make_pair("entityType", entity_type), std::make_pair("sexualActivityStatus", (int)DemographicProfile::SexualActivityStatus::NotActive)));
+        // Add the count of Males by Orienation
+        for(auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
+        {
+            PushElement(counter.GetCount(outcome,
+                std::make_pair("gender", (int)DemographicProfile::Gender::Male),
+                std::make_pair("sexualOrientation", (int)orientation)));
+        }
 
-			for(std::size_t ageGroup = 0; ageGroup < ageRanges.size(); ++ageGroup)
-			{
-                PushElement(counter.GetCount(outcome, std::make_pair("entityType", entity_type), std::make_pair("sexualActivityStatus", (int)DemographicProfile::SexualActivityStatus::Active), std::make_pair("ageGroup", (int)ageGroup)));
-			}
-		}
+        // Add the count of by gender, sexual activity status and age
+        for(auto gender : enum_iterator<DemographicProfile::Gender>())
+        {
+            PushElement(counter.GetCount(outcome,
+                std::make_pair("gender", (int)gender),
+                std::make_pair("sexualActivityStatus",
+                    (int)DemographicProfile::SexualActivityStatus::NotActive)));
+
+            for(std::size_t ageGroup = 0; ageGroup <ageRanges.size(); ++ageGroup)
+            {
+                PushElement(counter.GetCount(outcome,
+                    std::make_pair("gender", (int)gender),
+                    std::make_pair("sexualActivityStatus",
+                        (int)DemographicProfile::SexualActivityStatus::Active),
+                    std::make_pair("ageGroup", (int)ageGroup)));
+            }
+        }
+
+        // Add the count of Males by orienation, sexual activity status and age
+        for(auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
+        {
+            PushElement(counter.GetCount(outcome,
+                std::make_pair("gender", (int)DemographicProfile::Gender::Male),
+                std::make_pair("sexualOrientation", (int)orientation),
+                std::make_pair("sexualActivityStatus", (int)DemographicProfile::SexualActivityStatus::NotActive)));
+
+            for(std::size_t ageGroup = 0; ageGroup < ageRanges.size(); ++ageGroup)
+            {
+                PushElement(counter.GetCount(outcome,
+                    std::make_pair("gender", (int)DemographicProfile::Gender::Male),
+                    std::make_pair("sexualOrientation", (int)orientation),
+                    std::make_pair("sexualActivityStatus", (int)DemographicProfile::SexualActivityStatus::Active),
+                    std::make_pair("ageGroup", (int)ageGroup)));
+            }
+        }
 
         for(std::size_t i = 0; i < (std::size_t)CD4Strata::Last; ++i)
 		{
 			PushElement(counter.GetCount(outcome, std::make_pair("cd4Stratum", (int)i)));
 		}
 
-		for(auto employment : enum_iterator<DemographicProfile::Employment>())
-		{
-			for(auto riskLevel : enum_iterator<RiskLevel>())
-			{
-                for(auto entity_type : {0, 1, 2, 3})
-				{
-					// We don't include Male CSWs for now
-					if(entity_type != 3 && employment == DemographicProfile::Employment::Csw)
-					{
-						continue;
-					}
+        // Add the count by gender, employment and risk
+        for(auto employment : enum_iterator<DemographicProfile::Employment>())
+        {
+            for(auto riskLevel : enum_iterator<RiskLevel>())
+            {
+                for(auto gender : enum_iterator<DemographicProfile::Gender>())
+                {
+                    // We don't include Low-Risk CSWs
+                    if(riskLevel == RiskLevel::LOW &&
+                       employment == DemographicProfile::Employment::Csw)
+                    {
+                        continue;
+                    }
+                    PushElement(counter.GetCount(outcome,
+                        std::make_pair("gender", (int)gender),
+                        std::make_pair("employment", (int)employment),
+                        std::make_pair("riskLevel", (int)riskLevel)));
+                }
+            }
+        }
 
-                    PushElement(counter.GetCount(outcome, std::make_pair("entityType", entity_type), std::make_pair("employment", (int)employment), std::make_pair("riskLevel", (int)riskLevel)));
-				}
-			}
-		}
+        // Add the count of Males by orientation, employment and risk
+        for(auto employment : enum_iterator<DemographicProfile::Employment>())
+        {
+            for(auto riskLevel : enum_iterator<RiskLevel>())
+            {
+                for(auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
+                {
+                    // We don't include Low-Risk CSWs
+                    if(riskLevel == RiskLevel::LOW &&
+                       employment == DemographicProfile::Employment::Csw)
+                    {
+                        continue;
+                    }
+                    PushElement(counter.GetCount(outcome,
+                        std::make_pair("gender", (int)DemographicProfile::Gender::Male),
+                        std::make_pair("sexualOrientation", (int)orientation),
+                        std::make_pair("employment", (int)employment),
+                        std::make_pair("riskLevel", (int)riskLevel)));
+                }
+            }
+        }
 
 		if(outcome == "test_result")
 		{
