@@ -35,6 +35,7 @@ public:
 
 private:
     static const std::string RISK_GROUP_NAMES[];
+    static const std::string RACE_ETHNICITY_GROUP_NAMES[];
     static const std::string TRACKED_OUTCOMES[];
 
     BucketCounter counter;

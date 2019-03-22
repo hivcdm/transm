@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cassert>
 #include <map>
 #include <string>
 #include <boost/functional/hash.hpp>
@@ -10,19 +9,28 @@ namespace transm {
 class Bucket
 {
 public:
-	int GetValue(int i) const
+	bool HasKeyValue(std::string key, int value) const
 	{
-		return values_[i];
+        std::unordered_map<std::string,int>::const_iterator itr = values_.find(key);
+		if (itr != values_.end())
+        {
+            if (itr->second == value)
+                return true;
+            else
+                return false;
+        }
+        return false;
 	}
 
 	size_t Hash() const
 	{
 		size_t seed = 0;
-		for(auto value : values_)
-		{
-			boost::hash_combine<int>(seed, value);
-		}
-		return seed;
+        for (auto itr = values_.begin(); itr != values_.end(); itr++)
+        {
+            boost::hash_combine<std::string>(seed, itr->first);
+        }
+
+        return seed;
 	}
 
 	bool operator==(const Bucket &other) const
@@ -32,19 +40,21 @@ public:
 			return false;
 		}
 
-		for(size_t i = 0; i < values_.size(); i++)
-		{
-			if(values_[i] != other.values_[i])
+        for (auto itr = values_.begin(), itr_other = other.values_.begin();
+             itr != values_.end(); itr++, itr_other++)
+        {
+			if ((itr->first == itr_other->first) &&
+                (itr->second == itr_other->second))
 			{
-				return false;
+				return true;
 			}
 		}
 
-		return true;
+		return false;
 	}
 
 protected:
-	std::vector<int> values_;
+	std::unordered_map<std::string, int> values_;
 };
 
 template<class T> struct bucket_hash;

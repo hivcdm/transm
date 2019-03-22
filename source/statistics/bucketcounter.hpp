@@ -15,13 +15,15 @@ namespace transm {
 
 struct QueryField
 {
+    std::string key;
 	int value;
 	bool wildcard;
 };
 
 class BucketCounter
 {
-    using BucketContainer = std::unordered_map<Bucket, std::vector<int>, bucket_hash<Bucket>, bucket_equal_to<Bucket>>;
+    using BucketContainer = std::unordered_map<Bucket, std::vector<int>,
+          bucket_hash<Bucket>, bucket_equal_to<Bucket>>;
 
 	struct query_equal
 	{
@@ -29,9 +31,9 @@ class BucketCounter
 
 		bool operator()(const BucketContainer::value_type &b)
 		{
-			for(size_t i = 0; i < indices.size(); i++)
+			for (size_t i = 0; i < indices.size(); i++)
 			{
-				if(!indices[i].wildcard && b.first.GetValue((int)i) != indices[i].value)
+				if (!indices[i].wildcard && !b.first.HasKeyValue(indices[i].key, indices[i].value))
 				{
 					return false;
 				}
@@ -64,55 +66,58 @@ public:
 
 	void Increment(const Bucket &bucket, const std::string &count);
 
-	template<typename ... Ts>
-	int GetCount(const std::string &count, const Ts &... query)
-	{
-		auto predicate = query_equal(BuildQueryIndices(query...));
-		auto bucketIterator = std::find_if(counts_.begin(), counts_.end(), predicate);
-		int sum = 0;
-		int countIndex = (int)std::distance(countNames_.begin(), std::find(countNames_.begin(), countNames_.end(), count));
+    template<typename ... Ts>
+    int GetCount(const std::string &count, const Ts &... query)
+    {
+        auto predicate = query_equal(BuildQueryIndices(query...));
+        auto bucketIterator = std::find_if(counts_.begin(), counts_.end(), predicate);
+        int sum = 0;
+        int countIndex = (int)std::distance(countNames_.begin(),
+            std::find(countNames_.begin(), countNames_.end(), count));
 
-		while(bucketIterator != counts_.end())
-		{
-			sum += bucketIterator->second[countIndex];
-			bucketIterator = std::find_if(++bucketIterator, counts_.end(), predicate);
-		}
+        while(bucketIterator != counts_.end())
+        {
+            sum += bucketIterator->second[countIndex];
+            bucketIterator = std::find_if(++bucketIterator, counts_.end(), predicate);
+        }
 
-		return sum;
-	}
+        return sum;
+    }
 
-	template<typename ... Ts>
-	std::vector<int> GetCounts(const Ts &... query)
-	{
-		auto predicate = query_equal(BuildQueryIndices(query...));
-		auto bucketIterator = std::find_if(counts_.begin(), counts_.end(), predicate);
-		std::vector<int> sums(countNames_.size(), 0);
+    template<typename ... Ts>
+    std::vector<int> GetCounts(const Ts &... query)
+    {
+        auto predicate = query_equal(BuildQueryIndices(query...));
+        auto bucketIterator = std::find_if(counts_.begin(), counts_.end(), predicate);
+        std::vector<int> sums(countNames_.size(), 0);
 
-		while(bucketIterator != counts_.end())
-		{
-			std::transform(sums.begin(), sums.end(), bucketIterator->second.begin(), sums.begin(), std::plus<int>());
-			bucketIterator = std::find_if(++bucketIterator, counts_.end(), predicate);
-		}
+        while(bucketIterator != counts_.end())
+        {
+            std::transform(sums.begin(), sums.end(), bucketIterator->second.begin(),
+                sums.begin(), std::plus<int>());
+            bucketIterator = std::find_if(++bucketIterator, counts_.end(), predicate);
+        }
 
-		return sums;
-	}
+        return sums;
+    }
 
 private:
 	template<typename ... Ts>
 	std::vector<QueryField> BuildQueryIndices(const Ts &... query)
 	{
 		const std::size_t size = sizeof...(query);
-		std::pair<std::string, int> r[size] = {query...};
+		std::pair<std::string, int> queries[size] = {query...};
 
 		std::vector<QueryField> indices;
 
 		for(auto key : bucketNames_)
 		{
-			indices.push_back({0, true});
-			for(auto pair : r)
+			indices.push_back({"*", 0, true});
+			for(auto pair : queries)
 			{
 				if(pair.first == key)
 				{
+                    indices.back().key = pair.first;
 					indices.back().value = pair.second;
 					indices.back().wildcard = false;
 					break;
