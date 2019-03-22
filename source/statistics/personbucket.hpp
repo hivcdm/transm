@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "bucket.hpp"
+#include "entities/demographicprofile.hpp"
 #include "entities/entity.hpp"
 
 namespace transm {
@@ -15,31 +16,18 @@ public:
     {
         const DemographicProfile *demographicProfile = person.getDemographicProfile();
 
-        DemographicProfile::SexualActivityStatus sexualActivityStatus = static_cast<DemographicProfile::SexualActivityStatus>
-          (demographicProfile->get(DemographicProfile::Demographic::SexualActivityStatus));
-        values_.emplace("sexualActivityStatus", (std::size_t)sexualActivityStatus);
-        DemographicProfile::Gender gender = static_cast<DemographicProfile::Gender>(demographicProfile->get(DemographicProfile::Demographic::Gender));
-        values_.emplace("gender", (std::size_t)gender);
-        DemographicProfile::SexualOrientation sexualOrientation = static_cast<DemographicProfile::SexualOrientation>(demographicProfile->get(
-          DemographicProfile::Demographic::SexualOrientation));
-        values_.emplace("sexualOrientation", (std::size_t)sexualOrientation);
-        DemographicProfile::RelationshipStatus relationshipStatus = static_cast<DemographicProfile::RelationshipStatus>(demographicProfile->get(
-          DemographicProfile::Demographic::RelationshipStatus));
-        values_.emplace("relationshipStatus", (std::size_t)relationshipStatus);
-        DemographicProfile::Employment employment = static_cast<DemographicProfile::Employment>(demographicProfile->get(
-          DemographicProfile::Demographic::Employment));
-        values_.emplace("employment", (std::size_t)employment);
-
-        DemographicProfile::Ethnicity ethnicity = static_cast<DemographicProfile::Ethnicity>(
-            demographicProfile->get(DemographicProfile::Demographic::Ethnicity));
-        values_.emplace("ethnicity", (std::size_t)ethnicity);
-
-        DemographicProfile::Race race = static_cast<DemographicProfile::Race>(
-          demographicProfile->get(DemographicProfile::Demographic::Race));
-        values_.emplace("race", (std::size_t)race);
+        for (auto demographic : enum_iterator<DemographicProfile::Demographic>())
+        {
+            std::string demoString = DemographicStrs[(std::size_t)demographic];
+            std::size_t demoValue = (std::size_t)demographicProfile->get(demographic);
+            values_.emplace(demoString, demoValue);
+        }
 
         RiskLevel riskLevel = person.getRiskLevel();
-        values_.emplace("riskLevel", (std::size_t)riskLevel);
+        values_.emplace("RISK_LEVEL", (std::size_t)riskLevel);
+
+        CD4Strata cd4Stratum = person.getCd4Stratum();
+        values_.emplace("CD4_STRATUM", (std::size_t)cd4Stratum);
 
         int ageGroup = -1;
         auto age = person.getAge();
@@ -51,10 +39,7 @@ public:
             }
         }
         assert(ageGroup != -1);
-        values_.emplace("ageGroup", ageGroup);
-
-        CD4Strata cd4Stratum = person.getCd4Stratum();
-        values_.emplace("cd4Stratum", (std::size_t)cd4Stratum);
+        values_.emplace("AGE_GROUP", ageGroup);
     }
 };
 

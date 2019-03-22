@@ -64,15 +64,15 @@ const std::string PrepTracker::TRACKED_OUTCOMES[] =
 
 const std::string BUCKETS[] =
 {
-    "sexualActivityStatus",
-    "gender",
-    "sexualOrientation",
-    "relationshipStatus",
-    "employment",
-    "race",
-    "ethnicity",
-    "riskLevel",
-    "ageGroup"
+    "SEXUAL_ACTIVITY_STATUS",
+    "GENDER",
+    "SEXUAL_ORIENTATION",
+    "RELATIONSHIP_STATUS",
+    "RACE",
+    "ETHNICITY",
+    "EMPLOYMENT",
+    "RISK_LEVEL",
+    "AGE_GROUP"
 };
 
 PrepTracker::PrepTracker() :
@@ -204,30 +204,21 @@ void PrepTracker::buildHeader()
             }
         }
 
-        SetHeaderCell(column, 2, "Race Group");
+        SetHeaderCell(column, 2, "Race/Ethnicity Group");
         for (auto gender : {"Males", "Females", "Males:Msw", "Males:Msmw", "Males:Msm", })
         {
             for (auto race : {"Black", "White"})
             {
-                std::stringstream raceString;
-                raceString << gender << ":" << race;
-                SetHeaderCell(column++, 3, raceString.str());
-            }
-        }
-
-        SetHeaderCell(column, 2, "Ethnicity Group");
-        for (auto gender : {"Males", "Females", "Males:Msw", "Males:Msmw", "Males:Msm", })
-        {
-            for (auto ethnicity : {"Non-Hispanic", "Hispanic"})
-            {
-                std::stringstream ethString;
-                ethString << gender << ":" << ethnicity;
-                SetHeaderCell(column++, 3, ethString.str());
+                for (auto ethnicity : {"Non-Hispanic", "Hispanic"})
+                {
+                    std::stringstream raceString;
+                    raceString << gender << ":" << race << ":" << ethnicity;
+                    SetHeaderCell(column++, 3, raceString.str());
+                }
             }
         }
 
         SetHeaderCell(column, 2, "Risk Group");
-
         std::size_t num_risk_group_names = sizeof(RISK_GROUP_NAMES) / sizeof(RISK_GROUP_NAMES[0]);
         for(std::size_t riskGroupIndex = 0; riskGroupIndex < num_risk_group_names; ++riskGroupIndex, ++column)
         {
@@ -256,32 +247,32 @@ void PrepTracker::buildRow(Time time, Population *_population)
         // Add the count by Gender
         for(auto gender : enum_iterator<DemographicProfile::Gender>())
         {
-            PushElement(counter.GetCount(outcome, std::make_pair("gender", (int)gender)));
+            PushElement(counter.GetCount(outcome, std::make_pair("GENDER", (int)gender)));
         }
 
         // Add the count of Males by Orienation
         for(auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
         {
             PushElement(counter.GetCount(outcome,
-                std::make_pair("gender", (int)DemographicProfile::Gender::Male),
-                std::make_pair("sexualOrientation", (int)orientation)));
+                std::make_pair("GENDER", (int)DemographicProfile::Gender::Male),
+                std::make_pair("SEXUAL_ORIENTATION", (int)orientation)));
         }
 
         // Add the count of by gender, sexual activity status and age
         for(auto gender : enum_iterator<DemographicProfile::Gender>())
         {
             PushElement(counter.GetCount(outcome,
-                std::make_pair("gender", (int)gender),
-                std::make_pair("sexualActivityStatus",
+                std::make_pair("GENDER", (int)gender),
+                std::make_pair("SEXUAL_ACTIVITY_STATUS",
                     (int)DemographicProfile::SexualActivityStatus::NotActive)));
 
             for(std::size_t ageGroup = 0; ageGroup <ageRanges.size(); ++ageGroup)
             {
                 PushElement(counter.GetCount(outcome,
-                    std::make_pair("gender", (int)gender),
-                    std::make_pair("sexualActivityStatus",
+                    std::make_pair("GENDER", (int)gender),
+                    std::make_pair("SEXUAL_ACTIVITY_STATUS",
                         (int)DemographicProfile::SexualActivityStatus::Active),
-                    std::make_pair("ageGroup", (int)ageGroup)));
+                    std::make_pair("AGE_GROUP", (int)ageGroup)));
             }
         }
 
@@ -289,17 +280,17 @@ void PrepTracker::buildRow(Time time, Population *_population)
         for(auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
         {
             PushElement(counter.GetCount(outcome,
-                std::make_pair("gender", (int)DemographicProfile::Gender::Male),
-                std::make_pair("sexualOrientation", (int)orientation),
-                std::make_pair("sexualActivityStatus", (int)DemographicProfile::SexualActivityStatus::NotActive)));
+                std::make_pair("GENDER", (int)DemographicProfile::Gender::Male),
+                std::make_pair("SEXUAL_ORIENTATION", (int)orientation),
+                std::make_pair("SEXUAL_ACTIVITY_STATUS", (int)DemographicProfile::SexualActivityStatus::NotActive)));
 
             for(std::size_t ageGroup = 0; ageGroup < ageRanges.size(); ++ageGroup)
             {
                 PushElement(counter.GetCount(outcome,
-                    std::make_pair("gender", (int)DemographicProfile::Gender::Male),
-                    std::make_pair("sexualOrientation", (int)orientation),
-                    std::make_pair("sexualActivityStatus", (int)DemographicProfile::SexualActivityStatus::Active),
-                    std::make_pair("ageGroup", (int)ageGroup)));
+                    std::make_pair("GENDER", (int)DemographicProfile::Gender::Male),
+                    std::make_pair("SEXUAL_ORIENTATION", (int)orientation),
+                    std::make_pair("SEXUAL_ACTIVITY_STATUS", (int)DemographicProfile::SexualActivityStatus::Active),
+                    std::make_pair("AGE_GROUP", (int)ageGroup)));
             }
         }
 
@@ -308,9 +299,13 @@ void PrepTracker::buildRow(Time time, Population *_population)
         {
             for (auto race : enum_iterator<DemographicProfile::Race>())
             {
-                PushElement(counter.GetCount(outcome,
-                    std::make_pair("gender", (int)gender),
-                    std::make_pair("race", (int)race)));
+                for (auto ethnicity : enum_iterator<DemographicProfile::Ethnicity>())
+                {
+                    PushElement(counter.GetCount(outcome,
+                        std::make_pair("GENDER", (int)gender),
+                        std::make_pair("RACE", (int)race),
+                        std::make_pair("ETHNICITY", (int)ethnicity)));
+                }
             }
         }
 
@@ -319,32 +314,15 @@ void PrepTracker::buildRow(Time time, Population *_population)
         {
             for (auto race : enum_iterator<DemographicProfile::Race>())
             {
-                PushElement(counter.GetCount(outcome,
-                    std::make_pair("gender", (int)DemographicProfile::Gender::Male),
-                    std::make_pair("sexualOrientation", (int)orientation),
-                    std::make_pair("race", (int)race)));
-            }
-        }
-        // Add the count by gender and ethnicity
-        for(auto gender : enum_iterator<DemographicProfile::Gender>())
-        {
-            for (auto ethnicity : enum_iterator<DemographicProfile::Ethnicity>())
-            {
-                PushElement(counter.GetCount(outcome,
-                    std::make_pair("gender", (int)gender),
-                    std::make_pair("ethnicity", (int)ethnicity)));
-            }
-        }
+                for (auto ethnicity : enum_iterator<DemographicProfile::Ethnicity>())
+                {
+                    PushElement(counter.GetCount(outcome,
+                        std::make_pair("GENDER", (int)DemographicProfile::Gender::Male),
+                        std::make_pair("SEXUAL_ORIENTATION", (int)orientation),
+                        std::make_pair("RACE", (int)race),
+                        std::make_pair("ETHNICITY", (int)ethnicity)));
+                }
 
-        // Add the count of Males by orientation, race and ethnicity
-        for(auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
-        {
-            for (auto ethnicity : enum_iterator<DemographicProfile::Ethnicity>())
-            {
-                PushElement(counter.GetCount(outcome,
-                    std::make_pair("gender", (int)DemographicProfile::Gender::Male),
-                    std::make_pair("sexualOrientation", (int)orientation),
-                    std::make_pair("ethnicity", (int)ethnicity)));
             }
         }
 
@@ -362,9 +340,9 @@ void PrepTracker::buildRow(Time time, Population *_population)
                         continue;
                     }
                     PushElement(counter.GetCount(outcome,
-                        std::make_pair("gender", (int)gender),
-                        std::make_pair("employment", (int)employment),
-                        std::make_pair("riskLevel", (int)riskLevel)));
+                        std::make_pair("GENDER", (int)gender),
+                        std::make_pair("EMPLOYMENT", (int)employment),
+                        std::make_pair("RISK_LEVEL", (int)riskLevel)));
                 }
             }
         }
@@ -383,10 +361,10 @@ void PrepTracker::buildRow(Time time, Population *_population)
                         continue;
                     }
                     PushElement(counter.GetCount(outcome,
-                        std::make_pair("gender", (int)DemographicProfile::Gender::Male),
-                        std::make_pair("sexualOrientation", (int)orientation),
-                        std::make_pair("employment", (int)employment),
-                        std::make_pair("riskLevel", (int)riskLevel)));
+                        std::make_pair("GENDER", (int)DemographicProfile::Gender::Male),
+                        std::make_pair("SEXUAL_ORIENTATION", (int)orientation),
+                        std::make_pair("EMPLOYMENT", (int)employment),
+                        std::make_pair("RISK_LEVEL", (int)riskLevel)));
                 }
             }
         }

@@ -37,14 +37,14 @@ const std::string ArtRolloutTracker::TRACKED_OUTCOMES[] =
 
 const std::string BUCKETS[] =
 {
-	"sexualActivityStatus",
-	"gender",
-	"sexualOrientation",
-	"relationshipStatus",
-	"employment",
-	"riskLevel",
-	"ageGroup",
-	"cd4Stratum"
+    "SEXUAL_ACTIVITY_STATUS",
+    "GENDER",
+    "SEXUAL_ORIENTATION",
+    "RELATIONSHIP_STATUS",
+    "EMPLOYMENT",
+    "RISK_LEVEL",
+	"AGE_GROUP",
+	"CD4_STRATUM"
 };
 
 ArtRolloutTracker::ArtRolloutTracker() :
@@ -252,32 +252,32 @@ void ArtRolloutTracker::buildRow(Time time, Population *_population)
         // Add the count by Gender
         for(auto gender : enum_iterator<DemographicProfile::Gender>())
         {
-            PushElement(counter.GetCount(outcome, std::make_pair("gender", (int)gender)));
+            PushElement(counter.GetCount(outcome, std::make_pair("GENDER", (int)gender)));
         }
 
         // Add the count of Males by Orienation
         for(auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
         {
             PushElement(counter.GetCount(outcome,
-                std::make_pair("gender", (int)DemographicProfile::Gender::Male),
-                std::make_pair("sexualOrientation", (int)orientation)));
+                std::make_pair("GENDER", (int)DemographicProfile::Gender::Male),
+                std::make_pair("SEXUAL_ORIENTATION", (int)orientation)));
         }
 
         // Add the count of by gender, sexual activity status and age
         for(auto gender : enum_iterator<DemographicProfile::Gender>())
         {
             PushElement(counter.GetCount(outcome,
-                std::make_pair("gender", (int)gender),
-                std::make_pair("sexualActivityStatus",
+                std::make_pair("GENDER", (int)gender),
+                std::make_pair("SEXUAL_ACTIVITY_STATUS",
                     (int)DemographicProfile::SexualActivityStatus::NotActive)));
 
             for(std::size_t ageGroup = 0; ageGroup <ageRanges.size(); ++ageGroup)
             {
                 PushElement(counter.GetCount(outcome,
-                    std::make_pair("gender", (int)gender),
-                    std::make_pair("sexualActivityStatus",
+                    std::make_pair("GENDER", (int)gender),
+                    std::make_pair("SEXUAL_ACTIVITY_STATUS",
                         (int)DemographicProfile::SexualActivityStatus::Active),
-                    std::make_pair("ageGroup", (int)ageGroup)));
+                    std::make_pair("AGE_GROUP", (int)ageGroup)));
             }
         }
 
@@ -285,23 +285,23 @@ void ArtRolloutTracker::buildRow(Time time, Population *_population)
         for(auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
         {
             PushElement(counter.GetCount(outcome,
-                std::make_pair("gender", (int)DemographicProfile::Gender::Male),
-                std::make_pair("sexualOrientation", (int)orientation),
-                std::make_pair("sexualActivityStatus", (int)DemographicProfile::SexualActivityStatus::NotActive)));
+                std::make_pair("GENDER", (int)DemographicProfile::Gender::Male),
+                std::make_pair("SEXUAL_ORIENTATION", (int)orientation),
+                std::make_pair("SEXUAL_ACTIVITY_STATUS", (int)DemographicProfile::SexualActivityStatus::NotActive)));
 
             for(std::size_t ageGroup = 0; ageGroup < ageRanges.size(); ++ageGroup)
             {
                 PushElement(counter.GetCount(outcome,
-                    std::make_pair("gender", (int)DemographicProfile::Gender::Male),
-                    std::make_pair("sexualOrientation", (int)orientation),
-                    std::make_pair("sexualActivityStatus", (int)DemographicProfile::SexualActivityStatus::Active),
-                    std::make_pair("ageGroup", (int)ageGroup)));
+                    std::make_pair("GENDER", (int)DemographicProfile::Gender::Male),
+                    std::make_pair("SEXUAL_ORIENTATION", (int)orientation),
+                    std::make_pair("SEXUAL_ACTIVITY_STATUS", (int)DemographicProfile::SexualActivityStatus::Active),
+                    std::make_pair("AGE_GROUP", (int)ageGroup)));
             }
         }
 
         for(std::size_t i = 0; i < (std::size_t)CD4Strata::Last; ++i)
 		{
-			PushElement(counter.GetCount(outcome, std::make_pair("cd4Stratum", (int)i)));
+			PushElement(counter.GetCount(outcome, std::make_pair("CD4_STRATUM", (int)i)));
 		}
 
         // Add the count by gender, employment and risk
@@ -318,9 +318,9 @@ void ArtRolloutTracker::buildRow(Time time, Population *_population)
                         continue;
                     }
                     PushElement(counter.GetCount(outcome,
-                        std::make_pair("gender", (int)gender),
-                        std::make_pair("employment", (int)employment),
-                        std::make_pair("riskLevel", (int)riskLevel)));
+                        std::make_pair("GENDER", (int)gender),
+                        std::make_pair("EMPLOYMENT", (int)employment),
+                        std::make_pair("RISK_LEVEL", (int)riskLevel)));
                 }
             }
         }
@@ -339,10 +339,10 @@ void ArtRolloutTracker::buildRow(Time time, Population *_population)
                         continue;
                     }
                     PushElement(counter.GetCount(outcome,
-                        std::make_pair("gender", (int)DemographicProfile::Gender::Male),
-                        std::make_pair("sexualOrientation", (int)orientation),
-                        std::make_pair("employment", (int)employment),
-                        std::make_pair("riskLevel", (int)riskLevel)));
+                        std::make_pair("GENDER", (int)DemographicProfile::Gender::Male),
+                        std::make_pair("SEXUAL_ORIENTATION", (int)orientation),
+                        std::make_pair("EMPLOYMENT", (int)employment),
+                        std::make_pair("RISK_LEVEL", (int)riskLevel)));
                 }
             }
         }
