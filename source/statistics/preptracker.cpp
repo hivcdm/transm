@@ -25,6 +25,34 @@ const std::string PrepTracker::RISK_GROUP_NAMES[] =
     "CSW High-Risk Male:Msm"
 };
 
+const std::string PrepTracker::RACE_ETHNICITY_GROUP_NAMES[] =
+{
+    "Non-Hispanic Black Male",
+    "Hispanic Black Male",
+    "Non-Hispanic White Male",
+    "Hispanic White Male",
+
+    "Non-Hispanic Black Male",
+    "Hispanic Black Male",
+    "Non-Hispanic White Male",
+    "Hispanic White Male",
+
+    "Non-Hispanic Black MSW",
+    "Hispanic Black MSW",
+    "Non-Hispanic White MSW",
+    "Hispanic White MSW",
+
+    "Non-Hispanic Black MSMW",
+    "Hispanic Black MSMW",
+    "Non-Hispanic White MSMW",
+    "Hispanic White MSMW",
+
+    "Non-Hispanic Black MSM",
+    "Hispanic Black MSM",
+    "Non-Hispanic White MSM",
+    "Hispanic White MSM",
+};
+
 const std::string PrepTracker::TRACKED_OUTCOMES[] =
 {
     "eligible",
@@ -41,6 +69,8 @@ const std::string BUCKETS[] =
     "sexualOrientation",
     "relationshipStatus",
     "employment",
+    "race",
+    "ethnicity",
     "riskLevel",
     "ageGroup"
 };
@@ -174,6 +204,28 @@ void PrepTracker::buildHeader()
             }
         }
 
+        SetHeaderCell(column, 2, "Race Group");
+        for (auto gender : {"Males", "Females", "Males:Msw", "Males:Msmw", "Males:Msm", })
+        {
+            for (auto race : {"Black", "White"})
+            {
+                std::stringstream raceString;
+                raceString << gender << ":" << race;
+                SetHeaderCell(column++, 3, raceString.str());
+            }
+        }
+
+        SetHeaderCell(column, 2, "Ethnicity Group");
+        for (auto gender : {"Males", "Females", "Males:Msw", "Males:Msmw", "Males:Msm", })
+        {
+            for (auto ethnicity : {"Non-Hispanic", "Hispanic"})
+            {
+                std::stringstream ethString;
+                ethString << gender << ":" << ethnicity;
+                SetHeaderCell(column++, 3, ethString.str());
+            }
+        }
+
         SetHeaderCell(column, 2, "Risk Group");
 
         std::size_t num_risk_group_names = sizeof(RISK_GROUP_NAMES) / sizeof(RISK_GROUP_NAMES[0]);
@@ -248,6 +300,51 @@ void PrepTracker::buildRow(Time time, Population *_population)
                     std::make_pair("sexualOrientation", (int)orientation),
                     std::make_pair("sexualActivityStatus", (int)DemographicProfile::SexualActivityStatus::Active),
                     std::make_pair("ageGroup", (int)ageGroup)));
+            }
+        }
+
+        // Add the count by gender, race
+        for(auto gender : enum_iterator<DemographicProfile::Gender>())
+        {
+            for (auto race : enum_iterator<DemographicProfile::Race>())
+            {
+                PushElement(counter.GetCount(outcome,
+                    std::make_pair("gender", (int)gender),
+                    std::make_pair("race", (int)race)));
+            }
+        }
+
+        // Add the count of Males by orientation, race
+        for(auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
+        {
+            for (auto race : enum_iterator<DemographicProfile::Race>())
+            {
+                PushElement(counter.GetCount(outcome,
+                    std::make_pair("gender", (int)DemographicProfile::Gender::Male),
+                    std::make_pair("sexualOrientation", (int)orientation),
+                    std::make_pair("race", (int)race)));
+            }
+        }
+        // Add the count by gender and ethnicity
+        for(auto gender : enum_iterator<DemographicProfile::Gender>())
+        {
+            for (auto ethnicity : enum_iterator<DemographicProfile::Ethnicity>())
+            {
+                PushElement(counter.GetCount(outcome,
+                    std::make_pair("gender", (int)gender),
+                    std::make_pair("ethnicity", (int)ethnicity)));
+            }
+        }
+
+        // Add the count of Males by orientation, race and ethnicity
+        for(auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
+        {
+            for (auto ethnicity : enum_iterator<DemographicProfile::Ethnicity>())
+            {
+                PushElement(counter.GetCount(outcome,
+                    std::make_pair("gender", (int)DemographicProfile::Gender::Male),
+                    std::make_pair("sexualOrientation", (int)orientation),
+                    std::make_pair("ethnicity", (int)ethnicity)));
             }
         }
 

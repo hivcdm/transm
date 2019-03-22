@@ -30,6 +30,14 @@ public:
           DemographicProfile::Demographic::Employment));
         values_.emplace("employment", (std::size_t)employment);
 
+        DemographicProfile::Ethnicity ethnicity = static_cast<DemographicProfile::Ethnicity>(
+            demographicProfile->get(DemographicProfile::Demographic::Ethnicity));
+        values_.emplace("ethnicity", (std::size_t)ethnicity);
+
+        DemographicProfile::Race race = static_cast<DemographicProfile::Race>(
+          demographicProfile->get(DemographicProfile::Demographic::Race));
+        values_.emplace("race", (std::size_t)race);
+
         RiskLevel riskLevel = person.getRiskLevel();
         values_.emplace("riskLevel", (std::size_t)riskLevel);
 
