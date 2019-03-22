@@ -465,12 +465,13 @@ void DemographicProfile::initProfileIDMap()
 		//generate the string representation of current profileID
 		stringstream currEnumStr;
 
-        for(Demographic category = DemographicProfile::Demographic((std::size_t)DemographicProfile::Demographic::Last - 1);
-            category >= DemographicProfile::Demographic(0); category = DemographicProfile::Demographic((std::size_t)category - 1))
+        for(Demographic category = DemographicProfile::Demographic(0);
+            category <= DemographicProfile::Demographic((std::size_t)DemographicProfile::Demographic::Last - 1);
+            category = DemographicProfile::Demographic((std::size_t)category + 1))
 		{
             currEnumStr << *(DemographicProfile::DemographicEnumCls.at((std::size_t)category).toString(currDemographicProfile.get(category)));
 
-            if(category > DemographicProfile::Demographic(0))
+            if(category < DemographicProfile::Demographic((std::size_t)DemographicProfile::Demographic::Last -1))
             {
                 currEnumStr << Constants::Colon;
             }
