@@ -59,7 +59,8 @@ const std::string PrepTracker::TRACKED_OUTCOMES[] =
     "accessing",
     "adherent",
     "loss_to_care",
-    "return_to_care"
+    "return_to_care",
+    "ineligible"
 };
 
 const std::string BUCKETS[] =
@@ -106,7 +107,7 @@ void PrepTracker::recordTreatmentSlots(int numSlots)
     numTreatmentSlots = numSlots;
 }
 
-void PrepTracker::recordEligiblity(Entity *person)
+void PrepTracker::recordEligible(Entity *person)
 {
     counter.Increment(PersonBucket(*person, ageRanges), "eligible");
 }
@@ -132,6 +133,11 @@ void PrepTracker::recordReturnToCare(Entity *person)
     counter.Increment(PersonBucket(*person, ageRanges), "return_to_care");
 }
 
+void PrepTracker::recordIneligible(Entity *person)
+{
+    counter.Increment(PersonBucket(*person, ageRanges), "ineligible");
+}
+
 void PrepTracker::printPrepOutcomes(Time time, std::ostream &_outStream, Population *_population)
 {
     if(time == Time::Zero)
@@ -155,28 +161,32 @@ void PrepTracker::buildHeader()
 
     int column = 5;
 
-    for(auto outcome : TRACKED_OUTCOMES)
+    for (auto outcome : TRACKED_OUTCOMES)
     {
         std::string section_header = "";
-        if(outcome == "eligible")
+        if (outcome == "eligible")
         {
             section_header = "Number Eligible for Prep";
         }
-        else if(outcome == "accessing")
+        else if (outcome == "accessing")
         {
             section_header = "Number with Access to Prep";
         }
-        else if(outcome == "adherent")
+        else if (outcome == "adherent")
         {
             section_header = "Number Adherent";
         }
-        else if(outcome == "loss_to_care")
+        else if (outcome == "loss_to_care")
         {
-                section_header = "Number Lost";
+            section_header = "Number Lost";
         }
         else if (outcome == "return_to_care")
         {
-                section_header = "Number Return to Care";
+            section_header = "Number Return to Care";
+        }
+        else if (outcome == "ineligible")
+        {
+            section_header = "Ineligible for Prep (infected or dead)";
         }
 
         SetHeaderCell(column, 1, section_header);

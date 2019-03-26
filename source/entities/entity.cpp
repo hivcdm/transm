@@ -976,14 +976,14 @@ double Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
     double costThisMonthDiscounted = 0.0;
 
     if(!isAlive() || !wentThroughCEPAC)
-	return costThisMonthDiscounted;
+        return costThisMonthDiscounted;
 
     if(!_eventParams.useRollout) {
-	//Adjust the CEPAC SimContext depending on what time it is
-	if(_eventParams.itIsTimeToSwitchSimContext()) {
-	    cepacPatient->setSimContext(_eventParams.cepacSimContexts[
-					getCEPACSimContextIndex(_eventParams)]);
-	}
+        //Adjust the CEPAC SimContext depending on what time it is
+        if(_eventParams.itIsTimeToSwitchSimContext()) {
+            cepacPatient->setSimContext(_eventParams.cepacSimContexts[
+              getCEPACSimContextIndex(_eventParams)]);
+        }
     }
 
     const RunStats::OverallCosts costsBefore =
@@ -1158,7 +1158,14 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
       || (hivStatus == HIVStatus::UNOBSERVED_CHRONIC)
       || (hivStatus == HIVStatus::UNOBSERVED_LATESTAGE);
     if (!unobserved_or_negative)
+    {
+        if (prepStatus != PrepStatus::OFF_PREP)
+            // entity was on prep, but is no longer eligible (infected or died)
+            prepTracker->recordIneligible(this);
         return;
+    }
+
+    prepTracker->recordEligible(this);
 
     if (prepStatus == PrepStatus::OFF_PREP)
     {
@@ -1175,6 +1182,10 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
         {
             return;
         }
+        else
+        {
+            prepTracker->recordReturnToCare(this);
+        }
     }
     else
     {
@@ -1187,12 +1198,8 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
         }
     }
 
-adherence:
-    if (prepStatus == PrepStatus::OFF_PREP)
-        prepTracker->recordAccess(this);
-
-    if (prepStatus == PrepStatus::WAS_ON_PREP)
-        prepTracker->recordReturnToCare(this);
+    // Record as having access to PREP and then select adherence
+    prepTracker->recordAccess(this);
 
     double adherence = prepParameters.GetAdherence(*getDemographicProfile());
     if (_eventParams.randomNums.chance(adherence))

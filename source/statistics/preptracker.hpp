@@ -25,11 +25,12 @@ public:
     void SetAgeRanges(const std::vector<AgeRange> &ageRanges);
 
     void recordTreatmentSlots(int numSlots);
-    void recordEligiblity(Entity *person);
+    void recordEligible(Entity *person);
     void recordAccess(Entity *person);
     void recordAdherence(Entity *person);
     void recordLossToCare(Entity *person);
     void recordReturnToCare(Entity *person);
+    void recordIneligible(Entity *person);
 
     void printPrepOutcomes(Time time, std::ostream &_outStream, Population *_population);
 
