@@ -690,7 +690,7 @@ private:
 			     ArtRolloutTracker *testTracker,
 			     const RunStats::HIVScreening before,
 			     const RunStats::HIVScreening after);
-    void updatePrepStatus(EventParams &_eventParams);
+    void updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracker);
     void traceTreatmentChange(EventParams &_eventParams, bool after);
     void traceCD4Change(EventParams &_eventParams, double before, double after);
     void traceHVLChange(EventParams &_eventParams, HVLStrata before,

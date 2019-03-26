@@ -1007,11 +1007,7 @@ double Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 						costsBefore, costsAfter);
 
     // update the prep status for this entity
-    updatePrepStatus(_eventParams);
-    if (UsingPrEP())
-    {
-        prepTracker->recordAdherence(this);
-    }
+    updatePrepStatus(_eventParams, prepTracker);
 
     //update HVL and CD4 for this Person if they are infected
     if(isInfected()) {
@@ -1152,7 +1148,7 @@ void Entity::updateTestingStatus(EventParams &_eventParams,
     }
 }
 
-void Entity::updatePrepStatus(EventParams &_eventParams)
+void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracker)
 {
     if (!prepParameters.Enabled())
         return;
@@ -1186,15 +1182,23 @@ void Entity::updatePrepStatus(EventParams &_eventParams)
         if (!_eventParams.randomNums.chance(retention))
         {
             prepStatus = PrepStatus::WAS_ON_PREP;
+            prepTracker->recordLossToCare(this);
             return;
         }
     }
 
 adherence:
+    if (prepStatus == PrepStatus::OFF_PREP)
+        prepTracker->recordAccess(this);
+
+    if (prepStatus == PrepStatus::WAS_ON_PREP)
+        prepTracker->recordReturnToCare(this);
+
     double adherence = prepParameters.GetAdherence(*getDemographicProfile());
     if (_eventParams.randomNums.chance(adherence))
     {
         prepStatus = PrepStatus::PREP_ADHERENT;
+        prepTracker->recordAdherence(this);
     } else {
         prepStatus = PrepStatus::PREP_INADHERENT;
     }
