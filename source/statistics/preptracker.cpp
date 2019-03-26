@@ -327,11 +327,11 @@ void PrepTracker::buildRow(Time time, Population *_population)
         }
 
         // Add the count by gender, employment and risk
-        for(auto employment : enum_iterator<DemographicProfile::Employment>())
+        for(auto gender : enum_iterator<DemographicProfile::Gender>())
         {
             for(auto riskLevel : enum_iterator<RiskLevel>())
             {
-                for(auto gender : enum_iterator<DemographicProfile::Gender>())
+                for(auto employment : enum_iterator<DemographicProfile::Employment>())
                 {
                     // We don't include Low-Risk CSWs
                     if(riskLevel == RiskLevel::LOW &&
@@ -348,11 +348,11 @@ void PrepTracker::buildRow(Time time, Population *_population)
         }
 
         // Add the count of Males by orientation, employment and risk
-        for(auto employment : enum_iterator<DemographicProfile::Employment>())
+        for(auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
         {
             for(auto riskLevel : enum_iterator<RiskLevel>())
             {
-                for(auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
+                for(auto employment : enum_iterator<DemographicProfile::Employment>())
                 {
                     // We don't include Low-Risk CSWs
                     if(riskLevel == RiskLevel::LOW &&
