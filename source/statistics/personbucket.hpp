@@ -40,6 +40,11 @@ public:
         }
         assert(ageGroup != -1);
         values_.emplace("AGE_GROUP", ageGroup);
+
+        profile_ = *demographicProfile->toString() +
+          std::to_string((int)riskLevel) +
+          std::to_string((int)cd4Stratum) +
+          std::to_string(ageGroup);
     }
 };
 
