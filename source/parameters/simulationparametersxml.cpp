@@ -446,25 +446,30 @@ PrepParameters SimulationParametersXml::GetPrepParameters() const
                 std::string bucketString = node.attribute("bucket").as_string();
                 profile.parse(bucketString);
             }
-            if (prep_node.child("prepAccess"))
+            else
+            {
+                throw std::runtime_error("No bucket attribute provided in prep profile xml");
+            }
+
+            if (node.child("prepAccess"))
             {
                 parameters.SetProfileAccess(profile,
-                    Text<double>(prep_node.child("prepAccess")));
+                    Text<double>(node.child("prepAccess")));
             }
-            if (prep_node.child("prepAdherence"))
+            if (node.child("prepAdherence"))
             {
                 parameters.SetProfileAdherence(profile,
-                    Text<double>(prep_node.child("prepAdherence")));
+                    Text<double>(node.child("prepAdherence")));
             }
-            if (prep_node.child("prepRetention"))
+            if (node.child("prepRetention"))
             {
                 parameters.SetProfileRetention(profile,
-                    Text<double>(prep_node.child("prepRetention")));
+                    Text<double>(node.child("prepRetention")));
             }
-            if (prep_node.child("prepReturnToCare"))
+            if (node.child("prepReturnToCare"))
             {
                 parameters.SetProfileReturnToCare(profile,
-                    Text<double>(prep_node.child("prepReturnToCare")));
+                    Text<double>(node.child("prepReturnToCare")));
             }
         }
     }

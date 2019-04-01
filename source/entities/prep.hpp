@@ -34,10 +34,11 @@ class PrepParameters
 
     double efficacy;
 
-    std::map<DemographicProfile, double> accessProfiles;
-    std::map<DemographicProfile, double> adherenceProfiles;
-    std::map<DemographicProfile, double> retentionProfiles;
-    std::map<DemographicProfile, double> returnToCareProfiles;
+    using ProfileMap = std::map<DemographicProfile, double>;
+    ProfileMap accessProfiles;
+    ProfileMap adherenceProfiles;
+    ProfileMap retentionProfiles;
+    ProfileMap returnToCareProfiles;
 
 public:
     bool Enabled() { return enabled; }
@@ -52,18 +53,14 @@ public:
     void SetDefaultAccess(double value) { access = value; }
     void SetProfileAccess(DemographicProfile profile, double value)
     {
-        auto found = accessProfiles.find(profile);
-        if (found != accessProfiles.end())
-            found->second = value;
-        else
-            accessProfiles[profile] = value;
+        accessProfiles.emplace(profile, value);
     }
     double GetAccess(DemographicProfile profile) const
     {
         double value = access;
-        auto found = accessProfiles.find(profile);
-        if (found != accessProfiles.end())
-            value = found->second;
+        for (auto pair : accessProfiles)
+            if (profile.match(pair.first))
+                value = pair.second;
 
         return value;
     }
@@ -71,16 +68,14 @@ public:
     void SetDefaultAdherence(double value) { adherence = value; }
     void SetProfileAdherence(DemographicProfile profile, double value)
     {
-        auto found = adherenceProfiles.find(profile);
-        if (found != adherenceProfiles.end())
-            found->second = value;
+        adherenceProfiles.emplace(profile, value);
     }
     double GetAdherence(DemographicProfile profile) const
     {
         double value = adherence;
-        auto found = adherenceProfiles.find(profile);
-        if (found != adherenceProfiles.end())
-            value = found->second;
+        for (auto pair : adherenceProfiles)
+            if (profile.match(pair.first))
+                value = pair.second;
 
         return value;
     }
@@ -88,16 +83,14 @@ public:
     void SetDefaultRetention(double value) { retention = value; }
     void SetProfileRetention(DemographicProfile profile, double value)
     {
-        auto found = retentionProfiles.find(profile);
-        if (found != retentionProfiles.end())
-            found->second = value;
+        retentionProfiles.emplace(profile, value);
     }
     double GetRetention(DemographicProfile profile) const
     {
         double value = retention;
-        auto found = retentionProfiles.find(profile);
-        if (found != retentionProfiles.end())
-            value = found->second;
+        for (auto pair : retentionProfiles)
+            if (profile.match(pair.first))
+                value = pair.second;
 
         return value;
     }
@@ -105,16 +98,14 @@ public:
     void SetDefaultReturnToCare(double value) { returnToCare = value; }
     void SetProfileReturnToCare(DemographicProfile profile, double value)
     {
-        auto found = returnToCareProfiles.find(profile);
-        if (found != returnToCareProfiles.end())
-            found->second = value;
+        returnToCareProfiles.emplace(profile, value);
     }
     double GetReturnToCare(DemographicProfile profile) const
     {
         double value = returnToCare;
-        auto found = returnToCareProfiles.find(profile);
-        if (found != returnToCareProfiles.end())
-            value = found->second;
+        for (auto pair : returnToCareProfiles)
+            if (profile.match(pair.first))
+                value = pair.second;
 
         return value;
     }
