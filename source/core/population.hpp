@@ -391,7 +391,7 @@ private:
     /// <summary>
 	/// Size of CSW's by Risk and gender
     /// </summary>
-    std::unordered_map<DemographicProfile::ProfileID, RiskArray> currSizeEntityTypeRiskCSW;
+    std::unordered_map<DemographicProfile::ProfileID, RiskArray> currSizeProfileRiskCSW;
 
     /// <summary>
 	/// Size by gender
@@ -401,17 +401,17 @@ private:
     /// <summary>
     /// Size by entity type.
     /// </summary>
-    std::unordered_map<DemographicProfile::ProfileID, std::size_t> currSizeEntityType;
+    std::unordered_map<DemographicProfile::ProfileID, std::size_t> currSizeProfile;
 
     /// <summary>
 	/// non-sexually active by gender
     /// </summary>
-    std::unordered_map<DemographicProfile::ProfileID, std::size_t> currNASizeByEntityType;
+    std::unordered_map<DemographicProfile::ProfileID, std::size_t> currNASizeByProfile;
 
     /// <summary>
 	/// sexually active by risk and gender
     /// </summary>
-    std::unordered_map<DemographicProfile::ProfileID, RiskArray> currSASizeEntityTypeRisk;
+    std::unordered_map<DemographicProfile::ProfileID, RiskArray> currSASizeProfileRisk;
 
     /// <summary>
 	/// Num Died this month by Death Cause
@@ -420,7 +420,7 @@ private:
 
     /// <summary>
     /// </summary>
-    std::unordered_map<DemographicProfile::ProfileID, AgeRangeSizeContainer> currSizeByEntityTypeAgeRange;
+    std::unordered_map<DemographicProfile::ProfileID, AgeRangeSizeContainer> currSizeByProfileAgeRange;
 
     /// <summary>
 	/// The people who are infected but still untreated (Only used for rollout)

@@ -821,8 +821,8 @@ std::size_t Population::UpdateSize()
 		currCSWSize += entities->size(CSWProfileIDs[i]);
     }
 
-    currNASizeByEntityType.clear();
-    currSASizeEntityTypeRisk.clear();
+    currNASizeByProfile.clear();
+    currSASizeProfileRisk.clear();
 
     //Update size by risk level
     for(int risk = 0; risk < (int)RiskLevel::Last; risk++)
@@ -832,20 +832,20 @@ std::size_t Population::UpdateSize()
 
 		for(auto profileID : demographicProfileIDs)
 		{
-			currSizeEntityTypeRiskCSW[profileID][risk] = 0;
-			currSASizeEntityTypeRisk[profileID][risk] = 0;
+			currSizeProfileRiskCSW[profileID][risk] = 0;
+			currSASizeProfileRisk[profileID][risk] = 0;
 
             if(risk == 0)
             {
-                currSizeEntityType[profileID] = 0;
-				currNASizeByEntityType[profileID] = 0;
+                currSizeProfile[profileID] = 0;
+				currNASizeByProfile[profileID] = 0;
 			}
 		}
     }
 
     for(auto profileID : demographicProfileIDs)
     {
-		for (auto &age_range_size_pair : currSizeByEntityTypeAgeRange[profileID])
+		for (auto &age_range_size_pair : currSizeByProfileAgeRange[profileID])
 		{
 			age_range_size_pair.second = 0;
 		}
@@ -860,27 +860,27 @@ std::size_t Population::UpdateSize()
     {
 		auto profile = e->getDemographicProfile()->getProfileID();
 		auto risk = (std::size_t)e->getRiskLevel();
-        currSizeEntityType[profile]++;
+        currSizeProfile[profile]++;
         currSizeRisk[(std::size_t)e->getRiskLevel()]++;
 
         if(e->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() ==
 			DemographicProfile::SexualActivityStatus::Active)
         {
-            currSASizeEntityTypeRisk[profile][risk]++;
+            currSASizeProfileRisk[profile][risk]++;
         }
         else
         {
-            currNASizeByEntityType[profile]++;
+            currNASizeByProfile[profile]++;
         }
 
         if(e->getDemographicProfileVal<DemographicProfile::Employment>() ==
 			DemographicProfile::Employment::Csw)
         {
             currSizeRiskCSW[risk]++;
-            currSizeEntityTypeRiskCSW[profile][risk]++;
+            currSizeProfileRiskCSW[profile][risk]++;
         }
 
-		for (auto &age_range_size_pair : currSizeByEntityTypeAgeRange[profile])
+		for (auto &age_range_size_pair : currSizeByProfileAgeRange[profile])
 		{
 			if (age_range_size_pair.first.lower <= e->age && age_range_size_pair.first.upper >= e->age)
 			{
@@ -1153,7 +1153,8 @@ void Population::OnRiskGroupChanged(const Entity *entity)
 */
 void Population::InitIncidentInfectionsByAge()
 {
-    InfectionsTracker::EntityTypeArray<AgeRangeSizeContainer> incidentByGenderAndAge;
+    InfectionsTracker::GenderArray<AgeRangeSizeContainer> incidentByGenderAndAge;
+    InfectionsTracker::OrientationArray<AgeRangeSizeContainer> incidentByOrientationAndAge;
     AgeRangeSizeContainer totalIncidentInfsAge;
 
     for(auto ageBucketParams : popWideParams.GetInitialAgeBuckets())
@@ -1162,11 +1163,12 @@ void Population::InitIncidentInfectionsByAge()
         totalIncidentInfsAge.push_back({ageRange, 0});
         for(auto gender : enum_iterator<DemographicProfile::Gender>()) {
             incidentByGenderAndAge[(std::size_t)gender].push_back({ageRange, 0});
+            incidentByOrientationAndAge[(std::size_t)gender].push_back({ageRange, 0});
         }
     }
 
-    populationStatistics.infectionsTracker.initializeIncidentInfectionsByAge(incidentByGenderAndAge,
-		totalIncidentInfsAge);
+    populationStatistics.infectionsTracker.initializeIncidentInfectionsByAge(
+        incidentByGenderAndAge, incidentByOrientationAndAge, totalIncidentInfsAge);
 }
 
 /*
@@ -2369,8 +2371,10 @@ std::size_t Population::CalcPrevalentPopulation(Time time)
 
 	//holds number of prevalent infections
 	std::array<InfectionsTracker::DemographicArray, InfectionsTracker::NUMBER_GENERATIONS_TO_TRACE> prevalenceByBucket;
-	InfectionsTracker::EntityTypeArray<InfectionsTracker::RiskEmploymentArray> prevalenceByEntityTypeRiskEmployment;
-    InfectionsTracker::EntityTypeArray<AgeRangeSizeContainer> prevalenceByEntityTypeAge;
+	InfectionsTracker::GenderArray<InfectionsTracker::RiskEmploymentArray> prevalenceByGenderRiskEmployment;
+    InfectionsTracker::GenderArray<AgeRangeSizeContainer> prevalenceByGenderAge;
+	InfectionsTracker::OrientationArray<InfectionsTracker::RiskEmploymentArray> prevalenceByOrientationRiskEmployment;
+    InfectionsTracker::OrientationArray<AgeRangeSizeContainer> prevalenceByOrientationAge;
 
 	//initialize prevalent infections by age
     for(auto ageBucketParams : popWideParams.GetInitialAgeBuckets())
@@ -2379,19 +2383,29 @@ std::size_t Population::CalcPrevalentPopulation(Time time)
 		for(auto gender : enum_iterator<DemographicProfile::Gender>())
 		{
 			std::size_t entity_type = (std::size_t)gender;
-			prevalenceByEntityTypeAge[entity_type].push_back({range, 0});
+			prevalenceByGenderAge[entity_type].push_back({range, 0});
+		}
+		for(auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
+		{
+			std::size_t entity_type = (std::size_t)orientation;
+			prevalenceByOrientationAge[entity_type].push_back({range, 0});
 		}
 	}
 
 	//initialize prevalence tallies to 0
 	for(std::size_t i = 0; i < (std::size_t)RiskLevel::Last; i++)
 	{
-		for(auto gender : enum_iterator<DemographicProfile::Gender>())
-		{
-			std::size_t entity_type = (std::size_t)gender;
-            for(int k = 0; k < (int)DemographicProfile::Employment::Last; k++)
+        for(int k = 0; k < (int)DemographicProfile::Employment::Last; k++)
+        {
+            for(auto gender : enum_iterator<DemographicProfile::Gender>())
             {
-                prevalenceByEntityTypeRiskEmployment[entity_type][i][k] = 0;
+                std::size_t entity_type = (std::size_t)gender;
+                prevalenceByGenderRiskEmployment[entity_type][i][k] = 0;
+            }
+            for(auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
+            {
+                std::size_t entity_type = (std::size_t)orientation;
+                prevalenceByOrientationRiskEmployment[entity_type][i][k] = 0;
             }
         }
 	}
@@ -2429,15 +2443,25 @@ std::size_t Population::CalcPrevalentPopulation(Time time)
         if(e->isInfected())
         {
 			auto gender = (std::size_t)e->getDemographicProfileVal<DemographicProfile::Gender>();
+			auto orientation = (std::size_t)e->getDemographicProfileVal<DemographicProfile::SexualOrientation>();
 			prevalenceByBucket[e->getGenerationOfInfection()][e->getDemographicProfile()->getProfileID()]++;
-            prevalenceByEntityTypeAge[gender][get_age_bucket(e->age)].second++;
-            prevalenceByEntityTypeRiskEmployment[gender][(std::size_t)e->getRiskLevel()]
+            prevalenceByGenderAge[gender][get_age_bucket(e->age)].second++;
+            prevalenceByGenderRiskEmployment[gender][(std::size_t)e->getRiskLevel()]
 			    [(std::size_t)e->getDemographicProfileVal<DemographicProfile::Employment>()]++;
+            if (e->isMale())
+            {
+                prevalenceByOrientationAge[orientation][get_age_bucket(e->age)].second++;
+                prevalenceByOrientationRiskEmployment[orientation][(std::size_t)e->getRiskLevel()]
+                    [(std::size_t)e->getDemographicProfileVal<DemographicProfile::Employment>()]++;
+            }
+
         }
     });
 
     //save the prevalent infections by bucket in the PopulationStatistics
-	populationStatistics.infectionsTracker.setPrevalentInfections(prevalenceByBucket, prevalenceByEntityTypeAge, prevalenceByEntityTypeRiskEmployment);
+	populationStatistics.infectionsTracker.setPrevalentInfections(prevalenceByBucket,
+        prevalenceByGenderAge, prevalenceByGenderRiskEmployment,
+        prevalenceByOrientationAge, prevalenceByOrientationRiskEmployment);
 
     return totalInfected;
 }
@@ -2498,21 +2522,21 @@ std::size_t Population::GetSize(DemographicProfile::Gender gender)
 
 std::size_t Population::GetSize(DemographicProfile::ProfileID profileID)
 {
-    if(currSizeEntityType.find(profileID) != currSizeEntityType.end())
+    if(currSizeProfile.find(profileID) != currSizeProfile.end())
     {
-        return currSizeEntityType.at(profileID);
+        return currSizeProfile.at(profileID);
     }
     return 0;
 }
 
 std::size_t Population::GetSASize(DemographicProfile::ProfileID profileID, RiskLevel _risk)
 {
-    return currSASizeEntityTypeRisk[profileID][(std::size_t)_risk];
+    return currSASizeProfileRisk[profileID][(std::size_t)_risk];
 }
 
 std::size_t Population::GetCSWSize(DemographicProfile::ProfileID profileID, RiskLevel _risk)
 {
-    return currSizeEntityTypeRiskCSW[profileID][(std::size_t)_risk];
+    return currSizeProfileRiskCSW[profileID][(std::size_t)_risk];
 }
 
 void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::ostream &_outStream)
@@ -3352,7 +3376,7 @@ void Population::PrintPopulation(EventParams &/*_paramters*/, Time _time, std::o
 		size_by_age_range_female.push_back({age_range,0});
 	}
 
-	for(auto age_range_iter : currSizeByEntityTypeAgeRange)
+	for(auto age_range_iter : currSizeByProfileAgeRange)
 	{
 		DemographicProfile::ProfileID profile = age_range_iter.first;
 		AgeRangeSizeContainer age_range_list = age_range_iter.second;
@@ -3485,7 +3509,7 @@ void Population::Initialize(const PopulationParameters &parameters)
 	{
 		for (auto ageRange : GetAgeRanges())
 		{
-			currSizeByEntityTypeAgeRange[profileID].push_back({ageRange,0});
+			currSizeByProfileAgeRange[profileID].push_back({ageRange,0});
 		}
 	}
 
