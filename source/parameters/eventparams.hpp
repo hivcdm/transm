@@ -37,6 +37,7 @@ public:
             SinglePerson,
             LifeExpectancy,
             PartnerAcquisition,
+            PartnerNetwork,
             CalibrationStatistics,
             ArtRollout,
             PrepOutcomes,
@@ -147,6 +148,8 @@ public:
 	Time monthTraceNewborns;
 	//keeps track of how many newborns have been traced
 	int numNewbornsTraced;
+
+    std::vector<int> partnerNetworkRecordTimes;
 
 	bool tracePrevalentCases;
 

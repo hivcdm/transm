@@ -32,6 +32,7 @@ public:
         double life_expectancy_ci = 0;
         std::vector<int> life_expectancy_record_times;
         std::vector<int> partner_acquisition_record_times;
+        std::vector<int> partner_network_record_times;
     };
 
     SimulationParameters() : rng_(nullptr) { }
