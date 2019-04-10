@@ -320,12 +320,14 @@ void InfectionsTracker::recordIncidentInfection(Time time,
     //record infection
     incidentInfectionsByDemographic[(std::size_t)_partnershipType][_infector->getDemographicProfile()->getProfileID()][_infected->getDemographicProfile()->getProfileID()]++;
 
-	std::size_t infectorGender = _infector->getDemographicProfileVal(DemographicProfile::Demographic::Gender);
-	std::size_t infectedGender = _infector->getDemographicProfileVal(DemographicProfile::Demographic::Gender);
+	std::size_t infectorGender = (std::size_t)_infector->getDemographicProfileVal<DemographicProfile::Gender>();
+	std::size_t infectedGender = (std::size_t)_infector->getDemographicProfileVal<DemographicProfile::Gender>();
+	std::size_t infectedEmployment = (std::size_t)_infector->getDemographicProfileVal<DemographicProfile::Employment>();
+
     incidentInfectionsByGender[(std::size_t)_partnershipType][infectorGender][infectedGender]++;
 
 	currTimeStepIncidentInfs[(std::size_t)_infector->getHVL()]++;
-    currTimeStepIncidentInfsGenderRiskEmployment[infectedGender][(std::size_t)_infected->getRiskLevel()][_infected->getDemographicProfileVal(DemographicProfile::Demographic::Employment)]++;
+    currTimeStepIncidentInfsGenderRiskEmployment[infectedGender][(std::size_t)_infected->getRiskLevel()][infectedEmployment]++;
     totalIncidentInfections[(std::size_t)_infector->getHVL()]++;
 	auto infectedAge = _infected->getAge();
 	double infectorCD4 = _infector->cd4;
@@ -339,17 +341,17 @@ void InfectionsTracker::recordIncidentInfection(Time time,
     currTimeStepNumInfectedGender[infectedGender]++;
 	currTimeStepAgeInfectionSumGender[infectedGender] += (std::size_t)infectedAge.in_months();
 	currTimeStepAgeInfectionSumSqGender[infectedGender] += (std::size_t)square(infectedAge.in_months());
-    currTimeStepNumInfectedGenderRiskEmployment[infectedGender][(std::size_t)infectedRisk][_infected->getDemographicProfileVal(DemographicProfile::Demographic::Employment)]++;
-	currTimeStepAgeInfectionSumGenderRiskEmployment[infectedGender][(std::size_t)infectedRisk][_infected->getDemographicProfileVal(DemographicProfile::Demographic::Employment)] += (std::size_t)infectedAge.in_months();
-	currTimeStepAgeInfectionSumSqGenderRiskEmployment[infectedGender][(std::size_t)infectedRisk][_infected->getDemographicProfileVal(DemographicProfile::Demographic::Employment)] += (std::size_t)square(infectedAge.in_months());
+    currTimeStepNumInfectedGenderRiskEmployment[infectedGender][(std::size_t)infectedRisk][infectedEmployment]++;
+	currTimeStepAgeInfectionSumGenderRiskEmployment[infectedGender][(std::size_t)infectedRisk][infectedEmployment] += (std::size_t)infectedAge.in_months();
+	currTimeStepAgeInfectionSumSqGenderRiskEmployment[infectedGender][(std::size_t)infectedRisk][infectedEmployment] += (std::size_t)square(infectedAge.in_months());
 
-    if(_infected->getDemographicProfileVal(DemographicProfile::Demographic::Employment) == (std::size_t)DemographicProfile::Employment::Csw)
+    if(infectedEmployment == (std::size_t)DemographicProfile::Employment::Csw)
 	{
         totalIncidentInfsRiskCSW[(std::size_t)infectedRisk]++;
 	}
 
     totalIncidentInfsRisk[(std::size_t)_infected->getRiskLevel()]++;
-    totalIncidentInfsGenderRiskEmployment[infectedGender][(std::size_t)_infected->getRiskLevel()][_infected->getDemographicProfileVal(DemographicProfile::Demographic::Employment)]++;
+    totalIncidentInfsGenderRiskEmployment[infectedGender][(std::size_t)_infected->getRiskLevel()][infectedEmployment]++;
 
     auto &genderIncidentInfectionsByAge = currTimeStepIncidentInfsGenderAge[infectedGender];
     totalIncidentInfsGender[infectedGender]++;

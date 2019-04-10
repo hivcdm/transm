@@ -314,7 +314,7 @@ Male::~Male()
 
 std::size_t Male::GetSexualOrientation()
 {
-    return ((std::size_t)getDemographicProfileVal(DemographicProfile::Demographic::SexualOrientation));
+    return (std::size_t)getDemographicProfileVal<DemographicProfile::SexualOrientation>();
 }
 
 double Male::getCondomUseProb(Entity *_p, SexualPartnership::Type _partnershipType)
@@ -543,7 +543,7 @@ int Male::rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType
 
 void Male::rerollRiskGroup(EventParams &_eventParams)
 {
-	DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) getDemographicProfileVal(DemographicProfile::Demographic::Employment);
+	DemographicProfile::Employment cswStatus = getDemographicProfileVal<DemographicProfile::Employment>();
 	double chanceHighRisk = populationSpecificParams.getProportionHighRisk(cswStatus);
 	RiskLevel oldRisk = risk;
 

@@ -296,7 +296,8 @@ bool BucketAge::insert(Entity *_person)
     numRisk[(std::size_t)_person->getRiskLevel()]++;
     numRiskHIVStatus[(std::size_t)_person->getRiskLevel()][(std::size_t)_person->getHIVStatus()]++;
 
-    if(_person->getDemographicProfileVal(DemographicProfile::Demographic::Employment) == (std::size_t)DemographicProfile::Employment::Csw)
+    if(_person->getDemographicProfileVal<DemographicProfile::Employment>() ==
+        DemographicProfile::Employment::Csw)
 	{
         numRiskCSW[(std::size_t)_person->getRiskLevel()]++;
 	}

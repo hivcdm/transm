@@ -106,8 +106,8 @@ void PopulationStatisticsOld::processDeath(Entity *_p, EventParams &_eventParams
 {
 	assert((_p != nullptr));
 	assert((!_p->isAlive()));
-	DemographicProfile::Gender gend = (DemographicProfile::Gender) _p->getDemographicProfileVal(DemographicProfile::Demographic::Gender);
-	DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) _p->getDemographicProfileVal(DemographicProfile::Demographic::Employment);
+	DemographicProfile::Gender gend = _p->getDemographicProfileVal<DemographicProfile::Gender>();
+	DemographicProfile::Employment cswStatus = _p->getDemographicProfileVal<DemographicProfile::Employment>();
 	RiskLevel risk = _p->getRiskLevel();
 	auto prevDelay = _eventParams.delayPrevalence;
 
@@ -848,8 +848,8 @@ void PopulationStatisticsOld::recordIncidentInfection(EventParams &_eventParams,
 	assert((_infector != nullptr) && (_infector->isAlive()));
 	assert((_infected != nullptr) && (_infected->isAlive()));
 	assert(_time.in_months() >= 0);
-	DemographicProfile::Gender gend = (DemographicProfile::Gender) _infected->getDemographicProfileVal(DemographicProfile::Demographic::Gender);
-	DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) _infected->getDemographicProfileVal(DemographicProfile::Demographic::Employment);
+	DemographicProfile::Gender gend = _infected->getDemographicProfileVal<DemographicProfile::Gender>();
+	DemographicProfile::Employment cswStatus = _infected->getDemographicProfileVal<DemographicProfile::Employment>();
 	RiskLevel risk = _infected->getRiskLevel();
 	auto prevDelay = _eventParams.delayPrevalence;
 

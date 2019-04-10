@@ -123,8 +123,7 @@ double Female::GetVaginalMicrobicideEfficacy() const
 // FOI = transmission coeff * (1 - (condoms are used and succeed)) * (1 - (male is circumcised))
 double Female::getFOI(Entity *partner, const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
 {
-    assert(partner->getDemographicProfileVal(DemographicProfile::Demographic::Gender) ==
-	   (std::size_t)DemographicProfile::Gender::Male);
+    assert(partner->isMale());
     Male *_p = static_cast<Male*>(partner);
 
     auto orientation = _p->GetSexualOrientation();
@@ -202,7 +201,7 @@ void Female::SetChanceCondomUsePerEvent(RiskLevel /*risk*/, SexualPartnership::T
 
 void Female::rerollRiskGroup(EventParams &_eventParams)
 {
-	DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) getDemographicProfileVal(DemographicProfile::Demographic::Employment);
+	DemographicProfile::Employment cswStatus = getDemographicProfileVal<DemographicProfile::Employment>();
 	double chanceHighRisk = populationSpecificParams.GetProportionHighRisk(cswStatus);
 
 	if(_eventParams.randomNums.chance(chanceHighRisk))

@@ -520,13 +520,12 @@ std::size_t EntityPool::sizeSexuallyActiveByAge(Age minAgeMonths, Age maxAgeMont
  */
 bool EntityPool::addEntityToAll(Entity *_p)
 {
-    if(_p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
+    if(_p->isMale())
 	{
 		allMales.push_back(_p);
 	}
 	else
 	{
-        assert(_p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Female);
 		allFemales.push_back(_p);
 	}
 
@@ -542,19 +541,13 @@ std::list<Entity *>::iterator EntityPool::removeEntityFromAll(std::list<Entity *
 	std::list<Entity *>::iterator toReturn;
 	removeEntity(*_pIter);
 
-    if((*_pIter)->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
+    if((*_pIter)->isMale())
 	{
 		toReturn = allMales.erase(_pIter);
 	}
-    else if((*_pIter)->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Female)
+    else
 	{
 		toReturn = allFemales.erase(_pIter);
-	}
-	else
-	{
-		throw 1;
-		//(*_pIter)->print(cerr, "Not removing person of indiscriminate gender: ");
-		//toReturn = _pIter;
 	}
 
 	return toReturn;

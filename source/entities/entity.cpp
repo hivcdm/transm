@@ -89,7 +89,6 @@ HVLStrata Entity::getHvlStratum() const
     }
 }
 
-
 template<>
 DemographicProfile::Gender Entity::getDemographicProfileVal() const
 {
@@ -121,6 +120,18 @@ template<>
 DemographicProfile::RelationshipStatus Entity::getDemographicProfileVal() const
 {
 	return (DemographicProfile::RelationshipStatus)getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus);
+}
+
+template<>
+DemographicProfile::Race Entity::getDemographicProfileVal() const
+{
+	return (DemographicProfile::Race)getDemographicProfileVal(DemographicProfile::Demographic::Race);
+}
+
+template<>
+DemographicProfile::Ethnicity Entity::getDemographicProfileVal() const
+{
+	return (DemographicProfile::Ethnicity)getDemographicProfileVal(DemographicProfile::Demographic::Ethnicity);
 }
 
 bool Entity::isEligibleForTreatment(const SimContext::TreatmentInputs::ARTStartPolicy &artStartPolicy)
@@ -246,9 +257,11 @@ void Entity::addPartnership(SexualPartnership *_partnership)
 	//if a STEADY partnership was added && we are SINGLE, the we need to change or RELATIONSHIP_STATUS
 	if((_partnership->getType() == SexualPartnership::Type::Steady) &&
 		(!partners[(int)SexualPartnership::Type::Steady].empty()) &&
-        (getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus) == (std::size_t)DemographicProfile::RelationshipStatus::Single))
+        (getDemographicProfileVal<DemographicProfile::RelationshipStatus>() ==
+            DemographicProfile::RelationshipStatus::Single))
 	{
-        dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::NonSingle);
+        dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus,
+            (std::size_t)DemographicProfile::RelationshipStatus::NonSingle);
 	}
 }
 

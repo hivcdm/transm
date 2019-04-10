@@ -363,15 +363,14 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 			    }
 			}
 
-
 			//if this person wasn't sexually active but is now old enough to
-            if((p->getDemographicProfileVal(DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::Active)
+            if(!(p->isSexuallyActive())
                 && (p->getAge() >= popWideParams.ageOfMajority))
 			{
 				// set them as SA and potentially CSWs
 				if(parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && p->trace())
 				{
-                    if(p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
+                    if(p->isMale())
 					{
 						parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " % Male ";
 					}
@@ -965,7 +964,7 @@ void Population::UpdateFinalPhysicalState(EventParams &parameters_)
 void Population::DissolveSexualPartnerships(EventParams &parameters_, Entity *_initiator,
         std::list<SexualPartnership *> &_partnershipsToEnd)
 {
-    bool initiatorMale = (_initiator->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male);
+    bool initiatorMale = _initiator->isMale();
 	//iterate through each partner list
 	std::list<SexualPartnership *>::iterator partnerIter = _partnershipsToEnd.begin();
 
@@ -1796,7 +1795,7 @@ bool Population::PassesPartnershipCalibration(EventParams &parameters_)
 
 		while(p_Iter != entities->end(gender))
 		{
-            if((*p_Iter)->getDemographicProfileVal(DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::Active)
+            if(!(*p_Iter)->isSexuallyActive())
 			{
 				p_Iter++;
 				continue;
@@ -2222,7 +2221,7 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Male *_in
                 {
                     if(_initiator->trace())
                     {
-                        if(_initiator->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
+                        if(_initiator->isMale())
                         {
                             parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "  +x Male ";
                         }
@@ -2236,13 +2235,13 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Male *_in
                     }
                     else
                     {
-                        if(partner->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Female)
+                        if(partner->isMale())
                         {
-                            parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "  +x Female ";
+                            parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "  +x Male ";
                         }
                         else
                         {
-                            parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "  +x Male ";
+                            parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << "  +x Female ";
                         }
 
                         parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << partner->getID() << " was selected *again* by " <<

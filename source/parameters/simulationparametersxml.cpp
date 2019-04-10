@@ -1617,30 +1617,26 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         case KnownIntervention::CepacContext:
          {
              auto cepac_file = Text<std::string>(node);
-             intervention.SetPopulationIndividualCallback([=](Time current_time, Population &pop, Entity *person) 
+             intervention.SetPopulationIndividualCallback([=](Time current_time, Population &pop, Entity *person)
              {
-                 if (person->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() != DemographicProfile::SexualActivityStatus::Active)
+                 if (person->isSexuallyActive())
                  {
-		  return;
+                     auto context = pop.LoadCepacFile(cepac_file);
+                     person->SetTargetedCepacContext(context);
                  }
- 
-                 auto context = pop.LoadCepacFile(cepac_file);
-                 person->SetTargetedCepacContext(context);
              });
              break;
          }
          case KnownIntervention::VaginalMicrobicideUse:
          {
              auto adherence = Text<double>(node);
-             intervention.SetIndividualCallback([=](Time current_time, Entity *person) 
+             intervention.SetIndividualCallback([=](Time current_time, Entity *person)
              {
-                 if (person->getDemographicProfileVal<DemographicProfile::Gender>() != DemographicProfile::Gender::Female)
+                 if (person->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Female)
                  {
-		  return;
+                     auto female = static_cast<Female *>(person);
+                     female->SetVaginalMicrobicideAdherence(adherence);
                  }
- 
-                 auto female = static_cast<Female *>(person);
-                 female->SetVaginalMicrobicideAdherence(adherence); 
              });
              break;
          }
@@ -1731,7 +1727,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
                 [=](Time current_time, Population &p) { p.GetParameters().SetChanceBecomeCsw(gender, chance); });
             intervention.SetIndividualCallback([=](Time current_time, Entity *person)
             {
-                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == gender)
+                if(person->getDemographicProfileVal<DemographicProfile::Gender>() == gender)
                 {
                     person->SetChanceBecomeSexWorker(chance);
                 }
@@ -1757,7 +1753,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
                 [=](Time current_time, Population &p) { p.popWideParams.SetTransmissionCoefficient(gender, hvl_stratum, coefficient); });
             intervention.SetIndividualCallback([=](Time current_time, Entity *person)
             {
-                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == gender)
+                if (person->getDemographicProfileVal<DemographicProfile::Gender>() == gender)
                 {
                     person->SetTransmissionCoefficient(hvl_stratum, coefficient);
                 }
@@ -1775,7 +1771,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
                 [=](Time current_time, Population &p) { p.GetParameters().SetProportionHighRisk(gender, employment, proportion); });
             intervention.SetIndividualCallback([=](Time current_time, Entity *person)
             {
-                if(gender == (DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender))
+                if (gender == person->getDemographicProfileVal<DemographicProfile::Gender>())
                 {
                     person->SetProportionHighRisk(employment, proportion);
                 }
@@ -1788,9 +1784,9 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto dist = GetNormalDist(node);
             intervention.SetPopulationCallback(
                 [=](Time current_time, Population &p) { p.GetParameters().SetAverageYearsYounger(partnership_type, dist); });
-            intervention.SetIndividualCallback([=](Time current_time, Entity *person) 
-            { 
-                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == DemographicProfile::Gender::Male)
+            intervention.SetIndividualCallback([=](Time current_time, Entity *person)
+            {
+                if(person->isMale())
                 {
                     person->SetAverageYearsYounger(partnership_type, dist);
                 }
@@ -1806,7 +1802,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
                 [=](Time current_time, Population &p) { p.GetParameters().SetAcquisitionRatePerMonth(risk, partnership_type, dist); });
             intervention.SetIndividualCallback([=](Time current_time, Entity *person)
             {
-                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == DemographicProfile::Gender::Male)
+                if(person->isMale())
                 {
                     person->SetAcquisitionRatePerMonth(risk, partnership_type, dist, GetRandomNumberGenerator());
                 }
@@ -1822,7 +1818,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
                 [=](Time current_time, Population &p) { p.GetParameters().SetCoitalEventsPerMonth(risk, partnership_type, dist); });
             intervention.SetIndividualCallback([=](Time current_time, Entity *person)
             {
-                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == DemographicProfile::Gender::Male)
+                if(person->isMale())
                 {
                     person->SetCoitalEventsPerMonth(risk, partnership_type, dist);
                 }

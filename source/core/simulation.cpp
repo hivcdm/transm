@@ -100,25 +100,25 @@ void TargetGroup::Update(Population &population, Time current_time,
             }
 
             if(target_.value.gender.has_value
-                && target_.value.gender.value != (DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender))
+                && target_.value.gender.value != person->getDemographicProfileVal<DemographicProfile::Gender>())
             {
                 return false;
             }
 
             if(target_.value.relationship_status.has_value
-                && target_.value.relationship_status.value != (DemographicProfile::RelationshipStatus)person->getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus))
+                && target_.value.relationship_status.value != person->getDemographicProfileVal<DemographicProfile::RelationshipStatus>())
             {
                 return false;
             }
 
             if(target_.value.sexual_activity_status.has_value
-                && target_.value.sexual_activity_status.value != (DemographicProfile::SexualActivityStatus)person->getDemographicProfileVal(DemographicProfile::Demographic::SexualActivityStatus))
+                && target_.value.sexual_activity_status.value != person->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>())
             {
                 return false;
             }
 
             if(target_.value.sexual_orientation.has_value
-                && target_.value.sexual_orientation.value != (DemographicProfile::SexualOrientation)person->getDemographicProfileVal(DemographicProfile::Demographic::SexualOrientation))
+                && target_.value.sexual_orientation.value != person->getDemographicProfileVal<DemographicProfile::SexualOrientation>())
             {
                 return false;
             }

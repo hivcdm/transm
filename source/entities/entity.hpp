@@ -438,8 +438,6 @@ public:
 	//returns structure that holds current DemographicProfile
 	const DemographicProfile *getDemographicProfile() const;
 
-	BaseEnumCls::Enum getDemographicProfileVal(DemographicProfile::Demographic _demographic) const;
-
     template<typename D>
     D getDemographicProfileVal() const;
 
@@ -696,6 +694,8 @@ public:
     }
 
 private:
+    BaseEnumCls::Enum getDemographicProfileVal(DemographicProfile::Demographic _demographic) const;
+
     //Return the current index of which SimContext should be used to update the
     //health of a patient
     int getCEPACSimContextIndex(EventParams &_eventParams) const;
