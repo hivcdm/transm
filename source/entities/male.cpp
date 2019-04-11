@@ -177,14 +177,16 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
     }
 
     //choose partner gender and orientation -- based on orientation and, if msmw, percentMsmwChooseMale
-    if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() == DemographicProfile::SexualOrientation::Msw)
+    if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() ==
+        DemographicProfile::SexualOrientation::Msw)
     {
         selector.set(DemographicProfile::Demographic::Gender,
             (std::size_t)DemographicProfile::Gender::Female);
         selector.set(DemographicProfile::Demographic::SexualOrientation,
             (std::size_t)DemographicProfile::SexualOrientation::Msw);
     }
-    else if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() == DemographicProfile::SexualOrientation::Msm)
+    else if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() ==
+        DemographicProfile::SexualOrientation::Msm)
     {
         selector.set(DemographicProfile::Demographic::Gender,
             (std::size_t)DemographicProfile::Gender::Male);
@@ -200,7 +202,8 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
             (std::size_t)DemographicProfile::SexualOrientation::Msm);
         }
     }
-    else if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() == DemographicProfile::SexualOrientation::Msmw)
+    else if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() ==
+        DemographicProfile::SexualOrientation::Msmw)
     {
         if (_randomNums.chance(behavior.getChanceMsmwChooseMale()))
         {
@@ -221,7 +224,8 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
         }
         else
         {
-            selector.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Female);
+            selector.set(DemographicProfile::Demographic::Gender,
+                (std::size_t)DemographicProfile::Gender::Female);
             selector.set(DemographicProfile::Demographic::SexualOrientation,
                 (std::size_t)DemographicProfile::SexualOrientation::Msw);
         }
@@ -231,28 +235,18 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
         throw std::runtime_error("Unknown sexual orientation");
     }
 
-    //choose race -- based on raceAssort
     if (_randomNums.chance(behavior.getRaceAssortativeness()))
     {
+        // if non-assortative, choose entities own race
         selector.set(DemographicProfile::Demographic::Race,
-            (std::size_t)DemographicProfile::Race::Black);
-    }
-    else
-    {
-        selector.set(DemographicProfile::Demographic::Race,
-            (std::size_t)DemographicProfile::Race::White);
+            (std::size_t)getDemographicProfileVal<DemographicProfile::Race>());
     }
 
-    //choose ethnicity -- based on ethnicAssort
     if (_randomNums.chance(behavior.getEthnicAssortativeness()))
     {
+        // if non-assortative, choose entities own ethnicity
         selector.set(DemographicProfile::Demographic::Ethnicity,
-            (std::size_t)DemographicProfile::Ethnicity::NonHispanic);
-    }
-    else
-    {
-        selector.set(DemographicProfile::Demographic::Ethnicity,
-            (std::size_t)DemographicProfile::Ethnicity::Hispanic);
+            (std::size_t)getDemographicProfileVal<DemographicProfile::Ethnicity>());
     }
 
 	std::vector<DemographicProfile::ProfileID> validBucketIDs;
