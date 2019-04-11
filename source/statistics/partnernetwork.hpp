@@ -20,6 +20,7 @@ class Network {
         int orientation;
         int race;
         int ethnicity;
+        std::string race_eth;
         std::string demo_profile;
         bool is_CSW;
         bool hiv_pos;
@@ -66,15 +67,17 @@ class Network {
         auto ethnicity = entity->getDemographicProfileVal<transm::DemographicProfile::Ethnicity>();
 
         std::string demo_profile = entity->getEntityType();
+        std::string race_eth;
         if (race == transm::DemographicProfile::Race::Black)
-            demo_profile += ":BLACK";
+            race_eth += ":BLACK";
         else
-            demo_profile += ":WHITE";
+            race_eth += ":WHITE";
 
         if (ethnicity == transm::DemographicProfile::Ethnicity::NonHispanic)
-            demo_profile += ":NONHISP";
+            race_eth += ":NONHISP";
         else
-            demo_profile += ":HISP";
+            race_eth += ":HISP";
+        demo_profile += race_eth;
 
         bool hiv_pos = (entity->getHIVStatus() != transm::HIVStatus::NEGATIVE);
         bool on_PrEP = entity->UsingPrEP();
@@ -87,6 +90,7 @@ class Network {
         G[entity_vertex].race = (int)race;
         G[entity_vertex].ethnicity = (int)ethnicity;
         G[entity_vertex].demo_profile = demo_profile;
+        G[entity_vertex].race_eth = race_eth;
         G[entity_vertex].is_CSW = entity->isCSW();
         G[entity_vertex].risk_level = (bool)entity->getRiskLevel();
         G[entity_vertex].hiv_pos = hiv_pos;
@@ -161,6 +165,7 @@ public:
         dp.property("orientation", get(&EntityVertex::orientation, G));
         dp.property("race", get(&EntityVertex::race, G));
         dp.property("ethnicity", get(&EntityVertex::ethnicity, G));
+        dp.property("race_eth", get(&EntityVertex::race_eth, G));
         dp.property("demo_profile", get(&EntityVertex::demo_profile, G));
         dp.property("is_CSW", get(&EntityVertex::is_CSW, G));
         dp.property("hiv_pos", get(&EntityVertex::hiv_pos, G));
