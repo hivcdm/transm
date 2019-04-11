@@ -235,18 +235,36 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
         throw std::runtime_error("Unknown sexual orientation");
     }
 
+    auto race = getDemographicProfileVal<DemographicProfile::Race>();
     if (_randomNums.chance(behavior.getRaceAssortativeness()))
     {
         // if non-assortative, choose entities own race
-        selector.set(DemographicProfile::Demographic::Race,
-            (std::size_t)getDemographicProfileVal<DemographicProfile::Race>());
+        selector.set(DemographicProfile::Demographic::Race, (std::size_t)race);
+    }
+    else
+    {
+        if (race == DemographicProfile::Race::White)
+            selector.set(DemographicProfile::Demographic::Race,
+                (std::size_t)DemographicProfile::Race::Black);
+        else if (race == DemographicProfile::Race::Black)
+            selector.set(DemographicProfile::Demographic::Race,
+                (std::size_t)DemographicProfile::Race::White);
     }
 
+    auto ethnicity = getDemographicProfileVal<DemographicProfile::Ethnicity>();
     if (_randomNums.chance(behavior.getEthnicAssortativeness()))
     {
-        // if non-assortative, choose entities own ethnicity
-        selector.set(DemographicProfile::Demographic::Ethnicity,
-            (std::size_t)getDemographicProfileVal<DemographicProfile::Ethnicity>());
+        // if non-assortative, choose entities own race
+        selector.set(DemographicProfile::Demographic::Ethnicity, (std::size_t)ethnicity);
+    }
+    else
+    {
+        if (ethnicity == DemographicProfile::Ethnicity::NonHispanic)
+            selector.set(DemographicProfile::Demographic::Ethnicity,
+                (std::size_t)DemographicProfile::Ethnicity::Hispanic);
+        else if (ethnicity == DemographicProfile::Ethnicity::Hispanic)
+            selector.set(DemographicProfile::Demographic::Ethnicity,
+                (std::size_t)DemographicProfile::Ethnicity::NonHispanic);
     }
 
 	std::vector<DemographicProfile::ProfileID> validBucketIDs;
