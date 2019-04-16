@@ -983,8 +983,7 @@ std::string to_string(HIVStatus status)
     }
 }
 
-double Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTracker,
-    PrepTracker *prepTracker, CostsTracker *costsTracker)
+double Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTracker, CostsTracker *costsTracker)
 {
     double costThisMonthDiscounted = 0.0;
 
@@ -1018,9 +1017,6 @@ double Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
 
     costThisMonthDiscounted = updateHealthCosts(_eventParams, costsTracker,
 						costsBefore, costsAfter);
-
-    // update the prep status for this entity
-    updatePrepStatus(_eventParams, prepTracker);
 
     //update HVL and CD4 for this Person if they are infected
     if(isInfected()) {

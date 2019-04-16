@@ -290,69 +290,67 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 			HIVStatus oldStatus = p->hivStatus;
 			//update their health status
 			p->updateHealthStatus(parameters_, &populationStatistics.artTracker,
-                &populationStatistics.prepTracker, &populationStatistics.costsTracker);
+                &populationStatistics.costsTracker);
 
-			if (p->UsingPrEP()) {
-			    populationStatistics.costsTracker.RecordPrEPCost(popWideParams.prEPCost,
-				popWideParams.prEPCost * cepacDiscountFactor);
-			    p->add_cdm_cost(popWideParams.prEPCost, popWideParams.prEPCost * cepacDiscountFactor);
-			}
+		    if (oldStatus != p->hivStatus)
+            {
+                if(p->getDemographicProfile()->get(p->getDemographicProfile()->getProfileID(),
+                    DemographicProfile::Demographic::SexualActivityStatus) !=
+                    (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
+                {
+                    ((BucketSexualMixing *) entities->getBucket(p->getDemographicProfile()->
+                        getProfileID()))->changeHIVStatus(p, oldStatus, p->hivStatus);
+                }
+            }
 
-			if(oldStatus != p->hivStatus)
-			{
-                if(p->getDemographicProfile()->get(p->getDemographicProfile()->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) != (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
-				{
-					((BucketSexualMixing *) entities->getBucket(p->getDemographicProfile()->getProfileID()))->changeHIVStatus(p, oldStatus,
-					        p->hivStatus);
-				}
-			}
+            if(parameters_.useRollout && parameters_.treatedContext && p->isInfected())
+            {
+                if(p->isOnArt())
+                {
+                    populationStatistics.recordTreatment(p);
+                }
+            }
 
-			if(parameters_.useRollout && parameters_.treatedContext && p->isInfected())
-			{
-				if(p->isOnArt())
-				{
-					populationStatistics.recordTreatment(p);
-				}
-			}
+            //see whether this person has died.
+            //if this person was a couple, then will push living members to personsToAdd
+            // to be reinserted into the EntityPool once we have iterated through all buckets
+            if(p->rollForDeath(parameters_.randomNums))
+            {
+                if(parameters_.useRollout && parameters_.treatedContext &&
+                    p->isInfected() && p->isOnArt()) {
+                    populationStatistics.recordTreatmentDeath(p);
+                }
 
-			//see whether this person has died.
-			//if this person was a couple, then will push living members to personsToAdd
-			// to be reinserted into the EntityPool once we have iterated through all buckets
-			if(p->rollForDeath(parameters_.randomNums))
-			{
-				if(parameters_.useRollout && parameters_.treatedContext &&
-				    p->isInfected() && p->isOnArt()) {
-				    populationStatistics.recordTreatmentDeath(p);
-				}
+                p_Iter = entities->removeEntityFromAll(p_Iter);
+                ProcessDeath(parameters_, p, calculateLE);
 
-				p_Iter = entities->removeEntityFromAll(p_Iter);
-				ProcessDeath(parameters_, p, calculateLE);
+                if(parameters_.useRollout)
+                {
+                    //Remove people from the treated/untreated pool if they die
+                    std::list<Entity *>::iterator poolIterator;
+                    poolIterator = std::find(rolloutUntreatedPool.begin(), rolloutUntreatedPool.end(), p);
 
-				if(parameters_.useRollout)
-				{
-					//Remove people from the treated/untreated pool if they die
-					std::list<Entity *>::iterator poolIterator;
-					poolIterator = std::find(rolloutUntreatedPool.begin(), rolloutUntreatedPool.end(), p);
+                    if(poolIterator != rolloutUntreatedPool.end())
+                    {
+                        rolloutUntreatedPool.erase(poolIterator);
+                    }
+                    else
+                    {
+                        poolIterator = std::find(rolloutTreatedPool.begin(), rolloutTreatedPool.end(), p);
 
-					if(poolIterator != rolloutUntreatedPool.end())
-					{
-						rolloutUntreatedPool.erase(poolIterator);
-					}
-					else
-					{
-						poolIterator = std::find(rolloutTreatedPool.begin(), rolloutTreatedPool.end(), p);
+                        if(poolIterator != rolloutTreatedPool.end())
+                        {
+                            rolloutTreatedPool.erase(poolIterator);
+                        }
+                    }
+                }
 
-						if(poolIterator != rolloutTreatedPool.end())
-						{
-							rolloutTreatedPool.erase(poolIterator);
-						}
-					}
-				}
+                //removePersonFromAll returns iterator to next person in list...
+                //no need to increment
+                continue;
+            }
 
-				//removePersonFromAll returns iterator to next person in list...
-				//no need to increment
-				continue;
-			}
+            p->updatePrepStatus(parameters_, &populationStatistics.prepTracker);
 
 			if(parameters_.useRollout && parameters_.treatedContext && p->isInfected())
 			{
@@ -416,33 +414,33 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 				entities->refreshBucketDemographicProfile(p, &p_Iter, oldRisk != p->getRiskLevel());
 			}
 
-	    //Check for age to stop becoming CSW
+            //Check for age to stop becoming CSW
             if(p->isCSW() && p->PassedCSWEndAge()) {
-		p->quitSexWork(parameters_);
-		entities->refreshBucketDemographicProfile(p, &p_Iter);
-	    }
+                p->quitSexWork(parameters_);
+                entities->refreshBucketDemographicProfile(p, &p_Iter);
+            }
 
-	    if(((parameters_.useRollout && parameters_.treatedContext) || p->HasTargetedCepacContext()) &&
-	       p->isInfected())
-	    {
-                 auto context = p->HasTargetedCepacContext() ? p->GetTargetedCepacContext() : parameters_.treatedContext;
+        if(((parameters_.useRollout && parameters_.treatedContext) || p->HasTargetedCepacContext()) &&
+           p->isInfected())
+        {
+            auto context = p->HasTargetedCepacContext() ? p->GetTargetedCepacContext() : parameters_.treatedContext;
 
-		 if(p->isOnArt())
-		 {
-		     // if they're on treatment, they should be counted as eligible even if the treatment has worked  
-		     populationStatistics.recordTreatmentEligiblity(p);
-		     populationStatistics.recordTreatment(p);
-		 }
-		 else if(p->isEligibleForTreatment(context->getTreatmentInputs()->startART[0]))
-		 {
-		     populationStatistics.recordTreatmentEligiblity(p);
-		 }
-	    }
+            if(p->isOnArt())
+            {
+                // if they're on treatment, they should be counted as eligible even if the treatment has worked
+                populationStatistics.recordTreatmentEligiblity(p);
+                populationStatistics.recordTreatment(p);
+            }
+            else if(p->isEligibleForTreatment(context->getTreatmentInputs()->startART[0]))
+            {
+                populationStatistics.recordTreatmentEligiblity(p);
+            }
+        }
 
-	    populationStatistics.costsTracker.RecordLifeMonth(p->getQualityOfLife(),
-		cepacDiscountFactor, p->getHIVStatus());
+        populationStatistics.costsTracker.RecordLifeMonth(p->getQualityOfLife(),
+        cepacDiscountFactor, p->getHIVStatus());
 
-	    p_Iter++;
+        p_Iter++;
 		}
 	}
 }

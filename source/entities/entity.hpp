@@ -347,8 +347,10 @@ public:
 	//update health status of HIV infected people -- i.e. cd4, hvl, art, etc.
 	//  in version 1, this information is taken from CEPAC model
 	// @returns: costs (accrued in CEPAC) of updating health
-	double updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTracker,
-        PrepTracker *prepTracker, CostsTracker *costsTracker);
+	double updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTracker, CostsTracker *costsTracker);
+
+    void updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracker);
+
 
 	//Call this after all transmission/population dynamics are done.
 	//Runs infected through CEPAC until they die and adds their LM etc to CEPAC stats
@@ -708,7 +710,6 @@ private:
 			     ArtRolloutTracker *testTracker,
 			     const RunStats::HIVScreening before,
 			     const RunStats::HIVScreening after);
-    void updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracker);
     void traceTreatmentChange(EventParams &_eventParams, bool after);
     void traceCD4Change(EventParams &_eventParams, double before, double after);
     void traceHVLChange(EventParams &_eventParams, HVLStrata before,
