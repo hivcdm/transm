@@ -25,34 +25,6 @@ const std::string PrepTracker::RISK_GROUP_NAMES[] =
     "CSW High-Risk Male:Msm"
 };
 
-const std::string PrepTracker::RACE_ETHNICITY_GROUP_NAMES[] =
-{
-    "Non-Hispanic Black Male",
-    "Hispanic Black Male",
-    "Non-Hispanic White Male",
-    "Hispanic White Male",
-
-    "Non-Hispanic Black Male",
-    "Hispanic Black Male",
-    "Non-Hispanic White Male",
-    "Hispanic White Male",
-
-    "Non-Hispanic Black MSW",
-    "Hispanic Black MSW",
-    "Non-Hispanic White MSW",
-    "Hispanic White MSW",
-
-    "Non-Hispanic Black MSMW",
-    "Hispanic Black MSMW",
-    "Non-Hispanic White MSMW",
-    "Hispanic White MSMW",
-
-    "Non-Hispanic Black MSM",
-    "Hispanic Black MSM",
-    "Non-Hispanic White MSM",
-    "Hispanic White MSM",
-};
-
 const std::string PrepTracker::TRACKED_OUTCOMES[] =
 {
     "eligible",
@@ -215,15 +187,20 @@ void PrepTracker::buildHeader()
         }
 
         SetHeaderCell(column, 2, "Race/Ethnicity Group");
-        for (auto gender : {"Males", "Females", "Males:Msw", "Males:Msmw", "Males:Msm", })
+        for (auto gender : {"Males", "Females", "Msw", "Msmw", "Msm", })
         {
-            for (auto race : {"Black", "White"})
+            for (auto race : enum_iterator<DemographicProfile::Race>())
             {
-                for (auto ethnicity : {"Non-Hispanic", "Hispanic"})
+                std::string raceStr = DemographicEnumStrs.at((std::size_t)DemographicProfile::Demographic::Race).
+                    at((std::size_t)race);
+                for (auto ethnicity : enum_iterator<DemographicProfile::Ethnicity>())
                 {
-                    std::stringstream raceString;
-                    raceString << gender << ":" << race << ":" << ethnicity;
-                    SetHeaderCell(column++, 3, raceString.str());
+                    std::string ethStr = DemographicEnumStrs.at((std::size_t)DemographicProfile::Demographic::Ethnicity).
+                        at((std::size_t)ethnicity);
+
+                    std::stringstream label;
+                    label << gender << ":" << raceStr << ":" << ethStr;
+                    SetHeaderCell(column++, 3, label.str());
                 }
             }
         }

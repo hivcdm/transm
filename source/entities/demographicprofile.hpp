@@ -18,7 +18,7 @@ namespace transm {
 		{"MSW", "MSMW", "MSM" },
 		{"NON_SINGLE", "SINGLE"},
 		{"NON_CSW", "CSW"},
-        {"BLACK", "WHITE"},
+        {"BLACK", "WHITE", "OTHER" },
         {"NON_HISPANIC", "HISPANIC"}
 	};
 
@@ -110,6 +110,7 @@ public:
     {
         Black,
         White,
+        Other,
         Last,
         First = Black
     };

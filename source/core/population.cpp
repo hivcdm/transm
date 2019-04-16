@@ -3185,12 +3185,18 @@ void Population::PrintPopulationHeaders(Time _time, std::ostream &_outStream)
     {
         secondRow << label << Constants::Tab;
     }
+
     // By Race and Ethnicity
-    firstRow << "Race and Ethnicity" << Constants::Tab
-             << Constants::Tab << Constants::Tab << Constants::Tab;
-	for (std::string label : { "Black:NonHispanic", "Black:Hispanic", "White:NonHispanic", "White:Hispanic"})
+    firstRow << "Race and Ethnicity";
+    for (auto race : enum_iterator<DemographicProfile::Race>())
     {
-        secondRow << label << Constants::Tab;
+        std::string label = DemographicEnumStrs.at((std::size_t)DemographicProfile::Demographic::Race).at((std::size_t)race);
+        for (auto ethnicity : enum_iterator<DemographicProfile::Ethnicity>())
+        {
+            label += ":" + DemographicEnumStrs.at((std::size_t)DemographicProfile::Demographic::Ethnicity).at((std::size_t)ethnicity);
+            firstRow << Constants::Tab;
+            secondRow << label << Constants::Tab;
+        }
     }
 
     //write out headers for population by age
