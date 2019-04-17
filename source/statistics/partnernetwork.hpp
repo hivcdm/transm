@@ -67,16 +67,7 @@ class Network {
         auto ethnicity = entity->getDemographicProfileVal<transm::DemographicProfile::Ethnicity>();
 
         std::string demo_profile = entity->getEntityType();
-        std::string race_eth;
-        if (race == transm::DemographicProfile::Race::Black)
-            race_eth += ":BLACK";
-        else
-            race_eth += ":WHITE";
-
-        if (ethnicity == transm::DemographicProfile::Ethnicity::NonHispanic)
-            race_eth += ":NONHISP";
-        else
-            race_eth += ":HISP";
+        std::string race_eth = ":" + transm::DemographicEnumStrs.at((std::size_t)transm::DemographicProfile::Demographic::Race).at((std::size_t)race) + ":" + transm::DemographicEnumStrs.at((std::size_t)transm::DemographicProfile::Demographic::Ethnicity).at((std::size_t)ethnicity);
         demo_profile += race_eth;
 
         bool hiv_pos = (entity->getHIVStatus() != transm::HIVStatus::NEGATIVE);

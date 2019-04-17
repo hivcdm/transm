@@ -245,12 +245,11 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
     {
         // choose a race that is not the entities
         auto partnerRace = (std::size_t)entityRace;
-        do
+        while (partnerRace == (std::size_t)entityRace)
         {
             partnerRace = _randomNums.randInt((std::size_t)DemographicProfile::Race::First,
-                (std::size_t)DemographicProfile::Race::Last);
-        } while (partnerRace != (std::size_t)entityRace);
-
+                ((std::size_t)DemographicProfile::Race::Last - 1));
+        }
         selector.set(DemographicProfile::Demographic::Race, partnerRace);
     }
 
@@ -264,12 +263,11 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
     {
         // choose a race that is not the entities
         auto partnerEthnicity = (std::size_t)entityEthnicity;
-        do
+        while (partnerEthnicity == (std::size_t)entityEthnicity)
         {
             partnerEthnicity = _randomNums.randInt((std::size_t)DemographicProfile::Ethnicity::First,
-                (std::size_t)DemographicProfile::Ethnicity::Last);
-        } while (partnerEthnicity != (std::size_t)entityEthnicity);
-
+                ((std::size_t)DemographicProfile::Ethnicity::Last - 1));
+        }
         selector.set(DemographicProfile::Demographic::Ethnicity, partnerEthnicity);
     }
 
