@@ -24,8 +24,6 @@ EntityPool::EntityPool(const PopulationParameters &parameters, unsigned int _pop
     naMaleSelector.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::Single);
     naMaleSelector.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::NonCsw);
 	naMaleSelector.selectProfileIDs(validBucketIDs, nullptr);
-    // check that this adds twelve buckets
-    assert(validBucketIDs.size() == 12);
 
 	// Instantiate the Female Not-Sexually Active Buckets = (NA, Female, Msw, Single, nonCSW, *, *)
 	DemographicProfile naFemaleSelector;
@@ -35,8 +33,6 @@ EntityPool::EntityPool(const PopulationParameters &parameters, unsigned int _pop
     naFemaleSelector.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::Single);
     naFemaleSelector.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::NonCsw);
 	naFemaleSelector.selectProfileIDs(validBucketIDs, nullptr);
-    // check that this adds four buckets
-    assert(validBucketIDs.size() == 16);
 
 	// Instantiate the Male Sexually Active Buckets = (SA, Male, *, *, [param dependant], *, *)
 	DemographicProfile saMaleSelector;

@@ -350,8 +350,6 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
                 continue;
             }
 
-            p->updatePrepStatus(parameters_, &populationStatistics.prepTracker);
-
 			if(parameters_.useRollout && parameters_.treatedContext && p->isInfected())
 			{
 			    if((p->isOnArt()) ||
@@ -383,36 +381,40 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 				HIVStatus oldStatus = p->hivStatus;
 				p->becomeSexuallyActive(parameters_);
 
-				if(oldStatus != p->hivStatus)
-				    {
-					auto sa_status = p->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>();
+                if(oldStatus != p->hivStatus)
+                    {
+                    auto sa_status = p->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>();
 
-					if(sa_status != DemographicProfile::SexualActivityStatus::NotActive)
-					    {
-						auto bucket = entities->getBucket(p->getDemographicProfile()->getProfileID());
-						// This shouldn't fail because all sexually activity people are in sexual mixing buckets
-						auto sexual_mixing_bucket = static_cast<BucketSexualMixing *>(bucket); 
-						sexual_mixing_bucket->changeHIVStatus(p, oldStatus, p->hivStatus);
-					    }
-				    }
+                    if(sa_status != DemographicProfile::SexualActivityStatus::NotActive)
+                        {
+                        auto bucket = entities->getBucket(p->getDemographicProfile()->getProfileID());
+                        // This shouldn't fail because all sexually activity people are in sexual mixing buckets
+                        auto sexual_mixing_bucket = static_cast<BucketSexualMixing *>(bucket);
+                        sexual_mixing_bucket->changeHIVStatus(p, oldStatus, p->hivStatus);
+                        }
+                    }
 
-				if (!p->PassedCSWEndAge())
-				{
-					p->rollForBecomeSexWorker(parameters_);
-				}
+                if (!p->PassedCSWEndAge())
+                {
+                    p->rollForBecomeSexWorker(parameters_);
+                }
 
-				RiskLevel oldRisk = p->getRiskLevel();
-				//reroll risk group
-				p->rerollRiskGroup(parameters_);
+                RiskLevel oldRisk = p->getRiskLevel();
+                //reroll risk group
+                p->rerollRiskGroup(parameters_);
 
-				if(oldRisk != p->getRiskLevel())
-				    {
-					OnRiskGroupChanged(p);
-				    }
+                if(oldRisk != p->getRiskLevel())
+                {
+                    OnRiskGroupChanged(p);
+                }
 
-				//refresh risk group in dmg bucket and refresh BucketDemographicProfile
-				entities->refreshBucketDemographicProfile(p, &p_Iter, oldRisk != p->getRiskLevel());
-			}
+                //refresh risk group in dmg bucket and refresh BucketDemographicProfile
+                entities->refreshBucketDemographicProfile(p, &p_Iter, oldRisk != p->getRiskLevel());
+            }
+
+            if (p->isSexuallyActive())
+                p->updatePrepStatus(parameters_, &populationStatistics.prepTracker);
+
 
             //Check for age to stop becoming CSW
             if(p->isCSW() && p->PassedCSWEndAge()) {
@@ -420,27 +422,27 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
                 entities->refreshBucketDemographicProfile(p, &p_Iter);
             }
 
-        if(((parameters_.useRollout && parameters_.treatedContext) || p->HasTargetedCepacContext()) &&
-           p->isInfected())
-        {
-            auto context = p->HasTargetedCepacContext() ? p->GetTargetedCepacContext() : parameters_.treatedContext;
-
-            if(p->isOnArt())
+            if(((parameters_.useRollout && parameters_.treatedContext) || p->HasTargetedCepacContext()) &&
+                p->isInfected())
             {
-                // if they're on treatment, they should be counted as eligible even if the treatment has worked
-                populationStatistics.recordTreatmentEligiblity(p);
-                populationStatistics.recordTreatment(p);
-            }
-            else if(p->isEligibleForTreatment(context->getTreatmentInputs()->startART[0]))
-            {
-                populationStatistics.recordTreatmentEligiblity(p);
-            }
-        }
+                auto context = p->HasTargetedCepacContext() ? p->GetTargetedCepacContext() : parameters_.treatedContext;
 
-        populationStatistics.costsTracker.RecordLifeMonth(p->getQualityOfLife(),
-        cepacDiscountFactor, p->getHIVStatus());
+                if(p->isOnArt())
+                {
+                    // if they're on treatment, they should be counted as eligible even if the treatment has worked
+                    populationStatistics.recordTreatmentEligiblity(p);
+                    populationStatistics.recordTreatment(p);
+                }
+                else if(p->isEligibleForTreatment(context->getTreatmentInputs()->startART[0]))
+                {
+                    populationStatistics.recordTreatmentEligiblity(p);
+                }
+            }
 
-        p_Iter++;
+            populationStatistics.costsTracker.RecordLifeMonth(p->getQualityOfLife(),
+                cepacDiscountFactor, p->getHIVStatus());
+
+            p_Iter++;
 		}
 	}
 }

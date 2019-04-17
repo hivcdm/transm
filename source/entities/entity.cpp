@@ -1010,7 +1010,7 @@ double Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
     auto treatmentAfter = isOnArt();
 
     if(treatmentBefore != treatmentAfter)
-	traceTreatmentChange(_eventParams, treatmentAfter);
+        traceTreatmentChange(_eventParams, treatmentAfter);
 
     const auto costsAfter = *_eventParams.cepacRunStats->getOverallCosts();
     const auto hivScreeningAfter = *_eventParams.cepacRunStats->getHIVScreening();
