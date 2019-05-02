@@ -139,6 +139,9 @@ public:
 	int GetInitialSize() const { return initSize; }
 	void SetInitialSize(int size) { initSize = size; }
 
+	bool InitializeWithCounts() const { return initWithCounts; }
+	void SetInitializeWithCounts(bool init) { initWithCounts = init; }
+
 	double GetChanceChronicInfection() const {return chronicInfectionRate; }
 	void SetChanceChronicInfection(double rate) { chronicInfectionRate = rate; }
 
@@ -207,6 +210,9 @@ protected:
 
 private:
 	long initSize;
+
+    // initialize the entities with counts or proportions
+    bool initWithCounts;
 
 	double chronicInfectionRate;
 

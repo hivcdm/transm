@@ -826,31 +826,9 @@ SimulationParametersXml::EntityDistributions SimulationParametersXml::GetEntityD
     {
 	    DemographicProfile profile;
 
-        if (distribution_node.attribute("type"))
-        {
-            std::string entity_type = distribution_node.attribute("type").as_string();
-            if (entity_type == "female")
-            {
-                profile.set(DemographicProfile::Demographic::Gender,
-                    (std::size_t)DemographicProfile::Gender::Female);
-                // females are only msw (well, wsm)
-                profile.set(DemographicProfile::Demographic::SexualOrientation,
-					(std::size_t)DemographicProfile::SexualOrientation::Msw);
-            }
-            else if (entity_type == "male")
-            {
-                profile.set(DemographicProfile::Demographic::Gender,
-                    (std::size_t)DemographicProfile::Gender::Male);
-            } else {
-                throw std::runtime_error("Unknown entity type in xml node " +
-                    std::string(distribution_node.name()));
-            }
-        }
-        else if (distribution_node.attribute("bucket"))
-        {
-            std::string bucketString = distribution_node.attribute("bucket").as_string();
-            profile.parse(bucketString);
-        }
+        std::string bucketString = distribution_node.attribute("profile").as_string();
+        profile.parse(bucketString);
+
         distributions.push_back(DemographicProfile::DoublePair(profile,
 			distribution_node.text().as_double()));
     }
@@ -918,6 +896,7 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
     PopulationParameters parameters;
     auto initial_state_node = population_node.child("initialState");
     parameters.SetInitialSize(Text<int>(initial_state_node.child("size")));
+    parameters.SetInitializeWithCounts(Text<bool>(initial_state_node.child("useCounts")));
 
     //get initial age distribution
     for (auto age_bucket_node : initial_state_node.child("entityDistributions").children("ageRange"))

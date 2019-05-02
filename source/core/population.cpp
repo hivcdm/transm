@@ -1031,30 +1031,56 @@ void Population::DissolveSexualPartnerships(EventParams &parameters_, Entity *_i
 }
 
 /*
- * The params.xml file should have detailed the  characteristics of each age bucket.
- * We will go through each age bucket and create the part of the prevalent population that
- * falls within the bucket.
+ * Generate initial entities in the population
+ * if the user sets the data type to use counts, then the count of people per bucket
+ * will be generated.
+ * if the user sets the data type to use proportions, then we randomly choose which
+ * profile to assign the person based on the proportions.
  */
 void Population::GenerateInitialEntities()
 {
-    for(auto &ageBucketParams : popWideParams.GetInitialAgeBuckets())
+    if (popWideParams.InitializeWithCounts())
     {
-        AgeRange ageRange = {ageBucketParams.GetMinAge(), ageBucketParams.GetMaxAge()};
-		for (auto profileDoublePair : ageBucketParams.GetEntityProportions())
-		{
-            auto gender = profileDoublePair.first.get(DemographicProfile::Demographic::Gender);
-            double ageRangeValue = profileDoublePair.second;
-
-            for (auto birthProfile : popWideParams.GetBirthProportions())
+        std::vector<double> entityValues;
+        for(auto &ageBucketParams : popWideParams.GetInitialAgeBuckets())
+        {
+            AgeRange ageRange = {ageBucketParams.GetMinAge(), ageBucketParams.GetMaxAge()};
+            for (auto profileDoublePair : ageBucketParams.GetEntityProportions())
             {
-                if (gender == birthProfile.first.get(DemographicProfile::Demographic::Gender))
-                {
-                    unsigned long numToCreate = Utility::round<unsigned long>(
-                      popWideParams.GetInitialSize() * ageRangeValue * birthProfile.second);
-                    GenerateEntities(birthProfile.first, numToCreate, &ageRange);
-                }
+                auto profile = profileDoublePair.first;
+                int count = (int)profileDoublePair.second;
+
+                GenerateEntities(profile, count, &ageRange);
             }
-		}
+        }
+    }
+    else
+    {
+        std::vector<std::pair<DemographicProfile, AgeRange>> entityBuckets;
+        std::vector<double> entityValues;
+        for(auto &ageBucketParams : popWideParams.GetInitialAgeBuckets())
+        {
+            AgeRange ageRange = {ageBucketParams.GetMinAge(), ageBucketParams.GetMaxAge()};
+            for (auto profileDoublePair : ageBucketParams.GetEntityProportions())
+            {
+                auto profile = profileDoublePair.first;
+                double proportion = profileDoublePair.second;
+
+                entityBuckets.push_back(std::make_pair(profile, ageRange));
+                entityValues.push_back(proportion);
+            }
+        }
+
+        // create the initial entities
+        for (unsigned long count = 0; count < popWideParams.GetInitialSize(); count++)
+        {
+            // choose a random profile and age range
+            auto index = parameters_.randomNums.chooseIndex(entityValues);
+            auto profile = std::get<0>(entityBuckets.at(index));
+            auto ageRange = std::get<1>(entityBuckets.at(index));
+
+            GenerateEntities(profile, 1, &ageRange);
+        }
     }
 }
 
@@ -1076,7 +1102,6 @@ void Population::GenerateEntities(const DemographicProfile &profile,
 			}
 			auto p = GenerateEntity(parameters_, profile, age, toTrace);
 
-			// add the newborn to the EntityPool
 			// use addEntityToAll here (initial entrance into population)
 			entities->addEntityToAll(p);
 	}
