@@ -1,6 +1,5 @@
-# HIV-CDM
+# CDM Branch v3-5.0a
 
-The **HIV Calibrated Dynamic Model** (CDM) is a stochastic, agent-based model designed to simulate sexual transmission of HIV in communities of interest. CDM accounts for several different sexual mixing behaviours among individuals and leverages another piece of software, the CEPAC Disease Model, to model the natural history of HIV in individual patients.
+This branch is the legacy stable development of the CDM v3 with CEPAC v5.0a. Changes to CEPAC between v4.4a and v5.0a make it necessary to have separate branches. Running the same inputs for the model v3-4.4a and v3-5.0a will produce different outputs. 
 
-- Documentation and pre-compiled binaries for several platforms are available at `https://github.com/hsphcdm/transm-user`
-- The code for CEPAC is available at `https://github.com/hsphcdm/cepac-svn/commits/cepac-transm`
+See the [harvard wiki](https://wiki.harvard.edu/confluence/display/k95973/Archived+Versions) for instructions on developing and using the model.
