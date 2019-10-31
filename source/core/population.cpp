@@ -78,7 +78,7 @@ void Population::Circumcise(Entity *p)
 This is a bit hackish and hardcoded
 The method determines who are the partnership initiators and who are available to them
 //first we determine who can initiate
-//second we determine who can be accosted - this differs by partnershipType
+//second we determine who can be chosen - this differs by partnershipType
 **/
 void Population::InitPartnershipBuckets()
 {
@@ -106,70 +106,9 @@ void Population::InitPartnershipBuckets()
 		//if this Bucket is nullptr, the skip
 		if(bucket != nullptr)
 		{
-			partneringInitiators[bucket] = availPartnershipTypes;
 			profilesToPartnershipTypes[bucket->getProfileID()] = availPartnershipTypes;
 		}
 	}
-
-#if 0
-	DemographicProfile currProfileSelector;
-	std::vector<DemographicProfile::ProfileID> selectedIDs;
-
-	for (auto partnership_type : enum_iterator<SexualPartnership::Type>())
-	{
-        try
-        {
-            //get the parameters for current relationship type
-            assert(popWideParams.defaultMaleParams.hasSexualBehavior(partnership_type));
-            const SexualBehavior &partneringParams = popWideParams.defaultMaleParams.getSexualBehavior(partnership_type);
-
-            //get available demographicProfiles that are available for this partnership
-            for(unsigned int j = 0; j < partneringParams.getNumAvailableBuckets(); ++j)
-            {
-		    selectedIDs.clear();
-		    //contains profile ID's that were selected from
-		    currProfileSelector.set(partneringParams.getAvailableBucket(j).dmgProfileSelector);
-		    currProfileSelector.selectProfileIDs(selectedIDs, nullptr);
-
-		    //TODO:eventually, we should change this.
-		    //assert(selectedIDs.size() == 1);	//we don't want any wild cards in the DemographicProfile string.
-
-		    //check to see whether we have a repeat Bucket.
-		    for(size_t i = 0; i < potentialPartnerBuckets[partnership_type].size(); ++i)
-		    {
-			    if(potentialPartnerBuckets[partnership_type].at(i)->getProfileID() == selectedIDs.at(0))
-			    {
-				    throw std::runtime_error("For available buckets for partnership type '"
-					+ SexualPartnership::TypeStrings.at(SexualPartnership::Type(partnership_type))
-					+ "', " + *DemographicProfile::toString(selectedIDs.at(0))
-					+ " is listed multiple times either via repeat or wildcard overlaps");
-			    }
-		    }
-
-		    BucketSexualMixing *bucket = (BucketSexualMixing *)entities->getBucket(selectedIDs.at(0));
-
-		    if(bucket == nullptr)
-		    {
-			    throw std::runtime_error("This Demographic Profile "
-				+ *DemographicProfile::toString(selectedIDs.at(0))
-				+ " has not been instantiated and so cannot be used");
-		    }
-		    else
-		    {
-			    potentialPartnerBuckets[partnership_type].push_back(bucket);
-			    eligibleBucketWeights[partnership_type].push_back(partneringParams.getAvailableBucket(j).weight);
-		    }
-	    }
-
-	    //make sure that the weights sum to 1
-	    Utility::normalize(eligibleBucketWeights[partnership_type]);
-	}
-	catch(const std::exception &/*e*/)
-	{
-		continue;
-	}
-    }
-#endif
 }
 
 Population::~Population()
@@ -480,20 +419,6 @@ We hopefully only iterate through each initiator once.
 */
 void Population::UpdatePartnerships(EventParams &parameters_)
 {
-	//holds the tallies for any New partnerships that were made and ended this month
-	int newPartnershipCount[(std::size_t)SexualPartnership::Type::Last];
-	//Number of attemptedPartnerships may be higher than the actual partnerships formed if there weren't enough females/males tried to repartner with current partners
-	int attemptedPartnershipCount[(std::size_t)SexualPartnership::Type::Last];
-	int	endedPartnershipCount[(std::size_t)SexualPartnership::Type::Last];
-
-	//initialize counters
-	for(int type = 0; type < (int)SexualPartnership::Type::Last; ++type)
-	{
-		newPartnershipCount[type] = 0;
-		attemptedPartnershipCount[type] = 0;
-		endedPartnershipCount[type] = 0;
-	}
-
 	double cepacDiscountFactor = 1.0;
 	if (parameters_.useRollout) {
 		cepacDiscountFactor = Utility::computeCepacDiscountFactor(parameters_.currTime.in_months(),
@@ -510,7 +435,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 	//Iterate twice...
 	//First pass: Dissolve ended partnerships
 	for(p_Iter = entities->begin(DemographicProfile::Gender::Male); p_Iter != entities->end(DemographicProfile::Gender::Male); p_Iter++)
-	    {
+    {
 		auto person = *p_Iter;
 		person->resetNumActs();
 		person->reset_costs();
@@ -519,7 +444,7 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 		//Decide who needs to split up
 		for(int type = 0; type < (int)SexualPartnership::Type::Last; ++type)
 		{
-		    endedPartnershipCount[type] += ((Male *)person)->getPartnershipsToEnd(parameters_.currTime, SexualPartnership::Type(type), partnershipsToEnd, false);
+		    ((Male *)person)->getPartnershipsToEnd(parameters_.currTime, SexualPartnership::Type(type), partnershipsToEnd, false);
 		}
 
 		//Now, split them up... man, it would suck for their kids (if they had any)
@@ -527,12 +452,12 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 
 		//if this initiator is now single, then make sure they are in singles pool
 		if(!person->inCorrectBucketDemographicProfile())
-		    {
+        {
 			entities->refreshBucketDemographicProfile(person, &p_Iter);
-		    }
+        }
 
 		((Male *)person)->ResetTimesSelected();
-	    }
+    }
 
 	//Ending the first pass (dissolving partnerships)
 
@@ -587,8 +512,6 @@ void Population::UpdatePartnerships(EventParams &parameters_)
 			person->resetLatestUnformedPartnerships(type);
 			//TODO: Get the ratio of numFormed to numIntendedToForm
 			int numFormed = CreatePartnerships(parameters_, person, &p_Iter, type);
-			newPartnershipCount[(std::size_t)type] += numFormed;
-			attemptedPartnershipCount[(std::size_t)type] += numFormed + person->getLatestUnformedPartnerships(type);
 		}
 
 		//for existing partnerships, have sexual activity
@@ -1379,8 +1302,7 @@ void Population::applyPrevalentInfection(Entity *p)
 	    DemographicProfile::Demographic::SexualActivityStatus) !=
 	(std::size_t)DemographicProfile::SexualActivityStatus::NotActive) {
 	((BucketSexualMixing *)entities->getBucket(
-	    p->getDemographicProfile()->
-	    getProfileID()))->increaseInfected(p);
+	    p->getDemographicProfile()-> getProfileID()))->increaseInfected(p);
     }
 }
 
@@ -2325,6 +2247,7 @@ unsigned long Population::CreatePartnerships(EventParams &parameters_, Male *_in
         //the pointer to this partnership will be stored within initiator.
         new SexualPartnership(_initiator, chosenPartner, parameters_, _partnershipType);
         chosenPartner->IncrementTimesSelected();
+        RecordPartnership(_initiator, chosenPartner);
 
         //add all persons back to entity pool
         for(std::list<Entity *>::iterator it = attemptedPartners.begin(); it != attemptedPartners.end(); it++)
@@ -2643,9 +2566,8 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 			}
 		}
 
-		//Partnerships by partnership type
+		// Partnerships by partnership type headers
 		firstRow << "Partnerships by Partnership Type";
-
 		for (std::string partnership_type : { "MSW+Female" , "MSMW+Female", "MSMW+MSM", "MSM+MSM" })
 		{
 			secondRow << partnership_type;
@@ -2662,6 +2584,7 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 			}
 		}
 
+        // Selection Statistics
 		for (auto entity_type : { "MSMW", "MSM", "female" })
 		{
 			secondRow << entity_type << " Selection Statistics" << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
@@ -2802,6 +2725,7 @@ void Population::PrintPartnerships(EventParams &parameters_, Time _time, std::os
 		}
 	}
 
+    // Partnerships by partnership type
 	for (std::string partnership_type : { "MSW+Female" , "MSMW+Female", "MSMW+MSM", "MSM+MSM" })
 	{
 		std::string partner1;
@@ -3215,9 +3139,9 @@ void Population::PrintPopulationHeaders(Time _time, std::ostream &_outStream)
     firstRow << "Race and Ethnicity";
     for (auto race : enum_iterator<DemographicProfile::Race>())
     {
-        std::string label = DemographicEnumStrs.at((std::size_t)DemographicProfile::Demographic::Race).at((std::size_t)race);
         for (auto ethnicity : enum_iterator<DemographicProfile::Ethnicity>())
         {
+            std::string label = DemographicEnumStrs.at((std::size_t)DemographicProfile::Demographic::Race).at((std::size_t)race);
             label += ":" + DemographicEnumStrs.at((std::size_t)DemographicProfile::Demographic::Ethnicity).at((std::size_t)ethnicity);
             firstRow << Constants::Tab;
             secondRow << label << Constants::Tab;
@@ -3533,6 +3457,42 @@ void Population::RecordPartAcqFreq()
 	}
 }
 
+void Population::ResetPartnershipTracking()
+{
+    for (DemographicProfile::ProfileID initiatorProfileID : entities->getInitiatorProfileIDs()) {
+        std::map<DemographicProfile::ProfileID, unsigned long> partnerMap;
+        for (DemographicProfile::ProfileID partnerProfileID : entities->getPartnerProfileIDs()) {
+            partnerMap[partnerProfileID] = 0;
+        }
+        newPartnershipCountByProfile[initiatorProfileID] = partnerMap;
+    }
+}
+
+void Population::RecordPartnership(const Entity *initiator, const Entity *partner)
+{
+    newPartnershipCountByProfile[initiator->getDemographicProfile()->getProfileID()]
+        [partner->getDemographicProfile()->getProfileID()]++;
+}
+
+void Population::PrintPartnershipTracking(std::ostream &_outStream, Time currTime)
+{
+    _outStream << Constants::Tab << "Initiating Partners By Chosen Partners " <<  currTime.in_months() << std::endl;
+
+    _outStream << Constants::Tab;
+    for (DemographicProfile::ProfileID partnerProfileID : entities->getPartnerProfileIDs()) {
+        _outStream << *DemographicProfile::toString(partnerProfileID) << Constants::Tab;
+    }
+    _outStream << std::endl;
+
+    for (DemographicProfile::ProfileID initiatorProfileID : entities->getInitiatorProfileIDs()) {
+        _outStream << *DemographicProfile::toString(initiatorProfileID) << Constants::Tab;
+        for (DemographicProfile::ProfileID partnerProfileID : entities->getPartnerProfileIDs()) {
+            _outStream << newPartnershipCountByProfile[initiatorProfileID][partnerProfileID] << Constants::Tab;
+        }
+        _outStream << std::endl;
+    }
+}
+
 void Population::Initialize(const PopulationParameters &parameters)
 {
     popWideParams = parameters;
@@ -3548,9 +3508,8 @@ void Population::Initialize(const PopulationParameters &parameters)
     //create EntityPool - this will contain all Entities
     entities.reset(new EntityPool(popWideParams, GetId(), assort));
 
-	// initialize the list of demographic profile ids used in the simulation
-	demographicProfileIDs = entities->getProfileIDs();
-
+    // initialize the list of demographic profile ids used in the simulation
+    demographicProfileIDs = entities->getProfileIDs();
 	for (auto profileID : demographicProfileIDs)
 	{
 		for (auto ageRange : GetAgeRanges())

@@ -137,12 +137,15 @@ public :
 		double coefficientOfVariation;
 		bool useCoefficientVariation;
 
-	        // The number of times the male can be rejected by a female before he
-                // decreases his number of partnerships to be formed and stops looking
-                // for the current partner.
-                int maxPartnershipRejections;
+        // The number of times the male can be rejected by a female before he
+        // decreases his number of partnerships to be formed and stops looking
+        // for the current partner.
+        int maxPartnershipRejections;
 
-                double preExposureProphylaxisEfficacy_;
+        double preExposureProphylaxisEfficacy_;
+
+        //contains all current partnerships including CSW and Casual
+        std::list<SexualPartnership *> partners[(int)SexualPartnership::Type::Last];
 	};
 
 public:
@@ -184,8 +187,8 @@ public:
 
     void SetRiskAssortativeness(SexualPartnership::Type partnership_type, double assortativeness)
         { populationSpecificParams.getSexualBehavior(partnership_type).setRiskAssortativeness(assortativeness); }
-    void SetRaceAssortativeness(SexualPartnership::Type partnership_type, double assortativeness)
-        { populationSpecificParams.getSexualBehavior(partnership_type).setRaceAssortativeness(assortativeness); }
+    void SetRaceAssortativeness(DemographicProfile::Race race, SexualPartnership::Type partnership_type, double assortativeness)
+        { populationSpecificParams.getSexualBehavior(partnership_type).setRaceAssortativeness(race, assortativeness); }
     void SetEthnicAssortativeness(SexualPartnership::Type partnership_type, double assortativeness)
         { populationSpecificParams.getSexualBehavior(partnership_type).setEthnicAssortativeness(assortativeness); }
 

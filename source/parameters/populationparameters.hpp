@@ -131,8 +131,8 @@ public:
 
     void SetRiskAssortativeness(SexualPartnership::Type partnership_type, double assortativeness)
 		{ defaultMaleParams.getSexualBehavior(partnership_type).setRiskAssortativeness(assortativeness); }
-    void SetRaceAssortativeness(SexualPartnership::Type partnership_type, double assortativeness)
-		{ defaultMaleParams.getSexualBehavior(partnership_type).setRaceAssortativeness(assortativeness); }
+    void SetRaceAssortativeness(DemographicProfile::Race race, SexualPartnership::Type partnership_type, double assortativeness)
+		{ defaultMaleParams.getSexualBehavior(partnership_type).setRaceAssortativeness(race, assortativeness); }
     void SetEthnicAssortativeness(SexualPartnership::Type partnership_type, double assortativeness)
 		{ defaultMaleParams.getSexualBehavior(partnership_type).setEthnicAssortativeness(assortativeness); }
 

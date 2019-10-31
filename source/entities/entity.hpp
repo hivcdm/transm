@@ -108,7 +108,7 @@ public:
 	static int numTracesSoFar;
 
     virtual void SetRiskAssortativeness(SexualPartnership::Type partnership_type, double assortativeness) = 0;
-    virtual void SetRaceAssortativeness(SexualPartnership::Type partnership_type, double assortativeness) = 0;
+    virtual void SetRaceAssortativeness(DemographicProfile::Race race, SexualPartnership::Type partnership_type, double assortativeness) = 0;
     virtual void SetEthnicAssortativeness(SexualPartnership::Type partnership_type, double assortativeness) = 0;
 
     void UsePreExposureProphylaxis(double adherence);

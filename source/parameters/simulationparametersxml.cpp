@@ -707,7 +707,24 @@ SexualBehavior SimulationParametersXml::GetSexualBehavior(const std::string &ent
 
     auto assortivityNode = node.child("selectionCriteria").child("assortivity");
     result.setRiskAssortativeness(Text<double>(assortivityNode.child("riskAssortivity")));
-    result.setRaceAssortativeness(Text<double>(assortivityNode.child("raceAssortivity")));
+
+    auto raceAssortivityNode = assortivityNode.child("raceAssortivity");
+    double baselineRaceAssortativity = Attr<double>(raceAssortivityNode, "baseline");
+    result.setBaselineRaceAssortativeness(baselineRaceAssortativity);
+
+    for (auto raceNode : node.children("race")) {
+        std::string raceType = Attr<std::string>(raceNode, "type");
+        double assortivity = Attr<double>(raceNode, "value");
+        if (Attr<bool>(raceAssortivityNode, "useCoefficients")) {
+            assortivity *= baselineRaceAssortativity;
+        }
+        for (auto race : enum_iterator<DemographicProfile::Race>()) {
+            if (raceType.compare(DemographicEnumStrs.at((std::size_t)DemographicProfile::Demographic::Race).at((std::size_t)race)) == 0) {
+                result.setRaceAssortativeness(race, assortivity);
+            }
+        }
+    }
+
     result.setEthnicAssortativeness(Text<double>(assortivityNode.child("ethnicAssortivity")));
 
     result.setChanceChooseWithSteady(Text<double>(assortivityNode.child("chanceChooseWithSteady")));
@@ -716,7 +733,7 @@ SexualBehavior SimulationParametersXml::GetSexualBehavior(const std::string &ent
 
     result.setAverageYearsYounger(GetNormalDist(node.child("selectionCriteria").child("averageYearsYounger")));
 
-    for(auto risk : {RiskLevel::LOW, RiskLevel::HIGH})
+    for (auto risk : {RiskLevel::LOW, RiskLevel::HIGH})
     {
         auto risk_node = node.child(risk == RiskLevel::LOW ? "lowRisk" : "highRisk");
 

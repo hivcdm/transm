@@ -45,6 +45,8 @@ EntityPool::EntityPool(const PopulationParameters &parameters, unsigned int _pop
             (std::size_t)DemographicProfile::Employment::NonCsw);
     }
 	saMaleSelector.selectProfileIDs(validBucketIDs, nullptr);
+    saMaleSelector.selectProfileIDs(validInitiatorProfileIDs, nullptr);
+    saMaleSelector.selectProfileIDs(validPartnerProfileIDs, nullptr);
 
 	// Instantiate the Female Sexually Active Buckets = (SA, Female, Msw, *, [param dependant], *, *)
 	DemographicProfile saFemaleSelector;
@@ -58,6 +60,8 @@ EntityPool::EntityPool(const PopulationParameters &parameters, unsigned int _pop
             (std::size_t)DemographicProfile::Employment::NonCsw);
     }
 	saFemaleSelector.selectProfileIDs(validBucketIDs, nullptr);
+    saFemaleSelector.selectProfileIDs(validPartnerProfileIDs, nullptr);
+
 
     Age _ageOfMajority = parameters.GetAgeOfMajority();
 
@@ -157,6 +161,17 @@ std::vector<DemographicProfile::ProfileID> EntityPool::getProfileIDs()
 {
 	return validProfileIDs;
 }
+
+std::vector<DemographicProfile::ProfileID> EntityPool::getInitiatorProfileIDs()
+{
+	return validInitiatorProfileIDs;
+}
+
+std::vector<DemographicProfile::ProfileID> EntityPool::getPartnerProfileIDs()
+{
+	return validPartnerProfileIDs;
+}
+
 
 bool EntityPool::addEntity(Entity *_person)
 {

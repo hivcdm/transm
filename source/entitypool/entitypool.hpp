@@ -44,6 +44,16 @@ public:
 	std::vector<DemographicProfile::ProfileID> getProfileIDs();
 
 	/// <summary>
+	/// Return the profileIDs for initiator buckets
+	/// </summary>
+	std::vector<DemographicProfile::ProfileID> getInitiatorProfileIDs();
+
+	/// <summary>
+	/// Return the profileIDs for partner buckets
+	/// </summary>
+	std::vector<DemographicProfile::ProfileID> getPartnerProfileIDs();
+
+	/// <summary>
 	/// Return the bucket that matches _profileID
 	/// </summary>
 	BucketDemographicProfile *getBucket(DemographicProfile::ProfileID _profileID);
@@ -178,6 +188,18 @@ private:
 	std::vector<DemographicProfile::ProfileID> validProfileIDs;
 
 	/// <summary>
+	/// List of profile ids for initiators in the buckets in the pool
+    /// Used to enumerate initiator in initiator by partner output counts
+	/// </summary>
+	std::vector<DemographicProfile::ProfileID> validInitiatorProfileIDs;
+
+    /// <summary>
+	/// List of profile ids for initiators in the buckets in the pool
+    /// Used to enumerate partners in initiator by partner output counts
+	/// </summary>
+	std::vector<DemographicProfile::ProfileID> validPartnerProfileIDs;
+
+	/// <summary>
 	/// Master list of males for iterating
 	/// </summary>
 	std::list<Entity *> allMales;
@@ -194,6 +216,7 @@ private:
 	std::array<unsigned long, Entity::maxYrForDeathStats * 12 + 1> femalesPerAge;
 
 	void resetPeoplePerAge();
+
 };
 
 } // namespace transm

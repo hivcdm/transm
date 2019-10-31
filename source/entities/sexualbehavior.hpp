@@ -57,8 +57,11 @@ public :
     double getRiskAssortativeness() const { return riskAssortativeness; }
     void setRiskAssortativeness(double riskAssortativeness) { this->riskAssortativeness = riskAssortativeness; }
 
-    double getRaceAssortativeness() const { return raceAssortativeness; }
-    void setRaceAssortativeness(double raceAssortativeness) { this->raceAssortativeness = raceAssortativeness; }
+    void setBaselineRaceAssortativeness(double baselineAssortivity) { raceAssortativeness.fill(baselineAssortivity); }
+    void setRaceAssortativeness(DemographicProfile::Race race, double assortivity) {
+        raceAssortativeness[static_cast<std::size_t>(race)] = assortivity;
+    }
+	const double getRaceAssortativeness(DemographicProfile::Race race) const;
 
     double getEthnicAssortativeness() const { return ethnicAssortativeness; }
     void setEthnicAssortativeness(double ethnicAssortativeness) { this->ethnicAssortativeness = ethnicAssortativeness; }
@@ -76,7 +79,9 @@ private:
 	friend class SimulationBuilder;
 
     double riskAssortativeness;
-    double raceAssortativeness;
+
+    std::array<double, (std::size_t)DemographicProfile::Race::Last> raceAssortativeness;
+
     double ethnicAssortativeness;
 
     double chanceChooseWithSteady;

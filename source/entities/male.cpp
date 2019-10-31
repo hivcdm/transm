@@ -236,7 +236,7 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
     }
 
     auto entityRace = getDemographicProfileVal<DemographicProfile::Race>();
-    if (_randomNums.chance(behavior.getRaceAssortativeness()))
+    if (_randomNums.chance(behavior.getRaceAssortativeness(entityRace)))
     {
         // if non-assortative (homogeneous), choose entities own race
         selector.set(DemographicProfile::Demographic::Race, (std::size_t)entityRace);
