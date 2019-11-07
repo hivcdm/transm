@@ -254,7 +254,7 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
     }
 
     auto entityEthnicity = getDemographicProfileVal<DemographicProfile::Ethnicity>();
-    if (_randomNums.chance(behavior.getEthnicAssortativeness()))
+    if (_randomNums.chance(behavior.getEthnicityAssortativeness(entityEthnicity)))
     {
         // if non-assortative (homogeneous), choose entities own ethnicity
         selector.set(DemographicProfile::Demographic::Ethnicity, (std::size_t)entityEthnicity);

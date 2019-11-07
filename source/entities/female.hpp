@@ -69,7 +69,8 @@ public:
         { throw std::runtime_error("not implemented for women"); }
     void SetRaceAssortativeness(DemographicProfile::Race /*race*/, SexualPartnership::Type /*partnership_type*/, double /*assortativeness*/)
         { throw std::runtime_error("not implemented for women"); }
-    void SetEthnicAssortativeness(SexualPartnership::Type /*partnership_type*/, double /*assortativeness*/)
+    void SetEthnicityAssortativeness(DemographicProfile::Ethnicity ethnicity, SexualPartnership::Type /*partnership_type*/,
+        double /*assortativeness*/)
         { throw std::runtime_error("not implemented for women"); }
 
     void SetVaginalMicrobicideAdherence(double adherence);

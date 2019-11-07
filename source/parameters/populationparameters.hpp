@@ -133,8 +133,8 @@ public:
 		{ defaultMaleParams.getSexualBehavior(partnership_type).setRiskAssortativeness(assortativeness); }
     void SetRaceAssortativeness(DemographicProfile::Race race, SexualPartnership::Type partnership_type, double assortativeness)
 		{ defaultMaleParams.getSexualBehavior(partnership_type).setRaceAssortativeness(race, assortativeness); }
-    void SetEthnicAssortativeness(SexualPartnership::Type partnership_type, double assortativeness)
-		{ defaultMaleParams.getSexualBehavior(partnership_type).setEthnicAssortativeness(assortativeness); }
+    void SetEthnicAssortativeness(DemographicProfile::Ethnicity ethnicity, SexualPartnership::Type partnership_type, double assortativeness)
+		{ defaultMaleParams.getSexualBehavior(partnership_type).setEthnicityAssortativeness(ethnicity, assortativeness); }
 
 	int GetInitialSize() const { return initSize; }
 	void SetInitialSize(int size) { initSize = size; }

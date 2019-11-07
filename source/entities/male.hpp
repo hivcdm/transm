@@ -189,8 +189,10 @@ public:
         { populationSpecificParams.getSexualBehavior(partnership_type).setRiskAssortativeness(assortativeness); }
     void SetRaceAssortativeness(DemographicProfile::Race race, SexualPartnership::Type partnership_type, double assortativeness)
         { populationSpecificParams.getSexualBehavior(partnership_type).setRaceAssortativeness(race, assortativeness); }
-    void SetEthnicAssortativeness(SexualPartnership::Type partnership_type, double assortativeness)
-        { populationSpecificParams.getSexualBehavior(partnership_type).setEthnicAssortativeness(assortativeness); }
+    void SetEthnicityAssortativeness(DemographicProfile::Ethnicity ethnicity, SexualPartnership::Type partnership_type,
+        double assortativeness) {
+        populationSpecificParams.getSexualBehavior(partnership_type).setEthnicityAssortativeness(ethnicity, assortativeness);
+    }
 
     double getChanceBecomeCsw() const;
 

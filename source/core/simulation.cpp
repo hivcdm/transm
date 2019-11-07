@@ -727,7 +727,7 @@ std::size_t Simulation::SimulateMonth()
 	}
 
 	//steadyCouple, flings, and dissolveSexualPartnerships
-    //population_.ResetPartnershipTracking();
+    population_.ResetPartnershipTracking();
 	population_.UpdatePartnerships(parameters_);
 
 	if(recordPartAcq)

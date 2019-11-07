@@ -43,4 +43,9 @@ const double SexualBehavior::getRaceAssortativeness(DemographicProfile::Race rac
     return raceAssortativeness[(std::size_t)race];
 }
 
+const double SexualBehavior::getEthnicityAssortativeness(DemographicProfile::Ethnicity ethnicity) const
+{
+    return ethnicityAssortativeness[(std::size_t)ethnicity];
+}
+
 } // namespace transm

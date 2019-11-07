@@ -63,8 +63,11 @@ public :
     }
 	const double getRaceAssortativeness(DemographicProfile::Race race) const;
 
-    double getEthnicAssortativeness() const { return ethnicAssortativeness; }
-    void setEthnicAssortativeness(double ethnicAssortativeness) { this->ethnicAssortativeness = ethnicAssortativeness; }
+    void setBaselineEthnicityAssortativeness(double baselineAssortivity) { ethnicityAssortativeness.fill(baselineAssortivity); }
+    void setEthnicityAssortativeness(DemographicProfile::Ethnicity ethnicity, double assortivity) {
+        ethnicityAssortativeness[static_cast<std::size_t>(ethnicity)] = assortivity;
+    }
+	const double getEthnicityAssortativeness(DemographicProfile::Ethnicity ethnicity) const;
 
     void setChanceChooseWithSteady(double chance) { chanceChooseWithSteady = chance; }
     double getChanceChooseWithSteady() { return chanceChooseWithSteady; }
@@ -81,8 +84,7 @@ private:
     double riskAssortativeness;
 
     std::array<double, (std::size_t)DemographicProfile::Race::Last> raceAssortativeness;
-
-    double ethnicAssortativeness;
+    std::array<double, (std::size_t)DemographicProfile::Ethnicity::Last> ethnicityAssortativeness;
 
     double chanceChooseWithSteady;
 
