@@ -3501,8 +3501,7 @@ void Population::Initialize(const PopulationParameters &parameters)
     for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
     {
         if(!popWideParams.GetMaleParameters().hasSexualBehavior(partnership_type)) continue;
-        assort[partnership_type] = popWideParams.GetMaleParameters().
-		  getSexualBehavior(partnership_type).getRiskAssortativeness();
+        assort[partnership_type] = popWideParams.GetMaleParameters().getRiskAssortativeness();
     }
 
     //create EntityPool - this will contain all Entities

@@ -95,8 +95,29 @@ public :
 	    double GetProportionCircumcised() const { return proportionCircumcised; }
 	    void SetProportionCircumcised(double value) { proportionCircumcised = value; }
 
+        double getRiskAssortativeness() const { return riskAssortativeness; }
+        void setRiskAssortativeness(double riskAssortativeness) { this->riskAssortativeness = riskAssortativeness; }
+
+        void setBaselineRaceAssortativeness(double baselineAssortivity)
+            { raceAssortativeness.fill(baselineAssortivity); }
+        void setRaceAssortativeness(DemographicProfile::Race race, double assortivity) {
+            raceAssortativeness[static_cast<std::size_t>(race)] = assortivity;
+        }
+        const double getRaceAssortativeness(DemographicProfile::Race race) const {
+            return raceAssortativeness[(std::size_t)race];
+        }
+
+        void setBaselineEthnicityAssortativeness(double baselineAssortivity)
+            { ethnicityAssortativeness.fill(baselineAssortivity); }
+        void setEthnicityAssortativeness(DemographicProfile::Ethnicity ethnicity, double assortivity) {
+            ethnicityAssortativeness[static_cast<std::size_t>(ethnicity)] = assortivity;
+        }
+        const double getEthnicityAssortativeness(DemographicProfile::Ethnicity ethnicity) const {
+            return ethnicityAssortativeness[(std::size_t)ethnicity];
+        }
+
     private:
-	    Age cswEndAge;
+        Age cswEndAge;
 
 		//chance that a male will become a CSW
 		double chanceBecomeCSW;
@@ -146,6 +167,12 @@ public :
 
         //contains all current partnerships including CSW and Casual
         std::list<SexualPartnership *> partners[(int)SexualPartnership::Type::Last];
+
+        // assortativeness
+        double riskAssortativeness;
+        std::array<double, (std::size_t)DemographicProfile::Race::Last> raceAssortativeness;
+        std::array<double, (std::size_t)DemographicProfile::Ethnicity::Last> ethnicityAssortativeness;
+
 	};
 
 public:
@@ -186,12 +213,12 @@ public:
     void SetChanceBecomeSexWorker(double chance) { populationSpecificParams.SetChanceBecomeCsw(chance); }
 
     void SetRiskAssortativeness(SexualPartnership::Type partnership_type, double assortativeness)
-        { populationSpecificParams.getSexualBehavior(partnership_type).setRiskAssortativeness(assortativeness); }
+        { populationSpecificParams.setRiskAssortativeness(assortativeness); }
     void SetRaceAssortativeness(DemographicProfile::Race race, SexualPartnership::Type partnership_type, double assortativeness)
-        { populationSpecificParams.getSexualBehavior(partnership_type).setRaceAssortativeness(race, assortativeness); }
+        { populationSpecificParams.setRaceAssortativeness(race, assortativeness); }
     void SetEthnicityAssortativeness(DemographicProfile::Ethnicity ethnicity, SexualPartnership::Type partnership_type,
         double assortativeness) {
-        populationSpecificParams.getSexualBehavior(partnership_type).setEthnicityAssortativeness(ethnicity, assortativeness);
+        populationSpecificParams.setEthnicityAssortativeness(ethnicity, assortativeness);
     }
 
     double getChanceBecomeCsw() const;

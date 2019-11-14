@@ -705,7 +705,43 @@ SexualBehavior SimulationParametersXml::GetSexualBehavior(const std::string &ent
 
     SexualBehavior result(type);
 
-    auto assortivityNode = node.child("selectionCriteria").child("assortivity");
+    result.setChanceChooseWithSteady(Text<double>(node.child("chanceChooseWithSteady")));
+
+    result.setAverageYearsYounger(GetNormalDist(node.child("selectionCriteria").child("averageYearsYounger")));
+
+    for (auto risk : {RiskLevel::LOW, RiskLevel::HIGH})
+    {
+        auto risk_node = node.child(risk == RiskLevel::LOW ? "lowRisk" : "highRisk");
+
+        result.setAcquisitionRatePerMonth(risk, GetLogNormalDist(risk_node.child("acquisitionRate")));
+        result.setCoitalEventsPerMonth(risk, Text<double>(risk_node.child("coitalEventsPerMonth").child("distribution").child("mean")));
+        result.setChanceCondomUsePerEvent(risk, GetBetaDist(risk_node.child("chanceCondomUsePerEvent")));
+        result.setPartnershipDuration(risk, GetShiftedLogNormalDist(risk_node.child("partnershipDurationMth")));
+    }
+
+    return result;
+}
+
+Male::SubPopParams SimulationParametersXml::GetMaleSubPopParams() const
+{
+    auto node = document_.select_node("/simulation/population/entities/entity[@type='male']").node();
+
+    Male::SubPopParams result;
+
+    auto behavior_node = node.child("behavior");
+    result.SetCswEndAge(Age(Text<int>(behavior_node.child("cswEndAge")), 0));
+    result.SetChanceBecomeCsw(Text<double>(behavior_node.child("chanceBecomeSexWorker")));
+    result.SetPartnerAcqMultWithSteady(RiskLevel::HIGH, Text<double>(behavior_node.child("partnerAcqMultWithSteadyHighRisk")));
+    result.SetPartnerAcqMultWithSteady(RiskLevel::LOW, Text<double>(behavior_node.child("partnerAcqMultWithSteadyLowRisk")));
+
+    bool use_high_risk_multiplier = Attr<bool>(behavior_node.child("highRiskAcqRateMultiplier"), "enabled");
+    double high_risk_multiplier = Text<double>(behavior_node.child("highRiskAcqRateMultiplier"));
+    bool use_csw_high_risk_multiplier = Attr<bool>(behavior_node.child("highRiskCswAcqRateMultiplier"), "enabled");
+    double csw_high_risk_multiplier = Text<double>(behavior_node.child("highRiskCswAcqRateMultiplier"));
+
+    result.SetCoefficientVariation(false, 0);
+
+    auto assortivityNode = behavior_node.child("assortivity");
     result.setRiskAssortativeness(Text<double>(assortivityNode.child("riskAssortivity")));
 
     auto raceAssortivityNode = assortivityNode.child("raceAssortivity");
@@ -743,44 +779,8 @@ SexualBehavior SimulationParametersXml::GetSexualBehavior(const std::string &ent
             }
         }
     }
-
-    result.setChanceChooseWithSteady(Text<double>(assortivityNode.child("chanceChooseWithSteady")));
     result.setChanceMsmwChooseMale(Text<double>(assortivityNode.child("chanceMsmwChooseMale")));
     result.setChanceMsmChooseMsmw(Text<double>(assortivityNode.child("chanceMsmChooseMsmw")));
-
-    result.setAverageYearsYounger(GetNormalDist(node.child("selectionCriteria").child("averageYearsYounger")));
-
-    for (auto risk : {RiskLevel::LOW, RiskLevel::HIGH})
-    {
-        auto risk_node = node.child(risk == RiskLevel::LOW ? "lowRisk" : "highRisk");
-
-        result.setAcquisitionRatePerMonth(risk, GetLogNormalDist(risk_node.child("acquisitionRate")));
-        result.setCoitalEventsPerMonth(risk, Text<double>(risk_node.child("coitalEventsPerMonth").child("distribution").child("mean")));
-        result.setChanceCondomUsePerEvent(risk, GetBetaDist(risk_node.child("chanceCondomUsePerEvent")));
-        result.setPartnershipDuration(risk, GetShiftedLogNormalDist(risk_node.child("partnershipDurationMth")));
-    }
-
-    return result;
-}
-
-Male::SubPopParams SimulationParametersXml::GetMaleSubPopParams() const
-{
-    auto node = document_.select_node("/simulation/population/entities/entity[@type='male']").node();
-
-    Male::SubPopParams result;
-
-    auto behavior_node = node.child("behavior");
-    result.SetCswEndAge(Age(Text<int>(behavior_node.child("cswEndAge")), 0));
-    result.SetChanceBecomeCsw(Text<double>(behavior_node.child("chanceBecomeSexWorker")));
-    result.SetPartnerAcqMultWithSteady(RiskLevel::HIGH, Text<double>(behavior_node.child("partnerAcqMultWithSteadyHighRisk")));
-    result.SetPartnerAcqMultWithSteady(RiskLevel::LOW, Text<double>(behavior_node.child("partnerAcqMultWithSteadyLowRisk")));
-
-    bool use_high_risk_multiplier = Attr<bool>(behavior_node.child("highRiskAcqRateMultiplier"), "enabled");
-    double high_risk_multiplier = Text<double>(behavior_node.child("highRiskAcqRateMultiplier"));
-    bool use_csw_high_risk_multiplier = Attr<bool>(behavior_node.child("highRiskCswAcqRateMultiplier"), "enabled");
-    double csw_high_risk_multiplier = Text<double>(behavior_node.child("highRiskCswAcqRateMultiplier"));
-
-    result.SetCoefficientVariation(false, 0);
 
 	for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
 	{

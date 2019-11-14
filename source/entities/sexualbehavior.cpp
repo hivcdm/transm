@@ -38,14 +38,4 @@ const ShiftedLogNormalDist SexualBehavior::getPartnershipDurationMth(RiskLevel r
     return partnershipDurationMth[(std::size_t)risk];
 }
 
-const double SexualBehavior::getRaceAssortativeness(DemographicProfile::Race race) const
-{
-    return raceAssortativeness[(std::size_t)race];
-}
-
-const double SexualBehavior::getEthnicityAssortativeness(DemographicProfile::Ethnicity ethnicity) const
-{
-    return ethnicityAssortativeness[(std::size_t)ethnicity];
-}
-
 } // namespace transm

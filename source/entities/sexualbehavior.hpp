@@ -54,21 +54,6 @@ public :
 
     void setAcquisitionRatePerMonth(RiskLevel risk, LogNormalDist dist) { acquisitionRatePerMonth[static_cast<std::size_t>(risk)] = dist; }
 
-    double getRiskAssortativeness() const { return riskAssortativeness; }
-    void setRiskAssortativeness(double riskAssortativeness) { this->riskAssortativeness = riskAssortativeness; }
-
-    void setBaselineRaceAssortativeness(double baselineAssortivity) { raceAssortativeness.fill(baselineAssortivity); }
-    void setRaceAssortativeness(DemographicProfile::Race race, double assortivity) {
-        raceAssortativeness[static_cast<std::size_t>(race)] = assortivity;
-    }
-	const double getRaceAssortativeness(DemographicProfile::Race race) const;
-
-    void setBaselineEthnicityAssortativeness(double baselineAssortivity) { ethnicityAssortativeness.fill(baselineAssortivity); }
-    void setEthnicityAssortativeness(DemographicProfile::Ethnicity ethnicity, double assortivity) {
-        ethnicityAssortativeness[static_cast<std::size_t>(ethnicity)] = assortivity;
-    }
-	const double getEthnicityAssortativeness(DemographicProfile::Ethnicity ethnicity) const;
-
     void setChanceChooseWithSteady(double chance) { chanceChooseWithSteady = chance; }
     double getChanceChooseWithSteady() { return chanceChooseWithSteady; }
 
@@ -80,11 +65,6 @@ public :
 
 private:
 	friend class SimulationBuilder;
-
-    double riskAssortativeness;
-
-    std::array<double, (std::size_t)DemographicProfile::Race::Last> raceAssortativeness;
-    std::array<double, (std::size_t)DemographicProfile::Ethnicity::Last> ethnicityAssortativeness;
 
     double chanceChooseWithSteady;
 
