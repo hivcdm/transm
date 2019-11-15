@@ -44,6 +44,12 @@ int RandomNumberGenerator::chooseIndex(const std::vector<double> &_indexProbabil
 	return static_cast<int>(currIndex);
 }
 
+int RandomNumberGenerator::chooseIndex(const std::size_t array_size)
+{
+    return randInt() % array_size;
+}
+
+
 bool RandomNumberGenerator::chance(double _probability)
 {
 	//assert(Utility::valid_probability(_probability));

@@ -144,7 +144,7 @@ void Male::SetAcquisitionRatePerMonth(RiskLevel risk, SexualPartnership::Type pa
 DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerator &_randomNums,
     SexualPartnership::Type _partnershipType)
 {
-    SexualBehavior behavior = populationSpecificParams.getSexualBehavior(_partnershipType);
+    DemographicProfile::ProfileID entityProfileID;
     DemographicProfile selector;
 
     // only sexually active partners allowed
@@ -164,6 +164,7 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
         selector.set(DemographicProfile::Demographic::Employment,
             (std::size_t)DemographicProfile::Employment::NonCsw);
         //choose steady partner -- base on percentWithSteady
+        SexualBehavior behavior = populationSpecificParams.getSexualBehavior(_partnershipType);
         if (_randomNums.chance(behavior.getChanceChooseWithSteady()))
         {
             selector.set(DemographicProfile::Demographic::RelationshipStatus,
@@ -236,42 +237,37 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
     }
 
     auto entityRace = getDemographicProfileVal<DemographicProfile::Race>();
+    DemographicProfile::Race partnerRace;
     if (_randomNums.chance(populationSpecificParams.getRaceAssortativeness(entityRace)))
     {
         // if non-assortative (homogeneous), choose entities own race
-        selector.set(DemographicProfile::Demographic::Race, (std::size_t)entityRace);
+        partnerRace = entityRace;
     }
     else
     {
-        // choose a race that is not the entities
-        auto partnerRace = (std::size_t)entityRace;
-        while (partnerRace == (std::size_t)entityRace)
-        {
-            partnerRace = _randomNums.randInt((std::size_t)DemographicProfile::Race::First,
-                ((std::size_t)DemographicProfile::Race::Last - 1));
-        }
-        selector.set(DemographicProfile::Demographic::Race, partnerRace);
+        // choose a race randomly from the allowed list of races
+        std::vector<DemographicProfile::Race> races = populationSpecificParams.allowedRaceEthnicityMap.GetRaceKeys();
+        partnerRace = races[_randomNums.chooseIndex(races.size())];
     }
+    selector.set(DemographicProfile::Demographic::Race, (std::size_t)partnerRace);
 
     auto entityEthnicity = getDemographicProfileVal<DemographicProfile::Ethnicity>();
+    DemographicProfile::Ethnicity partnerEthnicity;
     if (_randomNums.chance(populationSpecificParams.getEthnicityAssortativeness(entityEthnicity)))
     {
         // if non-assortative (homogeneous), choose entities own ethnicity
-        selector.set(DemographicProfile::Demographic::Ethnicity, (std::size_t)entityEthnicity);
+        partnerEthnicity = entityEthnicity;
     }
     else
     {
-        // choose a race that is not the entities
-        auto partnerEthnicity = (std::size_t)entityEthnicity;
-        while (partnerEthnicity == (std::size_t)entityEthnicity)
-        {
-            partnerEthnicity = _randomNums.randInt((std::size_t)DemographicProfile::Ethnicity::First,
-                ((std::size_t)DemographicProfile::Ethnicity::Last - 1));
-        }
-        selector.set(DemographicProfile::Demographic::Ethnicity, partnerEthnicity);
+        // choose an ethnicity randomly from the allowed list of ethnicity for the chosen partner's race
+        std::vector<DemographicProfile::Ethnicity> ethnicities =
+          populationSpecificParams.allowedRaceEthnicityMap.GetEthnicityForRace(partnerRace);
+        partnerEthnicity = ethnicities[_randomNums.chooseIndex(ethnicities.size())];
     }
+    selector.set(DemographicProfile::Demographic::Ethnicity, (std::size_t)partnerEthnicity);
 
-	std::vector<DemographicProfile::ProfileID> validBucketIDs;
+    std::vector<DemographicProfile::ProfileID> validBucketIDs;
     selector.selectProfileIDs(validBucketIDs, nullptr);
 
     assert(validBucketIDs.size() == 1);

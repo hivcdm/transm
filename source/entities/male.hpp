@@ -9,6 +9,30 @@
 
 namespace transm {
 
+class RaceEthnicityMap {
+    using RaceEthnicityMapType = std::map<DemographicProfile::Race,
+                                          std::vector<DemographicProfile::Ethnicity>>;
+  public:
+    void insert(DemographicProfile::Race race, std::vector<DemographicProfile::Ethnicity> ethnicities) {
+        raceToEthnicityMap[race] = ethnicities;
+    }
+    std::vector<DemographicProfile::Ethnicity> GetEthnicityForRace(DemographicProfile::Race race) {
+        return raceToEthnicityMap.at(race);
+    }
+    void SetRaceKeys() {
+        for (RaceEthnicityMapType::iterator it = raceToEthnicityMap.begin(); it != raceToEthnicityMap.end(); ++it) {
+            raceKeys.push_back(it->first);
+        }
+    }
+    std::vector<DemographicProfile::Race> GetRaceKeys() {
+        return raceKeys;
+    }
+
+  private:
+    RaceEthnicityMapType raceToEthnicityMap;
+    std::vector<DemographicProfile::Race> raceKeys;
+};
+
 /// <summary>
 /// All females in the simulation are members of this class, or a class derived from this one
 /// </summary>
@@ -95,6 +119,12 @@ public :
 	    double GetProportionCircumcised() const { return proportionCircumcised; }
 	    void SetProportionCircumcised(double value) { proportionCircumcised = value; }
 
+        void setChanceMsmwChooseMale(double chance) { chanceMsmwChooseMale = chance; }
+        double getChanceMsmwChooseMale() { return chanceMsmwChooseMale; }
+
+        void setChanceMsmChooseMsmw(double chance) { chanceMsmChooseMsmw = chance; }
+        double getChanceMsmChooseMsmw() { return chanceMsmChooseMsmw; }
+
         double getRiskAssortativeness() const { return riskAssortativeness; }
         void setRiskAssortativeness(double riskAssortativeness) { this->riskAssortativeness = riskAssortativeness; }
 
@@ -115,6 +145,9 @@ public :
         const double getEthnicityAssortativeness(DemographicProfile::Ethnicity ethnicity) const {
             return ethnicityAssortativeness[(std::size_t)ethnicity];
         }
+
+    protected:
+        friend class Male;
 
     private:
         Age cswEndAge;
@@ -169,9 +202,13 @@ public :
         std::list<SexualPartnership *> partners[(int)SexualPartnership::Type::Last];
 
         // assortativeness
+        double chanceMsmwChooseMale;
+        double chanceMsmChooseMsmw;
         double riskAssortativeness;
         std::array<double, (std::size_t)DemographicProfile::Race::Last> raceAssortativeness;
         std::array<double, (std::size_t)DemographicProfile::Ethnicity::Last> ethnicityAssortativeness;
+
+        RaceEthnicityMap allowedRaceEthnicityMap;
 
 	};
 

@@ -3476,9 +3476,101 @@ void Population::RecordPartnership(const Entity *initiator, const Entity *partne
 
 void Population::PrintPartnershipTracking(std::ostream &_outStream, Time currTime)
 {
-    _outStream << Constants::Tab << "Initiating Partners By Chosen Partners " <<  currTime.in_months() << std::endl;
+    // Print Headers
+    _outStream << Constants::Tab << "Initiating Partners By Chosen Partners at " <<  currTime.in_months() << std::endl;
+    _outStream << Constants::Tab; // Skip first cell
+    for (DemographicProfile::ProfileID partnerProfileID : entities->getPartnerProfileIDs()) {
+        auto partDemoProfile = DemographicProfile(partnerProfileID);
+        if (partDemoProfile.get(DemographicProfile::Demographic::RelationshipStatus) ==
+            (int)DemographicProfile::RelationshipStatus::Single) {
+            continue;
+        }
+        if (partDemoProfile.get(DemographicProfile::Demographic::Gender) ==
+            (int)DemographicProfile::Gender::Male &&
+            partDemoProfile.get(DemographicProfile::Demographic::SexualOrientation) ==
+            (int)DemographicProfile::SexualOrientation::Msw) {
+            continue;
+        }
+        if (partDemoProfile.get(DemographicProfile::Demographic::Gender) ==
+            (int)DemographicProfile::Gender::Male &&
+            partDemoProfile.get(DemographicProfile::Demographic::Employment) ==
+            (int)DemographicProfile::Employment::Csw) {
+            continue;
+        }
+        if (!(partDemoProfile.get(DemographicProfile::Demographic::Race) ==
+            (int)DemographicProfile::Race::White) &&
+            partDemoProfile.get(DemographicProfile::Demographic::Ethnicity) ==
+            (int)DemographicProfile::Ethnicity::Hispanic) {
+            continue;
+        }
+        _outStream << *DemographicProfile::toString(partnerProfileID) << Constants::Tab;
+    }
+    _outStream << std::endl;
 
-    _outStream << Constants::Tab;
+    // Print Data
+    // collapse non-single and single relationship counts
+    for (DemographicProfile::ProfileID initiatorProfileID : entities->getInitiatorProfileIDs()) {
+        auto initDemoProfile = DemographicProfile(initiatorProfileID);
+        if (initDemoProfile.get(DemographicProfile::Demographic::RelationshipStatus) ==
+            (int)DemographicProfile::RelationshipStatus::Single) {
+            continue;
+        }
+        if (!(initDemoProfile.get(DemographicProfile::Demographic::Race) ==
+            (int)DemographicProfile::Race::White) &&
+            initDemoProfile.get(DemographicProfile::Demographic::Ethnicity) ==
+            (int)DemographicProfile::Ethnicity::Hispanic) {
+            continue;
+        }
+        _outStream << *DemographicProfile::toString(initiatorProfileID) << Constants::Tab;
+        for (DemographicProfile::ProfileID partnerProfileID : entities->getPartnerProfileIDs()) {
+            auto partDemoProfile = DemographicProfile(partnerProfileID);
+            if (partDemoProfile.get(DemographicProfile::Demographic::RelationshipStatus) ==
+                (int)DemographicProfile::RelationshipStatus::Single) {
+                continue;
+            }
+            if (partDemoProfile.get(DemographicProfile::Demographic::Gender) ==
+                (int)DemographicProfile::Gender::Male &&
+                partDemoProfile.get(DemographicProfile::Demographic::SexualOrientation) ==
+                (int)DemographicProfile::SexualOrientation::Msw) {
+                continue;
+            }
+            if (partDemoProfile.get(DemographicProfile::Demographic::Gender) ==
+                (int)DemographicProfile::Gender::Male &&
+                partDemoProfile.get(DemographicProfile::Demographic::Employment) ==
+                (int)DemographicProfile::Employment::Csw) {
+                continue;
+            }
+            if (!(partDemoProfile.get(DemographicProfile::Demographic::Race) ==
+                (int)DemographicProfile::Race::White) &&
+                partDemoProfile.get(DemographicProfile::Demographic::Ethnicity) ==
+                (int)DemographicProfile::Ethnicity::Hispanic) {
+                continue;
+            }
+            auto initNonSingleProfile = DemographicProfile(initiatorProfileID);
+            initNonSingleProfile.set(DemographicProfile::Demographic::RelationshipStatus,
+                (int)DemographicProfile::RelationshipStatus::NonSingle);
+            auto initSingleProfile = DemographicProfile(initiatorProfileID);
+            initSingleProfile.set(DemographicProfile::Demographic::RelationshipStatus,
+                (int)DemographicProfile::RelationshipStatus::Single);
+            auto partNonSingleProfile = DemographicProfile(partnerProfileID);
+            partNonSingleProfile.set(DemographicProfile::Demographic::RelationshipStatus,
+                (int)DemographicProfile::RelationshipStatus::NonSingle);
+            auto partSingleProfile = DemographicProfile(partnerProfileID);
+            partSingleProfile.set(DemographicProfile::Demographic::RelationshipStatus,
+                (int)DemographicProfile::RelationshipStatus::Single);
+            unsigned long count =
+              newPartnershipCountByProfile[initSingleProfile.getProfileID()][partSingleProfile.getProfileID()] +
+              newPartnershipCountByProfile[initSingleProfile.getProfileID()][partNonSingleProfile.getProfileID()] +
+              newPartnershipCountByProfile[initNonSingleProfile.getProfileID()][partSingleProfile.getProfileID()] +
+              newPartnershipCountByProfile[initNonSingleProfile.getProfileID()][partNonSingleProfile.getProfileID()];
+            _outStream << count << Constants::Tab;
+        }
+        _outStream << std::endl;
+    }
+
+#if 0
+    // Headers
+    _outStream << Constants::Tab; // Skip first cell
     for (DemographicProfile::ProfileID partnerProfileID : entities->getPartnerProfileIDs()) {
         _outStream << *DemographicProfile::toString(partnerProfileID) << Constants::Tab;
     }
@@ -3491,6 +3583,7 @@ void Population::PrintPartnershipTracking(std::ostream &_outStream, Time currTim
         }
         _outStream << std::endl;
     }
+#endif
 }
 
 void Population::Initialize(const PopulationParameters &parameters)

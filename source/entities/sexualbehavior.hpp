@@ -57,20 +57,10 @@ public :
     void setChanceChooseWithSteady(double chance) { chanceChooseWithSteady = chance; }
     double getChanceChooseWithSteady() { return chanceChooseWithSteady; }
 
-    void setChanceMsmwChooseMale(double chance) { chanceMsmwChooseMale = chance; }
-    double getChanceMsmwChooseMale() { return chanceMsmwChooseMale; }
-
-    void setChanceMsmChooseMsmw(double chance) { chanceMsmChooseMsmw = chance; }
-    double getChanceMsmChooseMsmw() { return chanceMsmChooseMsmw; }
-
 private:
 	friend class SimulationBuilder;
 
     double chanceChooseWithSteady;
-
-    double chanceMsmwChooseMale;
-
-    double chanceMsmChooseMsmw;
 
 	//the partnership type that these parameters represent
 	SexualPartnership::Type partnershipType;
