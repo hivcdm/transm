@@ -19,12 +19,12 @@ class RaceEthnicityMap {
     std::vector<DemographicProfile::Ethnicity> GetEthnicityForRace(DemographicProfile::Race race) {
         return raceToEthnicityMap.at(race);
     }
-    void SetRaceKeys() {
+    void SetRaceKeysFromMap() {
         for (RaceEthnicityMapType::iterator it = raceToEthnicityMap.begin(); it != raceToEthnicityMap.end(); ++it) {
             raceKeys.push_back(it->first);
         }
     }
-    std::vector<DemographicProfile::Race> GetRaceKeys() {
+    std::vector<DemographicProfile::Race> GetRaceKeysFromMap() {
         return raceKeys;
     }
 
@@ -144,6 +144,10 @@ public :
         }
         const double getEthnicityAssortativeness(DemographicProfile::Ethnicity ethnicity) const {
             return ethnicityAssortativeness[(std::size_t)ethnicity];
+        }
+
+        RaceEthnicityMap* GetAllowedRaceEthnicityMap() {
+            return &allowedRaceEthnicityMap;
         }
 
     protected:

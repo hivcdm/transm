@@ -246,7 +246,7 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
     else
     {
         // choose a race randomly from the allowed list of races
-        std::vector<DemographicProfile::Race> races = populationSpecificParams.allowedRaceEthnicityMap.GetRaceKeys();
+        std::vector<DemographicProfile::Race> races = populationSpecificParams.allowedRaceEthnicityMap.GetRaceKeysFromMap();
         partnerRace = races[_randomNums.chooseIndex(races.size())];
     }
     selector.set(DemographicProfile::Demographic::Race, (std::size_t)partnerRace);

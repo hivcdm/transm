@@ -93,6 +93,24 @@ DemographicProfile::Employment SimulationParametersXml::from_string(const std::s
 }
 
 template<>
+DemographicProfile::Race SimulationParametersXml::from_string(const std::string &race)
+{
+    if(race == "BLACK") return DemographicProfile::Race::Black;
+    if(race == "WHITE") return DemographicProfile::Race::White;
+    if(race == "OTHER") return DemographicProfile::Race::Other;
+    throw std::runtime_error("unknown gender: " + race);
+}
+
+template<>
+DemographicProfile::Ethnicity SimulationParametersXml::from_string(const std::string &ethnicity)
+{
+    if(ethnicity == "NON_HISPANIC") return DemographicProfile::Ethnicity::NonHispanic;
+    if(ethnicity == "HISPANIC") return DemographicProfile::Ethnicity::Hispanic;
+
+    throw std::runtime_error("unknown gender: " + ethnicity);
+}
+
+template<>
 HVLStrata SimulationParametersXml::from_string(const std::string &hvl_string)
 {
     if(hvl_string == "-1" || hvl_string == "uninfected") return HVLStrata::UNINFECTED;
@@ -705,7 +723,7 @@ SexualBehavior SimulationParametersXml::GetSexualBehavior(const std::string &ent
 
     SexualBehavior result(type);
 
-    result.setChanceChooseWithSteady(Text<double>(node.child("chanceChooseWithSteady")));
+    result.setChanceChooseWithSteady(Text<double>(node.child("selectionCriteria").child("chanceChooseWithSteady")));
 
     result.setAverageYearsYounger(GetNormalDist(node.child("selectionCriteria").child("averageYearsYounger")));
 
@@ -727,6 +745,20 @@ Male::SubPopParams SimulationParametersXml::GetMaleSubPopParams() const
     auto node = document_.select_node("/simulation/population/entities/entity[@type='male']").node();
 
     Male::SubPopParams result;
+
+    auto allowed_race_eth_node = node.child("allowedRaceAndEthnicities");
+    std::vector<DemographicProfile::Race> races;
+    RaceEthnicityMap *raceEthMap = result.GetAllowedRaceEthnicityMap();
+    for (auto allowed_race_node : allowed_race_eth_node.children("allowedRace")) {
+        DemographicProfile::Race race = Attr<DemographicProfile::Race>(allowed_race_node, "race");
+        races.push_back(race);
+        std::vector<DemographicProfile::Ethnicity> ethnicities;
+        for (auto ethnicity_node : allowed_race_node.children("allowedEthnicity")) {
+            ethnicities.push_back(Attr<DemographicProfile::Ethnicity>(ethnicity_node, "ethnicity"));
+        }
+        raceEthMap->insert(race, ethnicities);
+    }
+    raceEthMap->SetRaceKeysFromMap();
 
     auto behavior_node = node.child("behavior");
     result.SetCswEndAge(Age(Text<int>(behavior_node.child("cswEndAge")), 0));
