@@ -884,19 +884,59 @@ Female::SubPopParams SimulationParametersXml::GetFemaleSubPopParams() const
  * The demographic profiles specified in the xml for this simulation are defined
  * in this function. It must be kept in sync with all other instances of demographicProfiles.
  */
-SimulationParametersXml::EntityDistributions SimulationParametersXml::GetEntityDistributions(pugi::xml_node node) const
+SimulationParametersXml::EntityDistributions SimulationParametersXml::GetEntityDistributions(
+  pugi::xml_node node) const
 {
     EntityDistributions distributions;
 
-    for(auto distribution_node : node.children("distribution"))
+    // loop through the children of "demographicDistribution" node
+    for (auto child_node : node.children())
     {
-	    DemographicProfile profile;
+        std::string profileStr = "NA:";
+        double proportion = 1.0;
+        auto gender_node = node.child("gender");
+        auto orientation_node = node.child("orientation");
+        for (auto gender_attr : gender_node.attributes())
+        {
+            std::string genderStr = profileStr;
+            std::string genderNodeName = gender_attr.name();
+            genderStr.append(gender_attr.name()).append(":");
+            proportion *= Attr<double>(gender_node, gender_attr.name());
 
-        std::string bucketString = distribution_node.attribute("profile").as_string();
-        profile.parse(bucketString);
+            for (auto orientation_attr : orientation_node.attributes())
+            {
+                std::string orientationStr = genderStr;
+                orientationStr.append(orientation_attr.name()).append(":");
 
-        distributions.push_back(DemographicProfile::DoublePair(profile,
-			distribution_node.text().as_double()));
+                std::string orientationNodeName = orientation_attr.name();
+                if ((genderNodeName.compare("FEMALE") == 0))
+                {
+                    if (orientationNodeName.compare("MSW") == 0)
+                    {
+                        proportion = proportion * 1.0;
+                    } else {
+                        continue;
+                    }
+                } else {
+                    proportion *= Attr<double>(orientation_node, orientation_attr.name());
+                }
+
+                orientationStr.append("SINGLE:NON_CSW:");
+
+                auto race_eth_profile_node = node.child("raceAndEthnicityProfiles");
+                for (auto race_eth_node : race_eth_profile_node.children("raceAndEthnicity"))
+                {
+                    std::string raceEthStr = orientationStr;
+                    raceEthStr.append(Attr<std::string>(race_eth_node, "type"));
+                    proportion *= Text<double>(race_eth_node);
+
+                    DemographicProfile profile;
+                    profile.parse(raceEthStr);
+
+                    distributions.push_back(DemographicProfile::DoublePair(profile, proportion));
+                }
+            }
+        }
     }
 
     return distributions;
@@ -962,27 +1002,38 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
     PopulationParameters parameters;
     auto initial_state_node = population_node.child("initialState");
     parameters.SetInitialSize(Text<int>(initial_state_node.child("size")));
-    parameters.SetInitializeWithCounts(Text<bool>(initial_state_node.child("useCounts")));
 
-    //get initial age distribution
-    for (auto age_bucket_node : initial_state_node.child("entityDistributions").children("ageRange"))
+    //get initial age and profile distribution
+    auto initial_entity_distributions = initial_state_node.child("entityDistributions");
+    auto age_distribution_node = initial_entity_distributions.child("ageRangeDistributions");
+    auto demographic_distribution_node = initial_entity_distributions.child("demographicDistributions");
+    EntityDistributions distributions = GetEntityDistributions(demographic_distribution_node);
+
+    for (auto age_bucket_node : age_distribution_node.children("ageRange"))
 	{
-	    auto distributions = GetEntityDistributions(age_bucket_node);
-	    parameters.GetInitialAgeBuckets().emplace_back(
-		  Age(Attr<int>(age_bucket_node, "lower"), 0),
-		  Age(Attr<int>(age_bucket_node, "upper"), 11),
-		  distributions);
+        double ageRangeDistribution = age_bucket_node.text().as_double();
+
+        EntityDistributions ageDistributions;
+        for(auto distribution : distributions)
+        {
+            ageDistributions.push_back(DemographicProfile::DoublePair(distribution.first,
+                distribution.second * ageRangeDistribution));
+        }
+
+        parameters.GetInitialAgeBuckets().emplace_back(
+          Age(Attr<int>(age_bucket_node, "lower"), 0),
+          Age(Attr<int>(age_bucket_node, "upper"), 11),
+          ageDistributions);
     }
 	// set the age ranges specified by the xml --
 	// these are used mostly in printing headers in output files
 	parameters.SetAgeRanges();
-
     NormalizeEntityDistributions(parameters);
 
     auto births_node = population_node.child("births");
     parameters.SetBirthRate(Text<double>(births_node.child("rate")));
-	auto distributions = GetEntityDistributions(births_node.child("entityDistributions"));
-	for (auto distrib : distributions) {
+	auto birthDistributions = GetEntityDistributions(births_node.child("demographicDistributions"));
+	for (auto distrib : birthDistributions) {
 		parameters.SetBirthProportion(distrib.first, distrib.second);
 	}
 
