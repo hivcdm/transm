@@ -979,11 +979,48 @@ void Population::GenerateInitialEntities()
     }
     else
     {
-        std::vector<std::pair<DemographicProfile, AgeRange>> entityBuckets;
-        std::vector<double> entityValues;
+        unsigned long initialSize = popWideParams.GetInitialSize();
         for(auto &ageBucketParams : popWideParams.GetInitialAgeBuckets())
         {
             AgeRange ageRange = {ageBucketParams.GetMinAge(), ageBucketParams.GetMaxAge()};
+            unsigned long numToCreate = initialSize * ageBucketParams.GetProportionInAgeBucket();
+
+            std::vector<DemographicProfile> entityBuckets;
+            std::vector<double> entityValues;
+
+            int totalCreated = 0;
+            for (auto profileDoublePair : ageBucketParams.GetEntityProportions())
+            {
+                auto profile = profileDoublePair.first;
+                double proportion = profileDoublePair.second;
+                unsigned long createdCount = proportion * numToCreate;
+
+                entityBuckets.push_back(profile);
+                entityValues.push_back(proportion);
+
+                GenerateEntities(profile, createdCount, &ageRange);
+                totalCreated += createdCount;
+            }
+
+            if (totalCreated < numToCreate)
+            {
+                // If there is a remainder of individuals not created,
+                // distribute them randomly across age and profiles
+                int remainder = numToCreate - totalCreated;
+                for (int count = 0; count < remainder; count++)
+                {
+                    // choose a random profile and proportion
+                    auto index = parameters_.randomNums.chooseIndex(entityValues);
+                    auto profile = entityBuckets.at(index);
+
+                    GenerateEntities(profile, 1, &ageRange);
+                }
+            }
+        }
+    }
+
+
+                /*
             for (auto profileDoublePair : ageBucketParams.GetEntityProportions())
             {
                 auto profile = profileDoublePair.first;
@@ -991,20 +1028,38 @@ void Population::GenerateInitialEntities()
 
                 entityBuckets.push_back(std::make_pair(profile, ageRange));
                 entityValues.push_back(proportion);
+
+                // create the initial entities -- depending on proportions
+                unsigned long createdCount = proportion * numToCreate;
+                if (totalCreated + createdCount >= numToCreate) {
+                    createdCount = numToCreate - totalCreated;
+                    GenerateEntities(profile, createdCount, &ageRange);
+                    totalCreated += createdCount;
+                    break;
+                } else {
+                    GenerateEntities(profile, createdCount, &ageRange);
+                    totalCreated += createdCount;
+                }
             }
         }
 
-        // create the initial entities
-        for (unsigned long count = 0; count < popWideParams.GetInitialSize(); count++)
+        if (totalCreated <= initialSize)
         {
-            // choose a random profile and age range
-            auto index = parameters_.randomNums.chooseIndex(entityValues);
-            auto profile = std::get<0>(entityBuckets.at(index));
-            auto ageRange = std::get<1>(entityBuckets.at(index));
+            // If there is a remainder of individuals not created,
+            // distribute them randomly across age and profiles
+            int remainder = initialSize - totalCreated;
+            for (int count = 0; count < remainder; count++)
+            {
+                // choose a random profile and age range
+                auto index = parameters_.randomNums.chooseIndex(entityValues);
+                auto profile = std::get<0>(entityBuckets.at(index));
+                auto ageRange = std::get<1>(entityBuckets.at(index));
 
-            GenerateEntities(profile, 1, &ageRange);
+                GenerateEntities(profile, 1, &ageRange);
+            }
         }
-    }
+     }
+     */
 }
 
 void Population::GenerateEntities(const DemographicProfile &profile,

@@ -889,52 +889,49 @@ SimulationParametersXml::EntityDistributions SimulationParametersXml::GetEntityD
 {
     EntityDistributions distributions;
 
-    // loop through the children of "demographicDistribution" node
-    for (auto child_node : node.children())
+    std::string profileStr = "NA:";
+    auto gender_node = node.child("gender");
+    auto orientation_node = node.child("orientation");
+    for (auto gender_attr : gender_node.attributes())
     {
-        std::string profileStr = "NA:";
-        double proportion = 1.0;
-        auto gender_node = node.child("gender");
-        auto orientation_node = node.child("orientation");
-        for (auto gender_attr : gender_node.attributes())
+        std::string genderStr = profileStr;
+        std::string genderNodeName = gender_attr.name();
+        genderStr.append(gender_attr.name()).append(":");
+        double genderProportion = Attr<double>(gender_node, gender_attr.name());
+
+        for (auto orientation_attr : orientation_node.attributes())
         {
-            std::string genderStr = profileStr;
-            std::string genderNodeName = gender_attr.name();
-            genderStr.append(gender_attr.name()).append(":");
-            proportion *= Attr<double>(gender_node, gender_attr.name());
+            std::string orientationStr = genderStr;
+            orientationStr.append(orientation_attr.name()).append(":");
 
-            for (auto orientation_attr : orientation_node.attributes())
+            std::string orientationNodeName = orientation_attr.name();
+            double orientationProportion = 1.0;
+            if ((genderNodeName.compare("FEMALE") == 0))
             {
-                std::string orientationStr = genderStr;
-                orientationStr.append(orientation_attr.name()).append(":");
-
-                std::string orientationNodeName = orientation_attr.name();
-                if ((genderNodeName.compare("FEMALE") == 0))
+                if (orientationNodeName.compare("MSW") == 0)
                 {
-                    if (orientationNodeName.compare("MSW") == 0)
-                    {
-                        proportion = proportion * 1.0;
-                    } else {
-                        continue;
-                    }
+                    orientationProportion = 1.0;
                 } else {
-                    proportion *= Attr<double>(orientation_node, orientation_attr.name());
+                    continue;
                 }
+            } else {
+                orientationProportion = Attr<double>(orientation_node, orientation_attr.name());
+            }
 
-                orientationStr.append("SINGLE:NON_CSW:");
+            orientationStr.append("SINGLE:NON_CSW:");
 
-                auto race_eth_profile_node = node.child("raceAndEthnicityProfiles");
-                for (auto race_eth_node : race_eth_profile_node.children("raceAndEthnicity"))
-                {
-                    std::string raceEthStr = orientationStr;
-                    raceEthStr.append(Attr<std::string>(race_eth_node, "type"));
-                    proportion *= Text<double>(race_eth_node);
+            auto race_eth_profile_node = node.child("raceAndEthnicityProfiles");
+            for (auto race_eth_node : race_eth_profile_node.children("raceAndEthnicity"))
+            {
+                std::string raceEthStr = orientationStr;
+                raceEthStr.append(Attr<std::string>(race_eth_node, "type"));
+                double raceEthProportion = Text<double>(race_eth_node);
 
-                    DemographicProfile profile;
-                    profile.parse(raceEthStr);
+                DemographicProfile profile;
+                profile.parse(raceEthStr);
 
-                    distributions.push_back(DemographicProfile::DoublePair(profile, proportion));
-                }
+                distributions.push_back(DemographicProfile::DoublePair(profile,
+                    genderProportion * orientationProportion * raceEthProportion));
             }
         }
     }
@@ -1007,23 +1004,18 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
     auto initial_entity_distributions = initial_state_node.child("entityDistributions");
     auto age_distribution_node = initial_entity_distributions.child("ageRangeDistributions");
     auto demographic_distribution_node = initial_entity_distributions.child("demographicDistributions");
+
     EntityDistributions distributions = GetEntityDistributions(demographic_distribution_node);
 
     for (auto age_bucket_node : age_distribution_node.children("ageRange"))
 	{
         double ageRangeDistribution = age_bucket_node.text().as_double();
 
-        EntityDistributions ageDistributions;
-        for(auto distribution : distributions)
-        {
-            ageDistributions.push_back(DemographicProfile::DoublePair(distribution.first,
-                distribution.second * ageRangeDistribution));
-        }
-
         parameters.GetInitialAgeBuckets().emplace_back(
           Age(Attr<int>(age_bucket_node, "lower"), 0),
           Age(Attr<int>(age_bucket_node, "upper"), 11),
-          ageDistributions);
+          ageRangeDistribution,
+          distributions);
     }
 	// set the age ranges specified by the xml --
 	// these are used mostly in printing headers in output files
