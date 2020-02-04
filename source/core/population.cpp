@@ -140,6 +140,7 @@ void Population::Births(EventParams &parameters_)
 		DemographicProfile profile = profileDoublePair.first;
 		double value = profileDoublePair.second;
 		unsigned long numToCreate = Utility::round<unsigned long>(numBorn * value);
+
 		GenerateEntities(profile, numToCreate, nullptr);
 	}
 }
@@ -955,111 +956,50 @@ void Population::DissolveSexualPartnerships(EventParams &parameters_, Entity *_i
 
 /*
  * Generate initial entities in the population
- * if the user sets the data type to use counts, then the count of people per bucket
- * will be generated.
- * if the user sets the data type to use proportions, then we randomly choose which
- * profile to assign the person based on the proportions.
+ * if the user sets the data type to use proportions, then create entities
+ * by profile the proportions. Any remainder between the number created and the
+ * total desired will be distributed per age range randomly over the profiles.
  */
 void Population::GenerateInitialEntities()
 {
-    if (popWideParams.InitializeWithCounts())
+    unsigned long initialSize = popWideParams.GetInitialSize();
+    for(auto &ageBucketParams : popWideParams.GetInitialAgeBuckets())
     {
+        AgeRange ageRange = {ageBucketParams.GetMinAge(), ageBucketParams.GetMaxAge()};
+        unsigned long numToCreate = initialSize * ageBucketParams.GetProportionInAgeBucket();
+
+        std::vector<DemographicProfile> entityBuckets;
         std::vector<double> entityValues;
-        for(auto &ageBucketParams : popWideParams.GetInitialAgeBuckets())
+
+        int totalCreated = 0;
+        for (auto profileDoublePair : ageBucketParams.GetEntityProportions())
         {
-            AgeRange ageRange = {ageBucketParams.GetMinAge(), ageBucketParams.GetMaxAge()};
-            for (auto profileDoublePair : ageBucketParams.GetEntityProportions())
-            {
-                auto profile = profileDoublePair.first;
-                int count = (int)profileDoublePair.second;
+            auto profile = profileDoublePair.first;
+            double proportion = profileDoublePair.second;
+            unsigned long createdCount = proportion * numToCreate;
 
-                GenerateEntities(profile, count, &ageRange);
-            }
-        }
-    }
-    else
-    {
-        unsigned long initialSize = popWideParams.GetInitialSize();
-        for(auto &ageBucketParams : popWideParams.GetInitialAgeBuckets())
-        {
-            AgeRange ageRange = {ageBucketParams.GetMinAge(), ageBucketParams.GetMaxAge()};
-            unsigned long numToCreate = initialSize * ageBucketParams.GetProportionInAgeBucket();
+            entityBuckets.push_back(profile);
+            entityValues.push_back(proportion);
 
-            std::vector<DemographicProfile> entityBuckets;
-            std::vector<double> entityValues;
-
-            int totalCreated = 0;
-            for (auto profileDoublePair : ageBucketParams.GetEntityProportions())
-            {
-                auto profile = profileDoublePair.first;
-                double proportion = profileDoublePair.second;
-                unsigned long createdCount = proportion * numToCreate;
-
-                entityBuckets.push_back(profile);
-                entityValues.push_back(proportion);
-
-                GenerateEntities(profile, createdCount, &ageRange);
-                totalCreated += createdCount;
-            }
-
-            if (totalCreated < numToCreate)
-            {
-                // If there is a remainder of individuals not created,
-                // distribute them randomly across age and profiles
-                int remainder = numToCreate - totalCreated;
-                for (int count = 0; count < remainder; count++)
-                {
-                    // choose a random profile and proportion
-                    auto index = parameters_.randomNums.chooseIndex(entityValues);
-                    auto profile = entityBuckets.at(index);
-
-                    GenerateEntities(profile, 1, &ageRange);
-                }
-            }
-        }
-    }
-
-
-                /*
-            for (auto profileDoublePair : ageBucketParams.GetEntityProportions())
-            {
-                auto profile = profileDoublePair.first;
-                double proportion = profileDoublePair.second;
-
-                entityBuckets.push_back(std::make_pair(profile, ageRange));
-                entityValues.push_back(proportion);
-
-                // create the initial entities -- depending on proportions
-                unsigned long createdCount = proportion * numToCreate;
-                if (totalCreated + createdCount >= numToCreate) {
-                    createdCount = numToCreate - totalCreated;
-                    GenerateEntities(profile, createdCount, &ageRange);
-                    totalCreated += createdCount;
-                    break;
-                } else {
-                    GenerateEntities(profile, createdCount, &ageRange);
-                    totalCreated += createdCount;
-                }
-            }
+            GenerateEntities(profile, createdCount, &ageRange);
+            totalCreated += createdCount;
         }
 
-        if (totalCreated <= initialSize)
+        if (totalCreated < numToCreate)
         {
             // If there is a remainder of individuals not created,
             // distribute them randomly across age and profiles
-            int remainder = initialSize - totalCreated;
+            int remainder = numToCreate - totalCreated;
             for (int count = 0; count < remainder; count++)
             {
-                // choose a random profile and age range
+                // choose a random profile and proportion
                 auto index = parameters_.randomNums.chooseIndex(entityValues);
-                auto profile = std::get<0>(entityBuckets.at(index));
-                auto ageRange = std::get<1>(entityBuckets.at(index));
+                auto profile = entityBuckets.at(index);
 
                 GenerateEntities(profile, 1, &ageRange);
             }
         }
-     }
-     */
+    }
 }
 
 void Population::GenerateEntities(const DemographicProfile &profile,

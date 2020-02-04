@@ -11,7 +11,6 @@ PopulationParameters::PopulationParameters()
 {
 	//set default values of fields
 	initSize = 10000;
-    initWithCounts = false;
 	birthRate = 0.0038;
 	useBirthRate = true;
 	ageOfMajority = Age::from_months(180);
