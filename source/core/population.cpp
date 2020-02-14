@@ -3183,27 +3183,6 @@ void Population::PrintPopulationHeaders(Time _time, std::ostream &_outStream)
 		secondRow << age_ranges.at(i) << Constants::Tab;
     }
 
-    firstRow << "Number circumcised" << Constants::Tab << Constants::Tab;
-    secondRow << "NA" << Constants::Tab << "SA" << Constants::Tab;
-
-    // By Risk
-	DemographicProfile SAProfile;
-    std::vector<DemographicProfile::ProfileID> SAProfileIDs;
-
-    SAProfile.set(DemographicProfile::Demographic::SexualActivityStatus,
-		(std::size_t)DemographicProfile::SexualActivityStatus::Active);
-    SAProfile.selectProfileIDs(SAProfileIDs, &demographicProfileIDs);
-    //output size by risk
-	for (auto profile : SAProfileIDs)
-	{
-		firstRow << *DemographicProfile::toString(profile);
-		for(auto risk : enum_iterator<RiskLevel>())
-		{
-			firstRow << Constants::Tab;
-			secondRow << Entity::RiskStrings[(std::size_t)risk] << Constants::Tab;
-		}
-    }
-
 	_outStream << firstRow.str() << std::endl;
     _outStream << secondRow.str() << std::endl;
 }
@@ -3385,25 +3364,6 @@ void Population::PrintPopulation(EventParams &/*_paramters*/, Time _time, std::o
     for(auto &ageRangeSize : size_by_age_range_female)
     {
         _outStream << ageRangeSize.second << Constants::Tab;
-    }
-
-    _outStream << num_circumcised_na << Constants::Tab;
-    _outStream << num_circumcised_sa << Constants::Tab;
-
-    //output size by risk
-    DemographicProfile SAProfile;
-    std::vector<DemographicProfile::ProfileID> SAProfileIDs;
-    SAProfile.set(DemographicProfile::Demographic::SexualActivityStatus,
-		(std::size_t)DemographicProfile::SexualActivityStatus::Active);
-    SAProfile.selectProfileIDs(SAProfileIDs, &demographicProfileIDs);
-
-    //output size by risk
-	for (auto profile : SAProfileIDs)
-	{
-		for(auto risk : enum_iterator<RiskLevel>())
-		{
-			_outStream << GetSASize(profile, risk) << Constants::Tab;
-		}
     }
 
     _outStream << std::endl;
