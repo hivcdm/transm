@@ -1023,7 +1023,20 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
     NormalizeEntityDistributions(parameters);
 
     auto births_node = population_node.child("births");
+    bool useBirthRate = Attr<bool>(births_node, "useBirthRate");
+    parameters.SetUseBirthRate(useBirthRate);
     parameters.SetBirthRate(Text<double>(births_node.child("rate")));
+    if (!useBirthRate && births_node.child("fertilityRate")) {
+        std::vector<FertilityRate> rates;
+	    for(auto child : births_node.child("fertilityRate").children("rateForAgeRange")) {
+            auto lower = Age(Attr<int>(child, "lower"), 0);
+            auto upper = Age(Attr<int>(child, "upper"), 11);
+            auto value = Text<double>(child);
+            FertilityRate rate(lower, upper, value);
+            parameters.PushFertilityRate(rate);
+	    }
+    }
+
 	auto birthDistributions = GetEntityDistributions(births_node.child("demographicDistributions"));
 	for (auto distrib : birthDistributions) {
 		parameters.SetBirthProportion(distrib.first, distrib.second);
@@ -1760,30 +1773,30 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         {
             auto value = Text<double>(node);
             intervention.SetPopulationCallback(
-                [=](Time current_time, Population &p) {
-		    p.GetParameters().SetUseBirthRate(true);
-		    p.GetParameters().ClearFertilityRates();
-		    p.GetParameters().SetBirthRate(value); });
+              [=](Time current_time, Population &p) {
+                  p.GetParameters().SetUseBirthRate(true);
+                  p.GetParameters().ClearFertilityRates();
+                  p.GetParameters().SetBirthRate(value); });
             break;
         }
 	case KnownIntervention::FertilityRate:
 	{
 	    std::vector<FertilityRate> rates;
 	    for(auto child : node.children("rateForAgeRange")) {
-		auto lower = Age(Attr<int>(child, "lower"), 0);
-		auto upper = Age(Attr<int>(child, "upper"), 11);
-		auto value = Text<double>(child);
-		FertilityRate rate(lower, upper, value);
-		rates.push_back(rate);
+            auto lower = Age(Attr<int>(child, "lower"), 0);
+            auto upper = Age(Attr<int>(child, "upper"), 11);
+            auto value = Text<double>(child);
+            FertilityRate rate(lower, upper, value);
+            rates.push_back(rate);
 	    }
 	    intervention.SetPopulationCallback(
-		[=](Time current_time, Population &p) {
-		    p.GetParameters().SetUseBirthRate(false);
-		    p.GetParameters().ClearFertilityRates();
-		    for ( auto rate : rates)
-			p.GetParameters().PushFertilityRate(rate);
-		}
-	    );
+          [=](Time current_time, Population &p) {
+              p.GetParameters().SetUseBirthRate(false);
+              p.GetParameters().ClearFertilityRates();
+              for ( auto rate : rates)
+                  p.GetParameters().PushFertilityRate(rate);
+          }
+            );
 	    break;
 	}
 	case KnownIntervention::Circumcise:
