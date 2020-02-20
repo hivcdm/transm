@@ -130,7 +130,7 @@ void Population::Births(EventParams &parameters_)
 	    double sumRates = 0.0;
 	    for ( auto rate : popWideParams.GetFertilityRates()) {
 		    int numFemales = entities->sizeByAgeFemales(rate.Lower(), rate.Upper());
-		    sumRates += rate.Rate() * numFemales;
+		    sumRates += (rate.Rate() / 12) * numFemales;
 	    }
 	    numBorn = Utility::round<unsigned long>(sumRates / 1000);
     }
