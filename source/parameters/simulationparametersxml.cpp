@@ -1,6 +1,7 @@
 #include "simulationparameters.hpp"
 #include "core/population.hpp"
 #include "core/simulation.hpp"
+#include "entities/entity.hpp"
 #include "utility/cepacinputparser.hpp"
 
 namespace transm {
@@ -62,6 +63,117 @@ std::array<double, 7> SimulationParametersXml::from_string(const std::string &va
         ss >> values[i];
     }
     return values;
+}
+
+template<>
+RiskLevel SimulationParametersXml::from_string(const std::string &risk)
+{
+    if(risk == "high") return RiskLevel::HIGH;
+    if(risk == "low") return RiskLevel::LOW;
+
+    throw std::runtime_error("unknown risk level: " + risk);
+}
+
+template<>
+DemographicProfile::Gender SimulationParametersXml::from_string(const std::string &gender)
+{
+    if(gender == "male") return DemographicProfile::Gender::Male;
+    if(gender == "female") return DemographicProfile::Gender::Female;
+
+    throw std::runtime_error("unknown gender: " + gender);
+}
+
+template<>
+DemographicProfile::Employment SimulationParametersXml::from_string(const std::string &employment)
+{
+    if(employment == "csw") return DemographicProfile::Employment::Csw;
+    if(employment == "non-csw") return DemographicProfile::Employment::NonCsw;
+
+    throw std::runtime_error("unknown employment: " + employment);
+}
+
+template<>
+DemographicProfile::Race SimulationParametersXml::from_string(const std::string &race)
+{
+    if(race == "BLACK") return DemographicProfile::Race::Black;
+    if(race == "WHITE") return DemographicProfile::Race::White;
+    if(race == "OTHER") return DemographicProfile::Race::Other;
+    throw std::runtime_error("unknown gender: " + race);
+}
+
+template<>
+DemographicProfile::Ethnicity SimulationParametersXml::from_string(const std::string &ethnicity)
+{
+    if(ethnicity == "NON_HISPANIC") return DemographicProfile::Ethnicity::NonHispanic;
+    if(ethnicity == "HISPANIC") return DemographicProfile::Ethnicity::Hispanic;
+
+    throw std::runtime_error("unknown gender: " + ethnicity);
+}
+
+template<>
+HVLStrata SimulationParametersXml::from_string(const std::string &hvl_string)
+{
+    if(hvl_string == "-1" || hvl_string == "uninfected") return HVLStrata::UNINFECTED;
+    if(hvl_string == "0") return HVLStrata::HVL_ZERO;
+    if(hvl_string == "1") return HVLStrata::HVL_ONE;
+    if(hvl_string == "2") return HVLStrata::HVL_TWO;
+    if(hvl_string == "3") return HVLStrata::HVL_THREE;
+    if(hvl_string == "4") return HVLStrata::HVL_FOUR;
+    if(hvl_string == "5") return HVLStrata::HVL_FIVE;
+    if(hvl_string == "6") return HVLStrata::HVL_SIX;
+    if(hvl_string == "7" || hvl_string == "primary") return HVLStrata::HVL_PRIMARY;
+    if(hvl_string == "8" || hvl_string == "late-stage") return HVLStrata::HVL_LATESTAGE;
+
+    throw std::runtime_error("unknown hvl stratum: " + hvl_string);
+}
+
+template<>
+HIVStatus SimulationParametersXml::from_string(const std::string &value)
+{
+    if(value == "negative")
+    {
+        return HIVStatus::NEGATIVE;
+    }
+    else if(value == "observed-acute")
+    {
+        return HIVStatus::OBSERVED_ACUTE;
+    }
+    else if(value == "unobserved-acute")
+    {
+        return HIVStatus::UNOBSERVED_ACUTE;
+    }
+    else if(value == "observed-chronic")
+    {
+        return HIVStatus::OBSERVED_CHRONIC;
+    }
+    else if(value == "unobserved-chronic")
+    {
+        return HIVStatus::UNOBSERVED_CHRONIC;
+    }
+    else if(value == "observed-latestage")
+    {
+        return HIVStatus::OBSERVED_LATESTAGE;
+    }
+    else if(value == "unobserved-latestage")
+    {
+        return HIVStatus::UNOBSERVED_LATESTAGE;
+    }
+    else if (value == "any-positive")
+    {
+        return HIVStatus::ANY_POSITIVE;
+    }
+    else if (value == "not-observed-positive")
+    {
+        return HIVStatus::ANY_NOT_OBSERVED_POSITIVE;
+    }
+    else if (value == "observed-positive")
+    {
+        return HIVStatus::ANY_OBSERVED_POSITIVE;
+    }
+    else
+    {
+        throw std::runtime_error("invalid group target value for hiv-status: " + value);
+    }
 }
 
 NormalDist SimulationParametersXml::GetNormalDist(const pugi::xml_node node) const
@@ -271,23 +383,140 @@ CalibrationInputs SimulationParametersXml::GetCalibrationParameters() const
     return calib;
 }
 
-InterventionParameters SimulationParametersXml::GetInterventionParameters() const
+PrepParameters SimulationParametersXml::GetPrepParameters() const
+{
+    PrepParameters parameters;
+
+    if (!document_.select_node("/simulation/population/preExposureProphylaxis").node())
+        return parameters;
+
+    pugi::xml_node prep_node = document_.select_node("/simulation/population/preExposureProphylaxis").node();
+
+    parameters.SetEnabled(true);
+
+    try
+    {
+        parameters.SetEfficacy(Text<double>(prep_node.child("prepEfficacy")));
+    }
+    catch(std::string errorString)
+	{
+        throw std::runtime_error("Prep xml found but efficacy is missing:" + errorString);
+	}
+
+    if (prep_node.child("prepDefaults"))
+    {
+        auto defaults_node = prep_node.child("prepDefaults");
+        // the default prep values are required
+        if (defaults_node.child("prepEligibility"))
+        {
+            PrepEligibility eligibility;
+
+            auto eligibility_node = defaults_node.child("prepEligibility");
+            if (eligibility_node.child("currentPartnerCount"))
+            {
+                eligibility.currentPartnerCount = Text<int>(eligibility_node.child("currentPartnerCount"));
+            }
+            if (eligibility_node.child("partnerStatus"))
+            {
+                std::string value = Text<std::string>(eligibility_node.child("partnerStatus"));
+                eligibility.partnerStatus = from_string<HIVStatus>(value);
+            }
+            if (eligibility_node.child("partnerRiskLevel"))
+            {
+                std::string value = Text<std::string>(eligibility_node.child("partnerRiskLevel"));
+                eligibility.partnerRiskLevel = from_string<RiskLevel>(value);
+            }
+            if (eligibility_node.child("monthsSinceUnprotectedAct"))
+            {
+                eligibility.monthsSinceUnprotectedAct = Time::from_months(
+                  Text<int>(eligibility_node.child("monthsSinceUnprotectedAct")));
+            }
+            parameters.SetEligibility(eligibility);
+        }
+
+        if (defaults_node.child("prepAccess"))
+        {
+            parameters.SetDefaultAccess(Text<double>(defaults_node.child("prepAccess")));
+        }
+        if (defaults_node.child("prepAdherence"))
+        {
+            parameters.SetDefaultAdherence(Text<double>(defaults_node.child("prepAdherence")));
+        }
+        if (defaults_node.child("prepRetention"))
+        {
+            parameters.SetDefaultRetention(Text<double>(defaults_node.child("prepRetention")));
+        }
+        if (defaults_node.child("prepReturnToCare"))
+        {
+            parameters.SetDefaultReturnToCare(Text<double>(defaults_node.child("prepReturnToCare")));
+        }
+    }
+    else
+    {
+        throw std::runtime_error("Prep xml found but defaults are missing");
+    }
+
+    // Add the profile specific prep settings -- these are optional
+    if (prep_node.child("prepProfiles"))
+    {
+        auto profiles_node = prep_node.child("prepProfiles");
+        for(auto node : profiles_node.children("demographic"))
+        {
+            DemographicProfile profile;
+
+            if (node.attribute("bucket"))
+            {
+                std::string bucketString = node.attribute("bucket").as_string();
+                profile.parse(bucketString);
+            }
+            else
+            {
+                throw std::runtime_error("No bucket attribute provided in prep profile xml");
+            }
+
+            if (node.child("prepAccess"))
+            {
+                parameters.SetProfileAccess(profile,
+                    Text<double>(node.child("prepAccess")));
+            }
+            if (node.child("prepAdherence"))
+            {
+                parameters.SetProfileAdherence(profile,
+                    Text<double>(node.child("prepAdherence")));
+            }
+            if (node.child("prepRetention"))
+            {
+                parameters.SetProfileRetention(profile,
+                    Text<double>(node.child("prepRetention")));
+            }
+            if (node.child("prepReturnToCare"))
+            {
+                parameters.SetProfileReturnToCare(profile,
+                    Text<double>(node.child("prepReturnToCare")));
+            }
+        }
+    }
+
+    return parameters;
+}
+
+CepacParameters SimulationParametersXml::GetCepacParameters() const
 {
     auto simulation_node = document_.child("simulation");
     auto interventions_node = simulation_node.child("interventions");
 
-    InterventionParameters parameters;
+    CepacParameters parameters;
 
     if(Attr<bool>(interventions_node.child("artRolloutIntervention"), "enabled"))
     {
-        parameters.intervention_type = InterventionParameters::InterventionType::Art;
+        parameters.file_type = CepacParameters::FileType::Art;
     }
     else
     {
-        parameters.intervention_type = InterventionParameters::InterventionType::Cepac;
+        parameters.file_type = CepacParameters::FileType::Cepac;
     }
 
-    if(parameters.intervention_type == InterventionParameters::InterventionType::Art)
+    if(parameters.file_type == CepacParameters::FileType::Art)
     {
         auto scaling_node = interventions_node.child("artRolloutIntervention").child("dynamicTreatmentScaling");
 
@@ -296,7 +525,7 @@ InterventionParameters SimulationParametersXml::GetInterventionParameters() cons
 
         for(auto treatment_file_node : interventions_node.select_nodes("artRolloutIntervention/rolloutTreatmentFiles/rolloutFile"))
         {
-            auto time = Time::from_months(treatment_file_node.node().child("time").text().as_int());
+            auto time = Time::from_months(Text<int>(treatment_file_node.node().child("time")));
 
             if(time >= Time::Zero)
             {
@@ -304,7 +533,7 @@ InterventionParameters SimulationParametersXml::GetInterventionParameters() cons
                 int file_number = treatment_file_node.node().child("fileNumber").text().as_int();
                 int target_population = treatment_file_node.node().child("popToApply").text().as_int();
 
-                InterventionParameters::CepacFile file;
+                CepacParameters::CepacFile file;
                 file.target_population = target_population;
                 file.filename = file_name;
                 file.time = time;
@@ -324,7 +553,7 @@ InterventionParameters SimulationParametersXml::GetInterventionParameters() cons
         }
 
         parameters.eligibility_criteria = GetRolloutEligibility();
-    parameters.rollout_proportion_denominator = GetRolloutDenominator();
+        parameters.rollout_proportion_denominator = GetRolloutDenominator();
 
         for(auto target : interventions_node.select_nodes("artRolloutIntervention/targetRolloutProportions/target"))
         {
@@ -343,7 +572,7 @@ InterventionParameters SimulationParametersXml::GetInterventionParameters() cons
                 std::string file_name = treatment_file_node.node().child("fileName").text().as_string();
                 int file_number = treatment_file_node.node().child("fileNumber").text().as_int();
 
-                InterventionParameters::CepacFile file;
+                CepacParameters::CepacFile file;
                 file.target_population = 0;
                 file.filename = file_name;
                 file.time = time;
@@ -366,27 +595,27 @@ InterventionParameters SimulationParametersXml::GetInterventionParameters() cons
     return parameters;
 }
 
-std::unordered_map<TransmissionType, std::array<double, (std::size_t)Entity::HVLStrata::Last>> SimulationParametersXml::GetTransmissionCoefficients() const
+std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> SimulationParametersXml::GetTransmissionCoefficients() const
 {
-    std::unordered_map<TransmissionType, std::array<double, (std::size_t)Entity::HVLStrata::Last>> coefficient_map;
+    std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> coefficient_map;
 
-    auto read_coefficients = [](pugi::xml_node node) 
+    auto read_coefficients = [](pugi::xml_node node)
     {
-        std::array<double, (std::size_t)Entity::HVLStrata::Last> coefficients = {{0}};
+        std::array<double, (std::size_t)HVLStrata::Last> coefficients = {{0}};
         double value;
 
-        for(auto hvl : enum_iterator<Entity::HVLStrata>())
+        for(auto hvl : enum_iterator<HVLStrata>())
         {
-            if(hvl == Entity::HVLStrata::UNINFECTED) continue;
+            if(hvl == HVLStrata::UNINFECTED) continue;
 
             switch(hvl)
             {
-            case Entity::HVLStrata::UNINFECTED:
+            case HVLStrata::UNINFECTED:
                 continue;
-            case Entity::HVLStrata::HVL_PRIMARY:
+            case HVLStrata::HVL_PRIMARY:
                 value = node.child("primary").text().as_double();
                 break;
-            case Entity::HVLStrata::HVL_LATESTAGE:
+            case HVLStrata::HVL_LATESTAGE:
                 value = node.child("lateStage").text().as_double();
                 break;
             default: 
@@ -494,20 +723,13 @@ SexualBehavior SimulationParametersXml::GetSexualBehavior(const std::string &ent
 
     SexualBehavior result(type);
 
-    auto assortivityNode = node.child("selectionCriteria").child("assortivity");
-    result.setRiskAssortativeness(Text<double>(assortivityNode.child("riskAssortivity")));
-    result.setRaceAssortativeness(Text<double>(assortivityNode.child("raceAssortivity")));
-    result.setEthnicAssortativeness(Text<double>(assortivityNode.child("ethnicAssortivity")));
-
-    result.setChanceChooseWithSteady(Text<double>(assortivityNode.child("chanceChooseWithSteady")));
-    result.setChanceMsmwChooseMale(Text<double>(assortivityNode.child("chanceMsmwChooseMale")));
-    result.setChanceMsmChooseMsmw(Text<double>(assortivityNode.child("chanceMsmChooseMsmw")));
+    result.setChanceChooseWithSteady(Text<double>(node.child("selectionCriteria").child("chanceChooseWithSteady")));
 
     result.setAverageYearsYounger(GetNormalDist(node.child("selectionCriteria").child("averageYearsYounger")));
 
-    for(auto risk : {Entity::RiskLevel::LOW, Entity::RiskLevel::HIGH})
+    for (auto risk : {RiskLevel::LOW, RiskLevel::HIGH})
     {
-        auto risk_node = node.child(risk == Entity::RiskLevel::LOW ? "lowRisk" : "highRisk");
+        auto risk_node = node.child(risk == RiskLevel::LOW ? "lowRisk" : "highRisk");
 
         result.setAcquisitionRatePerMonth(risk, GetLogNormalDist(risk_node.child("acquisitionRate")));
         result.setCoitalEventsPerMonth(risk, Text<double>(risk_node.child("coitalEventsPerMonth").child("distribution").child("mean")));
@@ -524,11 +746,25 @@ Male::SubPopParams SimulationParametersXml::GetMaleSubPopParams() const
 
     Male::SubPopParams result;
 
+    auto allowed_race_eth_node = node.child("allowedRaceAndEthnicities");
+    std::vector<DemographicProfile::Race> races;
+    RaceEthnicityMap *raceEthMap = result.GetAllowedRaceEthnicityMap();
+    for (auto allowed_race_node : allowed_race_eth_node.children("allowedRace")) {
+        DemographicProfile::Race race = Attr<DemographicProfile::Race>(allowed_race_node, "race");
+        races.push_back(race);
+        std::vector<DemographicProfile::Ethnicity> ethnicities;
+        for (auto ethnicity_node : allowed_race_node.children("allowedEthnicity")) {
+            ethnicities.push_back(Attr<DemographicProfile::Ethnicity>(ethnicity_node, "ethnicity"));
+        }
+        raceEthMap->insert(race, ethnicities);
+    }
+    raceEthMap->SetRaceKeysFromMap();
+
     auto behavior_node = node.child("behavior");
     result.SetCswEndAge(Age(Text<int>(behavior_node.child("cswEndAge")), 0));
     result.SetChanceBecomeCsw(Text<double>(behavior_node.child("chanceBecomeSexWorker")));
-    result.SetPartnerAcqMultWithSteady(Entity::RiskLevel::HIGH, Text<double>(behavior_node.child("partnerAcqMultWithSteadyHighRisk")));
-    result.SetPartnerAcqMultWithSteady(Entity::RiskLevel::LOW, Text<double>(behavior_node.child("partnerAcqMultWithSteadyLowRisk")));
+    result.SetPartnerAcqMultWithSteady(RiskLevel::HIGH, Text<double>(behavior_node.child("partnerAcqMultWithSteadyHighRisk")));
+    result.SetPartnerAcqMultWithSteady(RiskLevel::LOW, Text<double>(behavior_node.child("partnerAcqMultWithSteadyLowRisk")));
 
     bool use_high_risk_multiplier = Attr<bool>(behavior_node.child("highRiskAcqRateMultiplier"), "enabled");
     double high_risk_multiplier = Text<double>(behavior_node.child("highRiskAcqRateMultiplier"));
@@ -536,6 +772,47 @@ Male::SubPopParams SimulationParametersXml::GetMaleSubPopParams() const
     double csw_high_risk_multiplier = Text<double>(behavior_node.child("highRiskCswAcqRateMultiplier"));
 
     result.SetCoefficientVariation(false, 0);
+
+    auto assortivityNode = behavior_node.child("assortivity");
+    result.setRiskAssortativeness(Text<double>(assortivityNode.child("riskAssortivity")));
+
+    auto raceAssortivityNode = assortivityNode.child("raceAssortivity");
+    double baselineRaceAssortativity = Attr<double>(raceAssortivityNode, "baseline");
+    result.setBaselineRaceAssortativeness(baselineRaceAssortativity);
+
+    for (auto raceNode : node.children("race")) {
+        std::string raceType = Attr<std::string>(raceNode, "type");
+        double assortivity = Attr<double>(raceNode, "value");
+        if (Attr<bool>(raceAssortivityNode, "useCoefficients")) {
+            assortivity *= baselineRaceAssortativity;
+        }
+        for (auto race : enum_iterator<DemographicProfile::Race>()) {
+            auto raceStr = DemographicEnumStrs.at((std::size_t)DemographicProfile::Demographic::Race).at((std::size_t)race);
+            if (raceType.compare(raceStr) == 0) {
+                result.setRaceAssortativeness(race, assortivity);
+            }
+        }
+    }
+
+    auto ethnicityAssortivityNode = assortivityNode.child("ethnicAssortivity");
+    double baselineEthnicityAssortativity = Attr<double>(ethnicityAssortivityNode, "baseline");
+    result.setBaselineEthnicityAssortativeness(baselineEthnicityAssortativity);
+
+    for (auto ethnicityNode : node.children("ethnicity")) {
+        std::string ethnicityType = Attr<std::string>(ethnicityNode, "type");
+        double assortivity = Attr<double>(ethnicityNode, "value");
+        if (Attr<bool>(ethnicityAssortivityNode, "useCoefficients")) {
+            assortivity *= baselineEthnicityAssortativity;
+        }
+        for (auto ethnicity : enum_iterator<DemographicProfile::Ethnicity>()) {
+            auto ethStr = DemographicEnumStrs.at((std::size_t)DemographicProfile::Demographic::Ethnicity).at((std::size_t)ethnicity);
+            if (ethnicityType.compare(ethStr) == 0) {
+                result.setEthnicityAssortativeness(ethnicity, assortivity);
+            }
+        }
+    }
+    result.setChanceMsmwChooseMale(Text<double>(assortivityNode.child("chanceMsmwChooseMale")));
+    result.setChanceMsmChooseMsmw(Text<double>(assortivityNode.child("chanceMsmChooseMsmw")));
 
 	for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
 	{
@@ -577,7 +854,6 @@ Male::SubPopParams SimulationParametersXml::GetMaleSubPopParams() const
 	auto health_node = node.child("health");
 	result.SetCircucmsionProtectEfficacy(Text<double>(health_node.child("circumcisionProtectEfficacy")));
 	result.SetCondomProtectEff(Text<double>(health_node.child("condomProtectEfficacy")));
-	result.SetPreExposureProphylaxisEfficacy(Text<double>(health_node.child("preExposureProphylaxisEfficacy")));
 
 	// This will be moved in the xml to /simulation/population/entities [@type='male']/health
 	auto circumcision_node = document_.select_node("/simulation/population/proportionMaleCircumcised").node();
@@ -599,7 +875,6 @@ Female::SubPopParams SimulationParametersXml::GetFemaleSubPopParams() const
 	result.SetProportionHighRisk(DemographicProfile::Employment::Csw, Text<double>(behavior_node.child("proportionHighRiskCsw")));
 
 	auto health_node = node.child("health");
-	result.SetPreExposureProphylaxisEfficacy(Text<double>(health_node.child("preExposureProphylaxisEfficacy")));
 	result.SetVaginalMicrobicideEfficacy(Text<double>(health_node.child("vaginalMicrobicideEfficacy")));
 
 	return result;
@@ -609,19 +884,56 @@ Female::SubPopParams SimulationParametersXml::GetFemaleSubPopParams() const
  * The demographic profiles specified in the xml for this simulation are defined
  * in this function. It must be kept in sync with all other instances of demographicProfiles.
  */
-SimulationParametersXml::EntityDistributions SimulationParametersXml::GetEntityDistributions(pugi::xml_node node) const
+SimulationParametersXml::EntityDistributions SimulationParametersXml::GetEntityDistributions(
+  pugi::xml_node node) const
 {
     EntityDistributions distributions;
 
-    for(auto distribution_node : node.children("distribution"))
+    std::string profileStr = "NA:";
+    auto gender_node = node.child("gender");
+    auto orientation_node = node.child("orientation");
+    for (auto gender_attr : gender_node.attributes())
     {
-	    DemographicProfile profile;
+        std::string genderStr = profileStr;
+        std::string genderNodeName = gender_attr.name();
+        genderStr.append(gender_attr.name()).append(":");
+        double genderProportion = Attr<double>(gender_node, gender_attr.name());
 
-        std::string bucketString = distribution_node.attribute("profile").as_string();
-        profile.parse(bucketString);
+        for (auto orientation_attr : orientation_node.attributes())
+        {
+            std::string orientationStr = genderStr;
+            orientationStr.append(orientation_attr.name()).append(":");
 
-        distributions.push_back(DemographicProfile::DoublePair(profile,
-			distribution_node.text().as_double()));
+            std::string orientationNodeName = orientation_attr.name();
+            double orientationProportion = 1.0;
+            if ((genderNodeName.compare("FEMALE") == 0))
+            {
+                if (orientationNodeName.compare("MSW") == 0)
+                {
+                    orientationProportion = 1.0;
+                } else {
+                    continue;
+                }
+            } else {
+                orientationProportion = Attr<double>(orientation_node, orientation_attr.name());
+            }
+
+            orientationStr.append("SINGLE:NON_CSW:");
+
+            auto race_eth_profile_node = node.child("raceAndEthnicityProfiles");
+            for (auto race_eth_node : race_eth_profile_node.children("raceAndEthnicity"))
+            {
+                std::string raceEthStr = orientationStr;
+                raceEthStr.append(Attr<std::string>(race_eth_node, "type"));
+                double raceEthProportion = Text<double>(race_eth_node);
+
+                DemographicProfile profile;
+                profile.parse(raceEthStr);
+
+                distributions.push_back(DemographicProfile::DoublePair(profile,
+                    genderProportion * orientationProportion * raceEthProportion));
+            }
+        }
     }
 
     return distributions;
@@ -687,27 +999,46 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
     PopulationParameters parameters;
     auto initial_state_node = population_node.child("initialState");
     parameters.SetInitialSize(Text<int>(initial_state_node.child("size")));
-    parameters.SetInitializeWithCounts(Text<bool>(initial_state_node.child("useCounts")));
 
-    //get initial age distribution
-    for (auto age_bucket_node : initial_state_node.child("entityDistributions").children("ageRange"))
+    //get initial age and profile distribution
+    auto initial_entity_distributions = initial_state_node.child("entityDistributions");
+    auto age_distribution_node = initial_entity_distributions.child("ageRangeDistributions");
+    auto demographic_distribution_node = initial_entity_distributions.child("demographicDistributions");
+
+    EntityDistributions distributions = GetEntityDistributions(demographic_distribution_node);
+
+    for (auto age_bucket_node : age_distribution_node.children("ageRange"))
 	{
-	    auto distributions = GetEntityDistributions(age_bucket_node);
-	    parameters.GetInitialAgeBuckets().emplace_back(
-		  Age(Attr<int>(age_bucket_node, "lower"), 0),
-		  Age(Attr<int>(age_bucket_node, "upper"), 11),
-		  distributions);
+        double ageRangeDistribution = age_bucket_node.text().as_double();
+
+        parameters.GetInitialAgeBuckets().emplace_back(
+          Age(Attr<int>(age_bucket_node, "lower"), 0),
+          Age(Attr<int>(age_bucket_node, "upper"), 11),
+          ageRangeDistribution,
+          distributions);
     }
 	// set the age ranges specified by the xml --
 	// these are used mostly in printing headers in output files
 	parameters.SetAgeRanges();
-
     NormalizeEntityDistributions(parameters);
 
     auto births_node = population_node.child("births");
+    bool useBirthRate = Attr<bool>(births_node, "useBirthRate");
+    parameters.SetUseBirthRate(useBirthRate);
     parameters.SetBirthRate(Text<double>(births_node.child("rate")));
-	auto distributions = GetEntityDistributions(births_node.child("entityDistributions"));
-	for (auto distrib : distributions) {
+    if (!useBirthRate && births_node.child("fertilityRate")) {
+        std::vector<FertilityRate> rates;
+	    for(auto child : births_node.child("fertilityRate").children("rateForAgeRange")) {
+            auto lower = Age(Attr<int>(child, "lower"), 0);
+            auto upper = Age(Attr<int>(child, "upper"), 11);
+            auto value = Text<double>(child);
+            FertilityRate rate(lower, upper, value);
+            parameters.PushFertilityRate(rate);
+	    }
+    }
+
+	auto birthDistributions = GetEntityDistributions(births_node.child("demographicDistributions"));
+	for (auto distrib : birthDistributions) {
 		parameters.SetBirthProportion(distrib.first, distrib.second);
 	}
 
@@ -757,13 +1088,16 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
 		{
 			std::string risk_string = infection_target_node.attribute("risk").as_string();
 			assert(risk_string == "high" || risk_string == "low");
-			target.risk = { true, risk_string == "high" ? Entity::RiskLevel::HIGH : Entity::RiskLevel::LOW };
+			target.risk = { true, risk_string == "high" ? RiskLevel::HIGH : RiskLevel::LOW };
 		}
 
 		parameters.AddInfectionTarget(target, infection_target_node.text().as_int());
     }
 
     parameters.SetTransmissionCoefficients(GetTransmissionCoefficients());
+
+    auto defaultPrepParams = GetPrepParameters();
+    parameters.SetPrepParameters(defaultPrepParams);
 
     parameters.SetAgeOfMajority(Age(Text<int>(population_node.child("ageOfMajority")), 0));
 
@@ -776,8 +1110,8 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
     for(auto type : enum_iterator<SexualPartnership::Type>()) {
         if(!defaultMaleParams.hasSexualBehavior(type)) continue;
 		auto has_duration =
-		  !(defaultMaleParams.getSexualBehavior(SexualPartnership::Type(type)).getPartnershipDurationMth(Entity::RiskLevel::LOW).isZeroDistrib) &&
-		  !(defaultMaleParams.getSexualBehavior(SexualPartnership::Type(type)).getPartnershipDurationMth(Entity::RiskLevel::HIGH).isZeroDistrib);
+		  !(defaultMaleParams.getSexualBehavior(SexualPartnership::Type(type)).getPartnershipDurationMth(RiskLevel::LOW).isZeroDistrib) &&
+		  !(defaultMaleParams.getSexualBehavior(SexualPartnership::Type(type)).getPartnershipDurationMth(RiskLevel::HIGH).isZeroDistrib);
 		parameters.SetPartnershipHasDuration(DemographicProfile::Gender::Male, type, has_duration);
 		parameters.SetPartnershipHasDuration(DemographicProfile::Gender::Female, type, false);
     }
@@ -793,7 +1127,7 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
     return parameters;
 }
 
-Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node criteria_node)
+Nullable<TargetGroup::PopulationTarget> SimulationParametersXml::ParseGroupEligibility(pugi::xml_node criteria_node) const
 {
     Nullable<TargetGroup::PopulationTarget> target;
 
@@ -841,51 +1175,7 @@ Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node cri
         else if(name == "hiv-status")
         {
             target.value.observed_hiv_status.has_value = true;
-
-            if(value == "negative")
-            {
-                target.value.observed_hiv_status.value = Entity::HIVStatus::NEGATIVE;
-            }
-            else if(value == "observed-acute")
-            {
-                target.value.observed_hiv_status.value = Entity::HIVStatus::OBSERVED_ACUTE;
-            }
-            else if(value == "unobserved-acute")
-            {
-                target.value.observed_hiv_status.value = Entity::HIVStatus::UNOBSERVED_ACUTE;
-            }
-            else if(value == "observed-chronic")
-            {
-                target.value.observed_hiv_status.value = Entity::HIVStatus::OBSERVED_CHRONIC;
-            }
-            else if(value == "unobserved-chronic")
-            {
-                target.value.observed_hiv_status.value = Entity::HIVStatus::UNOBSERVED_CHRONIC;
-            }
-            else if(value == "observed-latestage")
-            {
-                target.value.observed_hiv_status.value = Entity::HIVStatus::OBSERVED_LATESTAGE;
-            }
-            else if(value == "unobserved-latestage")
-            {
-                target.value.observed_hiv_status.value = Entity::HIVStatus::UNOBSERVED_LATESTAGE;
-            }
-	    else if (value == "any-positive")
-	    {
-		target.value.observed_hiv_status.value = Entity::HIVStatus::ANY_POSITIVE;
-	    }
-	    else if (value == "not-observed-positive")
-            {
-                target.value.observed_hiv_status.value = Entity::HIVStatus::ANY_NOT_OBSERVED_POSITIVE;
-            }
-            else if (value == "observed-positive")
-            {
-                target.value.observed_hiv_status.value = Entity::HIVStatus::ANY_OBSERVED_POSITIVE;
-            }
-            else
-            {
-                throw std::runtime_error("invalid group target value for " + name + ": " + value);
-            }
+            target.value.observed_hiv_status.value = from_string<HIVStatus>(value);
         }
         else if(name == "age")
         {
@@ -933,19 +1223,7 @@ Nullable<TargetGroup::PopulationTarget> ParseGroupEligibility(pugi::xml_node cri
         else if(name == "risk-group")
         {
             target.value.risk_level.has_value = true;
-
-            if(value == "high")
-            {
-                target.value.risk_level.value = Entity::RiskLevel::HIGH;
-            }
-            else if(value == "low")
-            {
-                target.value.risk_level.value = Entity::RiskLevel::LOW;
-            }
-            else
-            {
-                throw std::runtime_error("invalid group target value for " + name + ": " + value);
-            }
+            target.value.risk_level.value = from_string<RiskLevel>(value);
         }
         else if(name == "sexual-activity-status")
         {
@@ -1160,11 +1438,11 @@ const std::map<KnownIntervention, std::string> KnownInterventionStrings =
 template<>
 KnownIntervention SimulationParametersXml::from_string(const std::string &intervention)
 {
-    auto match = std::find_if(KnownInterventionStrings.begin(), 
-        KnownInterventionStrings.end(), 
-        [&](const std::pair<KnownIntervention, std::string> &e) 
-    { 
-        return e.second == intervention; 
+    auto match = std::find_if(KnownInterventionStrings.begin(),
+        KnownInterventionStrings.end(),
+        [&](const std::pair<KnownIntervention, std::string> &e)
+    {
+        return e.second == intervention;
     });
 
     if (match == KnownInterventionStrings.end()) {
@@ -1172,50 +1450,6 @@ KnownIntervention SimulationParametersXml::from_string(const std::string &interv
     }
 
     return match->first;
-}
-
-template<>
-Entity::RiskLevel SimulationParametersXml::from_string(const std::string &risk)
-{
-    if(risk == "high") return Entity::RiskLevel::HIGH;
-    if(risk == "low") return Entity::RiskLevel::LOW;
-
-    throw std::runtime_error("unknown risk level: " + risk);
-}
-
-template<>
-DemographicProfile::Gender SimulationParametersXml::from_string(const std::string &gender)
-{
-    if(gender == "male") return DemographicProfile::Gender::Male;
-    if(gender == "female") return DemographicProfile::Gender::Female;
-
-    throw std::runtime_error("unknown gender: " + gender);
-}
-
-template<>
-DemographicProfile::Employment SimulationParametersXml::from_string(const std::string &employment)
-{
-    if(employment == "csw") return DemographicProfile::Employment::Csw;
-    if(employment == "non-csw") return DemographicProfile::Employment::NonCsw;
-
-    throw std::runtime_error("unknown employment: " + employment);
-}
-
-template<>
-Entity::HVLStrata SimulationParametersXml::from_string(const std::string &hvl_string)
-{
-    if(hvl_string == "-1" || hvl_string == "uninfected") return Entity::HVLStrata::UNINFECTED;
-    if(hvl_string == "0") return Entity::HVLStrata::HVL_ZERO;
-    if(hvl_string == "1") return Entity::HVLStrata::HVL_ONE;
-    if(hvl_string == "2") return Entity::HVLStrata::HVL_TWO;
-    if(hvl_string == "3") return Entity::HVLStrata::HVL_THREE;
-    if(hvl_string == "4") return Entity::HVLStrata::HVL_FOUR;
-    if(hvl_string == "5") return Entity::HVLStrata::HVL_FIVE;
-    if(hvl_string == "6") return Entity::HVLStrata::HVL_SIX;
-    if(hvl_string == "7" || hvl_string == "primary") return Entity::HVLStrata::HVL_PRIMARY;
-    if(hvl_string == "8" || hvl_string == "late-stage") return Entity::HVLStrata::HVL_LATESTAGE;
-
-    throw std::runtime_error("unknown hvl stratum: " + hvl_string);
 }
 
 template<>
@@ -1253,7 +1487,7 @@ NormalDist SimulationParametersXml::TransformInterventionValue(NormalDist target
 void SimulationParametersXml::SetChanceCondomUseCallback(pugi::xml_node &node,
     Intervention &intervention, bool individual) const
 {
-    auto risk = Attr<Entity::RiskLevel>(node, "risk");
+    auto risk = Attr<RiskLevel>(node, "risk");
     auto type = Attr<SexualPartnership::Type>(node, "type");
     bool transform = false;
     if (node.child("transform"))
@@ -1411,7 +1645,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         case KnownIntervention::TransmissionCoefficient:
         {
             /*
-            auto hvl_stratum = Attr<Entity::HVLStrata>(node, "hvl");
+            auto hvl_stratum = Attr<HVLStrata>(node, "hvl");
             auto coefficient = Text<double>(node);
             intervention.SetIndividualCallback(
                 [=](Time current_time, Entity *person) { 
@@ -1431,7 +1665,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         }
         case KnownIntervention::PartnerAcquisitionRate:
         {
-            auto risk = Attr<Entity::RiskLevel>(node, "risk");
+            auto risk = Attr<RiskLevel>(node, "risk");
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = GetLogNormalDist(node);
             intervention.SetIndividualCallback(
@@ -1441,7 +1675,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         }
         case KnownIntervention::CoitalEventsPerMonth:
         {
-            auto risk = Attr<Entity::RiskLevel>(node, "risk");
+            auto risk = Attr<RiskLevel>(node, "risk");
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = Text<double>(node.child("distribution").child("mean"));
             intervention.SetIndividualCallback(
@@ -1451,11 +1685,11 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         }
         case KnownIntervention::ChanceCondomUse:
         {
-	    SetChanceCondomUseCallback(node, intervention, individual);
+            SetChanceCondomUseCallback(node, intervention, individual);
         }
         case KnownIntervention::PartnershipDuration:
         {
-            auto risk = Attr<Entity::RiskLevel>(node, "risk");
+            auto risk = Attr<RiskLevel>(node, "risk");
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = GetShiftedLogNormalDist(node);
             intervention.SetIndividualCallback(
@@ -1465,7 +1699,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         }
         case KnownIntervention::PartnershipRejectionChance:
         {
-            auto risk = Attr<Entity::RiskLevel>(node, "risk");
+            auto risk = Attr<RiskLevel>(node, "risk");
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto chance = Text<double>(node);
             intervention.SetIndividualCallback(
@@ -1484,30 +1718,26 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         case KnownIntervention::CepacContext:
          {
              auto cepac_file = Text<std::string>(node);
-             intervention.SetPopulationIndividualCallback([=](Time current_time, Population &pop, Entity *person) 
+             intervention.SetPopulationIndividualCallback([=](Time current_time, Population &pop, Entity *person)
              {
-                 if (person->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>() != DemographicProfile::SexualActivityStatus::Active)
+                 if (person->isSexuallyActive())
                  {
-		  return;
+                     auto context = pop.LoadCepacFile(cepac_file);
+                     person->SetTargetedCepacContext(context);
                  }
- 
-                 auto context = pop.LoadCepacFile(cepac_file);
-                 person->SetTargetedCepacContext(context);
              });
              break;
          }
          case KnownIntervention::VaginalMicrobicideUse:
          {
              auto adherence = Text<double>(node);
-             intervention.SetIndividualCallback([=](Time current_time, Entity *person) 
+             intervention.SetIndividualCallback([=](Time current_time, Entity *person)
              {
-                 if (person->getDemographicProfileVal<DemographicProfile::Gender>() != DemographicProfile::Gender::Female)
+                 if (person->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Female)
                  {
-		  return;
+                     auto female = static_cast<Female *>(person);
+                     female->SetVaginalMicrobicideAdherence(adherence);
                  }
- 
-                 auto female = static_cast<Female *>(person);
-                 female->SetVaginalMicrobicideAdherence(adherence); 
              });
              break;
          }
@@ -1516,9 +1746,9 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
              auto adherence = Text<double>(node);
              intervention.SetIndividualCallback([=](Time current_time, Entity *person) 
              {
-                if (person->getHIVStatus() == Entity::HIVStatus::OBSERVED_ACUTE
-                    || person->getHIVStatus() == Entity::HIVStatus::OBSERVED_LATESTAGE
-                    || person->getHIVStatus() == Entity::HIVStatus::OBSERVED_CHRONIC)
+                if (person->getHIVStatus() == HIVStatus::OBSERVED_ACUTE
+                    || person->getHIVStatus() == HIVStatus::OBSERVED_LATESTAGE
+                    || person->getHIVStatus() == HIVStatus::OBSERVED_CHRONIC)
 		{
 		  return;
                 }
@@ -1543,30 +1773,30 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         {
             auto value = Text<double>(node);
             intervention.SetPopulationCallback(
-                [=](Time current_time, Population &p) {
-		    p.GetParameters().SetUseBirthRate(true);
-		    p.GetParameters().ClearFertilityRates();
-		    p.GetParameters().SetBirthRate(value); });
+              [=](Time current_time, Population &p) {
+                  p.GetParameters().SetUseBirthRate(true);
+                  p.GetParameters().ClearFertilityRates();
+                  p.GetParameters().SetBirthRate(value); });
             break;
         }
 	case KnownIntervention::FertilityRate:
 	{
 	    std::vector<FertilityRate> rates;
 	    for(auto child : node.children("rateForAgeRange")) {
-		auto lower = Age(Attr<int>(child, "lower"), 0);
-		auto upper = Age(Attr<int>(child, "upper"), 11);
-		auto value = Text<double>(child);
-		FertilityRate rate(lower, upper, value);
-		rates.push_back(rate);
+            auto lower = Age(Attr<int>(child, "lower"), 0);
+            auto upper = Age(Attr<int>(child, "upper"), 11);
+            auto value = Text<double>(child);
+            FertilityRate rate(lower, upper, value);
+            rates.push_back(rate);
 	    }
 	    intervention.SetPopulationCallback(
-		[=](Time current_time, Population &p) {
-		    p.GetParameters().SetUseBirthRate(false);
-		    p.GetParameters().ClearFertilityRates();
-		    for ( auto rate : rates)
-			p.GetParameters().PushFertilityRate(rate);
-		}
-	    );
+          [=](Time current_time, Population &p) {
+              p.GetParameters().SetUseBirthRate(false);
+              p.GetParameters().ClearFertilityRates();
+              for ( auto rate : rates)
+                  p.GetParameters().PushFertilityRate(rate);
+          }
+            );
 	    break;
 	}
 	case KnownIntervention::Circumcise:
@@ -1598,7 +1828,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
                 [=](Time current_time, Population &p) { p.GetParameters().SetChanceBecomeCsw(gender, chance); });
             intervention.SetIndividualCallback([=](Time current_time, Entity *person)
             {
-                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == gender)
+                if(person->getDemographicProfileVal<DemographicProfile::Gender>() == gender)
                 {
                     person->SetChanceBecomeSexWorker(chance);
                 }
@@ -1618,13 +1848,13 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         {
             /*
             auto gender = Attr<DemographicProfile::Gender>(node, "gender");
-            auto hvl_stratum = Attr<Entity::HVLStrata>(node, "hvl");
+            auto hvl_stratum = Attr<HVLStrata>(node, "hvl");
             auto coefficient = Text<double>(node);
             intervention.SetPopulationCallback(
                 [=](Time current_time, Population &p) { p.popWideParams.SetTransmissionCoefficient(gender, hvl_stratum, coefficient); });
             intervention.SetIndividualCallback([=](Time current_time, Entity *person)
             {
-                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == gender)
+                if (person->getDemographicProfileVal<DemographicProfile::Gender>() == gender)
                 {
                     person->SetTransmissionCoefficient(hvl_stratum, coefficient);
                 }
@@ -1642,7 +1872,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
                 [=](Time current_time, Population &p) { p.GetParameters().SetProportionHighRisk(gender, employment, proportion); });
             intervention.SetIndividualCallback([=](Time current_time, Entity *person)
             {
-                if(gender == (DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender))
+                if (gender == person->getDemographicProfileVal<DemographicProfile::Gender>())
                 {
                     person->SetProportionHighRisk(employment, proportion);
                 }
@@ -1655,9 +1885,9 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto dist = GetNormalDist(node);
             intervention.SetPopulationCallback(
                 [=](Time current_time, Population &p) { p.GetParameters().SetAverageYearsYounger(partnership_type, dist); });
-            intervention.SetIndividualCallback([=](Time current_time, Entity *person) 
-            { 
-                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == DemographicProfile::Gender::Male)
+            intervention.SetIndividualCallback([=](Time current_time, Entity *person)
+            {
+                if(person->isMale())
                 {
                     person->SetAverageYearsYounger(partnership_type, dist);
                 }
@@ -1666,14 +1896,14 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         }
         case KnownIntervention::PartnerAcquisitionRate:
         {
-            auto risk = Attr<Entity::RiskLevel>(node, "risk");
+            auto risk = Attr<RiskLevel>(node, "risk");
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = GetLogNormalDist(node);
             intervention.SetPopulationCallback(
                 [=](Time current_time, Population &p) { p.GetParameters().SetAcquisitionRatePerMonth(risk, partnership_type, dist); });
             intervention.SetIndividualCallback([=](Time current_time, Entity *person)
             {
-                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == DemographicProfile::Gender::Male)
+                if(person->isMale())
                 {
                     person->SetAcquisitionRatePerMonth(risk, partnership_type, dist, GetRandomNumberGenerator());
                 }
@@ -1682,14 +1912,14 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         }
         case KnownIntervention::CoitalEventsPerMonth:
         {
-            auto risk = Attr<Entity::RiskLevel>(node, "risk");
+            auto risk = Attr<RiskLevel>(node, "risk");
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = Text<double>(node.child("distribution").child("mean"));
             intervention.SetPopulationCallback(
                 [=](Time current_time, Population &p) { p.GetParameters().SetCoitalEventsPerMonth(risk, partnership_type, dist); });
             intervention.SetIndividualCallback([=](Time current_time, Entity *person)
             {
-                if((DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == DemographicProfile::Gender::Male)
+                if(person->isMale())
                 {
                     person->SetCoitalEventsPerMonth(risk, partnership_type, dist);
                 }
@@ -1703,7 +1933,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         }
         case KnownIntervention::PartnershipDuration:
         {
-            auto risk = Attr<Entity::RiskLevel>(node, "risk");
+            auto risk = Attr<RiskLevel>(node, "risk");
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = GetShiftedLogNormalDist(node);
             intervention.SetPopulationCallback(

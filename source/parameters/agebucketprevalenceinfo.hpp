@@ -16,11 +16,13 @@ class AgeBucketPrevalenceInfo
 public:
     AgeBucketPrevalenceInfo();
 
-    AgeBucketPrevalenceInfo(Age _minAgeMth, Age _maxAgeMth,
+    AgeBucketPrevalenceInfo(Age _minAgeMth, Age _maxAgeMth, double _proportionInAgeBucket,
 		const std::vector<DemographicProfile::DoublePair> &entity_proportions);
 
     Age GetMinAge() { return minAgeMth; }
     Age GetMaxAge() { return maxAgeMth; }
+
+    double GetProportionInAgeBucket() { return proportionInAgeBucket; }
 
     const std::vector<DemographicProfile::DoublePair> &GetEntityProportions();
 	void SetEntityProportion(DemographicProfile profile, double value);
@@ -35,6 +37,8 @@ private:
     /// the max age that this bucket represents
     /// </summary>
     Age maxAgeMth;
+
+    double proportionInAgeBucket;
 
     /// <summary>
     /// determines size as proportion of the population

@@ -1,0 +1,1157 @@
+<simulation version="4.5">
+  <debugLevel>0</debugLevel>
+  <duration>960</duration>
+  <fixedSeed>0</fixedSeed>
+  <monthOf1990>600</monthOf1990>
+  <traceFiles>
+    <population enabled="true" tossIfCalibFail="false">
+      <extension>Population.xls</extension>
+    </population>
+    <infection enabled="true" tossIfCalibFail="false">
+      <extension>Infections.xls</extension>
+    </infection>
+    <partnership enabled="true" tossIfCalibFail="false">
+      <extension>Partnership.xls</extension>
+    </partnership>
+    <survival enabled="false" tossIfCalibFail="true">
+      <extension>Survival.xls</extension>
+    </survival>
+    <costEffectiveness enabled="false" tossIfCalibFail="true">
+      <extension>CE.xls</extension>
+      <condomCost>0.5</condomCost>
+      <circumcisionCost>500</circumcisionCost>
+      <prEPCost>1</prEPCost>
+      <vaginalMicrobicideCost>1</vaginalMicrobicideCost>
+    </costEffectiveness>
+    <clinical enabled="false" tossIfCalibFail="true">
+      <extension>Clinical.xls</extension>
+    </clinical>
+    <events enabled="false" tossIfCalibFail="true">
+      <extension>Events.xls</extension>
+    </events>
+    <health enabled="false" tossIfCalibFail="true">
+      <extension>Health.xls</extension>
+    </health>
+    <singlePerson enabled="true" tossIfCalibFail="true">
+      <extension>SinglePerson.xls</extension>
+      <numberToTracePerAgeRange>15</numberToTracePerAgeRange>
+      <numberNewbornsToTrace>500</numberNewbornsToTrace>
+      <monthTraceNewborns>600</monthTraceNewborns>
+      <tracePrevalentCases>1</tracePrevalentCases>
+    </singlePerson>
+    <lifeExpectancy enabled="false" tossIfCalibFail="true">
+      <extension>LE.xls</extension>
+      <medianConfidenceInterval>0.95</medianConfidenceInterval>
+      <time>660</time>
+      <time>780</time>
+      <time>900</time>
+      <time>1020</time>
+      <time>1140</time>
+    </lifeExpectancy>
+    <partnerAcquisition enabled="true" tossIfCalibFail="false">
+      <extension>PartAcq.xls</extension>
+      <partnerAcqOutput/>
+    </partnerAcquisition>
+    <calibrationStatistics enabled="true" tossIfCalibFail="false">
+      <extension>CalibStats.xls</extension>
+    </calibrationStatistics>
+    <artRollout enabled="true" tossIfCalibFail="true">
+      <extension>ARTRollout.xls</extension>
+    </artRollout>
+    <shiftedOutcomes enabled="true" tossIfCalibFail="true">
+      <extension>ShiftedOutcomes.xls</extension>
+    </shiftedOutcomes>
+  </traceFiles>
+  <concurrencyDefinition>
+    <definition id="0">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="1">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="2">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="3">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="4">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="5">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="6">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="7">
+      <minNeeded>2</minNeeded>
+      <allow>0</allow>
+    </definition>
+    <definition id="8">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="9">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="10">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="11">
+      <minNeeded>2</minNeeded>
+      <allow>0</allow>
+    </definition>
+    <definition id="12">
+      <minNeeded>2</minNeeded>
+      <allow>0</allow>
+    </definition>
+    <definition id="13">
+      <minNeeded>2</minNeeded>
+      <allow>0</allow>
+    </definition>
+    <definition id="14">
+      <minNeeded>2</minNeeded>
+      <allow>0</allow>
+    </definition>
+    <definition id="15">
+      <minNeeded>2</minNeeded>
+      <allow>0</allow>
+    </definition>
+  </concurrencyDefinition>
+  <calibration enabled="false">
+    <monthOfCalibration>600</monthOfCalibration>
+    <partnershipOutcomes>
+      <steadyPrev>
+        <popOfInterest>0</popOfInterest>
+        <lwrBound>0.37</lwrBound>
+        <uprBound>0.47</uprBound>
+      </steadyPrev>
+      <casualPrev>
+        <popOfInterest>1</popOfInterest>
+        <lwrBound>0.095</lwrBound>
+        <uprBound>0.81</uprBound>
+      </casualPrev>
+      <cswPrev>
+        <popOfInterest>1</popOfInterest>
+        <lwrBound>0.07</lwrBound>
+        <uprBound>0.27</uprBound>
+      </cswPrev>
+      <propInCon>
+        <popOfInterest>1</popOfInterest>
+        <lwrBound>0.17</lwrBound>
+        <uprBound>0.60</uprBound>
+      </propInCon>
+      <femaleCasualPrev>
+        <ratio>1</ratio>
+      </femaleCasualPrev>
+      <femalePropInCon>
+        <ratio>1</ratio>
+      </femalePropInCon>
+      <femaleNumActsLRtoHR>
+        <ratio>1</ratio>
+      </femaleNumActsLRtoHR>
+      <numActs>
+        <popOfInterest>0</popOfInterest>
+        <lwrBound>0</lwrBound>
+        <uprBound>50</uprBound>
+      </numActs>
+    </partnershipOutcomes>
+    <yearlyIncidenceRanges>
+      <yearlyIncidenceRange time="816" lower="0.0066" upper="0.0224"/>
+      <yearlyIncidenceRange time="864" lower="0.0043" upper="0.0227"/>
+    </yearlyIncidenceRanges>
+  </calibration>
+  <population id="DemographicMix">
+    <proportionMaleCircumcised>0.093</proportionMaleCircumcised>
+    <ageOfMajority>17</ageOfMajority>
+    <initialInfections>
+      <delay>600</delay>
+      <chanceSeedChronicInfection>0.909</chanceSeedChronicInfection>
+      <useCoefficients>true</useCoefficients>
+      <seedPrevalence>0.067</seedPrevalence>
+      <profile bucket="SA:MALE:*:*:NON_CSW:*:*" risk="high" age-range="17-49">3</profile>
+      <profile bucket="SA:MALE:*:*:NON_CSW:*:*" risk="low" age-range="17-49">1</profile>
+      <profile bucket="SA:FEMALE:MSW:*:NON_CSW:*:*" risk="high" age-range="17-49">5</profile>
+      <profile bucket="SA:FEMALE:MSW:*:NON_CSW:*:*" risk="low" age-range="17-49">2</profile>
+      <profile bucket="SA:FEMALE:MSW:*:CSW:*:*" risk="high" age-range="17-49">15</profile>
+    </initialInfections>
+    <births>
+      <rate>0.00227</rate>
+      <entityDistributions>
+        <distribution bucket="NA:FEMALE:MSW:SINGLE:NON_CSW:WHITE:NON_HISPANIC">0.0625</distribution>
+        <distribution bucket="NA:FEMALE:MSW:SINGLE:NON_CSW:WHITE:HISPANIC">0.0625</distribution>
+        <distribution bucket="NA:FEMALE:MSW:SINGLE:NON_CSW:BLACK:NON_HISPANIC">0.0625</distribution>
+        <distribution bucket="NA:FEMALE:MSW:SINGLE:NON_CSW:BLACK:HISPANIC">0.0625</distribution>
+        <distribution bucket="NA:MALE:MSW:SINGLE:NON_CSW:WHITE:NON_HISPANIC">0.0625</distribution>
+        <distribution bucket="NA:MALE:MSW:SINGLE:NON_CSW:WHITE:HISPANIC">0.0625</distribution>
+        <distribution bucket="NA:MALE:MSW:SINGLE:NON_CSW:BLACK:NON_HISPANIC">0.0625</distribution>
+        <distribution bucket="NA:MALE:MSW:SINGLE:NON_CSW:BLACK:HISPANIC">0.0625</distribution>
+        <distribution bucket="NA:MALE:MSMW:SINGLE:NON_CSW:WHITE:NON_HISPANIC">0.0625</distribution>
+        <distribution bucket="NA:MALE:MSMW:SINGLE:NON_CSW:WHITE:HISPANIC">0.0625</distribution>
+        <distribution bucket="NA:MALE:MSMW:SINGLE:NON_CSW:BLACK:NON_HISPANIC">0.0625</distribution>
+        <distribution bucket="NA:MALE:MSMW:SINGLE:NON_CSW:BLACK:HISPANIC">0.0625</distribution>
+        <distribution bucket="NA:MALE:MSM:SINGLE:NON_CSW:WHITE:NON_HISPANIC">0.0625</distribution>
+        <distribution bucket="NA:MALE:MSM:SINGLE:NON_CSW:WHITE:HISPANIC">0.0625</distribution>
+        <distribution bucket="NA:MALE:MSM:SINGLE:NON_CSW:BLACK:NON_HISPANIC">0.0625</distribution>
+        <distribution bucket="NA:MALE:MSM:SINGLE:NON_CSW:BLACK:HISPANIC">0.0625</distribution>
+      </entityDistributions>
+    </births>
+    <initialState>
+      <size>10000</size>
+      <entityDistributions>
+        <ageRange lower="0" upper="16">
+          <distribution type="female">0.41</distribution>
+          <distribution type="male">0.43</distribution>
+        </ageRange>
+        <ageRange lower="17" upper="19">
+          <distribution type="female">0.071</distribution>
+          <distribution type="male">0.07</distribution>
+        </ageRange>
+        <ageRange lower="20" upper="24">
+          <distribution type="female">0.12</distribution>
+          <distribution type="male">0.11</distribution>
+	</ageRange>
+        <ageRange lower="25" upper="29">
+          <distribution type="female">0.092</distribution>
+          <distribution type="male">0.09</distribution>
+	</ageRange>	  
+        <ageRange lower="30" upper="34">
+          <distribution type="female">0.063</distribution>
+          <distribution type="male">0.071</distribution>
+	</ageRange>
+        <ageRange lower="35" upper="39">
+          <distribution type="female">0.049</distribution>
+          <distribution type="male">0.058</distribution>
+	</ageRange>
+        <ageRange lower="40" upper="44">
+          <distribution type="female">0.044</distribution>
+          <distribution type="male">0.046</distribution>
+	</ageRange>
+	<ageRange lower="45" upper="49">
+          <distribution type="female">0.038</distribution>
+          <distribution type="male">0.035</distribution>
+	</ageRange>
+        <ageRange lower="50" upper="100">
+          <distribution type="female">0.113</distribution>
+          <distribution type="male">0.09</distribution>
+	</ageRange>
+      </entityDistributions>
+    </initialState>
+    <transmissionCoefficients>
+      <maleToFemale>
+        <hvl0>0.0001</hvl0>
+        <hvl1>0.0001</hvl1>
+        <hvl2>0.0012</hvl2>
+        <hvl3>0.0012</hvl3>
+        <hvl4>0.0014</hvl4>
+        <hvl5>0.0023</hvl5>
+        <hvl6>0.0023</hvl6>
+        <primary>0.00819</primary>
+        <lateStage>0.00355</lateStage>
+      </maleToFemale>
+      <femaleToMale>
+        <hvl0>0.0001</hvl0>
+        <hvl1>0.0001</hvl1>
+        <hvl2>0.0012</hvl2>
+        <hvl3>0.0012</hvl3>
+        <hvl4>0.0014</hvl4>
+        <hvl5>0.0023</hvl5>
+        <hvl6>0.0023</hvl6>
+        <primary>0.00819</primary>
+        <lateStage>0.00355</lateStage>
+      </femaleToMale>
+      <maleToMale>
+        <hvl0>0.0001</hvl0>
+        <hvl1>0.0001</hvl1>
+        <hvl2>0.0012</hvl2>
+        <hvl3>0.0012</hvl3>
+        <hvl4>0.0014</hvl4>
+        <hvl5>0.0023</hvl5>
+        <hvl6>0.0023</hvl6>
+        <primary>0.00819</primary>
+        <lateStage>0.00355</lateStage>
+      </maleToMale>
+    </transmissionCoefficients>
+    <preExposureProphylaxis>
+      <prepEfficacy>0.80</prepEfficacy>
+      <prepDefaults>
+	<prepEligibility>
+	  <!-- monthSinceLastHIVTest -->
+	  <!-- HIVStatus (unknown if passed 6 months) -->
+	  <partnerCount>6</partnerCount>
+	  <partnerStatus>any-positive</partnerStatus>
+	  <partnerRiskLevel>high</partnerRiskLevel>
+	  <monthsSinceUnprotectedAct>12</monthsSinceUnprotectedAct>
+	</prepEligibility>
+	<prepAccess>0.80</prepAccess>
+	<prepAdherence>0.80</prepAdherence>	      
+	<prepRetention>0.80</prepRetention>	      
+	<prepReturnToCare>0.06</prepReturnToCare>
+      </prepDefaults>
+      <prepProfiles>
+	<demographic bucket="SA:MALE:MSW:*:*:*:*">
+	  <prepAccess>0.06</prepAccess>
+	  <prepAdherence>0.06</prepAdherence>
+	  <prepRetention>0.06</prepRetention>
+	  <prepReturnToCare>0.06</prepReturnToCare>
+	</demographic>
+        <demographic bucket="SA:MALE:MSMW:*:*:WHITE:NON_HISPANIC">
+	  <prepAccess>0.06</prepAccess>
+	  <prepAdherence>0.06</prepAdherence>
+	  <prepRetention>0.06</prepRetention>
+	  <prepReturnToCare>0.06</prepReturnToCare>
+	</demographic>
+	<demographic bucket="SA:MALE:MSMW:*:*:WHITE:HISPANIC">
+	  <prepAccess>0.06</prepAccess>
+	  <prepAdherence>0.06</prepAdherence>
+	  <prepRetention>0.06</prepRetention>
+	  <prepReturnToCare>0.06</prepReturnToCare>
+	</demographic>
+	<demographic bucket="SA:MALE:MSMW:*:*:BLACK:NON_HISPANIC">
+	  <prepAccess>0.06</prepAccess>
+	  <prepAdherence>0.06</prepAdherence>
+	  <prepRetention>0.06</prepRetention>
+	  <prepReturnToCare>0.06</prepReturnToCare>
+	</demographic>
+	<demographic bucket="SA:MALE:MSMW:*:*:BLACK:HISPANIC">
+	  <prepAccess>0.06</prepAccess>
+	  <prepAdherence>0.06</prepAdherence>
+	  <prepRetention>0.06</prepRetention>
+	  <prepReturnToCare>0.06</prepReturnToCare>
+	</demographic>
+        <demographic bucket="SA:MALE:MSM:*:*:WHITE:NON_HISPANIC">
+	  <prepAccess>0.06</prepAccess>
+	  <prepAdherence>0.06</prepAdherence>
+	  <prepRetention>0.06</prepRetention>
+	  <prepReturnToCare>0.06</prepReturnToCare>
+	</demographic>
+	<demographic bucket="SA:MALE:MSM:*:*:WHITE:HISPANIC">
+	  <prepAccess>0.06</prepAccess>
+	  <prepAdherence>0.06</prepAdherence>
+	  <prepRetention>0.06</prepRetention>
+	  <prepReturnToCare>0.06</prepReturnToCare>
+	</demographic>
+	<demographic bucket="SA:MALE:MSM:*:*:BLACK:NON_HISPANIC">
+	  <prepAccess>0.06</prepAccess>
+	  <prepAdherence>0.06</prepAdherence>
+	  <prepRetention>0.06</prepRetention>
+	  <prepReturnToCare>0.06</prepReturnToCare>
+	</demographic>
+	<demographic bucket="SA:MALE:MSM:*:*:BLACK:HISPANIC">
+	  <prepAccess>0.06</prepAccess>
+	  <prepAdherence>0.06</prepAdherence>
+	  <prepRetention>0.06</prepRetention>
+	  <prepReturnToCare>0.06</prepReturnToCare>
+	</demographic>
+	<demographic bucket="SA:FEMALE:MSW:*:NON_CSW:WHITE:NON_HISPANIC">
+	  <prepAccess>0.06</prepAccess>
+	  <prepAdherence>0.06</prepAdherence>
+	  <prepRetention>0.06</prepRetention>
+	  <prepReturnToCare>0.06</prepReturnToCare>
+	</demographic>
+	<demographic bucket="SA:FEMALE:MSW:*:NON_CSW:WHITE:HISPANIC">
+	  <prepAccess>0.06</prepAccess>
+	  <prepAdherence>0.06</prepAdherence>
+	  <prepRetention>0.06</prepRetention>
+	  <prepReturnToCare>0.06</prepReturnToCare>
+	</demographic>
+	<demographic bucket="SA:FEMALE:MSW:*:NON_CSW:BLACK:NON_HISPANIC">
+	  <prepAccess>0.06</prepAccess>
+	  <prepAdherence>0.06</prepAdherence>
+	  <prepRetention>0.06</prepRetention>
+	  <prepReturnToCare>0.06</prepReturnToCare>
+	</demographic>
+	<demographic bucket="SA:FEMALE:MSW:*:NON_CSW:BLACK:HISPANIC">
+	  <prepAccess>0.06</prepAccess>
+	  <prepAdherence>0.06</prepAdherence>
+	  <prepRetention>0.06</prepRetention>
+	  <prepReturnToCare>0.06</prepReturnToCare>
+	</demographic>
+        <demographic bucket="SA:FEMALE:MSW:*:CSW:WHITE:NON_HISPANIC">
+	  <prepAccess>0.06</prepAccess>
+	  <prepAdherence>0.06</prepAdherence>
+	  <prepRetention>0.06</prepRetention>
+	  <prepReturnToCare>0.06</prepReturnToCare>
+	</demographic>
+	<demographic bucket="SA:FEMALE:MSW:*:CSW:WHITE:HISPANIC">
+	  <prepAccess>0.06</prepAccess>
+	  <prepAdherence>0.06</prepAdherence>
+	  <prepRetention>0.06</prepRetention>
+	  <prepReturnToCare>0.06</prepReturnToCare>
+	</demographic>
+	<demographic bucket="SA:FEMALE:MSW:*:CSW:BLACK:NON_HISPANIC">
+	  <prepAccess>0.06</prepAccess>
+	  <prepAdherence>0.06</prepAdherence>
+	  <prepRetention>0.06</prepRetention>
+	  <prepReturnToCare>0.06</prepReturnToCare>
+	</demographic>
+	<demographic bucket="SA:FEMALE:MSW:*:CSW:BLACK:HISPANIC">
+	  <prepAccess>0.06</prepAccess>
+	  <prepAdherence>0.06</prepAdherence>
+	  <prepRetention>0.06</prepRetention>
+	  <prepReturnToCare>0.06</prepReturnToCare>
+	</demographic>
+      </prepProfiles>
+    </preExposureProphylaxis>
+    <entities>
+      <entity type="male" bucket="NA:FEMALE:MSW:SINGLE:NON_CSW:WHITE:NON_HISPANIC">
+        <behavior>
+          <cswEndAge>50</cswEndAge>
+          <chanceBecomeSexWorker>0.021607628801524822</chanceBecomeSexWorker>
+          <partnerAcqMultWithSteadyHighRisk>1</partnerAcqMultWithSteadyHighRisk>
+          <partnerAcqMultWithSteadyLowRisk>0.3067544779341016</partnerAcqMultWithSteadyLowRisk>
+          <highRiskAcqRateMultiplier enabled="true">3.9018115639982884</highRiskAcqRateMultiplier>
+          <highRiskCswAcqRateMultiplier enabled="true">36.221009449143885</highRiskCswAcqRateMultiplier>
+          <proportionHighRiskCsw>1</proportionHighRiskCsw>
+          <proportionHighRiskNonCsw>0.2231706094268333</proportionHighRiskNonCsw>
+          <ageDiscounting>
+            <startAgeYrs>50</startAgeYrs>
+            <acquisitionDiscByYr>0.10</acquisitionDiscByYr>
+            <coitalActsDiscByYr>0.10</coitalActsDiscByYr>
+          </ageDiscounting>
+          <partnershipTypes>
+            <partnership type="steady">
+              <selectionCriteria>
+		<assortivity>
+		  <riskAssortivity>0.5384067373255641</riskAssortivity>
+		  <raceAssortivity>0.5</raceAssortivity>
+		  <ethnicAssortivity>0.5</ethnicAssortivity>
+		  <chanceChooseWithSteady>0.0</chanceChooseWithSteady>
+		  <chanceMsmwChooseMale>0.5</chanceMsmwChooseMale>
+		  <chanceMsmChooseMsmw>0.0</chanceMsmChooseMsmw>
+		</assortivity>
+                <averageYearsYounger>
+                  <distribution type="normal">
+                    <mean>5</mean>
+                    <stdDev>2.5</stdDev>
+                  </distribution>
+                </averageYearsYounger>
+              </selectionCriteria>
+              <lowRisk>
+                <acquisitionRate>
+                  <distribution type="normal">
+                    <mean>0.007368809580773184</mean>
+                    <stdDev>0</stdDev>
+                  </distribution>
+                </acquisitionRate>
+                <coitalEventsPerMonth>
+                  <distribution type="poisson">
+                    <mean>9</mean>
+                  </distribution>
+                </coitalEventsPerMonth>
+                <chanceCondomUsePerEvent>
+                  <distribution type="normal">
+                    <mean>0.006</mean>
+                    <stdDev>0.001</stdDev>
+                  </distribution>
+                </chanceCondomUsePerEvent>
+                <partnershipDurationMth>
+                  <distribution type="shifted-log-normal">
+                    <mean>122.64</mean>
+                    <stdDev>94.56</stdDev>
+                    <shift>0</shift>
+                  </distribution>
+                </partnershipDurationMth>
+              </lowRisk>
+              <highRisk>
+                <acquisitionRate>
+                  <distribution type="normal">
+                    <mean>0.02875170643516219</mean>
+                    <stdDev>0</stdDev>
+                  </distribution>
+                </acquisitionRate>
+                <coitalEventsPerMonth>
+                  <distribution type="poisson">
+                    <mean>9</mean>
+                  </distribution>
+                </coitalEventsPerMonth>
+                <chanceCondomUsePerEvent>
+                  <distribution type="normal">
+                    <mean>0.006</mean>
+                    <stdDev>0.001</stdDev>
+                  </distribution>
+                </chanceCondomUsePerEvent>
+                <partnershipDurationMth>
+                  <distribution type="shifted-log-normal">
+                    <mean>122.64</mean>
+                    <stdDev>94.56</stdDev>
+                    <shift>0</shift>
+                  </distribution>
+                </partnershipDurationMth>
+              </highRisk>
+            </partnership>
+            <partnership type="regular">
+              <selectionCriteria>
+		<assortivity>
+		  <riskAssortivity>0.5384067373255641</riskAssortivity>
+		  <raceAssortivity>0.5</raceAssortivity>
+		  <ethnicAssortivity>0.5</ethnicAssortivity>
+		  <chanceChooseWithSteady>0.05</chanceChooseWithSteady>
+		  <chanceMsmwChooseMale>0.5</chanceMsmwChooseMale>
+		  <chanceMsmChooseMsmw>0.0</chanceMsmChooseMsmw>
+		</assortivity>
+                <averageYearsYounger>
+                  <distribution type="normal">
+                    <mean>5</mean>
+                    <stdDev>2.5</stdDev>
+                  </distribution>
+                </averageYearsYounger>
+              </selectionCriteria>
+              <lowRisk>
+                <acquisitionRate>
+                  <distribution type="normal">
+                    <mean>0.06792530059094802</mean>
+                    <stdDev>0</stdDev>
+                  </distribution>
+                </acquisitionRate>
+                <coitalEventsPerMonth>
+                  <distribution type="poisson">
+                    <mean>9.681691542205423</mean>
+                  </distribution>
+                </coitalEventsPerMonth>
+                <chanceCondomUsePerEvent>
+                  <distribution type="normal">
+                    <mean>0.52</mean>
+                    <stdDev>0.001</stdDev>
+                  </distribution>
+                </chanceCondomUsePerEvent>
+                <partnershipDurationMth>
+                  <distribution type="shifted-log-normal">
+                    <mean>13.5</mean>
+                    <stdDev>9</stdDev>
+                    <shift>0</shift>
+                  </distribution>
+                </partnershipDurationMth>
+              </lowRisk>
+              <highRisk>
+                <acquisitionRate>
+                  <distribution type="normal">
+                    <mean>0.26503172333382075</mean>
+                    <stdDev>0</stdDev>
+                  </distribution>
+                </acquisitionRate>
+                <coitalEventsPerMonth>
+                  <distribution type="poisson">
+                    <mean>9.681691542205423</mean>
+                  </distribution>
+                </coitalEventsPerMonth>
+                <chanceCondomUsePerEvent>
+                  <distribution type="normal">
+                    <mean>0.52</mean>
+                    <stdDev>0.001</stdDev>
+                  </distribution>
+                </chanceCondomUsePerEvent>
+                <partnershipDurationMth>
+                  <distribution type="shifted-log-normal">
+                    <mean>13.5</mean>
+                    <stdDev>9</stdDev>
+                    <shift>0</shift>
+                  </distribution>
+                </partnershipDurationMth>
+              </highRisk>
+            </partnership>
+            <partnership type="casual">
+              <selectionCriteria>
+		<assortivity>
+		  <riskAssortivity>0.5384067373255641</riskAssortivity>
+		  <raceAssortivity>0.5</raceAssortivity>
+		  <ethnicAssortivity>0.5</ethnicAssortivity>
+		  <chanceChooseWithSteady>0.05</chanceChooseWithSteady>
+		  <chanceMsmwChooseMale>0.5</chanceMsmwChooseMale>
+		  <chanceMsmChooseMsmw>0.0</chanceMsmChooseMsmw>
+		</assortivity>
+                <averageYearsYounger>
+                  <distribution type="normal">
+                    <mean>5</mean>
+                    <stdDev>2.5</stdDev>
+                  </distribution>
+                </averageYearsYounger>
+              </selectionCriteria>
+              <lowRisk>
+                <acquisitionRate>
+                  <distribution type="normal">
+                    <mean>0.1470119358798124</mean>
+                    <stdDev>0</stdDev>
+                  </distribution>
+                </acquisitionRate>
+                <coitalEventsPerMonth>
+                  <distribution type="poisson">
+                    <mean>1</mean>
+                  </distribution>
+                </coitalEventsPerMonth>
+                <chanceCondomUsePerEvent>
+                  <distribution type="normal">
+                    <mean>0.37</mean>
+                    <stdDev>0.001</stdDev>
+                  </distribution>
+                </chanceCondomUsePerEvent>
+                <partnershipDurationMth>
+                  <distribution type="shifted-log-normal">
+                    <mean>-1</mean>
+                    <stdDev>0</stdDev>
+                    <shift>0</shift>
+                  </distribution>
+                </partnershipDurationMth>
+              </lowRisk>
+              <highRisk>
+                <acquisitionRate>
+                  <distribution type="normal">
+                    <mean>0.5736128714616269</mean>
+                    <stdDev>0</stdDev>
+                  </distribution>
+                </acquisitionRate>
+                <coitalEventsPerMonth>
+                  <distribution type="poisson">
+                    <mean>1</mean>
+                  </distribution>
+                </coitalEventsPerMonth>
+                <chanceCondomUsePerEvent>
+                  <distribution type="normal">
+                    <mean>0.37</mean>
+                    <stdDev>0.001</stdDev>
+                  </distribution>
+                </chanceCondomUsePerEvent>
+                <partnershipDurationMth>
+                  <distribution type="shifted-log-normal">
+                    <mean>-1</mean>
+                    <stdDev>0</stdDev>
+                    <shift>0</shift>
+                  </distribution>
+                </partnershipDurationMth>
+              </highRisk>
+            </partnership>
+            <partnership type="csw">
+              <selectionCriteria>
+		<assortivity>
+		  <riskAssortivity>0.0</riskAssortivity>
+		  <raceAssortivity>0.5</raceAssortivity>
+		  <ethnicAssortivity>0.5</ethnicAssortivity>
+		  <chanceChooseWithSteady>0.0</chanceChooseWithSteady>
+		  <chanceMsmwChooseMale>0.0</chanceMsmwChooseMale>
+		  <chanceMsmChooseMsmw>0.0</chanceMsmChooseMsmw>
+		</assortivity>
+                <averageYearsYounger>
+                  <distribution type="normal">
+                    <mean>13</mean>
+                    <stdDev>6.5</stdDev>
+                  </distribution>
+                </averageYearsYounger>
+              </selectionCriteria>
+              <lowRisk>
+                <acquisitionRate>
+                  <distribution type="normal">
+                    <mean>0.010489484244839737</mean>
+                    <stdDev>0</stdDev>
+                  </distribution>
+                </acquisitionRate>
+                <coitalEventsPerMonth>
+                  <distribution>
+                    <type>Poisson</type>
+                    <mean>1</mean>
+                  </distribution>
+                </coitalEventsPerMonth>
+                <chanceCondomUsePerEvent>
+                  <distribution type="normal">
+                    <mean>0.63</mean>
+                    <stdDev>0.001</stdDev>
+                  </distribution>
+                </chanceCondomUsePerEvent>
+                <partnershipDurationMth>
+                  <distribution type="shifted-log-normal">
+                    <mean>-1</mean>
+                    <stdDev>0</stdDev>
+                    <shift>0</shift>
+                  </distribution>
+                </partnershipDurationMth>
+              </lowRisk>
+              <highRisk>
+                <acquisitionRate>
+                  <distribution type="normal">
+                    <mean>0.379939707948986</mean>
+                    <stdDev>0</stdDev>
+                  </distribution>
+                </acquisitionRate>
+                <coitalEventsPerMonth>
+                  <distribution type="poisson">
+                    <mean>1</mean>
+                  </distribution>
+                </coitalEventsPerMonth>
+                <chanceCondomUsePerEvent>
+                  <distribution type="normal">
+                    <mean>0.63</mean>
+                    <stdDev>0.001</stdDev>
+                  </distribution>
+                </chanceCondomUsePerEvent>
+                <partnershipDurationMth>
+                  <distribution type="shifted-log-normal">
+                    <mean>-1</mean>
+                    <stdDev>0</stdDev>
+                    <shift>0</shift>
+                  </distribution>
+                </partnershipDurationMth>
+              </highRisk>
+            </partnership>
+          </partnershipTypes>
+          <maxPartnershipRejections>0</maxPartnershipRejections>
+        </behavior>
+        <health>
+          <circumcisionProtectEfficacy>0.56</circumcisionProtectEfficacy>
+          <condomProtectEfficacy>0.8</condomProtectEfficacy>
+        </health>
+      </entity>
+      <entity type="female">
+        <behavior>
+          <cswEndAge>70</cswEndAge>
+          <chanceBecomeSexWorker>0.021607628801524822</chanceBecomeSexWorker>
+          <proportionHighRiskCsw>1</proportionHighRiskCsw>
+          <proportionHighRiskNonCsw>0.08282268943241675</proportionHighRiskNonCsw>
+        </behavior>
+        <health>
+          <vaginalMicrobicideEfficacy>0</vaginalMicrobicideEfficacy>
+        </health>
+      </entity>
+    </entities>
+  </population>
+  <interventions>
+    <artRolloutIntervention enabled="true">
+      <dynamicTreatmentScaling enabled="false">
+        <feedbackPeriod>-1</feedbackPeriod>
+      </dynamicTreatmentScaling>
+      <rolloutTreatmentFiles>
+        <rolloutFile>
+          <time>0</time>
+          <fileName>Bots_NOART_50a_NoBT.in</fileName>
+          <fileNumber>0</fileNumber>
+          <popToApply>0</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>732</time>
+          <fileName>Bots_ART_50a_2001.in</fileName>
+          <fileNumber>1</fileNumber>
+          <popToApply>1</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>744</time>
+          <fileName>Bots_NOART_50a_BT25y_2002.in</fileName>
+          <fileNumber>2</fileNumber>
+          <popToApply>0</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>744</time>
+          <fileName>Bots_ART_50a_2002.in</fileName>
+          <fileNumber>3</fileNumber>
+          <popToApply>1</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>780</time>
+          <fileName>Bots_NOART_50a_BT11y_2005.in</fileName>
+          <fileNumber>4</fileNumber>
+          <popToApply>0</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>780</time>
+          <fileName>Bots_ART_50a_2005.in</fileName>
+          <fileNumber>5</fileNumber>
+          <popToApply>1</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>792</time>
+          <fileName>Bots_NOART_50a_BT10y_2006.in</fileName>
+          <fileNumber>6</fileNumber>
+          <popToApply>0</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>804</time>
+          <fileName>Bots_NOART_50a_BT09y_2007.in</fileName>
+          <fileNumber>7</fileNumber>
+          <popToApply>0</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>816</time>
+          <fileName>Bots_NOART_50a_BT08y_2008.in</fileName>
+          <fileNumber>8</fileNumber>
+          <popToApply>0</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>780</time>
+          <fileName>Bots_ART_50a_2008.in</fileName>
+          <fileNumber>9</fileNumber>
+          <popToApply>1</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>828</time>
+          <fileName>Bots_NOART_50a_BT07y_2009.in</fileName>
+          <fileNumber>10</fileNumber>
+          <popToApply>0</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>840</time>
+          <fileName>Bots_NOART_50a_BT06y_2010.in</fileName>
+          <fileNumber>11</fileNumber>
+          <popToApply>0</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>852</time>
+          <fileName>Bots_NOART_50a_BT05y_2011.in</fileName>
+          <fileNumber>12</fileNumber>
+          <popToApply>0</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>864</time>
+          <fileName>Bots_NOART_50a_BT04y_2012.in</fileName>
+          <fileNumber>13</fileNumber>
+          <popToApply>0</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>864</time>
+          <fileName>Bots_ART_50a_2012.in</fileName>
+          <fileNumber>14</fileNumber>
+          <popToApply>1</popToApply>
+        </rolloutFile>
+      </rolloutTreatmentFiles>
+      <rolloutEligibility>
+        <criteria name="OIHist">
+          <rank>1</rank>
+          <OI0>0</OI0>
+          <OI1>0</OI1>
+          <OI2>0</OI2>
+          <OI3>0</OI3>
+          <OI4>0</OI4>
+          <OI5>0</OI5>
+          <OI6>0</OI6>
+          <OI7>0</OI7>
+          <OI8>1</OI8>
+          <OI9>1</OI9>
+          <OI10>1</OI10>
+          <OI11>1</OI11>
+          <OI12>0</OI12>
+          <OI13>1</OI13>
+          <OI14>0</OI14>
+          <numOIToStart>1</numOIToStart>
+        </criteria>
+        <criteria name="CD4">
+          <rank>2</rank>
+          <CD4Upp>-1</CD4Upp>
+          <CD4Lwr>-1</CD4Lwr>
+        </criteria>
+        <criteria name="CD4OIHist">
+          <rank>3</rank>
+          <CD4Upp>-1</CD4Upp>
+          <CD4Lwr>-1</CD4Lwr>
+          <OI0>0</OI0>
+          <OI1>0</OI1>
+          <OI2>0</OI2>
+          <OI3>0</OI3>
+          <OI4>0</OI4>
+          <OI5>0</OI5>
+          <OI6>0</OI6>
+          <OI7>0</OI7>
+          <OI8>0</OI8>
+          <OI9>0</OI9>
+          <OI10>0</OI10>
+          <OI11>0</OI11>
+          <OI12>0</OI12>
+          <OI13>0</OI13>
+          <OI14>0</OI14>
+        </criteria>
+        <criteria name="HVL">
+          <rank>4</rank>
+          <HVLUpp>-1</HVLUpp>
+          <HVLLwr>-1</HVLLwr>
+        </criteria>
+        <criteria name="CD4HVL">
+          <rank>5</rank>
+          <CD4Upp>-1</CD4Upp>
+          <CD4Lwr>-1</CD4Lwr>
+          <HVLUpp>-1</HVLUpp>
+          <HVLLwr>-1</HVLLwr>
+        </criteria>
+      </rolloutEligibility>
+      <targetRolloutProportions>
+        <target year="2001">0.01</target>
+        <target year="2002">0.02</target>
+        <target year="2003">0.06</target>
+        <target year="2004">0.13</target>
+        <target year="2005">0.19</target>
+        <target year="2006">0.26</target>
+        <target year="2007">0.30</target>
+        <target year="2008">0.37</target>
+        <target year="2009">0.45</target>
+        <target year="2010">0.50</target>
+        <target year="2011">0.55</target>
+        <target year="2012">0.62</target>
+        <target year="2013">0.66</target>
+        <target year="2014">0.71</target>
+        <target year="2015">0.78</target>
+        <target year="2016">0.99</target>
+      </targetRolloutProportions>
+    </artRolloutIntervention>
+    <populationInterventions>
+      <prepEligibility cirterion="partnerHIVStatus" paramter="" time="700">observed-positive</prepEligibility>
+      <prepAdherence bucket="SA:MALE:MSM:*:*:BLACK:HISPANIC" time="700">0.02</prepAdherence>
+      <rolloutEligibility criterion="Identified" parameter="" time="732">true</rolloutEligibility>
+      <rolloutEligibility criterion="CD4" parameter="CD4Upp" time="744">200</rolloutEligibility>
+      <rolloutEligibility criterion="CD4" parameter="CD4Upp" time="816">250</rolloutEligibility>
+      <rolloutEligibility criterion="CD4" parameter="CD4Upp" time="864">350</rolloutEligibility>
+      <rolloutEligibility criterion="CD4" parameter="CD4Upp" time="912">10000</rolloutEligibility>
+      <birthRate time="768">0.00202</birthRate>
+      <chanceCondomUse time="600" duration="132" type="steady" risk="low">
+        <transform>true</transform>
+        <distribution type="normal">
+          <mean>0.35</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="600" duration="132" type="steady" risk="high">
+        <transform>true</transform>
+        <distribution type="normal">
+          <mean>0.35</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="600" duration="132" type="regular" risk="low">
+        <transform>true</transform>
+        <distribution type="normal">
+          <mean>0.71</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="600" duration="132" type="regular" risk="high">
+        <transform>true</transform>
+        <distribution type="normal">
+          <mean>0.71</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="600" duration="132" type="casual" risk="low">
+        <transform>true</transform>
+        <distribution type="normal">
+          <mean>0.71</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="600" duration="132" type="casual" risk="high">
+        <transform>true</transform>
+        <distribution type="normal">
+          <mean>0.71</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="600" duration="168" type="csw" risk="low">
+        <transform>true</transform>
+        <distribution type="normal">
+          <mean>0.79</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="600" duration="168" type="csw" risk="high">
+        <transform>true</transform>
+        <distribution type="normal">
+          <mean>0.79</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="732" duration="36" type="steady" risk="low">
+        <transform>true</transform>
+        <distribution type="normal">
+          <mean>0.44</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="732" duration="36" type="steady" risk="high">
+        <transform>true</transform>
+        <distribution type="normal">
+          <mean>0.44</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="732" duration="36" type="regular" risk="low">
+        <transform>true</transform>
+        <distribution type="normal">
+          <mean>0.76</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="732" duration="36" type="regular" risk="high">
+        <transform>true</transform>
+        <distribution type="normal">
+          <mean>0.76</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="732" duration="36" type="casual" risk="low">
+        <transform>true</transform>
+        <distribution type="normal">
+          <mean>0.79</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="732" duration="36" type="casual" risk="high">
+        <transform>true</transform>
+        <distribution type="normal">
+          <mean>0.79</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="786" duration="48" type="steady" risk="low">
+        <transform>true</transform>
+        <distribution type="normal">
+          <mean>0.57</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="786" duration="48" type="steady" risk="high">
+        <transform>true</transform>
+        <distribution type="normal">
+          <mean>0.57</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="768" duration="48" type="regular" risk="low">
+        <transform>true</transform>
+        <distribution type="normal">
+          <mean>0.83</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="768" duration="48" type="regular" risk="high">
+        <transform>true</transform>
+        <distribution type="normal">
+          <mean>0.83</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="768" duration="48" type="casual" risk="low">
+        <transform>true</transform>
+        <distribution type="normal">
+          <mean>0.93</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="768" duration="48" type="casual" risk="high">
+        <transform>true</transform>
+        <distribution type="normal">
+          <mean>0.93</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="768" duration="48" type="csw" risk="low">
+        <transform>true</transform>
+        <distribution type="normal">
+          <mean>0.90</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="768" duration="48" type="csw" risk="high">
+        <transform>true</transform>
+        <distribution type="normal">
+          <mean>0.90</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="816" type="steady" risk="low">
+        <transform>false</transform>
+        <distribution type="normal">
+          <mean>0.57</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="816" type="steady" risk="high">
+        <transform>false</transform>
+        <distribution type="normal">
+          <mean>0.57</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="816" type="regular" risk="low">
+        <transform>false</transform>
+        <distribution type="normal">
+          <mean>0.83</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="816" type="regular" risk="high">
+        <transform>false</transform>
+        <distribution type="normal">
+          <mean>0.83</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="816" type="casual" risk="low">
+        <transform>false</transform>
+        <distribution type="normal">
+          <mean>0.93</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="816" type="casual" risk="high">
+        <transform>false</transform>
+        <distribution type="normal">
+          <mean>0.93</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="816" type="csw" risk="low">
+        <transform>false</transform>
+        <distribution type="normal">
+          <mean>0.90</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <chanceCondomUse time="816" type="csw" risk="high">
+        <transform>false</transform>
+        <distribution type="normal">
+          <mean>0.90</mean>
+          <stdDev>0.001</stdDev>
+        </distribution>
+      </chanceCondomUse>
+      <circumcise time="768" duration="48">
+        <transform>true</transform>
+        <proportion>0.12</proportion>
+      </circumcise>
+      <circumcise time="816" duration="60">
+        <transform>true</transform>
+        <proportion>0.24</proportion>
+      </circumcise>
+      <proportionCircumcised time="876">
+        <transform>false</transform>
+        <proportion>0.24</proportion>
+      </proportionCircumcised>
+    </populationInterventions>
+    <groups>
+      <group label="BLMSM">
+	<enrollment-period>960-1020</enrollment-period>
+	<permanent-effect>true</permanent-effect>
+	<open-enrollment>true</open-enrollment>
+	<eligibility-criteria>
+	  <hiv-status>negative</hiv-status>
+	  <sexual-activity-status>active</sexual-activity-status>
+	  <risk-group>high</risk-group>
+	  <sexual-orientation>msm</sexual-orientation>
+	  <race>black</race>
+	  <ethnicity>hispanic</ethnicity>
+	</eligibility-criteria>
+	<partitions>
+	  <partition label="PREP-Intervention">
+	  <proportion>0.001</proportion>
+	    <trace>true</trace>
+	    <interventions time="900">
+	      <preExposureProphylaxisAccess>0.04</preExposureProphylaxisAccess>
+	      <preExposureProphylaxisAdherence>0.6</preExposureProphylaxisAdherence>
+	    </interventions>
+	  </partition>
+	</partitions>
+      </group>
+    </groups>
+  </interventions>
+</simulation>

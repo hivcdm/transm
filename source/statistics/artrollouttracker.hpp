@@ -13,7 +13,7 @@
 
 namespace transm {
 
-class Entity;
+//class Entity;
 class Population;
 
 class ArtRolloutTracker : protected TabularOutput
@@ -29,7 +29,6 @@ public:
 	void recordTreatmentAccess(Entity *person);
 	void recordTreatmentEligiblity(Entity *person);
 	void recordTreatment(Entity *person);
-        void recordPrEP(Entity *person);
 	void recordTreatmentDeath(Entity *person);
 	void recordTreatmentSlots(int numSlots);
 
@@ -45,7 +44,6 @@ private:
 	std::vector<int> numTestsByResult;
 	BucketCounter counter;
 	int numTreatmentSlots;
-    int numOnPrEP;
 
 	std::vector<AgeRange> ageRanges;
 

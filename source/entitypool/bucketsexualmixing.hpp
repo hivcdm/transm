@@ -25,10 +25,11 @@ errhode 4/20/2009: The index has been replaced by BucketAge, which implements a 
 #include "entityindex.hpp"
 #include "bucketdemographicprofile.hpp"
 #include "bucketage.hpp"
+#include "entities/entity.hpp"
 
 namespace transm {
 
-class Entity;
+// class Entity;
 
 /**
 This class contains Person objects in different buckets based on age
@@ -107,7 +108,7 @@ public :
 	/*
 	*returns the number of unique infected people by risk group
 	*/
-	unsigned long getNumInfected(Entity::RiskLevel _risk);
+	unsigned long getNumInfected(RiskLevel _risk);
 
 	//will index a new Person
 	//TESTED
@@ -141,24 +142,24 @@ public :
 
 	/*
 	 * @returns: total number of marbles in all FVs associated with _risk
-	 * across all BucketAges in this; If _risk = (std::size_t)Entity::RiskLevel::Last,
+	 * across all BucketAges in this; If _risk = (std::size_t)RiskLevel::Last,
 	 * returns the number of persons in the random risk bucket
 	 */
 	//TESTED
-	unsigned long sizeRisk(Entity::RiskLevel _risk);
+	unsigned long sizeRisk(RiskLevel _risk);
 
 	/*
 	 * @returns: total number of unique persons in this bucket with given risk level that is CSW
-	 * across all BucketAges in this; If _risk = (std::size_t)Entity::RiskLevel::Last,
+	 * across all BucketAges in this; If _risk = (std::size_t)RiskLevel::Last,
 	 * returns the number of persons in the random risk bucket
 	 */
-	unsigned long sizeRiskCSW(Entity::RiskLevel _risk);
+	unsigned long sizeRiskCSW(RiskLevel _risk);
 
 	/*
 	 * @returns: total number of unique persons in this bucket with given risk level and hiv status
 	 * across all BucketAges in this;
 	 */
-	unsigned long sizeRiskHIVStatus(Entity::RiskLevel _risk, Entity::HIVStatus _hivStatus);
+	unsigned long sizeRiskHIVStatus(RiskLevel _risk, HIVStatus _hivStatus);
 
 	/*
 	 * @returns: total number of marbles in all Random Risk FVs across all
@@ -180,7 +181,7 @@ public :
 	/* @function: changeHIVstatus
 	 * @effects: if person is in this Bucket and thier hiv status changes decrement the old status and increment new status
 	 */
-	void changeHIVStatus(Entity *_p, Entity::HIVStatus _orig, Entity::HIVStatus _new);
+	void changeHIVStatus(Entity *_p, HIVStatus _orig, HIVStatus _new);
 
 	/*
 	 * @effects: Sets all persons in oldest BucketAge to die and processes their
@@ -203,7 +204,7 @@ private :
 	//gets a random person with age in [_ageLowerBound,_ageUpperBound]
 	//TESTED
 	Entity *getRandomPerson(RandomNumberGenerator &_randomNums, Age _ageLowerBound, Age _ageUpperBound,
-	                        Entity::RiskLevel _risk, SexualPartnership::Type _partnershipType, bool _remove);
+	                        RiskLevel _risk, SexualPartnership::Type _partnershipType, bool _remove);
 
 	//Returns AgeBucket of oldest persons
 	//TESTED

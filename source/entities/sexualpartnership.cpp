@@ -3,6 +3,7 @@
 
 #include "sexualpartnership.hpp"
 #include "entity.hpp"
+#include "entitytypes.hpp"
 #include "male.hpp"
 #include "parameters/eventparams.hpp"
 #include "statistics/populationstatisticsold.hpp"
@@ -107,7 +108,7 @@ bool SexualPartnership::isMember(Entity *_p)
 
 Entity *SexualPartnership::monthlySexualActivity(EventParams &_eventParams, 
     InfectionsTracker *infTrack, 
-    const std::unordered_map<TransmissionType, std::array<double, (std::size_t)Entity::HVLStrata::Last>> &transmission_coefficients)
+    const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients)
 {
 	int eventsThisMonth = partners[0]->rollNumEventsPerPartner(partners[1], _eventParams.randomNums, type);
 

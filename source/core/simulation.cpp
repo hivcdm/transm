@@ -10,6 +10,7 @@
 #include "population.hpp"
 #include "utility/cepacinputparser.hpp"
 #include "parameters/eventparams.hpp"
+#include "entities/entitytypes.hpp"
 #include "entities/demographicprofile.hpp"
 #include "entities/sexualbehavior.hpp"
 #include "utility/highresolutiontimer.hpp"
@@ -99,25 +100,25 @@ void TargetGroup::Update(Population &population, Time current_time,
             }
 
             if(target_.value.gender.has_value
-                && target_.value.gender.value != (DemographicProfile::Gender)person->getDemographicProfileVal(DemographicProfile::Demographic::Gender))
+                && target_.value.gender.value != person->getDemographicProfileVal<DemographicProfile::Gender>())
             {
                 return false;
             }
 
             if(target_.value.relationship_status.has_value
-                && target_.value.relationship_status.value != (DemographicProfile::RelationshipStatus)person->getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus))
+                && target_.value.relationship_status.value != person->getDemographicProfileVal<DemographicProfile::RelationshipStatus>())
             {
                 return false;
             }
 
             if(target_.value.sexual_activity_status.has_value
-                && target_.value.sexual_activity_status.value != (DemographicProfile::SexualActivityStatus)person->getDemographicProfileVal(DemographicProfile::Demographic::SexualActivityStatus))
+                && target_.value.sexual_activity_status.value != person->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>())
             {
                 return false;
             }
 
             if(target_.value.sexual_orientation.has_value
-                && target_.value.sexual_orientation.value != (DemographicProfile::SexualOrientation)person->getDemographicProfileVal(DemographicProfile::Demographic::SexualOrientation))
+                && target_.value.sexual_orientation.value != person->getDemographicProfileVal<DemographicProfile::SexualOrientation>())
             {
                 return false;
             }
@@ -138,30 +139,30 @@ void TargetGroup::Update(Population &population, Time current_time,
             {
                 switch (target_.value.observed_hiv_status.value)
                 {
-                case Entity::HIVStatus::ANY_POSITIVE:
-		    if (person->getHIVStatus() == Entity::HIVStatus::NEGATIVE)
+                case HIVStatus::ANY_POSITIVE:
+		    if (person->getHIVStatus() == HIVStatus::NEGATIVE)
 	            {
 			return false;
 	            }
 
                     break;
-                case Entity::HIVStatus::ANY_NOT_OBSERVED_POSITIVE:
+                case HIVStatus::ANY_NOT_OBSERVED_POSITIVE:
                 {
-                    if (person->getHIVStatus() == Entity::HIVStatus::OBSERVED_ACUTE
-                        || person->getHIVStatus() == Entity::HIVStatus::OBSERVED_LATESTAGE
-                        || person->getHIVStatus() == Entity::HIVStatus::OBSERVED_CHRONIC)
+                    if (person->getHIVStatus() == HIVStatus::OBSERVED_ACUTE
+                        || person->getHIVStatus() == HIVStatus::OBSERVED_LATESTAGE
+                        || person->getHIVStatus() == HIVStatus::OBSERVED_CHRONIC)
                     {
                         return false;
                     }
 
                     break;
                 }
-                case Entity::HIVStatus::ANY_OBSERVED_POSITIVE:
+                case HIVStatus::ANY_OBSERVED_POSITIVE:
                 {
-                    if (person->getHIVStatus() == Entity::HIVStatus::NEGATIVE
-                        || person->getHIVStatus() == Entity::HIVStatus::UNOBSERVED_LATESTAGE
-                        || person->getHIVStatus() == Entity::HIVStatus::UNOBSERVED_CHRONIC
-                        || person->getHIVStatus() == Entity::HIVStatus::UNOBSERVED_ACUTE)
+                    if (person->getHIVStatus() == HIVStatus::NEGATIVE
+                        || person->getHIVStatus() == HIVStatus::UNOBSERVED_LATESTAGE
+                        || person->getHIVStatus() == HIVStatus::UNOBSERVED_CHRONIC
+                        || person->getHIVStatus() == HIVStatus::UNOBSERVED_ACUTE)
                     {
                         return false;
                     }
@@ -386,6 +387,11 @@ void Simulation::FirstStep()
         population_.PrintARTRolloutOutcomes(parameters_, parameters_.trace_files[EventParams::TraceFile::Type::ArtRollout].file);
 	}
 
+    if(parameters_.trace_files[EventParams::TraceFile::Type::PrepOutcomes].enabled)
+	{
+        population_.PrintPrepOutcomes(parameters_, parameters_.trace_files[EventParams::TraceFile::Type::PrepOutcomes].file);
+	}
+
     if(parameters_.trace_files[EventParams::TraceFile::Type::CostEffectiveness].enabled)
 	{
         population_.populationStatistics.costsTracker.PrintCosts(parameters_.currTime, parameters_.trace_files[EventParams::TraceFile::Type::CostEffectiveness].file);
@@ -467,6 +473,11 @@ void Simulation::Step()
         population_.PrintARTRolloutOutcomes(parameters_, parameters_.trace_files[EventParams::TraceFile::Type::ArtRollout].file);
 	}
 
+    if(parameters_.trace_files[EventParams::TraceFile::Type::PrepOutcomes].enabled)
+	{
+        population_.PrintPrepOutcomes(parameters_, parameters_.trace_files[EventParams::TraceFile::Type::PrepOutcomes].file);
+	}
+
     if(parameters_.trace_files[EventParams::TraceFile::Type::CostEffectiveness].enabled)
 	{
         population_.populationStatistics.costsTracker.PrintCosts(parameters_.currTime, parameters_.trace_files[EventParams::TraceFile::Type::CostEffectiveness].file);
@@ -480,44 +491,47 @@ void Simulation::Step()
         {
             // save the partnership network data in the user specified month
             population_.WritePartnershipNetwork(parameters_);
+
+            population_.PrintPartnershipTracking(parameters_.trace_files
+                [EventParams::TraceFile::Type::PartnerAcquisition].file, time_);
         }
     }
 
     if(parameters_.calibrationInputs.useCalibration)
     {
-	if (parameters_.calibrationInputs.monthOfCalibration == time_)
-	{
-		passedCalibration_ = population_.PassesPartnershipCalibration(parameters_);
-		string passedCalibrationString = (passedCalibration_ == true ? "true" : "false");
-		std::cerr << "PARTNERSHIP CALIBRATION PASSED: " << passedCalibrationString << endl;
-		//If this run doesn't pass the partnership calibration stop the run and
-		// discard specified trace files
-		if(!passedCalibration_)
-		{
-			return;
-		}
-	}
+        if (parameters_.calibrationInputs.monthOfCalibration == time_)
+        {
+            passedCalibration_ = population_.PassesPartnershipCalibration(parameters_);
+            string passedCalibrationString = (passedCalibration_ == true ? "true" : "false");
+            std::cerr << "PARTNERSHIP CALIBRATION PASSED: " << passedCalibrationString << endl;
+            //If this run doesn't pass the partnership calibration stop the run and
+            // discard specified trace files
+            if(!passedCalibration_)
+            {
+                return;
+            }
+        }
 
-	std::map<Time, std::pair<double,double>>::iterator incidenceRange;
-	incidenceRange = parameters_.calibrationInputs.yearlyIncidenceRanges.find(time_);
-	if (incidenceRange != parameters_.calibrationInputs.yearlyIncidenceRanges.end())
-	{
-		double incidence = population_.populationStatistics.infectionsTracker.getPopAnnualIncidence();
+        std::map<Time, std::pair<double,double>>::iterator incidenceRange;
+        incidenceRange = parameters_.calibrationInputs.yearlyIncidenceRanges.find(time_);
+        if (incidenceRange != parameters_.calibrationInputs.yearlyIncidenceRanges.end())
+        {
+            double incidence = population_.populationStatistics.infectionsTracker.getPopAnnualIncidence();
 
-		std::pair<double,double> range = incidenceRange->second;
-		if (incidence < range.first || incidence > range.second)
-		{
-			std::cerr << "INCIDENCE CALIBRATION FAILED at time: "
-				  << time_.in_months() << " " << incidence << endl;
-			passedCalibration_ = false;
-			return;
-		}
-		else
-		{
-			std::cerr << "INCIDENCE CALIBRATION PASSED at time: "
-				  << time_.in_months() << " " << incidence << endl;
-		}
-	}
+            std::pair<double,double> range = incidenceRange->second;
+            if (incidence < range.first || incidence > range.second)
+            {
+                std::cerr << "INCIDENCE CALIBRATION FAILED at time: "
+                          << time_.in_months() << " " << incidence << endl;
+                passedCalibration_ = false;
+                return;
+            }
+            else
+            {
+                std::cerr << "INCIDENCE CALIBRATION PASSED at time: "
+                          << time_.in_months() << " " << incidence << endl;
+            }
+        }
     }
 
     population_.ResetMonthlyStats();
@@ -713,6 +727,7 @@ std::size_t Simulation::SimulateMonth()
 	}
 
 	//steadyCouple, flings, and dissolveSexualPartnerships
+    //population_.ResetPartnershipTracking();
 	population_.UpdatePartnerships(parameters_);
 
 	if(recordPartAcq)
@@ -721,8 +736,9 @@ std::size_t Simulation::SimulateMonth()
 		population_.RecordPartAcqFreq();
 
         if(parameters_.trace_files[EventParams::TraceFile::Type::PartnerAcquisition].enabled) {
-	  population_.populationStatistics.printPartAcqStats(parameters_.trace_files[EventParams::TraceFile::Type::PartnerAcquisition].file, time_);
-	}
+            //population_.populationStatistics.printPartAcqStats(
+                //parameters_.trace_files[EventParams::TraceFile::Type::PartnerAcquisition].file, time_);
+        }
 
         delete population_.populationStatistics.selectedPartAcqStats;
         population_.populationStatistics.selectedPartAcqStats = nullptr;
@@ -767,17 +783,17 @@ void Simulation::Initialize(SimulationParameters &parameters)
     parameters_.monthOf1990 = Time::from_months(parameters.GetMonthOf1990());
     parameters_.calibrationInputs = parameters.GetCalibrationParameters();
     parameters_.delayPrevalence = Time::from_months(parameters.GetInitialInfectionDelay());
-    auto intervention_params = parameters.GetInterventionParameters();
-    for(const auto &prop : intervention_params.target_yearly_rollout_proportions)
+    auto cepac_params = parameters.GetCepacParameters();
+    for(const auto &prop : cepac_params.target_yearly_rollout_proportions)
     {
         parameters_.targetYearlyRolloutProportions[prop.first] = prop.second;
     }
 	parameters_.concurrencyDef = parameters.GetConcurrencyDefinition();
-    parameters_.useRollout = intervention_params.intervention_type == InterventionParameters::InterventionType::Art;
-    parameters_.enableDynamicTreatmentScaling = intervention_params.dynamic_feedback_enabled;
-    parameters_.dynamicFeedbackPeriod = intervention_params.dynamic_feedback_period;
-    parameters_.rolloutEligibility = intervention_params.eligibility_criteria;
-    parameters_.rolloutProportionDenominator = intervention_params.rollout_proportion_denominator;
+    parameters_.useRollout = (cepac_params.file_type == CepacParameters::FileType::Art);
+    parameters_.enableDynamicTreatmentScaling = cepac_params.dynamic_feedback_enabled;
+    parameters_.dynamicFeedbackPeriod = cepac_params.dynamic_feedback_period;
+    parameters_.rolloutEligibility = cepac_params.eligibility_criteria;
+    parameters_.rolloutProportionDenominator = cepac_params.rollout_proportion_denominator;
 
     auto load_context = [](const std::string &file_name)
     {
@@ -802,9 +818,9 @@ void Simulation::Initialize(SimulationParameters &parameters)
 
     if(parameters_.useRollout)
     {
-        parameters_.untreatedContext = load_context(intervention_params.default_cepac_file.filename);
+        parameters_.untreatedContext = load_context(cepac_params.default_cepac_file.filename);
 
-        for(auto &cepac_file : intervention_params.cepac_files)
+        for(auto &cepac_file : cepac_params.cepac_files)
         {
             if(cepac_file.time == Time::Zero && cepac_file.target_population == 0) continue; // skip untreated context
             auto context = load_context(cepac_file.filename);
@@ -818,9 +834,9 @@ void Simulation::Initialize(SimulationParameters &parameters)
     }
     else
     {
-        parameters_.cepacSimContexts.push_back(load_context(intervention_params.default_cepac_file.filename));
+        parameters_.cepacSimContexts.push_back(load_context(cepac_params.default_cepac_file.filename));
 
-        for(auto &cepac_file : intervention_params.cepac_files)
+        for(auto &cepac_file : cepac_params.cepac_files)
         {
             auto context = load_context(cepac_file.filename);
             parameters_.timesToSwitchSimContext.push_back(cepac_file.time);
@@ -851,13 +867,13 @@ void Simulation::Initialize(SimulationParameters &parameters)
             if(type_string == "clinical") return EventParams::TraceFile::Type::Clinical;
             if(type_string == "costEffectiveness") return EventParams::TraceFile::Type::CostEffectiveness;
             if(type_string == "events") return EventParams::TraceFile::Type::Events;
-            if(type_string == "health") return EventParams::TraceFile::Type::Health;
             if(type_string == "infection") return EventParams::TraceFile::Type::Infection;
             if(type_string == "lifeExpectancy") return EventParams::TraceFile::Type::LifeExpectancy;
             if(type_string == "partnerAcquisition") return EventParams::TraceFile::Type::PartnerAcquisition;
             if(type_string == "partnerNetwork") return EventParams::TraceFile::Type::PartnerNetwork;
             if(type_string == "partnership") return EventParams::TraceFile::Type::Partnership;
             if(type_string == "population") return EventParams::TraceFile::Type::Population;
+            if(type_string == "prepOutcomes") return EventParams::TraceFile::Type::PrepOutcomes;
             if(type_string == "shiftedOutcomes") return EventParams::TraceFile::Type::ShiftedOutcomes;
             if(type_string == "singlePerson") return EventParams::TraceFile::Type::SinglePerson;
             if(type_string == "survival") return EventParams::TraceFile::Type::Survival;

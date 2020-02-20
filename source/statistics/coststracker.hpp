@@ -7,12 +7,11 @@
 
 #include "bucketcounter.hpp"
 #include "tabularoutput.hpp"
-#include "entities/entity.hpp"
+#include "entities/entitytypes.hpp"
 #include "parameters/eventparams.hpp"
 
 namespace transm {
 
-class Entity;
 class Population;
 
 enum class ClinicalCostTypes : size_t
@@ -48,20 +47,20 @@ public:
 
 	void RecordTreatmentCosts(const std::array<double, 3> &costsUndiscounted, const std::array<double, 3> &costsDiscounted, int artLine);
 
-	void RecordCepacCosts(double costsUndiscounted, double costsDiscounted, const std::string &entityType, Entity::CD4Strata cd4,
-		Entity::HVLStrata hvl, Entity::HIVStatus status);
+	void RecordCepacCosts(double costsUndiscounted, double costsDiscounted, const std::string &entityType, CD4Strata cd4,
+		HVLStrata hvl, HIVStatus status);
 
-	void RecordLifeMonth(double qualityOfLife, double discountFactor, Entity::HIVStatus status);
+	void RecordLifeMonth(double qualityOfLife, double discountFactor, HIVStatus status);
 
 	void PrintCosts(Time time, std::ostream &_outStream);
 
 	static const int NumArtLinesToRecord = 4;
 
-private:	
+private:
 	struct Costs
 	{
-		std::array<double, (std::size_t)Entity::HIVStatus::Last> lifeMonthsByHivStatus;
-		std::array<double, (std::size_t)Entity::HIVStatus::Last> qalmsByHivStatus;
+		std::array<double, (std::size_t)HIVStatus::Last> lifeMonthsByHivStatus;
+		std::array<double, (std::size_t)HIVStatus::Last> qalmsByHivStatus;
 		double condomCosts;
 		double circumcisionCosts;
         double prEPCosts;
@@ -72,9 +71,9 @@ private:
 		double drugCosts;
 		double toxicityCosts;
 		std::unordered_map<std::string, double> totalCostsByEntityType;
-		std::array<double, (std::size_t)Entity::HIVStatus::Last> totalCostsByHivState;
-        std::array<double, (std::size_t)Entity::CD4Strata::Last> totalCostsByCd4;
-        std::array<double, (std::size_t)Entity::HVLStrata::Last> totalCostsByHvl;
+		std::array<double, (std::size_t)HIVStatus::Last> totalCostsByHivState;
+        std::array<double, (std::size_t)CD4Strata::Last> totalCostsByCd4;
+        std::array<double, (std::size_t)HVLStrata::Last> totalCostsByHvl;
 	};
 
 	Costs undiscounted_;

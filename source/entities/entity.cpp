@@ -8,13 +8,14 @@
 #include "utility/randomnumbergenerator.hpp"
 #include "statistics/infectionstracker.hpp"
 #include "statistics/artrollouttracker.hpp"
+#include "statistics/preptracker.hpp"
 #include "statistics/coststracker.hpp"
 
 namespace transm {
 
 class EntityPool;
 
-const std::array<std::string, (std::size_t)Entity::RiskLevel::Last> Entity::RiskStrings =
+const std::array<std::string, (std::size_t)RiskLevel::Last> Entity::RiskStrings =
 { "Low", "High" };
 
 long Entity::idCounter = 0;
@@ -43,7 +44,7 @@ void Entity::ageOneTimeUnit()
 	age++;
 }
 
-Entity::CD4Strata Entity::getCd4Stratum() const
+CD4Strata Entity::getCd4Stratum() const
 {
 	switch(cepacPatient->getDiseaseState()->currTrueCD4Strata)
 	{
@@ -64,7 +65,7 @@ Entity::CD4Strata Entity::getCd4Stratum() const
 	}
 }
 
-Entity::HVLStrata Entity::getHvlStratum() const
+HVLStrata Entity::getHvlStratum() const
 {
     SimContext::HVL_STRATA hvl = cepacPatient->getDiseaseState()->currTrueHVLStrata;
     switch (hvl) {
@@ -87,7 +88,6 @@ Entity::HVLStrata Entity::getHvlStratum() const
 				 std::string(SimContext::HVL_STRATA_STRS[hvl]));
     }
 }
-
 
 template<>
 DemographicProfile::Gender Entity::getDemographicProfileVal() const
@@ -120,6 +120,18 @@ template<>
 DemographicProfile::RelationshipStatus Entity::getDemographicProfileVal() const
 {
 	return (DemographicProfile::RelationshipStatus)getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus);
+}
+
+template<>
+DemographicProfile::Race Entity::getDemographicProfileVal() const
+{
+	return (DemographicProfile::Race)getDemographicProfileVal(DemographicProfile::Demographic::Race);
+}
+
+template<>
+DemographicProfile::Ethnicity Entity::getDemographicProfileVal() const
+{
+	return (DemographicProfile::Ethnicity)getDemographicProfileVal(DemographicProfile::Demographic::Ethnicity);
 }
 
 bool Entity::isEligibleForTreatment(const SimContext::TreatmentInputs::ARTStartPolicy &artStartPolicy)
@@ -245,9 +257,11 @@ void Entity::addPartnership(SexualPartnership *_partnership)
 	//if a STEADY partnership was added && we are SINGLE, the we need to change or RELATIONSHIP_STATUS
 	if((_partnership->getType() == SexualPartnership::Type::Steady) &&
 		(!partners[(int)SexualPartnership::Type::Steady].empty()) &&
-        (getDemographicProfileVal(DemographicProfile::Demographic::RelationshipStatus) == (std::size_t)DemographicProfile::RelationshipStatus::Single))
+        (getDemographicProfileVal<DemographicProfile::RelationshipStatus>() ==
+            DemographicProfile::RelationshipStatus::Single))
 	{
-        dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::NonSingle);
+        dmgProfile.set(DemographicProfile::Demographic::RelationshipStatus,
+            (std::size_t)DemographicProfile::RelationshipStatus::NonSingle);
 	}
 }
 
@@ -921,50 +935,50 @@ T Scale(const T &t, double factor)
 	return r;
 }
 
-Entity::HVLStrata HvlFromCepacHvl(SimContext::HVL_STRATA stratum)
+HVLStrata HvlFromCepacHvl(SimContext::HVL_STRATA stratum)
 {
     switch(stratum)
     {
-    case SimContext::HVL_VLO: return Entity::HVLStrata::HVL_ZERO;
-    case SimContext::HVL__LO: return Entity::HVLStrata::HVL_ONE;
-    case SimContext::HVL_MLO: return Entity::HVLStrata::HVL_TWO;
-    case SimContext::HVL_MED: return Entity::HVLStrata::HVL_THREE;
-    case SimContext::HVL_MHI: return Entity::HVLStrata::HVL_FOUR;
-    case SimContext::HVL__HI: return Entity::HVLStrata::HVL_FIVE;
-    case SimContext::HVL_VHI: return Entity::HVLStrata::HVL_SIX;
+    case SimContext::HVL_VLO: return HVLStrata::HVL_ZERO;
+    case SimContext::HVL__LO: return HVLStrata::HVL_ONE;
+    case SimContext::HVL_MLO: return HVLStrata::HVL_TWO;
+    case SimContext::HVL_MED: return HVLStrata::HVL_THREE;
+    case SimContext::HVL_MHI: return HVLStrata::HVL_FOUR;
+    case SimContext::HVL__HI: return HVLStrata::HVL_FIVE;
+    case SimContext::HVL_VHI: return HVLStrata::HVL_SIX;
     default: throw std::runtime_error("invalid hvl");
     }
 }
 
-std::string to_string(Entity::HVLStrata stratum)
+std::string to_string(HVLStrata stratum)
 {
     switch(stratum)
     {
-    case Entity::HVLStrata::UNINFECTED: return "uninfected";
-    case Entity::HVLStrata::HVL_ZERO: return "0-20";
-    case Entity::HVLStrata::HVL_ONE: return "21-500";
-    case Entity::HVLStrata::HVL_TWO: return "501-3000";
-    case Entity::HVLStrata::HVL_THREE: return "3001-10000";
-    case Entity::HVLStrata::HVL_FOUR: return "10001-30000";
-    case Entity::HVLStrata::HVL_FIVE: return "30001-100000";
-    case Entity::HVLStrata::HVL_SIX: return "100000+";
-    case Entity::HVLStrata::HVL_PRIMARY: return "primary";
-    case Entity::HVLStrata::HVL_LATESTAGE: return "late-stage";
+    case HVLStrata::UNINFECTED: return "uninfected";
+    case HVLStrata::HVL_ZERO: return "0-20";
+    case HVLStrata::HVL_ONE: return "21-500";
+    case HVLStrata::HVL_TWO: return "501-3000";
+    case HVLStrata::HVL_THREE: return "3001-10000";
+    case HVLStrata::HVL_FOUR: return "10001-30000";
+    case HVLStrata::HVL_FIVE: return "30001-100000";
+    case HVLStrata::HVL_SIX: return "100000+";
+    case HVLStrata::HVL_PRIMARY: return "primary";
+    case HVLStrata::HVL_LATESTAGE: return "late-stage";
     default: throw std::runtime_error("invalid hvl");
     }
 }
 
-std::string to_string(Entity::HIVStatus status)
+std::string to_string(HIVStatus status)
 {
     switch(status)
     {
-    case Entity::HIVStatus::NEGATIVE: return "negative";
-    case Entity::HIVStatus::OBSERVED_ACUTE: return "acute (observed)";
-    case Entity::HIVStatus::OBSERVED_CHRONIC: return "chronic (observed)";
-    case Entity::HIVStatus::OBSERVED_LATESTAGE: return "late-stage (observed)";
-    case Entity::HIVStatus::UNOBSERVED_ACUTE: return "acute (unobserved)";
-    case Entity::HIVStatus::UNOBSERVED_CHRONIC: return "chronic (unobserved)";
-    case Entity::HIVStatus::UNOBSERVED_LATESTAGE: return "late-stage (unobserved)";
+    case HIVStatus::NEGATIVE: return "negative";
+    case HIVStatus::OBSERVED_ACUTE: return "acute (observed)";
+    case HIVStatus::OBSERVED_CHRONIC: return "chronic (observed)";
+    case HIVStatus::OBSERVED_LATESTAGE: return "late-stage (observed)";
+    case HIVStatus::UNOBSERVED_ACUTE: return "acute (unobserved)";
+    case HIVStatus::UNOBSERVED_CHRONIC: return "chronic (unobserved)";
+    case HIVStatus::UNOBSERVED_LATESTAGE: return "late-stage (unobserved)";
     default: throw std::runtime_error("invalid hiv status");
     }
 }
@@ -974,14 +988,14 @@ double Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
     double costThisMonthDiscounted = 0.0;
 
     if(!isAlive() || !wentThroughCEPAC)
-	return costThisMonthDiscounted;
+        return costThisMonthDiscounted;
 
     if(!_eventParams.useRollout) {
-	//Adjust the CEPAC SimContext depending on what time it is
-	if(_eventParams.itIsTimeToSwitchSimContext()) {
-	    cepacPatient->setSimContext(_eventParams.cepacSimContexts[
-					getCEPACSimContextIndex(_eventParams)]);
-	}
+        //Adjust the CEPAC SimContext depending on what time it is
+        if(_eventParams.itIsTimeToSwitchSimContext()) {
+            cepacPatient->setSimContext(_eventParams.cepacSimContexts[
+              getCEPACSimContextIndex(_eventParams)]);
+        }
     }
 
     const RunStats::OverallCosts costsBefore =
@@ -996,7 +1010,7 @@ double Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
     auto treatmentAfter = isOnArt();
 
     if(treatmentBefore != treatmentAfter)
-	traceTreatmentChange(_eventParams, treatmentAfter);
+        traceTreatmentChange(_eventParams, treatmentAfter);
 
     const auto costsAfter = *_eventParams.cepacRunStats->getOverallCosts();
     const auto hivScreeningAfter = *_eventParams.cepacRunStats->getHIVScreening();
@@ -1004,44 +1018,29 @@ double Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *
     costThisMonthDiscounted = updateHealthCosts(_eventParams, costsTracker,
 						costsBefore, costsAfter);
 
-    bool not_observed_postitive = hivStatus == HIVStatus::NEGATIVE
-        || hivStatus == HIVStatus::UNOBSERVED_ACUTE
-        || hivStatus == HIVStatus::UNOBSERVED_CHRONIC
-        || hivStatus == HIVStatus::UNOBSERVED_LATESTAGE;
-
-    if (not_observed_postitive
-        && preExposureProphylaxisAdherence_ > 0
-        && _eventParams.randomNums.chance(preExposureProphylaxisAdherence_))
-    {
-        using_prep_this_month_ = true;
-        testTracker->recordPrEP(this);
-    } else {
-        using_prep_this_month_ = false;
-    }
-
     //update HVL and CD4 for this Person if they are infected
     if(isInfected()) {
-	double cd4Before = cd4;
-	cd4 = cepacPatient->getDiseaseState()->currTrueCD4;
+        double cd4Before = cd4;
+        cd4 = cepacPatient->getDiseaseState()->currTrueCD4;
 
-	if(cd4Before != cd4)
-	    traceCD4Change(_eventParams, cd4Before, cd4);
+        if(cd4Before != cd4)
+            traceCD4Change(_eventParams, cd4Before, cd4);
 
         auto hvlBefore = hvl;
         auto hivStatusBefore = hivStatus;
 
-	hvl = HvlFromCepacHvl(cepacPatient->getDiseaseState()->currTrueHVLStrata);
-	currentTrueHvl = hvl;
+        hvl = HvlFromCepacHvl(cepacPatient->getDiseaseState()->currTrueHVLStrata);
+        currentTrueHvl = hvl;
 
-	updateCEPACpatient(_eventParams);
+        updateCEPACpatient(_eventParams);
 
-	if(hvl != hvlBefore)
-	    traceHVLChange(_eventParams, hvlBefore, hvl);
-	if (hivStatus != hivStatusBefore)
-	    traceHIVChange(_eventParams, hivStatusBefore, hivStatus);
+        if(hvl != hvlBefore)
+            traceHVLChange(_eventParams, hvlBefore, hvl);
+        if (hivStatus != hivStatusBefore)
+            traceHIVChange(_eventParams, hivStatusBefore, hivStatus);
 
-	updateTestingStatus(_eventParams, testTracker,
-			    hivScreeningBefore, hivScreeningAfter);
+        updateTestingStatus(_eventParams, testTracker,
+            hivScreeningBefore, hivScreeningAfter);
     }
 
     return costThisMonthDiscounted;
@@ -1151,10 +1150,73 @@ void Entity::updateTestingStatus(EventParams &_eventParams,
     }
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::ArtRollout].enabled) {
-	if(offeredTest) {
-	    testTracker->recordTest(this, acceptedTest, returnedForResults,
-				    testResult);
-	}
+        if(offeredTest) {
+            testTracker->recordTest(this, acceptedTest, returnedForResults,
+                testResult);
+        }
+    }
+}
+
+void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracker)
+{
+    if (!prepParameters.Enabled())
+        return;
+
+    bool unobserved_or_negative = (hivStatus == HIVStatus::NEGATIVE)
+      || (hivStatus == HIVStatus::UNOBSERVED_ACUTE)
+      || (hivStatus == HIVStatus::UNOBSERVED_CHRONIC)
+      || (hivStatus == HIVStatus::UNOBSERVED_LATESTAGE);
+    if (!unobserved_or_negative)
+    {
+        if (prepStatus != PrepStatus::OFF_PREP)
+            // entity was on prep, but is no longer eligible (infected or died)
+            prepTracker->recordIneligible(this);
+        return;
+    }
+
+    prepTracker->recordEligible(this);
+
+    if (prepStatus == PrepStatus::OFF_PREP)
+    {
+        double access = prepParameters.GetAccess(*getDemographicProfile());
+        if (!_eventParams.randomNums.chance(access))
+        {
+            return;
+        }
+    }
+    else if (prepStatus == PrepStatus::WAS_ON_PREP)
+    {
+        double returnToCare = prepParameters.GetReturnToCare(*getDemographicProfile());
+        if (!_eventParams.randomNums.chance(returnToCare))
+        {
+            return;
+        }
+        else
+        {
+            prepTracker->recordReturnToCare(this);
+        }
+    }
+    else
+    {
+        double retention = prepParameters.GetRetention(*getDemographicProfile());
+        if (!_eventParams.randomNums.chance(retention))
+        {
+            prepStatus = PrepStatus::WAS_ON_PREP;
+            prepTracker->recordLossToCare(this);
+            return;
+        }
+    }
+
+    // Record as having access to PREP and then select adherence
+    prepTracker->recordAccess(this);
+
+    double adherence = prepParameters.GetAdherence(*getDemographicProfile());
+    if (_eventParams.randomNums.chance(adherence))
+    {
+        prepStatus = PrepStatus::PREP_ADHERENT;
+        prepTracker->recordAdherence(this);
+    } else {
+        prepStatus = PrepStatus::PREP_INADHERENT;
     }
 }
 
@@ -1190,8 +1252,8 @@ void Entity::traceHVLChange(EventParams &_eventParams, HVLStrata before,
     }
 }
 
-void Entity::traceHIVChange(EventParams &_eventParams,Entity::HIVStatus before,
-			    Entity::HIVStatus after)
+void Entity::traceHIVChange(EventParams &_eventParams,HIVStatus before,
+			    HIVStatus after)
 {
     if (_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled &&
 	trace()) {
@@ -1439,26 +1501,26 @@ std::vector<unsigned int> Entity::getFVindices(FullVector *FV)
 	return vcopy;
 }
 
-Entity::RiskLevel Entity::getRiskLevel() const
+RiskLevel Entity::getRiskLevel() const
 {
 	return risk;
 }
 
-Entity::HIVStatus Entity::getHIVStatus() const
+HIVStatus Entity::getHIVStatus() const
 {
 	return hivStatus;
 }
 
 /**** Start constructors, destructors, initializers *****/
 //this constructor is used by the Male and Female classes
-Entity::Entity(Age _age, unsigned int _populationID) :
-    preExposureProphylaxisAdherence_(0),
+Entity::Entity(Age _age, unsigned int _populationID, const PrepParameters &prepParams) :
     targetedCepacContext_(nullptr),
     monthly_cepac_costs_undiscounted_(0),
     monthly_cepac_costs_discounted_(0),
     monthly_cdm_costs_undiscounted_(0),
     monthly_cdm_costs_discounted_(0),
-    using_prep_this_month_(false)
+    prepParameters(prepParams),
+    prepStatus(PrepStatus::OFF_PREP)
 {
 	id = Entity::idCounter++;
 	populationID = _populationID;
@@ -1532,7 +1594,12 @@ Entity::~Entity(void)
 
 void Entity::UsePreExposureProphylaxis(double adherence)
 {
-    preExposureProphylaxisAdherence_ = adherence;
+    prepParameters.SetDefaultAdherence(adherence);
+}
+
+double Entity::GetPreExposureProphylaxisEfficacy() const
+{
+    return prepParameters.GetEfficacy();
 }
 
 void Entity::deleteEntityWithoutDeleting()

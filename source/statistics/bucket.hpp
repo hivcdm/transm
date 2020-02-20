@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cassert>
 #include <map>
 #include <string>
 #include <boost/functional/hash.hpp>
@@ -10,41 +9,41 @@ namespace transm {
 class Bucket
 {
 public:
-	int GetValue(int i) const
-	{
-		return values_[i];
-	}
+    bool HasKeyValue(std::string key, int value) const
+    {
+        std::unordered_map<std::string,int>::const_iterator itr = values_.find(key);
+        if (itr != values_.end())
+        {
+            if (itr->second == value)
+                return true;
+            else
+                return false;
+        }
+        return false;
+    }
 
-	size_t Hash() const
-	{
-		size_t seed = 0;
-		for(auto value : values_)
-		{
-			boost::hash_combine<int>(seed, value);
-		}
-		return seed;
-	}
+    size_t Hash() const
+    {
+        size_t seed = 0;
 
-	bool operator==(const Bucket &other) const
-	{
-		if(other.values_.size() != values_.size())
-		{
-			return false;
-		}
+        boost::hash_combine<std::string>(seed, profile_);
 
-		for(size_t i = 0; i < values_.size(); i++)
-		{
-			if(values_[i] != other.values_[i])
-			{
-				return false;
-			}
-		}
+        return seed;
+    }
 
-		return true;
-	}
+    bool operator==(const Bucket &other) const
+    {
+        if(other.values_.size() != values_.size())
+        {
+            return false;
+        }
+
+        return (profile_ == other.profile_);
+    }
 
 protected:
-	std::vector<int> values_;
+    std::unordered_map<std::string, int> values_;
+    std::string profile_;
 };
 
 template<class T> struct bucket_hash;
@@ -53,19 +52,19 @@ template<class T> struct bucket_equal_to;
 template<>
 struct bucket_hash<Bucket>
 {
-	size_t operator()(const Bucket &bucket) const
-	{
-		return bucket.Hash();
-	}
+    size_t operator()(const Bucket &bucket) const
+    {
+        return bucket.Hash();
+    }
 };
 
 template<>
 struct bucket_equal_to<Bucket>
 {
-	bool operator()(const Bucket &a, const Bucket &b) const
-	{
-		return a == b;
-	}
+    bool operator()(const Bucket &a, const Bucket &b) const
+    {
+        return a == b;
+    }
 };
 
 } // namespace transm

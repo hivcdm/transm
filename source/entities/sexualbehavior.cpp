@@ -1,12 +1,11 @@
 #include "sexualbehavior.hpp"
-#include "entity.hpp"
 
 namespace transm {
 
 void SexualBehavior::SetHighRiskMultiplier(double multiplier)
 {
-    acquisitionRatePerMonth[(std::size_t)Entity::RiskLevel::HIGH] = acquisitionRatePerMonth[(std::size_t)Entity::RiskLevel::LOW];
-    acquisitionRatePerMonth[(std::size_t)Entity::RiskLevel::HIGH].mu += log(multiplier);
+    acquisitionRatePerMonth[(std::size_t)RiskLevel::HIGH] = acquisitionRatePerMonth[(std::size_t)RiskLevel::LOW];
+    acquisitionRatePerMonth[(std::size_t)RiskLevel::HIGH].mu += log(multiplier);
 }
 
 SexualPartnership::Type SexualBehavior::getPartnershipType() const
@@ -14,7 +13,7 @@ SexualPartnership::Type SexualBehavior::getPartnershipType() const
 	return partnershipType;
 }
 
-const LogNormalDist SexualBehavior::getAcquisitionRatePerMonth(Entity::RiskLevel risk) const
+const LogNormalDist SexualBehavior::getAcquisitionRatePerMonth(RiskLevel risk) const
 {
     return acquisitionRatePerMonth[(std::size_t)risk];
 }
@@ -24,17 +23,17 @@ const NormalDist SexualBehavior::getAverageYearsYounger() const
 	return averageYearsYounger;
 }
 
-double SexualBehavior::getCoitalEventsPerMonth(Entity::RiskLevel risk) const
+double SexualBehavior::getCoitalEventsPerMonth(RiskLevel risk) const
 {
     return coitalEventsPerMonth[(std::size_t)risk];
 }
 
-const BetaDist SexualBehavior::getChanceCondomUsePerEvent(Entity::RiskLevel risk) const
+const BetaDist SexualBehavior::getChanceCondomUsePerEvent(RiskLevel risk) const
 {
     return chanceCondomUsePerEvent[(std::size_t)risk];
 }
 
-const ShiftedLogNormalDist SexualBehavior::getPartnershipDurationMth(Entity::RiskLevel risk) const
+const ShiftedLogNormalDist SexualBehavior::getPartnershipDurationMth(RiskLevel risk) const
 {
     return partnershipDurationMth[(std::size_t)risk];
 }

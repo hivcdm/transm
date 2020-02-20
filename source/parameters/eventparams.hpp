@@ -7,7 +7,7 @@
 #include <vector>
 #include <include.h>
 
-#include "concurrencydefinition.hpp"
+#include "parameterdefinitions.hpp"
 #include "core/constants.hpp"
 #include "utility/enum_iterator.hpp"
 #include "utility/filesystem.hpp"
@@ -34,13 +34,13 @@ public:
             CostEffectiveness,
             Clinical,
             Events,
-            Health,
             SinglePerson,
             LifeExpectancy,
             PartnerAcquisition,
             PartnerNetwork,
             CalibrationStatistics,
             ArtRollout,
+            PrepOutcomes,
             ShiftedOutcomes,
             Last,
             First = Population

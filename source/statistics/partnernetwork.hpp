@@ -1,6 +1,7 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graphml.hpp>
 
+#include "entities/entitytypes.hpp"
 #include "entities/entity.hpp"
 #include "entities/demographicprofile.hpp"
 #include "entities/sexualpartnership.hpp"
@@ -15,14 +16,19 @@ class Network {
     struct EntityVertex
     {
         int id;
-        std::string gender;
+        int gender;
+        int orientation;
+        int race;
+        int ethnicity;
+        std::string race_eth;
+        std::string demo_profile;
         bool is_CSW;
         bool hiv_pos;
         bool on_prep;
         bool on_ART;
         bool risk_level;
         int viral_load;
-        int composite; // on_prep=-1,hiv_neg=0,hiv_pos=viral_load
+        int hiv_composite; // on_prep=-1,hiv_neg=0,hiv_pos=viral_load
     };
 
     struct PartnershipEdge
@@ -55,20 +61,34 @@ class Network {
 
     void AddEntity(vertex_t entity_vertex, transm::Entity *entity)
     {
-        bool hiv_pos = (entity->getHIVStatus() != transm::Entity::HIVStatus::NEGATIVE);
+        auto gender = entity->getDemographicProfileVal<transm::DemographicProfile::Gender>();
+        auto orientation = entity->getDemographicProfileVal<transm::DemographicProfile::SexualOrientation>();
+        auto race = entity->getDemographicProfileVal<transm::DemographicProfile::Race>();
+        auto ethnicity = entity->getDemographicProfileVal<transm::DemographicProfile::Ethnicity>();
+
+        std::string demo_profile = entity->getEntityType();
+        std::string race_eth = ":" + transm::DemographicEnumStrs.at((std::size_t)transm::DemographicProfile::Demographic::Race).at((std::size_t)race) + ":" + transm::DemographicEnumStrs.at((std::size_t)transm::DemographicProfile::Demographic::Ethnicity).at((std::size_t)ethnicity);
+        demo_profile += race_eth;
+
+        bool hiv_pos = (entity->getHIVStatus() != transm::HIVStatus::NEGATIVE);
         bool on_PrEP = entity->UsingPrEP();
         bool on_ART = entity->isOnArt();
         int viral_load = hiv_pos ? (int)entity->getHvlStratum() : 0;
 
         G[entity_vertex].id = entity->getID();
-        G[entity_vertex].gender = entity->getEntityType();
+        G[entity_vertex].gender = (int)gender;
+        G[entity_vertex].orientation = (int)orientation;
+        G[entity_vertex].race = (int)race;
+        G[entity_vertex].ethnicity = (int)ethnicity;
+        G[entity_vertex].demo_profile = demo_profile;
+        G[entity_vertex].race_eth = race_eth;
         G[entity_vertex].is_CSW = entity->isCSW();
         G[entity_vertex].risk_level = (bool)entity->getRiskLevel();
         G[entity_vertex].hiv_pos = hiv_pos;
         G[entity_vertex].on_prep = on_PrEP;
         G[entity_vertex].on_ART = on_ART;
         G[entity_vertex].viral_load = viral_load;
-        G[entity_vertex].composite = (!on_PrEP) ? viral_load : -1;
+        G[entity_vertex].hiv_composite = (!on_PrEP) ? viral_load : -1;
     }
 
     void AddPartnership(edge_t partnership_edge, transm::Entity *entity, transm::Entity *partner,
@@ -77,8 +97,8 @@ class Network {
         std::string entity_gender =  entity->getEntityType();
         std::string partner_gender = partner->getEntityType();
 
-        bool entity_hiv_pos = (entity->getHIVStatus() != transm::Entity::HIVStatus::NEGATIVE);
-        bool partner_hiv_pos = (partner->getHIVStatus() != transm::Entity::HIVStatus::NEGATIVE);
+        bool entity_hiv_pos = (entity->getHIVStatus() != transm::HIVStatus::NEGATIVE);
+        bool partner_hiv_pos = (partner->getHIVStatus() != transm::HIVStatus::NEGATIVE);
 
         int time_of_formation = (int)partnership->getTimeOfFormation().in_months();
         int time_of_dissolution = (int)partnership->getTimeOfDissolution().in_months();
@@ -133,13 +153,18 @@ public:
         // node properties
         dp.property("id", get(&EntityVertex::id, G));
         dp.property("gender", get(&EntityVertex::gender, G));
+        dp.property("orientation", get(&EntityVertex::orientation, G));
+        dp.property("race", get(&EntityVertex::race, G));
+        dp.property("ethnicity", get(&EntityVertex::ethnicity, G));
+        dp.property("race_eth", get(&EntityVertex::race_eth, G));
+        dp.property("demo_profile", get(&EntityVertex::demo_profile, G));
         dp.property("is_CSW", get(&EntityVertex::is_CSW, G));
         dp.property("hiv_pos", get(&EntityVertex::hiv_pos, G));
         dp.property("on_prep", get(&EntityVertex::on_prep, G));
         dp.property("on_ART", get(&EntityVertex::on_ART, G));
         dp.property("risk_level", get(&EntityVertex::risk_level, G));
         dp.property("viral_load", get(&EntityVertex::viral_load, G));
-        dp.property("composite", get(&EntityVertex::composite, G));
+        dp.property("hiv_composite", get(&EntityVertex::hiv_composite, G));
 
         // edge properties
         dp.property("type", get(&PartnershipEdge::type, G));

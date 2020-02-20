@@ -17,7 +17,7 @@ public:
     {
         static PopulationTarget Any;
 
-        Nullable<Entity::RiskLevel> risk_level;
+        Nullable<RiskLevel> risk_level;
         Nullable<DemographicProfile::Employment> employment;
         Nullable<DemographicProfile::SexualActivityStatus> sexual_activity_status;
         Nullable<DemographicProfile::Gender> gender;
@@ -25,7 +25,7 @@ public:
         Nullable<DemographicProfile::SexualOrientation> sexual_orientation;
         Nullable<int> age_lower;
         Nullable<int> age_upper;
-        Nullable<Entity::HIVStatus> observed_hiv_status;
+        Nullable<HIVStatus> observed_hiv_status;
         Nullable<bool> on_treatment;
         Nullable<bool> circumcised;
 
@@ -81,7 +81,7 @@ public:
 
     TargetGroup(const std::string &label, Time start, Time end, bool open, Nullable<PopulationTarget> target);
 
-    void Update(Population &p, Time simulation_time, RandomNumberGenerator &rng, 
+    void Update(Population &p, Time simulation_time, RandomNumberGenerator &rng,
         const std::unordered_set<Entity *> &dead_people);
 
     void AddPartition(const std::string &label, bool trace, double proportion,
@@ -155,43 +155,43 @@ public:
 
             if(risk_string == "CSW High Risk")
             {
-                return p.first->getRiskLevel() == Entity::RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::Csw;
+                return p.first->getRiskLevel() == RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::Csw;
             }
             if(risk_string == "CSW Low Risk")
             {
-                return p.first->getRiskLevel() == Entity::RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::Csw;
+                return p.first->getRiskLevel() == RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::Csw;
             }
             if(risk_string == "Non-CSW High Risk Male:Msw")
             {
-                return p.first->getEntityType() == "MSW" && p.first->getRiskLevel() == Entity::RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
+                return p.first->getEntityType() == "MSW" && p.first->getRiskLevel() == RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
             }
             if(risk_string == "Non-CSW High Risk Male:Msmw")
             {
-                return p.first->getEntityType() == "MSMW" && p.first->getRiskLevel() == Entity::RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
+                return p.first->getEntityType() == "MSMW" && p.first->getRiskLevel() == RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
             }
             if(risk_string == "Non-CSW High Risk Male:Msm")
             {
-                return p.first->getEntityType() == "MSM" && p.first->getRiskLevel() == Entity::RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
+                return p.first->getEntityType() == "MSM" && p.first->getRiskLevel() == RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
             }
             if(risk_string == "Non-CSW High Risk Female")
             {
-                return p.first->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Female && p.first->getRiskLevel() == Entity::RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
+                return p.first->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Female && p.first->getRiskLevel() == RiskLevel::HIGH && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
             }
             if(risk_string == "Non-CSW Low Risk Male:Msw")
             {
-                return p.first->getEntityType() == "MSW" && p.first->getRiskLevel() == Entity::RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
+                return p.first->getEntityType() == "MSW" && p.first->getRiskLevel() == RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
             }
             if(risk_string == "Non-CSW Low Risk Male:Msmw")
             {
-                return p.first->getEntityType() == "MSMW" && p.first->getRiskLevel() == Entity::RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
+                return p.first->getEntityType() == "MSMW" && p.first->getRiskLevel() == RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
             }
             if(risk_string == "Non-CSW Low Risk Male:Msm")
             {
-                return p.first->getEntityType() == "MSM" && p.first->getRiskLevel() == Entity::RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
+                return p.first->getEntityType() == "MSM" && p.first->getRiskLevel() == RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
             }
             if(risk_string == "Non-CSW Low Risk Female")
             {
-                return p.first->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Female && p.first->getRiskLevel() == Entity::RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
+                return p.first->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Female && p.first->getRiskLevel() == RiskLevel::LOW && p.first->getDemographicProfileVal<DemographicProfile::Employment>() == DemographicProfile::Employment::NonCsw;
             }
             throw std::runtime_error("unknown risk group");
         };

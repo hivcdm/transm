@@ -24,8 +24,6 @@ EntityPool::EntityPool(const PopulationParameters &parameters, unsigned int _pop
     naMaleSelector.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::Single);
     naMaleSelector.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::NonCsw);
 	naMaleSelector.selectProfileIDs(validBucketIDs, nullptr);
-    // check that this adds twelve buckets
-    assert(validBucketIDs.size() == 12);
 
 	// Instantiate the Female Not-Sexually Active Buckets = (NA, Female, Msw, Single, nonCSW, *, *)
 	DemographicProfile naFemaleSelector;
@@ -35,8 +33,6 @@ EntityPool::EntityPool(const PopulationParameters &parameters, unsigned int _pop
     naFemaleSelector.set(DemographicProfile::Demographic::RelationshipStatus, (std::size_t)DemographicProfile::RelationshipStatus::Single);
     naFemaleSelector.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::NonCsw);
 	naFemaleSelector.selectProfileIDs(validBucketIDs, nullptr);
-    // check that this adds four buckets
-    assert(validBucketIDs.size() == 16);
 
 	// Instantiate the Male Sexually Active Buckets = (SA, Male, *, *, [param dependant], *, *)
 	DemographicProfile saMaleSelector;
@@ -49,6 +45,8 @@ EntityPool::EntityPool(const PopulationParameters &parameters, unsigned int _pop
             (std::size_t)DemographicProfile::Employment::NonCsw);
     }
 	saMaleSelector.selectProfileIDs(validBucketIDs, nullptr);
+    saMaleSelector.selectProfileIDs(validInitiatorProfileIDs, nullptr);
+    saMaleSelector.selectProfileIDs(validPartnerProfileIDs, nullptr);
 
 	// Instantiate the Female Sexually Active Buckets = (SA, Female, Msw, *, [param dependant], *, *)
 	DemographicProfile saFemaleSelector;
@@ -62,6 +60,8 @@ EntityPool::EntityPool(const PopulationParameters &parameters, unsigned int _pop
             (std::size_t)DemographicProfile::Employment::NonCsw);
     }
 	saFemaleSelector.selectProfileIDs(validBucketIDs, nullptr);
+    saFemaleSelector.selectProfileIDs(validPartnerProfileIDs, nullptr);
+
 
     Age _ageOfMajority = parameters.GetAgeOfMajority();
 
@@ -161,6 +161,17 @@ std::vector<DemographicProfile::ProfileID> EntityPool::getProfileIDs()
 {
 	return validProfileIDs;
 }
+
+std::vector<DemographicProfile::ProfileID> EntityPool::getInitiatorProfileIDs()
+{
+	return validInitiatorProfileIDs;
+}
+
+std::vector<DemographicProfile::ProfileID> EntityPool::getPartnerProfileIDs()
+{
+	return validPartnerProfileIDs;
+}
+
 
 bool EntityPool::addEntity(Entity *_person)
 {
@@ -268,8 +279,8 @@ void EntityPool::printBucketSizes(std::ostream &_outStream, const std::string &,
 
         if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)
 		{
-			long bucketSizeHR = ((BucketSexualMixing *) bucket)->sizeRisk(Entity::RiskLevel::HIGH);
-			long bucketSizeLR = ((BucketSexualMixing *) bucket)->sizeRisk(Entity::RiskLevel::LOW);
+			long bucketSizeHR = ((BucketSexualMixing *) bucket)->sizeRisk(RiskLevel::HIGH);
+			long bucketSizeLR = ((BucketSexualMixing *) bucket)->sizeRisk(RiskLevel::LOW);
 			_outStream << bucketSizeHR << Constants::Tab << bucketSizeLR << Constants::Tab;
 		}
 
@@ -464,7 +475,7 @@ std::size_t EntityPool::sizeNotSexuallyActive(const std::string &entity_type)
 }
 
 //calculate the current number of persons that are sexually active in the entity pool with a given demographic
-std::size_t EntityPool::sizeSexuallyActive(const std::string &entity_type, Entity::RiskLevel _risk)
+std::size_t EntityPool::sizeSexuallyActive(const std::string &entity_type, RiskLevel _risk)
 {
     std::size_t count = 0;
     forEach([&](Entity *e) { if(e->getEntityType() == entity_type && _risk == e->getRiskLevel()) count++; });
@@ -520,13 +531,12 @@ std::size_t EntityPool::sizeSexuallyActiveByAge(Age minAgeMonths, Age maxAgeMont
  */
 bool EntityPool::addEntityToAll(Entity *_p)
 {
-    if(_p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
+    if(_p->isMale())
 	{
 		allMales.push_back(_p);
 	}
 	else
 	{
-        assert(_p->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Female);
 		allFemales.push_back(_p);
 	}
 
@@ -542,19 +552,13 @@ std::list<Entity *>::iterator EntityPool::removeEntityFromAll(std::list<Entity *
 	std::list<Entity *>::iterator toReturn;
 	removeEntity(*_pIter);
 
-    if((*_pIter)->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male)
+    if((*_pIter)->isMale())
 	{
 		toReturn = allMales.erase(_pIter);
 	}
-    else if((*_pIter)->getDemographicProfileVal(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Female)
+    else
 	{
 		toReturn = allFemales.erase(_pIter);
-	}
-	else
-	{
-		throw 1;
-		//(*_pIter)->print(cerr, "Not removing person of indiscriminate gender: ");
-		//toReturn = _pIter;
 	}
 
 	return toReturn;

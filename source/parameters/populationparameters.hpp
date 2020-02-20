@@ -1,8 +1,10 @@
 #pragma once
 
+#include "entities/entitytypes.hpp"
 #include "entities/demographicprofile.hpp"
 #include "entities/female.hpp"
 #include "entities/male.hpp"
+#include "entities/prep.hpp"
 #include "entities/transmissiontype.hpp"
 #include "parameters/agebucketprevalenceinfo.hpp"
 #include "parameters/agerangesizecontainer.hpp"
@@ -45,7 +47,7 @@ public:
 	Optional<DemographicProfile> profile;
 	Optional<Age> min_age;
 	Optional<Age> max_age;
-	Optional<Entity::RiskLevel> risk;
+	Optional<RiskLevel> risk;
 
 	bool match(const Entity *e)
 	{
@@ -111,12 +113,15 @@ public:
 			partnershipsHaveDuration[(std::size_t)gender][(std::size_t)type] = has_duration;
 		}
 
+    const PrepParameters &GetPrepParameters() const { return defaultPrepParams; }
+    void SetPrepParameters(PrepParameters &params) { defaultPrepParams = params; }
+
 	const Male::SubPopParams &GetMaleParameters() const { return defaultMaleParams; }
 	void SetMaleParameters(Male::SubPopParams &params) { defaultMaleParams = params; }
 	const Female::SubPopParams &GetFemaleParameters() const { return defaultFemaleParams; }
 	void SetFemaleParameters(Female::SubPopParams &params) { defaultFemaleParams = params; }
 
-	void SetTransmissionCoefficients(const std::unordered_map<TransmissionType, std::array<double, (std::size_t)Entity::HVLStrata::Last>> &coefficients)
+	void SetTransmissionCoefficients(const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &coefficients)
 	{
         transmission_coefficients_ = coefficients;
 	}
@@ -125,17 +130,14 @@ public:
     TimeSpan GetSexualActivityDelay() const { return sexualActivityDelay; }
 
     void SetRiskAssortativeness(SexualPartnership::Type partnership_type, double assortativeness)
-		{ defaultMaleParams.getSexualBehavior(partnership_type).setRiskAssortativeness(assortativeness); }
-    void SetRaceAssortativeness(SexualPartnership::Type partnership_type, double assortativeness)
-		{ defaultMaleParams.getSexualBehavior(partnership_type).setRaceAssortativeness(assortativeness); }
-    void SetEthnicAssortativeness(SexualPartnership::Type partnership_type, double assortativeness)
-		{ defaultMaleParams.getSexualBehavior(partnership_type).setEthnicAssortativeness(assortativeness); }
+		{ defaultMaleParams.setRiskAssortativeness(assortativeness); }
+    void SetRaceAssortativeness(DemographicProfile::Race race, SexualPartnership::Type partnership_type, double assortativeness)
+		{ defaultMaleParams.setRaceAssortativeness(race, assortativeness); }
+    void SetEthnicAssortativeness(DemographicProfile::Ethnicity ethnicity, SexualPartnership::Type partnership_type, double assortativeness)
+		{ defaultMaleParams.setEthnicityAssortativeness(ethnicity, assortativeness); }
 
 	int GetInitialSize() const { return initSize; }
 	void SetInitialSize(int size) { initSize = size; }
-
-	bool InitializeWithCounts() const { return initWithCounts; }
-	void SetInitializeWithCounts(bool init) { initWithCounts = init; }
 
 	double GetChanceChronicInfection() const {return chronicInfectionRate; }
 	void SetChanceChronicInfection(double rate) { chronicInfectionRate = rate; }
@@ -183,17 +185,17 @@ public:
 
 	void SetAverageYearsYounger(SexualPartnership::Type type, NormalDist dist) { defaultMaleParams.SetAverageYearsYounger(type, dist); }
 
-	void SetAcquisitionRatePerMonth(Entity::RiskLevel risk, SexualPartnership::Type type, LogNormalDist dist) { defaultMaleParams.SetAcquisitionRatePerMonth(risk, type, dist); }
-	void SetCoitalEventsPerMonth(Entity::RiskLevel risk, SexualPartnership::Type type, double mean) { defaultMaleParams.SetCoitalEventsPerMonth(risk, type, mean); }
-	void SetChanceCondomUsePerEvent(Entity::RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { defaultMaleParams.SetChanceCondomUsePerEvent(risk, type, dist); }
-	const BetaDist GetChanceCondomUsePerEvent(Entity::RiskLevel risk, SexualPartnership::Type type)
+	void SetAcquisitionRatePerMonth(RiskLevel risk, SexualPartnership::Type type, LogNormalDist dist) { defaultMaleParams.SetAcquisitionRatePerMonth(risk, type, dist); }
+	void SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type type, double mean) { defaultMaleParams.SetCoitalEventsPerMonth(risk, type, mean); }
+	void SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { defaultMaleParams.SetChanceCondomUsePerEvent(risk, type, dist); }
+	const BetaDist GetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type type)
 	{ return defaultMaleParams.getSexualBehavior(type).getChanceCondomUsePerEvent(risk); }
-	void SetPartnershipDuration(Entity::RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { defaultMaleParams.SetPartnershipDuration(risk, type, dist); }
+	void SetPartnershipDuration(RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { defaultMaleParams.SetPartnershipDuration(risk, type, dist); }
 
     double GetProportionCircumcised() const { return defaultMaleParams.GetProportionCircumcised(); }
     void SetProportionCircumcised(double value) { defaultMaleParams.SetProportionCircumcised(value); }
 
-	void SetPartnerAcquisitionSteadyMultiplier(Entity::RiskLevel risk, double multiplier) { defaultMaleParams.SetPartnerAcqMultWithSteady(risk, multiplier); }
+	void SetPartnerAcquisitionSteadyMultiplier(RiskLevel risk, double multiplier) { defaultMaleParams.SetPartnerAcqMultWithSteady(risk, multiplier); }
 
     void SetCondomCost(double condom_cost) { condomCost = condom_cost; }
     void SetCircumcisionCost(double circumcision_cost) { circumcisionCost = circumcision_cost; }
@@ -205,9 +207,6 @@ protected:
 
 private:
 	long initSize;
-
-    // initialize the entities with counts or proportions
-    bool initWithCounts;
 
 	double chronicInfectionRate;
 
@@ -250,7 +249,7 @@ private:
     /// <summary>
     /// Base FOI for different transmission types at various viral loads.
     /// </summary>
-    std::unordered_map<TransmissionType, std::array<double, (std::size_t)Entity::HVLStrata::Last>> transmission_coefficients_;
+    std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> transmission_coefficients_;
 
     /// <summary>
     /// holds the population-level parameters for population of heterosexual males
@@ -261,6 +260,11 @@ private:
     /// holds the population-level parameters for population of females
     /// </summary>
 	Female::SubPopParams defaultFemaleParams;
+
+    /// <summary>
+    /// holds the population-level (default) prep parameters
+    /// </summary>
+	PrepParameters defaultPrepParams;
 
     /// <summary>
 	/// this is a quick way to check whether a partnership is technically a fling or not

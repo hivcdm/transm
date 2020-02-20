@@ -2,6 +2,7 @@
 #include <set>
 
 #include "populationstatistics.hpp"
+#include "entities/entitytypes.hpp"
 #include "entities/male.hpp"
 
 namespace transm {
@@ -38,7 +39,7 @@ void PopulationStatistics::RecordEntity(int month, const Entity *entity)
     if (((Male *)entity)->IsCircumcised()) month_stats.num_circumcised[sexual_activity_status]++;
 }
 
-void PopulationStatistics::RecordDeath(int month, Entity::DeathStatus cause_of_death)
+void PopulationStatistics::RecordDeath(int month, DeathStatus cause_of_death)
 {
     auto &month_stats = GetMonthStats(month, true);
     month_stats.death_cause_count[cause_of_death]++;
@@ -65,7 +66,7 @@ std::vector<std::string> PopulationStatistics::BuildMonthSummary(int m) const
 
     //Deaths
     std::size_t total_deaths = 0;
-    for (auto death_cause : enum_iterator<Entity::DeathStatus>())
+    for (auto death_cause : enum_iterator<DeathStatus>())
     {
         auto deaths = std::accumulate(month.death_cause_count.begin(), month.death_cause_count.end(), 0ULL,
             [=](std::size_t sum, const DeathCauseCount::value_type &i)
@@ -100,7 +101,7 @@ std::vector<std::string> PopulationStatistics::BuildMonthSummary(int m) const
                 continue; // skip non-female csws
             }
 
-            for (auto risk : enum_iterator<Entity::RiskLevel>())
+            for (auto risk : enum_iterator<RiskLevel>())
             {
                 auto num_risk_group = std::accumulate(month.pop_size.begin(), month.pop_size.end(), 0ULL,
                     [=](std::size_t sum, const AgeActivityGenderRiskEmplCount::value_type &i)

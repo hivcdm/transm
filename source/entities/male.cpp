@@ -36,7 +36,7 @@ double Male::SubPopParams::getChanceBecomeCSW() const
 	return chanceBecomeCSW;
 }
 
-double Male::SubPopParams::getPartnerAcqMultWithSteady(Entity::RiskLevel _risk) const
+double Male::SubPopParams::getPartnerAcqMultWithSteady(RiskLevel _risk) const
 {
     return partnerAcqMultWithSteady[(std::size_t)_risk];
 }
@@ -144,7 +144,7 @@ void Male::SetAcquisitionRatePerMonth(RiskLevel risk, SexualPartnership::Type pa
 DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerator &_randomNums,
     SexualPartnership::Type _partnershipType)
 {
-    SexualBehavior behavior = populationSpecificParams.getSexualBehavior(_partnershipType);
+    DemographicProfile::ProfileID entityProfileID;
     DemographicProfile selector;
 
     // only sexually active partners allowed
@@ -164,6 +164,7 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
         selector.set(DemographicProfile::Demographic::Employment,
             (std::size_t)DemographicProfile::Employment::NonCsw);
         //choose steady partner -- base on percentWithSteady
+        SexualBehavior behavior = populationSpecificParams.getSexualBehavior(_partnershipType);
         if (_randomNums.chance(behavior.getChanceChooseWithSteady()))
         {
             selector.set(DemographicProfile::Demographic::RelationshipStatus,
@@ -177,19 +178,21 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
     }
 
     //choose partner gender and orientation -- based on orientation and, if msmw, percentMsmwChooseMale
-    if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() == DemographicProfile::SexualOrientation::Msw)
+    if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() ==
+        DemographicProfile::SexualOrientation::Msw)
     {
         selector.set(DemographicProfile::Demographic::Gender,
             (std::size_t)DemographicProfile::Gender::Female);
         selector.set(DemographicProfile::Demographic::SexualOrientation,
             (std::size_t)DemographicProfile::SexualOrientation::Msw);
     }
-    else if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() == DemographicProfile::SexualOrientation::Msm)
+    else if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() ==
+        DemographicProfile::SexualOrientation::Msm)
     {
         selector.set(DemographicProfile::Demographic::Gender,
             (std::size_t)DemographicProfile::Gender::Male);
 
-        if (_randomNums.chance(behavior.getChanceMsmChooseMsmw()))
+        if (_randomNums.chance(populationSpecificParams.getChanceMsmChooseMsmw()))
         {
             selector.set(DemographicProfile::Demographic::SexualOrientation,
                 (std::size_t)DemographicProfile::SexualOrientation::Msmw);
@@ -200,14 +203,15 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
             (std::size_t)DemographicProfile::SexualOrientation::Msm);
         }
     }
-    else if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() == DemographicProfile::SexualOrientation::Msmw)
+    else if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() ==
+        DemographicProfile::SexualOrientation::Msmw)
     {
-        if (_randomNums.chance(behavior.getChanceMsmwChooseMale()))
+        if (_randomNums.chance(populationSpecificParams.getChanceMsmwChooseMale()))
         {
             selector.set(DemographicProfile::Demographic::Gender,
                 (std::size_t)DemographicProfile::Gender::Male);
 
-            if (_randomNums.chance(behavior.getChanceMsmChooseMsmw()))
+            if (_randomNums.chance(populationSpecificParams.getChanceMsmChooseMsmw()))
             {
                 selector.set(DemographicProfile::Demographic::SexualOrientation,
                     (std::size_t)DemographicProfile::SexualOrientation::Msmw);
@@ -221,7 +225,8 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
         }
         else
         {
-            selector.set(DemographicProfile::Demographic::Gender, (std::size_t)DemographicProfile::Gender::Female);
+            selector.set(DemographicProfile::Demographic::Gender,
+                (std::size_t)DemographicProfile::Gender::Female);
             selector.set(DemographicProfile::Demographic::SexualOrientation,
                 (std::size_t)DemographicProfile::SexualOrientation::Msw);
         }
@@ -231,31 +236,38 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
         throw std::runtime_error("Unknown sexual orientation");
     }
 
-    //choose race -- based on raceAssort
-    if (_randomNums.chance(behavior.getRaceAssortativeness()))
+    auto entityRace = getDemographicProfileVal<DemographicProfile::Race>();
+    DemographicProfile::Race partnerRace;
+    if (_randomNums.chance(populationSpecificParams.getRaceAssortativeness(entityRace)))
     {
-        selector.set(DemographicProfile::Demographic::Race,
-            (std::size_t)DemographicProfile::Race::Black);
+        // if non-assortative (homogeneous), choose entities own race
+        partnerRace = entityRace;
     }
     else
     {
-        selector.set(DemographicProfile::Demographic::Race,
-            (std::size_t)DemographicProfile::Race::White);
+        // choose a race randomly from the allowed list of races
+        std::vector<DemographicProfile::Race> races = populationSpecificParams.allowedRaceEthnicityMap.GetRaceKeysFromMap();
+        partnerRace = races[_randomNums.chooseIndex(races.size())];
     }
+    selector.set(DemographicProfile::Demographic::Race, (std::size_t)partnerRace);
 
-    //choose ethnicity -- based on ethnicAssort
-    if (_randomNums.chance(behavior.getEthnicAssortativeness()))
+    auto entityEthnicity = getDemographicProfileVal<DemographicProfile::Ethnicity>();
+    DemographicProfile::Ethnicity partnerEthnicity;
+    if (_randomNums.chance(populationSpecificParams.getEthnicityAssortativeness(entityEthnicity)))
     {
-        selector.set(DemographicProfile::Demographic::Ethnicity,
-            (std::size_t)DemographicProfile::Ethnicity::NonHispanic);
+        // if non-assortative (homogeneous), choose entities own ethnicity
+        partnerEthnicity = entityEthnicity;
     }
     else
     {
-        selector.set(DemographicProfile::Demographic::Ethnicity,
-            (std::size_t)DemographicProfile::Ethnicity::Hispanic);
+        // choose an ethnicity randomly from the allowed list of ethnicity for the chosen partner's race
+        std::vector<DemographicProfile::Ethnicity> ethnicities =
+          populationSpecificParams.allowedRaceEthnicityMap.GetEthnicityForRace(partnerRace);
+        partnerEthnicity = ethnicities[_randomNums.chooseIndex(ethnicities.size())];
     }
+    selector.set(DemographicProfile::Demographic::Ethnicity, (std::size_t)partnerEthnicity);
 
-	std::vector<DemographicProfile::ProfileID> validBucketIDs;
+    std::vector<DemographicProfile::ProfileID> validBucketIDs;
     selector.selectProfileIDs(validBucketIDs, nullptr);
 
     assert(validBucketIDs.size() == 1);
@@ -272,9 +284,10 @@ void Male::Circumcise()
 	circumcised = true;
 }
 
-Male::Male(EventParams &_eventParams, Age _age, bool _circumcised, const DemographicProfile &profile,
-    unsigned int _populationID, const Male::SubPopParams &params) :
-    Entity(_age, _populationID),
+Male::Male(EventParams &_eventParams, Age _age, bool _circumcised,
+    const DemographicProfile &profile, unsigned int _populationID,
+    const Male::SubPopParams &params, const PrepParameters &prepParams) :
+    Entity(_age, _populationID, prepParams),
     populationSpecificParams(params)
 {
 	// Only set the gender and sexual orientation
@@ -286,7 +299,7 @@ Male::Male(EventParams &_eventParams, Age _age, bool _circumcised, const Demogra
 
     //Set this male's risk level assume everyone is low risk on creation.
     //Risk is rerolled when they reach the age of sexual maturity
-    risk = Entity::RiskLevel::LOW;
+    risk = RiskLevel::LOW;
 
 	for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
 	{
@@ -313,17 +326,7 @@ Male::~Male()
 
 std::size_t Male::GetSexualOrientation()
 {
-    return ((std::size_t)getDemographicProfileVal(DemographicProfile::Demographic::SexualOrientation));
-}
-
-/*virtual*/ void Male::SetPreExposureProphylaxisEfficacy(double efficacy)
-{
-    populationSpecificParams.SetPreExposureProphylaxisEfficacy(efficacy);
-}
-
-/*virtual*/ double Male::GetPreExposureProphylaxisEfficacy() const
-{
-    return populationSpecificParams.GetPreExposureProphylaxisEfficacy();
+    return (std::size_t)getDemographicProfileVal<DemographicProfile::SexualOrientation>();
 }
 
 double Male::getCondomUseProb(Entity *_p, SexualPartnership::Type _partnershipType)
@@ -552,9 +555,9 @@ int Male::rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType
 
 void Male::rerollRiskGroup(EventParams &_eventParams)
 {
-	DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) getDemographicProfileVal(DemographicProfile::Demographic::Employment);
+	DemographicProfile::Employment cswStatus = getDemographicProfileVal<DemographicProfile::Employment>();
 	double chanceHighRisk = populationSpecificParams.getProportionHighRisk(cswStatus);
-	Entity::RiskLevel oldRisk = risk;
+	RiskLevel oldRisk = risk;
 
 	if(_eventParams.randomNums.chance(chanceHighRisk))
 	{

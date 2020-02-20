@@ -7,7 +7,9 @@
 #include "artrollouttracker.hpp"
 #include "coststracker.hpp"
 #include "infectionstracker.hpp"
+#include "preptracker.hpp"
 #include "statsrecord.hpp"
+#include "entities/entity.hpp"
 #include "entities/sexualpartnership.hpp"
 #include "utility/enum.hpp"
 
@@ -87,9 +89,9 @@ public:
         unsigned int numDeathGender[(std::size_t)DemographicProfile::Gender::Last];
 
         //time to death stratified by CSW status and Risk level
-		unsigned long timeToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Last][(std::size_t)Entity::RiskLevel::Last];
-        unsigned long timeToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Last][(std::size_t)Entity::RiskLevel::Last];
-        unsigned int numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Last][(std::size_t)Entity::RiskLevel::Last];
+		unsigned long timeToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Last][(std::size_t)RiskLevel::Last];
+        unsigned long timeToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Last][(std::size_t)RiskLevel::Last];
+        unsigned int numDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Last][(std::size_t)RiskLevel::Last];
 
         //time to death stratified by initial HIV status
 		unsigned long timeToDeathHIVStatusSum[ENDInitHIVStatus];
@@ -104,9 +106,9 @@ public:
 		unsigned int numInfOrDeathGender[(std::size_t)DemographicProfile::Gender::Last];
 
         //time to inf or death stratified by CSW status and Risk level
-		unsigned long timeToInfOrDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Last][(std::size_t)Entity::RiskLevel::Last];
-        unsigned long timeToInfOrDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Last][(std::size_t)Entity::RiskLevel::Last];
-        unsigned int numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Last][(std::size_t)Entity::RiskLevel::Last];
+		unsigned long timeToInfOrDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Last][(std::size_t)RiskLevel::Last];
+        unsigned long timeToInfOrDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Last][(std::size_t)RiskLevel::Last];
+        unsigned int numInfOrDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Last][(std::size_t)RiskLevel::Last];
 
         //sum of time from infection to death for people who die during model run (used to calculate mean) strat by gender
 		unsigned long timeFromInfToDeathGenderSum[(std::size_t)DemographicProfile::Gender::Last]; 
@@ -116,9 +118,9 @@ public:
         unsigned int numInfDeathGender[(std::size_t)DemographicProfile::Gender::Last];
 
         //time from inf to death stratified by CSW status and Risk level
-		unsigned long timeFromInfToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Last][(std::size_t)Entity::RiskLevel::Last]; 
-        unsigned long timeFromInfToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Last][(std::size_t)Entity::RiskLevel::Last];
-        unsigned int numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Last][(std::size_t)Entity::RiskLevel::Last];
+		unsigned long timeFromInfToDeathEmplRiskSum[(std::size_t)DemographicProfile::Employment::Last][(std::size_t)RiskLevel::Last]; 
+        unsigned long timeFromInfToDeathEmplRiskSumSquare[(std::size_t)DemographicProfile::Employment::Last][(std::size_t)RiskLevel::Last];
+        unsigned int numInfDeathEmplRisk[(std::size_t)DemographicProfile::Employment::Last][(std::size_t)RiskLevel::Last];
 
 	};
 private:
@@ -164,6 +166,8 @@ public:
 	CostsTracker costsTracker;			//tallies all costs
 
 	ArtRolloutTracker artTracker; // records art rollout outcomes
+
+	PrepTracker prepTracker; // records art rollout outcomes
 
 	EnumCls<PopulationStatisticsOld::LifeStats> *enumClass; //used in lifeStats; declared here so that deletion is possible
 

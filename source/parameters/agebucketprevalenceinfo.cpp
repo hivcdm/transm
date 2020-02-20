@@ -3,9 +3,11 @@
 namespace transm {
 
     AgeBucketPrevalenceInfo::AgeBucketPrevalenceInfo(Age _minAgeMth, Age _maxAgeMth,
+        double _proportionInAgeBucket,
 		const std::vector<DemographicProfile::DoublePair> &entity_proportions) :
         minAgeMth(_minAgeMth),
         maxAgeMth(_maxAgeMth),
+        proportionInAgeBucket(_proportionInAgeBucket),
         entityProportions(entity_proportions)
     {
 	assert((_minAgeMth >= Time::Zero) && (_maxAgeMth > Time::Zero) && (_maxAgeMth > _minAgeMth));

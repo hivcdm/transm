@@ -79,8 +79,9 @@ double Female::SubPopParams::GetProportionHighRisk(DemographicProfile::Employmen
 }
 
 Female::Female(EventParams &_eventParams, Age _age, const DemographicProfile &profile,
-    unsigned int _populationID, const Female::SubPopParams &params)
-	: Entity(_age, _populationID),
+    unsigned int _populationID, const Female::SubPopParams &params,
+    const PrepParameters &prepParams)
+	: Entity(_age, _populationID, prepParams),
 	  populationSpecificParams(params),
 	  overrideChanceCondomUse_(-1),
 	  times_selected_(0),
@@ -93,7 +94,7 @@ Female::Female(EventParams &_eventParams, Age _age, const DemographicProfile &pr
     assert(profile.get(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Female);
 	dmgProfile = profile;
 
-	risk = Entity::RiskLevel::LOW;
+	risk = RiskLevel::LOW;
 
     for(auto risk : {RiskLevel::LOW, RiskLevel::HIGH})
     {
@@ -106,17 +107,6 @@ Female::Female(EventParams &_eventParams, Age _age, const DemographicProfile &pr
 
 Female::~Female(void)
 {
-}
-
-
-/*virtual*/ void Female::SetPreExposureProphylaxisEfficacy(double efficacy)
-{
-    populationSpecificParams.SetPreExposureProphylaxisEfficacy(efficacy);
-}
-
-/*virtual*/ double Female::GetPreExposureProphylaxisEfficacy() const
-{
-    return populationSpecificParams.GetPreExposureProphylaxisEfficacy();
 }
 
 void Female::SetVaginalMicrobicideAdherence(double adherence)
@@ -133,8 +123,7 @@ double Female::GetVaginalMicrobicideEfficacy() const
 // FOI = transmission coeff * (1 - (condoms are used and succeed)) * (1 - (male is circumcised))
 double Female::getFOI(Entity *partner, const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
 {
-    assert(partner->getDemographicProfileVal(DemographicProfile::Demographic::Gender) ==
-	   (std::size_t)DemographicProfile::Gender::Male);
+    assert(partner->isMale());
     Male *_p = static_cast<Male*>(partner);
 
     auto orientation = _p->GetSexualOrientation();
@@ -205,14 +194,14 @@ double Female::getChanceBecomeCsw() const
 	return populationSpecificParams.GetChanceBecomeCSW();
 }
 
-void Female::SetChanceCondomUsePerEvent(Entity::RiskLevel /*risk*/, SexualPartnership::Type /*partnershipType*/, BetaDist /*dist*/, RandomNumberGenerator &/*rng*/)
+void Female::SetChanceCondomUsePerEvent(RiskLevel /*risk*/, SexualPartnership::Type /*partnershipType*/, BetaDist /*dist*/, RandomNumberGenerator &/*rng*/)
 {
 
 }
 
 void Female::rerollRiskGroup(EventParams &_eventParams)
 {
-	DemographicProfile::Employment cswStatus = (DemographicProfile::Employment) getDemographicProfileVal(DemographicProfile::Demographic::Employment);
+	DemographicProfile::Employment cswStatus = getDemographicProfileVal<DemographicProfile::Employment>();
 	double chanceHighRisk = populationSpecificParams.GetProportionHighRisk(cswStatus);
 
 	if(_eventParams.randomNums.chance(chanceHighRisk))
