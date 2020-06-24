@@ -845,10 +845,7 @@ Male::SubPopParams SimulationParametersXml::GetMaleSubPopParams() const
 	auto health_node = node.child("health");
 	result.SetCircucmsionProtectEfficacy(Text<double>(health_node.child("circumcisionProtectEfficacy")));
 	result.SetCondomProtectEff(Text<double>(health_node.child("condomProtectEfficacy")));
-
-	// This will be moved in the xml to /simulation/population/entities [@type='male']/health
-	auto circumcision_node = document_.select_node("/simulation/population/proportionMaleCircumcised").node();
-	result.SetProportionCircumcised(Text<double>(circumcision_node));
+	result.SetProportionCircumcised(Text<double>(health_node.child("proportionMaleCircumcised")));
 
 	return result;
 }
