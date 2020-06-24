@@ -129,12 +129,14 @@ public:
     void SetSexualActivityDelay(TimeSpan delay) { sexualActivityDelay = delay; }
     TimeSpan GetSexualActivityDelay() const { return sexualActivityDelay; }
 
-    void SetRiskAssortativeness(SexualPartnership::Type partnership_type, double assortativeness)
-		{ defaultMaleParams.setRiskAssortativeness(assortativeness); }
-    void SetRaceAssortativeness(DemographicProfile::Race race, SexualPartnership::Type partnership_type, double assortativeness)
-		{ defaultMaleParams.setRaceAssortativeness(race, assortativeness); }
-    void SetEthnicAssortativeness(DemographicProfile::Ethnicity ethnicity, SexualPartnership::Type partnership_type, double assortativeness)
-		{ defaultMaleParams.setEthnicityAssortativeness(ethnicity, assortativeness); }
+    void SetRiskAssortativeness(double assortativeness) {
+        defaultMaleParams.setRiskAssortativeness(assortativeness);
+    }
+
+    void SetRaceEthnicAssortativeness(DemographicProfile::Race race,
+        DemographicProfile::Ethnicity ethnicity, double assortativeness) {
+        defaultMaleParams.setRaceEthnicAssortativeness(race, ethnicity, assortativeness);
+    }
 
 	int GetInitialSize() const { return initSize; }
 	void SetInitialSize(int size) { initSize = size; }

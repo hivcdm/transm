@@ -237,34 +237,30 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
     }
 
     auto entityRace = getDemographicProfileVal<DemographicProfile::Race>();
+    auto entityEthnicity = getDemographicProfileVal<DemographicProfile::Ethnicity>();
+
     DemographicProfile::Race partnerRace;
-    if (_randomNums.chance(populationSpecificParams.getRaceAssortativeness(entityRace)))
+    DemographicProfile::Ethnicity partnerEthnicity;
+
+    if (_randomNums.chance(populationSpecificParams.getRaceEthnicAssortativeness(entityRace, entityEthnicity)))
     {
         // if non-assortative (homogeneous), choose entities own race
         partnerRace = entityRace;
-    }
-    else
-    {
-        // choose a race randomly from the allowed list of races
-        std::vector<DemographicProfile::Race> races = populationSpecificParams.allowedRaceEthnicityMap.GetRaceKeysFromMap();
-        partnerRace = races[_randomNums.chooseIndex(races.size())];
-    }
-    selector.set(DemographicProfile::Demographic::Race, (std::size_t)partnerRace);
-
-    auto entityEthnicity = getDemographicProfileVal<DemographicProfile::Ethnicity>();
-    DemographicProfile::Ethnicity partnerEthnicity;
-    if (_randomNums.chance(populationSpecificParams.getEthnicityAssortativeness(entityEthnicity)))
-    {
-        // if non-assortative (homogeneous), choose entities own ethnicity
         partnerEthnicity = entityEthnicity;
     }
     else
     {
-        // choose an ethnicity randomly from the allowed list of ethnicity for the chosen partner's race
+        // choose a race randomly from the allowed list of races
+        std::vector<DemographicProfile::Race> races = populationSpecificParams.
+            allowedRaceEthnicityMap.GetRaceKeysFromMap();
+        partnerRace = races[_randomNums.chooseIndex(races.size())];
+
+        // choose an ethnicity randomly from the allowed list of ethnicities for the race chosen
         std::vector<DemographicProfile::Ethnicity> ethnicities =
           populationSpecificParams.allowedRaceEthnicityMap.GetEthnicityForRace(partnerRace);
         partnerEthnicity = ethnicities[_randomNums.chooseIndex(ethnicities.size())];
     }
+    selector.set(DemographicProfile::Demographic::Race, (std::size_t)partnerRace);
     selector.set(DemographicProfile::Demographic::Ethnicity, (std::size_t)partnerEthnicity);
 
     std::vector<DemographicProfile::ProfileID> validBucketIDs;

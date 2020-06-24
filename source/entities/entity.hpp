@@ -107,9 +107,9 @@ public:
 	//there is option to print patient traces to a text file. this keeps track of how many we've done so far
 	static int numTracesSoFar;
 
-    virtual void SetRiskAssortativeness(SexualPartnership::Type partnership_type, double assortativeness) = 0;
-    virtual void SetRaceAssortativeness(DemographicProfile::Race race, SexualPartnership::Type partnership_type, double assortativeness) = 0;
-    virtual void SetEthnicityAssortativeness(DemographicProfile::Ethnicity ethnicity, SexualPartnership::Type partnership_type, double assortativeness) = 0;
+    virtual void SetRiskAssortativeness(double assortativeness) = 0;
+    virtual void SetRaceEthnicAssortativeness(DemographicProfile::Race race,
+        DemographicProfile::Ethnicity ethnicity, double assortativeness) = 0;
 
     void UsePreExposureProphylaxis(double adherence);
 

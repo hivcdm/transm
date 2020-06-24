@@ -126,24 +126,38 @@ public :
         double getChanceMsmChooseMsmw() { return chanceMsmChooseMsmw; }
 
         double getRiskAssortativeness() const { return riskAssortativeness; }
-        void setRiskAssortativeness(double riskAssortativeness) { this->riskAssortativeness = riskAssortativeness; }
-
-        void setBaselineRaceAssortativeness(double baselineAssortivity)
-            { raceAssortativeness.fill(baselineAssortivity); }
-        void setRaceAssortativeness(DemographicProfile::Race race, double assortivity) {
-            raceAssortativeness[static_cast<std::size_t>(race)] = assortivity;
-        }
-        const double getRaceAssortativeness(DemographicProfile::Race race) const {
-            return raceAssortativeness[(std::size_t)race];
+        void setRiskAssortativeness(double riskAssortativeness) {
+            this->riskAssortativeness = riskAssortativeness;
         }
 
-        void setBaselineEthnicityAssortativeness(double baselineAssortivity)
-            { ethnicityAssortativeness.fill(baselineAssortivity); }
-        void setEthnicityAssortativeness(DemographicProfile::Ethnicity ethnicity, double assortivity) {
-            ethnicityAssortativeness[static_cast<std::size_t>(ethnicity)] = assortivity;
+        void setBaselineRaceEthnicAssortativeness(double baselineAssortivity) {
+            for (auto race : allowedRaceEthnicityMap.GetRaceKeysFromMap()) {
+                for (auto ethnicity : allowedRaceEthnicityMap.GetEthnicityForRace(race)) {
+                    raceEthnicAssortivity.push_back(std::make_tuple(race, ethnicity, baselineAssortivity));
+                }
+            }
         }
-        const double getEthnicityAssortativeness(DemographicProfile::Ethnicity ethnicity) const {
-            return ethnicityAssortativeness[(std::size_t)ethnicity];
+        void setRaceEthnicAssortativeness(DemographicProfile::Race race, DemographicProfile::Ethnicity ethnicity,
+            double assortivity) {
+            using raceEthTuple = std::tuple<DemographicProfile::Race,DemographicProfile::Ethnicity,double>;
+            auto it = std::find_if(raceEthnicAssortivity.begin(), raceEthnicAssortivity.end(),
+                [&race,&ethnicity](const raceEthTuple& e)
+                    { return std::get<0>(e) == race && std::get<1>(e) == ethnicity; });
+            if (it != raceEthnicAssortivity.end()) {
+                std::get<2>(*it) = assortivity;
+            }
+        }
+
+        const double getRaceEthnicAssortativeness(DemographicProfile::Race race,
+            DemographicProfile::Ethnicity ethnicity) {
+            using raceEthTuple = std::tuple<DemographicProfile::Race,DemographicProfile::Ethnicity,double>;
+            auto it = std::find_if(raceEthnicAssortivity.begin(), raceEthnicAssortivity.end(),
+                [&race,&ethnicity](const raceEthTuple& e)
+                    { return std::get<0>(e) == race && std::get<1>(e) == ethnicity; });
+            if (it != raceEthnicAssortivity.end()) {
+                return std::get<2>(*it);
+            }
+            throw std::runtime_error("Missing assortivity for race and ethnicity pair");
         }
 
         RaceEthnicityMap* GetAllowedRaceEthnicityMap() {
@@ -209,8 +223,9 @@ public :
         double chanceMsmwChooseMale;
         double chanceMsmChooseMsmw;
         double riskAssortativeness;
-        std::array<double, (std::size_t)DemographicProfile::Race::Last> raceAssortativeness;
-        std::array<double, (std::size_t)DemographicProfile::Ethnicity::Last> ethnicityAssortativeness;
+
+        std::vector<std::tuple<DemographicProfile::Race, DemographicProfile::Ethnicity, double>>
+            raceEthnicAssortivity;
 
         RaceEthnicityMap allowedRaceEthnicityMap;
 
@@ -253,13 +268,12 @@ public:
 
     void SetChanceBecomeSexWorker(double chance) { populationSpecificParams.SetChanceBecomeCsw(chance); }
 
-    void SetRiskAssortativeness(SexualPartnership::Type partnership_type, double assortativeness)
-        { populationSpecificParams.setRiskAssortativeness(assortativeness); }
-    void SetRaceAssortativeness(DemographicProfile::Race race, SexualPartnership::Type partnership_type, double assortativeness)
-        { populationSpecificParams.setRaceAssortativeness(race, assortativeness); }
-    void SetEthnicityAssortativeness(DemographicProfile::Ethnicity ethnicity, SexualPartnership::Type partnership_type,
+    void SetRiskAssortativeness(double assortativeness) {
+        populationSpecificParams.setRiskAssortativeness(assortativeness);
+    }
+    void SetRaceEthnicAssortativeness(DemographicProfile::Race race, DemographicProfile::Ethnicity eth,
         double assortativeness) {
-        populationSpecificParams.setEthnicityAssortativeness(ethnicity, assortativeness);
+        populationSpecificParams.setRaceEthnicAssortativeness(race, eth, assortativeness);
     }
 
     double getChanceBecomeCsw() const;

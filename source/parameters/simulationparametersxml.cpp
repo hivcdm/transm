@@ -771,50 +771,41 @@ Male::SubPopParams SimulationParametersXml::GetMaleSubPopParams() const
     bool use_csw_high_risk_multiplier = Attr<bool>(behavior_node.child("highRiskCswAcqRateMultiplier"), "enabled");
     double csw_high_risk_multiplier = Text<double>(behavior_node.child("highRiskCswAcqRateMultiplier"));
 
+    result.setChanceMsmwChooseMale(Text<double>(behavior_node.child("chanceMsmwChooseMale")));
+    result.setChanceMsmChooseMsmw(Text<double>(behavior_node.child("chanceMsmChooseMsmw")));
+
     result.SetCoefficientVariation(false, 0);
 
     auto assortivityNode = behavior_node.child("assortivity");
     result.setRiskAssortativeness(Text<double>(assortivityNode.child("riskAssortivity")));
 
-    auto raceAssortivityNode = assortivityNode.child("raceAssortivity");
+    auto raceAssortivityNode = assortivityNode.child("raceEthnicAssortivity");
     double baselineRaceAssortativity = Attr<double>(raceAssortivityNode, "baseline");
-    result.setBaselineRaceAssortativeness(baselineRaceAssortativity);
+    result.setBaselineRaceEthnicAssortativeness(baselineRaceAssortativity);
+    bool useCoefficients = Attr<bool>(raceAssortivityNode, "useCoefficients");
 
-    for (auto raceNode : node.children("race")) {
-        std::string raceType = Attr<std::string>(raceNode, "type");
-        double assortivity = Attr<double>(raceNode, "value");
-        if (Attr<bool>(raceAssortivityNode, "useCoefficients")) {
+    for (auto raceNode : raceAssortivityNode.children("raceAndEthnicity")) {
+        std::string raceType = Attr<std::string>(raceNode, "race");
+        std::string ethnicityType = Attr<std::string>(raceNode, "ethnicity");
+        double assortivity = Text<double>(raceNode);
+        if (useCoefficients) {
             assortivity *= baselineRaceAssortativity;
         }
         for (auto race : enum_iterator<DemographicProfile::Race>()) {
             auto raceStr = DemographicEnumStrs.at((std::size_t)DemographicProfile::Demographic::Race).at((std::size_t)race);
             if (raceType.compare(raceStr) == 0) {
-                result.setRaceAssortativeness(race, assortivity);
+                for (auto ethnicity : enum_iterator<DemographicProfile::Ethnicity>()) {
+                    auto ethStr = DemographicEnumStrs.at((std::size_t)
+                        DemographicProfile::Demographic::Ethnicity).at((std::size_t)ethnicity);
+                    if (ethnicityType.compare(ethStr) == 0) {
+                        result.setRaceEthnicAssortativeness(race, ethnicity, assortivity);
+                    }
+                }
             }
         }
     }
 
-    auto ethnicityAssortivityNode = assortivityNode.child("ethnicAssortivity");
-    double baselineEthnicityAssortativity = Attr<double>(ethnicityAssortivityNode, "baseline");
-    result.setBaselineEthnicityAssortativeness(baselineEthnicityAssortativity);
-
-    for (auto ethnicityNode : node.children("ethnicity")) {
-        std::string ethnicityType = Attr<std::string>(ethnicityNode, "type");
-        double assortivity = Attr<double>(ethnicityNode, "value");
-        if (Attr<bool>(ethnicityAssortivityNode, "useCoefficients")) {
-            assortivity *= baselineEthnicityAssortativity;
-        }
-        for (auto ethnicity : enum_iterator<DemographicProfile::Ethnicity>()) {
-            auto ethStr = DemographicEnumStrs.at((std::size_t)DemographicProfile::Demographic::Ethnicity).at((std::size_t)ethnicity);
-            if (ethnicityType.compare(ethStr) == 0) {
-                result.setEthnicityAssortativeness(ethnicity, assortivity);
-            }
-        }
-    }
-    result.setChanceMsmwChooseMale(Text<double>(assortivityNode.child("chanceMsmwChooseMale")));
-    result.setChanceMsmChooseMsmw(Text<double>(assortivityNode.child("chanceMsmChooseMsmw")));
-
-	for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
+    for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
 	{
         try
         {

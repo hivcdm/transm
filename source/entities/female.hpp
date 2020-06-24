@@ -61,15 +61,15 @@ public:
 
     bool IsCircumcised() const { return false; }
 
-    void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) { populationSpecificParams.SetProportionHighRisk(employment, proportion); }
+    void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) {
+        populationSpecificParams.SetProportionHighRisk(employment, proportion);
+    }
 
     void SetChanceBecomeSexWorker(double chance) { populationSpecificParams.SetChanceBecomeCsw(chance); }
 
-    void SetRiskAssortativeness(SexualPartnership::Type /*partnership_type*/, double /*assortativeness*/)
+    void SetRiskAssortativeness(double /*assortativeness*/)
         { throw std::runtime_error("not implemented for women"); }
-    void SetRaceAssortativeness(DemographicProfile::Race /*race*/, SexualPartnership::Type /*partnership_type*/, double /*assortativeness*/)
-        { throw std::runtime_error("not implemented for women"); }
-    void SetEthnicityAssortativeness(DemographicProfile::Ethnicity ethnicity, SexualPartnership::Type /*partnership_type*/,
+    void SetRaceEthnicAssortativeness(DemographicProfile::Race /*race*/, DemographicProfile::Ethnicity /*eth*/,
         double /*assortativeness*/)
         { throw std::runtime_error("not implemented for women"); }
 
