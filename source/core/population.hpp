@@ -420,6 +420,11 @@ private:
     std::unordered_map<DemographicProfile::ProfileID, RiskArray> currSASizeProfileRisk;
 
     /// <summary>
+    /// Births this month
+    /// </summary>
+    std::size_t currBirths;
+
+    /// <summary>
 	/// Num Died this month by Death Cause
     /// </summary>
     std::size_t currDeathCauses[(std::size_t)DeathStatus::Last];

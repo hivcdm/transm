@@ -126,13 +126,13 @@ void Population::Births(EventParams &parameters_)
     else
     {
 	    // get numBorn from fertility rates
-	    // numBorn = sum((rate*females) / 1000
+	    // numBorn = sum((rate*females)
 	    double sumRates = 0.0;
 	    for ( auto rate : popWideParams.GetFertilityRates()) {
 		    int numFemales = entities->sizeByAgeFemales(rate.Lower(), rate.Upper());
-		    sumRates += (rate.Rate() / 12) * numFemales;
+		    sumRates +=  rate.Rate() * numFemales;
 	    }
-	    numBorn = Utility::round<unsigned long>(sumRates / 1000);
+	    numBorn = Utility::round<unsigned long>(sumRates);
     }
 
 	for (auto profileDoublePair : popWideParams.GetBirthProportions())
@@ -143,6 +143,7 @@ void Population::Births(EventParams &parameters_)
 
 		GenerateEntities(profile, numToCreate, nullptr);
 	}
+    currBirths = numBorn;
 }
 
 //Updates the age buckets for use with life expectancy
@@ -3113,6 +3114,8 @@ void Population::PrintPopulationHeaders(Time _time, std::ostream &_outStream)
     secondRow << "Pop Size" << Constants::Tab;
     firstRow << Constants::Tab;
     secondRow << "SA Pop Size" << Constants::Tab;
+    firstRow << Constants::Tab;
+    secondRow << "Births" << Constants::Tab;
     firstRow << "Deaths" << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
 	Constants::Tab << Constants::Tab;
     secondRow << "Any OI" << Constants::Tab << "Chronic AIDS" << Constants::Tab << "Non-AIDS" << Constants::Tab <<
@@ -3203,6 +3206,9 @@ void Population::PrintPopulation(EventParams &/*_paramters*/, Time _time, std::o
     //output population size and SA pop size
     _outStream << GetSize() << Constants::Tab;
     _outStream << GetSize() - GetNASize() << Constants::Tab;
+
+    // output births this month
+    _outStream << currBirths << Constants::Tab;
 
 	//output deaths by causes
     _outStream << currDeathCauses[(std::size_t)DeathStatus::DTH_OI]

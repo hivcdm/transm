@@ -1016,7 +1016,7 @@ PopulationParameters SimulationParametersXml::GetPopulationParameters() const
     auto births_node = population_node.child("births");
     bool useBirthRate = Attr<bool>(births_node, "useBirthRate");
     parameters.SetUseBirthRate(useBirthRate);
-    parameters.SetBirthRate(Text<double>(births_node.child("rate")));
+    parameters.SetBirthRate(Text<double>(births_node.child("birthRate")));
     if (!useBirthRate && births_node.child("fertilityRate")) {
         std::vector<FertilityRate> rates;
 	    for(auto child : births_node.child("fertilityRate").children("rateForAgeRange")) {
