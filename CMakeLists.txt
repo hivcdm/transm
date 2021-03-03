@@ -35,7 +35,7 @@ include_directories(${SQLITE3_INCLUDE_DIRS})
 
 ExternalProject_Add(
 	rana_project 
-	PREFIX ${CMAKE_SOURCE_DIR}/third-party
+	PREFIX ${CMAKE_SOURCE_DIR}/build/third-party
 	GIT_REPOSITORY git@github.com:hsphcdm/rana.git
 	CONFIGURE_COMMAND ""
 	BUILD_COMMAND ""
@@ -50,7 +50,7 @@ include_directories(${source_dir}/include)
 ExternalProject_Add(
 	tclap_project 
 	DEPENDS rana_project
-	PREFIX ${CMAKE_SOURCE_DIR}/third-party
+	PREFIX ${CMAKE_SOURCE_DIR}/build/third-party
 	GIT_REPOSITORY git@github.com:hsphcdm/tclap.git
 	CONFIGURE_COMMAND ""
 	BUILD_COMMAND ""
@@ -64,54 +64,54 @@ include_directories(${source_dir}/include)
 
 ExternalProject_Add(
 	pugixml_project
-	PREFIX ${CMAKE_SOURCE_DIR}/third-party
+	PREFIX ${CMAKE_SOURCE_DIR}/build/third-party
 	GIT_REPOSITORY git@github.com:hsphcdm/pugixml.git
 	CONFIGURE_COMMAND cmake -DCMAKE_BUILD_TYPE=Release ../pugixml_project
     BUILD_COMMAND make pugixml
-    INSTALL_COMMAND mv libpugixml.a ${CMAKE_SOURCE_DIR}/../lib
+    INSTALL_COMMAND mv libpugixml.a ${CMAKE_SOURCE_DIR}/lib
 )
 
 ExternalProject_Get_Property(pugixml_project source_dir)
 include_directories(${source_dir}/src)
 add_library(pugixml STATIC IMPORTED)
-set_property(TARGET pugixml PROPERTY IMPORTED_LOCATION  ${CMAKE_SOURCE_DIR}/../lib/libpugixml.a)
+set_property(TARGET pugixml PROPERTY IMPORTED_LOCATION  ${CMAKE_SOURCE_DIR}/lib/libpugixml.a)
 add_dependencies(pugixml pugixml_project)
 
 # Then there is CEPAC, we also use it as a library
 
 ExternalProject_Add(
 	cepac_project 
-	PREFIX ${CMAKE_SOURCE_DIR}/third-party
+	PREFIX ${CMAKE_SOURCE_DIR}/build/third-party
 	GIT_REPOSITORY git@github.com:hsphcdm/cepac-svn.git
 	GIT_TAG cepac-transm
 	UPDATE_COMMAND ""
 	CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-	#CONFIGURE_COMMAND cmake ../cepac_project
+	#CONFIGURE_COMMAND cmake cepac_project
 	BUILD_COMMAND make
-	INSTALL_COMMAND mv libcepac.a ${CMAKE_SOURCE_DIR}/../lib/ 
+	INSTALL_COMMAND mv libcepac.a ${CMAKE_SOURCE_DIR}/lib/ 
 )
 
 ExternalProject_Get_Property(cepac_project source_dir)
 include_directories(${source_dir}/src)
 add_library(cepac STATIC IMPORTED)
-set_property(TARGET cepac PROPERTY IMPORTED_LOCATION  ${CMAKE_SOURCE_DIR}/../lib/libcepac.a)
+set_property(TARGET cepac PROPERTY IMPORTED_LOCATION  ${CMAKE_SOURCE_DIR}/lib/libcepac.a)
 add_dependencies(cepac cepac_project)
 
 # Now it is time to compile our own code
 
-set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/../build)
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/../bin)
+set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/build)
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
 
 # The headers are nicely referenced with relative path, we can simply include the source directory
 
-include_directories(../source)
+include_directories(source)
 
 # Then we add our source files, they are listed in our helper file
 
 include(cmake.sources)
 
 # We add our executable
-add_executable(transm ../source/main.cpp ${TRANSM_SOURCE_FILES})
+add_executable(transm source/main.cpp ${TRANSM_SOURCE_FILES})
 add_dependencies(transm rana_project tclap_project cepac_project)
 
 # Read and set up the version number
@@ -126,16 +126,16 @@ set(CMAKE_EXECUTABLE_SUFFIX "-v${TRANSM_VER}") # ...we need to use the followin
 # Add a makefile target that creates a header file with the version from VERSION
 
 add_custom_target(create-version-header 
-   COMMAND ./version_header.sh ${CMAKE_SOURCE_DIR}/../ ${TRANSM_VER}
+   COMMAND ../version_header.sh ${CMAKE_SOURCE_DIR}/ ${TRANSM_VER}
    COMMENT "Creating version.h"
 )
 add_dependencies(transm create-version-header)
 set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES 
-	${CMAKE_SOURCE_DIR}/../source/utility/version.h)
+	${CMAKE_SOURCE_DIR}/source/utility/version.h)
 
 # Then specify all the flags we need for our compiler and linker
 
-#set_property(TARGET transm PROPERTY CXX_STANDARD 14) # Proper way to require c++14 compatibility, 
+#set_property(TARGET transm PROPERTY CXX_STANDARD 14) # Proper way to require c++14 compatibility,
 #set_property(TARGET transm PROPERTY CXX_STANDARD_REQUIRED ON) # but it causes issues on CentOS 7 + CMake 2.8,
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -fpermissive -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free") # so we just set the flag
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native") 
