@@ -6,7 +6,7 @@ then
   exit 1
 fi
 
-cat > $1/source/utility/version.h << END
+cat > $1/src/utility/version.h << END
 /* version.h
  * File created automatically by CMakeLists.txt
  * Kept in sync with VERSION file

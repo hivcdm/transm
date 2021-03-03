@@ -104,14 +104,14 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
 
 # The headers are nicely referenced with relative path, we can simply include the source directory
 
-include_directories(source)
+include_directories(src)
 
 # Then we add our source files, they are listed in our helper file
 
 include(cmake.sources)
 
 # We add our executable
-add_executable(transm source/main.cpp ${TRANSM_SOURCE_FILES})
+add_executable(transm src/transm.cpp ${TRANSM_SOURCE_FILES})
 add_dependencies(transm rana_project tclap_project cepac_project)
 
 # Read and set up the version number
@@ -131,7 +131,7 @@ add_custom_target(create-version-header
 )
 add_dependencies(transm create-version-header)
 set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES 
-	${CMAKE_SOURCE_DIR}/source/utility/version.h)
+	${CMAKE_SOURCE_DIR}/src/utility/version.h)
 
 # Then specify all the flags we need for our compiler and linker
 
@@ -160,7 +160,7 @@ add_custom_target(clean-cmake-files
 
 add_custom_target(tags
     COMMAND find ${CMAKE_SOURCE_DIR} -name "*.cpp" -print -or -name "*.h" -print | xargs etags --append
-    COMMAND install TAGS ${CMAKE_SOURCE_DIR}/source
+    COMMAND install TAGS ${CMAKE_SOURCE_DIR}/src
 )
 set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES TAGS) 
 
