@@ -28,7 +28,7 @@ endif (USE_GOOGLE_PERF_TOOLS)
 
 set(CMAKE_FIND_FRAMEWORK NEVER) # on OSX, don't search frameworks
 set(CMAKE_FIND_APPBUNDLE NEVER) # or appbundles for sqlite3
-find_package (SQLite3 REQUIRED)
+find_package (SQLITE3 REQUIRED)
 include_directories(${SQLITE3_INCLUDE_DIRS})
 
 # We only need to include the headers for rana
