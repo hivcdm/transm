@@ -31,5 +31,9 @@ fi
 # Let's clear the cache first if it's there
 rm -f CMakeCache.txt
 
+# Creating the build directory
+mkdir build
+cd build
+
 # Then we call cmake and start compiling
-cmake ${CMAKE_ARGS[@]} . && make
+cmake ${CMAKE_ARGS[@]} .. && make

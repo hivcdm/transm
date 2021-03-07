@@ -1,16 +1,16 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.1)
 project(transm)
+
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 include(GNUInstallDirs)
 include(ExternalProject)
 
 # First let's see if we have what we need
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}")
 
-# First let's see if we have what we need
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}")
 set(Boost_USE_STATIC_LIBS ON)
 
 find_package(
@@ -21,9 +21,9 @@ find_package(
 include_directories(${Boost_INCLUDE_DIR})
 
 add_definitions(-DUSE_GOOGLE_PERF_TOOLS=${USE_GOOGLE_PERF_TOOLS})
-message("Use gpt: ${USE_GOOGLE_PERF_TOOLS}")
+message(STATUS "Using Google Performance Tools: ${USE_GOOGLE_PERF_TOOLS}")
 if (USE_GOOGLE_PERF_TOOLS)
-        find_package(GooglePerfTools)
+        find_package (Gperftools REQUIRED)
 endif (USE_GOOGLE_PERF_TOOLS)
 
 set(CMAKE_FIND_FRAMEWORK NEVER) # on OSX, don't search frameworks
