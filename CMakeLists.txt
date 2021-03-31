@@ -2,19 +2,19 @@ cmake_minimum_required(VERSION 3.1)
 project(transm)
 
 # maybe not needed for now but should be replaced with "transm"
-set(BINARY ${CMAKE_PROJECT_NAME})
+set(TRANSM_BINARY ${CMAKE_PROJECT_NAME})
 
 # Then specify all the flags we need for our compiler and linker
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+
 #set_property(TARGET transm PROPERTY CXX_STANDARD 14) # Proper way to require c++14 compatibility,
 #set_property(TARGET transm PROPERTY CXX_STANDARD_REQUIRED ON) # but it causes issues on CentOS 7 + CMake 2.8,
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free") # so we just set the flag
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native") 
-
-message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
 
 include(GNUInstallDirs)
 include(ExternalProject)
@@ -47,7 +47,7 @@ include_directories(${SQLITE3_INCLUDE_DIRS})
 # We only need to include the headers for rana
 ExternalProject_Add(
 	rana_project 
-	PREFIX ${CMAKE_SOURCE_DIR}/build/third-party
+	PREFIX ${CMAKE_BINARY_DIR}/third-party
 	GIT_REPOSITORY https://github.com/hsphcdm/rana.git
 	CONFIGURE_COMMAND ""
 	BUILD_COMMAND ""
@@ -62,7 +62,7 @@ include_directories(${source_dir}/include)
 ExternalProject_Add(
 	tclap_project 
 	DEPENDS rana_project
-	PREFIX ${CMAKE_SOURCE_DIR}/build/third-party
+	PREFIX ${CMAKE_BINARY_DIR}/third-party
 	GIT_REPOSITORY https://github.com/hsphcdm/tclap.git
 	CONFIGURE_COMMAND ""
 	BUILD_COMMAND ""
@@ -76,7 +76,7 @@ include_directories(${source_dir}/include)
 
 ExternalProject_Add(
 	pugixml_project
-	PREFIX ${CMAKE_SOURCE_DIR}/build/third-party
+	PREFIX ${CMAKE_BINARY_DIR}/third-party
 	GIT_REPOSITORY https://github.com/hsphcdm/pugixml.git
 	CONFIGURE_COMMAND cmake -DCMAKE_BUILD_TYPE=Release ../pugixml_project
     BUILD_COMMAND make pugixml
@@ -93,7 +93,7 @@ add_dependencies(pugixml pugixml_project)
 
 ExternalProject_Add(
 	cepac_project 
-	PREFIX ${CMAKE_SOURCE_DIR}/build/third-party
+	PREFIX ${CMAKE_BINARY_DIR}/third-party
 	GIT_REPOSITORY https://github.com/hsphcdm/cepac-svn.git
 	GIT_TAG cepac-transm
 	UPDATE_COMMAND ""
@@ -111,7 +111,7 @@ add_dependencies(cepac cepac_project)
 
 # Now it is time to compile our own code
 
-set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/build)
+#set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/build)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
 
 # The headers are nicely referenced with relative path, we can simply include the source directory
