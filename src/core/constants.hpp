@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CONSTANTS_HPP
+#define CONSTANTS_HPP
 
 #include <map>
 #include <string>
@@ -24,3 +25,5 @@ public:
 };
 
 } // namespace transm
+
+#endif /* !CONSTANTS_HPP */

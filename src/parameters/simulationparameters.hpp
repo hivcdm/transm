@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SIMULATIONPARAMETERS_HPP
+#define SIMULATIONPARAMETERS_HPP
 
 #include <pugixml.hpp>
 #include <rana/rana.hpp>
@@ -29,20 +30,21 @@ public:
         int num_to_trace = 0;
         int num_newborns_to_trace = 0;
         Time month_trace_newborns;
-        double life_expectancy_ci = 0;
+        __unused double life_expectancy_ci = 0;
         std::vector<int> life_expectancy_record_times;
         std::vector<int> partner_acquisition_record_times;
         std::vector<int> partner_network_record_times;
     };
 
     SimulationParameters() : rng_(nullptr) { }
-    virtual ~SimulationParameters() { }
+    virtual ~SimulationParameters() = default;
 
     void SetRandomNumberGenerator(RandomNumberGenerator &rng) { rng_ = &rng; }
     RandomNumberGenerator &GetRandomNumberGenerator() const { assert(rng_ != nullptr); return *rng_; }
 
     virtual std::string GetName() const = 0;
-    virtual Version GetVersion() const = 0;
+
+    __unused virtual Version GetVersion() const = 0;
     virtual std::uint32_t GetFixedSeed() const = 0;
     virtual int GetDuration() const = 0;
     virtual int GetMonthOf1990() const = 0;
@@ -63,33 +65,35 @@ private:
     RandomNumberGenerator *rng_;
 };
 
-class SimulationParametersFactory;
+class __unused SimulationParametersFactory;
 
 class SimulationParametersXml : public SimulationParameters
 {
 public:
-    SimulationParametersXml(const path &filename);
-    virtual ~SimulationParametersXml();
+    explicit SimulationParametersXml(const path &filename);
+    ~SimulationParametersXml() override;
 
-    /*virtual*/ std::string GetName() const { return name_; }
-    /*virtual*/ Version GetVersion() const;
-    /*virtual*/ std::uint32_t GetFixedSeed() const;
-    /*virtual*/ int GetDuration() const;
-    /*virtual*/ int GetMonthOf1990() const;
-    /*virtual*/ int GetInitialInfectionDelay() const;
-    /*virtual*/ ConcurrencyDefinition GetConcurrencyDefinition() const;
-    /*virtual*/ TracingParameters GetTracingParameters() const;
-    /*virtual*/ CalibrationInputs GetCalibrationParameters() const;
-    /*virtual*/ PopulationParameters GetPopulationParameters() const;
-    /*virtual*/ std::unordered_map<std::string, TargetGroup> GetTargetGroups() const;
-    /*virtual*/ TransmissionCoefficientsMap GetTransmissionCoefficients() const;
-    /*virtual*/ Female::SubPopParams GetFemaleSubPopParams() const;
-    /*virtual*/ Male::SubPopParams GetMaleSubPopParams() const;
-    /*virtual*/ InterventionsContainer GetPopulationInterventions() const;
-    /*virtual*/ CepacParameters GetCepacParameters() const;
-    /*virtual*/ PrepParameters GetPrepParameters() const;
+    /*virtual*/ std::string GetName() const override { return name_; }
+    /*virtual*/ Version GetVersion() const override;
+    /*virtual*/ std::uint32_t GetFixedSeed() const override;
+    /*virtual*/ int GetDuration() const override;
+    /*virtual*/ int GetMonthOf1990() const override;
+    /*virtual*/ int GetInitialInfectionDelay() const override;
+    /*virtual*/ ConcurrencyDefinition GetConcurrencyDefinition() const override;
+    /*virtual*/ TracingParameters GetTracingParameters() const override;
+    /*virtual*/ CalibrationInputs GetCalibrationParameters() const override;
+    /*virtual*/ PopulationParameters GetPopulationParameters() const override;
+    /*virtual*/ std::unordered_map<std::string, TargetGroup> GetTargetGroups() const override;
+    /*virtual*/ TransmissionCoefficientsMap GetTransmissionCoefficients() const override;
+    /*virtual*/ Female::SubPopParams GetFemaleSubPopParams() const override;
+    /*virtual*/ Male::SubPopParams GetMaleSubPopParams() const override;
+    /*virtual*/ InterventionsContainer GetPopulationInterventions() const override;
+    /*virtual*/ CepacParameters GetCepacParameters() const override;
+    /*virtual*/ PrepParameters GetPrepParameters() const override;
 
 private:
+
+
     template<typename T>
     static T from_string(const std::string &value_string);
 
@@ -105,19 +109,20 @@ private:
         return from_string<T>(node.attribute(name.c_str()).as_string());
     }
 
-    NormalDist GetNormalDist(const pugi::xml_node node) const;
-    LogNormalDist GetLogNormalDist(const pugi::xml_node node) const;
-    BetaDist GetBetaDist(const pugi::xml_node node) const;
-    ShiftedLogNormalDist GetShiftedLogNormalDist(const pugi::xml_node node) const;
+    NormalDist GetNormalDist(pugi::xml_node node) const;
+    LogNormalDist GetLogNormalDist(pugi::xml_node node) const;
+    BetaDist GetBetaDist(pugi::xml_node node) const;
+    ShiftedLogNormalDist GetShiftedLogNormalDist(pugi::xml_node node) const;
 
     void SetChanceCondomUseCallback(pugi::xml_node &node, Intervention &intervention, bool individual) const;
-    void SetProportionCircumcisedCallback(pugi::xml_node &node, Intervention &intervention) const;
-    void SetCircumciseCallback(pugi::xml_node &node, Intervention &intervention, bool individual) const;
+    static void SetProportionCircumcisedCallback(pugi::xml_node &node, Intervention &intervention) ;
+    static void SetCircumciseCallback(pugi::xml_node &node, Intervention &intervention, bool individual) ;
 
     // template function for returning different values when calculating transform
     // values in interventions (transform meaning increase or decrease)
-    template<typename V>
-    V TransformInterventionValue(V target, V curr, Time time, TimeSpan duration, Time current_time) const;
+    static double TransformInterventionValue(double target, double curr, Time time, TimeSpan duration, Time current_time);
+    static NormalDist TransformInterventionValue(NormalDist target, NormalDist curr, Time time, TimeSpan duration, Time current_time);
+
 
     EntityDistributions GetEntityDistributions(pugi::xml_node node) const;
 	inline void NormalizeEntityDistributions(PopulationParameters &parameters) const;
@@ -136,16 +141,21 @@ private:
 
     pugi::xml_document document_;
     std::string name_;
+
+    static string SexPartnerType_to_String(SexualPartnership::Type type);
 };
 
+// TODO: json file format is not implemented !
 class SimulationParametersJson : public SimulationParameters
 {
 public:
-    SimulationParametersJson(const std::string &filename);
-    virtual ~SimulationParametersJson();
+    explicit SimulationParametersJson(const std::string &filename);
+    ~SimulationParametersJson() override;
 
 private:
     rana::value root_;
 };
 
 } // namespace transm
+
+#endif /* SIMULATIONPARAMETERS_HPP */

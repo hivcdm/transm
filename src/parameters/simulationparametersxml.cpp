@@ -6,8 +6,8 @@
 
 namespace transm {
 
-namespace {
-std::string to_string(SexualPartnership::Type type)
+
+std::string SimulationParametersXml::SexPartnerType_to_String(SexualPartnership::Type type)
 {
     switch(type)
     {
@@ -18,8 +18,6 @@ std::string to_string(SexualPartnership::Type type)
     default: throw std::runtime_error("unknown type");
     }
 }
-}
-
 template<>
 bool SimulationParametersXml::from_string(const std::string &value_string)
 {
@@ -56,7 +54,7 @@ std::string SimulationParametersXml::from_string(const std::string &value)
 template<>
 std::array<double, 7> SimulationParametersXml::from_string(const std::string &value_string)
 {
-    std::array<double, 7> values;
+    std::array<double, 7> values{};
     std::stringstream ss(value_string);
     for(int i = 0; i < 7; i++)
     {
@@ -294,7 +292,7 @@ SimulationParameters::ConcurrencyDefinition SimulationParametersXml::GetConcurre
 
 SimulationParameters::TracingParameters SimulationParametersXml::GetTracingParameters() const
 {
-    SimulationParameters::TracingParameters parameters;
+    TracingParameters parameters;
 
     auto simulation_node = document_.child("simulation");
     auto trace_files_node = simulation_node.child("traceFiles");
@@ -713,12 +711,14 @@ RolloutDenominator SimulationParametersXml::GetRolloutDenominator() const
 
 SexualBehavior SimulationParametersXml::GetSexualBehavior(const std::string &entity_type, SexualPartnership::Type type) const
 {
-    auto path = "/simulation/population/entities/entity[@type='" + entity_type + "']/behavior/partnershipTypes/partnership[@type='" + to_string(type) + "']";
+    auto path = "/simulation/population/entities/entity[@type='" + entity_type + "']/behavior/partnershipTypes/partnership[@type='" +
+            SexPartnerType_to_String(type) + "']";
     auto node = document_.select_node(path.c_str()).node();
 
     if(node == nullptr)
     {
-        throw std::runtime_error("behavior not defined for entity type " + entity_type + " and partnership type " + to_string(type));
+        throw std::runtime_error("behavior not defined for entity type " + entity_type + " and partnership type " +
+                                         SexPartnerType_to_String(type));
     }
 
     SexualBehavior result(type);
@@ -1363,7 +1363,7 @@ std::unordered_map<std::string, TargetGroup> SimulationParametersXml::GetTargetG
     return groups;
 }
 
-std::vector<std::string> split_string(const std::string &string, char delim)
+    __unused std::vector<std::string> split_string(const std::string &string, char delim)
 {
     std::vector<std::string> split;
     std::stringstream ss(string);
@@ -1440,9 +1440,8 @@ KnownIntervention SimulationParametersXml::from_string(const std::string &interv
     return match->first;
 }
 
-template<>
 double SimulationParametersXml::TransformInterventionValue(double target_value,
-    double curr_value, Time time, TimeSpan duration, Time current_time) const
+    double curr_value, Time time, TimeSpan duration, Time current_time)
 {
     double new_value;
 
@@ -1456,11 +1455,10 @@ double SimulationParametersXml::TransformInterventionValue(double target_value,
 /*
  * Calculates the current normal distribution when transforming an intervention.
  */
-template<>
 NormalDist SimulationParametersXml::TransformInterventionValue(NormalDist target_dist,
-    NormalDist curr_dist, Time time, TimeSpan duration, Time current_time) const
+    NormalDist curr_dist, Time time, TimeSpan duration, Time current_time)
 {
-	NormalDist new_dist;
+	NormalDist new_dist{};
 
 	// calculate the amount to add each time step so we don't have to store a coeff value
 	int lapsed = duration.in_months() - (current_time.in_months() - time.in_months()) + 1;
@@ -1489,7 +1487,7 @@ void SimulationParametersXml::SetChanceCondomUseCallback(pugi::xml_node &node,
     if (!individual) {
 	intervention.SetPopulationCallback(
 	    [=](Time current_time, Population &p) {
-		BetaDist target_beta_dist;
+		BetaDist target_beta_dist{};
 		if (transform) {
 		    // increase or descrease to the target value over the duration
 		    NormalDist curr_dist = BetaDist::ToNormal(p.GetParameters().
@@ -1507,7 +1505,7 @@ void SimulationParametersXml::SetChanceCondomUseCallback(pugi::xml_node &node,
     }
     intervention.SetIndividualCallback(
 	[=](Time current_time, Entity *person) {
-	    BetaDist target_beta_dist;
+	    BetaDist target_beta_dist{};
 	    if (transform) {
 		// increase or descrease to the target value over the duration
 		NormalDist curr_dist = BetaDist::ToNormal(person->
@@ -1526,12 +1524,12 @@ void SimulationParametersXml::SetChanceCondomUseCallback(pugi::xml_node &node,
 }
 
 void SimulationParametersXml::SetProportionCircumcisedCallback(pugi::xml_node &node,
-    Intervention &intervention) const
+    Intervention &intervention)
 {
     bool transform = false;
     if (node.child("transform"))
 	transform = Text<bool>(node.child("transform"));
-    double target_value = Text<double>(node.child("proportion"));
+    auto target_value = Text<double>(node.child("proportion"));
 
     Time time = intervention.GetTime();
     TimeSpan duration = intervention.GetDuration();
@@ -1551,7 +1549,7 @@ void SimulationParametersXml::SetProportionCircumcisedCallback(pugi::xml_node &n
 }
 
 void SimulationParametersXml::SetCircumciseCallback(pugi::xml_node &node,
-    Intervention &intervention, bool individual) const
+    Intervention &intervention, bool individual)
 {
     if (individual) {
 	intervention.SetPopulationIndividualCallback(
@@ -1563,7 +1561,7 @@ void SimulationParametersXml::SetCircumciseCallback(pugi::xml_node &node,
 	bool transform = false;
 	if (node.child("transform"))
 	    transform = Text<bool>(node.child("transform"));
-	double target_value = Text<double>(node.child("proportion"));
+	auto target_value = Text<double>(node.child("proportion"));
 
 	Time time = intervention.GetTime();
 	TimeSpan duration = intervention.GetDuration();
@@ -1618,7 +1616,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         {
             auto chance = Text<double>(node);
             intervention.SetIndividualCallback(
-                [=](Time current_time, Entity *person) { 
+                [=](Time current_time, Entity *person) {
                     person->SetChanceBecomeSexWorker(chance); });
             break;
         }
@@ -1626,7 +1624,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
         {
             auto months = Text<int>(node);
             intervention.SetIndividualCallback(
-                [=](Time current_time, Entity *person) { 
+                [=](Time current_time, Entity *person) {
                     person->SetSexualActivityDelay(TimeSpan(0, months)); });
             break;
         }
@@ -1636,7 +1634,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto hvl_stratum = Attr<HVLStrata>(node, "hvl");
             auto coefficient = Text<double>(node);
             intervention.SetIndividualCallback(
-                [=](Time current_time, Entity *person) { 
+                [=](Time current_time, Entity *person) {
                     person->SetTransmissionCoefficient(hvl_stratum, coefficient); });
             break;
             */
@@ -1647,7 +1645,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = GetNormalDist(node);
             intervention.SetIndividualCallback(
-                [=](Time current_time, Entity *person) { 
+                [=](Time current_time, Entity *person) {
                     person->SetAverageYearsYounger(partnership_type, dist); });
             break;
         }
@@ -1657,7 +1655,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             auto partnership_type = Attr<SexualPartnership::Type>(node, "type");
             auto dist = GetLogNormalDist(node);
             intervention.SetIndividualCallback(
-                [=](Time current_time, Entity *person) { 
+                [=](Time current_time, Entity *person) {
                     person->SetAcquisitionRatePerMonth(risk, partnership_type, dist, GetRandomNumberGenerator()); });
             break;
         }
@@ -1723,7 +1721,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
              {
                  if (person->getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Female)
                  {
-                     auto female = static_cast<Female *>(person);
+                     auto female = dynamic_cast<Female *>(person);
                      female->SetVaginalMicrobicideAdherence(adherence);
                  }
              });
@@ -1732,7 +1730,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
          case KnownIntervention::PreExposureProphylaxisUse:
          {
              auto adherence = Text<double>(node);
-             intervention.SetIndividualCallback([=](Time current_time, Entity *person) 
+             intervention.SetIndividualCallback([=](Time current_time, Entity *person)
              {
                 if (person->getHIVStatus() == HIVStatus::OBSERVED_ACUTE
                     || person->getHIVStatus() == HIVStatus::OBSERVED_LATESTAGE
@@ -1740,8 +1738,8 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
 		{
 		  return;
                 }
- 
-                 person->UsePreExposureProphylaxis(adherence); 
+
+                 person->UsePreExposureProphylaxis(adherence);
              });
              break;
          }
@@ -1947,144 +1945,114 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
 			s.GetEventParams().rolloutEligibility.isIdentified = Text<bool>(node);
 		    });
 	    }
-	    else if(criterion == "OIHist")
-            {
-		int new_value = Text<int>(node);
-                if(parameter_name == "rank")
-                {
+	    else if (!(criterion == "OIHist")) {
+            if (criterion == "CD4") {
+                int new_value = Text<int>(node);
+                if (parameter_name == "rank") {
                     intervention.SetSimulationCallback(
-                        [=](Time current_time, Simulation &s) {
-				s.GetEventParams().rolloutEligibility.oiHistRank = new_value; });
+                            [=](Time current_time,
+                                Simulation &s) { s.GetEventParams().rolloutEligibility.cd4Rank = new_value; });
+                } else if (parameter_name == "CD4Lwr") {
+                    intervention.SetSimulationCallback(
+                            [=](Time current_time,
+                                Simulation &s) { s.GetEventParams().rolloutEligibility.cd4Bounds.lower = new_value; });
+                } else if (parameter_name == "CD4Upp") {
+                    intervention.SetSimulationCallback(
+                            [=](Time current_time,
+                                Simulation &s) { s.GetEventParams().rolloutEligibility.cd4Bounds.upper = new_value; });
+                } else {
+                    throw std::runtime_error("invalid parameter: " + parameter_name);
                 }
-                else if(parameter_name.substr(0, 2) == "OI")
-                {
+            } else if (criterion == "CD4OIHist") {
+                int new_value = Text<int>(node);
+                if (parameter_name == "rank") {
+                    intervention.SetSimulationCallback(
+                            [=](Time current_time,
+                                Simulation &s) { s.GetEventParams().rolloutEligibility.cd4OiHistRank = new_value; });
+                } else if (parameter_name == "CD4Lwr") {
+                    intervention.SetSimulationCallback(
+                            [=](Time current_time,
+                                Simulation &s) { s.GetEventParams().rolloutEligibility.cd4OiHistCd4Bounds.lower = new_value; });
+                } else if (parameter_name == "CD4Upp") {
+                    intervention.SetSimulationCallback(
+                            [=](Time current_time,
+                                Simulation &s) { s.GetEventParams().rolloutEligibility.cd4OiHistCd4Bounds.upper = new_value; });
+                } else if (parameter_name.substr(0, 2) == "OI") {
                     int oi_number = std::stoi(parameter_name.substr(2));
                     intervention.SetSimulationCallback(
-                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.oiHistOIs[oi_number] = new_value != 0; });
-                }
-                else if(parameter_name == "numOIToStart")
-                {
-                    intervention.SetSimulationCallback(
-                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.oiHistNumToStart = new_value; });
-                }
-                else
-                {
+                            [=](Time current_time, Simulation &s) {
+                                s.GetEventParams().rolloutEligibility.cd4OiHistOIs[oi_number] = new_value != 0;
+                            });
+                } else {
                     throw std::runtime_error("invalid parameter: " + parameter_name);
                 }
-            }
-            else if(criterion == "CD4")
-            {
-		int new_value = Text<int>(node);
-                if(parameter_name == "rank")
-                {
+            } else if (criterion == "HVL") {
+                int new_value = Text<int>(node);
+                if (parameter_name == "rank") {
                     intervention.SetSimulationCallback(
-                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.cd4Rank = new_value; });
-                }
-                else if(parameter_name == "CD4Lwr")
-                {
+                            [=](Time current_time,
+                                Simulation &s) { s.GetEventParams().rolloutEligibility.hvlRank = new_value; });
+                } else if (parameter_name == "HVLLwr") {
                     intervention.SetSimulationCallback(
-                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.cd4Bounds.lower = new_value; });
-                }
-                else if(parameter_name == "CD4Upp")
-                {
+                            [=](Time current_time,
+                                Simulation &s) { s.GetEventParams().rolloutEligibility.hvlBounds.lower = new_value; });
+                } else if (parameter_name == "HVLUpp") {
                     intervention.SetSimulationCallback(
-                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.cd4Bounds.upper = new_value; });
-                }
-                else
-                {
+                            [=](Time current_time,
+                                Simulation &s) { s.GetEventParams().rolloutEligibility.hvlBounds.upper = new_value; });
+                } else {
                     throw std::runtime_error("invalid parameter: " + parameter_name);
                 }
-            }
-            else if(criterion == "CD4OIHist")
-            {
-		int new_value = Text<int>(node);
-                if(parameter_name == "rank")
-                {
+            } else if (criterion == "CD4HVL") {
+                int new_value = Text<int>(node);
+                if (parameter_name == "rank") {
                     intervention.SetSimulationCallback(
-                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.cd4OiHistRank = new_value; });
-                }
-                else if(parameter_name == "CD4Lwr")
-                {
+                            [=](Time current_time,
+                                Simulation &s) { s.GetEventParams().rolloutEligibility.cd4HvlRank = new_value; });
+                } else if (parameter_name == "CD4Lwr") {
                     intervention.SetSimulationCallback(
-                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.cd4OiHistCd4Bounds.lower = new_value; });
-                }
-                else if(parameter_name == "CD4Upp")
-                {
+                            [=](Time current_time,
+                                Simulation &s) { s.GetEventParams().rolloutEligibility.cd4HvlCd4Bounds.lower = new_value; });
+                } else if (parameter_name == "CD4Upp") {
                     intervention.SetSimulationCallback(
-                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.cd4OiHistCd4Bounds.upper = new_value; });
-                }
-                else if(parameter_name.substr(0, 2) == "OI")
-                {
-                    int oi_number = std::stoi(parameter_name.substr(2));
+                            [=](Time current_time,
+                                Simulation &s) { s.GetEventParams().rolloutEligibility.cd4HvlCd4Bounds.upper = new_value; });
+                } else if (parameter_name == "HVLLwr") {
                     intervention.SetSimulationCallback(
-                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.cd4OiHistOIs[oi_number] = new_value != 0; });
-                }
-                else
-                {
+                            [=](Time current_time,
+                                Simulation &s) { s.GetEventParams().rolloutEligibility.cd4HvlHvlBounds.lower = new_value; });
+                } else if (parameter_name == "HVLUpp") {
+                    intervention.SetSimulationCallback(
+                            [=](Time current_time, Simulation &s) {
+                                s.GetEventParams().rolloutEligibility.cd4HvlHvlBounds.upper = new_value;
+                            });
+                } else {
                     throw std::runtime_error("invalid parameter: " + parameter_name);
                 }
-            }
-            else if(criterion == "HVL")
-            {
-		int new_value = Text<int>(node);
-		if(parameter_name == "rank")
-                {
-                    intervention.SetSimulationCallback(
-                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.hvlRank = new_value; });
-                }
-                else if(parameter_name == "HVLLwr")
-                {
-                    intervention.SetSimulationCallback(
-                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.hvlBounds.lower = new_value; });
-                }
-                else if(parameter_name == "HVLUpp")
-                {
-                    intervention.SetSimulationCallback(
-                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.hvlBounds.upper = new_value; });
-                }
-                else
-                {
-                    throw std::runtime_error("invalid parameter: " + parameter_name);
-                }
-            }
-            else if(criterion == "CD4HVL")
-            {
-		int new_value = Text<int>(node);
-                if(parameter_name == "rank")
-                {
-                    intervention.SetSimulationCallback(
-                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.cd4HvlRank = new_value; });
-                }
-                else if(parameter_name == "CD4Lwr")
-                {
-                    intervention.SetSimulationCallback(
-                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.cd4HvlCd4Bounds.lower = new_value; });
-                }
-                else if(parameter_name == "CD4Upp")
-                {
-                    intervention.SetSimulationCallback(
-                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.cd4HvlCd4Bounds.upper = new_value; });
-                }
-                else if(parameter_name == "HVLLwr")
-                {
-                    intervention.SetSimulationCallback(
-                        [=](Time current_time, Simulation &s) { s.GetEventParams().rolloutEligibility.cd4HvlHvlBounds.lower = new_value; });
-                }
-                else if(parameter_name == "HVLUpp")
-                {
-                    intervention.SetSimulationCallback(
-                        [=](Time current_time, Simulation &s) {
-                        s.GetEventParams().rolloutEligibility.cd4HvlHvlBounds.upper = new_value; });
-                }
-                else
-                {
-                    throw std::runtime_error("invalid parameter: " + parameter_name);
-                }
-            }
-            else
-            {
+            } else {
                 throw std::runtime_error("invalid rollout eligibility criterion for intervention: " + criterion);
             }
+        } else {
+            int new_value = Text<int>(node);
+            if (parameter_name == "rank") {
+                intervention.SetSimulationCallback(
+                        [=](Time current_time, Simulation &s) {
+                            s.GetEventParams().rolloutEligibility.oiHistRank = new_value;
+                        });
+            } else if (parameter_name.substr(0, 2) == "OI") {
+                int oi_number = std::stoi(parameter_name.substr(2));
+                intervention.SetSimulationCallback(
+                        [=](Time current_time, Simulation &s) {
+                            s.GetEventParams().rolloutEligibility.oiHistOIs[oi_number] = new_value != 0;
+                        });
+            } else if (parameter_name == "numOIToStart") {
+                intervention.SetSimulationCallback(
+                        [=](Time current_time,
+                            Simulation &s) { s.GetEventParams().rolloutEligibility.oiHistNumToStart = new_value; });
+            } else {
+                throw std::runtime_error("invalid parameter: " + parameter_name);
+            }
+        }
             break;
         }
         default:

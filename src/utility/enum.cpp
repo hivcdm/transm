@@ -73,8 +73,8 @@ BaseEnumCls::Enum BaseEnumCls::fromString(const std::string &_str) const
 }
 
 /**
-Return the number of valid values for this Enum
-**/
+ * Return the number of valid values for this Enum
+ */
 unsigned int BaseEnumCls::getNumEnums() const
 {
 	assert(initialized);
@@ -83,8 +83,8 @@ unsigned int BaseEnumCls::getNumEnums() const
 
 
 /**
-Stores the string representation of enum E
-**/
+ * Stores the string representation of enum E
+ */
 void BaseEnumCls::init(const std::vector<std::string> _strs)
 {
 	initialized = true;

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef INTERVENTION_HPP
+#define INTERVENTION_HPP
 
 #include <functional>
 #include <string>
@@ -49,3 +50,5 @@ private:
 };
 
 } // namespace transm
+
+#endif /* !INTERVENTION_HPP */

@@ -1,12 +1,11 @@
 #include <fstream>
 #include <functional>
-#include <unordered_set>
 #include <tclap/CmdLine.h>
 
 #include "transm.hpp"
-/// <summary>
-/// Process provided arguments and execute the simulation as specified by those arguments.
-/// </summary>
+/**
+ * Process provided arguments and execute the simulation as specified by those arguments.
+ */
 int main(int argc, char *argv[])
 {
     auto executable = transm::path(argv[0]).filename().string();
@@ -77,7 +76,7 @@ int main(int argc, char *argv[])
 	}
 
 	transm::path batch_path;
-	for(auto batch : batch_files_arg.getValue())
+	for(const auto& batch : batch_files_arg.getValue())
         {
         /* Check that the file or directory exists using the absolute path */
 	    batch_path = transm::filesystem::real_path(batch);

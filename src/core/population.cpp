@@ -330,7 +330,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
                         {
                         auto bucket = entities->getBucket(p->getDemographicProfile()->getProfileID());
                         // This shouldn't fail because all sexually activity people are in sexual mixing buckets
-                        auto sexual_mixing_bucket = static_cast<BucketSexualMixing *>(bucket);
+                        auto sexual_mixing_bucket = dynamic_cast<BucketSexualMixing *>(bucket);
                         sexual_mixing_bucket->changeHIVStatus(p, oldStatus, p->hivStatus);
                         }
                     }
