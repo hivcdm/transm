@@ -97,7 +97,8 @@ private:
     template<typename T>
     static T from_string(const std::string &value_string);
 
-    template<typename T>
+
+        template<typename T>
     static T Text(const pugi::xml_node &node)
     {
         return from_string<T>(node.text().as_string());

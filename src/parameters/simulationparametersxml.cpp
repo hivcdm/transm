@@ -11,11 +11,11 @@ std::string SimulationParametersXml::SexPartnerType_to_String(SexualPartnership:
 {
     switch(type)
     {
-    case SexualPartnership::Type::Steady: return "steady";
-    case SexualPartnership::Type::Regular: return "regular";
-    case SexualPartnership::Type::Casual: return "casual";
-    case SexualPartnership::Type::Csw: return "csw";
-    default: throw std::runtime_error("unknown type");
+        case SexualPartnership::Type::Steady: return "steady";
+        case SexualPartnership::Type::Regular: return "regular";
+        case SexualPartnership::Type::Casual: return "casual";
+        case SexualPartnership::Type::Csw: return "csw";
+        default: throw std::runtime_error("unknown type");
     }
 }
 template<>
@@ -98,6 +98,7 @@ DemographicProfile::Race SimulationParametersXml::from_string(const std::string 
     if(race == "OTHER") return DemographicProfile::Race::Other;
     throw std::runtime_error("unknown gender: " + race);
 }
+
 
 template<>
 DemographicProfile::Ethnicity SimulationParametersXml::from_string(const std::string &ethnicity)
@@ -380,25 +381,29 @@ CalibrationInputs SimulationParametersXml::GetCalibrationParameters() const
 
     return calib;
 }
-
+/**
+ * Simulation parameters for Prep analysis is handled in population level
+ * @return parameters
+ */
 PrepParameters SimulationParametersXml::GetPrepParameters() const
 {
-    PrepParameters parameters;
+    PrepParameters prepParameters;
 
-    if (!document_.select_node("/simulation/population/preExposureProphylaxis").node())
-        return parameters;
+    if (!document_.select_node("/simulation/population/preExposureProphylaxis").node()) {
+        return prepParameters;
+    }
 
     pugi::xml_node prep_node = document_.select_node("/simulation/population/preExposureProphylaxis").node();
 
-    parameters.SetEnabled(true);
+    prepParameters.SetEnabled(true);
 
     try
     {
-        parameters.SetEfficacy(Text<double>(prep_node.child("prepEfficacy")));
+        prepParameters.SetEfficacy(Text<double>(prep_node.child("prepEfficacy")));
     }
     catch(std::string errorString)
 	{
-        throw std::runtime_error("Prep xml found but efficacy is missing:" + errorString);
+        throw std::runtime_error("ERROR: Prep xml node found but prepEfficacy is missing:" + errorString);
 	}
 
     if (prep_node.child("prepDefaults"))
@@ -429,29 +434,29 @@ PrepParameters SimulationParametersXml::GetPrepParameters() const
                 eligibility.monthsSinceUnprotectedAct = Time::from_months(
                   Text<int>(eligibility_node.child("monthsSinceUnprotectedAct")));
             }
-            parameters.SetEligibility(eligibility);
+            prepParameters.SetEligibility(eligibility);
         }
 
         if (defaults_node.child("prepAccess"))
         {
-            parameters.SetDefaultAccess(Text<double>(defaults_node.child("prepAccess")));
+            prepParameters.SetDefaultAccess(Text<double>(defaults_node.child("prepAccess")));
         }
         if (defaults_node.child("prepAdherence"))
         {
-            parameters.SetDefaultAdherence(Text<double>(defaults_node.child("prepAdherence")));
+            prepParameters.SetDefaultAdherence(Text<double>(defaults_node.child("prepAdherence")));
         }
         if (defaults_node.child("prepRetention"))
         {
-            parameters.SetDefaultRetention(Text<double>(defaults_node.child("prepRetention")));
+            prepParameters.SetDefaultRetention(Text<double>(defaults_node.child("prepRetention")));
         }
         if (defaults_node.child("prepReturnToCare"))
         {
-            parameters.SetDefaultReturnToCare(Text<double>(defaults_node.child("prepReturnToCare")));
+            prepParameters.SetDefaultReturnToCare(Text<double>(defaults_node.child("prepReturnToCare")));
         }
     }
     else
     {
-        throw std::runtime_error("Prep xml found but defaults are missing");
+        throw std::runtime_error("ERROR: Prep xml node found but prepDefaults are missing.");
     }
 
     // Add the profile specific prep settings -- these are optional
@@ -469,33 +474,33 @@ PrepParameters SimulationParametersXml::GetPrepParameters() const
             }
             else
             {
-                throw std::runtime_error("No bucket attribute provided in prep profile xml");
+                throw std::runtime_error("ERROR: No bucket attribute provided in prep profile xml");
             }
 
             if (node.child("prepAccess"))
             {
-                parameters.SetProfileAccess(profile,
-                    Text<double>(node.child("prepAccess")));
+                prepParameters.SetProfileAccess(profile,
+                                                Text<double>(node.child("prepAccess")));
             }
             if (node.child("prepAdherence"))
             {
-                parameters.SetProfileAdherence(profile,
-                    Text<double>(node.child("prepAdherence")));
+                prepParameters.SetProfileAdherence(profile,
+                                                   Text<double>(node.child("prepAdherence")));
             }
             if (node.child("prepRetention"))
             {
-                parameters.SetProfileRetention(profile,
-                    Text<double>(node.child("prepRetention")));
+                prepParameters.SetProfileRetention(profile,
+                                                   Text<double>(node.child("prepRetention")));
             }
             if (node.child("prepReturnToCare"))
             {
-                parameters.SetProfileReturnToCare(profile,
-                    Text<double>(node.child("prepReturnToCare")));
+                prepParameters.SetProfileReturnToCare(profile,
+                                                      Text<double>(node.child("prepReturnToCare")));
             }
         }
     }
 
-    return parameters;
+    return prepParameters;
 }
 
 CepacParameters SimulationParametersXml::GetCepacParameters() const

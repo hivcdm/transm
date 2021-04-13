@@ -243,10 +243,10 @@ private:
     /// prevalence parameters stratified by age.
     /// </summary>
     Time seedDelay;
-    double seedPrevalence;
-    bool useSeedCoefficients;
-    int minSeedAge;
-    int maxSeedAge;
+    double seedPrevalence{};
+    bool useSeedCoefficients{};
+    int minSeedAge{};
+    int maxSeedAge{};
 
     /// <summary>
     /// Base FOI for different transmission types at various viral loads.
@@ -272,21 +272,21 @@ private:
 	/// this is a quick way to check whether a partnership is technically a fling or not
 	/// right now, behavior for males is the only one that has been coded
     /// </summary>
-    bool partnershipsHaveDuration[(std::size_t)DemographicProfile::Gender::Last][(std::size_t)SexualPartnership::Type::Last];
+    bool partnershipsHaveDuration[(std::size_t)DemographicProfile::Gender::Last][(std::size_t)SexualPartnership::Type::Last]{};
 
     /// <summary>
     /// cost per condom in dollars
     /// </summary>
-	double condomCost;
+	double condomCost{};
 
     /// <summary>
     /// cost per circumcision in dollars
     /// </summary>
-	double circumcisionCost;
+	double circumcisionCost{};
 
-    double prEPCost;
+    double prEPCost{};
 
-    double vaginalMicrobicideApplicationCost;
+    double vaginalMicrobicideApplicationCost{};
 };
 
 } // namespace transm
