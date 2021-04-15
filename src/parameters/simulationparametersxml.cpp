@@ -171,7 +171,7 @@ HIVStatus SimulationParametersXml::from_string(const std::string &value)
     }
     else
     {
-        throw std::runtime_error("invalid group target value for hiv-status: " + value);
+        throw std::runtime_error("ERROR: invalid group target value for hiv-status: " + value);
     }
 }
 

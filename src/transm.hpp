@@ -31,7 +31,7 @@ std::vector<path> find_input_files(const path &batch_path) {
 
 /**
  * Find all XML files in batch_directory and CEPAC .in files in cepac_directory
- * (Might be the same directory). Load parameters from each XML file and run
+ * using --cepac. Load parameters from each XML file and run
  * the model using those parameters.
  **/
 int run_simulation(const path &batch_path, const path &cepac_directory) {

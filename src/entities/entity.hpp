@@ -34,9 +34,9 @@ class FullVector;
 class InfectionsTracker;
 class RandomNumberGenerator;
 
-/// <summary>
-/// All individuals in the simulation are of this class, or something derived from this
-/// </summary>
+/**
+ * All individuals in the simulation are of this class, or something derived from this
+ */
 /// <remarks>
 /// Fields and Methods are divided into the following categories:
 /// Physical, Relational, DemographicProfile-related, other
@@ -193,10 +193,10 @@ protected:
 
 public:
 
-	//dummy constructor
+	// dummy constructor
 	Entity();
 
-	//this constructor creates an actual person that can be simulated. It is generally called by Male and Female
+	// this constructor creates an actual person that can be simulated. It is generally called by Male and Female
 	// we pass in _eventParams because becomeInfected() needs it...
 	Entity(Age age, unsigned int _populationID, const PrepParameters &prepParameters);
 
@@ -340,8 +340,8 @@ public:
 	bool isMale() const;
 
 	/**
-	//see whether person dies. If they went through CEPAC, use health trace. else roll against nonAIDS death probs
-	**/
+	 * see whether person dies. If they went through CEPAC, use health trace. else roll against nonAIDS death probs
+	 **/
 	bool rollForDeath(RandomNumberGenerator &_randomNums);
 
 	//update health status of HIV infected people -- i.e. cd4, hvl, art, etc.
