@@ -41,15 +41,11 @@ int run_simulation(const path &batch_path, const path &cepac_directory) {
     } else {
         batch_directory = batch_path;
     }
+
     Utility::setInputsDirectory(batch_directory.string());
     Utility::changeDirectoryToInputs();
 
-    path results("results");
-    path results_directory(batch_directory.append(results));
-
-    Utility::createResultsDirectory(results_directory.string());
-
-    /* Set the Cepac input directory */
+    /* Set the cepac input directory */
     CepacUtil::inputsDirectory = cepac_directory.string();
 
     SummaryStats cepac_summary("cepacPopstats.out");
@@ -65,15 +61,28 @@ int run_simulation(const path &batch_path, const path &cepac_directory) {
         cout << "No input files found in batch" << batch_path.string() << std::endl;
         return 1;
     }
-
+    // TODO: Potentially this loop can be multi-threaded with OpenMP
     for (const auto &input_file : input_files) {
-        //Changing back to the input directory because over the course of Sim->run,
-        //the directory gets changed to results
+
+        // Changing back to the input directory because over the course of Sim->run,
+        // the directory gets changed to results
         Utility::changeDirectoryToInputs();
+
+        /* Retrieve a copy of the original path to batch directory */
+        path copy_batch_dir = batch_directory;
+
+        /* Drooping the extension from filename */
+        size_t lastIndex = input_file.filename().string().find_last_of('.');
+        string rawFileName = input_file.filename().string().substr(0, lastIndex);
+
+        /* Create the results_<INPUT_FILE_NAME> directory for results */
+        std::string results_str = "results_" + rawFileName;
+        path results_directory(copy_batch_dir.append(results_str));
+        Utility::createResultsDirectory(results_directory.string());
 
         std::cout << "Running File: " << input_file.stem().string() << std::endl;
 
-        // Storing the parsed simulation parameters
+        /* Storing the parsed simulation parameters */
         SimulationParametersXml parameters(input_file);
 
         Simulation simulation(status);
@@ -90,7 +99,7 @@ int run_simulation(const path &batch_path, const path &cepac_directory) {
             sleep(4);
         }
 
-        // Start!
+        // Start running models!
         auto outputs = simulation.Run();
 
         cepac_summary.addRunStats(&simulation.GetCEPACRunStats());
@@ -109,17 +118,21 @@ int run_simulation(const path &batch_path, const path &cepac_directory) {
  **/
 void print_usage(const std::string &executable) {
     std::cout << "usage: " << executable;
-    std::cout << " [--version] [--help] --cepac [directory] [input...]" << std::endl;
+    std::cout << " [--version] [--help] --cepac [cepac_directory] [input(s)...]" << std::endl;
 }
 
+/**
+ * Print a brief helping statement.
+ **/
 void print_help(const std::string &executable) {
     print_usage(executable);
     std::cout << std::endl;
     std::cout <<
-    "input should be a directory containing one or more parameter files (XML or     \n"
+    "   Input should be a directory containing one or more parameter files (XML or     \n"
     "   JSON) or a specific parameter file to be simulated. In the case of a        \n"
-    "   directory, input files will be simulated sequentially in an arbitrary order.\n"
-    "       If multiple inputs are specified, they will be simulated in the order they  \n"
+    "   directory, input files will be simulated sequentially in an arbitrary order using:\n\n"
+    "   <TRANSM_BINARY> --cepac <PATH_TO_INFILES> ./\n\n"
+    "   If multiple inputs are specified, they will be simulated in the order they  \n"
     "   are given."
     << std::endl;
 }
