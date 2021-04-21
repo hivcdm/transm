@@ -70,7 +70,7 @@ class __unused SimulationParametersFactory;
 class SimulationParametersXml : public SimulationParameters
 {
 public:
-    explicit SimulationParametersXml(const path &filename);
+    explicit SimulationParametersXml(const path &filename, const path &cepac_directory);
     ~SimulationParametersXml() override;
 
     /*virtual*/ std::string GetName() const override { return name_; }
@@ -142,6 +142,7 @@ private:
 
     pugi::xml_document document_;
     std::string name_;
+    std::string cepac_dir_;     // path to wehre CEPAC files are read from command line with --cepac <PATH_TO_INFILES>
 
     static string SexPartnerType_to_String(SexualPartnership::Type type);
 };

@@ -5,6 +5,9 @@
 #include "utility/utility.hpp"
 #include "utility/filesystem.hpp"
 
+//#include <pthread.h>
+
+#define NUM_THREADS 4
 using namespace transm;
 
 /**
@@ -83,7 +86,9 @@ int run_simulation(const path &batch_path, const path &cepac_directory) {
         std::cout << "Running File: " << input_file.stem().string() << std::endl;
 
         /* Storing the parsed simulation parameters */
-        SimulationParametersXml parameters(input_file);
+        // cepac_direcotory is also passed to the parser for accurate access to CEPAC files
+        SimulationParametersXml parameters(input_file, cepac_directory);
+
 
         Simulation simulation(status);
         //XXX: we shouldn't have to do this

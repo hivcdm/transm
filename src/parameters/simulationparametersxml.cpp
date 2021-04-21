@@ -203,11 +203,12 @@ ShiftedLogNormalDist SimulationParametersXml::GetShiftedLogNormalDist(const pugi
     return ShiftedLogNormalDist::FromShiftedNormal(dist, shift);
 }
 
-SimulationParametersXml::SimulationParametersXml(const path &filename)
+SimulationParametersXml::SimulationParametersXml(const path &filename, const path &cepac_directory)
 {
     //XXX: verify that it's safe to give a c_str of a temporary
     document_.load_file(filename.string().c_str());
     name_ = filename.stem().string();
+    cepac_dir_ = cepac_directory.string();
 }
 
 SimulationParametersXml::~SimulationParametersXml()
@@ -538,7 +539,7 @@ CepacParameters SimulationParametersXml::GetCepacParameters() const
 
                 CepacParameters::CepacFile file;
                 file.target_population = target_population;
-                file.filename = file_name;
+                file.filename = cepac_dir_ + "/" + file_name;
                 file.time = time;
 
                 parameters.cepac_files.push_back(file);
@@ -547,7 +548,7 @@ CepacParameters SimulationParametersXml::GetCepacParameters() const
                 if(file_number == 0)
                 {
                     parameters.default_cepac_file = file;
-                    CepacInputParser cepacInput(file_name);
+                    CepacInputParser cepacInput(file.filename);
                     auto probabilities = cepacInput.parseNonAidsDeathProbabilities();
                     Entity::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Male] = probabilities[0];
                     Entity::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Female] = probabilities[1];
@@ -577,7 +578,7 @@ CepacParameters SimulationParametersXml::GetCepacParameters() const
 
                 CepacParameters::CepacFile file;
                 file.target_population = 0;
-                file.filename = file_name;
+                file.filename = cepac_dir_ + "/" + file_name;   // this accuretly finds the CEPAC files.
                 file.time = time;
 
                 parameters.cepac_files.push_back(file);
@@ -586,7 +587,7 @@ CepacParameters SimulationParametersXml::GetCepacParameters() const
                 if(file_number == 0)
                 {
                     parameters.default_cepac_file = file;
-                    CepacInputParser cepacInput(file_name);
+                    CepacInputParser cepacInput(file.filename);
                     auto probabilities = cepacInput.parseNonAidsDeathProbabilities();
                     Entity::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Male] = probabilities[0];
                     Entity::probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Female] = probabilities[1];
@@ -594,7 +595,6 @@ CepacParameters SimulationParametersXml::GetCepacParameters() const
             }
         }
     }
-
     return parameters;
 }
 

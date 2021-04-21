@@ -792,7 +792,7 @@ bool Entity::rollForDeath(RandomNumberGenerator &_randomNums)
         auto gender = getDemographicProfileVal<DemographicProfile::Gender>();
         auto age = getAge();
         double deathRate = probDeathNatCauses[(std::size_t)gender].at(age.year_as_index());
-
+//        double deathRate = 0.01;
         if(_randomNums.chance(deathRate))
 		{
             death = true;

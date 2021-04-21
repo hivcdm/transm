@@ -13,6 +13,7 @@ CepacInputParser::CepacInputParser(const std::string &filename)
 }
 
 //TODO:we need to check the correctness of this method
+//TODO:It works, but need to write a test for this
 std::array<std::vector<double>, 2> CepacInputParser::parseNonAidsDeathProbabilities()
 {
 	std::array<std::vector<double>, 2> probabilities;
