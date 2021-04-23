@@ -30,7 +30,7 @@ public:
         int num_to_trace = 0;
         int num_newborns_to_trace = 0;
         Time month_trace_newborns;
-        __unused double life_expectancy_ci = 0;
+        double life_expectancy_ci = 0;
         std::vector<int> life_expectancy_record_times;
         std::vector<int> partner_acquisition_record_times;
         std::vector<int> partner_network_record_times;
@@ -44,7 +44,7 @@ public:
 
     virtual std::string GetName() const = 0;
 
-    __unused virtual Version GetVersion() const = 0;
+    virtual Version GetVersion() const = 0;
     virtual std::uint32_t GetFixedSeed() const = 0;
     virtual int GetDuration() const = 0;
     virtual int GetMonthOf1990() const = 0;
@@ -65,7 +65,7 @@ private:
     RandomNumberGenerator *rng_;
 };
 
-class __unused SimulationParametersFactory;
+class SimulationParametersFactory;
 
 class SimulationParametersXml : public SimulationParameters
 {
