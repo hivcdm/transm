@@ -1368,7 +1368,7 @@ std::unordered_map<std::string, TargetGroup> SimulationParametersXml::GetTargetG
     return groups;
 }
 
-    __unused std::vector<std::string> split_string(const std::string &string, char delim)
+    std::vector<std::string> split_string(const std::string &string, char delim)
 {
     std::vector<std::string> split;
     std::stringstream ss(string);
