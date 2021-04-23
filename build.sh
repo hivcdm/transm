@@ -13,6 +13,7 @@ if [[ $# -eq 0 ]]
 then
 	CMAKE_ARGS+=("-D CMAKE_BUILD_TYPE=Release")
 	CMAKE_ARGS+=("-D USE_GOOGLE_PERF_TOOLS=true")
+	CMAKE_ARGS+=("-D BUILD_TESTING=OFF")
 else
 	while (($#)); do
 	if [[ $1 == "--debug" ]]
