@@ -3334,19 +3334,27 @@ void Population::PrintPopulation(EventParams &/*_paramters*/, Time _time, std::o
 		std::size_t i = 0;
 		for (auto age_range : age_range_list)
 		{
-			size_by_age_range[i].second += age_range.second;
+            auto sexualActivityStatusProfile = ((std::size_t)DemographicProfile::get(profile,
+                            DemographicProfile::Demographic::SexualActivityStatus) ==
+                (std::size_t)DemographicProfile::SexualActivityStatus::Active);
 
 			auto maleProfile = ((std::size_t)DemographicProfile::get(profile,
 				DemographicProfile::Demographic::Gender) ==
 				(std::size_t)DemographicProfile::Gender::Male);
-			if (maleProfile)
-			{
-				size_by_age_range_male[i].second += age_range.second;
-			}
-			else
-			{
-				size_by_age_range_female[i].second += age_range.second;
-			}
+
+			// First make sure all sexually active agents are included
+			if (sexualActivityStatusProfile) {
+                size_by_age_range[i].second += age_range.second;
+                // Then see if they're male
+                if (maleProfile) {
+                    size_by_age_range_male[i].second += age_range.second;
+                }
+                // Otherwise they're female
+                else
+                {
+                    size_by_age_range_female[i].second += age_range.second;
+                }
+            }
 			i++;
 		}
     }
