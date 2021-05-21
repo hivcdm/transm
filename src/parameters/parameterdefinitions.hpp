@@ -141,7 +141,7 @@ struct CepacParameters
     struct CepacFile
     {
         Time time;
-        int target_population = 0;
+        int target_population = 0;      /***< default target population = 0 (not on treatment) */
         std::string filename = "";
     };
 

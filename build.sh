@@ -13,15 +13,18 @@ if [[ $# -eq 0 ]]
 then
 	CMAKE_ARGS+=("-D CMAKE_BUILD_TYPE=Release")
 	CMAKE_ARGS+=("-D USE_GOOGLE_PERF_TOOLS=true")
-	CMAKE_ARGS+=("-D BUILD_TESTING=OFF")
+	CMAKE_ARGS+=("-D BUILD_TESTING=ON")
 else
 	while (($#)); do
 	if [[ $1 == "--debug" ]]
 	then
 		CMAKE_ARGS+=("-D CMAKE_BUILD_TYPE=Debug")
 	elif [[ $1 == "--no-gperftools" ]]
-	then
+	then 
 		CMAKE_ARGS+=("-D USE_GOOGLE_PERF_TOOLS=false")
+	elif [[ $1 == "--no-test" ]]
+	then
+		CMAKE_ARGS+=("-D BUILD_TESTING=OFF")
 	else
 		CMAKE_ARGS+=($1)
 	fi

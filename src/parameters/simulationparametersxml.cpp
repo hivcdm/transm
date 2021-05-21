@@ -503,7 +503,7 @@ PrepParameters SimulationParametersXml::GetPrepParameters() const
 
     return prepParameters;
 }
-
+// This fills out all the information for CEPAC intervention or ART rollout.
 CepacParameters SimulationParametersXml::GetCepacParameters() const
 {
     auto simulation_node = document_.child("simulation");
@@ -513,11 +513,11 @@ CepacParameters SimulationParametersXml::GetCepacParameters() const
 
     if(Attr<bool>(interventions_node.child("artRolloutIntervention"), "enabled"))
     {
-        parameters.file_type = CepacParameters::FileType::Art;
+        parameters.file_type = CepacParameters::FileType::Art;      /***< if ART rollout */
     }
     else
     {
-        parameters.file_type = CepacParameters::FileType::Cepac;
+        parameters.file_type = CepacParameters::FileType::Cepac;    /***< if no ART switch to CEPAC intervention */
     }
 
     if(parameters.file_type == CepacParameters::FileType::Art)
@@ -544,7 +544,7 @@ CepacParameters SimulationParametersXml::GetCepacParameters() const
 
                 parameters.cepac_files.push_back(file);
 
-                //From the first file only, get the death tables for non-AIDS death
+                // From the first file only, get the death tables for non-AIDS death
                 if(file_number == 0)
                 {
                     parameters.default_cepac_file = file;
@@ -578,12 +578,12 @@ CepacParameters SimulationParametersXml::GetCepacParameters() const
 
                 CepacParameters::CepacFile file;
                 file.target_population = 0;
-                file.filename = cepac_dir_ + "/" + file_name;   // this accuretly finds the CEPAC files.
+                file.filename = cepac_dir_ + "/" + file_name;   // this accurately finds the CEPAC files.
                 file.time = time;
 
                 parameters.cepac_files.push_back(file);
 
-                //From the first file only, get the death tables for non-AIDS death
+                // From the first file only, get the death tables for non-AIDS death
                 if(file_number == 0)
                 {
                     parameters.default_cepac_file = file;
@@ -640,6 +640,7 @@ std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::
     return coefficient_map;
 }
 
+// Collect inputs for ART rollout eligibility criteria
 RolloutEligibility SimulationParametersXml::GetRolloutEligibility() const
 {
     auto eligibility_node = document_.select_node("/simulation/interventions/artRolloutIntervention/rolloutEligibility").node();
@@ -648,15 +649,16 @@ RolloutEligibility SimulationParametersXml::GetRolloutEligibility() const
     // Identified
     auto identified_node = eligibility_node.select_node("criteria[@name='Identified']").node();
     if (identified_node.child("status"))
-    eligibility.isIdentified = Text<bool>(identified_node.child("status"));
+        eligibility.isIdentified = Text<bool>(identified_node.child("status"));
     else
-    eligibility.isIdentified = false;
+        eligibility.isIdentified = false;
 
 
     // OIHist
     auto oi_hist_node = eligibility_node.select_node("criteria[@name='OIHist']").node();
     eligibility.oiHistRank = Text<int>(oi_hist_node.child("rank"));
-    eligibility.oiHistNumToStart = Text<int>(oi_hist_node.child("numOIToStart"));
+    eligibility.oiHistNumToStart = Text<int>(oi_hist_node.child("numOIToStart")); /***< <numOIToStart>1</numOIToStart> */
+
 
     // CD4
     auto cd4_node = eligibility_node.select_node("criteria[@name='CD4']").node();
@@ -684,6 +686,23 @@ RolloutEligibility SimulationParametersXml::GetRolloutEligibility() const
     eligibility.cd4HvlHvlBounds.lower = Text<int>(cd4_hvl_node.child("HVLLwr"));
     eligibility.cd4HvlHvlBounds.upper = Text<int>(cd4_hvl_node.child("HVLUpp"));
 
+    /** In the input file this loops through the following values as an example:
+          <OI0>0</OI0>
+          <OI1>0</OI1>
+          <OI2>0</OI2>
+          <OI3>0</OI3>
+          <OI4>0</OI4>
+          <OI5>0</OI5>
+          <OI6>0</OI6>
+          <OI7>0</OI7>
+          <OI8>1</OI8>
+          <OI9>1</OI9>
+          <OI10>1</OI10>
+          <OI11>1</OI11>
+          <OI12>0</OI12>
+          <OI13>1</OI13>
+          <OI14>0</OI14>
+     */
     for(int i = 0; i < 15; i++)
     {
         std::string oi_name = std::string("OI") + std::to_string(i);
@@ -697,16 +716,18 @@ RolloutEligibility SimulationParametersXml::GetRolloutEligibility() const
 RolloutDenominator SimulationParametersXml::GetRolloutDenominator() const
 {
     auto node = document_.select_node("/simulation/interventions/artRolloutIntervention/targetRolloutProportions").node();
+
+    // The denominator does not need to be included since it takes ELIGIBLE as DEFAULT
     RolloutDenominator denom = RolloutDenominator::DEFAULT;
 
     try {
         std::string value = Attr<std::string>(node, "proportionDenominator");
 
-    if (value == "population") {
-        denom = RolloutDenominator::POPULATION;
-    } else if (value == "eligible") {
-        denom = RolloutDenominator::ELIGIBLE;
-    }
+        if (value == "population") {
+            denom = RolloutDenominator::POPULATION;
+        } else if (value == "eligible") {
+            denom = RolloutDenominator::ELIGIBLE;
+        }
     } catch (std::string err) {
         // denominator not specified
     }

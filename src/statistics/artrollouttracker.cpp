@@ -148,7 +148,7 @@ void ArtRolloutTracker::buildHeader()
 	SetHeaderCell(5, 3, "Accepted");
 	SetHeaderCell(6, 3, "Returned For Results");
 
-	int column = 8;
+	int column = 7;
 
 	for(auto outcome : TRACKED_OUTCOMES)
 	{

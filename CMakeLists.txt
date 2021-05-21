@@ -154,7 +154,7 @@ if(GOOGLE_PERFTOOLS_FOUND)
 endif(GOOGLE_PERFTOOLS_FOUND)
 
 # Boost linrary was disabled here originally: issues with FASRC
-target_link_libraries(transm cepac pugixml ${SQLITE3_LIBRARIES}) # ${Boost_LIBRARIES})
+target_link_libraries(transm cepac pugixml ${SQLITE3_LIBRARIES} ${Boost_LIBRARIES})
 
 # Building google tests
 

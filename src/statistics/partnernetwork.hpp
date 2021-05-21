@@ -8,9 +8,8 @@
 #include "utility/time.hpp"
 
 /**
-   This class outputs the partnership network in graphml format
- **/
-
+ * This class outputs the partnership network in graphml format
+ */
 class Network {
 
     struct EntityVertex

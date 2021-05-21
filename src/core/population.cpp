@@ -1525,7 +1525,7 @@ double InterpolateProportion(const std::map<int, double> &yearly_proportions, Ti
 			{
 				double currentYearTargetProportion = yearly_proportions.at(relative_year);
 				double nextYearTargetProportion = yearly_proportions.at(relative_year + 1);
-				//TODO: there's a better way to do this
+                //TODO: there's a better way to do this
 				double x = ((int)(month - monthOf1990).in_months() % 12) / 12.0;
 				return currentYearTargetProportion + (nextYearTargetProportion - currentYearTargetProportion) * x;
 			}
@@ -1557,17 +1557,17 @@ int Population::UpdateTreatmentSlots(double rolloutProportion)
 {
     int eligiblePopulation;
     switch (parameters_.rolloutProportionDenominator) {
-    case (RolloutDenominator::POPULATION):
-	    eligiblePopulation = GetSize();
-	    break;
-    case (RolloutDenominator::ELIGIBLE):
-	    eligiblePopulation = (int)(rolloutTreatedPool.size() +
-		rolloutUntreatedPool.size());
-	    break;
-    default:
-	    eligiblePopulation = (int)(rolloutTreatedPool.size() +
-		rolloutUntreatedPool.size());
-	    break;
+        case (RolloutDenominator::POPULATION):
+	        eligiblePopulation = GetSize();
+	        break;
+        case (RolloutDenominator::ELIGIBLE):
+	        eligiblePopulation = (int)(rolloutTreatedPool.size() +
+		    rolloutUntreatedPool.size());
+	        break;
+        default:
+	        eligiblePopulation = (int)(rolloutTreatedPool.size() +
+		    rolloutUntreatedPool.size());
+	        break;
     }
 
     int numAccessingTreatment = (int)rolloutTreatedPool.size();
@@ -1575,25 +1575,21 @@ int Population::UpdateTreatmentSlots(double rolloutProportion)
 
     int numSlots;
     if(parameters_.enableDynamicTreatmentScaling) {
-	int position = (int)(parameters_.currTime - parameters_.monthOf1990).in_months() %
-	    parameters_.dynamicFeedbackPeriod;
+	    int position = (int)(parameters_.currTime - parameters_.monthOf1990).in_months() % parameters_.dynamicFeedbackPeriod;
 
-	if(position == 0) {
-	    treatmentCorrectionFactor_ = 1;
-	    // Count the number of people reported to be on ART in CEPAC
-	    auto numTreated = std::count_if(rolloutTreatedPool.begin(), rolloutTreatedPool.end(),
+	    if(position == 0) {
+	        treatmentCorrectionFactor_ = 1;
+	        // Count the number of people reported to be on ART in CEPAC
+	        auto numTreated = std::count_if(rolloutTreatedPool.begin(), rolloutTreatedPool.end(),
 					    [](Entity *p) { return p->isOnArt(); });
 
-	    if(numTreated > 0) {
-		treatmentCorrectionFactor_ = numAccessingTreatment /
-		    static_cast<double>(numTreated);
+	        if(numTreated > 0) {
+		        treatmentCorrectionFactor_ = numAccessingTreatment / static_cast<double>(numTreated);
+	        }
 	    }
-	}
-	numSlots = static_cast<int>(targetTreatmentSlots * treatmentCorrectionFactor_) -
-	    numAccessingTreatment;
-
+	    numSlots = static_cast<int>(targetTreatmentSlots * treatmentCorrectionFactor_) - numAccessingTreatment;
     } else {
-	numSlots = static_cast<int>(targetTreatmentSlots) - numAccessingTreatment;
+	    numSlots = static_cast<int>(targetTreatmentSlots) - numAccessingTreatment;
     }
 
     return numSlots;
@@ -1610,7 +1606,7 @@ void Population::ApplyARTRollout(EventParams &parameters_)
 	{
 		DetermineRankings(parameters_.rolloutEligibility);
 	}
-
+    // TODO: Seems there is a ranking for who gets the available slots for treatment based on health status!!
 	if(newSlots > 0)
 	{
 		for(auto &current_ranking_bucket : rankedForTreatment)

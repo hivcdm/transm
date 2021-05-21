@@ -212,9 +212,10 @@ private:
 
 	double chronicInfectionRate;
 
-    /// <summary>
-	/// Per month per person based on WHI data
-    /// </summary>
+    /* Population growth parameters: Per month per person based on WHI data
+     * @param birthRate
+     * @fertilityRates vector of FertilityRate
+     * */
 	bool useBirthRate;
 	double birthRate;
 	std::vector<FertilityRate> fertilityRates;
