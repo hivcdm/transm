@@ -27,18 +27,20 @@ const std::string ArtRolloutTracker::RISK_GROUP_NAMES[] =
 
 const std::string ArtRolloutTracker::TRACKED_OUTCOMES[] =
 {
-    "test_result",
-    "eligible_for_access",
-    "accessing_treatment",
-    "eligible_for_treatment",
-    "treated",
-    "death_on_treatment"
+//    "test_result",
+//    "eligible_for_access",
+//    "accessing_treatment",
+//    "eligible_for_treatment",
+//    "treated",
+//    "death_on_treatment"
 };
 
 const std::string BUCKETS[] =
 {
     "SEXUAL_ACTIVITY_STATUS",
     "GENDER",
+    "RACE",
+    "ETHNICITY",
     "SEXUAL_ORIENTATION",
     "RELATIONSHIP_STATUS",
     "EMPLOYMENT",
@@ -187,6 +189,21 @@ void ArtRolloutTracker::buildHeader()
         SetHeaderCell(column++, 3, "Males:Msmw");
         SetHeaderCell(column++, 3, "Males:Msm");
 
+        SetHeaderCell(column, 2, "Race/Ethnicity Group");
+        for (auto race : enum_iterator<DemographicProfile::Race>())
+        {
+            std::string raceStr = DemographicEnumStrs.at((std::size_t)DemographicProfile::Demographic::Race).
+                    at((std::size_t)race);
+            for (auto ethnicity : enum_iterator<DemographicProfile::Ethnicity>())
+            {
+                std::string ethStr = DemographicEnumStrs.at((std::size_t)DemographicProfile::Demographic::Ethnicity).
+                        at((std::size_t)ethnicity);
+
+                std::stringstream label;
+                label << raceStr << ":" << ethStr;
+                SetHeaderCell(column++, 3, label.str());
+            }
+        }
         for(auto gender : {"Males", "Females", "Males:Msw", "Males:Msmw", "Males:Msm", })
         {
             SetHeaderCell(column, 1, gender);
@@ -262,6 +279,21 @@ void ArtRolloutTracker::buildRow(Time time, Population *_population)
                 std::make_pair("GENDER", (int)DemographicProfile::Gender::Male),
                 std::make_pair("SEXUAL_ORIENTATION", (int)orientation)));
         }
+        // Add the count by gender, race
+        for(auto gender : enum_iterator<DemographicProfile::Gender>())
+        {
+            for (auto race : enum_iterator<DemographicProfile::Race>())
+            {
+                for (auto ethnicity : enum_iterator<DemographicProfile::Ethnicity>())
+                {
+                    PushElement(counter.GetCount(outcome,
+                                                 std::make_pair("GENDER", (int)gender),
+                                                 std::make_pair("RACE", (int)race),
+                                                 std::make_pair("ETHNICITY", (int)ethnicity)));
+                }
+            }
+        }
+
 
         // Add the count of by gender, sexual activity status and age
         for(auto gender : enum_iterator<DemographicProfile::Gender>())

@@ -1,0 +1,13 @@
+# Target labels
+ cepac_project
+# Source files and their labels
+/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/CMakeFiles/cepac_project
+/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/CMakeFiles/cepac_project.rule
+/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/CMakeFiles/cepac_project-complete.rule
+/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-install.rule
+/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-mkdir.rule
+/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-download.rule
+/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-update.rule
+/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-patch.rule
+/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-configure.rule
+/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-build.rule
