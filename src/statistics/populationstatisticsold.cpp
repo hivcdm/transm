@@ -1045,6 +1045,12 @@ void PopulationStatisticsOld::recordTreatmentSlots(int numSlots)
 	artTracker.recordTreatmentSlots(numSlots);
 }
 
+void PopulationStatisticsOld::recordInCare(Entity *person)
+{
+    uniqueYearlyInCare.insert(person);
+    artTracker.recordInCare(person);
+}
+
 void PopulationStatisticsOld::resetYear(Time newYear)
 {
 	relativeTime = newYear;

@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/CMakeFiles/rana_project"
+		},
+		{
+			"file" : "/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/CMakeFiles/rana_project.rule"
+		},
+		{
+			"file" : "/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/CMakeFiles/rana_project-complete.rule"
+		},
+		{
+			"file" : "/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/rana_project-stamp/rana_project-install.rule"
+		},
+		{
+			"file" : "/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/rana_project-stamp/rana_project-mkdir.rule"
+		},
+		{
+			"file" : "/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/rana_project-stamp/rana_project-download.rule"
+		},
+		{
+			"file" : "/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/rana_project-stamp/rana_project-update.rule"
+		},
+		{
+			"file" : "/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/rana_project-stamp/rana_project-patch.rule"
+		},
+		{
+			"file" : "/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/rana_project-stamp/rana_project-configure.rule"
+		},
+		{
+			"file" : "/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/rana_project-stamp/rana_project-build.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"rana_project"
+		],
+		"name" : "rana_project"
+	}
+}

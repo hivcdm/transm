@@ -250,6 +250,10 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
                 {
                     populationStatistics.recordTreatment(p);
                 }
+                if (p->isLinked() && p->isOnArt()) {
+                    populationStatistics.recordTreatment(p);
+                    populationStatistics.recordInCare(p);
+                }
             }
 
             //see whether this person has died.

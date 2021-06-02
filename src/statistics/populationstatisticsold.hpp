@@ -154,6 +154,7 @@ private:
 	std::set<Entity *> uniqueYearlyEligibleForTreatment;
 	std::set<Entity *> uniqueYearlyTreated;
 	std::set<Entity *> uniqueYearlyTreatmentDeaths;
+	std::set<Entity *> uniqueYearlyInCare;
 	std::vector<int> yearlyTestsByResult;
 
 public:
@@ -224,6 +225,8 @@ public:
 	void recordTreatment(Entity *person);
 	void recordTreatmentDeath(Entity *person);
 	void recordTreatmentSlots(int numSlots);
+
+	void recordInCare(Entity *person);
 
 	void addLifeExpectancyRecordTime(Time time) { timesToRecordLE.push_back(time); }
     void setMedianLECI(double ci) { medianLECI = ci; }

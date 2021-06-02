@@ -32,6 +32,10 @@ public:
 	void recordTreatmentDeath(Entity *person);
 	void recordTreatmentSlots(int numSlots);
 
+	void recordSuppressedVL(Entity *person);
+	void recordEnrolledInThirty(Entity *person);
+	void recordInCare(Entity *person);
+
 	void printArtRolloutOutcomes(Time time, std::ostream &_outStream, Population *_population);
 
 private:

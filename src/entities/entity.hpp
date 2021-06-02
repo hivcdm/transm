@@ -594,7 +594,12 @@ public:
 
 	bool isOnArt()
 	{
-		return cepacPatient && cepacPatient->getARTState()->isOnART;
+		return cepacPatient && cepacPatient->getARTState()->isOnART ;
+	}
+
+	bool isLinked()
+    {
+	    return cepacPatient && cepacPatient->getMonitoringState()->isLinked;
 	}
 
 	virtual void SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng) = 0;
