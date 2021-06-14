@@ -172,8 +172,8 @@ void Population::UpdateAgeBucketsLE()
 }
 
 /**
-update age (and SAStatus b/c SAStatus depends on age), health,
-**/
+ * Update age (and SAStatus b/c SAStatus depends on age), health,
+ */
 void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE, bool newLEPeriod)
 {
     dead_people_this_month_.clear();
@@ -223,41 +223,61 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 	{
 		p_Iter = entities->begin(gender);
 
-		while(p_Iter != entities->end(gender))
-		{
-			Entity *p = (*p_Iter);
-			assert(p != nullptr);
+		while(p_Iter != entities->end(gender)) {
+            Entity *p = (*p_Iter);
+            assert(p != nullptr);
 
-			HIVStatus oldStatus = p->hivStatus;
-			//update their health status
-			p->updateHealthStatus(parameters_, &populationStatistics.artTracker,
-                &populationStatistics.costsTracker);
+            HIVStatus oldStatus = p->hivStatus;
+            //update their health status
+            p->updateHealthStatus(parameters_, &populationStatistics.artTracker,
+                                  &populationStatistics.costsTracker);
 
-		    if (oldStatus != p->hivStatus)
-            {
-                if(p->getDemographicProfile()->get(p->getDemographicProfile()->getProfileID(),
-                    DemographicProfile::Demographic::SexualActivityStatus) !=
-                    (std::size_t)DemographicProfile::SexualActivityStatus::NotActive)
-                {
+            if (oldStatus != p->hivStatus) {
+                if (p->getDemographicProfile()->get(p->getDemographicProfile()->getProfileID(),
+                                                    DemographicProfile::Demographic::SexualActivityStatus) !=
+                    (std::size_t) DemographicProfile::SexualActivityStatus::NotActive) {
                     ((BucketSexualMixing *) entities->getBucket(p->getDemographicProfile()->
-                        getProfileID()))->changeHIVStatus(p, oldStatus, p->hivStatus);
+                            getProfileID()))->changeHIVStatus(p, oldStatus, p->hivStatus);
                 }
             }
 
+		    /* if the ART is enabled check if the entity is infected (detected) .. */
             if(parameters_.useRollout && parameters_.treatedContext && p->isInfected())
             {
-                if(p->isOnArt())
-                {
-                    populationStatistics.recordTreatment(p);
+                /* Number of diagnosed (detected) HIV positives counts as PLWH (person living with HIV) */
+                if (p->isDetected()) {
+                    if (p->ageDetected.get_year() == 0 && p->ageDetected.get_month() == -1) {
+                        p->ageDetected = p->getAge();
+                    }
+                    populationStatistics.recordPLWH(p);
+
+                    /* if only linked (has tested) put it in "In Care" bucket */
+                    /* Important note: This is OK if the probability of "false positive" is virtually zero. */
+                    if (p->isInCare()) {
+                        if (p->ageInCare.get_year() == 0 && p->ageInCare.get_month() == -1) {
+                            p->ageInCare = p->getAge();
+                        }
+                        populationStatistics.recordInCare(p);
+                        if (p->isInCareWithinThirty()) {
+                            populationStatistics.recordEnrolledInThirtyDays(p);
+                        }
+
+                        /* Now check if the patient is on ART put it in "treatment" bucket */
+                        if (p->isOnArt()) {
+                            populationStatistics.recordTreatment(p);
+                        }
+                    }
+                    /* Now check if the patient has suppressed level of HVL (lowest level) */
+                    if (p->isSuppressd()) {
+                        populationStatistics.recordSuppressedVL(p);
+                    }
                 }
-                if (p->isLinked() && p->isOnArt()) {
-                    populationStatistics.recordTreatment(p);
-                    populationStatistics.recordInCare(p);
-                }
+
             }
 
-            //see whether this person has died.
-            //if this person was a couple, then will push living members to personsToAdd
+
+            // see whether this person has died.
+            // if this person was a couple, then will push living members to personsToAdd
             // to be reinserted into the EntityPool once we have iterated through all buckets
             if(p->rollForDeath(parameters_.randomNums))
             {
@@ -271,7 +291,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 
                 if(parameters_.useRollout)
                 {
-                    //Remove people from the treated/untreated pool if they die
+                    // Remove people from the treated/untreated pool if they die
                     std::list<Entity *>::iterator poolIterator;
                     poolIterator = std::find(rolloutUntreatedPool.begin(), rolloutUntreatedPool.end(), p);
 
@@ -295,6 +315,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
                 continue;
             }
 
+            /* Treatment eligibility workflow: Not being used for Miami analysis */
 			if(parameters_.useRollout && parameters_.treatedContext && p->isInfected())
 			{
 			    if((p->isOnArt()) ||
@@ -304,7 +325,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 			    }
 			}
 
-			//if this person wasn't sexually active but is now old enough to
+			/* If this person wasn't sexually active but is now old enough to */
             if(!(p->isSexuallyActive())
                 && (p->getAge() >= popWideParams.ageOfMajority))
 			{
@@ -314,33 +335,27 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
                     if(p->isMale())
 					{
 						parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " % Male ";
-					}
-					else
-					{
+					} else {
 						parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " % Female ";
 					}
-
-					parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << p->getID() << " becomes sexually active" << std::endl;
+                    parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << p->getID() << " becomes sexually active" << std::endl;
 				}
 
 				HIVStatus oldStatus = p->hivStatus;
 				p->becomeSexuallyActive(parameters_);
 
-                if(oldStatus != p->hivStatus)
-                    {
+                if(oldStatus != p->hivStatus) {
                     auto sa_status = p->getDemographicProfileVal<DemographicProfile::SexualActivityStatus>();
 
-                    if(sa_status != DemographicProfile::SexualActivityStatus::NotActive)
-                        {
+                    if(sa_status != DemographicProfile::SexualActivityStatus::NotActive) {
                         auto bucket = entities->getBucket(p->getDemographicProfile()->getProfileID());
                         // This shouldn't fail because all sexually activity people are in sexual mixing buckets
                         auto sexual_mixing_bucket = dynamic_cast<BucketSexualMixing *>(bucket);
                         sexual_mixing_bucket->changeHIVStatus(p, oldStatus, p->hivStatus);
-                        }
                     }
+                }
 
-                if (!p->PassedCSWEndAge())
-                {
+                if (!p->PassedCSWEndAge()) {
                     p->rollForBecomeSexWorker(parameters_);
                 }
 
@@ -357,9 +372,9 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
                 entities->refreshBucketDemographicProfile(p, &p_Iter, oldRisk != p->getRiskLevel());
             }
 
-            if (p->isSexuallyActive())
+            if (p->isSexuallyActive()) {
                 p->updatePrepStatus(parameters_, &populationStatistics.prepTracker);
-
+            }
 
             //Check for age to stop becoming CSW
             if(p->isCSW() && p->PassedCSWEndAge()) {
@@ -368,18 +383,15 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
             }
 
             if(((parameters_.useRollout && parameters_.treatedContext) || p->HasTargetedCepacContext()) &&
-                p->isInfected())
-            {
+                p->isInfected()) {
                 auto context = p->HasTargetedCepacContext() ? p->GetTargetedCepacContext() : parameters_.treatedContext;
 
-                if(p->isOnArt())
-                {
+                if(p->isOnArt()) {
+
                     // if they're on treatment, they should be counted as eligible even if the treatment has worked
                     populationStatistics.recordTreatmentEligiblity(p);
-                    populationStatistics.recordTreatment(p);
-                }
-                else if(p->isEligibleForTreatment(context->getTreatmentInputs()->startART[0]))
-                {
+//                    populationStatistics.recordTreatment(p);
+                } else if(p->isEligibleForTreatment(context->getTreatmentInputs()->startART[0])) {
                     populationStatistics.recordTreatmentEligiblity(p);
                 }
             }

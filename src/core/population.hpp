@@ -23,27 +23,25 @@
 
 namespace transm {
 
-/// <summary>
-/// This class contains the main simulation logic
-/// </summary>
-/// <remarks>
-/// The population contains an EntityPool which is further subdivided into Buckets
-/// </remarks>
+/** This class contains the main simulation logic.
+ *  The population contains an @param EntityPool which is further subdivided into @param Buckets
+ */
 class Population
 {
 public:
-	/// <summary>
-    /// This is the main circular buffer containing the BucketAge structures
-    /// </summary>
+	/**
+     * This is the main circular buffer containing the BucketAge structures
+     */
     using BucketAllAges = boost::circular_buffer_space_optimized<BucketAge *>;
 
     using RiskArray = std::array<std::size_t, (std::size_t)RiskLevel::Last>;
 
-	/// <summary>
-    /// Creates a new population object given an XML input subtree which contains the parameters
-    /// </summary>
-	Population(EventParams &parameters);
+	/**
+     * Creates a new @param population object given an XML input subtree which contains the @param parameters
+     */
+	explicit Population(EventParams &parameters);
 
+	/** Default destructor */
 	~Population();
 
 	void operator=(const Population &) = delete;

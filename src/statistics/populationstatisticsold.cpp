@@ -1012,7 +1012,7 @@ void PopulationStatisticsOld::recordTestStats(int numTests, const std::vector<in
 void PopulationStatisticsOld::recordTreatmentAccessEligiblity(Entity *person)
 {
 	uniqueYearlyEligibleForTreatmentAccess.insert(person);
-	artTracker.recordTreatmentAccessEligiblity(person);
+    artTracker.recordTreatmentAccessEligibility(person);
 }
 
 void PopulationStatisticsOld::recordTreatmentAccess(Entity *person)
@@ -1024,7 +1024,7 @@ void PopulationStatisticsOld::recordTreatmentAccess(Entity *person)
 void PopulationStatisticsOld::recordTreatmentEligiblity(Entity *person)
 {
 	uniqueYearlyEligibleForTreatment.insert(person);
-	artTracker.recordTreatmentEligiblity(person);
+    artTracker.recordTreatmentEligibility(person);
 }
 
 void PopulationStatisticsOld::recordTreatment(Entity *person)
@@ -1045,11 +1045,37 @@ void PopulationStatisticsOld::recordTreatmentSlots(int numSlots)
 	artTracker.recordTreatmentSlots(numSlots);
 }
 
+/* Record number of agents "In Care" which is equivalent to those that are HIV positive and "Linked" to care */
 void PopulationStatisticsOld::recordInCare(Entity *person)
 {
     uniqueYearlyInCare.insert(person);
     artTracker.recordInCare(person);
 }
+
+/* Put agents in "Suppressed VL" if they have lowest level of VL */
+void PopulationStatisticsOld::recordSuppressedVL(Entity *person)
+{
+    uniqueYearlySuppressed.insert(person);
+    artTracker.recordSuppressedVL(person);
+}
+
+void PopulationStatisticsOld::recordEnrolledInThirtyDays(Entity *person)
+{
+    uniqueYearlyEnrolledInThirtyDays.insert(person);
+    artTracker.recordEnrolledInThirtyDays(person);
+}
+
+void PopulationStatisticsOld::recordPLWH(Entity *person)
+{
+    uniqueYearlyPLWH.insert(person);
+    artTracker.recordPLWH(person);
+}
+
+    void PopulationStatisticsOld::recordNewDiagnosis(Entity *person)
+    {
+        uniqueYearlyNewDiagnosis.insert(person);
+        artTracker.recordNewDiagnosis(person);
+    }
 
 void PopulationStatisticsOld::resetYear(Time newYear)
 {
@@ -1074,6 +1100,13 @@ void PopulationStatisticsOld::resetYear(Time newYear)
 	uniqueYearlyTreated.clear();
 	uniqueYearlyTreatmentDeaths.clear();
 
+    uniqueYearlyInCare.clear();
+    uniqueYearlySuppressed.clear();
+    uniqueYearlyEnrolledInThirtyDays.clear();
+    uniqueYearlyPLWH.clear();
+    uniqueYearlyNewDiagnosis.clear();
+
 }
+
 
 } // namespace transm

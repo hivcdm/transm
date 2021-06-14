@@ -265,8 +265,7 @@ void Entity::addPartnership(SexualPartnership *_partnership)
 	}
 }
 
-void Entity::seedInfection(int _generationOfInfection, EventParams &_eventParams,
-    bool chronicInfection)
+void Entity::seedInfection(int _generationOfInfection, EventParams &_eventParams, bool chronicInfection)
 {
     enableInfectionTrace(_generationOfInfection, _eventParams);
 
@@ -304,8 +303,8 @@ void Entity::becomeInfected(int _generationOfInfection, EventParams &_eventParam
     generationOfInfection = _generationOfInfection;
 
     if(!wentThroughCEPAC) {
-	// Need to initialize CEPAC person first
-	initializeCEPACpatient(_eventParams);
+	    // Need to initialize CEPAC person first
+	    initializeCEPACpatient(_eventParams);
     }
 
     // force new Acute infection
@@ -317,8 +316,7 @@ void Entity::becomeInfected(int _generationOfInfection, EventParams &_eventParam
 }
 
 
-void Entity::enableInfectionTrace(int _generationOfInfection,
-				  EventParams &_eventParams)
+void Entity::enableInfectionTrace(int _generationOfInfection, EventParams &_eventParams)
 {
     if (_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled
 	&& trace()) {
@@ -342,8 +340,7 @@ void Entity::enableInfectionTrace(int _generationOfInfection,
 
 void Entity::updateCEPACpatient(EventParams &_eventParams)
 {
-	if(cepacPatient->getDiseaseState()->infectedHIVState ==
-	    SimContext::HIV_INF_ACUTE_SYN) {
+	if (cepacPatient->getDiseaseState()->infectedHIVState == SimContext::HIV_INF_ACUTE_SYN) {
 		hvl = HVLStrata::HVL_PRIMARY;
 
 		if(cepacPatient->getMonitoringState()->isDetectedHIVPositive) {
@@ -351,17 +348,16 @@ void Entity::updateCEPACpatient(EventParams &_eventParams)
 		} else {
 			hivStatus = HIVStatus::UNOBSERVED_ACUTE;
 		}
-	} else if((!(cepacPatient->getARTState()->hasNextRegimenAvailable) &&
-	    (!(cepacPatient->getARTState()->isOnART) ||
-		cepacPatient->getARTState()->hasObservedFailure)) &&
-	    cepacPatient->getDiseaseState()->currTrueCD4 <= 50) {
+	} else if ((!(cepacPatient->getARTState()->hasNextRegimenAvailable) &&
+	(!(cepacPatient->getARTState()->isOnART) ||
+	cepacPatient->getARTState()->hasObservedFailure)) &&
+	cepacPatient->getDiseaseState()->currTrueCD4 <= 50) {
 
 		//Late stage is defined as having failed the last ART regimen
 		// (or having no art regimens to start with) and a CD4 <= 50
-
 		hvl = HVLStrata::HVL_LATESTAGE;
 
-		if(cepacPatient->getMonitoringState()->isDetectedHIVPositive) {
+		if (cepacPatient->getMonitoringState()->isDetectedHIVPositive) {
 			hivStatus = HIVStatus::OBSERVED_LATESTAGE;
 		} else {
 			hivStatus = HIVStatus::UNOBSERVED_LATESTAGE;
@@ -394,8 +390,7 @@ void Entity::initializeCEPACpatient(EventParams &_eventParams)
 	    //When patients are initialized they are added to the untreated pool
 	    simContextToUse = _eventParams.untreatedContext;
     } else {
-	    simContextToUse = _eventParams.cepacSimContexts[getCEPACSimContextIndex(
-			_eventParams)];
+	    simContextToUse = _eventParams.cepacSimContexts[getCEPACSimContextIndex(_eventParams)];
     }
 
     cepacPatient = new Patient(simContextToUse,
@@ -506,7 +501,7 @@ Time Entity::getAge() const
 	return age;
 }
 
-DemographicProfile::ProfileID Entity::getCurrBucketProfileID()
+DemographicProfile::ProfileID Entity::getCurrBucketProfileID() const
 {
 	return currentBucketID;
 }
@@ -532,7 +527,7 @@ long Entity::getPartnershipsToEnd(Time _currTime, SexualPartnership::Type _partn
 	assert(_partnershipType < SexualPartnership::Type::Last);
 	assert((_currTime >= Time::Zero) || _fromDeath);
 
-	if(partners[(int)_partnershipType].size() == 0)
+	if(partners[(int)_partnershipType].empty())
 	{
 		return 0;
 	}
@@ -583,13 +578,13 @@ void Entity::resetLatestUnformedPartnerships(SexualPartnership::Type type)
 
 //End Unformed Partnership helper methods
 
-unsigned int Entity::getPopulationID()
+unsigned int Entity::getPopulationID() const
 {
 	return populationID;
 }
 
 //returns traceMe
-bool Entity::trace()
+bool Entity::trace() const
 {
 	return traceMe;
 }
@@ -662,7 +657,7 @@ bool Entity::hasPartnership()
 	return false;
 }
 
-bool Entity::isInfected()
+bool Entity::isInfected() const
 {
     return hvl != HVLStrata::UNINFECTED;
 }
@@ -1533,6 +1528,8 @@ Entity::Entity(Age _age, unsigned int _populationID, const PrepParameters &prepP
 	age = _age;
 	initAge = _age;
 	ageInfected = Age(0, -1);
+	ageDetected = Age(0, -1);   /**< initial age of detection = 0 */
+	ageInCare = Age(0, -1);     /**< initial age of in care = 0 */
 
 	death = false;
 	deathStatus = DeathStatus::ALIVE;

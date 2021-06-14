@@ -25,6 +25,7 @@
 
 namespace transm {
 
+/** Forward declarations */
 class ArtRolloutTracker;
 class PrepTracker;
 class CostsTracker;
@@ -36,17 +37,14 @@ class RandomNumberGenerator;
 
 /**
  * All individuals in the simulation are of this class, or something derived from this
- */
-/// <remarks>
-/// Fields and Methods are divided into the following categories:
-/// Physical, Relational, DemographicProfile-related, other
-/// </remarks>
+ *
+ * Fields and Methods are divided into the following categories:
+ * Physical, Relational, DemographicProfile-related, other
+ **/
 class Entity
 {
-	/// <summary>
-	/// used to create unique id's for each person
-	/// this increments every time a New person is created
-	/// </summary>
+
+	/** used to create unique id's for each person this increments every time a New person is created */
 	static long idCounter;
 
 public:
@@ -72,121 +70,144 @@ public:
     virtual double GetOverrideChanceCondomUse() const = 0;
     bool HasOverrideChanceCondomUse() const { return GetOverrideChanceCondomUse() != -1; }
 
-	// we have made these stats referenceable by enum so that we can more easily create customizeable outputs or reports...
-	// we can perhaps have easier look-up of stat descriptions if we choose to write some up
+	/**
+	 * We have made these stats referencable by enum so that we can more easily create
+	 * customizable outputs or reports we can perhaps have easier look-up of stat descriptions
+	 * if we choose to write some up.
+	 */
 	enum class Stats
 	{
-		STAT_TOTAL_LM,							//months lived during sim.
-		STAT_HIV_NEG_LM,						//life months lived as HIV-
-		STAT_HIV_POS_POSTINFECT_LM,				//life months lived after HIV infection
-		STAT_EXPOSURES_BEFORE_INF,				//# times exposed to HIV but not infected
-		STAT_NUM_INFECTED,						//number of people that someone infected
-		STAT_AGE_AT_INFECTION_MTH,				//age when infection occurred
-		STAT_TIME_OF_INFECTION_MTH,				//calendar time of infection
-		STAT_GENERATION_OF_INFECTION,			//generation of infection: prevalent case is 0, otherwise (1+generation of infectors infection)
+		STAT_TOTAL_LM,							/**< months lived during sim.  */
+		STAT_HIV_NEG_LM,						/**< life months lived as HIV Negative */
+		STAT_HIV_POS_POSTINFECT_LM,				/**< life months lived after HIV infection */
+		STAT_EXPOSURES_BEFORE_INF,				/**< Number times exposed to HIV but not infected */
+		STAT_NUM_INFECTED,						/**< Number of people that someone infected */
+		STAT_AGE_AT_INFECTION_MTH,				/**< age when infection occurred */
+		STAT_TIME_OF_INFECTION_MTH,				/**< calendar time of infection */
+		STAT_GENERATION_OF_INFECTION,			/**< generation of infection: prevalent case is 0, otherwise (1+generation of infectors infection) */
 		Last,
         First = STAT_TOTAL_LM
 	};
 
-	//string representations of enum Stats
+	/* string representations of enum Stats */
 	static const std::vector<std::string> StatsStr;
 
-	//this is a enum class wrapper that has helpful enum-related functions
+	/* this is a enum class wrapper that has helpful enum-related functions */
 	static EnumCls<Stats> StatsEnum;
 
-	//this is a type declaration of a class that keeps track of statistics defined in enum Stats
+	/* this is a type declaration of a class that keeps track of statistics defined in enum Stats */
 	using EntityStatsRecord = StatsRecord<Stats, BaseEnumCls::NULL_ENUM>;
 
-	//the CEPAC death table has stats for 0-100 years old.
-	//  people automatically die at this age in the dynamic model
+	/**
+	 *  the CEPAC death table has stats for 0-100 years old.
+	 *  people automatically die at this age in the dynamic model
+	 */
 	const static int maxYrForDeathStats = 101;
 
-	//contains probabilities of nonAIDS-death, read from CEPAC .in file
+	/* contains probabilities of nonAIDS-death, read from CEPAC .in file */
 	static std::vector<double> probDeathNatCauses[(std::size_t)DemographicProfile::Gender::Last];
 
-	//there is option to print patient traces to a text file. this keeps track of how many we've done so far
+	/* there is option to print patient traces to a text file. this keeps track of how many we've done so far */
 	static int numTracesSoFar;
 
+	/** Setting assortativenesses */
     virtual void SetRiskAssortativeness(double assortativeness) = 0;
     virtual void SetRaceEthnicAssortativeness(DemographicProfile::Race race,
-        DemographicProfile::Ethnicity ethnicity, double assortativeness) = 0;
+                                              DemographicProfile::Ethnicity ethnicity,
+                                              double assortativeness) = 0;
 
     void UsePreExposureProphylaxis(double adherence);
 
-    void SetTargetedCepacContext(SimContext *context) { setSimContext(context); targetedCepacContext_ = context; }
+    void SetTargetedCepacContext(SimContext *context) {
+        setSimContext(context);
+        targetedCepacContext_ = context;
+    }
 
-    bool HasTargetedCepacContext() const { return targetedCepacContext_ != nullptr; }
+    bool HasTargetedCepacContext() const {
+        return targetedCepacContext_ != nullptr;
+    }
 
-    SimContext *GetTargetedCepacContext() const { return targetedCepacContext_; }
+    SimContext *GetTargetedCepacContext() const {
+        return targetedCepacContext_;
+    }
 
 protected:
-    //keeps track of which population this Entity belongs to
-	unsigned int populationID;
 
-    //person's unique id number
-	unsigned long id;
+	unsigned int populationID;      /**< keeps track of which population this Entity belongs to */
+
+	unsigned long id;               /**< person's unique id number */
 
     SimContext *targetedCepacContext_;
 
-    //person's current demographic profile - values in here depend on person's
-    //physical, relational state, and other preferences
+    /**
+     * person's current demographic profile - values in here depend on person's
+     * physical, relational state, and other preferences
+     */
 	DemographicProfile dmgProfile;
 
-	//person keeps track of which BucketDemographicProfile they are currently in
-	//  this value should stay equal to dmgProfile->getProfileID()
-    //  sometimes a person's dmgProfile is changed, so we have to refresh their
-    //  place in the EntityPool
+	/**
+	 * person keeps track of which BucketDemographicProfile they are currently in
+	 * this value should stay equal to dmgProfile->getProfileID()
+     * sometimes a person's dmgProfile is changed, so we have to refresh their
+     * place in the EntityPool
+     */
 	DemographicProfile::ProfileID currentBucketID;
 
-	//Entity's relational state
-	//contains all current partnerships including CSW and Casual
+	/**
+	 * Entity's relational state
+	 * contains all current partnerships including CSW and Casual
+	 */
 	std::list<SexualPartnership *> partners[(int)SexualPartnership::Type::Last];
 
-	//array of number of partners over persons history stratified by partnership type
+	/* array of number of partners over persons history stratified by partnership type */
 	int numPartnersInHistory[(int)SexualPartnership::Type::Last];
 
-	//array of month of their farthest current partnership dissolution time for each partnership type.  initialized to zero
+	/* array of month of their farthest current partnership dissolution time for each partnership type.  initialized to zero */
 	Time monthOfLatestPartnershipDissolution[(int)SexualPartnership::Type::Last];
 
-	//array of month of latest concurrent relationship for each partnership type. Only updated for 12 months before calibration
+	/* array of month of latest concurrent relationship for each partnership type. Only updated for 12 months before calibration */
 	Time monthOfLatestConcurrent;
 
-	// Contains the number of partnerships the person tried to form over time, but didn't
-	// (usually due to no partners available or re-hooking up with a current partner)
+	/**
+	 * Contains the number of partnerships the person tried to form over time, but didn't
+	 * (usually due to no partners available or re-hooking up with a current partner)
+	 */
 	int unformedPartnershipsTotal[(int)SexualPartnership::Type::Last];
 	int unformedPartnershipsLatestTime[(int)SexualPartnership::Type::Last];
 
-    //Which generation was the person infected in
+    /* Which generation was the person infected in */
 	int generationOfInfection;
 
-    //flag to indicate whether this person has CEPAC data
+    /* flag to indicate whether this person has CEPAC data */
 	bool wentThroughCEPAC;
 
-    //a pointer to a CEPAC patient object which stores all post-infection health states
+	bool newDiagnosis;
+
+    /* a pointer to a CEPAC patient object which stores all post-infection health states */
 	Patient *cepacPatient;
 
-    //A running tally of all costs accrued through CEPAC
+    /* A running tally of all costs accrued through CEPAC */
 	double CEPACcosts;
 
-	//Used to keep track of number of acts this month
+	/* Used to keep track of number of acts this month */
 	int numActsThisMonth;
 
-	//Used to keep track of number of condoms used in a given month for cost purposes
+	/* Used to keep track of number of condoms used in a given month for cost purposes */
 	int condomsUsedThisMonth;
 
-	//Used to keep track of whether or not a condom was used the last time getFOI was called
+	/* Used to keep track of whether or not a condom was used the last time getFOI was called */
 	bool condomUsedLastFOICalculation;
 
-	//currently defaults to "LOW" and 1
+	/* currently defaults to "LOW" and 1 */
 	RiskLevel risk;
 
-	//statistical information from this individual
+	/* statistical information from this individual */
 	EntityStatsRecord stats;
 
-	//True if this person should be followed in singlePersonTrace file
+	/* True if this person should be followed in singlePersonTrace file */
 	bool traceMe;
 
-	//The indices which point to the person in their assigned FullVector
+	/* The indices which point to the person in their assigned FullVector */
 	std::map<FullVector *, std::vector<unsigned int>> FVindices;
 
     TimeSpan sexualActivityDelay;
@@ -210,6 +231,12 @@ public:
 
     //age of Entity when they got infected (-1 for uninfected)
 	Age ageInfected;
+
+	/* Age of Entity when is in care */
+	Age ageInCare;
+
+	/* Age of Entity when is detected HIV+ */
+	Age ageDetected;
 
     //whether this person is dead or not
 	bool death;
@@ -322,15 +349,15 @@ public:
 	/** this calculates the FOI towards Entity _p (this uses the Transmission coefficient) per event
 	// @param _p - partner
 	// @param _parteringType - whether this is a fling or steadyCouple */
-	virtual double getFOI(Entity *_p, 
+	virtual double getFOI(Entity *_p,
         const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients,
         SexualPartnership::Type _partnershipType, EventParams &_eventParams) = 0;
 
-	//returns true if person is currently alive
+	// returns true if person is currently alive
 	bool isAlive() const;
 
-	//returns true if person is currently infected
-	bool isInfected();
+	// returns true if person is currently infected
+	bool isInfected() const;
 
 	// Self explanatory I'd say
 	bool isSexuallyActive();
@@ -444,7 +471,7 @@ public:
     D getDemographicProfileVal() const;
 
 	//sets and gets current BucketDemographicProfile membership
-	DemographicProfile::ProfileID getCurrBucketProfileID();
+	DemographicProfile::ProfileID getCurrBucketProfileID() const;
 	void setCurrBucketProfileID(DemographicProfile::ProfileID _profileID);
 
 	//returns true if the person's DemographicProfile matches their current BucketDemographicProfile membership
@@ -574,10 +601,10 @@ public:
 	//returns the unique id number of this person
 	unsigned long getID() const;
 
-	unsigned int getPopulationID();
+	unsigned int getPopulationID() const;
 
 	//returns traceMe
-	bool trace();
+	bool trace() const;
 	//sets traceMe to true
 	void setToBeTraced();
 
@@ -597,10 +624,65 @@ public:
 		return cepacPatient && cepacPatient->getARTState()->isOnART ;
 	}
 
+	/*
+	 * Check if the patient is linked to care.
+	 * Important note: The patient can be linked but be HIV negative.
+	 * */
 	bool isLinked()
     {
 	    return cepacPatient && cepacPatient->getMonitoringState()->isLinked;
 	}
+
+	bool isDetected() const
+    {
+	    return cepacPatient && cepacPatient->getMonitoringState()->isDetectedHIVPositive;
+    }
+	/*
+	 * Check if the patient is actually in care.
+	 */
+	bool isInCare() const
+	{
+//	    bool visitedAtLeastOnce = cepacPatient->getMonitoringState()->hadPrevClinicVisit;
+//        bool hadCD4Test = cepacPatient->getMonitoringState()->hasObservedCD4;
+//        bool hadHVLTest = cepacPatient->getMonitoringState()->hasObservedHVLStrata;
+//
+//        return (visitedAtLeastOnce || hadCD4Test || hadHVLTest);
+        return (cepacPatient && cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_IN_CARE);
+	}
+
+	/* Check if the patient has suppressed level of VL */
+	bool isSuppressd() const
+    {
+	    bool flag;
+	    // Call the local function that pulls HVL status from CEPAC
+	    HVLStrata hvl = getHvlStratum();
+	    if (hvl == HVLStrata::HVL_ZERO) {
+	        flag = true;
+	    } else {
+	        flag = false;
+	    }
+	    return (cepacPatient && flag);
+    }
+    /**
+     * Recording Person Living with HIV to do that just check if the agent is HIV detected
+     */
+    bool isPLWH() const {
+        return (cepacPatient && cepacPatient->getDiseaseState()->infectedHIVState != SimContext::HIV_INF_NEG);
+	}
+
+	bool isInCareWithinThirty() const {
+        bool flag = false;
+        if (this->ageDetected.get_month() != -1 && this->ageInCare.get_month() != -1) {
+            int monthOfDetection = this->ageDetected.in_months();
+            int monthOfLinkage = this->ageInCare.in_months();
+            if (monthOfLinkage - monthOfDetection <= 1 ) {
+                flag = true;
+            }
+        } else {
+            flag = false;
+        }
+        return (cepacPatient && flag);
+    }
 
 	virtual void SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng) = 0;
 	virtual const BetaDist GetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType) = 0;
@@ -628,17 +710,17 @@ public:
 	/// _DEFAULTKEY provides a 2nd layer of ordering if people have identical _PSC
 	/// true is returned if key value of _p1 >= _p2. If key values are equal, then sorts based on Entity's EntityID num
 	/// </summary>
-	template <Entity::SelectingCriteria _PSC, class _KeyValType>
+	template <Entity::SelectingCriteria _PSC, class KeyValType>
 	class Sorter
 	{
 	public :
 		//gets value associated with _p
-		static inline _KeyValType getSortKey(Entity *_p)
+		static inline KeyValType getSortKey(Entity *_p)
 		{
 			switch(_PSC)
 			{
-			case AGE: return (_KeyValType)(static_cast<unsigned long>(_p->age.in_months()));
-			case ID: return (_KeyValType)_p->id;
+			case AGE: return (KeyValType)(static_cast<unsigned long>(_p->age.in_months()));
+			case ID: return (KeyValType)_p->id;
 			}
 
 			throw std::runtime_error("Invalid Sorting key");

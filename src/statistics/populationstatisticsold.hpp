@@ -154,8 +154,15 @@ private:
 	std::set<Entity *> uniqueYearlyEligibleForTreatment;
 	std::set<Entity *> uniqueYearlyTreated;
 	std::set<Entity *> uniqueYearlyTreatmentDeaths;
+
 	std::set<Entity *> uniqueYearlyInCare;
-	std::vector<int> yearlyTestsByResult;
+	std::set<Entity *> uniqueYearlySuppressed;
+    std::set<Entity *> uniqueYearlyEnrolledInThirtyDays;
+    std::set<Entity *> uniqueYearlyPLWH;
+    std::set<Entity *> uniqueYearlyNewDiagnosis;
+
+
+    std::vector<int> yearlyTestsByResult;
 
 public:
 	SingleLEStats *selectedLEStats;
@@ -226,7 +233,14 @@ public:
 	void recordTreatmentDeath(Entity *person);
 	void recordTreatmentSlots(int numSlots);
 
+	/* Miami outputs of interest on ART rollout */
+    /*@{*/
 	void recordInCare(Entity *person);
+	void recordSuppressedVL(Entity *person);
+	void recordEnrolledInThirtyDays(Entity *person);
+	void recordPLWH(Entity *person);
+	void recordNewDiagnosis(Entity *person);
+    /*@}*/
 
 	void addLifeExpectancyRecordTime(Time time) { timesToRecordLE.push_back(time); }
     void setMedianLECI(double ci) { medianLECI = ci; }

@@ -408,7 +408,7 @@ void Simulation::Step()
         {
             if(intervention.AffectsSimulation())
             {
-	        intervention.Apply(time_, *this);
+	            intervention.Apply(time_, *this);
             }
 
             if(intervention.AffectsPopulation())
@@ -544,10 +544,10 @@ void Simulation::Step()
         seconds_remaining -= hours_remaining * 3600;
         int minutes_remaining = seconds_remaining / 60;
         seconds_remaining -= minutes_remaining * 60;
-	auto message = run_time_predictor_.MakeProgressBar(40) + " " +
-	    std::to_string(time_.in_months()) + " " + std::to_string(hours_remaining) + ":" +
-	    std::to_string(minutes_remaining) + ":" + std::to_string(seconds_remaining);
-	std::cout << message << std::endl;
+	    auto message = run_time_predictor_.MakeProgressBar(40) + " " +
+	        std::to_string(time_.in_months()) + " " + std::to_string(hours_remaining) + ":" +
+	        std::to_string(minutes_remaining) + ":" + std::to_string(seconds_remaining);
+	    std::cout << message << std::endl;
     }
     else if(time_ > Time(0, 1))
     {

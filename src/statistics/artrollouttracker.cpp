@@ -27,14 +27,10 @@ namespace transm {
 
     const std::string ArtRolloutTracker::TRACKED_OUTCOMES[] =
             {
-//                    "test_result",
-//                    "eligible_for_access",
-//                    "accessing_treatment",
-//                    "eligible_for_treatment",
-//                    "treated",
-//                    "death_on_treatment",
+                    "plwh",
                     "in_care",
                     "enrolled_within_30",
+                    "treated",
                     "suppressed_vl"
             };
 
@@ -98,7 +94,7 @@ namespace transm {
         }
     }
 
-    void ArtRolloutTracker::recordTreatmentAccessEligiblity(Entity *person)
+    void ArtRolloutTracker::recordTreatmentAccessEligibility(Entity *person)
     {
         counter.Increment(PersonBucket(*person, ageRanges), "eligible_for_access");
     }
@@ -108,7 +104,7 @@ namespace transm {
         counter.Increment(PersonBucket(*person, ageRanges), "accessing_treatment");
     }
 
-    void ArtRolloutTracker::recordTreatmentEligiblity(Entity *person)
+    void ArtRolloutTracker::recordTreatmentEligibility(Entity *person)
     {
         counter.Increment(PersonBucket(*person, ageRanges), "eligible_for_treatment");
     }
@@ -172,7 +168,7 @@ namespace transm {
             }
             else if(outcome == "treated")
             {
-                section_header = "In Treatment";
+                section_header = "On ART"; //previoulu "In Treatment"
             }
             else if (outcome == "death_on_treatment")
             {
@@ -190,6 +186,9 @@ namespace transm {
             }
             else if (outcome == "enrolled_within_30") {
                 section_header = "Enrolled Within 30 days";
+            }
+            else if (outcome == "plwh") {
+                section_header = "Person Living with HIV";
             }
 
 
@@ -247,15 +246,15 @@ namespace transm {
 //                SetHeaderCell(column, 3, RISK_GROUP_NAMES[riskGroupIndex]);
 //            }
 
-            if(outcome == "test_result")
-            {
-                SetHeaderCell(column, 2, "Test Result");
-
-                for(int testResultIndex = 0; testResultIndex < SimContext::TEST_RESULT_NUM; ++testResultIndex, ++column)
-                {
-                    SetHeaderCell(column, 3, SimContext::TEST_RESULT_STRS[testResultIndex]);
-                }
-            }
+//            if(outcome == "test_result")
+//            {
+//                SetHeaderCell(column, 2, "Test Result");
+//
+//                for(int testResultIndex = 0; testResultIndex < SimContext::TEST_RESULT_NUM; ++testResultIndex, ++column)
+//                {
+//                    SetHeaderCell(column, 3, SimContext::TEST_RESULT_STRS[testResultIndex]);
+//                }
+//            }
         }
     }
 
@@ -418,14 +417,25 @@ namespace transm {
         counter.Increment(PersonBucket(*person, ageRanges), "suppressed_vl");
     }
 
-    void ArtRolloutTracker::recordEnrolledInThirty(Entity *person) {
+    void ArtRolloutTracker::recordEnrolledInThirtyDays(Entity *person) {
         counter.Increment(PersonBucket(*person, ageRanges), "enrolled_within_30");
 
     }
 
+        /* Counts number of people living with HIV+ */
+    void ArtRolloutTracker::recordNewDiagnosis(Entity *person) {
+        counter.Increment(PersonBucket(*person, ageRanges), "new_diagnosis");
+    }
+
+    /* Counts number of people on HIV_CARE_IN_CARE */
     void ArtRolloutTracker::recordInCare(Entity *person) {
         counter.Increment(PersonBucket(*person, ageRanges), "in_care");
 
+    }
+
+    /* Counts number of people living with HIV+ */
+    void ArtRolloutTracker::recordPLWH(Entity *person) {
+        counter.Increment(PersonBucket(*person, ageRanges), "plwh");
     }
 
 } // namespace transm

@@ -19,22 +19,31 @@ class Population;
 class ArtRolloutTracker : protected TabularOutput
 {
 public:
+    /** Default constructor */
 	ArtRolloutTracker();
+
+	/** Deconstructor */
 	~ArtRolloutTracker();
 
 	void SetAgeRanges(const std::vector<AgeRange> &ageRanges);
 
-	void recordTest(Entity *person, bool accepted, bool returned, SimContext::TEST_RESULT result);
-	void recordTreatmentAccessEligiblity(Entity *person);
+	/** Recorders */
+    /*@{*/
+    void recordTest(Entity *person, bool accepted, bool returned, SimContext::TEST_RESULT result);
+	void recordTreatmentAccessEligibility(Entity *person);
 	void recordTreatmentAccess(Entity *person);
-	void recordTreatmentEligiblity(Entity *person);
+	void recordTreatmentEligibility(Entity *person);
 	void recordTreatment(Entity *person);
 	void recordTreatmentDeath(Entity *person);
 	void recordTreatmentSlots(int numSlots);
 
-	void recordSuppressedVL(Entity *person);
-	void recordEnrolledInThirty(Entity *person);
+	/* Stuff for Miami analysis for HIC care continuum */
+	void recordSuppressedVL(Entity *person);            /****> Record the suppressed VL = lowest level VL */
+	void recordEnrolledInThirtyDays(Entity *person);
 	void recordInCare(Entity *person);
+    void recordPLWH(Entity *person);
+    void recordNewDiagnosis(Entity *person);
+    /*@}*/
 
 	void printArtRolloutOutcomes(Time time, std::ostream &_outStream, Population *_population);
 
