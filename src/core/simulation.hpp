@@ -19,129 +19,133 @@
 
 namespace transm {
 
-class Simulation
-{
-public:
-	Simulation(BatchStatus &batch_status);
+    class Simulation {
+    public:
+        explicit Simulation(BatchStatus &batch_status);
 
-	~Simulation();
+        ~Simulation();
 
-    void Initialize(SimulationParameters &parameters);
+        void Initialize(SimulationParameters &parameters);
 
-	Outputs Run();
+        Outputs Run();
 
-	//returns eventParams.cepacRunStats for adding to the general popstats
-	RunStats &GetCEPACRunStats();
+        //returns eventParams.cepacRunStats for adding to the general popstats
+        RunStats &GetCEPACRunStats();
 
-	//returns eventParams.cepacCostStats for adding to the general popstats
-	CostStats &GetCEPACCostStats();
+        //returns eventParams.cepacCostStats for adding to the general popstats
+        CostStats &GetCEPACCostStats();
 
-	//returns population->popStats information for creating popStats-like file for transmission output
-	PopulationStatisticsOld &GetPopulationStatistics();
+        //returns population->popStats information for creating popStats-like file for transmission output
+        PopulationStatisticsOld &GetPopulationStatistics();
 
-	EventParams &GetEventParams();
+        EventParams &GetEventParams();
 
-	double GetPrevalence() { return prevalence_; }
+        double GetPrevalence() { return prevalence_; }
 
-	double GetIncidence() { return incidence_; }
+        double GetIncidence() { return incidence_; }
 
-	Time GetTime() { return time_; }
+        Time GetTime() { return time_; }
 
-	void RegisterTargetGroup(const TargetGroup &group);
+        void RegisterTargetGroup(const TargetGroup &group);
 
-	Population &GetPopulation() { return population_; }
-    const Population &GetPopulation() const { return population_; }
+        Population &GetPopulation() { return population_; }
 
-	void SetDuration(TimeSpan duration) { duration_ = duration; }
+        const Population &GetPopulation() const { return population_; }
 
-	void SetFixedSeed(int seed);
+        void SetDuration(TimeSpan duration) { duration_ = duration; }
 
-	void SetName(const std::string &name) 
-    { 
-        name_ = name; 
-        parameters_.simName = name; 
-        batch_status_.set_state(name_, SimState::queued);
-    }
+        void SetFixedSeed(int seed);
 
-	void AddLifeExpectancyRecordTime(Time time) { population_.populationStatistics.addLifeExpectancyRecordTime(time); }
+        void SetName(const std::string &name) {
+            name_ = name;
+            parameters_.simName = name;
+            batch_status_.set_state(name_, SimState::queued);
+        }
 
-    void SetLifeExpectancyConfidenceInterval(double ci) { population_.populationStatistics.setMedianLECI(ci); }
+        void AddLifeExpectancyRecordTime(Time time) {
+            population_.populationStatistics.addLifeExpectancyRecordTime(time);
+        }
 
-	void AddPartnerAcquisitionRecordTime(Time time) { population_.populationStatistics.addPartnerAcquisitionRecordTime(time); }
+        void SetLifeExpectancyConfidenceInterval(double ci) { population_.populationStatistics.setMedianLECI(ci); }
 
-    void RegisterPopulationIntervention(const Intervention &intervention);
+        void AddPartnerAcquisitionRecordTime(Time time) {
+            population_.populationStatistics.addPartnerAcquisitionRecordTime(time);
+        }
 
-private:
-	friend class SimulationBuilderXml;
-    friend class Intervention;
+        void RegisterPopulationIntervention(const Intervention &intervention);
 
-	struct TreatmentFile
-	{
-		std::string file_name;
-		int file_number;
-		Time time;
-		int target_population;
-	};
+    private:
+        friend class SimulationBuilderXml;
 
-private:
-	friend class SimulationBuilderXml;
-	friend class Intervention;
+        friend class Intervention;
 
-	void FirstStep();
+        struct TreatmentFile {
+            std::string file_name;
+            int file_number;
+            Time time;
+            int target_population;
+        };
 
-	void LastStep();
+    private:
+        friend class SimulationBuilderXml;
 
-	void Step();
+        friend class Intervention;
 
-	/** Sets the Non aids death from a cepac simcontext */
-	void SetNonAidsDeathFromCepac(SimContext &context, std::vector<double> &male, std::vector<double> &female);
+        void FirstStep();
 
-	/** perform one timestep of simulation */
-    std::size_t SimulateMonth();
+        void LastStep();
 
-    void UpdateInterventions(const std::unordered_set<Entity *> &dead_people);
+        void Step();
 
-	std::string name_;
+        /** Sets the Non aids death from a cepac simcontext */
+        void SetNonAidsDeathFromCepac(SimContext &context, std::vector<double> &male, std::vector<double> &female);
 
-	/** current time in the simulation */
-	Time time_;
+        /** perform one timestep of simulation */
+        std::size_t SimulateMonth();
 
-	/** number of months to run this file in a sequence*/
-	TimeSpan duration_;
+        void UpdateInterventions(const std::unordered_set<Entity *> &dead_people);
 
-	/** housekeeping parameters that are universal to each event in the simulation */
-	EventParams parameters_;
+        std::string name_;
 
-	/** current population */
-	Population population_;
+        /** current time in the simulation */
+        Time time_;
 
-	bool passedCalibration_;
+        /** number of months to run this file in a sequence*/
+        TimeSpan duration_;
 
-	bool hasPassedFirstMonthCalibPrev_;
+        /** housekeeping parameters that are universal to each event in the simulation */
+        EventParams parameters_;
 
-	Time monthOfFirstMonthCalibPrev_;
+        /** current population */
+        Population population_;
 
-	uint32_t rng_seed_;
+        bool passedCalibration_;
 
-	double incidence_;
+        bool hasPassedFirstMonthCalibPrev_;
 
-	double prevalence_;
+        Time monthOfFirstMonthCalibPrev_;
 
-	HighResolutionTimer timer_;
+        uint32_t rng_seed_;
 
-	Outputs outputs_;
+        double incidence_;
 
-    std::vector<TargetGroup> groups_;
+        double prevalence_;
 
-    std::vector<Intervention> interventions_;
+        HighResolutionTimer timer_;
 
-    std::vector<std::pair<int, double>> population_size_;
+        Outputs outputs_;
 
-    RunTimePredictor run_time_predictor_;
+        std::vector<TargetGroup> groups_;
 
-    double start_time_;
+        std::vector<Intervention> interventions_;
 
-    BatchStatus &batch_status_;
-};
+        std::vector<std::pair<int, double>> population_size_;
+
+        RunTimePredictor run_time_predictor_;
+
+        double start_time_;
+
+        BatchStatus &batch_status_;
+    };
 
 } // namespace transm

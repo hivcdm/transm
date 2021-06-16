@@ -53,19 +53,19 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake
+CMAKE_COMMAND = /snap/clion/152/bin/cmake/linux/bin/cmake
 
 # The command to remove a file.
-RM = /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E rm -f
+RM = /snap/clion/152/bin/cmake/linux/bin/cmake -E rm -f
 
 # Escaping for special characters.
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/sas0507/Codes/hiv-CDM/transm
+CMAKE_SOURCE_DIR = /home/saman/Codes/hiv-CDM/transm-miami
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug
+CMAKE_BINARY_DIR = /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug
 
 # Utility rule file for pugixml_project.
 
@@ -83,52 +83,52 @@ CMakeFiles/pugixml_project-complete: third-party/src/pugixml_project-stamp/pugix
 CMakeFiles/pugixml_project-complete: third-party/src/pugixml_project-stamp/pugixml_project-configure
 CMakeFiles/pugixml_project-complete: third-party/src/pugixml_project-stamp/pugixml_project-build
 CMakeFiles/pugixml_project-complete: third-party/src/pugixml_project-stamp/pugixml_project-install
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Completed 'pugixml_project'"
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E make_directory /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/CMakeFiles
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/CMakeFiles/pugixml_project-complete
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/pugixml_project-stamp/pugixml_project-done
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Completed 'pugixml_project'"
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E make_directory /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles/pugixml_project-complete
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project-stamp/pugixml_project-done
 
 third-party/src/pugixml_project-stamp/pugixml_project-install: third-party/src/pugixml_project-stamp/pugixml_project-build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Performing install step for 'pugixml_project'"
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/pugixml_project-build && mv libpugixml.a /Users/sas0507/Codes/hiv-CDM/transm/lib
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/pugixml_project-build && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/pugixml_project-stamp/pugixml_project-install
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Performing install step for 'pugixml_project'"
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project-build && mv libpugixml.a /home/saman/Codes/hiv-CDM/transm-miami/lib
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project-build && /snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project-stamp/pugixml_project-install
 
 third-party/src/pugixml_project-stamp/pugixml_project-mkdir:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Creating directories for 'pugixml_project'"
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E make_directory /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/pugixml_project
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E make_directory /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/pugixml_project-build
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E make_directory /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E make_directory /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/tmp
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E make_directory /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/pugixml_project-stamp
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E make_directory /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E make_directory /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/pugixml_project-stamp
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/pugixml_project-stamp/pugixml_project-mkdir
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Creating directories for 'pugixml_project'"
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E make_directory /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E make_directory /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project-build
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E make_directory /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E make_directory /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/tmp
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E make_directory /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project-stamp
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E make_directory /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E make_directory /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project-stamp
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project-stamp/pugixml_project-mkdir
 
 third-party/src/pugixml_project-stamp/pugixml_project-download: third-party/src/pugixml_project-stamp/pugixml_project-gitinfo.txt
 third-party/src/pugixml_project-stamp/pugixml_project-download: third-party/src/pugixml_project-stamp/pugixml_project-mkdir
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Performing download step (git clone) for 'pugixml_project'"
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -P /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/tmp/pugixml_project-gitclone.cmake
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/pugixml_project-stamp/pugixml_project-download
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Performing download step (git clone) for 'pugixml_project'"
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src && /snap/clion/152/bin/cmake/linux/bin/cmake -P /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/tmp/pugixml_project-gitclone.cmake
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src && /snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project-stamp/pugixml_project-download
 
 third-party/src/pugixml_project-stamp/pugixml_project-update: third-party/src/pugixml_project-stamp/pugixml_project-download
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Performing update step for 'pugixml_project'"
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/pugixml_project && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -P /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/tmp/pugixml_project-gitupdate.cmake
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Performing update step for 'pugixml_project'"
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project && /snap/clion/152/bin/cmake/linux/bin/cmake -P /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/tmp/pugixml_project-gitupdate.cmake
 
 third-party/src/pugixml_project-stamp/pugixml_project-patch: third-party/src/pugixml_project-stamp/pugixml_project-update
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "No patch step for 'pugixml_project'"
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E echo_append
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/pugixml_project-stamp/pugixml_project-patch
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "No patch step for 'pugixml_project'"
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E echo_append
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project-stamp/pugixml_project-patch
 
 third-party/src/pugixml_project-stamp/pugixml_project-configure: third-party/tmp/pugixml_project-cfgcmd.txt
 third-party/src/pugixml_project-stamp/pugixml_project-configure: third-party/src/pugixml_project-stamp/pugixml_project-patch
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Performing configure step for 'pugixml_project'"
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/pugixml_project-build && cmake -DCMAKE_BUILD_TYPE=Release ../pugixml_project
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/pugixml_project-build && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/pugixml_project-stamp/pugixml_project-configure
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Performing configure step for 'pugixml_project'"
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project-build && cmake -DCMAKE_BUILD_TYPE=Release ../pugixml_project
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project-build && /snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project-stamp/pugixml_project-configure
 
 third-party/src/pugixml_project-stamp/pugixml_project-build: third-party/src/pugixml_project-stamp/pugixml_project-configure
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Performing build step for 'pugixml_project'"
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/pugixml_project-build && make pugixml
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/pugixml_project-build && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/pugixml_project-stamp/pugixml_project-build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Performing build step for 'pugixml_project'"
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project-build && make pugixml
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project-build && /snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project-stamp/pugixml_project-build
 
 pugixml_project: CMakeFiles/pugixml_project
 pugixml_project: CMakeFiles/pugixml_project-complete
@@ -153,6 +153,6 @@ CMakeFiles/pugixml_project.dir/clean:
 .PHONY : CMakeFiles/pugixml_project.dir/clean
 
 CMakeFiles/pugixml_project.dir/depend:
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/sas0507/Codes/hiv-CDM/transm /Users/sas0507/Codes/hiv-CDM/transm /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/CMakeFiles/pugixml_project.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/saman/Codes/hiv-CDM/transm-miami /home/saman/Codes/hiv-CDM/transm-miami /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles/pugixml_project.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/pugixml_project.dir/depend
 

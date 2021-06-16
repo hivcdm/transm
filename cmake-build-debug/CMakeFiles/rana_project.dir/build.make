@@ -53,19 +53,19 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake
+CMAKE_COMMAND = /snap/clion/152/bin/cmake/linux/bin/cmake
 
 # The command to remove a file.
-RM = /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E rm -f
+RM = /snap/clion/152/bin/cmake/linux/bin/cmake -E rm -f
 
 # Escaping for special characters.
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/sas0507/Codes/hiv-CDM/transm
+CMAKE_SOURCE_DIR = /home/saman/Codes/hiv-CDM/transm-miami
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug
+CMAKE_BINARY_DIR = /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug
 
 # Utility rule file for rana_project.
 
@@ -83,52 +83,52 @@ CMakeFiles/rana_project-complete: third-party/src/rana_project-stamp/rana_projec
 CMakeFiles/rana_project-complete: third-party/src/rana_project-stamp/rana_project-configure
 CMakeFiles/rana_project-complete: third-party/src/rana_project-stamp/rana_project-build
 CMakeFiles/rana_project-complete: third-party/src/rana_project-stamp/rana_project-install
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Completed 'rana_project'"
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E make_directory /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/CMakeFiles
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/CMakeFiles/rana_project-complete
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/rana_project-stamp/rana_project-done
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Completed 'rana_project'"
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E make_directory /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles/rana_project-complete
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/rana_project-stamp/rana_project-done
 
 third-party/src/rana_project-stamp/rana_project-install: third-party/src/rana_project-stamp/rana_project-build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "No install step for 'rana_project'"
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/rana_project-build && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E echo_append
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/rana_project-build && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/rana_project-stamp/rana_project-install
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "No install step for 'rana_project'"
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/rana_project-build && /snap/clion/152/bin/cmake/linux/bin/cmake -E echo_append
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/rana_project-build && /snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/rana_project-stamp/rana_project-install
 
 third-party/src/rana_project-stamp/rana_project-mkdir:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Creating directories for 'rana_project'"
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E make_directory /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/rana_project
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E make_directory /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/rana_project-build
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E make_directory /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E make_directory /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/tmp
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E make_directory /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/rana_project-stamp
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E make_directory /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E make_directory /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/rana_project-stamp
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/rana_project-stamp/rana_project-mkdir
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Creating directories for 'rana_project'"
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E make_directory /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/rana_project
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E make_directory /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/rana_project-build
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E make_directory /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E make_directory /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/tmp
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E make_directory /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/rana_project-stamp
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E make_directory /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E make_directory /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/rana_project-stamp
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/rana_project-stamp/rana_project-mkdir
 
 third-party/src/rana_project-stamp/rana_project-download: third-party/src/rana_project-stamp/rana_project-gitinfo.txt
 third-party/src/rana_project-stamp/rana_project-download: third-party/src/rana_project-stamp/rana_project-mkdir
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Performing download step (git clone) for 'rana_project'"
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -P /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/tmp/rana_project-gitclone.cmake
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/rana_project-stamp/rana_project-download
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Performing download step (git clone) for 'rana_project'"
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src && /snap/clion/152/bin/cmake/linux/bin/cmake -P /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/tmp/rana_project-gitclone.cmake
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src && /snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/rana_project-stamp/rana_project-download
 
 third-party/src/rana_project-stamp/rana_project-update: third-party/src/rana_project-stamp/rana_project-download
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Performing update step for 'rana_project'"
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/rana_project && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -P /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/tmp/rana_project-gitupdate.cmake
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Performing update step for 'rana_project'"
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/rana_project && /snap/clion/152/bin/cmake/linux/bin/cmake -P /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/tmp/rana_project-gitupdate.cmake
 
 third-party/src/rana_project-stamp/rana_project-patch: third-party/src/rana_project-stamp/rana_project-update
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "No patch step for 'rana_project'"
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E echo_append
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/rana_project-stamp/rana_project-patch
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "No patch step for 'rana_project'"
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E echo_append
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/rana_project-stamp/rana_project-patch
 
 third-party/src/rana_project-stamp/rana_project-configure: third-party/tmp/rana_project-cfgcmd.txt
 third-party/src/rana_project-stamp/rana_project-configure: third-party/src/rana_project-stamp/rana_project-patch
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "No configure step for 'rana_project'"
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/rana_project-build && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E echo_append
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/rana_project-build && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/rana_project-stamp/rana_project-configure
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "No configure step for 'rana_project'"
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/rana_project-build && /snap/clion/152/bin/cmake/linux/bin/cmake -E echo_append
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/rana_project-build && /snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/rana_project-stamp/rana_project-configure
 
 third-party/src/rana_project-stamp/rana_project-build: third-party/src/rana_project-stamp/rana_project-configure
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "No build step for 'rana_project'"
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/rana_project-build && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E echo_append
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/rana_project-build && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/third-party/src/rana_project-stamp/rana_project-build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "No build step for 'rana_project'"
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/rana_project-build && /snap/clion/152/bin/cmake/linux/bin/cmake -E echo_append
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/rana_project-build && /snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/rana_project-stamp/rana_project-build
 
 rana_project: CMakeFiles/rana_project
 rana_project: CMakeFiles/rana_project-complete
@@ -153,6 +153,6 @@ CMakeFiles/rana_project.dir/clean:
 .PHONY : CMakeFiles/rana_project.dir/clean
 
 CMakeFiles/rana_project.dir/depend:
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/sas0507/Codes/hiv-CDM/transm /Users/sas0507/Codes/hiv-CDM/transm /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-debug/CMakeFiles/rana_project.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/saman/Codes/hiv-CDM/transm-miami /home/saman/Codes/hiv-CDM/transm-miami /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles/rana_project.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/rana_project.dir/depend
 

@@ -53,19 +53,19 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake
+CMAKE_COMMAND = /snap/clion/152/bin/cmake/linux/bin/cmake
 
 # The command to remove a file.
-RM = /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E rm -f
+RM = /snap/clion/152/bin/cmake/linux/bin/cmake -E rm -f
 
 # Escaping for special characters.
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/sas0507/Codes/hiv-CDM/transm
+CMAKE_SOURCE_DIR = /home/saman/Codes/hiv-CDM/transm-miami
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release
+CMAKE_BINARY_DIR = /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release
 
 # Utility rule file for cepac_project.
 
@@ -83,53 +83,53 @@ CMakeFiles/cepac_project-complete: third-party/src/cepac_project-stamp/cepac_pro
 CMakeFiles/cepac_project-complete: third-party/src/cepac_project-stamp/cepac_project-configure
 CMakeFiles/cepac_project-complete: third-party/src/cepac_project-stamp/cepac_project-build
 CMakeFiles/cepac_project-complete: third-party/src/cepac_project-stamp/cepac_project-install
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Completed 'cepac_project'"
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E make_directory /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/CMakeFiles
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/CMakeFiles/cepac_project-complete
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-done
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Completed 'cepac_project'"
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E make_directory /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/CMakeFiles
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/CMakeFiles/cepac_project-complete
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-done
 
 third-party/src/cepac_project-stamp/cepac_project-install: third-party/src/cepac_project-stamp/cepac_project-build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Performing install step for 'cepac_project'"
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project-build && mv libcepac.a /Users/sas0507/Codes/hiv-CDM/transm/lib/
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project-build && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-install
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Performing install step for 'cepac_project'"
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project-build && mv libcepac.a /home/saman/Codes/hiv-CDM/transm-miami/lib/
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project-build && /snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-install
 
 third-party/src/cepac_project-stamp/cepac_project-mkdir:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Creating directories for 'cepac_project'"
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E make_directory /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E make_directory /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project-build
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E make_directory /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E make_directory /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/tmp
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E make_directory /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project-stamp
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E make_directory /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E make_directory /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project-stamp
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-mkdir
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Creating directories for 'cepac_project'"
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E make_directory /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E make_directory /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project-build
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E make_directory /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E make_directory /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/tmp
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E make_directory /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project-stamp
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E make_directory /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E make_directory /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project-stamp
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-mkdir
 
 third-party/src/cepac_project-stamp/cepac_project-download: third-party/src/cepac_project-stamp/cepac_project-gitinfo.txt
 third-party/src/cepac_project-stamp/cepac_project-download: third-party/src/cepac_project-stamp/cepac_project-mkdir
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Performing download step (git clone) for 'cepac_project'"
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -P /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/tmp/cepac_project-gitclone.cmake
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-download
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Performing download step (git clone) for 'cepac_project'"
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src && /snap/clion/152/bin/cmake/linux/bin/cmake -P /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/tmp/cepac_project-gitclone.cmake
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src && /snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-download
 
 third-party/src/cepac_project-stamp/cepac_project-update: third-party/src/cepac_project-stamp/cepac_project-download
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "No update step for 'cepac_project'"
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E echo_append
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-update
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "No update step for 'cepac_project'"
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project && /snap/clion/152/bin/cmake/linux/bin/cmake -E echo_append
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project && /snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-update
 
 third-party/src/cepac_project-stamp/cepac_project-patch: third-party/src/cepac_project-stamp/cepac_project-update
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "No patch step for 'cepac_project'"
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E echo_append
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-patch
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "No patch step for 'cepac_project'"
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E echo_append
+	/snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-patch
 
 third-party/src/cepac_project-stamp/cepac_project-configure: third-party/tmp/cepac_project-cfgcmd.txt
 third-party/src/cepac_project-stamp/cepac_project-configure: third-party/src/cepac_project-stamp/cepac_project-patch
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Performing configure step for 'cepac_project'"
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project-build && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Release "-GCodeBlocks - Unix Makefiles" /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project-build && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-configure
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Performing configure step for 'cepac_project'"
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project-build && /snap/clion/152/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Release "-GCodeBlocks - Unix Makefiles" /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project-build && /snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-configure
 
 third-party/src/cepac_project-stamp/cepac_project-build: third-party/src/cepac_project-stamp/cepac_project-configure
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Performing build step for 'cepac_project'"
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project-build && make
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project-build && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E touch /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Performing build step for 'cepac_project'"
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project-build && make
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project-build && /snap/clion/152/bin/cmake/linux/bin/cmake -E touch /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-build
 
 cepac_project: CMakeFiles/cepac_project
 cepac_project: CMakeFiles/cepac_project-complete
@@ -154,6 +154,6 @@ CMakeFiles/cepac_project.dir/clean:
 .PHONY : CMakeFiles/cepac_project.dir/clean
 
 CMakeFiles/cepac_project.dir/depend:
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/sas0507/Codes/hiv-CDM/transm /Users/sas0507/Codes/hiv-CDM/transm /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/CMakeFiles/cepac_project.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/saman/Codes/hiv-CDM/transm-miami /home/saman/Codes/hiv-CDM/transm-miami /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/CMakeFiles/cepac_project.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/cepac_project.dir/depend
 

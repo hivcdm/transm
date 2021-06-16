@@ -53,19 +53,19 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake
+CMAKE_COMMAND = /snap/clion/152/bin/cmake/linux/bin/cmake
 
 # The command to remove a file.
-RM = /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E rm -f
+RM = /snap/clion/152/bin/cmake/linux/bin/cmake -E rm -f
 
 # Escaping for special characters.
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/sas0507/Codes/hiv-CDM/transm
+CMAKE_SOURCE_DIR = /home/saman/Codes/hiv-CDM/transm-miami
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release
+CMAKE_BINARY_DIR = /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release
 
 # Utility rule file for create-version-header.
 
@@ -73,8 +73,8 @@ CMAKE_BINARY_DIR = /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release
 include CMakeFiles/create-version-header.dir/progress.make
 
 CMakeFiles/create-version-header:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Creating version.h"
-	../version_header.sh /Users/sas0507/Codes/hiv-CDM/transm/ 4.5.1
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Creating version.h"
+	../version_header.sh /home/saman/Codes/hiv-CDM/transm-miami/ 4.5.1
 
 create-version-header: CMakeFiles/create-version-header
 create-version-header: CMakeFiles/create-version-header.dir/build.make
@@ -91,6 +91,6 @@ CMakeFiles/create-version-header.dir/clean:
 .PHONY : CMakeFiles/create-version-header.dir/clean
 
 CMakeFiles/create-version-header.dir/depend:
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/sas0507/Codes/hiv-CDM/transm /Users/sas0507/Codes/hiv-CDM/transm /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/CMakeFiles/create-version-header.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/saman/Codes/hiv-CDM/transm-miami /home/saman/Codes/hiv-CDM/transm-miami /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/CMakeFiles/create-version-header.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/create-version-header.dir/depend
 

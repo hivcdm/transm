@@ -53,19 +53,19 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake
+CMAKE_COMMAND = /snap/clion/152/bin/cmake/linux/bin/cmake
 
 # The command to remove a file.
-RM = /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E rm -f
+RM = /snap/clion/152/bin/cmake/linux/bin/cmake -E rm -f
 
 # Escaping for special characters.
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/sas0507/Codes/hiv-CDM/transm
+CMAKE_SOURCE_DIR = /home/saman/Codes/hiv-CDM/transm-miami
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release
+CMAKE_BINARY_DIR = /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release
 
 # Utility rule file for clean-cmake-files.
 
@@ -73,7 +73,7 @@ CMAKE_BINARY_DIR = /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release
 include CMakeFiles/clean-cmake-files.dir/progress.make
 
 CMakeFiles/clean-cmake-files:
-	/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -P /Users/sas0507/Codes/hiv-CDM/transm/clean-all.cmake
+	/snap/clion/152/bin/cmake/linux/bin/cmake -P /home/saman/Codes/hiv-CDM/transm-miami/clean-all.cmake
 
 clean-cmake-files: CMakeFiles/clean-cmake-files
 clean-cmake-files: CMakeFiles/clean-cmake-files.dir/build.make
@@ -90,6 +90,6 @@ CMakeFiles/clean-cmake-files.dir/clean:
 .PHONY : CMakeFiles/clean-cmake-files.dir/clean
 
 CMakeFiles/clean-cmake-files.dir/depend:
-	cd /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/sas0507/Codes/hiv-CDM/transm /Users/sas0507/Codes/hiv-CDM/transm /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release /Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/CMakeFiles/clean-cmake-files.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/saman/Codes/hiv-CDM/transm-miami /home/saman/Codes/hiv-CDM/transm-miami /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/CMakeFiles/clean-cmake-files.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/clean-cmake-files.dir/depend
 
