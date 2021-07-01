@@ -221,6 +221,22 @@ namespace transm {
                 /* if the ART is enabled check if the entity is infected (detected) .. */
                 if (parameters_.useRollout && parameters_.treatedContext && p->isDetected()) {
 
+                    if (!p->newDiagnosis) {
+                        populationStatistics.recordNewDiagnosis(p);
+                        p->newDiagnosis = true;
+                    }
+
+                    /* Check if they are Loss to Follow Up */
+                    if (p->isLTFU()) {
+                        populationStatistics.recordLTFU(p);
+                    }
+
+                    /* Check if anyone is unlinked */
+                    if (p->isUnLinked()) {
+                        populationStatistics.recordUnlinked(p);
+                    }
+
+
                     /* Number of diagnosed (detected) HIV positives counts as PLWH (person living with HIV) */
                     if (p->isDetected()) {
                         if (p->ageDetected == Age(0, -1)) {
@@ -1468,6 +1484,9 @@ Iterates through current entities in the population and returns a total number o
         } else {
             numSlots = static_cast<int>(targetTreatmentSlots) - numAccessingTreatment;
         }
+
+        /* maximizing the number of slots */
+        numSlots = 1000000;
 
         return numSlots;
     }

@@ -991,8 +991,18 @@ namespace transm {
     }
 
     void PopulationStatisticsOld::recordNewDiagnosis(Entity *person) {
-        uniqueYearlyNewDiagnosis.insert(person);
+        uniqueYearlyLTFU.insert(person);
         artTracker.recordNewDiagnosis(person);
+    }
+
+    void PopulationStatisticsOld::recordLTFU(Entity *person) {
+        uniqueYearlyNewDiagnosis.insert(person);
+        artTracker.recordLTFU(person);
+    }
+
+    void PopulationStatisticsOld::recordUnlinked(Entity *person) {
+        uniqueYearlyUnlinked.insert(person);
+        artTracker.recordUnlinked(person);
     }
 
     void PopulationStatisticsOld::resetYear(Time newYear) {
@@ -1022,6 +1032,9 @@ namespace transm {
         uniqueYearlyEnrolledInThirtyDays.clear();
         uniqueYearlyPLWH.clear();
         uniqueYearlyNewDiagnosis.clear();
+
+        uniqueYearlyLTFU.clear();
+        uniqueYearlyUnlinked.clear();
 
     }
 

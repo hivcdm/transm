@@ -115,22 +115,23 @@ namespace transm {
         /** Setting assortativenesses */
         virtual void SetRiskAssortativeness(double assortativeness) = 0;
 
-        virtual void SetRaceEthnicAssortativeness(DemographicProfile::Race race,
-                                                  DemographicProfile::Ethnicity ethnicity,
-                                                  double assortativeness) = 0;
+        virtual void SetRaceEthnicAssortativeness(DemographicProfile::Race race, DemographicProfile::Ethnicity ethnicity, double assortativeness) = 0;
 
         void UsePreExposureProphylaxis(double adherence);
 
-        void SetTargetedCepacContext(SimContext *context) {
+        void SetTargetedCepacContext(SimContext *context)
+        {
             setSimContext(context);
             targetedCepacContext_ = context;
         }
 
-        bool HasTargetedCepacContext() const {
+        bool HasTargetedCepacContext() const
+        {
             return targetedCepacContext_ != nullptr;
         }
 
-        SimContext *GetTargetedCepacContext() const {
+        SimContext *GetTargetedCepacContext() const
+        {
             return targetedCepacContext_;
         }
 
@@ -184,8 +185,6 @@ namespace transm {
         /* flag to indicate whether this person has CEPAC data */
         bool wentThroughCEPAC;
 
-        bool newDiagnosis;
-
         /* a pointer to a CEPAC patient object which stores all post-infection health states */
         Patient *cepacPatient;
 
@@ -224,44 +223,48 @@ namespace transm {
         // we pass in _eventParams because becomeInfected() needs it...
         Entity(Age age, unsigned int _populationID, const PrepParameters &prepParameters);
 
+        // deconstructor
         virtual ~Entity();
 
-        //age of Entity (in months)
+        // age of Entity (in months)
         Age age;
 
-        //age of Entity on model init (in months)
+        // age of Entity on model init (in months)
         Age initAge;
 
-        //age of Entity when they got infected (-1 for uninfected)
+        // age of Entity when they got infected (-1 for uninfected)
         Age ageInfected;
 
         /* Age of Entity when is in care */
         Age ageInCare;
 
-        /* Age of Entity when is detected HIV+ */
+        /* Age of Entity when is detected HIV */
         Age ageDetected;
 
+        /* whether this Entity is already detected HIV */
         bool alreadyDetected;
 
-        //whether this person is dead or not
+        bool newDiagnosis;
+
+        // whether this Entity is dead or not
         bool death;
 
-        //Entity's infected status
+        // Entity's infected status
         HIVStatus hivStatus;
 
-        //CD4 cell count
+        // CD4 cell count
         double cd4;
 
-        //HIV Viral Load
+        // HIV Viral Load
         HVLStrata hvl;
 
-        //HIV Viral Load of person from patient object.  No primary or late stage stratas
+        // HIV Viral Load of person from patient object.  No primary or late stage stratas
         HVLStrata currentTrueHvl;
 
-        //Whether this person has observed HIV
+        // Whether this person has observed HIV
         bool isObserved;
 
-        //OI HIstory
+        // OI HIstory
         bool oiHistory[Constants::NumberOfOIs];
 
         DeathStatus deathStatus;
@@ -272,25 +275,28 @@ namespace transm {
 
         bool isEligibleForTreatment(const SimContext::TreatmentInputs::ARTStartPolicy &artStartPolicy);
 
-        //This is for keeping dead people around for graph printing reasons
-        //It mimics the destructor without destroying the Entity object.
+        /**
+         * This is for keeping dead people around for graph printing reasons It mimics the destructor
+         * without destroying the Entity object.
+         */
         void deleteEntityWithoutDeleting();
 
         void ageOneTimeUnit();
 
-        /// <summary>
-        /// call this to infect person...
-        /// if CEPAC bridge is in place, will call CEPAC to determine the health trajectory of this person
-        /// @params _prevalentInfection if true, than this person was a prevalent infection
-        /// </summary>
+        /**
+         * call this to infect person...
+         * if CEPAC bridge is in place, will call CEPAC to determine the health trajectory of this person
+         * @param _generationOfInfection : if true, than this person was a prevalent infection
+         * @param _eventParams
+         */
         void becomeInfected(int _generationOfInfection, EventParams &_eventParams);
 
-        void seedInfection(int _generationOfInfection, EventParams &_eventParams,
-                           bool chronicInfection);
+        void seedInfection(int _generationOfInfection, EventParams &_eventParams, bool chronicInfection);
 
-        /*
+        /**
          * Initializes cepacPatient using the persons current age, gender, and infection status.
-         * Prevalent cases should call "becomeInfected" before calling this function; incident cases will become infected later
+         * Prevalent cases should call "becomeInfected" before calling this function; incident cases will become
+         * infected later.
          */
         void initializeCEPACpatient(EventParams &_eventParams);
 
@@ -301,19 +307,18 @@ namespace transm {
         virtual bool PassedCSWEndAge() const = 0;
 
         /**
-         * @return generationOfInfection
+         * @return generation of infection
          */
-
         int getGenerationOfInfection(bool cap_at_5 = true) const;
 
         /**
-        *	returns the number of partners by partnership type
-        */
+         * @return the number of partners by partnership type
+         */
         int getNumPartners(SexualPartnership::Type);
 
         /**
-        *	returns the number of partners by partnership type that are either the samerisk or different
-        */
+         *	returns the number of partners by partnership type that are either the samerisk or different
+         */
         int getNumPartners(SexualPartnership::Type, bool);
 
         double getQualityOfLife() const {
@@ -646,32 +651,54 @@ namespace transm {
 
         void resetLatestUnformedPartnerships(SexualPartnership::Type type);
 
+        /**
+         * Check if the patient is on ART
+         */
         bool isOnArt() {
             return cepacPatient && cepacPatient->getARTState()->isOnART;
         }
 
-        /*
+        /**
          * Check if the patient is linked to care.
-         * Important note: The patient can be linked but be HIV negative.
-         * */
-        bool isLinked() {
+         * Important notes: 1) The patient can be linked but be HIV negative.
+         *                  2) The patient can be linked but not HIV_CARE_IN_CARE.
+         */
+        bool isLinked() const {
             return cepacPatient && cepacPatient->getMonitoringState()->isLinked;
         }
 
+        /**
+         * Check if the patient is unlinked.
+         */
+        bool isUnLinked() const {
+            return (cepacPatient && cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_UNLINKED);
+        }
+
+        /**
+         * Check if the patient is Loss to Follow Up (LTFU)
+         * @return
+         */
+        bool isLTFU() const {
+            return (cepacPatient && cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_LTFU);
+        }
+
+        /**
+         * This is the same as the definition of Person Living With HIV (PLWH)
+         * @return if the patient is detected HIV positive
+         */
         bool isDetected() const {
             return cepacPatient && cepacPatient->getMonitoringState()->isDetectedHIVPositive;
         }
 
         /*
-         * Check if the patient is actually in care.
+         * Check if the patient is actually in care:
+         * Definition of Person "In Care" according to HIV Care Continuum, Miami 2014-2018 is to have at least one
+         * documented VL or CD4 lab, medical visit or prescription from the first day of the year to the last day of
+         * the third months of next year.
          */
         bool isInCare() const {
-//	    bool visitedAtLeastOnce = cepacPatient->getMonitoringState()->hadPrevClinicVisit;
-//        bool hadCD4Test = cepacPatient->getMonitoringState()->hasObservedCD4;
-//        bool hadHVLTest = cepacPatient->getMonitoringState()->hasObservedHVLStrata;
-//
-//        return (visitedAtLeastOnce || hadCD4Test || hadHVLTest);
-            return (cepacPatient && cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_IN_CARE);
+            return (cepacPatient && (cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_IN_CARE
+                    || cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_RTC ));
         }
 
         /* Check if the patient has suppressed level of VL */

@@ -43,6 +43,8 @@ public:
 	void recordInCare(Entity *person);
     void recordPLWH(Entity *person);
     void recordNewDiagnosis(Entity *person);
+    void recordLTFU(Entity *person);
+    void recordUnlinked(Entity *person);
     /*@}*/
 
 	void printArtRolloutOutcomes(Time time, std::ostream &_outStream, Population *_population);
@@ -50,6 +52,7 @@ public:
 private:
 	static const std::string RISK_GROUP_NAMES[];
 	static const std::string TRACKED_OUTCOMES[];
+    static const std::string BUCKETS[];
 
 	int numTestsOffered;
 	int numTestsAccepted;

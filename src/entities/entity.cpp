@@ -15,14 +15,14 @@ namespace transm {
 
     class EntityPool;
 
-    const std::array<std::string, (std::size_t) RiskLevel::Last> Entity::RiskStrings =
-            {"Low", "High"};
-
     long Entity::idCounter = 0;
     int Entity::numTracesSoFar = 0;
 
-//This is pretty much only used by the NA folks who are NA at the end of the model and need to have their LMs added to total
-//TODO: But maybe they shouldn't?
+    /*
+     * This is pretty much only used by the NA folks who are NA at the end of the model and need to have
+     * their LMs added to total
+     */
+    // TODO: But maybe they shouldn't?
     std::vector<double> Entity::probDeathNatCauses[(std::size_t) DemographicProfile::Gender::Last];
 
     const std::vector<std::string> Entity::StatsStr =
@@ -362,8 +362,8 @@ namespace transm {
                                    true, (int) getAge().in_months(), cepacGender, setAsIncidentCase,
                                    (int) _eventParams.currTime.in_months());
 
-        const auto discount_factor = Utility::computeCepacDiscountFactor( _eventParams.currTime.in_months(),
-                                                                          simContextToUse->getRunSpecsInputs()->discountFactor);
+        const auto discount_factor = Utility::computeCepacDiscountFactor(_eventParams.currTime.in_months(),
+                                                                         simContextToUse->getRunSpecsInputs()->discountFactor);
         const_cast<Patient::GeneralState *>(cepacPatient->getGeneralState())->discountFactor = discount_factor;
 
         Entity::numTracesSoFar++;
@@ -1388,10 +1388,14 @@ namespace transm {
 
         age = _age;
         initAge = _age;
-        ageInfected = Age(0, -1);
+
+
+        ageInfected = Age(0, -1);   /**< initial age of infection = 0 */
         ageDetected = Age(0, -1);   /**< initial age of detection = 0 */
         ageInCare = Age(0, -1);     /**< initial age of in care = 0 */
+
         alreadyDetected = false;
+        newDiagnosis = false;
 
         death = false;
         deathStatus = DeathStatus::ALIVE;
@@ -1494,5 +1498,6 @@ namespace transm {
 
         return returnValue;
     }
+
 
 } // namespace transm
