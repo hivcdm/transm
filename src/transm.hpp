@@ -7,7 +7,6 @@
 
 //#include <pthread.h>
 
-#define NUM_THREADS 4
 using namespace transm;
 
 /**
@@ -24,8 +23,7 @@ std::vector<path> find_input_files(const path &batch_path) {
         input_files.push_back(batch_path);
     } else if (filesystem::is_directory(batch_path)) {
         auto all_files = filesystem::listdir(batch_path);
-        auto new_end = std::remove_if(all_files.begin(), all_files.end(),
-                                      is_not_known_extension);
+        auto new_end = std::remove_if(all_files.begin(), all_files.end(), is_not_known_extension);
         input_files = std::vector<path>(all_files.begin(), new_end);
     }
 
@@ -91,6 +89,7 @@ int run_simulation(const path &batch_path, const path &cepac_directory) {
 
 
         Simulation simulation(status);
+
         //XXX: we shouldn't have to do this
         parameters.SetRandomNumberGenerator(simulation.GetEventParams().randomNums);
         simulation.Initialize(parameters);

@@ -1,5 +1,7 @@
-#pragma once
+#ifndef _ENTITY_H_
+#define _ENTITY_H_
 
+/* basic headers */
 #include <iostream>
 #include <list>
 #include <set>
@@ -17,6 +19,7 @@
 #include "utility/time.hpp"
 #include "utility/utility.hpp"
 
+/* Boost headers */
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/member.hpp>
@@ -869,3 +872,5 @@ namespace transm {
     };
 
 } // namespace transm
+
+#endif  /* _ENTITY_H_ */
