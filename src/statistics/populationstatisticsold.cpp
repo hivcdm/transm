@@ -1005,6 +1005,11 @@ namespace transm {
         artTracker.recordUnlinked(person);
     }
 
+void PopulationStatisticsOld::recordInfected(Entity *person) {
+    uniqueYearlyInfected.insert(person);
+    artTracker.recordInfected(person);
+}
+
     void PopulationStatisticsOld::resetYear(Time newYear) {
         relativeTime = newYear;
 
@@ -1035,6 +1040,8 @@ namespace transm {
 
         uniqueYearlyLTFU.clear();
         uniqueYearlyUnlinked.clear();
+
+        uniqueYearlyInfected.clear();
 
     }
 

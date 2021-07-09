@@ -157,6 +157,7 @@ namespace transm {
         std::set<Entity *> uniqueYearlyNewDiagnosis;
         std::set<Entity *> uniqueYearlyLTFU;
         std::set<Entity *> uniqueYearlyUnlinked;
+        std::set<Entity *> uniqueYearlyInfected;
 
 
         std::vector<int> yearlyTestsByResult;
@@ -258,6 +259,8 @@ namespace transm {
         void recordLTFU(Entity *person);
 
         void recordUnlinked(Entity *person);
+
+        void recordInfected(Entity *person);
 
         /*@}*/
 

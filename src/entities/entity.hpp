@@ -1,7 +1,7 @@
 #ifndef _ENTITY_H_
 #define _ENTITY_H_
 
-/* basic headers */
+
 #include <iostream>
 #include <list>
 #include <set>
@@ -19,7 +19,6 @@
 #include "utility/time.hpp"
 #include "utility/utility.hpp"
 
-/* Boost headers */
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/member.hpp>
@@ -690,9 +689,25 @@ namespace transm {
          * @return if the patient is detected HIV positive
          */
         bool isDetected() const {
-            return cepacPatient && cepacPatient->getMonitoringState()->isDetectedHIVPositive;
+            return (cepacPatient && cepacPatient->getMonitoringState()->isDetectedHIVPositive);
         }
 
+        void getClinicVisitType() {
+            if (cepacPatient->getMonitoringState()->clinicVisitType == SimContext::CLINIC_INITIAL)
+                cout << "Initial" << endl;
+            else if (cepacPatient->getMonitoringState()->clinicVisitType == SimContext::CLINIC_INIT_ACUTE)
+                cout << "Acute Init" << endl;
+            else if (cepacPatient->getMonitoringState()->clinicVisitType == SimContext::CLINIC_SCHED)
+                cout << "Scheduled" << endl;
+            else
+                cout << "Unknown" << endl;
+        }
+
+        void getMonthOfDetected() {
+             cout << "Month of infected: " << cepacPatient->getDiseaseState()->monthOfHIVInfection << endl;
+             cout << "Month of detected: " << cepacPatient->getMonitoringState()->monthOfDetection << endl;
+
+        }
         /*
          * Check if the patient is actually in care:
          * Definition of Person "In Care" according to HIV Care Continuum, Miami 2014-2018 is to have at least one

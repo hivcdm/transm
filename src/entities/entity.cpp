@@ -11,7 +11,7 @@
 #include "statistics/preptracker.hpp"
 #include "statistics/coststracker.hpp"
 
-using namespace transm;
+namespace transm {
 
 class EntityPool;
 
@@ -583,7 +583,8 @@ bool Entity::hasPartnership() {
 }
 
 bool Entity::isInfected() const {
-    return hvl != HVLStrata::UNINFECTED;
+//    return hvl != HVLStrata::UNINFECTED;
+    return (cepacPatient && cepacPatient->getDiseaseState()->infectedHIVState != SimContext::HIV_INF_NEG);
 }
 
 bool Entity::isSexuallyActive() {
@@ -1500,4 +1501,4 @@ int Entity::getCEPACSimContextIndex(EventParams &_eventParams) const {
 }
 
 
-//} // namespace transm
+} // namespace transm

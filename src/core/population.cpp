@@ -217,8 +217,12 @@ namespace transm {
                                 getProfileID()))->changeHIVStatus(p, oldStatus, p->hivStatus);
                     }
                 }
+                if (p->isInfected()) {
+                    populationStatistics.recordInfected(p);
+                }
 
-                /* if the ART is enabled check if the entity is infected (detected) .. */
+
+                    /* if the ART is enabled check if the entity is infected (detected) .. */
                 if (parameters_.useRollout && parameters_.treatedContext && p->isDetected()) {
 
                     if (!p->newDiagnosis) {

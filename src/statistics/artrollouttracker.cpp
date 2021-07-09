@@ -27,12 +27,12 @@ const std::string ArtRolloutTracker::RISK_GROUP_NAMES[] =
 
 const std::string ArtRolloutTracker::TRACKED_OUTCOMES[] =
         {
+                "infected",
                 "plwh",
                 "in_care",
                 "new_diagnosis",
                 "enrolled_within_30",
                 "suppressed_vl",
-                "unlinked",
                 "ltfu",
                 "suppressed",
                 "treated"
@@ -158,13 +158,15 @@ void ArtRolloutTracker::buildHeader() {
         } else if (outcome == "enrolled_within_30") {
             section_header = "Enrolled Within 30 days";
         } else if (outcome == "plwh") {
-            section_header = "Person Living with HIV";
+            section_header = "Number Detected";
         } else if (outcome == "new_diagnosis") {
             section_header = "New Diagnosis";
         } else if (outcome == "ltfu") {
             section_header = "Loss To Follow Up";
         } else if (outcome == "unlinked") {
             section_header = "Number of Unlinked";
+        } else if (outcome == "infected") {
+            section_header = "Number Infected";
         }
 
 
@@ -407,6 +409,11 @@ void ArtRolloutTracker::recordLTFU(Entity *person) {
 /* Counts number of people living with HIV+ */
 void ArtRolloutTracker::recordUnlinked(Entity *person) {
     counter.Increment(PersonBucket(*person, ageRanges), "unlinked");
+}
+
+/* Counts number of people infected */
+void ArtRolloutTracker::recordInfected(Entity *person) {
+    counter.Increment(PersonBucket(*person, ageRanges), "infected");
 }
 
 // namespace transm

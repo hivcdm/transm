@@ -45,6 +45,7 @@ public:
     void recordNewDiagnosis(Entity *person);
     void recordLTFU(Entity *person);
     void recordUnlinked(Entity *person);
+    void recordInfected(Entity *person);
     /*@}*/
 
 	void printArtRolloutOutcomes(Time time, std::ostream &_outStream, Population *_population);
