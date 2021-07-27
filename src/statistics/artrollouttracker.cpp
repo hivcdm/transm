@@ -33,8 +33,6 @@ const std::string ArtRolloutTracker::TRACKED_OUTCOMES[] =
                 "new_diagnosis",
                 "enrolled_within_30",
                 "suppressed_vl",
-                "ltfu",
-                "suppressed",
                 "treated"
         };
 
