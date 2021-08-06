@@ -750,7 +750,7 @@ namespace transm {
 //            } else {
 //                flag = false;
 //            }
-            if (cepacPatient->getMonitoringState()->monthOfLinkage - cepacPatient->getMonitoringState()->monthOfDetection <= 1) {
+            if (cepacPatient->getMonitoringState()->monthOfLinkage - cepacPatient->getMonitoringState()->monthOfDetection == 0) {
                 flag = true;
             }
 
