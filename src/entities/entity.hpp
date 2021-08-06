@@ -741,15 +741,19 @@ namespace transm {
 
         bool isInCareWithinThirty() const {
             bool flag = false;
-            if (this->ageDetected != Age(0, -1) && this->ageInCare != Age(0,-1)) {
-                int monthOfDetection = this->ageDetected.in_months();
-                int monthOfLinkage = this->ageInCare.in_months();
-                if (monthOfLinkage - monthOfDetection <= 1) {
-                    flag = true;
-                }
-            } else {
-                flag = false;
+//            if (this->ageDetected != Age(0, -1) && this->ageInCare != Age(0,-1)) {
+//                int monthOfDetection = this->ageDetected.in_months();
+//                int monthOfLinkage = this->ageInCare.in_months();
+//                if (monthOfLinkage - monthOfDetection <= 1) {
+//                    flag = true;
+//                }
+//            } else {
+//                flag = false;
+//            }
+            if (cepacPatient->getMonitoringState()->monthOfLinkage - cepacPatient->getMonitoringState()->monthOfDetection <= 1) {
+                flag = true;
             }
+
             return (flag);
         }
 
