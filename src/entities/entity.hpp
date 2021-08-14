@@ -754,7 +754,7 @@ namespace transm {
                 flag = true;
             }
 
-            return (flag);
+            return (cepacPatient && flag);
         }
 
         virtual void SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist,

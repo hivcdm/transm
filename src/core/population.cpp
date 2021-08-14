@@ -228,6 +228,9 @@ namespace transm {
                     if (!p->newDiagnosis) {
                         populationStatistics.recordNewDiagnosis(p);
                         p->newDiagnosis = true;
+                        if (p->isInCare()) {
+                            populationStatistics.recordEnrolledInThirtyDays(p);
+                        }
                     }
 
                     /* Check if they are Loss to Follow Up */
@@ -242,36 +245,37 @@ namespace transm {
 
 
                     /* Number of diagnosed (detected) HIV positives counts as PLWH (person living with HIV) */
-                    if (p->isDetected()) {
-                        if (p->ageDetected == Age(0, -1)) {
-                            p->ageDetected = p->getAge();
-                        }
-                        populationStatistics.recordPLWH(p);
-
-                        /* if only linked (has tested) put it in "In Care" bucket */
-                        /* Important note: This is OK if the probability of "false positive" is virtually zero. */
-                        if (p->isInCare()) {
-                            if (p->ageInCare == Age(0, -1)) {
-                                p->ageInCare = p->getAge();
-                            }
-                            populationStatistics.recordInCare(p);
-                            if (!p->alreadyDetected) {
-                                if (p->isInCareWithinThirty()) {
-                                    populationStatistics.recordEnrolledInThirtyDays(p);
-                                }
-                                p->alreadyDetected = true;
-                            }
-
-                            /* Now check if the patient is on ART put it in "treatment" bucket */
-                            if (p->isOnArt()) {
-                                populationStatistics.recordTreatment(p);
-                            }
-                        }
-                        /* Now check if the patient has suppressed level of HVL (lowest level) */
-                        if (p->isSuppressd()) {
-                            populationStatistics.recordSuppressedVL(p);
-                        }
+                    if (p->ageDetected == Age(0, -1)) {
+                        p->ageDetected = p->getAge();
                     }
+                    populationStatistics.recordPLWH(p);
+
+                    /* if only linked (has tested) put it in "In Care" bucket */
+                    /* Important note: This is OK if the probability of "false positive" is virtually zero. */
+                    if (p->isInCare()) {
+                        if (p->ageInCare == Age(0, -1)) {
+                            p->ageInCare = p->getAge();
+                        }
+                        populationStatistics.recordInCare(p);
+                    }
+                    /* Let's see if the person already detected */
+//                    if (!p->alreadyDetected) {
+//                        if (p->isInCareWithinThirty()) {
+//                            populationStatistics.recordEnrolledInThirtyDays(p);
+//                        }
+//                        p->alreadyDetected = true;
+//                    }
+
+                    /* Now check if the patient is on ART put it in "treatment" bucket */
+                    if (p->isOnArt()) {
+                        populationStatistics.recordTreatment(p);
+                    }
+
+                    /* Now check if the patient has suppressed level of HVL (lowest level) */
+                    if (p->isSuppressd()) {
+                        populationStatistics.recordSuppressedVL(p);
+                    }
+
 
                 }
 
