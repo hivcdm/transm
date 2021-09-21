@@ -19,117 +19,121 @@
 
 namespace transm {
 
-class Simulation
-{
+class Simulation {
 public:
-	Simulation(BatchStatus &batch_status);
+    explicit Simulation(BatchStatus &batch_status);
 
-	~Simulation();
+    ~Simulation();
 
     void Initialize(SimulationParameters &parameters);
 
-	Outputs Run();
+    Outputs Run();
 
-	//returns eventParams.cepacRunStats for adding to the general popstats
-	RunStats &GetCEPACRunStats();
+    //returns eventParams.cepacRunStats for adding to the general popstats
+    RunStats &GetCEPACRunStats();
 
-	//returns eventParams.cepacCostStats for adding to the general popstats
-	CostStats &GetCEPACCostStats();
+    //returns eventParams.cepacCostStats for adding to the general popstats
+    CostStats &GetCEPACCostStats();
 
-	//returns population->popStats information for creating popStats-like file for transmission output
-	PopulationStatisticsOld &GetPopulationStatistics();
+    //returns population->popStats information for creating popStats-like file for transmission output
+    PopulationStatisticsOld &GetPopulationStatistics();
 
-	EventParams &GetEventParams();
+    EventParams &GetEventParams();
 
-	double GetPrevalence() { return prevalence_; }
+    double GetPrevalence() const { return prevalence_; }
 
-	double GetIncidence() { return incidence_; }
+    double GetIncidence() const { return incidence_; }
 
-	Time GetTime() { return time_; }
+    Time GetTime() { return time_; }
 
-	void RegisterTargetGroup(const TargetGroup &group);
+    void RegisterTargetGroup(const TargetGroup &group);
 
-	Population &GetPopulation() { return population_; }
+    Population &GetPopulation() { return population_; }
+
     const Population &GetPopulation() const { return population_; }
 
-	void SetDuration(TimeSpan duration) { duration_ = duration; }
+    void SetDuration(TimeSpan duration) { duration_ = duration; }
 
-	void SetFixedSeed(int seed);
+    void SetFixedSeed(int seed);
 
-	void SetName(const std::string &name) 
-    { 
-        name_ = name; 
-        parameters_.simName = name; 
+    void SetName(const std::string &name) {
+        name_ = name;
+        parameters_.simName = name;
         batch_status_.set_state(name_, SimState::queued);
     }
 
-	void AddLifeExpectancyRecordTime(Time time) { population_.populationStatistics.addLifeExpectancyRecordTime(time); }
+    void AddLifeExpectancyRecordTime(Time time) {
+        population_.populationStatistics.addLifeExpectancyRecordTime(time);
+    }
 
     void SetLifeExpectancyConfidenceInterval(double ci) { population_.populationStatistics.setMedianLECI(ci); }
 
-	void AddPartnerAcquisitionRecordTime(Time time) { population_.populationStatistics.addPartnerAcquisitionRecordTime(time); }
+    void AddPartnerAcquisitionRecordTime(Time time) {
+        population_.populationStatistics.addPartnerAcquisitionRecordTime(time);
+    }
 
     void RegisterPopulationIntervention(const Intervention &intervention);
 
 private:
-	friend class SimulationBuilderXml;
+    friend class SimulationBuilderXml;
+
     friend class Intervention;
 
-	struct TreatmentFile
-	{
-		std::string file_name;
-		int file_number;
-		Time time;
-		int target_population;
-	};
+    struct TreatmentFile {
+        std::string file_name;
+        int file_number;
+        Time time;
+        int target_population;
+    };
 
 private:
-	friend class SimulationBuilderXml;
-	friend class Intervention;
+    friend class SimulationBuilderXml;
 
-	void FirstStep();
+    friend class Intervention;
 
-	void LastStep();
+    void FirstStep();
 
-	void Step();
+    void LastStep();
 
-	/** Sets the Non aids death from a cepac simcontext */
-	void SetNonAidsDeathFromCepac(SimContext &context, std::vector<double> &male, std::vector<double> &female);
+    void Step();
 
-	/** perform one timestep of simulation */
+    /** Sets the Non aids death from a cepac simcontext */
+    void SetNonAidsDeathFromCepac(SimContext &context, std::vector<double> &male, std::vector<double> &female);
+
+    /** perform one timestep of simulation */
     std::size_t SimulateMonth();
 
     void UpdateInterventions(const std::unordered_set<Entity *> &dead_people);
 
-	std::string name_;
+    std::string name_;
 
-	/** current time in the simulation */
-	Time time_;
+    /** current time in the simulation */
+    Time time_;
 
-	/** number of months to run this file in a sequence*/
-	TimeSpan duration_;
+    /** number of months to run this file in a sequence*/
+    TimeSpan duration_;
 
-	/** housekeeping parameters that are universal to each event in the simulation */
-	EventParams parameters_;
+    /** housekeeping parameters that are universal to each event in the simulation */
+    EventParams parameters_;
 
-	/** current population */
-	Population population_;
+    /** current population */
+    Population population_;
 
-	bool passedCalibration_;
+    bool passedCalibration_;
 
-	bool hasPassedFirstMonthCalibPrev_;
+    bool hasPassedFirstMonthCalibPrev_;
 
-	Time monthOfFirstMonthCalibPrev_;
+    Time monthOfFirstMonthCalibPrev_;
 
-	uint32_t rng_seed_;
+    uint32_t rng_seed_;
 
-	double incidence_;
+    double incidence_;
 
-	double prevalence_;
+    double prevalence_;
 
-	HighResolutionTimer timer_;
+    HighResolutionTimer timer_;
 
-	Outputs outputs_;
+    Outputs outputs_;
 
     std::vector<TargetGroup> groups_;
 

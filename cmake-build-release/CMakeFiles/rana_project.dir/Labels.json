@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/CMakeFiles/rana_project"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/CMakeFiles/rana_project.rule"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/CMakeFiles/rana_project-complete.rule"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/rana_project-stamp/rana_project-install.rule"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/rana_project-stamp/rana_project-mkdir.rule"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/rana_project-stamp/rana_project-download.rule"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/rana_project-stamp/rana_project-update.rule"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/rana_project-stamp/rana_project-patch.rule"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/rana_project-stamp/rana_project-configure.rule"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/rana_project-stamp/rana_project-build.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"rana_project"
+		],
+		"name" : "rana_project"
+	}
+}

@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles/pugixml_project"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles/pugixml_project.rule"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/CMakeFiles/pugixml_project-complete.rule"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project-stamp/pugixml_project-install.rule"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project-stamp/pugixml_project-mkdir.rule"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project-stamp/pugixml_project-download.rule"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project-stamp/pugixml_project-update.rule"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project-stamp/pugixml_project-patch.rule"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project-stamp/pugixml_project-configure.rule"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug/third-party/src/pugixml_project-stamp/pugixml_project-build.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"pugixml_project"
+		],
+		"name" : "pugixml_project"
+	}
+}

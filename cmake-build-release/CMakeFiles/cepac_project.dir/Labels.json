@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/CMakeFiles/cepac_project"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/CMakeFiles/cepac_project.rule"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/CMakeFiles/cepac_project-complete.rule"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-install.rule"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-mkdir.rule"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-download.rule"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-update.rule"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-patch.rule"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-configure.rule"
+		},
+		{
+			"file" : "/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/cepac_project-stamp/cepac_project-build.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"cepac_project"
+		],
+		"name" : "cepac_project"
+	}
+}

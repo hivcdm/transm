@@ -1,0 +1,7 @@
+/snap/clion/152/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/saman/Codes/hiv-CDM/transm-miami
+-- Build type: Debug
+-- Using Google Performance Tools: 
+Building version 4.5.1
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/saman/Codes/hiv-CDM/transm-miami/cmake-build-debug
