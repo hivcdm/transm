@@ -719,6 +719,7 @@ namespace transm {
                     || cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_RTC ));
         }
 
+
         /* Check if the patient has suppressed level of VL */
         bool isSuppressd() const {
             bool flag;
