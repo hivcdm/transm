@@ -82,7 +82,7 @@ namespace transm {
 		ANY_OBSERVED_POSITIVE,
 		ANY_NOT_OBSERVED_POSITIVE,
         ENDType,
-		Last = ENDType,
+		Last = ENDHIVStatus,
 		First = NEGATIVE
 	};
 
