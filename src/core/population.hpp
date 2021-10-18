@@ -513,6 +513,8 @@ namespace transm {
             RiskLevel risk_group;
         };
 
+
+
     private:
         std::unordered_map<unsigned long, EntitySummary> individual_summaries_;
 
