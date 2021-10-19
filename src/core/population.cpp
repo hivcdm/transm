@@ -1287,7 +1287,7 @@ void Population::ApplyRolloutContext(EventParams &parameters_, Time time) {
             interimTimeToApply = TimeToApplies[i];
         }
         // In case it is the time for the last rollout file and the next context doesn't exist keep going with the last
-        if (time.in_months() == TimeToApplies[TimeToApplies.size()].in_months()) {
+        if (time.in_months() >= TimeToApplies[TimeToApplies.size()].in_months()) {
             interimTimeToApply = TimeToApplies[TimeToApplies.size()];
         }
     }
