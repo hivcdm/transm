@@ -738,11 +738,11 @@ void Simulation::Initialize(SimulationParameters &parameters) {
         }
 
         /** Sorting the rollout contexts with respect to their timeToApply **/
-        sort(parameters_.rolloutSimContexts.begin(), parameters_.rolloutSimContexts.end(),
-             [] (RolloutContext * a, RolloutContext * b) -> bool
-        {
-            return a->timeToApply.in_months() > b->timeToApply.in_months();
-        });
+//        sort(parameters_.rolloutSimContexts.begin(), parameters_.rolloutSimContexts.end(),
+//             [] (RolloutContext * a, RolloutContext * b) -> bool
+//        {
+//            return a->timeToApply.in_months() > b->timeToApply.in_months();
+//        });
 
         parameters_.cepacTracer = new Tracer(name_, parameters_.untreatedContext, 1);
         parameters_.cepacRunStats = new RunStats(name_, parameters_.untreatedContext);

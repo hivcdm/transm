@@ -1281,19 +1281,22 @@ void Population::ApplyRolloutContext(EventParams &parameters_, Time time) {
         TimeToApplies.push_back(rolloutContext->timeToApply);
     }
 
-    /** Check if it is the interim time has to be set the previous time to apply (continue) **/
-    for (int i = 0; i < TimeToApplies.size(); i++) {
-        if (time.in_months() > TimeToApplies[i].in_months() && time.in_months() < TimeToApplies[i + 1].in_months()) {
-            interimTimeToApply = TimeToApplies[i];
-        }
-        // In case it is the time for the last rollout file and the next context doesn't exist keep going with the last
-        if (time.in_months() >= TimeToApplies[TimeToApplies.size()].in_months()) {
-            interimTimeToApply = TimeToApplies[TimeToApplies.size()];
+    // In case it is the time for the last rollout file and the next context doesn't exist keep going with the last
+    if (time.in_months() >= TimeToApplies[TimeToApplies.size()-1].in_months()) {
+        interimTimeToApply = TimeToApplies[TimeToApplies.size()-1];
+    } else {
+
+        /** Check if it is the interim time has to be set the previous time to apply (continue) **/
+        for (int i = 0; i < TimeToApplies.size(); i++) {
+            if (time.in_months() > TimeToApplies[i].in_months() && time.in_months() < TimeToApplies[i + 1].in_months()) {
+                interimTimeToApply = TimeToApplies[i];
+            }
         }
     }
 
     for (auto rolloutContext : parameters_.rolloutSimContexts) {
         if (rolloutContext->timeToApply == interimTimeToApply) {
+
             //Switch the cepac file depending on the population the new file is applied to
             switch (rolloutContext->popOfInterest) {
                 case 0: // Update all untreated people with the new context
