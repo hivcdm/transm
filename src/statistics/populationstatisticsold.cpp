@@ -1010,6 +1010,21 @@ void PopulationStatisticsOld::recordInfected(Entity *person) {
     artTracker.recordInfected(person);
 }
 
+void PopulationStatisticsOld::recordFirstLine(Entity *person) {
+        uniqueYearlyFirstLine.insert(person);
+        artTracker.recordFirstLine(person);
+    }
+
+    void PopulationStatisticsOld::recordSecondLine(Entity *person) {
+        uniqueYearlySecondLine.insert(person);
+        artTracker.recordSecondLine(person);
+    }
+
+    void PopulationStatisticsOld::recordRTC(Entity *person) {
+        uniqueYearlyRTC.insert(person);
+        artTracker.recordRTC(person);
+    }
+
     void PopulationStatisticsOld::resetYear(Time newYear) {
         relativeTime = newYear;
 
@@ -1042,6 +1057,9 @@ void PopulationStatisticsOld::recordInfected(Entity *person) {
         uniqueYearlyUnlinked.clear();
 
         uniqueYearlyInfected.clear();
+
+        uniqueYearlyFirstLine.clear();
+        uniqueYearlySecondLine.clear();
 
     }
 

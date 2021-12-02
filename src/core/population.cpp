@@ -196,7 +196,9 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
         currProfileID++;
     }
 
-    //Double loop: first iterate through the men, then the women
+//        cout << "Treated= " << rolloutTreatedPool.size() << " " << "Untreated= " << rolloutUntreatedPool.size() << endl;
+
+        //Double loop: first iterate through the men, then the women
     for (auto gender : enum_iterator<DemographicProfile::Gender>()) {
         p_Iter = entities->begin(gender);
 
@@ -221,9 +223,8 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
                 populationStatistics.recordInfected(p);
             }
 
-
             /* if the ART is enabled check if the entity is infected (detected) .. */
-            if (parameters_.useRollout && parameters_.treatedContext && p->isDetected()) {
+            if (p->isDetected()) {
 
                 if (!p->newDiagnosis) {
                     populationStatistics.recordNewDiagnosis(p);
@@ -236,6 +237,10 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
                 /* Check if they are Loss to Follow Up */
                 if (p->isLTFU()) {
                     populationStatistics.recordLTFU(p);
+                }
+
+                if (p->isRTC()) {
+                    populationStatistics.recordRTC(p);
                 }
 
                 /* Check if anyone is unlinked */
@@ -258,6 +263,7 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
                     }
                     populationStatistics.recordInCare(p);
                 }
+//                p->printFailure();
                 /* Let's see if the person already detected */
 //                    if (!p->alreadyDetected) {
 //                        if (p->isInCareWithinThirty()) {
@@ -269,6 +275,14 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
                 /* Now check if the patient is on ART put it in "treatment" bucket */
                 if (p->isOnArt()) {
                     populationStatistics.recordTreatment(p);
+
+                    if (p->isOnFirstLineART()) {
+                        populationStatistics.recordFirstLine(p);
+                    }
+
+                    if (p->isOnSecondLineART()) {
+                        populationStatistics.recordSecondLine(p);
+                    }
                 }
 
                 /* Now check if the patient has suppressed level of HVL (lowest level) */
@@ -1272,27 +1286,27 @@ void Population::RecordInfection(const Entity *infectee, const Entity *infector,
 * Sets the untreated and treated cepac files if using ART Rollout
 */
 void Population::ApplyRolloutContext(EventParams &parameters_, Time time) {
-    /** Here is to determine if the treatment context has to be continued with respect to current time **/
-    vector<Time> TimeToApplies;
+//    /** Here is to determine if the treatment context has to be continued with respect to current time **/
+//    vector<Time> TimeToApplies;
     Time interimTimeToApply = time;     // This is the interim time between two rollout context (default is current real time)
-
-    /** Get all TimeToApply times from all of rollout contexts **/
-    for (auto rolloutContext : parameters_.rolloutSimContexts) {
-        TimeToApplies.push_back(rolloutContext->timeToApply);
-    }
-
-    // In case it is the time for the last rollout file and the next context doesn't exist keep going with the last
-    if (time.in_months() >= TimeToApplies[TimeToApplies.size()-1].in_months()) {
-        interimTimeToApply = TimeToApplies[TimeToApplies.size()-1];
-    } else {
-
-        /** Check if it is the interim time has to be set the previous time to apply (continue) **/
-        for (int i = 0; i < TimeToApplies.size(); i++) {
-            if (time.in_months() > TimeToApplies[i].in_months() && time.in_months() < TimeToApplies[i + 1].in_months()) {
-                interimTimeToApply = TimeToApplies[i];
-            }
-        }
-    }
+//
+//    /** Get all TimeToApply times from all of rollout contexts **/
+//    for (auto rolloutContext : parameters_.rolloutSimContexts) {
+//        TimeToApplies.push_back(rolloutContext->timeToApply);
+//    }
+//
+//    // In case it is the time for the last rollout file and the next context doesn't exist keep going with the last
+//    if (time.in_months() >= TimeToApplies[TimeToApplies.size()-1].in_months()) {
+//        interimTimeToApply = TimeToApplies[TimeToApplies.size()-1];
+//    } else {
+//
+//        /** Check if it is the interim time has to be set the previous time to apply (continue) **/
+//        for (int i = 0; i < TimeToApplies.size(); i++) {
+//            if (time.in_months() > TimeToApplies[i].in_months() && time.in_months() < TimeToApplies[i + 1].in_months()) {
+//                interimTimeToApply = TimeToApplies[i];
+//            }
+//        }
+//    }
 
     for (auto rolloutContext : parameters_.rolloutSimContexts) {
         if (rolloutContext->timeToApply == interimTimeToApply) {
@@ -1316,7 +1330,7 @@ void Population::ApplyRolloutContext(EventParams &parameters_, Time time) {
                 {
                     parameters_.treatedContext = rolloutContext->rolloutSimContext.get();
 
-                    //Apply to all current treated patients
+                    // Apply to all current treated patients
                     std::list<Entity *>::iterator personIter;
                     for (personIter = rolloutTreatedPool.begin();
                          personIter != rolloutTreatedPool.end(); personIter++) {
@@ -1331,6 +1345,69 @@ void Population::ApplyRolloutContext(EventParams &parameters_, Time time) {
                 case 3: // Only newly infected people (added to the untreated pool) will context this context
                     parameters_.untreatedContext = rolloutContext->rolloutSimContext.get();
                     break;
+                case 4: // Only applies to White population
+                {
+                    parameters_.untreatedContext = rolloutContext->rolloutSimContext.get();
+                    parameters_.treatedContext = rolloutContext->rolloutSimContext.get();
+
+                    //Apply to all current treated patients
+                    std::list<Entity *>::iterator personIter;
+                    for (personIter = rolloutUntreatedPool.begin();
+                         personIter != rolloutUntreatedPool.end(); personIter++) {
+                        if ((*personIter)->isWhite() && !(*personIter)->isHispanic()) {
+                            (*personIter)->setSimContext(parameters_.untreatedContext);
+                        }
+                    }
+                    for (personIter = rolloutTreatedPool.begin();
+                         personIter != rolloutTreatedPool.end(); personIter++) {
+                        if ((*personIter)->isWhite() && !(*personIter)->isHispanic()) {
+                            (*personIter)->setSimContext(parameters_.treatedContext);
+                        }
+                    }
+                    break;
+                }
+                case 5: // Only applies to Black population
+                {
+                    parameters_.untreatedContext = rolloutContext->rolloutSimContext.get();
+                    parameters_.treatedContext = rolloutContext->rolloutSimContext.get();
+
+                    //Apply to all current treated patients
+                    std::list<Entity *>::iterator personIter;
+                    for (personIter = rolloutUntreatedPool.begin();
+                         personIter != rolloutUntreatedPool.end(); personIter++) {
+                        if ((*personIter)->isBlack() && !(*personIter)->isHispanic()) {
+                            (*personIter)->setSimContext(parameters_.untreatedContext);
+                        }
+                    }
+                    for (personIter = rolloutTreatedPool.begin();
+                         personIter != rolloutTreatedPool.end(); personIter++) {
+                        if ((*personIter)->isBlack() && !(*personIter)->isHispanic()) {
+                            (*personIter)->setSimContext(parameters_.treatedContext);
+                        }
+                    }
+                    break;
+                }
+                case 6: // Only applies to Hispanic population
+                {
+                    parameters_.untreatedContext = rolloutContext->rolloutSimContext.get();
+                    parameters_.treatedContext = rolloutContext->rolloutSimContext.get();
+
+                    //Apply to all current treated patients
+                    std::list<Entity *>::iterator personIter;
+                    for (personIter = rolloutUntreatedPool.begin();
+                         personIter != rolloutUntreatedPool.end(); personIter++) {
+                        if ((*personIter)->isHispanic()) {
+                            (*personIter)->setSimContext(parameters_.untreatedContext);
+                        }
+                    }
+                    for (personIter = rolloutTreatedPool.begin();
+                         personIter != rolloutTreatedPool.end(); personIter++) {
+                        if ((*personIter)->isHispanic()) {
+                            (*personIter)->setSimContext(parameters_.treatedContext);
+                        }
+                    }
+                    break;
+                }
                 default:
                     break;
             }
@@ -1434,6 +1511,9 @@ void Population::DetermineRankings(const RolloutEligibility &criteria) {
     }
 }
 
+/* This is to start the treatment for untreatrd entity
+ * NOTE: This is the only functionality to move an untreated person to treated
+ */
 void Population::StartTreatment(Entity *person, SimContext *treatedContext) {
     std::list<Entity *>::iterator untreatedIterator;
     untreatedIterator = std::find(rolloutUntreatedPool.begin(), rolloutUntreatedPool.end(), person);
@@ -1518,8 +1598,6 @@ int Population::UpdateTreatmentSlots(double rolloutProportion) {
         numSlots = static_cast<int>(targetTreatmentSlots) - numAccessingTreatment;
     }
 
-    /* maximizing the number of slots */
-    numSlots = 1000000;
 
     return numSlots;
 }
@@ -1527,30 +1605,36 @@ int Population::UpdateTreatmentSlots(double rolloutProportion) {
 void Population::ApplyARTRollout(EventParams &parameters_) {
     double rolloutProportion = InterpolateProportion(parameters_.targetYearlyRolloutProportions,
                                                      parameters_.currTime, parameters_.monthOf1990);
-    int newSlots = UpdateTreatmentSlots(rolloutProportion);
-    populationStatistics.recordTreatmentSlots(newSlots);
 
-    if (rolloutProportion > 0) {
-        DetermineRankings(parameters_.rolloutEligibility);
-    }
-    // TODO: Seems there is a ranking for who gets the available slots for treatment based on health status!!
-    if (newSlots > 0) {
-        for (auto &current_ranking_bucket : rankedForTreatment) {
-            while (newSlots > 0 && !current_ranking_bucket.empty()) {
-                int randomPersonIndex = (int) parameters_.randomNums.randInt(0,
-                                                                             (uint32_t) current_ranking_bucket.size() -
-                                                                             1);
-                StartTreatment(current_ranking_bucket[randomPersonIndex], parameters_.treatedContext);
+    if (parameters_.rolloutEligibility.eligibility_enabled) {
 
-                if (randomPersonIndex != static_cast<int>(current_ranking_bucket.size() - 1)) {
-                    std::swap(current_ranking_bucket[randomPersonIndex], current_ranking_bucket.back());
+        int newSlots = UpdateTreatmentSlots(rolloutProportion);
+        populationStatistics.recordTreatmentSlots(newSlots);
+
+        if (rolloutProportion > 0) {
+            DetermineRankings(parameters_.rolloutEligibility);
+        }
+
+        /* There is a ranking for who gets the available slots for treatment based on health status!! */
+        if (newSlots > 0) {
+            for (auto &current_ranking_bucket: rankedForTreatment) {
+                while (newSlots > 0 && !current_ranking_bucket.empty()) {
+                    int randomPersonIndex = (int) parameters_.randomNums.randInt(0,
+                                                                                 (uint32_t) current_ranking_bucket.size() -
+                                                                                 1);
+                    StartTreatment(current_ranking_bucket[randomPersonIndex], parameters_.treatedContext);
+
+                    if (randomPersonIndex != static_cast<int>(current_ranking_bucket.size() - 1)) {
+                        std::swap(current_ranking_bucket[randomPersonIndex], current_ranking_bucket.back());
+                    }
+
+                    current_ranking_bucket.pop_back();
+                    --newSlots;
                 }
-
-                current_ranking_bucket.pop_back();
-                --newSlots;
             }
         }
     }
+
 
     for (auto &current_ranking_bucket : rankedForTreatment) {
         for (auto &person : current_ranking_bucket) {

@@ -603,6 +603,21 @@ bool Entity::isMale() const {
             (std::size_t) DemographicProfile::Gender::Male);
 }
 
+bool Entity::isWhite() const {
+    return (getDemographicProfileVal(DemographicProfile::Demographic::Race) ==
+            (std::size_t) DemographicProfile::Race::White);
+}
+
+bool Entity::isBlack() const {
+    return (getDemographicProfileVal(DemographicProfile::Demographic::Race) ==
+            (std::size_t) DemographicProfile::Race::Black);
+}
+
+bool Entity::isHispanic() const {
+    return (getDemographicProfileVal(DemographicProfile::Demographic::Ethnicity) ==
+            (std::size_t) DemographicProfile::Ethnicity::Hispanic);
+}
+
 void Entity::removePartnership(SexualPartnership *_partnership) {
     assert(_partnership != nullptr);
     partners[(int) _partnership->getType()].remove(_partnership);

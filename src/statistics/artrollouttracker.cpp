@@ -28,12 +28,16 @@ const std::string ArtRolloutTracker::RISK_GROUP_NAMES[] =
 const std::string ArtRolloutTracker::TRACKED_OUTCOMES[] =
         {
                 "infected",
-                "plwh",
+                "plwh", /* people living with HIV */
                 "in_care",
                 "new_diagnosis",
                 "enrolled_within_30",
                 "suppressed_vl",
-                "treated"
+                "treated" /* people on ART */
+                /* "return_to_care",
+                "ltfu",
+                "firstlineART",
+                "secondlineART" */
         };
 
 const std::string ArtRolloutTracker::BUCKETS[] =
@@ -165,6 +169,12 @@ void ArtRolloutTracker::buildHeader() {
             section_header = "Number of Unlinked";
         } else if (outcome == "infected") {
             section_header = "Number Infected";
+        } else if (outcome == "firstlineART") {
+            section_header = "First Line ART";
+        } else if (outcome == "secondlineART") {
+            section_header = "Second Line ART";
+        } else if (outcome == "return_to_care") {
+            section_header = "Return To Care";
         }
 
 
@@ -413,6 +423,21 @@ void ArtRolloutTracker::recordUnlinked(Entity *person) {
 void ArtRolloutTracker::recordInfected(Entity *person) {
     counter.Increment(PersonBucket(*person, ageRanges), "infected");
 }
+
+/* Counts number of people on second line of ART */
+    void ArtRolloutTracker::recordRTC(Entity *person) {
+        counter.Increment(PersonBucket(*person, ageRanges), "return_to_care");
+    }
+
+/* Counts number of people on first line of ART */
+void ArtRolloutTracker::recordFirstLine(Entity *person) {
+    counter.Increment(PersonBucket(*person, ageRanges), "firstlineART");
+}
+
+/* Counts number of people on second line of ART */
+    void ArtRolloutTracker::recordSecondLine(Entity *person) {
+        counter.Increment(PersonBucket(*person, ageRanges), "secondlineART");
+    }
 
 // namespace transm
 }

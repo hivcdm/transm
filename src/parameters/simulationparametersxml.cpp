@@ -646,6 +646,9 @@ RolloutEligibility SimulationParametersXml::GetRolloutEligibility() const
     auto eligibility_node = document_.select_node("/simulation/interventions/artRolloutIntervention/rolloutEligibility").node();
     RolloutEligibility eligibility;
 
+    eligibility.eligibility_enabled = Attr<bool>(eligibility_node, "enabled");
+
+
     // Identified
     auto identified_node = eligibility_node.select_node("criteria[@name='Identified']").node();
     if (identified_node.child("status"))
