@@ -732,8 +732,9 @@ void Simulation::Initialize(SimulationParameters &parameters) {
             if (cepac_file.time == Time::Zero && cepac_file.target_population == 0)
                 continue; // skip untreated context
             auto context = load_context(cepac_file.filename);
-            auto rollout_context = new RolloutContext(cepac_file.time, std::unique_ptr<SimContext>(context),
+            auto rollout_context = new RolloutContext(cepac_file.time, context,
                                                       cepac_file.target_population);
+            parameters_.timesToSwitchSimContext.push_back(cepac_file.time);
             parameters_.rolloutSimContexts.push_back(rollout_context);
         }
 

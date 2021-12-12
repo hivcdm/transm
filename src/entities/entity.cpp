@@ -352,7 +352,7 @@ void Entity::initializeCEPACpatient(EventParams &_eventParams) {
     SimContext *simContextToUse;
     if (_eventParams.useRollout) {
         //When patients are initialized they are added to the untreated pool
-        simContextToUse = _eventParams.untreatedContext;
+        simContextToUse = _eventParams.rolloutSimContexts[getCEPACSimContextIndex(_eventParams)]->rolloutSimContext;
     } else {
         simContextToUse = _eventParams.cepacSimContexts[getCEPACSimContextIndex(_eventParams)];
     }
@@ -1505,10 +1505,17 @@ void Entity::deleteEntityWithoutDeleting() {
 
 int Entity::getCEPACSimContextIndex(EventParams &_eventParams) const {
     int returnValue = 0;
-
-    for (std::size_t i = 0; i < _eventParams.cepacSimContexts.size(); i++) {
-        if (_eventParams.currTime > _eventParams.timesToSwitchSimContext[i]) {
-            returnValue = static_cast<int>(i);
+    if (_eventParams.useRollout) {
+        for (std::size_t i = 0; i < _eventParams.rolloutSimContexts.size(); i++) {
+            if (_eventParams.currTime > _eventParams.timesToSwitchSimContext[i]) {
+                returnValue = static_cast<int>(i);
+            }
+        }
+    } else {
+        for (std::size_t i = 0; i < _eventParams.cepacSimContexts.size(); i++) {
+            if (_eventParams.currTime > _eventParams.timesToSwitchSimContext[i]) {
+                returnValue = static_cast<int>(i);
+            }
         }
     }
 

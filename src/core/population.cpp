@@ -1315,7 +1315,7 @@ void Population::ApplyRolloutContext(EventParams &parameters_, Time time) {
             switch (rolloutContext->popOfInterest) {
                 case 0: // Update all untreated people with the new context
                 {
-                    parameters_.untreatedContext = rolloutContext->rolloutSimContext.get();
+                    parameters_.untreatedContext = rolloutContext->rolloutSimContext;
 
                     //Apply to all current untreated patients
                     std::list<Entity *>::iterator personIter;
@@ -1328,7 +1328,7 @@ void Population::ApplyRolloutContext(EventParams &parameters_, Time time) {
                 }
                 case 1:  // Update all treated people with the new context
                 {
-                    parameters_.treatedContext = rolloutContext->rolloutSimContext.get();
+                    parameters_.treatedContext = rolloutContext->rolloutSimContext;
 
                     // Apply to all current treated patients
                     std::list<Entity *>::iterator personIter;
@@ -1340,15 +1340,15 @@ void Population::ApplyRolloutContext(EventParams &parameters_, Time time) {
                     break;
                 }
                 case 2: // Only new people added to the treated pool will context this context
-                    parameters_.treatedContext = rolloutContext->rolloutSimContext.get();
+                    parameters_.treatedContext = rolloutContext->rolloutSimContext;
                     break;
                 case 3: // Only newly infected people (added to the untreated pool) will context this context
-                    parameters_.untreatedContext = rolloutContext->rolloutSimContext.get();
+                    parameters_.untreatedContext = rolloutContext->rolloutSimContext;
                     break;
                 case 4: // Only applies to White population
                 {
-                    parameters_.untreatedContext = rolloutContext->rolloutSimContext.get();
-                    parameters_.treatedContext = rolloutContext->rolloutSimContext.get();
+                    parameters_.untreatedContext = rolloutContext->rolloutSimContext;
+                    parameters_.treatedContext = rolloutContext->rolloutSimContext;
 
                     //Apply to all current treated patients
                     std::list<Entity *>::iterator personIter;
@@ -1368,8 +1368,8 @@ void Population::ApplyRolloutContext(EventParams &parameters_, Time time) {
                 }
                 case 5: // Only applies to Black population
                 {
-                    parameters_.untreatedContext = rolloutContext->rolloutSimContext.get();
-                    parameters_.treatedContext = rolloutContext->rolloutSimContext.get();
+                    parameters_.untreatedContext = rolloutContext->rolloutSimContext;
+                    parameters_.treatedContext = rolloutContext->rolloutSimContext;
 
                     //Apply to all current treated patients
                     std::list<Entity *>::iterator personIter;
@@ -1389,8 +1389,8 @@ void Population::ApplyRolloutContext(EventParams &parameters_, Time time) {
                 }
                 case 6: // Only applies to Hispanic population
                 {
-                    parameters_.untreatedContext = rolloutContext->rolloutSimContext.get();
-                    parameters_.treatedContext = rolloutContext->rolloutSimContext.get();
+                    parameters_.untreatedContext = rolloutContext->rolloutSimContext;
+                    parameters_.treatedContext = rolloutContext->rolloutSimContext;
 
                     //Apply to all current treated patients
                     std::list<Entity *>::iterator personIter;

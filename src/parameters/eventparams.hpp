@@ -110,10 +110,10 @@ public:
 
 	inline bool itIsTimeToSwitchSimContext()
 	{
-		if(useRollout)
-		{
-			return false;
-		}
+//		if(useRollout)
+//		{
+//			return false;
+//		}
 
 		for (auto time : timesToSwitchSimContext)
 		{

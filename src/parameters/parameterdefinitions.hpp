@@ -85,17 +85,17 @@ class RolloutContext
 {
 public:
     Time timeToApply;
-    std::unique_ptr<SimContext> rolloutSimContext;
+    SimContext *rolloutSimContext;
     //who to apply to 0=All Untreated 1=All Treated 2=Untreated Getting New ART -1=None
     int popOfInterest;
-    RolloutContext(Time t, std::unique_ptr<SimContext> context, int pop) : rolloutSimContext(std::move(context))
+
+    RolloutContext(Time t, SimContext *context, int pop) : rolloutSimContext(context)
     {
         timeToApply = t;
         popOfInterest = pop;
     }
     ~RolloutContext()
-    {
-    }
+    = default;
 };
 
 /**
