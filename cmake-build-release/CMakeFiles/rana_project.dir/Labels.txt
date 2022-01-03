@@ -1,13 +1,13 @@
 # Target labels
  rana_project
 # Source files and their labels
-/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/CMakeFiles/rana_project
-/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/CMakeFiles/rana_project.rule
-/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/CMakeFiles/rana_project-complete.rule
-/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/rana_project-stamp/rana_project-install.rule
-/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/rana_project-stamp/rana_project-mkdir.rule
-/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/rana_project-stamp/rana_project-download.rule
-/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/rana_project-stamp/rana_project-update.rule
-/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/rana_project-stamp/rana_project-patch.rule
-/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/rana_project-stamp/rana_project-configure.rule
-/home/saman/Codes/hiv-CDM/transm-miami/cmake-build-release/third-party/src/rana_project-stamp/rana_project-build.rule
+/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/CMakeFiles/rana_project
+/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/CMakeFiles/rana_project.rule
+/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/CMakeFiles/rana_project-complete.rule
+/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/rana_project-stamp/rana_project-build.rule
+/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/rana_project-stamp/rana_project-configure.rule
+/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/rana_project-stamp/rana_project-download.rule
+/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/rana_project-stamp/rana_project-install.rule
+/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/rana_project-stamp/rana_project-mkdir.rule
+/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/rana_project-stamp/rana_project-patch.rule
+/Users/sas0507/Codes/hiv-CDM/transm/cmake-build-release/third-party/src/rana_project-stamp/rana_project-update.rule
