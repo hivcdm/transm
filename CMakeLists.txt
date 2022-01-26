@@ -33,8 +33,8 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 set(Boost_USE_STATIC_LIBS ON)
 
-find_package(
-	Boost
+find_package(Boost
+	1.63.0
 	COMPONENTS system
 	REQUIRED
 )
