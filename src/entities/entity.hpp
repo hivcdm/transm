@@ -796,8 +796,8 @@ public:
 //            } else {
 //                flag = false;
 //            }
-        if (cepacPatient->getMonitoringState()->monthOfLinkage - cepacPatient->getMonitoringState()->monthOfDetection ==
-            0) {
+        if (cepacPatient->getMonitoringState()->monthOfLinkage - cepacPatient->getMonitoringState()->monthOfDetection <=
+            1) {
             flag = true;
         }
 

@@ -226,14 +226,6 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
             /* if the ART is enabled check if the entity is infected (detected) .. */
             if (p->isDetected()) {
 
-                if (!p->newDiagnosis) {
-                    populationStatistics.recordNewDiagnosis(p);
-                    p->newDiagnosis = true;
-                    if (p->isInCare()) {
-                        populationStatistics.recordEnrolledInThirtyDays(p);
-                    }
-                }
-
                 /* Check if they are Loss to Follow Up */
                 if (p->isLTFU()) {
                     populationStatistics.recordLTFU(p);
@@ -263,6 +255,19 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
                     }
                     populationStatistics.recordInCare(p);
                 }
+
+                if (!p->newDiagnosis) {
+                    populationStatistics.recordNewDiagnosis(p);
+                    p->newDiagnosis = true;
+//                    if (p->isInCare()) {
+//                        populationStatistics.recordEnrolledInThirtyDays(p);
+//                    }
+                    if (p->isInCareWithinThirty()) {
+                        populationStatistics.recordEnrolledInThirtyDays(p);
+                    }
+                }
+
+
 //                p->printFailure();
                 /* Let's see if the person already detected */
 //                    if (!p->alreadyDetected) {
