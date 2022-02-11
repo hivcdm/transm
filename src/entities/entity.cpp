@@ -1412,6 +1412,7 @@ Entity::Entity(Age _age, unsigned int _populationID, const PrepParameters &prepP
 
     alreadyDetected = false;
     newDiagnosis = false;
+    inCareWithinThirty = false;
 
     death = false;
     deathStatus = DeathStatus::ALIVE;

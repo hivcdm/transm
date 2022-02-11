@@ -248,6 +248,8 @@ public:
 
     bool newDiagnosis;
 
+    bool inCareWithinThirty;
+
     // whether this Entity is dead or not
     bool death;
 
@@ -796,13 +798,25 @@ public:
 //            } else {
 //                flag = false;
 //            }
-        if (cepacPatient->getMonitoringState()->monthOfLinkage - cepacPatient->getMonitoringState()->monthOfDetection <=
-            1) {
-            flag = true;
+        int current_month = cepacPatient->getGeneralState()->monthNum;
+
+        int linkage_month = cepacPatient->getMonitoringState()->monthOfLinkage;
+        int detected_month = cepacPatient->getMonitoringState()->monthOfDetection;
+//        cout << current_month << linkage_month << detected_month << endl;
+        if (current_month == detected_month + 1)  {
+            if (detected_month == linkage_month) {
+                flag = true;
+            }
         }
+
+//        if (cepacPatient->getMonitoringState()->monthOfLinkage - cepacPatient->getMonitoringState()->monthOfDetection <
+//            1) {
+//            flag = true;
+//        }
 
         return (cepacPatient && flag);
     }
+
 
 //    void printFailure() {
 //        if (cepacPatient && cepacPatient && cepacPatient->getARTState()->hasObservedFailure) {

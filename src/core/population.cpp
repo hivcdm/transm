@@ -262,11 +262,15 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
 //                    if (p->isInCare()) {
 //                        populationStatistics.recordEnrolledInThirtyDays(p);
 //                    }
+
+                }
+
+                if (!p->inCareWithinThirty) {
                     if (p->isInCareWithinThirty()) {
                         populationStatistics.recordEnrolledInThirtyDays(p);
                     }
+                    p->inCareWithinThirty = true;
                 }
-
 
 //                p->printFailure();
                 /* Let's see if the person already detected */
