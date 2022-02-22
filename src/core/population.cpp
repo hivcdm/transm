@@ -256,21 +256,22 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
                     populationStatistics.recordInCare(p);
                 }
 
-                if (!p->newDiagnosis) {
+                if (p->isNewDiagnosed()) {
                     populationStatistics.recordNewDiagnosis(p);
-                    p->newDiagnosis = true;
+//                    p->newDiagnosis = true;
 //                    if (p->isInCare()) {
 //                        populationStatistics.recordEnrolledInThirtyDays(p);
 //                    }
 
+
                 }
 
-                if (!p->inCareWithinThirty) {
+
                     if (p->isInCareWithinThirty()) {
                         populationStatistics.recordEnrolledInThirtyDays(p);
                     }
-                    p->inCareWithinThirty = true;
-                }
+
+
 
 //                p->printFailure();
                 /* Let's see if the person already detected */
@@ -1326,6 +1327,8 @@ void Population::ApplyRolloutContext(EventParams &parameters_, Time time) {
                 {
                     parameters_.untreatedContext = rolloutContext->rolloutSimContext;
 
+                    cout << parameters_.untreatedContext->getHIVTestInputs()->CD4TestLinkageRate[0];
+
                     //Apply to all current untreated patients
                     std::list<Entity *>::iterator personIter;
                     for (personIter = rolloutUntreatedPool.begin(); personIter != rolloutUntreatedPool.end();
@@ -1412,6 +1415,27 @@ void Population::ApplyRolloutContext(EventParams &parameters_, Time time) {
                     for (personIter = rolloutTreatedPool.begin();
                          personIter != rolloutTreatedPool.end(); personIter++) {
                         if ((*personIter)->isHispanic()) {
+                            (*personIter)->setSimContext(parameters_.treatedContext);
+                        }
+                    }
+                    break;
+                }
+                case 7: // Only applies to other populations
+                {
+                    parameters_.untreatedContext = rolloutContext->rolloutSimContext;
+                    parameters_.treatedContext = rolloutContext->rolloutSimContext;
+
+                    //Apply to all current treated patients
+                    std::list<Entity *>::iterator personIter;
+                    for (personIter = rolloutUntreatedPool.begin();
+                         personIter != rolloutUntreatedPool.end(); personIter++) {
+                        if (!(*personIter)->isHispanic() && !(*personIter)->isWhite() && !(*personIter)->isBlack() ) {
+                            (*personIter)->setSimContext(parameters_.untreatedContext);
+                        }
+                    }
+                    for (personIter = rolloutTreatedPool.begin();
+                         personIter != rolloutTreatedPool.end(); personIter++) {
+                        if (!(*personIter)->isHispanic() && !(*personIter)->isWhite() && !(*personIter)->isBlack() ) {
                             (*personIter)->setSimContext(parameters_.treatedContext);
                         }
                     }

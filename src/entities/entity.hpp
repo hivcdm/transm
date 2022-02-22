@@ -762,6 +762,7 @@ public:
      * the third months of next year.
      */
     bool isInCare() const {
+
         return (cepacPatient && (cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_IN_CARE
                                  || cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_RTC));
     }
@@ -785,6 +786,16 @@ public:
      */
     bool isPLWH() const {
         return (cepacPatient && cepacPatient->getDiseaseState()->infectedHIVState != SimContext::HIV_INF_NEG);
+    }
+
+    bool isNewDiagnosed() const {
+        bool flag = false;
+        int current_month = cepacPatient->getGeneralState()->monthNum;
+        int detected_month = cepacPatient->getMonitoringState()->monthOfDetection;
+        if (current_month == detected_month + 1)  {
+            flag = true;
+        }
+        return (cepacPatient && flag);
     }
 
     bool isInCareWithinThirty() const {
@@ -813,7 +824,9 @@ public:
 //            1) {
 //            flag = true;
 //        }
-
+        if (!cepacPatient) {
+            cout << "not a patient!" << endl;
+        }
         return (cepacPatient && flag);
     }
 
@@ -932,7 +945,9 @@ private:
 
     //Return the current index of which SimContext should be used to update the
     //health of a patient
-    int getCEPACSimContextIndex(EventParams &_eventParams) const;
+    static int getCEPACSimContextIndex(EventParams &_eventParams) ;
+
+    static int getCEPACSimContextIndex(EventParams &_eventParams, int popToApply) ;
 
     double updateHealthCosts(EventParams &_eventParams,
                              CostsTracker *costsTracker,

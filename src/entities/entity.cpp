@@ -248,10 +248,10 @@ void Entity::seedInfection(int _generationOfInfection, EventParams &_eventParams
 
     generationOfInfection = _generationOfInfection;
 
-    if (!wentThroughCEPAC) {
+//    if (!wentThroughCEPAC) {
         // Need to initialize CEPAC person first
         initializeCEPACpatient(_eventParams);
-    }
+//    }
 
     // force new infection
     cepacPatient->forceNewInfection(chronicInfection);
@@ -274,10 +274,10 @@ void Entity::becomeInfected(int _generationOfInfection, EventParams &_eventParam
 
     generationOfInfection = _generationOfInfection;
 
-    if (!wentThroughCEPAC) {
+//    if (!wentThroughCEPAC) {
         // Need to initialize CEPAC person first
         initializeCEPACpatient(_eventParams);
-    }
+//    }
 
     // force new Acute infection
     cepacPatient->forceNewInfection(false);
@@ -352,7 +352,16 @@ void Entity::initializeCEPACpatient(EventParams &_eventParams) {
     SimContext *simContextToUse;
     if (_eventParams.useRollout) {
         //When patients are initialized they are added to the untreated pool
-        simContextToUse = _eventParams.rolloutSimContexts[getCEPACSimContextIndex(_eventParams)]->rolloutSimContext;
+        if (this->isWhite() && !(this->isHispanic())) {
+            simContextToUse = _eventParams.rolloutSimContexts[getCEPACSimContextIndex(_eventParams, 4)]->rolloutSimContext;
+        } else if (this->isBlack() && !(this->isHispanic())) {
+            simContextToUse = _eventParams.rolloutSimContexts[getCEPACSimContextIndex(_eventParams, 5)]->rolloutSimContext;
+        } else if (this->isHispanic()) {
+            simContextToUse = _eventParams.rolloutSimContexts[getCEPACSimContextIndex(_eventParams, 6)]->rolloutSimContext;
+        } else {
+            simContextToUse = _eventParams.rolloutSimContexts[getCEPACSimContextIndex(_eventParams, 7)]->rolloutSimContext;
+        }
+
     } else {
         simContextToUse = _eventParams.cepacSimContexts[getCEPACSimContextIndex(_eventParams)];
     }
@@ -1504,7 +1513,7 @@ void Entity::deleteEntityWithoutDeleting() {
     }
 }
 
-int Entity::getCEPACSimContextIndex(EventParams &_eventParams) const {
+int Entity::getCEPACSimContextIndex(EventParams &_eventParams) {
     int returnValue = 0;
     if (_eventParams.useRollout) {
         for (std::size_t i = 0; i < _eventParams.rolloutSimContexts.size(); i++) {
@@ -1515,6 +1524,20 @@ int Entity::getCEPACSimContextIndex(EventParams &_eventParams) const {
     } else {
         for (std::size_t i = 0; i < _eventParams.cepacSimContexts.size(); i++) {
             if (_eventParams.currTime > _eventParams.timesToSwitchSimContext[i]) {
+                returnValue = static_cast<int>(i);
+            }
+        }
+    }
+
+    return returnValue;
+}
+
+int Entity::getCEPACSimContextIndex(EventParams &_eventParams, int popToApply) {
+    int returnValue = 0;
+    if (_eventParams.useRollout) {
+        for (std::size_t i = 0; i < _eventParams.rolloutSimContexts.size(); i++) {
+            if (_eventParams.currTime > _eventParams.timesToSwitchSimContext[i]
+            && _eventParams.rolloutSimContexts[i]->popOfInterest == popToApply) {
                 returnValue = static_cast<int>(i);
             }
         }

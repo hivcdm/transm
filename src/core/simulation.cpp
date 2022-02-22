@@ -623,13 +623,13 @@ std::size_t Simulation::SimulateMonth() {
         lastMonthToRecord = true;
     }
 
-    population_.UpdatePhysicalState(parameters_, recordLE, firstMonthToRecord);
-
     UpdateInterventions(population_.GetDeadPeopleThisMonth());
 
-    if (parameters_.useRollout) {
-        population_.ApplyARTRollout(parameters_);
-    }
+//    if (parameters_.useRollout) {
+//        population_.ApplyARTRollout(parameters_);
+//    }
+
+    population_.UpdatePhysicalState(parameters_, recordLE, firstMonthToRecord);
 
     population_.Births(parameters_);
 

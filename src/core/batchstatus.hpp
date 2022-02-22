@@ -1,4 +1,7 @@
-#pragma once
+#ifndef _BATCHSTATUS_H_
+#define _BATCHSTATUS_H_
+
+//#pragma once
 
 #include <string>
 #include <vector>
@@ -132,3 +135,5 @@ private:
 };
 
 } // namespace transm
+
+#endif

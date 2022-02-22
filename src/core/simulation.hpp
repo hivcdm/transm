@@ -20,37 +20,48 @@
 namespace transm {
 
 class Simulation {
+
 public:
     explicit Simulation(BatchStatus &batch_status);
-
-    ~Simulation();
 
     void Initialize(SimulationParameters &parameters);
 
     Outputs Run();
 
-    //returns eventParams.cepacRunStats for adding to the general popstats
+    /* returns eventParams.cepacRunStats for adding to the general popstats */
     RunStats &GetCEPACRunStats();
 
-    //returns eventParams.cepacCostStats for adding to the general popstats
+    /* returns eventParams.cepacCostStats for adding to the general popstats */
     CostStats &GetCEPACCostStats();
 
-    //returns population->popStats information for creating popStats-like file for transmission output
+    /* returns population->popStats information for creating popStats-like file for transmission output */
     PopulationStatisticsOld &GetPopulationStatistics();
 
     EventParams &GetEventParams();
 
-    double GetPrevalence() const { return prevalence_; }
+    /** Getters */
+    /*@{*/
+    double GetPrevalence() const {
+        return prevalence_;
+    }
 
-    double GetIncidence() const { return incidence_; }
+    double GetIncidence() const {
+        return incidence_;
+    }
 
-    Time GetTime() { return time_; }
+    Time GetTime() {
+        return time_;
+    }
 
-    void RegisterTargetGroup(const TargetGroup &group);
-
-    Population &GetPopulation() { return population_; }
+    Population &GetPopulation() {
+        return population_;
+    }
 
     const Population &GetPopulation() const { return population_; }
+
+    /*@}*/
+
+    void RegisterTargetGroup(const TargetGroup &group);
 
     void SetDuration(TimeSpan duration) { duration_ = duration; }
 
@@ -73,6 +84,9 @@ public:
     }
 
     void RegisterPopulationIntervention(const Intervention &intervention);
+
+    /* Default deconstructor */
+    ~Simulation();
 
 private:
     friend class SimulationBuilderXml;
