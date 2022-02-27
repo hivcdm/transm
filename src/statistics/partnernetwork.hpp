@@ -1,3 +1,6 @@
+#ifndef PARTNERNETWORK_HPP
+#define PARTNERNETWORK_HPP
+
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graphml.hpp>
 
@@ -182,3 +185,5 @@ private:
     Graph G;
 
 };
+
+#endif /* PARTNERNETWORK_HPP */

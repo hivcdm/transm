@@ -1,4 +1,5 @@
-#pragma once
+#ifndef HIGHRESOLUTIONTIMER_HPP
+#define HIGHRESOLUTIONTIMER_HPP
 
 namespace transm {
 
@@ -18,3 +19,6 @@ private:
 };
 
 } // namespace transm
+
+
+#endif /* HIGHRESOLUTIONTIMER_HPP */

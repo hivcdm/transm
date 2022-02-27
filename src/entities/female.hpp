@@ -1,4 +1,5 @@
-#pragma once
+#ifndef FEMALE_HPP
+#define FEMALE_HPP
 
 #include "entity.hpp"
 #include "prep.hpp"
@@ -165,3 +166,6 @@ private:
 };
 
 } // namespace transm
+
+
+#endif /* FEMALE_HPP */

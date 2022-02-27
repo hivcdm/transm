@@ -1,5 +1,5 @@
-#ifndef _ENTITY_H_
-#define _ENTITY_H_
+#ifndef ENTITY_HPP
+#define ENTITY_HPP
 
 /* Standard essentials */
 #include <iostream>
@@ -980,4 +980,4 @@ private:
 
 } // namespace transm
 
-#endif  /* _ENTITY_H_ */
+#endif  /* ENTITY_HPP */

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef POPULATIONSTATISTICS_HPP
+#define POPULATIONSTATISTICS_HPP
 
 #include "monthlystats.hpp"
 
@@ -26,3 +27,5 @@ private:
 };
 
 } // namespace transm
+
+#endif /* POPULATIONSTATISTICS_HPP */

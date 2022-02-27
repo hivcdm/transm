@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ENTITYINDEX_HPP
+#define ENTITYINDEX_HPP
 
 #include <iostream>
 #include <list>
@@ -522,3 +523,6 @@ typename std::multimap<_KeyValType, Entity *>::iterator EntityIndex<_PSC, _KeyVa
 }
 
 } // namespace transm
+
+
+#endif /* ENTITYINDEX_HPP */

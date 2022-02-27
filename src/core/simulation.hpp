@@ -1,4 +1,6 @@
-#pragma once
+#ifndef SIMULTAION_HPP
+#define SIMULTAION_HPP
+
 
 #include <unordered_set>
 #include <pugixml.hpp>
@@ -163,3 +165,5 @@ private:
 };
 
 } // namespace transm
+
+#endif /* SIMULATION_HPP */

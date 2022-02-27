@@ -1,4 +1,5 @@
-#pragma once
+#ifndef HASH_TUPLE_HPP
+#define HASH_TUPLE_HPP
 
 #include <tuple>
 
@@ -46,3 +47,6 @@ struct hash<std::tuple<TT...>>
 };
 
 } // namespace stsd
+
+
+#endif /* HASH_TUPLE_HPP */

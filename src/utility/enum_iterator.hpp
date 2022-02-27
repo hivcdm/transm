@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ENUM_ITERATOR_HPP
+#define ENUM_ITERATOR_HPP
 
 #include <iterator>
 
@@ -47,3 +48,6 @@ public:
 };
 
 } // namespace transm
+
+
+#endif /* ENUMITERATOR_HPP */

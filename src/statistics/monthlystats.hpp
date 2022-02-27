@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MONTHLYSTATS_HPP
+#define MONTHLYSTATS_HPP
 
 #include <tuple>
 #include <unordered_map>
@@ -105,3 +106,6 @@ protected:
 };
 
 } // namespace transm
+
+
+#endif /* MONTHLYSTATS_HPP */

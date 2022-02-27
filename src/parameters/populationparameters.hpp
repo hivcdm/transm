@@ -1,4 +1,5 @@
-#pragma once
+#ifndef POPULATIONPARAMETERS_HPP
+#define POPULATIONPARAMETERS_HPP
 
 #include "entities/entitytypes.hpp"
 #include "entities/demographicprofile.hpp"
@@ -291,3 +292,6 @@ private:
 };
 
 } // namespace transm
+
+
+#endif /* POPULATIONPARAMETERS_HPP */

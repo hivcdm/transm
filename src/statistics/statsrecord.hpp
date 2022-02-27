@@ -1,4 +1,5 @@
-#pragma once
+#ifndef STATSRECORD_HPP
+#define STATSRECORD_HPP
 
 #include <assert.h>
 #include <iostream>
@@ -146,3 +147,5 @@ bool StatsRecord<PointStatIDs, StratifiedStatIDs>::validStatID(PointStatIDs _sta
 }
 
 } // namespace transm
+
+#endif /* STATSRECORD_HPP */

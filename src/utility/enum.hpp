@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ENUM_HPP
+#define ENUM_HPP
 
 #include <iostream>
 #include <string>
@@ -203,3 +204,6 @@ E EnumCls<E>::toEnum(std::string _enumStr)
 }
 
 } // namespace transm
+
+
+#endif /* ENUM_HPP */

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TRANSMISSIONTYPE_HPP
+#define TRANSMISSIONTYPE_HPP
 
 namespace transm {
 
@@ -29,3 +30,6 @@ struct hash<transm::TransmissionType>
 };
 
 } // namespace std
+
+
+#endif /* TRANSMISSIONTYPE_HPP */

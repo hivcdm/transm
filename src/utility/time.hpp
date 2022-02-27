@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TIME_HPP
+#define TIME_HPP
 
 #include <string>
 
@@ -108,3 +109,6 @@ inline Time max(const Time &left, const Time &right)
 using Age = Time;
 
 } // namespace transm
+
+
+#endif /* TIME_HPP */
