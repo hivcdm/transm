@@ -1,4 +1,5 @@
-#pragma once
+#ifndef FILESYSTEM_HPP
+#define FILESYSTEM_HPP
 
 #include <iostream>
 #include <string>
@@ -94,3 +95,7 @@ public:
 };
 
 } // namespace transm
+
+
+
+#endif /* FILESYSTEM_HPP */

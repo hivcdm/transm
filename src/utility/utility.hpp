@@ -1,4 +1,5 @@
-#pragma once
+#ifndef UTILITY_HPP
+#define UTILITY_HPP
 
 #include <set>
 #include <string>
@@ -185,3 +186,5 @@ bool Utility::within_range(T val, T min, T max)
 }
 
 } // namespace transm
+
+#endif

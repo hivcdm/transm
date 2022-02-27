@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BUCKETCOUNTER_HPP
+#define BUCKETCOUNTER_HPP
 
 #include <algorithm>
 #include <cassert>
@@ -134,3 +135,6 @@ private:
 };
 
 } // namespace transm
+
+
+#endif /* BUCKETCOUNTER_HPP */

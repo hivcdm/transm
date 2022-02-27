@@ -1,4 +1,5 @@
-#pragma once
+#ifndef COSTTRACKER_HPP
+#define COSTTRACKER_HPP
 
 #include <iostream>
 #include <string>
@@ -88,3 +89,6 @@ private:
 };
 
 } // namespace transm
+
+
+#endif /* COSTTRACKER_HPP */

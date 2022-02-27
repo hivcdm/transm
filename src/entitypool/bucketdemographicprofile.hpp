@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BUCKETDEMOGRAPHICPROFILE_HPP
+#define BUCKETDEMOGRAPHICPROFILE_HPP
 
 #include "entityindex.hpp"
 #include "entities/demographicprofile.hpp"
@@ -139,3 +140,6 @@ private:
 };
 
 } // namespace transm
+
+
+#endif /* BUCKETDEMOGRAPHICPROFILE_HPP */

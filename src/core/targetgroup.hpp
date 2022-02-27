@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TARGETGROUP_HPP
+#define TARGETGROUP_HPP
 
 #include <string>
 #include <unordered_set>
@@ -321,3 +322,6 @@ private:
 };
 
 } // namespace transm
+
+
+#endif /* TARGETGROUP_HPP */

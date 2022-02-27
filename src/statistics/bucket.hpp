@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BUCKET_HPP
+#define BUCKET_HPP
 
 #include <map>
 #include <string>
@@ -68,3 +69,5 @@ struct bucket_equal_to<Bucket>
 };
 
 } // namespace transm
+
+#endif /* BUCKET_HPP */

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TRANSMISSIONSUMMARYSTATS_HPP
+#define TRANSMISSIONSUMMARYSTATS_HPP
 
 #include <fstream>
 
@@ -66,3 +67,5 @@ namespace transm {
     };
 
 } // namespace transm
+
+#endif /* TRANSMISSIONSUMMARYSTATS_HPP */

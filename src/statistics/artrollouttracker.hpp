@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ARTROLLOUTTRACKER_HPP
+#define ARTROLLOUTTRACKER_HPP
 
 #include <iostream>
 #include <string>
@@ -75,3 +76,5 @@ private:
 };
 
 } // namespace transm
+
+#endif /* ARTROLLOUTTRACKER_HPP */
