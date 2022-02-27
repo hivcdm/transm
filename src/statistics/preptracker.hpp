@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PREPTRACKER_HPP
+#define PREPTRACKER_HPP
 
 #include <iostream>
 #include <string>
@@ -54,3 +55,5 @@ private:
 };
 
 } // namespace transm
+
+#endif /* PREPTRACKER_HPP */

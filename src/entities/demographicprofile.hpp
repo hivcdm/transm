@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DEMOGRAPHICPROFILE_HPP
+#define DEMOGRAPHICPROFILE_HPP
 
 #include <map>
 
@@ -296,3 +297,6 @@ private:
 };
 
 } // namespace transm
+
+
+#endif /* DEMOGRAPHICPROFILE_HPP */

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MALE_HPP
+#define MALE_HPP
 
 #include <map>
 
@@ -349,3 +350,6 @@ private:
 };
 
 } // namespace transm
+
+
+#endif /* MALE_HPP */

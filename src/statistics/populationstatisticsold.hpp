@@ -1,4 +1,5 @@
-#pragma once
+#ifndef POPULATIONSTATSTICSOLD_HPP
+#define POPULATIONSTATSTICSOLD_HPP
 
 #include <fstream>
 #include <unordered_map>
@@ -283,3 +284,5 @@ namespace transm {
     };
 
 } // namespace transm
+
+#endif /* POPULATIONSTATSTICSOLD_HPP */

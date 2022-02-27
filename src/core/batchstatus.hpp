@@ -1,5 +1,5 @@
-#ifndef _BATCHSTATUS_H_
-#define _BATCHSTATUS_H_
+#ifndef BATCHSTATUS_HPP
+#define BATCHSTATUS_HPP
 
 //#pragma once
 
@@ -136,4 +136,4 @@ private:
 
 } // namespace transm
 
-#endif
+#endif /* BATCHSTATUS_HPP */

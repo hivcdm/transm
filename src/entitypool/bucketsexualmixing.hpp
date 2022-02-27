@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BUCKETSEXUALMIXING_HPP
+#define BUCKETSEXUALMIXING_HPP
 
 //this creates a BucketDemographicProfile with an optimized data structure for sexual selection
 //  people are put in different buckets based on age. Each bucket is sorted by sexualActivity coefficient
@@ -216,3 +217,6 @@ private :
 };
 
 } // namespace transm
+
+
+#endif /* BUCKETSEXUALMIXING_HPP */

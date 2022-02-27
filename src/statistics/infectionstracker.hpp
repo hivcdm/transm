@@ -1,4 +1,5 @@
-#pragma once
+#ifndef INFECTIONSTRACKER_HPP
+#define INFECTIONSTRACKER_HPP
 
 #include <deque>
 #include <list>
@@ -274,3 +275,5 @@ public :
 };
 
 } // namespace transm
+
+#endif /* INFECTIONSTRACKER_HPP */

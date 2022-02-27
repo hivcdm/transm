@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AGERANGESIZECONTAINER_HPP
+#define AGERANGESIZECONTAINER_HPP
 
 #include <utility>
 #include <vector>
@@ -25,3 +26,5 @@ using AgeRangeSizePair = std::pair<AgeRange, std::size_t>;
 using AgeRangeSizeContainer = std::vector<AgeRangeSizePair>;
 
 } // namespace transm
+
+#endif /* AGERANGESIZECONTAINER_HPP */

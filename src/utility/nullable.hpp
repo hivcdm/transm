@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NULLABLE_HPP
+#define NULLABLE_HPP
 
 namespace transm {
 
@@ -12,3 +13,6 @@ struct Nullable
 };
 
 } // namespace transm
+
+
+#endif /* NULLABLE_HPP */

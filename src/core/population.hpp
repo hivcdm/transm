@@ -1,4 +1,5 @@
-#pragma once
+#ifndef POPULATION_HPP
+#define POPULATION_HPP
 
 #include <fstream>
 #include <iostream>
@@ -531,3 +532,6 @@ namespace transm {
     };
 
 } // namespace transm
+
+
+#endif /* POPULATION_HPP */

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SEXUALPARTNERSHIP_HPP
+#define SEXUALPARTNERSHIP_HPP
 
 #include <functional>
 
@@ -154,3 +155,6 @@ struct hash<transm::SexualPartnership::Type>
 };
 
 } // namespace std
+
+
+#endif /* SEXUALPARTNERSHIP_HPP */

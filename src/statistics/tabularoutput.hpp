@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TABULAROUTPUT_HPP
+#define TABULAROUTPUT_HPP
 
 #include <fstream>
 #include <string>
@@ -73,3 +74,5 @@ private:
 };
 
 } // namespace transm
+
+#endif /* TABULAROUTPUT_HPP */

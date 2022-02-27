@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PERSONBUCKET_HPP
+#define PERSONBUCKET_HPP
 
 #include <utility>
 #include <vector>
@@ -49,3 +50,5 @@ public:
 };
 
 } // namespace transm
+
+#endif /* PERSONBUCKET_HPP */
