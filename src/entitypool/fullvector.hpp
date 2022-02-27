@@ -1,4 +1,5 @@
-#pragma once
+#ifndef FULLVECTOR_HPP
+#define FULLVECTOR_HPP
 
 #include <vector>
 #include "entities/entity.hpp"
@@ -103,3 +104,6 @@ protected:
 };
 
 } // namespace transm
+
+
+#endif /* FULLVECTOR_HPP */

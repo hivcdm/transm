@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AGEBUCKETPREVALENCEINFO_HPP
+#define AGEBUCKETPREVALENCEINFO_HPP
 
 #include <string>
 #include <unordered_map>
@@ -47,3 +48,5 @@ private:
 };
 
 } // namespace transm
+
+#endif /* AGEBUCKETPREVALENCEINFO_HPP */

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DESCRIPTIVE_STATS_CONTAINER_HPP
+#define DESCRIPTIVE_STATS_CONTAINER_HPP
 
 #include <cmath>
 #include <set>
@@ -106,3 +107,6 @@ private:
 };
 
 } // namespace transm
+
+
+#endif /* DESCRIPTIVE_STATS_CONTAINER_HPP */

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef INTERVENTIONOUTCOMES_HPP
+#define INTERVENTIONOUTCOMES_HPP
 
 #include <fstream>
 
@@ -212,3 +213,6 @@ private:
 };
 
 } // namespace transm
+
+
+#endif /* INTERVENTIONOUTCOMES_HPP */

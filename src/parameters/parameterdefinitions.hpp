@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PARAMETERDEFINITIONS_HPP
+#define PARAMETERDEFINITIONS_HPP
 
 #include <fstream>
 #include <memory>
@@ -196,3 +197,6 @@ struct CepacParameters
 };
 
 } // namespace transm
+
+
+#endif /* PARAMETERDEFINITIONS_HPP */

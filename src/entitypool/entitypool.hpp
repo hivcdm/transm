@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ENTITYPOOL_HPP
+#define ENTITYPOOL_HPP
 
 #include <cstdlib>
 #include <list>
@@ -220,3 +221,6 @@ private:
 };
 
 } // namespace transm
+
+
+#endif /* ENTITYPOOL_HPP */

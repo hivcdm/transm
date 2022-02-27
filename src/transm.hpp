@@ -1,3 +1,6 @@
+#ifndef TRANSM_HPP
+#define TRANSM_HPP
+
 #include "core/batchstatus.hpp"
 #include "core/simulation.hpp"
 #include "parameters/simulationparameters.hpp"
@@ -149,3 +152,6 @@ void print_version() {
     std::cout << "transm version " << version_string << std::endl;
 }
 
+
+
+#endif /* TRANSM_HPP */

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SEXUALBEHAVIOR_HPP
+#define SEXUALBEHAVIOR_HPP
 
 #include <vector>
 
@@ -85,3 +86,6 @@ private:
 };
 
 } // namespace transm
+
+
+#endif /* SEXUALBEHAVIOR_HPP */

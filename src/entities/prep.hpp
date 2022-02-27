@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PREP_HPP
+#define PREP_HPP
 
 #include <vector>
 
@@ -112,3 +113,6 @@ public:
 };
 
 } // namespace transm
+
+
+#endif /* PREP_HPP */

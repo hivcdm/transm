@@ -1,4 +1,6 @@
-#pragma once
+#ifndef RANDOMNUMBERGENERATOR_HPP
+#define RANDOMNUMBERGENERATOR_HPP
+
 
 #include <cstdint>
 #include <cstdlib>
@@ -168,3 +170,6 @@ private:
 };
 
 } // namespace transm
+
+
+#endif /* RANDOMNUMBERGENERATOR_HPP */

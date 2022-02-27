@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CEPACINPUTPARSER_HPP
+#define CEPACINPUTPARSER_HPP
 
 #include <array>
 #include <fstream>
@@ -34,3 +35,6 @@ private:
 };
 
 } // namespace transm
+
+
+#endif /* CEPACINPUTPARSER_HPP */

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef EVENTPARAMS_HPP
+#define EVENTPARAMS_HPP
 
 #include <iostream>
 #include <fstream>
@@ -218,3 +219,6 @@ public:
 };
 
 } // namespace transm
+
+
+#endif /* EVENTPARAMS_HPP */

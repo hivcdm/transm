@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BUCKETAGE_HPP
+#define BUCKETAFE_HPP
 
 #include <vector>
 
@@ -169,3 +170,6 @@ private:
 };
 
 } // namespace transm
+
+
+#endif /* BUCKETAGE_HPP */

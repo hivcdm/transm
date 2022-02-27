@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ENTITYTYPES_HPP
+#define ENTITYTYPES_HPP
 
 namespace transm {
 
@@ -120,3 +121,6 @@ namespace transm {
         First = OFF_PREP
     };
 }
+
+
+#endif /* ENTITYTYPES_HPP */
