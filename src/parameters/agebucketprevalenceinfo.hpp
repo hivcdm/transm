@@ -9,41 +9,34 @@
 
 namespace transm {
 
-/// <summary>
-/// this data structure contains prevalence parameters differ in value by age buckets
-/// </summary>
+/** this data structure contains prevalence parameters differ in value by age buckets */
 class AgeBucketPrevalenceInfo
 {
+
 public:
     AgeBucketPrevalenceInfo();
 
     AgeBucketPrevalenceInfo(Age _minAgeMth, Age _maxAgeMth, double _proportionInAgeBucket,
-		const std::vector<DemographicProfile::DoublePair> &entity_proportions);
+		std::vector<DemographicProfile::DoublePair> entity_proportions);
 
     Age GetMinAge() { return minAgeMth; }
     Age GetMaxAge() { return maxAgeMth; }
 
-    double GetProportionInAgeBucket() { return proportionInAgeBucket; }
+    double GetProportionInAgeBucket() const { return proportionInAgeBucket; }
 
     const std::vector<DemographicProfile::DoublePair> &GetEntityProportions();
-	void SetEntityProportion(DemographicProfile profile, double value);
+	void SetEntityProportion(const DemographicProfile& profile, double value);
 
 private:
-    /// <summary>
-    /// the min age that this bucket represents
-    /// </summary>
+     /** the min age that this bucket represents */
     Age minAgeMth;
 
-    /// <summary>
-    /// the max age that this bucket represents
-    /// </summary>
+     /** the max age that this bucket represents */
     Age maxAgeMth;
 
     double proportionInAgeBucket;
 
-    /// <summary>
-    /// determines size as proportion of the population
-    /// </summary>
+     /** determines size as proportion of the population */
 	std::vector<DemographicProfile::DoublePair> entityProportions;
 };
 

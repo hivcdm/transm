@@ -8,13 +8,13 @@
 
 namespace transm {
 
-/// <summary>
-/// SummaryStats class contains a list of the summary statistics from each of the
-/// input files (simulation contexts) that are executed in a given run of the model.
-/// It contains the functions to generate a summary from a given RunStats object, add it to
-/// the list of summaries, and output all the summaries to the popstats file.  Main calls these
-/// functions to add each new summary and append to popstats.out at the end of the run.
-/// </summary>
+ /**
+  * SummaryStats class contains a list of the summary statistics from each of the
+  * input files (simulation contexts) that are executed in a given run of the model.
+  * It contains the functions to generate a summary from a given RunStats object, add it to
+  * the list of summaries, and output all the summaries to the popstats file.  Main calls these
+  * functions to add each new summary and append to popstats.out at the end of the run.
+*/
     class TransmissionSummaryStats {
     public:
         static const int NUM_TIMES_TO_RECORD = 5;
@@ -23,9 +23,9 @@ namespace transm {
 
         ~TransmissionSummaryStats();
 
-        /// <summary>
-        /// Summary class stores the summary information that is written to the popstats file
-        /// </summary>
+         /**
+          * Summary class stores the summary information that is written to the popstats file
+        */
         class TransmissionSummary {
         public:
             ~TransmissionSummary();

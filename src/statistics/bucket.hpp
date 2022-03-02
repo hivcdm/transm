@@ -12,7 +12,7 @@ class Bucket
 public:
     bool HasKeyValue(std::string key, int value) const
     {
-        std::unordered_map<std::string,int>::const_iterator itr = values_.find(key);
+        auto itr = values_.find(key);
         if (itr != values_.end())
         {
             if (itr->second == value)

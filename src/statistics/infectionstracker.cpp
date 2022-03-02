@@ -16,7 +16,7 @@ InfectionsTracker::InfectionsTracker() :
 
 void InfectionsTracker::Initialize()
 {
-	//zero out all infection tallies
+	/* zero out all infection tallies */
 	for(int i = 0; i < (int)SexualPartnership::Type::Last; ++i)
 	{
 		for(unsigned int j = 0; j < DemographicProfile::TotalNumBuckets; ++j)
@@ -55,7 +55,7 @@ void InfectionsTracker::Initialize()
 
     for(auto gender : enum_iterator<DemographicProfile::Gender>())
     {
-		std::size_t entity_type = (std::size_t)gender;
+		auto entity_type = (std::size_t)gender;
         for(std::size_t i = 0; i < (std::size_t)RiskLevel::Last; i++)
         {
             for(std::size_t k = 0; k < (std::size_t)DemographicProfile::Employment::Last; k++)
@@ -72,7 +72,7 @@ void InfectionsTracker::Initialize()
 
     for(auto gender : enum_iterator<DemographicProfile::Gender>())
     {
-		std::size_t entity_type = (std::size_t)gender;
+		auto entity_type = (std::size_t)gender;
 		totalIncidentInfsGender[entity_type] = 0;
         currTimeStepNumInfectedGender[entity_type] = 0;
         currTimeStepAgeInfectionSumGender[entity_type] = 0;
@@ -87,7 +87,7 @@ void InfectionsTracker::Initialize()
 
     for(auto gender : enum_iterator<DemographicProfile::Gender>())
     {
-		std::size_t entity_type = (std::size_t)gender;
+		auto entity_type = (std::size_t)gender;
         for(std::size_t i = 0; i < (std::size_t)RiskLevel::Last; i++)
         {
             for(std::size_t k = 0; k < (std::size_t)DemographicProfile::Employment::Last; k++)
@@ -158,15 +158,15 @@ std::size_t InfectionsTracker::getNumIncidentInfections()
 	return infections;
 }
 
-//returns the prevalence rate among sexually active pop
+/* returns the prevalence rate among sexually active pop */
 double InfectionsTracker::getSAPrev(Population &_population)
 {
 	std::size_t totalInfected = 0;
     std::size_t currPopSize = _population.GetSize();
     std::size_t currSAPopSize = currPopSize - _population.GetNASize();
 
-	//Currently Infected
-	//total the current infections
+	/* Currently Infected */
+	/* total the current infections */
 	for(unsigned int i = 0; i < DemographicProfile::TotalNumBuckets; i++)
 	{
 		for(int j = 0; j < NUMBER_GENERATIONS_TO_TRACE; j++)
@@ -175,19 +175,19 @@ double InfectionsTracker::getSAPrev(Population &_population)
 		}
 	}
 
-	//current pop and prevalence of sexually active population
-	//Need total number of infected for SA population only
+	/* current pop and prevalence of sexually active population */
+	/* Need total number of infected for SA population only */
 	auto totalInfectedSA = totalInfected;
 	DemographicProfile NAProfile;
     NAProfile.set(DemographicProfile::Demographic::SexualActivityStatus, (std::size_t)DemographicProfile::SexualActivityStatus::NotActive);
 	std::vector<DemographicProfile::ProfileID> NAProfileIDs;
 	NAProfile.selectProfileIDs(NAProfileIDs, nullptr);
 
-    for(std::size_t i = 0; i < NAProfileIDs.size(); i++)
+    for(int NAProfileID : NAProfileIDs)
 	{
         for(std::size_t j = 0; j < NUMBER_GENERATIONS_TO_TRACE; j++)
 		{
-			totalInfectedSA -= currPrevalentInfections[j][NAProfileIDs[i]];
+			totalInfectedSA -= currPrevalentInfections[j][NAProfileID];
 		}
 	}
 
@@ -201,12 +201,10 @@ double InfectionsTracker::getSAPrev(Population &_population)
 	}
 }
 
-/*
-* Resests counting of incident infections for time step
-*/
+/* Resests counting of incident infections for time step */
 void InfectionsTracker::resetIncidentInfections(Time time)
 {
-    /** Reset counter for incident infections and exposures for current timestep*/
+    /** Reset counter for incident infections and exposures for current timestep */
     for(std::size_t i = 0; i < (std::size_t)HVLStrata::Last; i++)
     {
         currTimeStepIncidentInfs[i] = 0;
@@ -226,7 +224,7 @@ void InfectionsTracker::resetIncidentInfections(Time time)
 
     for(auto gender : enum_iterator<DemographicProfile::Gender>())
     {
-		std::size_t entity_type = (std::size_t)gender;
+		auto entity_type = (std::size_t)gender;
         for(std::size_t i = 0; i < (std::size_t)RiskLevel::Last; i++)
         {
             for(std::size_t k = 0; k < (std::size_t)DemographicProfile::Employment::Last; k++)
@@ -259,9 +257,7 @@ void InfectionsTracker::resetIncidentInfections(Time time)
 }
 
 
-/*
-initializes the counters for incident infections by age and gender
-*/
+/* Initializes the counters for incident infections by age and gender */
 void InfectionsTracker::initializeIncidentInfectionsByAge(
     const GenderArray<AgeRangeSizeContainer> &incident_by_gender_age,
     const OrientationArray<AgeRangeSizeContainer> &incident_by_orientation_age,
@@ -273,12 +269,12 @@ void InfectionsTracker::initializeIncidentInfectionsByAge(
     totalIncidentInfsAge = incident_by_age;
 }
 
-// Records a new exposure regardless of whether an infection happened or not
+/* Records a new exposure regardless of whether an infection happened or not */
 void InfectionsTracker::recordExposure(Time time, const Entity *_infector,
     SexualPartnership::Type partnershipType, bool condomUsed)
 {
-	// Reset counter for incident infections and exposures for current timestep
-	// if this is the first time an InfectionsTracker function has been called.
+	/* Reset counter for incident infections and exposures for current timestep */
+	/* if this is the first time an InfectionsTracker function has been called. */
 	if(time > currTimeStep)
 	{
 		resetIncidentInfections(time);
@@ -296,33 +292,35 @@ void InfectionsTracker::recordExposure(Time time, const Entity *_infector,
 
 }
 
-//records a New infection and also prints the infection out to a trace
+/* records a New infection and also prints the infection out to a trace */
 void InfectionsTracker::recordIncidentInfection(Time time,
     SexualPartnership::Type _partnershipType, const Entity *_infector,
     const Entity *_infected)
 {
     assert(time.in_months() >= 0);
-    //check to see if the people are valid: not null, not dead, in a valid bucket
+
+    /* check to see if the people are valid: not null, not dead, in a valid bucket */
     assert((_infector != nullptr) && (_infector->isAlive())
         && (Utility::within_range(_infector->getDemographicProfile()->getProfileID(), DemographicProfile::MIN, DemographicProfile::MAX)));
     assert((_infected != nullptr) && (_infected->isAlive())
         && (Utility::within_range(_infected->getDemographicProfile()->getProfileID(), DemographicProfile::MIN, DemographicProfile::MAX)));
     assert(_partnershipType < SexualPartnership::Type::Last);
 
-    //reset counter for incident infections and exposures for current timestep
+    /* reset counter for incident infections and exposures for current timestep */
     if(time > currTimeStep)
     {
         resetIncidentInfections(time);
     }
-    //The person doing the infecting should be infected!
+
+    /* The person doing the infecting should be infected! */
     assert(_infector->getHVL() != HVLStrata::UNINFECTED);
 
-    //record infection
+    /* record infection */
     incidentInfectionsByDemographic[(std::size_t)_partnershipType][_infector->getDemographicProfile()->getProfileID()][_infected->getDemographicProfile()->getProfileID()]++;
 
-	std::size_t infectorGender = (std::size_t)_infector->getDemographicProfileVal<DemographicProfile::Gender>();
-	std::size_t infectedGender = (std::size_t)_infector->getDemographicProfileVal<DemographicProfile::Gender>();
-	std::size_t infectedEmployment = (std::size_t)_infector->getDemographicProfileVal<DemographicProfile::Employment>();
+	auto infectorGender = (std::size_t)_infector->getDemographicProfileVal<DemographicProfile::Gender>();
+	auto infectedGender = (std::size_t)_infector->getDemographicProfileVal<DemographicProfile::Gender>();
+	auto infectedEmployment = (std::size_t)_infector->getDemographicProfileVal<DemographicProfile::Employment>();
 
     incidentInfectionsByGender[(std::size_t)_partnershipType][infectorGender][infectedGender]++;
 
@@ -375,9 +373,7 @@ void InfectionsTracker::recordIncidentInfection(Time time,
 	}
 }
 
-/**
-records the cd4 at transmission (requested by clinical out stream)
-**/
+/* records the cd4 at transmission (requested by clinical out stream) */
 void InfectionsTracker::recordCD4AtTransmission(ostream &_outStream)
 {
 	if(currTimeStepNumInfected != 0)
@@ -412,7 +408,7 @@ void InfectionsTracker::setPrevalentInfections(std::array<DemographicArray, NUMB
 
     for(auto gender : enum_iterator<DemographicProfile::Gender>())
     {
-		std::size_t entity_type = (std::size_t)gender;
+		auto entity_type = (std::size_t)gender;
         currPrevalentInfectionsGender[entity_type] = 0;
 
         for(std::size_t i = 0; i < (std::size_t)RiskLevel::Last; i++)
@@ -433,7 +429,7 @@ void InfectionsTracker::setPrevalentInfections(std::array<DemographicArray, NUMB
 
     for(auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
     {
-		std::size_t entity_type = (std::size_t)orientation;
+		auto entity_type = (std::size_t)orientation;
         currPrevalentInfectionsOrientation[entity_type] = 0;
 
         for(std::size_t i = 0; i < (std::size_t)RiskLevel::Last; i++)
@@ -456,22 +452,26 @@ void InfectionsTracker::setPrevalentInfections(std::array<DemographicArray, NUMB
 int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time, std::ostream &_outStream, Population *_population)
 {
 	assert(time.in_months() >= 0);
-	//total # infections this month
+
+	/* total # infections this month */
 	std::size_t totalInfected = 0;
-	//current population size
+
+	/* current population size */
 	std::size_t currPopSize = _population->GetSize();
 	std::size_t currSAPopSize = currPopSize - _population->GetNASize();
-	//total # of age ranges to print out
+
+	/* total # of age ranges to print out */
 	auto currSizeByAgeRange = _population->GetAgeRanges();
 	auto numAgeRanges = currSizeByAgeRange.size();
 
-	//write headers for infections sheet
+	/* write headers for infections sheet */
 	if(time.in_months() == 0)
 	{
 		std::ostringstream firstRow;
         std::ostringstream secondRow;
         std::ostringstream thirdRow;
-		//incidence-related headers
+
+		/* incidence-related headers */
 		firstRow << "Epidemiology Outputs" << Constants::Tab;
 		secondRow << Constants::Tab;
 		thirdRow << "Month" << Constants::Tab;
@@ -503,31 +503,31 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 		secondRow << Constants::Tab;
 		thirdRow << "Past-Year SAPop Incidence" << Constants::Tab;
 
-        // write headers for by gender
+        /* write headers for by gender */
 		firstRow << "Prevalent Cases";
         secondRow << "By Gender";
 		for(auto gender : enum_iterator<DemographicProfile::Gender>())
 		{
             firstRow << Constants::Tab;
             secondRow << Constants::Tab;
-            std::size_t entity_type = (std::size_t)gender;
+            auto entity_type = (std::size_t)gender;
             thirdRow << DemographicEnumStrs.at((std::size_t)DemographicProfile::Demographic::Gender)
                         .at(entity_type) << Constants::Tab;
         }
 
-        // write headers for by orientation
+        /* write headers for by orientation */
         firstRow << "Prevalent Cases";
         secondRow << "By Orientation";
 		for(auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
 		{
             firstRow << Constants::Tab;
             secondRow << Constants::Tab;
-            std::size_t entity_type = (std::size_t)orientation;
+            auto entity_type = (std::size_t)orientation;
             thirdRow << DemographicEnumStrs.at((std::size_t)DemographicProfile::Demographic::SexualOrientation)
                         .at(entity_type) << Constants::Tab;
         }
 
-		//write out headers for population by age\sexual activity
+		/* write out headers for population by age\sexual activity */
 		firstRow << "Prevalent Cases";
         secondRow << "By Age";
 		for(std::size_t i = 0; i < numAgeRanges; i++)
@@ -537,7 +537,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 			thirdRow << currSizeByAgeRange.at(i) << Constants::Tab;
 		}
 
-		//write out headers for population by gender and age
+		/* write out headers for population by gender and age */
 		for(auto gender : enum_iterator<DemographicProfile::Gender>())
 		{
             std::size_t entity_type = (std::size_t)gender;
@@ -556,7 +556,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
             }
         }
 
-        //write out headers for number infected by risk
+        /* write out headers for number infected by risk */
         firstRow << "Prevalent Cases" << Constants::Tab << Constants::Tab;
         secondRow << "By Risk Group" << Constants::Tab << Constants::Tab;
         thirdRow << "CSW High Risk" << Constants::Tab;
@@ -578,7 +578,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
             thirdRow << "Non-CSW Low Risk " << entity_type << Constants::Tab;
         }
 
-		//write out headers for number of infections by generation (7 tabs)
+		/* write out headers for number of infections by generation (7 tabs) */
 		firstRow << "Prevalent Cases" << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab
 		         << Constants::Tab;
 		secondRow << "Number Infected by Generation" << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
@@ -586,7 +586,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 		thirdRow << "0 (Prev.)" << Constants::Tab << "First" << Constants::Tab << "Second" << Constants::Tab << "Third" <<
 		         Constants::Tab << "Fourth" << Constants::Tab << "Fifth+" << Constants::Tab;
 
-        //write out headers for number of exposures and infections by HVL
+        /* write out headers for number of exposures and infections by HVL */
 		firstRow << "Exposures by HVL" << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab <<
 		         Constants::Tab << Constants::Tab << Constants::Tab << Constants::Tab;
 		secondRow << Constants::Tab << Constants::Tab << Constants::Tab <<
@@ -604,7 +604,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 		         Constants::Tab << "HVL 100000+" << Constants::Tab << "HVL Primary" << Constants::Tab << "HVL Late Stage" <<
 		         Constants::Tab;
 
-		//write out headers for number of infections by Age and gender
+		/* write out headers for number of infections by Age and gender */
 		for(std::size_t i = 0; i < numAgeRanges; i++)
 		{
 			if(i == 0)
@@ -669,7 +669,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
             }
         }
 
-		//write out headers for incident infections by relationship type
+		/* write out headers for incident infections by relationship type */
         firstRow << "Total Infected in History (Prevalent Cases Excluded)";
         secondRow << "Relationship Type";
 
@@ -680,7 +680,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 			thirdRow << header << Constants::Tab;
 		}
 
-		//write out headers that tally total infections based on age and gender and risk group
+		/* write out headers that tally total infections based on age and gender and risk group */
 		for(std::size_t i = 0; i < numAgeRanges; i++)
 		{
 			if(i == 0)
@@ -779,12 +779,12 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 		}
 
 #ifdef WHO_INFECTED_WHOM
-		//write out headers that tally infections from one DemographicProfile to another
-		//loop through all used ProfileID's and create internal string buffer headers for future timestep trace output
+		/* write out headers that tally infections from one DemographicProfile to another */
+		/* loop through all used ProfileID's and create internal string buffer headers for future timestep trace output */
 		auto infectorProfileID = profileIDsForDetailedTrace.begin();
 		while(infectorProfileID != profileIDsForDetailedTrace.end())
 		{
-			//first row profile str refers to infectors
+			/* first row profile str refers to infectors */
 			firstRow << "Total Infected in History (Prevalent Cases Excluded)";
 			secondRow << *DemographicProfile::toString(*infectorProfileID);
 			auto infectedProfileID = profileIDsForDetailedTrace.begin();
@@ -793,7 +793,8 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 			{
 				firstRow << Constants::Tab;
 				secondRow << Constants::Tab;
-				//second row profile str refers to infecteds
+
+				/* second row profile str refers to infecteds */
 				thirdRow << *DemographicProfile::toString(*infectedProfileID) << Constants::Tab;
 				infectedProfileID++;
 			}
@@ -802,7 +803,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 		}
 #endif
 
-		//Write out string buffers to trace file
+		/* Write out string buffers to trace file */
 		_outStream << firstRow.str() << std::endl;
 		_outStream << secondRow.str() << std::endl;
 		_outStream << thirdRow.str() << std::endl;
@@ -811,14 +812,15 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 
     //* END OF HEADERS *//
 
-	//if no incident infections happened during this time, then make sure that we have 0 in the currTime incident infections and exposures
+	/* if no incident infections happened during this time, then make sure that we have 0 in the currTime
+	 * incident infections and exposures */
 	if(time > currTimeStep)
 	{
 		resetIncidentInfections(time);
 	}
 
-	//get current total infections
-	//Month
+	/** get current total infections */
+	/* Month */
 	if(time.in_months() == 0)
 	{
 		_outStream << "init" << Constants::Tab;
@@ -828,15 +830,15 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 		_outStream << time.in_months() << Constants::Tab;
 	}
 
-	//New Infections
+	/* New Infections */
 	std::size_t newInfections = getCurrTimeStepIncidentInfsTotal();
 	_outStream << newInfections << Constants::Tab;
 
-	//Total Infected in History
+	/* Total Infected in History */
 	_outStream << getNumIncidentInfections() << Constants::Tab;
 
-	//Currently Infected
-	//total the current infections
+	/** Currently Infected */
+	/* total the current infections */
 	for(unsigned int i = 0; i < DemographicProfile::TotalNumBuckets; i++)
 	{
 		for(int j = 0; j < NUMBER_GENERATIONS_TO_TRACE; j++)
@@ -846,118 +848,122 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 	}
 	_outStream << totalInfected << Constants::Tab;
 
-	//Total Population Size
+	/* Total Population Size */
 	_outStream << currPopSize << Constants::Tab;
 
-	//Current Population Prevalence
+	/* Current Population Prevalence */
 	double currPrevalence = totalInfected / (double)currPopSize;
 	_outStream << currPrevalence << Constants::Tab;
 
-	// Calculate the past-year incidence for the TOTAL POPULATION
+	/* Calculate the past-year incidence for the TOTAL POPULATION */
 	double monthlyPopIncidence = double(newInfections) / double(currPopSize - totalInfected);
-	//Push the monthly incidence onto the deque
+
+	/* Push the monthly incidence onto the deque */
 	lastTwelvePopIncidenceRates.push_back(monthlyPopIncidence);
-	//Pop off the oldest incidence rate
+
+	/* Pop off the oldest incidence rate */
 	lastTwelvePopIncidenceRates.pop_front();
 	assert(lastTwelvePopIncidenceRates.size() == 12);
 	_outStream << calculateAnnualIncidence(lastTwelvePopIncidenceRates) << Constants::Tab;
 
-	// Current pop and prevalence of sexually active population
-	// Need total number of infected for SA population only
+	/* Current pop and prevalence of sexually active population */
+	/* Need total number of infected for SA population only */
 	std::size_t totalInfectedSA = totalInfected;
 	DemographicProfile NAProfile;
 	NAProfile.set(DemographicProfile::Demographic::SexualActivityStatus,
 	    (std::size_t)DemographicProfile::SexualActivityStatus::NotActive);
 	std::vector<DemographicProfile::ProfileID> NAProfileIDs;
 	NAProfile.selectProfileIDs(NAProfileIDs, nullptr);
-	for(size_t i = 0; i < NAProfileIDs.size(); i++)
+	for(int NAProfileID : NAProfileIDs)
 	{
 		for(size_t j = 0; j < NUMBER_GENERATIONS_TO_TRACE; j++)
 		{
-			totalInfectedSA -= currPrevalentInfections[j][NAProfileIDs[i]];
+			totalInfectedSA -= currPrevalentInfections[j][NAProfileID];
 		}
 	}
 	double currPrevalenceSA = (totalInfectedSA) / (double)currSAPopSize;
 	_outStream << currSAPopSize << Constants::Tab;
 	_outStream << currPrevalenceSA << Constants::Tab;
 
-	// Calculate the past-year incidence for the SEXUALLY ACTIVE POPULATION
+	/* Calculate the past-year incidence for the SEXUALLY ACTIVE POPULATION */
 	double monthlySAPopIncidence = double(newInfections) / double(currSAPopSize - totalInfectedSA);
-	//Push the monthly incidence onto the deque
+
+	/* Push the monthly incidence onto the deque */
 	lastTwelveSAPopIncidenceRates.push_back(monthlySAPopIncidence);
-	//Pop off the oldest incidence rate
+
+	/* Pop off the oldest incidence rate */
 	lastTwelveSAPopIncidenceRates.pop_front();
 	_outStream << calculateAnnualIncidence(lastTwelveSAPopIncidenceRates) << Constants::Tab;
 
-	//Multiply by 100 and round to nearest integer for graphical output
+	/* Multiply by 100 and round to nearest integer for graphical output */
 	int intPrevalence = (int)(100 * currPrevalence + 0.5);
 
-    // sum and output infections by gender
+    /* sum and output infections by gender */
     GenderArray<std::size_t> totalInfectedGender = {0};
 	for(std::size_t i = 0; i < numAgeRanges; i++)
 	{
 		for(auto gender : enum_iterator<DemographicProfile::Gender>())
 		{
-			std::size_t entity_type = (std::size_t)gender;
+			auto entity_type = (std::size_t)gender;
             totalInfectedGender[entity_type] += currPrevalentInfectionsGenderAge[entity_type].at(i).second;
         }
 	}
     for(auto gender : enum_iterator<DemographicProfile::Gender>())
     {
-        std::size_t entity_type = (std::size_t)gender;
+        auto entity_type = (std::size_t)gender;
         _outStream << totalInfectedGender[entity_type] << Constants::Tab;
     }
 
-    // sum and output infections by orientation
+    /* sum and output infections by orientation */
     OrientationArray<std::size_t> totalInfectedOrientation = {0};
 	for(std::size_t i = 0; i < numAgeRanges; i++)
 	{
 		for(auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
 		{
-			std::size_t entity_type = (std::size_t)orientation;
+			auto entity_type = (std::size_t)orientation;
             totalInfectedOrientation[entity_type] += currPrevalentInfectionsOrientationAge[entity_type].at(i).second;
         }
 	}
     for(auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
     {
-        std::size_t entity_type = (std::size_t)orientation;
+        auto entity_type = (std::size_t)orientation;
         _outStream << totalInfectedOrientation[entity_type] << Constants::Tab;
     }
 
-	// output infections by age
+	/* output infections by age */
     for(std::size_t i = 0; i < numAgeRanges; i++)
     {
         std::size_t sum_all_genders = 0;
         for(auto gender : enum_iterator<DemographicProfile::Gender>())
         {
-            std::size_t entity_type = (std::size_t)gender;
+            auto entity_type = (std::size_t)gender;
             sum_all_genders += currPrevalentInfectionsGenderAge[entity_type].at(i).second;
         }
         _outStream << sum_all_genders << Constants::Tab;
     }
 
-	// output infections by age and gender
+	/* output infections by age and gender */
     for(auto gender : enum_iterator<DemographicProfile::Gender>())
     {
-        std::size_t entity_type = (std::size_t)gender;
+        auto entity_type = (std::size_t)gender;
         for(std::size_t i = 0; i < numAgeRanges; i++)
         {
             _outStream << currPrevalentInfectionsGenderAge[entity_type].at(i).second << Constants::Tab;
         }
     }
 
-	//output prevalent infections by risk
+	/* output prevalent infections by risk */
 	std::size_t totalInfectedCSW = 0;
 	DemographicProfile CSWProfile;
     CSWProfile.set(DemographicProfile::Demographic::Employment, (std::size_t)DemographicProfile::Employment::Csw);
 	std::vector<DemographicProfile::ProfileID> CSWProfileIDs;
 	CSWProfile.selectProfileIDs(CSWProfileIDs, nullptr);
 
-	for(std::size_t i = 0; i < CSWProfileIDs.size(); i++)
+	for(int CSWProfileID : CSWProfileIDs)
 	{
 		for(std::size_t j = 0; j < NUMBER_GENERATIONS_TO_TRACE; j++)
 		{
-			totalInfectedCSW += currPrevalentInfections[j][CSWProfileIDs[i]];
+			totalInfectedCSW += currPrevalentInfections[j][CSWProfileID];
 		}
 	}
 
@@ -972,7 +978,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 
 	for(auto gender : enum_iterator<DemographicProfile::Gender>())
 	{
-		std::size_t entity_type = (std::size_t)gender;
+		auto entity_type = (std::size_t)gender;
         _outStream
             << currPrevalentInfectionsGenderRiskEmployment[entity_type][(std::size_t)RiskLevel::HIGH][(std::size_t)DemographicProfile::Employment::NonCsw]
             << Constants::Tab;
@@ -980,13 +986,13 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 
 	for(auto gender : enum_iterator<DemographicProfile::Gender>())
 	{
-		std::size_t entity_type = (std::size_t)gender;
+		auto entity_type = (std::size_t)gender;
         _outStream
             << currPrevalentInfectionsGenderRiskEmployment[entity_type][(std::size_t)RiskLevel::LOW][(std::size_t)DemographicProfile::Employment::NonCsw]
             << Constants::Tab;
     }
 
-	//We're hard wiring 6 (Prev + 5) generations of reporting for now
+	/* We're hard wiring 6 (Prev + 5) generations of reporting for now */
 	std::size_t totalInfectedByGeneration[NUMBER_GENERATIONS_TO_TRACE];
 
 	for(int i = 0; i < NUMBER_GENERATIONS_TO_TRACE; i++)
@@ -999,13 +1005,13 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 		}
 	}
 
-	//write out number of infections by generation (7 tabs)
-	for(int i = 0; i < NUMBER_GENERATIONS_TO_TRACE; i++)
+	/* Write out number of infections by generation (7 tabs) */
+	for(unsigned long i : totalInfectedByGeneration)
 	{
-		_outStream << totalInfectedByGeneration[i] << Constants::Tab;
+		_outStream << i << Constants::Tab;
 	}
 
-	/** Print out exposures and infections by viral load */
+	/* Print out exposures and infections by viral load */
 	for(std::size_t i = 1; i < (std::size_t)HVLStrata::Last; i++)
 	{
 		_outStream << currTimeExposures[i] << Constants::Tab;
@@ -1015,9 +1021,9 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 		_outStream << currTimeStepIncidentInfs[i] << Constants::Tab;
 	}
 
-	//Print out incident infections by age and gender and risk
+	/* Print out incident infections by age and gender and risk */
 	GenderArray<std::size_t> incidentInfsGender;
-    //std::size_t sumIncidentInfs = 0;
+//    std::size_t sumIncidentInfs = 0;
 
     for(std::size_t i = 0; i < numAgeRanges; i++)
 	{
@@ -1025,10 +1031,10 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 
 		for(auto gender : enum_iterator<DemographicProfile::Gender>())
 		{
-			std::size_t entity_type = (std::size_t)gender;
+			auto entity_type = (std::size_t)gender;
             auto incident_entity_type_age = currTimeStepIncidentInfsGenderAge[entity_type].at(i).second;
             incidentInfsGender[entity_type] += incident_entity_type_age;
-            //sumIncidentInfs += incident_entity_type_age;
+//            sumIncidentInfs += incident_entity_type_age;
             sumIncidentAge += incident_entity_type_age;
         }
 
@@ -1037,7 +1043,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 
 	for(auto gender : enum_iterator<DemographicProfile::Gender>())
 	{
-		std::size_t entity_type = (std::size_t)gender;
+		auto entity_type = (std::size_t)gender;
         _outStream << incidentInfsGender[entity_type] << Constants::Tab;
     }
 
@@ -1053,7 +1059,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 
 	for(auto gender : enum_iterator<DemographicProfile::Gender>())
 	{
-		std::size_t entity_type = (std::size_t)gender;
+		auto entity_type = (std::size_t)gender;
         _outStream
             << currTimeStepIncidentInfsGenderRiskEmployment[entity_type][(std::size_t)RiskLevel::HIGH][(std::size_t)DemographicProfile::Employment::NonCsw]
             << Constants::Tab;
@@ -1061,7 +1067,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 
 	for(auto gender : enum_iterator<DemographicProfile::Gender>())
 	{
-		std::size_t entity_type = (std::size_t)gender;
+		auto entity_type = (std::size_t)gender;
         _outStream
             << currTimeStepIncidentInfsGenderRiskEmployment[entity_type][(std::size_t)RiskLevel::LOW][(std::size_t)DemographicProfile::Employment::NonCsw]
             << Constants::Tab;
@@ -1069,21 +1075,21 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 
 	for(auto gender : enum_iterator<DemographicProfile::Gender>())
 	{
-		std::size_t entity_type = (std::size_t)gender;
+		auto entity_type = (std::size_t)gender;
         for(std::size_t i = 0; i < numAgeRanges; i++)
         {
             _outStream << currTimeStepIncidentInfsGenderAge[entity_type].at(i).second << Constants::Tab;
         }
     }
 
-	// Print out incident infections by relationship type
-    //steady,reg,cas,csw:male<->fem
+	/* Print out incident infections by relationship type */
+    /* steady,reg,cas,csw:male<->fem */
     _outStream << incidentInfectionsByGender[0][0][3] + incidentInfectionsByGender[0][3][0] << Constants::Tab;
     _outStream << incidentInfectionsByGender[1][0][3] + incidentInfectionsByGender[1][3][0] << Constants::Tab;
     _outStream << incidentInfectionsByGender[2][0][3] + incidentInfectionsByGender[2][3][0] << Constants::Tab;
     _outStream << incidentInfectionsByGender[3][0][3] + incidentInfectionsByGender[3][3][0] << Constants::Tab;
 
-	//write out all incident infections that happened in history stratified by age and gender and risk
+	/* write out all incident infections that happened in history stratified by age and gender and risk */
     for(std::size_t i = 0; i < numAgeRanges; i++)
 	{
 		_outStream << totalIncidentInfsAge.at(i).second << Constants::Tab;
@@ -1091,7 +1097,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 
 	for(auto gender : enum_iterator<DemographicProfile::Gender>())
 	{
-		std::size_t entity_type = (std::size_t)gender;
+		auto entity_type = (std::size_t)gender;
         _outStream << totalIncidentInfsGender[entity_type] << Constants::Tab;
     }
 
@@ -1107,7 +1113,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 
 	for(auto gender : enum_iterator<DemographicProfile::Gender>())
 	{
-		std::size_t entity_type = (std::size_t)gender;
+		auto entity_type = (std::size_t)gender;
         _outStream
             << totalIncidentInfsGenderRiskEmployment[entity_type][(std::size_t)RiskLevel::HIGH][(std::size_t)DemographicProfile::Employment::NonCsw]
             << Constants::Tab;
@@ -1115,16 +1121,16 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 
 	for(auto gender : enum_iterator<DemographicProfile::Gender>())
 	{
-		std::size_t entity_type = (std::size_t)gender;
+		auto entity_type = (std::size_t)gender;
         _outStream
             << totalIncidentInfsGenderRiskEmployment[entity_type][(std::size_t)RiskLevel::LOW][(std::size_t)DemographicProfile::Employment::NonCsw]
             << Constants::Tab;
     }
 
-	//write out age of infection for incident infections that month (mean and SD)
+	/* write out age of infection for incident infections that month (mean and SD) */
 	for(auto gender : enum_iterator<DemographicProfile::Gender>())
 	{
-		std::size_t entity_type = (std::size_t)gender;
+		auto entity_type = (std::size_t)gender;
 		if(currTimeStepNumInfectedGender[entity_type] != 0)
 		{
 			double ageMean = currTimeStepAgeInfectionSumGender[entity_type] / (double) currTimeStepNumInfectedGender[entity_type];
@@ -1144,7 +1150,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 	{
 		for(auto gender : enum_iterator<DemographicProfile::Gender>())
 		{
-			std::size_t entity_type = (std::size_t)gender;
+			auto entity_type = (std::size_t)gender;
             numInfectedCSW += currTimeStepNumInfectedGenderRiskEmployment[entity_type][i][(std::size_t)DemographicProfile::Employment::Csw];
 		}
 	}
@@ -1158,7 +1164,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 		{
 			for(auto gender : enum_iterator<DemographicProfile::Gender>())
 			{
-				std::size_t entity_type = (std::size_t)gender;
+				auto entity_type = (std::size_t)gender;
                 ageSumCSW += currTimeStepAgeInfectionSumGenderRiskEmployment[entity_type][i][(std::size_t)DemographicProfile::Employment::Csw];
                 ageSumSqCSW += currTimeStepAgeInfectionSumSqGenderRiskEmployment[entity_type][i][(std::size_t)DemographicProfile::Employment::Csw];
 			}
@@ -1179,7 +1185,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 
 		for(auto gender : enum_iterator<DemographicProfile::Gender>())
 		{
-			std::size_t entity_type = (std::size_t)gender;
+			auto entity_type = (std::size_t)gender;
             numInfected += currTimeStepNumInfectedGenderRiskEmployment[entity_type][i][(std::size_t)DemographicProfile::Employment::Csw];
 		}
 
@@ -1190,7 +1196,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 
 			for(auto gender : enum_iterator<DemographicProfile::Gender>())
 			{
-				std::size_t entity_type = (std::size_t)gender;
+				auto entity_type = (std::size_t)gender;
                 ageSum += currTimeStepAgeInfectionSumGenderRiskEmployment[entity_type][i][(std::size_t)DemographicProfile::Employment::Csw];
                 ageSumSq += currTimeStepAgeInfectionSumSqGenderRiskEmployment[entity_type][i][(std::size_t)DemographicProfile::Employment::Csw];
 			}
@@ -1209,13 +1215,13 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 	{
 		for(auto gender : enum_iterator<DemographicProfile::Gender>())
 		{
-			std::size_t entity_type = (std::size_t)gender;
+			auto entity_type = (std::size_t)gender;
             auto numInfected = currTimeStepNumInfectedGenderRiskEmployment[entity_type][i][(std::size_t)DemographicProfile::Employment::NonCsw];
 
 			if(numInfected != 0)
 			{
-                double ageSum = static_cast<double>(currTimeStepAgeInfectionSumGenderRiskEmployment[entity_type][i][(std::size_t)DemographicProfile::Employment::NonCsw]);
-                double ageSumSq = static_cast<double>(currTimeStepAgeInfectionSumSqGenderRiskEmployment[entity_type][i][(std::size_t)DemographicProfile::Employment::NonCsw]);
+                auto ageSum = static_cast<double>(currTimeStepAgeInfectionSumGenderRiskEmployment[entity_type][i][(std::size_t)DemographicProfile::Employment::NonCsw]);
+                auto ageSumSq = static_cast<double>(currTimeStepAgeInfectionSumSqGenderRiskEmployment[entity_type][i][(std::size_t)DemographicProfile::Employment::NonCsw]);
 				double ageMean = ageSum / numInfected;
                 double ageSD = std::sqrt(ageSumSq / numInfected - ageMean * ageMean);
 				_outStream << ageMean << Constants::Tab << ageSD << Constants::Tab;
@@ -1227,7 +1233,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 		}
 	}
 
-	// Sex Act and Condom Use Outputs
+	/* Sex Act and Condom Use Outputs */
 	_outStream << currTimeTotalExposures << Constants::Tab;
 	_outStream << currTimeCondomUse << Constants::Tab;
 
@@ -1243,8 +1249,8 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 	}
 
 #ifdef WHO_INFECTED_WHOM
-	//write out all incident infections that happened in history
-	// only ProfileID's in profileIDsForDetailedTrace are included
+	/* write out all incident infections that happened in history */
+	/* only ProfileID's in profileIDsForDetailedTrace are included */
 	auto infectorProfileID = profileIDsForDetailedTrace.begin();
 	while(infectorProfileID != profileIDsForDetailedTrace.end())
 	{
@@ -1252,7 +1258,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 
 		while(infectedProfileID != profileIDsForDetailedTrace.end())
 		{
-			//tally all the infections that happened from curr infectorProfileID -> curr infectedProfileID
+			/* tally all the infections that happened from curr infectorProfileID -> curr infectedProfileID */
             std::size_t infs = 0;
 
 			for(int partnershipType = 0; partnershipType < (int)SexualPartnership::Type::Last; ++partnershipType)

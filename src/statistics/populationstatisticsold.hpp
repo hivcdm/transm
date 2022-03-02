@@ -18,11 +18,9 @@ namespace transm {
 
     class Entity;
 
-/// <summary>
-/// This class contains population level statistics
-/// </summary>
+ /** This class contains population level statistics */
     class PopulationStatisticsOld {
-        // Note: If we change things here, make sure to to change the LifeStatsStr.
+    /* Note: If we change things here, make sure to to change the LifeStatsStr. */
     public:
         enum InitHIVStatus {
             PREVALENT,
@@ -31,14 +29,14 @@ namespace transm {
         };
 
         enum LifeStats {
-            TOTAL_LM,                            //total life months of the population
-            TOTAL_HIV_NEG_LM,                            //total life months of all HIV-
-            TOTAL_HIV_NEG_DTHS,                        //total number of deaths in HIV
-            TOTAL_HIV_NEG,                        //total number of HIV negative persons (could be greater than number of deaths as it includes those who died after time ended)
-            TOTAL_HIV_POS_LM,                    //total life months of all HIV+
-            TOTAL_HIV_POS_POSTINFECT_LM,                //total life months of the HIV+ after point of infection
-            TOTAL_HIV_POS_DTHS,                        //total deaths emong HIV+
-            TOTAL_HIV_POS,                        //Denominator of HIV positive persons (will be greater than number of deaths as it includes those who died after time ended)
+            TOTAL_LM,                            /* total life months of the population */
+            TOTAL_HIV_NEG_LM,                    /* total life months of all HIV- */
+            TOTAL_HIV_NEG_DTHS,                  /*total number of deaths in HIV */
+            TOTAL_HIV_NEG,                       /*total number of HIV negative persons (could be greater than number of deaths as it includes those who died after time ended)*/
+            TOTAL_HIV_POS_LM,                    /*total life months of all HIV+ */
+            TOTAL_HIV_POS_POSTINFECT_LM,         /*total life months of the HIV+ after point of infection */
+            TOTAL_HIV_POS_DTHS,                  /*total deaths emong HIV+ */
+            TOTAL_HIV_POS,                       /*Denominator of HIV positive persons (will be greater than number of deaths as it includes those who died after time ended) */
             ENDLifeStats
         };
 
@@ -48,9 +46,9 @@ namespace transm {
         struct SingleTimeStats {
             Time timeOfStats;
             double prevalence;
-            double SAprevalence;    //Prevalence of sexually active population only
-            double incidence;        //TODO: Incidence will be an average over the 12 months leading up to the given time point
-            long cumulativeNumberDead;    //Total number of persons who have died since time 0
+            double SAprevalence;    /* Prevalence of sexually active population only */
+            double incidence;       /* TODO: Incidence will be an average over the 12 months leading up to the given time point */
+            long cumulativeNumberDead;    // Total number of persons who have died since time 0
         };
 
         class SingleLEStats {
@@ -63,12 +61,12 @@ namespace transm {
 
         class SinglePartAcqStats {
         public:
-            //Number of partner bins to store for freq plot
+            /* Number of partner bins to store for freq plot */
             static const int NUM_PARTNER_BINS = 16;
 
             SinglePartAcqStats();
 
-            //Number of people with specified number of partners
+            /* Number of people with specified number of partners */
             long partnerFreq[NUM_PARTNER_BINS];
         };
 

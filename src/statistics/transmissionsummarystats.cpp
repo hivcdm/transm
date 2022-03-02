@@ -12,12 +12,11 @@ TransmissionSummaryStats::TransmissionSummaryStats(const std::string &summariesF
 }
 
 /* Destructor frees allocated Summary objects and clears summaries vector */
-TransmissionSummaryStats::~TransmissionSummaryStats(void)
+TransmissionSummaryStats::~TransmissionSummaryStats()
 {
-	for(std::vector<TransmissionSummary *>::iterator j = summaries.begin(); j != summaries.end(); j++)
+	for(auto summary : summaries)
 	{
-		TransmissionSummary *summary = *j;
-		delete summary;
+			delete summary;
 	}
 
 	summaries.clear();
@@ -25,11 +24,9 @@ TransmissionSummaryStats::~TransmissionSummaryStats(void)
 
 TransmissionSummaryStats::TransmissionSummary::~TransmissionSummary()
 {
-	for(std::vector<PopulationStatisticsOld::SingleTimeStats *>::iterator iter = selectedSummaryStats->begin();
-	        iter != selectedSummaryStats->end(); iter++)
+	for(auto singleTimeStat : *selectedSummaryStats)
 	{
-		PopulationStatisticsOld::SingleTimeStats *singleTimeStat = *iter;
-		delete singleTimeStat;
+			delete singleTimeStat;
 	}
 
 	selectedSummaryStats->clear();
@@ -40,18 +37,19 @@ TransmissionSummaryStats::TransmissionSummary::~TransmissionSummary()
 void TransmissionSummaryStats::addPopulationStatistics(PopulationStatisticsOld &popStats, EventParams &eventParams)
 {
 	/* Create a new summary object */
-	TransmissionSummary *summary = new TransmissionSummary();
+	auto *summary = new TransmissionSummary();
+
 	/* Copy the population summary stats */
-	//const RunStats::PopulationSummary *popSummary = runStats->getPopulationSummary();
-	//TODO: This doesn't mean anything for now...
+//	const RunStats::PopulationSummary *popSummary = runStats->getPopulationSummary();
+	/* TODO: This doesn't mean anything for now... */
 	summary->runSetName = eventParams.simName;
 	summary->runName = eventParams.simName;
-	//summary->runDate = eventParams.
-	//summary->runTime = popSummary->runTime;
-	//summary->numCohorts = popSummary->numCohorts;
+//	summary->runDate = eventParams.
+//	summary->runTime = popSummary->runTime;
+//	summary->numCohorts = popSummary->numCohorts;
 	summary->selectedSummaryStats = new std::vector<PopulationStatisticsOld::SingleTimeStats *>();
 	auto time = popStats.getNextTimeToRecord(Time::Zero);
-	std::vector<PopulationStatisticsOld::SingleTimeStats *>::iterator statsIterator = popStats.getSelectedSummaryStats()->begin();
+	auto statsIterator = popStats.getSelectedSummaryStats()->begin();
 
 	while(time > Time::Zero && statsIterator != popStats.getSelectedSummaryStats()->end())
 	{

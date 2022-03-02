@@ -10,111 +10,81 @@ namespace transm {
 class Entity;
 class RandomNumberGenerator;
 
-/// <summary>
-/// This class is a simple container for Entitys and allows us to add, count, get, and remove them
-/// </summary>
-/// <remarks>
-/// This class is related to class DemographicProfile in that for each unique DemographicProfile, there is one and only one BucketDemographicProfile
-/// The internal representation of the entities is a set. People are unsorted.
-/// </remarks>
+ /**
+  * This class is a simple container for Entitys and allows us to add, count, get, and remove them
+  * <remarks>
+  * This class is related to class DemographicProfile in that for each unique DemographicProfile, there is one and only one BucketDemographicProfile
+  * The internal representation of the entities is a set. People are unsorted.
+  * </remarks> */
 class BucketDemographicProfile
 {
 public:
-    /// <summary>
-    /// this is an index based on person's ID
-    /// </summary>
+    /** this is an index based on person's ID */
     using PersonSet = EntityIndex<Entity::ID, unsigned long>;
 
-    /// <summary>
-    /// this function should not be used in this sim, it's just here for a default constructor
-    /// </summary>
+    /** this function should not be used in this sim, it's just here for a default constructor */
     BucketDemographicProfile();
 
-    /// <summary>
-    /// this creates a BucketDemographicProfile object
-    /// @param _id sets this as this bucket's ID
-    /// @param _simpleIndex - if this is true, then this BucketDemographicProfile uses an EntityIndex
-    /// </summary>
+    /**
+     * this creates a BucketDemographicProfile object
+     * @param _id sets this as this bucket's ID
+     * @param _simpleIndex - if this is true, then this BucketDemographicProfile uses an EntityIndex */
     BucketDemographicProfile(int _id, const std::string *_bucketLabel, bool _simpleIndex);
 
-    /// <summary>
-    /// deletes all entities inside this BucketDemographicProfile
-    /// </summary>
+    /** deletes all entities inside this BucketDemographicProfile */
     virtual ~BucketDemographicProfile();
 
-    /// <summary>
-	/// returns the BucketDemographicProfile's ID number
-    /// </summary>
+     /** returns the BucketDemographicProfile's ID number */
 	DemographicProfile::ProfileID getProfileID();
 
-    /// <summary>
-    /// </summary>
 	PersonSet *getEntityIndex();
 
-    /// <summary>
-	/// This method will return a label for this BucketDemographicProfile
-    /// </summary>
+    /** This method will return a label for this BucketDemographicProfile */
     const std::string *getLabel();
 
-    /// <summary>
-	/// empties this BucketDemographicProfile
-    /// </summary>
+    /** empties this BucketDemographicProfile */
 	virtual void clear();
 
-    /// <summary>
-	/// choose random person from the BucketDemographicProfile
-    /// <summary>
-    /// <remarks>
-	///  _remove - if true, then will remove the chosen person from the BucketDemographicProfile
-    /// </remarks>
+    /**
+	 * choose random person from the BucketDemographicProfile
+     *
+     * <remarks>
+	 *  _remove - if true, then will remove the chosen person from the BucketDemographicProfile
+     * </remarks> */
 	virtual Entity *drawMember(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType, bool _remove);
 
-    /// <summary>
-	/// Draws a partner from this Bucket on behalf of _chooser. This will take into account the
-	/// chooser's partner selection requirements for the given partnership type
-    /// </summary>
-    /// <remarks>
-	/// @param _randomNums random number generator
-	/// @param _chooser the person who is choosing a partner
-	/// @param _partnershipType the type of partner this person is looking for
-	/// @param _remove - will remove this person from the bucket
-	/// </remarks>
+    /**
+	 * Draws a partner from this Bucket on behalf of _chooser. This will take into account the
+	 * chooser's partner selection requirements for the given partnership type
+     * <remarks>
+	 * @param _randomNums random number generator
+	 * @param _chooser the person who is choosing a partner
+	 * @param _partnershipType the type of partner this person is looking for
+	 * @param _remove - will remove this person from the bucket
+	 * </remarks> */
 	virtual Entity *drawMember(RandomNumberGenerator &_randomNums, Entity *_chooser, SexualPartnership::Type _partnershipType, bool _remove);
 
-    /// <summary>
-    /// </summary>
 	virtual bool exists(Entity *_person);
 
-    /// <summary>
-	/// counts number of infected people this EntityPool
-    /// </summary>
+    /** counts number of infected people this EntityPool */
 	virtual unsigned long getNumInfected();
 
-    /// <summary>
-    /// counts number of infected people this EntityPool
-    /// </summary>
+    /** counts number of infected people this EntityPool */
 	virtual unsigned long getNumInfected(int generation);
 
-    /// <summary>
-	/// this adds member into the pool
-	/// _toInsert - the Person being added to the pool.
-    /// </summary>
+    /** this adds member into the pool
+	 * _toInsert - the Person being added to the pool. */
 	virtual bool insert(Entity *_toInsert);
 
-    /// <summary>
-	/// if _p exists in the bucket, will remove. remove true if existed
-    /// </summary>
+    /** if _p exists in the bucket, will remove. remove true if existed */
 	virtual bool erase(Entity *_p);
 
-    /// <summary>
-	/// returns the size of this BucketDemographicProfile
-    /// </summary>
+    /** returns the size of this BucketDemographicProfile */
 	virtual unsigned long size();
 
-    /// <summary>
-	/// @effects: Ages everyone in the bucket one timestep
-	/// @returns: List of persons too old for timestep (should be placed into other bucket)
-    /// </summary>
+    /**
+	 * @effects: Ages everyone in the bucket one timestep
+	 * @returns: List of persons too old for timestep (should be placed into other bucket) */
 	virtual std::list<Entity *> ageOneTimeStep();
 
     virtual void forEach(std::function<void(Entity *)> callback);
@@ -128,14 +98,10 @@ private:
 
     const std::string *bucketLabel;
 
-    /// <summary>
-    /// holds all the entities in this index
-    /// </summary>
+    /** holds all the entities in this index */
     PersonSet *simpleEntityIndex;
 
-    /// <summary>
-    /// ID of BucketDemographicProfile. id's go from 0 -> total number of buckets in EntityPool
-    /// </summmary>
+    /** ID of BucketDemographicProfile. id's go from 0 -> total number of buckets in EntityPool */
     DemographicProfile::ProfileID dmgProfileID;
 };
 

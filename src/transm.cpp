@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
 
 	        auto result = run_simulation(batch_path, cepac_directory);
 
-	        // added because sometimes we don't see all output if buffered
+	        /* added because sometimes we don't see all output if buffered */
 	        std::cout.flush();
 
 	        if (result != 0) return result;

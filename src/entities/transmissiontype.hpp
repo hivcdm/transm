@@ -14,9 +14,7 @@ enum class TransmissionType
 
 namespace std {
 
-/// <summary>
-/// Specialize std::hash for TransmissionType
-/// </summary>
+ /** Specialize std::hash for TransmissionType */
 template<>
 struct hash<transm::TransmissionType>
 {

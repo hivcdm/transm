@@ -3503,4 +3503,9 @@ void Population::Initialize(const PopulationParameters &parameters) {
     UpdateSize();
 }
 
+void Population::PrintMethodResults(EventParams &_eventParams, const string &_methodName, const string &_eventLabel,
+                                    long _totalAffected, const string &_totalAffectedLabel, bool _showInfections) {
+
+}
+
 }

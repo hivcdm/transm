@@ -19,8 +19,8 @@ namespace transm {
                     "TOTAL_HIV_POS",
             };
 
-//declare strings of Enums
-    const int NUM_LE_CAT = 12; //number of life expectancy categories
+    /* declare strings of Enums */
+    const int NUM_LE_CAT = 12; /* number of life expectancy categories */
     const char *lifeExpectancyStrs[NUM_LE_CAT] = {"Age(yr)", "raw deaths", "raw pop", "n", "deaths", "death rate",
                                                   "midpoint survivorship", "total remaining time", "life expectancy",
                                                   "median LE", "median LE Standard Error",
@@ -33,7 +33,8 @@ namespace transm {
         enumClass = new EnumCls<PopulationStatisticsOld::LifeStats>(PopulationStatisticsOld::LifeStatsStr);
         lifeStats = new StatsRecord<PopulationStatisticsOld::LifeStats, BaseEnumCls::NULL_ENUM>(enumClass);
         survivalStats = new SurvivalStats();
-        //Set up the timeToRecord vector... by default, record at every 1/4 of the maxTime
+
+        /* Set up the timeToRecord vector... by default, record at every 1/4 of the maxTime */
         timesToRecord.push_back(Time(0, 1));
         selectedLEStats = nullptr;
         selectedPartAcqStats = nullptr;
@@ -99,13 +100,14 @@ namespace transm {
     void PopulationStatisticsOld::processDeath(Entity *_p, EventParams &_eventParams) {
         assert((_p != nullptr));
         assert((!_p->isAlive()));
-        DemographicProfile::Gender gend = _p->getDemographicProfileVal<DemographicProfile::Gender>();
-        DemographicProfile::Employment cswStatus = _p->getDemographicProfileVal<DemographicProfile::Employment>();
+        auto gend = _p->getDemographicProfileVal<DemographicProfile::Gender>();
+        auto cswStatus = _p->getDemographicProfileVal<DemographicProfile::Employment>();
         RiskLevel risk = _p->getRiskLevel();
         auto prevDelay = _eventParams.delayPrevalence;
 
         if (_eventParams.currTime > prevDelay) {
-            //time spent in model after prev delay until death
+
+            /* time spent in model after prev delay until death */
             auto timeToDeath = (int) min(_p->age - _p->initAge, _eventParams.currTime - prevDelay).in_months();
             survivalStats->numDeathGender[(std::size_t) gend]++;
             survivalStats->timeToDeathGenderSum[(std::size_t) gend] += timeToDeath;
@@ -115,7 +117,7 @@ namespace transm {
             survivalStats->timeToDeathEmplRiskSumSquare[(std::size_t) cswStatus][(std::size_t) risk] +=
                     timeToDeath * timeToDeath;
 
-            if (_p->getGenerationOfInfection() == Constants::InitialInfection)  //initial prev case
+            if (_p->getGenerationOfInfection() == Constants::InitialInfection)  /* initial prev case */
             {
                 survivalStats->numDeathHIVStatus[PREVALENT]++;
                 survivalStats->timeToDeathHIVStatusSum[PREVALENT] += timeToDeath;
@@ -161,8 +163,9 @@ namespace transm {
                                 stats->getStat(Entity::Stats::STAT_TOTAL_LM));
             lifeStats->incrStat(PopulationStatisticsOld::TOTAL_HIV_NEG_DTHS, 1);
             lifeStats->incrStat(PopulationStatisticsOld::TOTAL_HIV_NEG, 1);
-            //this person was exposed to virus but not infected
-            //infectionStats->incrStat( PopulationStatisticsOld::TOTAL_EXPOSED_BUT_NOT_INFECTED, stats->getStat(Entity::Stats::STAT_EXPOSURES_BEFORE_INF));
+
+            /* this person was exposed to virus but not infected */
+//            infectionStats->incrStat( PopulationStatisticsOld::TOTAL_EXPOSED_BUT_NOT_INFECTED, stats->getStat(Entity::Stats::STAT_EXPOSURES_BEFORE_INF));
         }
 
         lifeStats->incrStat(PopulationStatisticsOld::TOTAL_LM, stats->getStat(Entity::Stats::STAT_TOTAL_LM));
@@ -170,8 +173,8 @@ namespace transm {
 
     void PopulationStatisticsOld::processPostMaxTimeDeath(Entity *_p) {
         assert((_p != nullptr));
-        //assert((!_p->isAlive()));
-        //assert(!(_p->cepacPatient->isAlive()));
+//        assert((!_p->isAlive()));
+//        assert(!(_p->cepacPatient->isAlive()));
         const auto stats = _p->getStats();
 
         if (_p->isInfected()) {
@@ -319,7 +322,7 @@ namespace transm {
             }
         }
 
-        //Time to Death
+        /* Time to Death */
         firstRow << "Time to Death" << Constants::Tab << Constants::Tab << Constants::Tab;
         secondRow << Constants::Tab << "Gender" << Constants::Tab << Constants::Tab;
         thirdRow << "Total" << Constants::Tab << "Male" << Constants::Tab << "Female" << Constants::Tab;
@@ -413,7 +416,7 @@ namespace transm {
             }
         }
 
-        //Time From Infection to Death
+        /* Time From Infection to Death */
         firstRow << "Time from Infection to Death" << Constants::Tab << Constants::Tab << Constants::Tab;
         secondRow << Constants::Tab << "Gender" << Constants::Tab << Constants::Tab;
         thirdRow << "Total" << Constants::Tab << "Male" << Constants::Tab << "Female" << Constants::Tab;
@@ -500,21 +503,21 @@ namespace transm {
 
     void PopulationStatisticsOld::printLEStats(std::ostream &_outStream, Time currTime) {
         assert((selectedLEStats != nullptr));
-        double proportionalDeathRate[Entity::maxYrForDeathStats];//proportionaldeathrate=number of deaths/total number of people for each age bucket
-        double lifeTablePop[Entity::maxYrForDeathStats];//number of people who survive to age bucket for a hypothetical Pop of n people
-        double lifeTableDeaths[Entity::maxYrForDeathStats];//number of deaths in life table for hypothetical Population
-        double lifeTableMidpointSurvival[Entity::maxYrForDeathStats];//number of people who survive to midpoint of age cat
-        double lifeTableTotalRemainingYears[Entity::maxYrForDeathStats];//total person years left for all individuals who survive to age cat
-        double lifeTableLifeExpectancy[Entity::maxYrForDeathStats];//mean number of years expected until death for survivors to age cat
-        double survivalFunction[Entity::maxYrForDeathStats];//proportion of pop that survive to year x
-        int medianLELowerIndex = 0; //The index for which the survivalFunction is just over .5
-        double medianLE;//The median Life Expectancy
-        double medianDensity; //The value of the density function at the median
-        double medianSE;//Standard Error around median
-        double medianCIBound;//Confidance Interval bounds
+        double proportionalDeathRate[Entity::maxYrForDeathStats]; /* proportionaldeathrate=number of deaths/total number of people for each age bucket */
+        double lifeTablePop[Entity::maxYrForDeathStats]; /* number of people who survive to age bucket for a hypothetical Pop of n people*/
+        double lifeTableDeaths[Entity::maxYrForDeathStats]; /* number of deaths in life table for hypothetical Population */
+        double lifeTableMidpointSurvival[Entity::maxYrForDeathStats];/* number of people who survive to midpoint of age cat */
+        double lifeTableTotalRemainingYears[Entity::maxYrForDeathStats];/* total person years left for all individuals who survive to age cat */
+        double lifeTableLifeExpectancy[Entity::maxYrForDeathStats];/* mean number of years expected until death for survivors to age cat */
+        double survivalFunction[Entity::maxYrForDeathStats]; /* proportion of pop that survive to year x */
+        int medianLELowerIndex = 0; /* The index for which the survivalFunction is just over .5 */
+        double medianLE; /* The median Life Expectancy */
+        double medianDensity; /* The value of the density function at the median */
+        double medianSE; /*Standard Error around median */
+        double medianCIBound;/*Confidance Interval bounds */
         lifeTablePop[0] = 0;
 
-        //add back people who died in that year
+        /* add back people who died in that year */
         for (int i = 0; i < Entity::maxYrForDeathStats; i++) {
             selectedLEStats->popByAge[i] += selectedLEStats->deathsByAge[i];
             lifeTablePop[0] += selectedLEStats->popByAge[i];
@@ -536,7 +539,7 @@ namespace transm {
             lifeTableDeaths[i] = proportionalDeathRate[i] * lifeTablePop[i];
         }
 
-        //everyone dies at last age bucket
+        /* everyone dies at last age bucket*/
         proportionalDeathRate[Entity::maxYrForDeathStats - 1] = 1;
         lifeTableTotalRemainingYears[Entity::maxYrForDeathStats - 1] = 0;
 
@@ -625,19 +628,19 @@ namespace transm {
         std::string testTypes[] = {"True Positive", "False Positive", "True Negative", "False Negative"};
 
         if (year.get_year() == 1990) {
-            // First Row Headers
+            /* First Row Headers */
             _outStream << "Shifted Outcomes" << std::endl;
 
-            // Second Row Headers
-            _outStream << Constants::Tab; // Year
-            _outStream << Constants::Tab; // Pop Size
+            /* Second Row Headers */
+            _outStream << Constants::Tab; /* Year */
+            _outStream << Constants::Tab; /* Pop Size */
 
             for (auto entity_type : {"", "Male", "Male:Msw", "Male:Msmw", "Male:Msm", "Female"}) {
-                _outStream << entity_type << Constants::Tab; // SA Pop Size
-                _outStream << Constants::Tab; // Incident
-                _outStream << Constants::Tab; // Prevalent
-                _outStream << Constants::Tab; // SA Prevalence
-                _outStream << Constants::Tab; // Annual Incidence
+                _outStream << entity_type << Constants::Tab; /* SA Pop Size */
+                _outStream << Constants::Tab; /* Incident */
+                _outStream << Constants::Tab; /* Prevalent */
+                _outStream << Constants::Tab; /* SA Prevalence */
+                _outStream << Constants::Tab; /* Annual Incidence */
             }
             _outStream << "Screening Results" << Constants::Tab;
             _outStream << Constants::Tab;
@@ -673,8 +676,8 @@ namespace transm {
             _outStream << "Total Tests";
             _outStream << Constants::Tab;
 
-            for (int i = 0; i < SimContext::TEST_RESULT_NUM; i++) {
-                _outStream << testTypes[i];
+            for (auto & testType : testTypes) {
+                _outStream << testType;
                 _outStream << Constants::Tab;
             }
 
@@ -690,25 +693,27 @@ namespace transm {
         }
 
         std::size_t sum_year_start_pop_size = 0;
-        //std::size_t sum_sa_pop_size = 0;
+
+//       std::size_t sum_sa_pop_size = 0;
         std::size_t sum_incident_infections = 0;
         std::size_t sum_prevalent_infections = 0;
         std::size_t sum_year_start_sa_pop_size = 0;
 
-        //std::size_t sum_sa_pop_size_male = 0;
+//        std::size_t sum_sa_pop_size_male = 0;
         std::size_t sum_incident_infections_male = 0;
         std::size_t sum_prevalent_infections_male = 0;
         std::size_t sum_year_start_sa_pop_size_male = 0;
 
         for (auto entity_type : {"MSW", "MSMW", "MSM", "female"}) {
-            //sum_sa_pop_size += yearlyCumulativeSexuallyActivePopSize[entity_type];
+
+            /* sum_sa_pop_size += yearlyCumulativeSexuallyActivePopSize[entity_type]; */
             sum_year_start_pop_size += yearStartPopSize[entity_type];
             sum_year_start_sa_pop_size += yearStartSexuallyActivePopSize[entity_type];
             sum_prevalent_infections += yearStartPrevalentInfections[entity_type];
             sum_incident_infections += yearlyIncidentInfections[entity_type];
 
             if (std::string(entity_type) != "female") {
-                //sum_sa_pop_size_male += yearlyCumulativeSexuallyActivePopSize[entity_type];
+                /* sum_sa_pop_size_male += yearlyCumulativeSexuallyActivePopSize[entity_type]; */
                 sum_year_start_sa_pop_size_male += yearStartSexuallyActivePopSize[entity_type];
                 sum_prevalent_infections_male += yearStartPrevalentInfections[entity_type];
                 sum_incident_infections_male += yearlyIncidentInfections[entity_type];
@@ -908,23 +913,23 @@ namespace transm {
     }
 
 
-/*
-	for(auto record_time : timesToRecord)
-	{
-		if(record_time == currTime)
-		{
-			SingleTimeStats *statistics = new SingleTimeStats();
-			statistics->timeOfStats = currTime;
-			statistics->prevalence = _prevalence;
-			statistics->incidence  = _incidence;
-			statistics->SAprevalence = static_cast<long>(_SAprevalence);
-			statistics->cumulativeNumberDead = static_cast<long>(lifeStats->getStat(PopulationStatisticsOld::TOTAL_HIV_NEG_DTHS) +
-			                                   lifeStats->getStat(PopulationStatisticsOld::TOTAL_HIV_POS_DTHS));
-			selectedSummaryStats.push_back(statistics);
-			break;
-		}
-	}
-    */
+
+//	for(auto record_time : timesToRecord)
+//	{
+//		if(record_time == currTime)
+//		{
+//			SingleTimeStats *statistics = new SingleTimeStats();
+//			statistics->timeOfStats = currTime;
+//			statistics->prevalence = _prevalence;
+//			statistics->incidence  = _incidence;
+//			statistics->SAprevalence = static_cast<long>(_SAprevalence);
+//			statistics->cumulativeNumberDead = static_cast<long>(lifeStats->getStat(PopulationStatisticsOld::TOTAL_HIV_NEG_DTHS) +
+//			                                   lifeStats->getStat(PopulationStatisticsOld::TOTAL_HIV_POS_DTHS));
+//			selectedSummaryStats.push_back(statistics);
+//			break;
+//		}
+//	}
+
 
     std::vector<PopulationStatisticsOld::SingleTimeStats *> *PopulationStatisticsOld::getSelectedSummaryStats() {
         return &selectedSummaryStats;

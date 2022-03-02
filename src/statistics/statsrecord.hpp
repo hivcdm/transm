@@ -12,17 +12,17 @@
 namespace transm {
 
 /**
-This class keeps a record of statistics for any class. The templates make it easy to
-use in any class.
+ * This class keeps a record of statistics for any class. The templates make it easy to
+ * use in any class.
+ *
+ * It contains two categories of stats
+ * 1) single values - these are values of type double
+ * 2) stratified values - these are vector<double>
+ *	ex.  New infections stratified by CD4 strata
+ *		or New infections by age bucket
 
-It contains two categories of stats
-1) single values - these are values of type double
-2) stratified values - these are vector<double>
-	ex.  New infections stratified by CD4 strata
-		or New infections by age bucket
-
-All stats are stored in an internal data structure, but we can access them via enum id's
-	typename PointStatIDs for single value stats
+ *  All stats are stored in an internal data structure, but we can access them via enum id's
+ 	typename PointStatIDs for single value stats
 	typename StratifiedStatIDs for stratified value stats
 
 This class was created so that statistics could be contained inside an object

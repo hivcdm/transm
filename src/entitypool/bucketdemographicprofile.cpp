@@ -14,14 +14,12 @@ void BucketDemographicProfile::forEach(std::function<void(Entity *)> callback)
     }
 }
 
-//returns the BucketDemographicProfile's ID number
+/* returns the BucketDemographicProfile's ID number */
 DemographicProfile::ProfileID BucketDemographicProfile::getProfileID()
 {
 	return dmgProfileID;
 }
-/**
-This method returns entity index for dmgprofilebucket
-**/
+/* This method returns entity index for dmgprofilebucket */
 BucketDemographicProfile::PersonSet *BucketDemographicProfile::getEntityIndex()
 {
 	return simpleEntityIndex;
@@ -32,9 +30,7 @@ Entity *BucketDemographicProfile::drawMember(RandomNumberGenerator &, Entity *, 
     throw std::runtime_error("not implemented");
 }
 
-/**
-This method will return a label for this BucketDemographicProfile
-**/
+/* This method will return a label for this BucketDemographicProfile */
 const std::string *BucketDemographicProfile::getLabel()
 {
 	return bucketLabel;
@@ -46,12 +42,13 @@ void BucketDemographicProfile::clear()
 	simpleEntityIndex->clear();
 }
 
-Entity *BucketDemographicProfile::drawMember(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType, bool _remove)
+Entity *BucketDemographicProfile::drawMember(RandomNumberGenerator &_randomNums,
+                                             SexualPartnership::Type _partnershipType, bool _remove)
 {
 	assert(simpleEntityIndex != nullptr);
 	Entity *removed = simpleEntityIndex->drawMember(_randomNums, _partnershipType, _remove);
 
-	//we have to tell the person that they are not part of a bucket anymore
+	/* we have to tell the person that they are not part of a bucket anymore */
 	if(_remove && removed)
 	{
 		removed->setCurrBucketProfileID(DemographicProfile::END);
@@ -105,8 +102,10 @@ bool BucketDemographicProfile::insert(Entity *_person)
 	assert(simpleEntityIndex != nullptr);
 	assert(_person != nullptr);
 	simpleEntityIndex->insert(_person);
-	//let the _person know of their new BucketDemographicProfile membership
+
+	/* let the _person know of their new BucketDemographicProfile membership */
 	_person->setCurrBucketProfileID(getProfileID());
+
 	return true;
 }
 
@@ -116,34 +115,34 @@ unsigned long BucketDemographicProfile::size()
 	return simpleEntityIndex->size();
 }
 
-/*
+/**
  * @effects: Ages everyone in the bucket one timestep
- * @returns: List of persons too old for timestep (should always be null)
- */
+ * @returns: List of persons too old for timestep (should always be null) */
 std::list<Entity *> BucketDemographicProfile::ageOneTimeStep()
 {
 	std::list<Entity *> lP;
 
-	for(auto pIter = simpleEntityIndex->begin(); pIter != simpleEntityIndex->end(); pIter++)
+	for(auto & pIter : *simpleEntityIndex)
 	{
-		(pIter->second)->ageOneTimeUnit();
+		(pIter.second)->ageOneTimeUnit();
 	}
 
 	return lP;
 }
 
-//this function should not be used in this sim, it's just here for a default constructor
+/* this function should not be used in this sim, it's just here for a default constructor */
 BucketDemographicProfile::BucketDemographicProfile()
 {
 	simpleEntityIndex = nullptr;
 }
 
-//this creates a simple BucketDemographicProfile with an index that is sorted by age
+/* this creates a simple BucketDemographicProfile with an index that is sorted by age */
 BucketDemographicProfile::BucketDemographicProfile(int _id, const std::string *_bucketLabel, bool _simpleIndex)
 {
 	dmgProfileID = _id;
 	bucketLabel = _bucketLabel;
-	//if this is a simple index, then use field simpleEntityIndex
+
+	/* if this is a simple index, then use field simpleEntityIndex */
 	simpleEntityIndex = _simpleIndex ? new PersonSet() : nullptr;
 }
 
