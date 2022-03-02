@@ -35,9 +35,8 @@ class DemographicProfile
 {
 public:
     /**
-     * When we want to change enum Demographic, we also need to change:
-     * void initEnums()
-     * fields/variables: demographicStrs,enumStrs,TotalNumBuckets
+     * TODO: When we want to change enum Demographic, we also need to change:
+     * void initEnums() fields/variables: demographicStrs,enumStrs,TotalNumBuckets
      * For each enum, the END*** value is considered as a wildcard value in profile selection-related functions */
     enum class Demographic
     {

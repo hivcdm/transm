@@ -56,9 +56,7 @@ path::path(const std::wstring &s) : pathname_(s.begin(), s.end())
 {
 }
 
-path::~path()
-{
-}
+path::~path() = default;
 
 path &path::operator=(path p)
 {

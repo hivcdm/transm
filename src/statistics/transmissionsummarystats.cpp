@@ -74,35 +74,33 @@ void TransmissionSummaryStats::addPopulationStatistics(PopulationStatisticsOld &
 	                               PopulationStatisticsOld::TOTAL_HIV_NEG);
 	summary->HIVPosSurvivalAverage = popStats.lifeStats->getStat(PopulationStatisticsOld::TOTAL_HIV_POS_POSTINFECT_LM) /
 	                                 popStats.lifeStats->getStat(PopulationStatisticsOld::TOTAL_HIV_POS) ;
-	//TODO: Fix me!
+	/* TODO: Fix me! */
 	summary->AverageNumberOfPeopleEachPersonInfects = 1;
-	// Add the new summary to the summaries vector
+	/* Add the new summary to the summaries vector */
 	summaries.push_back(summary);
 } /* end addRunStats */
 
 /* writeSummariesFile appends the summary information to the popstats.out file */
 void TransmissionSummaryStats::writeSummariesFile()
 {
-	// Open the popstats file and write header if needed
+	/* Open the popstats file and write header if needed */
 	Utility::changeDirectoryToResults();
 	summaryStatsStream.open(summariesFileName.c_str(), ios::out | ios::app);
 	writeSummariesFileHeader();
 
-	// Loop over the individual run summaries of the summaries vector
-	for(vector<TransmissionSummary *>::iterator i = summaries.begin(); i != summaries.end(); i++)
+	/* Loop over the individual run summaries of the summaries vector */
+	for(auto summary : summaries)
 	{
-		TransmissionSummary *summary = *i;
-		summaryStatsStream << summary->runName << "\t";
+			summaryStatsStream << summary->runName << "\t";
 		summaryStatsStream << summary->LMsAverage << "\t";
 		summaryStatsStream << summary->HIVPosLMAverage << "\t";
 		summaryStatsStream << summary->HIVNegLMAverage << "\t";
 		summaryStatsStream << summary->HIVPosSurvivalAverage << "\t";
 		summaryStatsStream << summary->AverageNumberOfPeopleEachPersonInfects << "\t";
 
-		for(size_t j = 0; j < summary->selectedSummaryStats->size(); j++)
+		for(auto singleTimeStat : *summary->selectedSummaryStats)
 		{
-			PopulationStatisticsOld::SingleTimeStats *singleTimeStat = summary->selectedSummaryStats->at(j);
-			summaryStatsStream << singleTimeStat->timeOfStats.in_months() << "\t";
+				summaryStatsStream << singleTimeStat->timeOfStats.in_months() << "\t";
 			summaryStatsStream << singleTimeStat->prevalence << "\t";
 			summaryStatsStream << singleTimeStat->SAprevalence << "\t";
 			summaryStatsStream << singleTimeStat->incidence << "\t";
