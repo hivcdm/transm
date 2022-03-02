@@ -204,7 +204,7 @@ void TargetGroup::Update(Population &population, Time current_time,
             return static_cast<int>(rand_01 * i);
         };
 
-        std::random_shuffle(assignments.begin(), assignments.end(), generate_rand);
+        std::shuffle(assignments.begin(), assignments.end(), std::mt19937(std::random_device()()));
 
         for (std::size_t i = 0; i < people.size(); i++) {
             AssignToPartition(current_time, population, people[i], assignments[i]);

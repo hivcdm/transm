@@ -14,11 +14,10 @@ std::vector<std::unique_ptr<const DemographicProfile>> DemographicProfile::Profi
 std::vector<string> DemographicProfile::ProfileIDtoStr;
 std::map<DemographicProfile, DemographicProfile::ProfileID, DemographicProfile::less> DemographicProfile::ProfileToProfileID;
 
-//declare fields of class DemographicProfile
+/** declare fields of class DemographicProfile */
 DemographicProfile::Demographic DemographicProfile::MaxDemographic = DemographicProfile::Demographic((std::size_t)DemographicProfile::Demographic::Last - 1);
 DemographicProfile::ProfileID NOT_UNIQUE = -1;
-const DemographicProfile::ProfileID DemographicProfile::NOT_UNIQUE = DemographicProfile::ProfileID(
-            -1);	//used as a return value to getProfileID to signify that the current tuple of enums inside this class contain a wildcard
+const DemographicProfile::ProfileID DemographicProfile::NOT_UNIQUE = DemographicProfile::ProfileID(-1);	/* used as a return value to getProfileID to signify that the current tuple of enums inside this class contain a wildcard */
 const DemographicProfile::ProfileID DemographicProfile::MIN = DemographicProfile::ProfileID(0);
 const DemographicProfile::ProfileID DemographicProfile::MAX = DemographicProfile::TotalNumBuckets - 1;
 const DemographicProfile::ProfileID DemographicProfile::END = DemographicProfile::ProfileID(
@@ -43,13 +42,13 @@ DemographicProfile::DemographicProfile(ProfileID _profileID)
 	set(_profileID);
 }
 
-bool DemographicProfile::operator==(const DemographicProfile _a) const
+bool DemographicProfile::operator==(const DemographicProfile& _a) const
 {
-	//i don't know why we can't use memcmp, but it seems to not be working correctly.
-	//return (::memcmp( enums, _a.enums, DemographicProfile::Demographic::Last) == 0);
+	// i don't know why we can't use memcmp, but it seems to not be working correctly.
+	// return (::memcmp( enums, _a.enums, DemographicProfile::Demographic::Last) == 0);
 	// it thinks that {1,0,0,0} is equal to {1,1,1,1}
-	//check from left-most value for equality
-	DemographicProfile::Demographic currDemographic = DemographicProfile::Demographic(0);
+	// check from left-most value for equality
+	auto currDemographic = DemographicProfile::Demographic(0);
 
 	while(currDemographic < DemographicProfile::Demographic::Last)
 	{
@@ -64,21 +63,21 @@ bool DemographicProfile::operator==(const DemographicProfile _a) const
 	return true;
 }
 
-bool DemographicProfile::operator!=(const DemographicProfile _a) const
+bool DemographicProfile::operator!=(const DemographicProfile& _a) const
 {
 	return !(*this == _a);
 }
 
-bool DemographicProfile::operator<(const DemographicProfile _a) const
+bool DemographicProfile::operator<(const DemographicProfile& _a) const
 {
 	if(*this == _a)
 	{
 		return false;
 	}
 
-	//check from left-most value for greater than
+	/* check from left-most value for greater than */
 	DemographicProfile::Demographic currDemographic = DemographicProfile::MaxDemographic;
-	DemographicProfile::Demographic min = DemographicProfile::Demographic(0);
+	auto min = DemographicProfile::Demographic(0);
 
 	while(currDemographic >= min)
 	{
@@ -98,7 +97,7 @@ bool DemographicProfile::operator<(const DemographicProfile _a) const
 	return true;
 }
 
-bool DemographicProfile::operator<=(const DemographicProfile _a) const
+bool DemographicProfile::operator<=(const DemographicProfile& _a) const
 {
 	if(*this == _a)
 	{
@@ -113,21 +112,22 @@ bool DemographicProfile::operator<=(const DemographicProfile _a) const
 	return false;
 }
 
-void DemographicProfile::operator=(const DemographicProfile _a)
+DemographicProfile& DemographicProfile::operator=(const DemographicProfile& _a)
 {
-	DemographicProfile::Demographic currDemographic = DemographicProfile::Demographic(0);
+	auto currDemographic = DemographicProfile::Demographic(0);
 
-	//set the internal enum fields equal to _a
+	/* set the internal enum fields equal to _a */
 	while(currDemographic < DemographicProfile::Demographic::Last)
 	{
 		set(currDemographic, _a.get(currDemographic));
         currDemographic = (Demographic)((std::size_t)currDemographic + 1);
 	}
+    return *this;
 }
 
 void DemographicProfile::operator++(int)
 {
-	if(DemographicProfile::DemographicEnumCls.size() == 0)
+	if(DemographicProfile::DemographicEnumCls.empty())
 	{
 		DemographicProfile::initEnums();
 	}
@@ -136,7 +136,7 @@ void DemographicProfile::operator++(int)
 	assert(getProfileID() != DemographicProfile::MAX);
 	assert(getProfileID() != DemographicProfile::END);
 	DemographicProfile::Demographic currPlace = DemographicProfile::MaxDemographic;
-	DemographicProfile::Demographic min = DemographicProfile::Demographic(0);
+	auto min = DemographicProfile::Demographic(0);
 	//add one to the right-most column
 	set(currPlace, get(currPlace) + 1);
 	//carry if needed
@@ -171,26 +171,26 @@ BaseEnumCls::Enum DemographicProfile::get(DemographicProfile::Demographic _demog
 
 DemographicProfile::ProfileID DemographicProfile::getProfileID() const
 {
-	//the map tupleToID stores tuple->id
+	/* the map tupleToID stores tuple->id */
 	return DemographicProfile::ProfileToProfileID[*this];
 }
 
 
 bool DemographicProfile::match(const DemographicProfile &_selector) const
 {
-	DemographicProfile::Demographic currDemographic = DemographicProfile::Demographic(0);
+	auto currDemographic = DemographicProfile::Demographic(0);
 
-	//loop through each Demographic
+	/* loop through each Demographic */
 	while(currDemographic <= DemographicProfile::MaxDemographic)
 	{
-		//skip if wildcard
+		/* skip if wildcard */
         if(_selector.get(currDemographic) == DemographicProfile::DemographicEnumCls.at((std::size_t)currDemographic).getWildcard())
 		{
             currDemographic = DemographicProfile::Demographic((std::size_t)currDemographic + 1);
 			continue;
 		}
 
-		//if enums don't match, then this tuple doesn't match
+		/* if enums don't match, then this tuple doesn't match */
         if(_selector.get(currDemographic) != (enums[(std::size_t)currDemographic]))
 		{
 			return false;
@@ -202,35 +202,37 @@ bool DemographicProfile::match(const DemographicProfile &_selector) const
 	return true;
 }
 
-void DemographicProfile::parse(string _tupleStr)
+void DemographicProfile::parse(const string& _tupleStr)
 {
-	if(DemographicProfile::DemographicEnumCls.size() == 0)
+	if(DemographicProfile::DemographicEnumCls.empty())
 	{
 		DemographicProfile::initEnums();
 	}
 
-	//we want to tokenize a string representatino of a tuple
-	//currently allowed delimiters are: "_"
+	/* we want to tokenize a string representatino of a tuple */
+	/* currently allowed delimiters are: "_" */
 	auto tokens = Utility::tokenize(_tupleStr, Constants::Colon);
 
-	//make sure we have correct amount of tokens
+	/* make sure we have correct amount of tokens */
     if(tokens.size() != (std::size_t)DemographicProfile::Demographic::Last)
 	{
 		throw std::runtime_error("Tuple String " + _tupleStr + " is not valid");
 	}
 
-	//encode each part of the string into an enum value
-	DemographicProfile::Demographic currDemographic = DemographicProfile::Demographic(0);
+	/* encode each part of the string into an enum value */
+	auto currDemographic = DemographicProfile::Demographic(0);
 	const BaseEnumCls *currCategoryCls;
 
-	//loop through each Demographic
+	/* loop through each Demographic */
 	while(currDemographic < DemographicProfile::Demographic::Last)
 	{
-		//get the current Demographic helper enum
+		/* get the current Demographic helper enum */
 		currCategoryCls = DemographicProfile::getEnumCls(currDemographic);
-		//get the enum value from _tupleStr's tokens
+
+		/* get the enum value from _tupleStr's tokens */
         BaseEnumCls::Enum e = currCategoryCls->fromString(tokens.at((std::size_t)currDemographic));
-		//if we get currCategoryCls->fromString(tokens.at(currDemographic)) to throw an exception, then we can use a better error msg
+
+		/* if we get currCategoryCls->fromString(tokens.at(currDemographic)) to throw an exception, then we can use a better error msg */
 		set(currDemographic, e);
         currDemographic = DemographicProfile::Demographic((std::size_t)currDemographic + 1);
 	}
@@ -261,7 +263,7 @@ void DemographicProfile::saveState(std::ostream &_outStream)
 }
 void DemographicProfile::selectProfileIDs(std::vector<ProfileID> &_selected, const std::vector<ProfileID> *_available) const
 {
-	if(DemographicProfile::ProfileIDtoProfile.size() == 0)
+	if(DemographicProfile::ProfileIDtoProfile.empty())
 	{
 		DemographicProfile::initProfileIDMap();
 	}
@@ -270,11 +272,11 @@ void DemographicProfile::selectProfileIDs(std::vector<ProfileID> &_selected, con
 
 	if(_available)
 	{
-		//loop through subset of all possible ProfileID's
+		/* loop through subset of all possible ProfileID's */
 		while(i < _available->size())
 		{
-			//if the profile that correponds to the ProfileID is matched by this(which is the selector here)
-			//  then add the ProfileID to the resulting vector
+			/* if the profile that correponds to the ProfileID is matched by this(which is the selector here) */
+			/* then add the ProfileID to the resulting vector */
 			if(DemographicProfile::ProfileIDtoProfile.at(_available->at(i))->match(*this))
 			{
 				_selected.push_back(_available->at(i));
@@ -285,7 +287,7 @@ void DemographicProfile::selectProfileIDs(std::vector<ProfileID> &_selected, con
 	}
 	else
 	{
-		//loop though all possible ProfileID
+		/* loop though all possible ProfileID */
 		do
 		{
 			if(DemographicProfile::ProfileIDtoProfile.at(i)->match(*this))
@@ -301,7 +303,7 @@ void DemographicProfile::selectProfileIDs(std::vector<ProfileID> &_selected, con
 
 void DemographicProfile::set(DemographicProfile::Demographic _demographic, BaseEnumCls::Enum _enum)
 {
-	if(DemographicProfile::DemographicEnumCls.size() == 0)
+	if(DemographicProfile::DemographicEnumCls.empty())
 	{
 		DemographicProfile::initEnums();
 	}
@@ -316,20 +318,20 @@ void DemographicProfile::set(DemographicProfile::ProfileID _profileID)
 {
 	assert((_profileID == DemographicProfile::END) || Utility::within_range(_profileID, DemographicProfile::MIN, DemographicProfile::MAX));
 
-	if(DemographicProfile::DemographicEnumCls.size() == 0)
+	if(DemographicProfile::DemographicEnumCls.empty())
 	{
 		DemographicProfile::initEnums();
 	}
 
-	if(DemographicProfile::ProfileIDtoProfile.size() == 0)
+	if(DemographicProfile::ProfileIDtoProfile.empty())
 	{
 		DemographicProfile::initProfileIDMap();
 	}
 
 	if(_profileID == DemographicProfile::END)
 	{
-		//set each value of Tuple to wildcard
-		DemographicProfile::Demographic currDemographic = DemographicProfile::Demographic(0);
+		/* set each value of Tuple to wildcard */
+		auto currDemographic = DemographicProfile::Demographic(0);
 
 		while(currDemographic < DemographicProfile::Demographic::Last)
 		{
@@ -339,8 +341,8 @@ void DemographicProfile::set(DemographicProfile::ProfileID _profileID)
 	}
 	else
 	{
-		//look up the tuple that matches this ProfileID and internalize values
-		if(DemographicProfile::ProfileIDtoProfile.size() == 0)
+		/* look up the tuple that matches this ProfileID and internalize values */
+		if(DemographicProfile::ProfileIDtoProfile.empty())
 		{
 			DemographicProfile::initProfileIDMap();
 		}
@@ -351,7 +353,7 @@ void DemographicProfile::set(DemographicProfile::ProfileID _profileID)
 
 void DemographicProfile::set(const DemographicProfile &_dmgProfile)
 {
-	DemographicProfile::Demographic currDemographic = DemographicProfile::Demographic(0);
+	auto currDemographic = DemographicProfile::Demographic(0);
 
 	while(currDemographic < DemographicProfile::Demographic::Last)
 	{
@@ -376,7 +378,7 @@ const BaseEnumCls *DemographicProfile::getEnumCls(DemographicProfile::Demographi
 {
 	assert(Utility::within_range(_demographic, DemographicProfile::Demographic(0), DemographicProfile::MaxDemographic));
 
-	if(DemographicProfile::DemographicEnumCls.size() == 0)
+	if(DemographicProfile::DemographicEnumCls.empty())
 	{
 		DemographicProfile::initEnums();
 	}
@@ -384,13 +386,13 @@ const BaseEnumCls *DemographicProfile::getEnumCls(DemographicProfile::Demographi
     return &(DemographicProfile::DemographicEnumCls.at((std::size_t)_demographic));
 }
 
-const DemographicProfile DemographicProfile::getDemographics(ProfileID _profileID)
+DemographicProfile DemographicProfile::getDemographics(ProfileID _profileID)
 {
 	assert(Utility::within_range(_profileID, DemographicProfile::MIN, DemographicProfile::MAX));
 	return *DemographicProfile::ProfileIDtoProfile[_profileID];
 }
 
-const DemographicProfile::ProfileID DemographicProfile::getProfileID(DemographicProfile _profile)
+DemographicProfile::ProfileID DemographicProfile::getProfileID(const DemographicProfile& _profile)
 {
 	return DemographicProfile::ProfileToProfileID[_profile];
 }
@@ -406,8 +408,8 @@ const string *DemographicProfile::toString(ProfileID _profileID)
 {
 	assert(Utility::within_range(_profileID, DemographicProfile::MIN, DemographicProfile::MAX));
 
-	//make sure the internal dmgProfileID-related  fields are initiated before returning any information to the outside
-	if(DemographicProfile::ProfileIDtoProfile.size() == 0)
+	/* make sure the internal dmgProfileID-related  fields are initiated before returning any information to the outside */
+	if(DemographicProfile::ProfileIDtoProfile.empty())
 	{
 		DemographicProfile::initProfileIDMap();
 	}
@@ -415,6 +417,7 @@ const string *DemographicProfile::toString(ProfileID _profileID)
 	return &DemographicProfile::ProfileIDtoStr.at(_profileID);
 }
 
+/* initialization of enums */
 void DemographicProfile::initEnums()
 {
     DemographicProfile::DemographicEnumCls.push_back(EnumCls<SexualActivityStatus>(
@@ -435,19 +438,21 @@ void DemographicProfile::initEnums()
 
 void DemographicProfile::initProfileIDMap()
 {
-	if(DemographicProfile::DemographicEnumCls.size() == 0)
+	if(DemographicProfile::DemographicEnumCls.empty())
 	{
 		DemographicProfile::initEnums();
 	}
 
-	//see how many buckets there are and allocate space for them
+	/* see how many buckets there are and allocate space for them */
 	DemographicProfile::ProfileIDtoProfile.resize(DemographicProfile::TotalNumBuckets);
 	DemographicProfile::ProfileIDtoStr.resize(DemographicProfile::TotalNumBuckets);
-	//used to populate look-ups data structures with DemographicProfile
+
+    /* used to populate look-ups data structures with DemographicProfile */
 	DemographicProfile currDemographicProfile;
-	//set currDemographicProfile to all min values. we can't use DemographicProfile.set(ProfileID) b/c we need to make it through this
-	//  function before it is used
-	DemographicProfile::Demographic currDemographic = DemographicProfile::Demographic(0);
+
+	/* set currDemographicProfile to all min values. we can't use DemographicProfile.set(ProfileID) b/c we need to make it through this */
+	/* function before it is used */
+	auto currDemographic = DemographicProfile::Demographic(0);
 
 	while(currDemographic < DemographicProfile::Demographic::Last)
 	{
@@ -455,17 +460,19 @@ void DemographicProfile::initProfileIDMap()
         currDemographic = DemographicProfile::Demographic((std::size_t)currDemographic + 1);
 	}
 
-	//iterate through all possible ProfileID's and corresponding tuples
+	/* iterate through all possible ProfileID's and corresponding tuples */
 	for(ProfileID currProfileID = DemographicProfile::MIN; currProfileID <= DemographicProfile::MAX; currProfileID++)
 	{
-		//map DemographicProfile -> ProfileID
+		/* map DemographicProfile -> ProfileID */
 		DemographicProfile::ProfileToProfileID[currDemographicProfile] = currProfileID;
-		//map ProfileID -> DemographicProfile
+
+		/* map ProfileID -> DemographicProfile */
 		DemographicProfile::ProfileIDtoProfile.at(currProfileID) = std::make_unique<const DemographicProfile>(currDemographicProfile);
-		//generate the string representation of current profileID
+
+		/* generate the string representation of current profileID */
 		stringstream currEnumStr;
 
-        for(Demographic category = DemographicProfile::Demographic(0);
+        for(auto category = DemographicProfile::Demographic(0);
             category <= DemographicProfile::Demographic((std::size_t)DemographicProfile::Demographic::Last - 1);
             category = DemographicProfile::Demographic((std::size_t)category + 1))
 		{
@@ -477,16 +484,16 @@ void DemographicProfile::initProfileIDMap()
             }
 		}
 
-		//map ProfileID->string
+		/* map ProfileID->string */
 		DemographicProfile::ProfileIDtoStr.at(currProfileID).append(currEnumStr.str());
 
-		//if we are at the last profile, then don't increment anymore
+		/* if we are at the last profile, then don't increment anymore */
 		if(currProfileID == DemographicProfile::MAX)
 		{
 			break;
 		}
 
-		//get the next set of unique values for the next round in loop
+		/* get the next set of unique values for the next round in loop */
 		currDemographicProfile++;
 	}
 }

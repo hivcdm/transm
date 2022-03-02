@@ -72,9 +72,7 @@ BaseEnumCls::Enum BaseEnumCls::fromString(const std::string &_str) const
 	}
 }
 
-/**
- * Return the number of valid values for this Enum
- */
+/** Return the number of valid values for this Enum */
 unsigned int BaseEnumCls::getNumEnums() const
 {
 	assert(initialized);
@@ -82,9 +80,7 @@ unsigned int BaseEnumCls::getNumEnums() const
 }
 
 
-/**
- * Stores the string representation of enum E
- */
+/** Stores the string representation of enum E */
 void BaseEnumCls::init(const std::vector<std::string> _strs)
 {
 	initialized = true;
@@ -92,14 +88,14 @@ void BaseEnumCls::init(const std::vector<std::string> _strs)
 	min = 0;
 	max = numEnums - 1;
 
-	//save all the strings
+	/* save all the strings */
 	for(size_t i = 0; i < numEnums; i++)
 	{
 		std::string to_push = _strs[i];
 		strs.push_back(to_push);
 	}
 
-	//make an extra space for wildcard
+	/* make an extra space for wildcard */
 	strs.push_back("*");
 }
 

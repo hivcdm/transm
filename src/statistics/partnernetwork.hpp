@@ -10,9 +10,7 @@
 #include "entities/sexualpartnership.hpp"
 #include "utility/time.hpp"
 
-/**
- * This class outputs the partnership network in graphml format
- */
+/** This class outputs the partnership network in graphml format */
 class Network {
 
     struct EntityVertex
@@ -30,7 +28,7 @@ class Network {
         bool on_ART;
         bool risk_level;
         int viral_load;
-        int hiv_composite; // on_prep=-1,hiv_neg=0,hiv_pos=viral_load
+        int hiv_composite; /* on_prep=-1,hiv_neg=0,hiv_pos=viral_load */
     };
 
     struct PartnershipEdge
@@ -39,18 +37,18 @@ class Network {
         int start;
         int end;
         int duration;
-        std::string gender_to_gender; //e.g msw+female,msm+msm,etc
-        int sero_pos; // both_hiv-=0,one_hiv+=1,both_hiv+=2
+        std::string gender_to_gender; /* e.g msw+female,msm+msm,etc */
+        int sero_pos; /* both_hiv-=0,one_hiv+=1,both_hiv+=2 */
     };
 
-    // Adjacency List
+    /* Adjacency List */
     typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS,
                                   EntityVertex, PartnershipEdge> Graph;
     typedef boost::graph_traits<Graph>::vertex_descriptor vertex_t;
     typedef boost::graph_traits<Graph>::vertex_iterator vertex_iter_t;
     typedef boost::graph_traits<Graph>::edge_descriptor edge_t;
 
-    vertex_iter_t FindVertex(const Graph& g, int id)
+    static vertex_iter_t FindVertex(const Graph& g, int id)
     {
         vertex_iter_t vi, vi_end;
         for (boost::tie(vi, vi_end) = boost::vertices(g); vi != vi_end; ++vi)
@@ -152,7 +150,7 @@ public:
     {
         boost::dynamic_properties dp;
 
-        // node properties
+        /* node properties */
         dp.property("id", get(&EntityVertex::id, G));
         dp.property("gender", get(&EntityVertex::gender, G));
         dp.property("orientation", get(&EntityVertex::orientation, G));
@@ -168,7 +166,7 @@ public:
         dp.property("viral_load", get(&EntityVertex::viral_load, G));
         dp.property("hiv_composite", get(&EntityVertex::hiv_composite, G));
 
-        // edge properties
+        /* edge properties */
         dp.property("type", get(&PartnershipEdge::type, G));
         dp.property("start", get(&PartnershipEdge::start, G));
         dp.property("end", get(&PartnershipEdge::end, G));

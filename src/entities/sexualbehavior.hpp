@@ -9,14 +9,12 @@
 
 namespace transm {
 
-/// <summary>
-/// This can parse XML that contains info about sexual behavior for a particular
-/// type of partnership.
-/// </summary>
-/// <remarks>
-/// So far, only males have detailed sexual behavior. There should be 1 XML -
-/// subtree for every SexualPartnership::Type for each entity type.
-/// </remarks>
+/**
+ * This can parse XML that contains info about sexual behavior for a particular
+ * type of partnership.
+ *
+ * So far, only males have detailed sexual behavior. There should be 1 XML -
+ * subtree for every SexualPartnership::Type for each entity type. */
 class SexualBehavior
 {
 
@@ -27,21 +25,20 @@ public :
 
 	void SetHighRiskMultiplier(double multiplier);
 
-	/// <summary>
-	/// Returns number of Buckets that are available for this kind of partnership.
-	/// This is used to allow class Male to set aside some temporary space
-	/// </summary>
+    /**
+	 * Returns number of Buckets that are available for this kind of partnership.
+	 * This is used to allow class Male to set aside some temporary space */
 	unsigned int getNumAvailableBuckets() const;
 
-	const LogNormalDist getAcquisitionRatePerMonth(RiskLevel risk) const;
+	LogNormalDist getAcquisitionRatePerMonth(RiskLevel risk) const;
 
 	double getCoitalEventsPerMonth(RiskLevel risk) const;
 
-	const BetaDist getChanceCondomUsePerEvent(RiskLevel risk) const;
+	BetaDist getChanceCondomUsePerEvent(RiskLevel risk) const;
 
-	const NormalDist getAverageYearsYounger() const;
+	NormalDist getAverageYearsYounger() const;
 
-	const ShiftedLogNormalDist getPartnershipDurationMth(RiskLevel risk) const;
+	ShiftedLogNormalDist getPartnershipDurationMth(RiskLevel risk) const;
 
 	SexualPartnership::Type getPartnershipType() const;
 
@@ -56,32 +53,35 @@ public :
     void setAcquisitionRatePerMonth(RiskLevel risk, LogNormalDist dist) { acquisitionRatePerMonth[static_cast<std::size_t>(risk)] = dist; }
 
     void setChanceChooseWithSteady(double chance) { chanceChooseWithSteady = chance; }
-    double getChanceChooseWithSteady() { return chanceChooseWithSteady; }
+
+    double getChanceChooseWithSteady() const { return chanceChooseWithSteady; }
 
 private:
 	friend class SimulationBuilder;
 
     double chanceChooseWithSteady;
 
-	//the partnership type that these parameters represent
+	/** the partnership type that these parameters represent */
 	SexualPartnership::Type partnershipType;
 
-	//LogNormal distribution from which the people draw a rate to acquire this type of partner
+	/** LogNormal distribution from which the people draw a rate to acquire this type of partner */
 	LogNormalDist acquisitionRatePerMonth[(std::size_t)RiskLevel::Last];
 
-	//average number of partners men acquire at a time
-	//double averagePartnersAtATime[(std::size_t)RiskLevel::Last];
+	/** average number of partners men acquire at a time */
+	double averagePartnersAtATime[(std::size_t)RiskLevel::Last];
 
-	//The distribution the males will draw from to determine how many years younger their partner should be (resulting difference may be negative for older women)
+	/**
+	 * The distribution the males will draw from to determine how many years younger their partner should be
+	 * (resulting difference may be negative for older women) */
 	NormalDist averageYearsYounger;
 
-	//avg events per month across all Couples; will be used as a mean in Poisson distribution
+	/** avg events per month across all Couples; will be used as a mean in Poisson distribution */
     double coitalEventsPerMonth[(std::size_t)RiskLevel::Last];
 
-	//chance per event that this person will use a condom
+	/** chance per event that this person will use a condom */
     BetaDist chanceCondomUsePerEvent[(std::size_t)RiskLevel::Last];
 
-	//avg duration if partnerships across all Couples
+	/** avg duration if partnerships across all Couples */
     ShiftedLogNormalDist partnershipDurationMth[(std::size_t)RiskLevel::Last];
 };
 

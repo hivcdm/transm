@@ -148,7 +148,7 @@ public:
 	double randBeta(const BetaDist &_betaDist);
 
 	//getters and setters
-	uint32_t getSeed();
+	uint32_t getSeed() const;
 	//reset the generator w/ the current seed
 	void reset();
 	//reset the generator and use a diff seed

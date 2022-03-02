@@ -20,7 +20,7 @@ public:
         for (auto demographic : enum_iterator<DemographicProfile::Demographic>())
         {
             std::string demoString = DemographicStrs[(std::size_t)demographic];
-            std::size_t demoValue = (std::size_t)demographicProfile->get(demographic);
+            auto demoValue = (std::size_t)demographicProfile->get(demographic);
             values_.emplace(demoString, demoValue);
         }
 
