@@ -48,7 +48,7 @@ class Network {
     typedef boost::graph_traits<Graph>::vertex_iterator vertex_iter_t;
     typedef boost::graph_traits<Graph>::edge_descriptor edge_t;
 
-    vertex_iter_t FindVertex(const Graph& g, int id)
+    static vertex_iter_t FindVertex(const Graph& g, int id)
     {
         vertex_iter_t vi, vi_end;
         for (boost::tie(vi, vi_end) = boost::vertices(g); vi != vi_end; ++vi)

@@ -12,19 +12,19 @@ CepacInputParser::CepacInputParser(const std::string &filename)
 	inputStream_.open(filename.c_str(), std::ios::in);
 }
 
-//TODO:we need to check the correctness of this method
-//TODO:It works, but need to write a test for this
+/* TODO:we need to check the correctness of this method */
+/* TODO:It works, but need to write a test for this */
 std::array<std::vector<double>, 2> CepacInputParser::parseNonAidsDeathProbabilities()
 {
 	std::array<std::vector<double>, 2> probabilities;
 
-	//if we tried to open the CEPAC file, just silently fail and use hardcoded defaults
+	/* if we tried to open the CEPAC file, just silently fail and use hardcoded defaults */
 	if(!inputStream_.fail())
 	{
-        //contains the current line of the file we're looking at
+        /* contains the current line of the file we're looking at */
         std::string currLine;
 
-		//go through CEPAC .in file until we find the right row
+		/* go through CEPAC .in file until we find the right row */
 		do
 		{
 			std::getline(inputStream_, currLine);
@@ -35,16 +35,16 @@ std::array<std::vector<double>, 2> CepacInputParser::parseNonAidsDeathProbabilit
 			}
 		} while(currLine.find("NonAIDSDthProb_Male", 0) == std::string::npos);
 
-		//currLine should now contain row for male non AIDS death probabilities
+		/* currLine should now contain row for male non AIDS death probabilities */
 		auto male_values = Utility::tokenize(currLine, Constants::Tab);
 
 		std::getline(inputStream_, currLine);
 
-		//currLine should now contain row for female non AIDS death probabilities
+		/* currLine should now contain row for female non AIDS death probabilities */
 		auto female_values = Utility::tokenize(currLine, Constants::Tab);
 
-		//generate the non-aids death probabilitiy
-		//we start the loop at 1 instead of 0 b/c first token contains a text label of the row. the probabilities start at index 1
+		/* generate the non-aids death probabilitiy */
+		/* we start the loop at 1 instead of 0 b/c first token contains a text label of the row. the probabilities start at index 1 */
 		for(std::size_t i = 1; i < male_values.size(); ++i)
 		{
 			probabilities[0].push_back(Utility::from_string<double>(male_values.at(i)));
@@ -52,7 +52,7 @@ std::array<std::vector<double>, 2> CepacInputParser::parseNonAidsDeathProbabilit
 		}
 	}
 
-	//TODO:we should really reset the pointer to the beginning of the file
+	/* TODO:we should really reset the pointer to the beginning of the file */
 
 	return probabilities;
 }

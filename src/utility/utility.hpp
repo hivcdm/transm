@@ -26,8 +26,8 @@ struct Version
 
 class Utility
 {
-    //usually we would divide to convert between these time increments
-    //but division is more expensive, so multiply by inverse instead.
+    /* usually we would divide to convert between these time increments */
+    /* but division is more expensive, so multiply by inverse instead. */
     static double day_to_month_multiplier;
     static double day_to_year_multiplier;
     static double month_to_year_multiplier;
@@ -38,73 +38,50 @@ class Utility
 public:
     static std::size_t get_current_process_id();
 
-     /**
-      * Return the location in which the currently executing model is stored.
-    */
+    /** Return the location in which the currently executing model is stored. */
     static path get_model_directory();
 
-     /**
-      * Return the user directory ($HOME). This depends on platform.
-    */
+    /** Return the user directory ($HOME). This depends on platform. */
     static path get_user_directory();
 
-     /**
-      * Return the location of the config file. This depends on platform.
-    */
+    /** Return the location of the config file. This depends on platform. */
     static path get_config_file_path();
 
-     /**
-      * Return a version object that represents the version of the running model.
-    */
+    /** Return a version object that represents the version of the running model. */
     static Version get_model_version();
 
-     /**
-      * Return an unordered map of key->value config options.
-    */
+    /** Return an unordered map of key->value config options. */
     static std::unordered_map<std::string, std::string> load_config();
 
-     /**
-      * Returns the directory in which batches are stored.
-    */
+    /** Returns the directory in which batches are stored. */
     static path get_batches_directory();
 
-	// TODO: replace with standard library functions like std::stod
-	 /**
-      * Converts a string value to another datatype.
-	*/
+	/** TODO: replace with standard library functions like std::stod */
+    /** Converts a string value to another datatype. */
 	template <class T>
 	static T from_string(std::string s);
 
-    // TODO: replace
-     /**
-	  * Returns true if need is a member of haystack
-    */
+    /** TODO: replace */
+    /** Returns true if need is a member of haystack */
 	template <class T>
 	static bool member_of(const std::set<T> &haystack, const T &needle);
 
-    // TODO: replace
-     /**
-      * Returns true if need is a member of haystack
-    */
+    /** TODO: replace */
+    /** Returns true if need is a member of haystack */
     template <class T>
     static bool member_of(const std::vector<T> &haystack, const T &needle);
 
-     /**
-      * Divide a vector of relative probabilities by the sum so that they add up to 1.
-      * <remarks>
-      * This is used for sampling from a categorical distribution. */
+    /**
+     * Divide a vector of relative probabilities by the sum so that they add up to 1.
+     * This is used for sampling from a categorical distribution. */
 	static void normalize(std::vector<double> &weights);
 
-    // TODO: is this being used?
-     /**
-	  * Convert a probability, prob, to a rate
-    */
+    /** TODO: is this being used? */
+    /** Convert a probability, prob, to a rate */
 	static double prob_to_rate(double prob);
 
-    // TODO: is this being used?
-	 /**
-      * Converts a rate, rate, to a probability.
-    */
+    /** TODO: is this being used? */
+    /** Converts a rate, rate, to a probability. */
 	static double rate_to_prob(double rate);
 
 	template <typename T>
@@ -112,25 +89,17 @@ public:
 
 	static bool is_norm_dist_zero(const NormalDist &dist);
 
-     /**
-	  * returns true if _val is within [_min,_max]
-	*/
+    /** returns true if _val is within [_min,_max] */
 	template <class T>
 	static bool within_range(T val, T min, T max);
 
-     /**
-	  * Returns true if 0.0 <= prob <= 1.0
-    */
+    /** Returns true if 0.0 <= prob <= 1.0 */
 	static bool valid_probability(double prob);
 
-     /**
-	  * Returns 1/pow(discount_rate, month)
-    */
+    /** Returns 1/pow(discount_rate, month) */
 	static double computeCepacDiscountFactor(int month, double discount_rate);
 
-     /**
-      * Return the set of tokens resulting form splitting str on provided delimiters.
-    */
+    /** Return the set of tokens resulting form splitting str on provided delimiters. */
 	static std::vector<std::string> tokenize(const std::string &str, const std::string &delimiters);
 
 	static int createResultsDirectory(std::string directory);
@@ -139,7 +108,7 @@ public:
 	static void changeDirectoryToInputs();
 };
 
-// Template implementations.
+/** Template implementations. */
 
 template <typename T>
 T Utility::round(double d)
