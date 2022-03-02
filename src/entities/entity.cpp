@@ -351,7 +351,7 @@ void Entity::initializeCEPACpatient(EventParams &_eventParams) {
 
     SimContext *simContextToUse;
     if (_eventParams.useRollout) {
-        //When patients are initialized they are added to the untreated pool
+        // When patients are initialized they are added to the untreated pool
         if (this->isWhite() && !(this->isHispanic())) {
             simContextToUse = _eventParams.rolloutSimContexts[getCEPACSimContextIndex(_eventParams, 4)]->rolloutSimContext;
         } else if (this->isBlack() && !(this->isHispanic())) {

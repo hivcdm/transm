@@ -1,8 +1,10 @@
 #include "bucketage.hpp"
 
+#include <utility>
+
 namespace transm {
 
-//Constructor
+/** Constructors */
 BucketAge::BucketAge()
 {
 	numPersons = 0;
@@ -26,8 +28,8 @@ BucketAge::BucketAge()
 	}
 }
 
-BucketAge::BucketAge(DemographicProfile::ProfileID BinID, unsigned int popID, const std::map<SexualPartnership::Type, double> &_assort)
-: assort(_assort)
+BucketAge::BucketAge(DemographicProfile::ProfileID BinID, unsigned int popID, std::map<SexualPartnership::Type, double> _assort)
+: assort(std::move(_assort))
 {
 	currentBinID = BinID;
 	populationID = popID;
@@ -46,15 +48,15 @@ BucketAge::BucketAge(DemographicProfile::ProfileID BinID, unsigned int popID, co
 		}
 	}
 
-	//Initialize the infected FVs
+	/* Initialize the infected FVs */
 	for(int i = 0; i < NUMBER_GENERATIONS_TO_TRACE; i++)
 	{
-		FullVector *emptyFV = new FullVector();
+		auto *emptyFV = new FullVector();
 		FVinfected.push_back(emptyFV);
 	}
 }
 
-//Destructor
+/* Destructor */
 BucketAge::~BucketAge()
 {
 	for(int i = 0; i < NUMBER_GENERATIONS_TO_TRACE; i++)
@@ -72,7 +74,7 @@ BucketAge::~BucketAge()
 	FVNoDist.clear();
 }
 
-//clears all elements from this index
+/* clears all elements from this index */
 void BucketAge::clear()
 {
 	for(int i = 0; i < NUMBER_GENERATIONS_TO_TRACE; i++)
@@ -102,14 +104,14 @@ void BucketAge::clear()
 	}
 }
 
-//tells whether _person exists in the index
+/* tells whether _person exists in the index */
 bool BucketAge::exists(Entity *p)
 {
 	return (FVNoDist.exists(p));
 }
 
-//will return how many HIV infected people are currently in the index
-//Store as a number?  No -- Not costing significant time
+/* will return how many HIV infected people are currently in the index */
+/* Store as a number?  No -- Not costing significant time */
 unsigned long BucketAge::getNumInfected()
 {
 	unsigned long total = 0;
@@ -132,15 +134,14 @@ unsigned long BucketAge::getNumInfected(RiskLevel _risk)
 	return numInfectedRisk[(std::size_t)_risk];
 }
 
-//draw any member from this pool, this function has a speed optimization
-//this function is used by class BucketSexualMixing
-//  draw a particular key first to narrow down potentials
-//	then choose randomly from among the potentials with that key
-//  assumption - all keys have an equal opportunity of being picked regardless
-//				  of the # of Entities with that key
-//				- if a key is chosen where there are no entities, choose the next
-//					key w/ members in it
-//TESTED... without random number generator
+/** draw any member from this pool, this function has a speed optimization
+ *  this function is used by class BucketSexualMixing
+ *  draw a particular key first to narrow down potentials
+ *	then choose randomly from among the potentials with that key
+ *  assumption - all keys have an equal opportunity of being picked regardless
+ *  of the # of Entities with that key
+ *		- if a key is chosen where there are no entities, choose the next key w/ members in it */
+ /* \TESTED  (without random number generator) */
 Entity *BucketAge::drawMember(RandomNumberGenerator &_randomNums, RiskLevel _riskLevel,
                               SexualPartnership::Type /*_partnershipType*/, bool _use_random, bool _remove)
 {
@@ -171,11 +172,11 @@ Entity *BucketAge::drawMember(RandomNumberGenerator &_randomNums, RiskLevel _ris
 
 	if(toDrawFrom->size() > 0)
 	{
-		int toPick = _randomNums.randInt(0, toDrawFrom->size() - 1);
+		int toPick = static_cast<int>(_randomNums.randInt(0, toDrawFrom->size() - 1));
 
 		if(_remove)
 		{
-			//Remove person from all FV
+			/* Remove person from all FV */
 			Entity *personToReturn = toDrawFrom->selectout(toPick);
 			erase(personToReturn);
 			return personToReturn;
@@ -192,17 +193,17 @@ Entity *BucketAge::drawMember(RandomNumberGenerator &_randomNums, RiskLevel _ris
 	}
 }
 
-/* @function: erase
+/**
+ * @function: erase
  * @effects: removes _person from this by removing _person from all FVs; decrements numPersons by 1;
  * if _person is an infected individual, decrements numInfected by 1
  * @returns: true if _person was previously a member of this and was successfully removed, false is
- * _person was not a member of this
- */
+ * _person was not a member of this  */
 bool BucketAge::erase(Entity *_person)
 {
 	if(exists(_person))
 	{
-		//Remove from all FVs
+		/* Remove from all FVs */
 		bool removed[6];
 		removed[0] = FVProbDist_high.remove(_person);
 		removed[1] = FVProbDist_low.remove(_person);
@@ -217,17 +218,17 @@ bool BucketAge::erase(Entity *_person)
 
 		removed[4] = FVuninfected.remove(_person);
 		assert((removed[0] || removed[1] || removed[2]) && (removed[3] || removed[4]));
-		//Remove from linked list
+		/* Remove from linked list */
 		FVNoDist.remove(_person);
 
-		//If infected, reduce count of numInfected
+		/* If infected, reduce count of numInfected */
 		if(_person->isInfected())
 		{
 			numInfected--;
 			numInfectedRisk[(std::size_t)_person->getRiskLevel()]--;
 		}
 
-		//Reduce count of number of people
+		/* Reduce count of number of people */
 		numPersons--;
         numRisk[(std::size_t)_person->getRiskLevel()]--;
         numRiskHIVStatus[(std::size_t)_person->getRiskLevel()][(std::size_t)_person->getHIVStatus()]--;
@@ -245,13 +246,13 @@ bool BucketAge::erase(Entity *_person)
 	}
 }
 
-/* @function: insert
+/**
+ * @function: insert
  * @effects: adds _person to this by adding _person to appropriate FV: FVinfected (_person.isInfected)
  * or FVuninfected, and FVProbDist_random and either FVProbDist_high or FVProbDist_low depending on
  * _person.risk and assortativeness variable (to be defined later)
- * @returns: true if person was successfully added, false otherwise
- */
-//TESTED (without global assort param)
+ * @returns: true if person was successfully added, false otherwise */
+/* \TESTED (without global assort param) */
 bool BucketAge::insert(Entity *_person)
 {
 	if(exists(_person))
@@ -260,38 +261,33 @@ bool BucketAge::insert(Entity *_person)
 		return false;
 	}
 
-	//Using Mark Lipsitch's sexual mixing algorithm based on the assortativeness value
-	//Update: Mark says this is double counting the assortativeness!
-	//Just put the same amount of marbles in each box
-	//Update again: Mathematically proved that the two methods are the same... putting the same number of marbles in each box has less potential for bugs
+    /** Using Mark Lipsitch's sexual mixing algorithm based on the assortativeness value
+	 * Update: Mark says this is double counting the assortativeness!
+	 * Just put the same amount of marbles in each box
+	 * Update again: Mathematically proved that the two methods are the same... putting the same number of marbles in
+     * each box has less potential for bugs */
 	int marblesInRandomFV = 1;
 	int marblesInRiskFV = 1;
 
 	if(_person->getRiskLevel() == RiskLevel::HIGH)
-	{
 		FVProbDist_high.add(_person, marblesInRiskFV);
-	}
 	else
-	{
 		FVProbDist_low.add(_person, marblesInRiskFV);
-	}
 
 	FVProbDist_random.add(_person, marblesInRandomFV);
 
-	//Add person to infected/uninfected list (as appropriate) for size purposes
+	/* Add person to infected/uninfected list (as appropriate) for size purposes */
 	if(_person->isInfected())
 	{
 		assert(_person->getGenerationOfInfection() >= 0);
 		FVinfected[_person->getGenerationOfInfection()]->add(_person, 1);
-	}
-	else
-	{
+	} else
 		FVuninfected.add(_person, 1);
-	}
 
-	//Also add single copy to linked list for iterating
+	/* Also add single copy to linked list for iterating */
 	FVNoDist.add(_person, 1);
-	//Increment number of persons and number of infected person (if necessary)
+
+	/* Increment number of persons and number of infected person (if necessary) */
 	numPersons++;
     numRisk[(std::size_t)_person->getRiskLevel()]++;
     numRiskHIVStatus[(std::size_t)_person->getRiskLevel()][(std::size_t)_person->getHIVStatus()]++;
@@ -311,19 +307,19 @@ bool BucketAge::insert(Entity *_person)
 	return true;
 }
 
-/* @function: begin
+/**
+ * @function: begin
  * @returns: An iterator of LLNoDist: the FullVector of person's with
- * exactly one copy of each person in the Bucket
- */
+ * exactly one copy of each person in the Bucket  */
 std::vector<Entity *>::iterator BucketAge::begin()
 {
 	return FVNoDist.begin();
 }
 
-/* @function: end
+/**
+ * @function: end
  * @returns: An iterator of LLNoDist: the FullVector of person's with
- * exactly one copy of each person in the Bucket
- */
+ * exactly one copy of each person in the Bucket */
 std::vector<Entity *>::iterator BucketAge::end()
 {
 	return FVNoDist.end();
@@ -334,95 +330,90 @@ DemographicProfile::ProfileID BucketAge::getBinID()
 	return currentBinID;
 }
 
-/* @function: size
- * @returns: The integer number of unique Persons in the bucket
- */
+/**
+ * @function: size
+ * @returns: The integer number of unique Persons in the bucket */
 unsigned long BucketAge::size()
 {
 	return FVNoDist.size();
 }
 
-/* @function: getNumRisk
- * @returns: The integer number of unique Persons in the bucket with given risk
- */
+/**
+ * @function: getNumRisk
+ * @returns: The integer number of unique Persons in the bucket with given risk  */
 unsigned long BucketAge::getNumRisk(RiskLevel _risk)
 {
     return numRisk[(std::size_t)_risk];
 }
 
-/* @function: getNumRiskCSW
- * @returns: The integer number of unique Persons in the bucket with given risk that is CSW
- */
+/**
+ * @function: getNumRiskCSW
+ * @returns: The integer number of unique Persons in the bucket with given risk that is CSW */
 unsigned long BucketAge::getNumRiskCSW(RiskLevel _risk)
 {
     return numRiskCSW[(std::size_t)_risk];
 }
 
-/* @function: getNumRiskHIVStatus
- * @returns: The integer number of unique Persons in the bucket with given risk and HIV Status
- */
+/**
+ * @function: getNumRiskHIVStatus
+ * @returns: The integer number of unique Persons in the bucket with given risk and HIV Status */
 unsigned long BucketAge::getNumRiskHIVStatus(RiskLevel _risk, HIVStatus _hivStatus)
 {
     return numRiskHIVStatus[(std::size_t)_risk][(std::size_t)_hivStatus];
 }
 
-/* @function: numHighRiskChoices
- * @returns: The integer number of (non-unique) Persons in the high risk bucket
- */
-//TESTED
+/**
+ * @function: numHighRiskChoices
+ * @returns: The integer number of (non-unique) Persons in the high risk bucket */
+/* \TESTED */
 int BucketAge::numHighRiskChoices()
 {
 	return FVProbDist_high.size();
 }
 
-/* @function: numLowRiskChoices
- * @returns: The integer number of (non-unique) Persons in the low risk bucket
- */
-//TESTED
+/**
+ * @function: numLowRiskChoices
+ * @returns: The integer number of (non-unique) Persons in the low risk bucket */
+/* \TESTED */
 int BucketAge::numLowRiskChoices()
 {
 	return FVProbDist_low.size();
 }
 
-/* @function: numRandomRiskChoices
- * @returns: The integer number of (non-unique) Persons in the random risk bucket
- */
-//TESTED
+/**
+ * @function: numRandomRiskChoices
+ * @returns: The integer number of (non-unique) Persons in the random risk bucket */
+/* \TESTED */
 int BucketAge::numRandomRiskChoices()
 {
 	return FVProbDist_random.size();
 }
 
-/* @function: numChoices
+/**
+ * @function: numChoices
  * @returns: The integer number of (non-unique) Persons in the risk bucket associated with _risk
- * If _risk = (std::size_t)RiskLevel::Last, returns the number of persons in the random risk bucket
- */
-
-int BucketAge::numChoices(RiskLevel _risk)
-{
-    if(_risk == RiskLevel::HIGH)
-	{
-		return numHighRiskChoices();
-	}
-    else if(_risk == RiskLevel::LOW)
-	{
-		return numLowRiskChoices();
-	}
-	else if(_risk == RiskLevel::Last)
-	{
-		return numRandomRiskChoices();
-	}
-	else
-	{
-		return -1;
-	}
+ * If _risk = (std::size_t)RiskLevel::Last, returns the number of persons in the random risk bucket */
+int BucketAge::numChoices(RiskLevel _risk) {
+    switch (_risk) {
+        case RiskLevel::HIGH:
+            return numHighRiskChoices();
+            break;
+        case RiskLevel::LOW:
+            return numLowRiskChoices();
+            break;
+        case RiskLevel::ENDType:
+            return numRandomRiskChoices();
+            break;
+        default:
+            return -1;
+            break;
+    }
 }
 
-/* @function: increaseInfected
+/**
+ * @function: increaseInfected
  * @effects: if person is in this BucketAge and is infected, increases the tally of numInfected
- * @returns: true if numInfected was increased
- */
-
+ * @returns: true if numInfected was increased */
 bool BucketAge::increaseInfected(Entity *_p)
 {
 	if(_p->isInfected())
@@ -437,7 +428,7 @@ bool BucketAge::increaseInfected(Entity *_p)
 		}
 		else
 		{
-			//This means (should mean?) person is either not in this or is already counted as infected
+			/* This means (should mean?) person is either not in this or is already counted as infected */
 			return false;
 		}
 	}
@@ -447,16 +438,17 @@ bool BucketAge::increaseInfected(Entity *_p)
 	}
 }
 
-/* @function: changeHIVstatus
- * @effects: if person is in this BucketAge and thier hiv status changes decrement the old status and increment new status
- */
+/**
+ * @function: changeHIVstatus
+ * @effects: if person is in this BucketAge and thier hiv status changes decrement the old status and increment
+ * new status */
 void BucketAge::changeHIVStatus(Entity *_p, HIVStatus _orig, HIVStatus _new)
 {
     numRiskHIVStatus[(std::size_t)_p->getRiskLevel()][(std::size_t)_orig]--;
 	numRiskHIVStatus[(std::size_t)_p->getRiskLevel()][(std::size_t)_new]++;
 }
 
-//Pseudo-TESTED... should use print function later on
+/** Pseudo-TESTED... should use print function later on */
 void BucketAge::printAll(std::ostream &_outStream, const std::string &_prefix)
 {
 	_outStream << _prefix << std::endl;

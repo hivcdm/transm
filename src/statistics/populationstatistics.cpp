@@ -50,21 +50,21 @@ std::vector<std::string> PopulationStatistics::BuildMonthSummary(int m) const
     const auto &month = stats_.at(m);
     std::vector<std::string> formatted;
 
-    // Pop Size
+    /* Pop Size */
     formatted.push_back(std::to_string(std::accumulate(month.pop_size.begin(), month.pop_size.end(), 0ULL,
         [](std::size_t sum, const AgeActivityGenderRiskEmplCount::value_type &i)
     {
         return sum + i.second;
     })));
 
-    // SA Pop Size
+    /* SA Pop Size */
     formatted.push_back(std::to_string(std::accumulate(month.pop_size.begin(), month.pop_size.end(), 0ULL,
         [](std::size_t sum, const AgeActivityGenderRiskEmplCount::value_type &i)
     {
         return sum + (std::get<1>(i.first) == DemographicProfile::SexualActivityStatus::Active ? i.second : 0);
     })));
 
-    //Deaths
+    /* Deaths */
     std::size_t total_deaths = 0;
     for (auto death_cause : enum_iterator<DeathStatus>())
     {
@@ -76,10 +76,10 @@ std::vector<std::string> PopulationStatistics::BuildMonthSummary(int m) const
         formatted.push_back(std::to_string(deaths));
         total_deaths += deaths;
     }
-    // Total (Deaths)
+    /* Total (Deaths) */
     formatted.push_back(std::to_string(total_deaths));
 
-    // By Gender
+    /* By Gender */
     for (auto gender : enum_iterator<DemographicProfile::Gender>())
     {
         auto num_gender = std::accumulate(month.pop_size.begin(), month.pop_size.end(), 0ULL,
@@ -90,7 +90,7 @@ std::vector<std::string> PopulationStatistics::BuildMonthSummary(int m) const
         formatted.push_back(std::to_string(num_gender));
     }
 
-    // By Risk Group
+    /* By Risk Group */
     for (auto employment : enum_iterator<DemographicProfile::Employment>())
     {
         for (auto gender : enum_iterator<DemographicProfile::Gender>())
@@ -98,7 +98,7 @@ std::vector<std::string> PopulationStatistics::BuildMonthSummary(int m) const
             if (employment == DemographicProfile::Employment::Csw
                 && gender != DemographicProfile::Gender::Female)
             {
-                continue; // skip non-female csws
+                continue; /* skip non-female csws */
             }
 
             for (auto risk : enum_iterator<RiskLevel>())
@@ -115,7 +115,7 @@ std::vector<std::string> PopulationStatistics::BuildMonthSummary(int m) const
         }
     }
 
-    // Non-SA Pop (All Ages)
+    /* Non-SA Pop (All Ages) */
     formatted.push_back(std::to_string(std::accumulate(month.pop_size.begin(), month.pop_size.end(), 0ULL,
         [&](std::size_t sum, const AgeActivityGenderRiskEmplCount::value_type &i)
     {
@@ -124,7 +124,7 @@ std::vector<std::string> PopulationStatistics::BuildMonthSummary(int m) const
 
     assert(!age_groups_.empty());
 
-    // SA Pop (Age Months)
+    /* SA Pop (Age Months) */
     for (const auto &age_group : age_groups_)
     {
         formatted.push_back(std::to_string(std::accumulate(month.pop_size.begin(), month.pop_size.end(), 0ULL,
@@ -135,10 +135,10 @@ std::vector<std::string> PopulationStatistics::BuildMonthSummary(int m) const
         })));
     }
 
-    // Gender (By Age)
+    /* Gender (By Age) */
     for (auto gender : enum_iterator<DemographicProfile::Gender>())
     {
-        // Non-SA
+        /* Non-SA */
         formatted.push_back(std::to_string(std::accumulate(month.pop_size.begin(), month.pop_size.end(), 0ULL,
             [&](std::size_t sum, const AgeActivityGenderRiskEmplCount::value_type &i)
         {
@@ -146,7 +146,7 @@ std::vector<std::string> PopulationStatistics::BuildMonthSummary(int m) const
                 && std::get<2>(i.first) == gender ? i.second : 0);
         })));
 
-        // SA Pop (Age Months)
+        /* SA Pop (Age Months) */
         for (const auto &age_group : age_groups_)
         {
             formatted.push_back(std::to_string(std::accumulate(month.pop_size.begin(), month.pop_size.end(), 0ULL,
@@ -159,7 +159,7 @@ std::vector<std::string> PopulationStatistics::BuildMonthSummary(int m) const
         }
     }
 
-    // Number circumcised by sexual activity status
+    /* Number circumcised by sexual activity status */
     for (auto sexual_activity_status : enum_iterator<DemographicProfile::SexualActivityStatus>())
     {
         formatted.push_back(std::to_string(std::accumulate(month.num_circumcised.begin(), month.num_circumcised.end(), 0ULL,

@@ -56,7 +56,7 @@ struct hash<transm::RiskLevel>
       return hash<std::size_t>()(static_cast<std::size_t>(g));
     }
 };
-} // namespace std
+} /* namespace std */
 
 namespace transm {
 using DeathCauseCount = std::unordered_map<DeathStatus, std::size_t>;
@@ -67,7 +67,7 @@ struct AgeGroup
     int upper;
 };
 using AgeActivityGenderRiskEmpl = std::tuple<AgeGroup, DemographicProfile::SexualActivityStatus, DemographicProfile::Gender, RiskLevel, DemographicProfile::Employment>;
-} // namespace transm
+} /* namespace transm */
 
 namespace std {
 template<>

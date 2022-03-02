@@ -869,12 +869,12 @@ public:
 
     virtual void SetChanceBecomeSexWorker(double chance) = 0;
 
-    /// <summary>
-    /// this class has a method that compares two Entities based on the desired key
-    /// _PSC holds the key that we search and index against.
-    /// _DEFAULTKEY provides a 2nd layer of ordering if people have identical _PSC
-    /// true is returned if key value of _p1 >= _p2. If key values are equal, then sorts based on Entity's EntityID num
-    /// </summary>
+     /**
+      * this class has a method that compares two Entities based on the desired key
+      * _PSC holds the key that we search and index against.
+      * _DEFAULTKEY provides a 2nd layer of ordering if people have identical _PSC
+      * true is returned if key value of _p1 >= _p2. If key values are equal, then sorts based on Entity's EntityID num
+    */
     template<Entity::SelectingCriteria _PSC, class KeyValType>
     class Sorter {
     public :

@@ -55,9 +55,9 @@ public:
 	void printArtRolloutOutcomes(Time time, std::ostream &_outStream, Population *_population);
 
 private:
-	static const std::string RISK_GROUP_NAMES[];
-	static const std::string TRACKED_OUTCOMES[];
-    static const std::string BUCKETS[];
+    static const std::vector<std::string> RISK_GROUP_NAMES;
+    static const std::vector<std::string> TRACKED_OUTCOMES;
+    static const std::vector<std::string> BUCKETS;
 
 	int numTestsOffered;
 	int numTestsAccepted;

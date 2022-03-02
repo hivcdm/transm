@@ -9,7 +9,7 @@ namespace transm {
 
 PopulationParameters::PopulationParameters()
 {
-	//set default values of fields
+	/* set default values of fields */
 	initSize = 10000;
 	birthRate = 0.0038;
 	useBirthRate = true;
@@ -19,6 +19,7 @@ PopulationParameters::PopulationParameters()
 
 PopulationParameters::~PopulationParameters()
 {
+
 }
 
 void PopulationParameters::SetAgeRanges()
@@ -36,7 +37,7 @@ void PopulationParameters::SetAgeRanges()
 double PopulationParameters::GetBirthProportion(DemographicProfile profile)
 {
 	auto iter = std::find_if(birthProportions.begin(), birthProportions.end(),
-		[&](const DemographicProfile::DoublePair pair)
+		[&](const DemographicProfile::DoublePair& pair)
 		{ return pair.first == profile; }
 		);
 	if (iter == birthProportions.end())

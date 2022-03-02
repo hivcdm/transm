@@ -43,24 +43,15 @@ public:
 
     /** Getters */
     /*@{*/
-    double GetPrevalence() const {
-        return prevalence_;
-    }
+    double GetPrevalence() const { return prevalence_; }
 
-    double GetIncidence() const {
-        return incidence_;
-    }
+    double GetIncidence() const { return incidence_; }
 
-    Time GetTime() {
-        return time_;
-    }
+    Time GetTime() { return time_; }
 
-    Population &GetPopulation() {
-        return population_;
-    }
+    Population &GetPopulation() { return population_; }
 
     const Population &GetPopulation() const { return population_; }
-
     /*@}*/
 
     void RegisterTargetGroup(const TargetGroup &group);
@@ -75,11 +66,9 @@ public:
         batch_status_.set_state(name_, SimState::queued);
     }
 
-    void AddLifeExpectancyRecordTime(Time time) {
-        population_.populationStatistics.addLifeExpectancyRecordTime(time);
-    }
-
     void SetLifeExpectancyConfidenceInterval(double ci) { population_.populationStatistics.setMedianLECI(ci); }
+
+    void AddLifeExpectancyRecordTime(Time time) { population_.populationStatistics.addLifeExpectancyRecordTime(time); }
 
     void AddPartnerAcquisitionRecordTime(Time time) {
         population_.populationStatistics.addPartnerAcquisitionRecordTime(time);
@@ -95,14 +84,6 @@ private:
 
     friend class Intervention;
 
-    struct TreatmentFile {
-        std::string file_name;
-        int file_number;
-        Time time;
-        int target_population;
-    };
-
-private:
     friend class SimulationBuilderXml;
 
     friend class Intervention;
@@ -120,6 +101,16 @@ private:
     std::size_t SimulateMonth();
 
     void UpdateInterventions(const std::unordered_set<Entity *> &dead_people);
+
+
+private:
+
+    struct TreatmentFile {
+        std::string file_name;
+        int file_number;
+        Time time;
+        int target_population;
+    };
 
     std::string name_;
 
