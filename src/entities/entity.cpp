@@ -1094,16 +1094,19 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
     if (!prepParameters.Enabled())
         return;
 
-    bool unobserved_or_negative = (hivStatus == HIVStatus::NEGATIVE)
-                                  || (hivStatus == HIVStatus::UNOBSERVED_ACUTE)
-                                  || (hivStatus == HIVStatus::UNOBSERVED_CHRONIC)
-                                  || (hivStatus == HIVStatus::UNOBSERVED_LATESTAGE);
-    if (!unobserved_or_negative) {
+    bool unobserved_or_negative = (hivStatus == HIVStatus::NEGATIVE) || (hivStatus == HIVStatus::UNOBSERVED_ACUTE) || (hivStatus == HIVStatus::UNOBSERVED_CHRONIC)
+            || (hivStatus == HIVStatus::UNOBSERVED_LATESTAGE);
+
+
+    if (!unobserved_or_negative ) {
         if (prepStatus != PrepStatus::OFF_PREP)
             // entity was on prep, but is no longer eligible (infected or died)
             prepTracker->recordIneligible(this);
         return;
     }
+
+
+
 
     prepTracker->recordEligible(this);
 
