@@ -67,10 +67,10 @@ void Population::Circumcise(Entity *p) {
 }
 
 /**
-This is a bit hackish and hardcoded
-The method determines who are the partnership initiators and who are available to them
-first we determine who can initiate
-second we determine who can be chosen - this differs by partnershipType */
+ * This is a bit hackish and hardcoded
+ * The method determines who are the partnership initiators and who are available to them
+ * first we determine who can initiate
+ * second we determine who can be chosen - this differs by partnershipType */
 void Population::InitPartnershipBuckets() {
 
     /* Select ProfileID's of eligible initiators */
@@ -100,8 +100,7 @@ void Population::InitPartnershipBuckets() {
     }
 }
 
-Population::~Population() {
-}
+Population::~Population() = default;
 
 void Population::Births(EventParams &parameters_) {
     unsigned long numBorn = 0;
@@ -196,8 +195,6 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
         currProfileID++;
     }
 
-//        cout << "Treated= " << rolloutTreatedPool.size() << " " << "Untreated= " << rolloutUntreatedPool.size() << endl;
-
     /* Double loop: first iterate through the men, then the women */
     for (auto gender : enum_iterator<DemographicProfile::Gender>()) {
         p_Iter = entities->begin(gender);
@@ -220,33 +217,38 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
                             getProfileID()))->changeHIVStatus(p, oldStatus, p->hivStatus);
                 }
             }
+
+            /* counts whoever is infected with HIV */
             if (p->isInfected()) {
                 populationStatistics.recordInfected(p);
             }
 
-            /* if the ART is enabled check if the entity is infected (detected) .. */
+            /* Counts whoever if detected HIV positive */
+            /* Everything else is being counted under the condition of the entity is already being detected positive */
             if (p->isDetected()) {
 
-                /* Check if they are Loss to Follow Up */
+                /* detected entity is called PLWH: Person Living with HIV */
+                populationStatistics.recordPLWH(p);
+
+                /* Check if the entity is Loss to Follow Up */
                 if (p->isLTFU()) {
                     populationStatistics.recordLTFU(p);
                 }
 
+                /* Check if the entity has Returned to Care */
                 if (p->isRTC()) {
                     populationStatistics.recordRTC(p);
                 }
 
-                /* Check if anyone is unlinked */
+                /* Check if the entity is unlinked from care */
                 if (p->isUnLinked()) {
                     populationStatistics.recordUnlinked(p);
                 }
-
 
                 /* Number of diagnosed (detected) HIV positives counts as PLWH (person living with HIV) */
                 if (p->ageDetected == Age(0, -1)) {
                     p->ageDetected = p->getAge();
                 }
-                populationStatistics.recordPLWH(p);
 
                 /* if only linked (has tested) put it in "In Care" bucket */
                 /* Important note: This is OK if the probability of "false positive" is virtually zero. */
@@ -257,11 +259,13 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
                     populationStatistics.recordInCare(p);
                 }
 
+                /* Check if the entity just being diagnosed */
                 if (p->isNewDiagnosed()) {
                     populationStatistics.recordNewDiagnosis(p);//
                 }
 
 
+                /* Check if the entity is in care within a month */
                 if (p->isInCareWithinThirty()) {
                     populationStatistics.recordEnrolledInThirtyDays(p);
                 }
@@ -331,9 +335,9 @@ void Population::UpdatePhysicalState(EventParams &parameters_, bool calculateLE,
             }
 
             /* If this person wasn't sexually active but is now old enough to */
-            if (!(p->isSexuallyActive())
-                && (p->getAge() >= popWideParams.ageOfMajority)) {
-                // set them as SA and potentially CSWs
+            if (!(p->isSexuallyActive()) && (p->getAge() >= popWideParams.ageOfMajority)) {
+
+                /* set them as SA and potentially CSWs */
                 if (parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && p->trace()) {
                     if (p->isMale()) {
                         parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson] << " % Male ";
@@ -432,11 +436,9 @@ void Population::RegisterIntervention(const Intervention &intervention) {
     interventions_.push_back(intervention);
 }
 
-/*  who initiates flings? it seems that males do for now
-
-This method is mostly designed for speed as this takes up the bulk of processing
-We hopefully only iterate through each initiator once.
-*/
+/** who initiates flings? it seems that males do for now
+ * This method is mostly designed for speed as this takes up the bulk of processing
+ * We hopefully only iterate through each initiator once. */
 void Population::UpdatePartnerships(EventParams &parameters_) {
     double cepacDiscountFactor = 1.0;
     if (parameters_.useRollout) {
@@ -877,7 +879,7 @@ void Population::DissolveSexualPartnerships(EventParams &parameters_, Entity *_i
     bool initiatorMale = _initiator->isMale();
 
     /* iterate through each partner list */
-    std::list<SexualPartnership *>::iterator partnerIter = _partnershipsToEnd.begin();
+    auto partnerIter = _partnershipsToEnd.begin();
 
     while (partnerIter != _partnershipsToEnd.end()) {
         Entity *partner = (*partnerIter)->getOtherPartner(_initiator);

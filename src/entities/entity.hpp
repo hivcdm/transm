@@ -760,11 +760,15 @@ public:
      * Definition of Person "In Care" according to HIV Care Continuum, Miami 2014-2018 is to have at least one
      * documented VL or CD4 lab, medical visit or prescription from the first day of the year to the last day of
      * the third months of next year.
+     *
+     * Our definition for this is whoever has been in care is counted as one. This included any entity who is Loss to
+     * Follow up (LTFU) or just returned in care (RTC). This counts for anyone who has ever been in care.
      */
     bool isInCare() const {
 
         return (cepacPatient && (cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_IN_CARE
-                                 || cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_RTC));
+                                 || cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_RTC)
+                                 || cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_LTFU);
     }
 
 
