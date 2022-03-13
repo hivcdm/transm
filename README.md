@@ -1,4 +1,4 @@
-CDM Development Branch: issue-15
+CDM Development Branch
 ===
-This branch is to work on the issue #15 on the in-care problem.
+This branch is for active development of the transm code.
 
