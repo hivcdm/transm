@@ -20,9 +20,10 @@
 #include "utility/randomnumbergenerator.hpp"
 
 namespace transm {
-/***
-Data needed :
-events stratified by age and CD4 */
+
+/**
+ * Data needed :
+ * events stratified by age and CD4 */
 unsigned int Population::idCounter = 0;
 
 /** Creates an initial population of folks */

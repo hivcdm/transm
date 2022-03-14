@@ -12,9 +12,7 @@ struct sqlite3;
 
 namespace transm {
 
-/**
- * Every simulation is in one of these states.
- */
+/** Every simulation is in one of these states. */
 enum class SimState
 {
     queued,
@@ -26,8 +24,7 @@ enum class SimState
     completed
 };
 
-/**
- * A BatchStatus tracks the progress of all simulations that have been
+/** A BatchStatus tracks the progress of all simulations that have been
  * registered with it through the initialize method. Simulations are referred
  * to by their name as a string. */
 class BatchStatus
@@ -40,8 +37,7 @@ public:
     /** Destructor for BatchStatus. */
     ~BatchStatus();
 
-    /**
-     * Register the provided set of simulations with this batch status.
+    /** Register the provided set of simulations with this batch status.
      * This should be done before calling the set_* methods. */
     void initialize(const std::vector<path> &sim_names);
 
@@ -76,8 +72,7 @@ private:
     /** Close the database. */
     void shutdown();
 
-    /**
-     * Throw a std::exception if function_result indicates an error.
+    /** Throw a std::exception if function_result indicates an error.
      * Used as a callback for sqlite functions. */
     static void throw_if_not_ok(int function_result);
 

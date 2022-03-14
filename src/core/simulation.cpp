@@ -248,11 +248,10 @@ Simulation::Simulation(BatchStatus &batch_status) :
         batch_status_(batch_status) {
 }
 
-Simulation::~Simulation() {
-}
+Simulation::~Simulation() = default;
 
 void Simulation::SetFixedSeed(int seed) {
-    // Seed is Minnesota Twins retired numbers... yes, I am a dork (Erin, not Thomas!)
+    /* Seed is Minnesota Twins retired numbers... yes, I am a dork (Erin, not Thomas!) */
     seed = seed == 0 ? 36291434 : seed;
 
     if (seed < 0) {
@@ -269,10 +268,10 @@ void Simulation::SetFixedSeed(int seed) {
 void Simulation::FirstStep() {
     run_time_predictor_.SetTotalMonths(duration_);
 
-    //No longer creating a CEPAC trace file, but we still need to change over to the results folder before creating any other output files
+    /* No longer creating a CEPAC trace file, but we still need to change over to the results folder before creating any other output files */
     Utility::changeDirectoryToResults();
 
-    //output seed used for this run
+    /* output seed used for this run */
     if (parameters_.trace_files[EventParams::TraceFile::Type::Events].enabled) {
         parameters_.trace_files[EventParams::TraceFile::Type::Events] << "Seed = "
                                                                       << parameters_.randomNums.getSeed()
@@ -301,16 +300,17 @@ void Simulation::FirstStep() {
 
     UpdateInterventions(population_.GetDeadPeopleThisMonth());
 
-    //initialize/reset monthly stats
+    /* initialize/reset monthly stats */
     population_.ResetMonthlyStats();
-    //initialize incident infections by age
+
+    /* initialize incident infections by age */
     population_.InitIncidentInfectionsByAge();
 
     if (population_.popWideParams.GetSeedDelay() == Time::Zero) {
         population_.ApplyIncidentPrevalence(parameters_);
     }
 
-    //print out prevalent infection stats & headers for rest of infection stats
+    /* print out prevalent infection stats & headers for rest of infection stats */
     population_.CalcPrevalentPopulation(Time::Zero);
 
     for (auto entity : population_.Find([](Entity *) { return true; })) {
@@ -384,7 +384,7 @@ void Simulation::Step() {
 
     SimulateMonth();
 
-    //print out new infection stats
+    /* print out new infection stats */
     population_.CalcPrevalentPopulation(time_);
 
     population_.entities->forEach([&](Entity *e) {
@@ -412,7 +412,7 @@ void Simulation::Step() {
                                   parameters_.trace_files[EventParams::TraceFile::Type::Clinical].file);
     }
 
-    //For now, this must come after infectionsTracker.printInfections as it is what calculate prevalence
+    /* For now, this must come after infectionsTracker.printInfections as it is what calculate prevalence */
     if (parameters_.trace_files[EventParams::TraceFile::Type::ShiftedOutcomes].enabled) {
         population_.RecordShiftedOutcomes(parameters_,
                                           parameters_.trace_files[EventParams::TraceFile::Type::ShiftedOutcomes].file);
@@ -434,10 +434,10 @@ void Simulation::Step() {
     }
 
     if (parameters_.trace_files[EventParams::TraceFile::Type::PartnerNetwork].enabled) {
-        if (std::find(parameters_.partnerNetworkRecordTimes.begin(),
-                      parameters_.partnerNetworkRecordTimes.end(), time_.in_months()) !=
-            parameters_.partnerNetworkRecordTimes.end()) {
-            // save the partnership network data in the user specified month
+        if (std::find(parameters_.partnerNetworkRecordTimes.begin(), parameters_.partnerNetworkRecordTimes.end(),
+                      time_.in_months()) != parameters_.partnerNetworkRecordTimes.end()) {
+
+            /* save the partnership network data in the user specified month */
             population_.WritePartnershipNetwork(parameters_);
 
             population_.PrintPartnershipTracking(parameters_.trace_files
@@ -448,10 +448,11 @@ void Simulation::Step() {
     if (parameters_.calibrationInputs.useCalibration) {
         if (parameters_.calibrationInputs.monthOfCalibration == time_) {
             passedCalibration_ = population_.PassesPartnershipCalibration(parameters_);
-            string passedCalibrationString = (passedCalibration_ == true ? "true" : "false");
+            string passedCalibrationString = (passedCalibration_ ? "true" : "false");
             std::cerr << "PARTNERSHIP CALIBRATION PASSED: " << passedCalibrationString << endl;
-            //If this run doesn't pass the partnership calibration stop the run and
-            // discard specified trace files
+
+            /* If this run doesn't pass the partnership calibration stop the run and */
+            /*  discard specified trace files */
             if (!passedCalibration_) {
                 return;
             }
@@ -500,13 +501,14 @@ void Simulation::Step() {
 }
 
 void Simulation::LastStep() {
-    //print survival statistics
+
+    /* print survival statistics */
     if (parameters_.trace_files[EventParams::TraceFile::Type::Survival].enabled) {
         population_.populationStatistics.printSurvivalStats(
                 parameters_.trace_files[EventParams::TraceFile::Type::Survival].file);
     }
 
-    //Run every infected person left through CEPAC until they die
+    /* Run every infected person left through CEPAC until they die */
     if (passedCalibration_) {
         population_.UpdateFinalPhysicalState(parameters_);
     }
@@ -516,7 +518,7 @@ void Simulation::LastStep() {
                 parameters_.trace_files[EventParams::TraceFile::Type::Infection].file);
     }
 
-    //finalize and print CEPAC output, but only if at least one patient went through CEPAC
+    /* finalize and print CEPAC output, but only if at least one patient went through CEPAC */
     try {
         if (parameters_.cepacRunStats->getPopulationSummary()->numCohorts > 0) {
             parameters_.cepacRunStats->finalizeStats();
@@ -527,10 +529,10 @@ void Simulation::LastStep() {
     }
     catch (std::string errorString) {
         std::cout << errorString;
-        //parameters_.displayOut(errorString);
+//        parameters_.displayOut(errorString);
     }
 
-    //if failed partnership calibration toss unneeded files
+    /* if failed partnership calibration toss unneeded files */
     if (!passedCalibration_) {
         for (auto &trace_file : parameters_.trace_files) {
             if (trace_file.second.toss) {
@@ -548,9 +550,7 @@ void Simulation::LastStep() {
     population_.SaveIndividualSummaries(summary_stream);
 }
 
-/***
-Sets the Non aids death from a cepac simcontext
-***/
+/** Sets the Non aids death from a cepac simcontext */
 void Simulation::SetNonAidsDeathFromCepac(SimContext &cepacSimContext, std::vector<double> &male,
                                           std::vector<double> &female) {
     male.clear();
@@ -580,14 +580,12 @@ void Simulation::RegisterTargetGroup(const TargetGroup &group) {
     }
 }
 
-/***
-This function executes one timestep of the simulation
-The ordering of events within this function determines the ordering of events in each timestep
-****/
+/** This function executes one timestep of the simulation
+The ordering of events within this function determines the ordering of events in each timestep */
 std::size_t Simulation::SimulateMonth() {
     parameters_.currTime = time_;
 
-    //change non AIDS death if it is time to switch cepac files
+    /* change non AIDS death if it is time to switch cepac files */
     if (parameters_.itIsTimeToSwitchSimContext() && !parameters_.useRollout) {
         int simIndex = 0;
 
@@ -645,34 +643,34 @@ std::size_t Simulation::SimulateMonth() {
         population_.populationStatistics.selectedLEStats = nullptr;
     }
 
-    //steadyCouple, flings, and dissolveSexualPartnerships
-    //population_.ResetPartnershipTracking();
+    /* steadyCouple, flings, and dissolveSexualPartnerships */
+//    population_.ResetPartnershipTracking();
     population_.UpdatePartnerships(parameters_);
 
     if (recordPartAcq) {
         population_.populationStatistics.selectedPartAcqStats = new PopulationStatisticsOld::SinglePartAcqStats();
         population_.RecordPartAcqFreq();
 
-        if (parameters_.trace_files[EventParams::TraceFile::Type::PartnerAcquisition].enabled) {
-            //population_.populationStatistics.printPartAcqStats(
-            //parameters_.trace_files[EventParams::TraceFile::Type::PartnerAcquisition].file, time_);
-        }
+//        if (parameters_.trace_files[EventParams::TraceFile::Type::PartnerAcquisition].enabled) {
+//            population_.populationStatistics.printPartAcqStats(
+//            parameters_.trace_files[EventParams::TraceFile::Type::PartnerAcquisition].file, time_);
+//        }
 
         delete population_.populationStatistics.selectedPartAcqStats;
         population_.populationStatistics.selectedPartAcqStats = nullptr;
     }
 
-    //apply incident prevalence
+    /* apply incident prevalence */
     Time seedDelay = population_.popWideParams.GetSeedDelay();
     if (seedDelay != Time::Zero && seedDelay.in_months() == time_.in_months()) {
         population_.ApplyIncidentPrevalence(parameters_);
     }
 
-    //Will confirm that population_.currSize is correct and update size of age ranges
+    /* Will confirm that population_.currSize is correct and update size of age ranges */
     return population_.UpdateSize();
 }
 
-RunStats &Simulation::GetCEPACRunStats() {
+RunStats &Simulation::GetCEPACRunStats() const {
     return *parameters_.cepacRunStats;
 }
 
@@ -708,10 +706,12 @@ void Simulation::Initialize(SimulationParameters &parameters) {
     parameters_.rolloutProportionDenominator = cepac_params.rollout_proportion_denominator;
 
     auto load_context = [](const std::string &file_name) {
-        //Set the CEPAC simContext from the specified CEPAC .in file
+
+        /* Set the CEPAC simContext from the specified CEPAC .in file */
         auto context = new SimContext(file_name.substr(0, file_name.find(CepacUtil::FILE_EXTENSION_FOR_INPUT)));
-        //Don't trace any CEPAC patients -- the output doesn't make any sense and it just gets overly large for no reason
-        //TODO: The reason is because the CEPAC Patient number doesn't get updated until the patient dies: this should be changed!
+
+        /* Don't trace any CEPAC patients -- the output doesn't make any sense and it just gets overly large for no reason */
+        /* TODO: The reason is because the CEPAC Patient number doesn't get updated until the patient dies: this should be changed! */
         context->numPatientsToTrace = 0;
 
         //Read in the inputs
@@ -772,7 +772,7 @@ void Simulation::Initialize(SimulationParameters &parameters) {
 
     Utility::changeDirectoryToResults();
 
-    for (auto trace_file : tracing_parameters.files) {
+    for (const auto& trace_file : tracing_parameters.files) {
         auto string_to_type = [](const std::string &type_string) {
             if (type_string == "artRollout") return EventParams::TraceFile::Type::ArtRollout;
             if (type_string == "calibrationStatistics") return EventParams::TraceFile::Type::CalibrationStatistics;
@@ -801,11 +801,11 @@ void Simulation::Initialize(SimulationParameters &parameters) {
         parameters_.trace_files[type].file.open(file_name.c_str());
     }
 
-    for (auto intervention : parameters.GetPopulationInterventions()) {
+    for (const auto& intervention : parameters.GetPopulationInterventions()) {
         RegisterPopulationIntervention(intervention);
     }
 
-    for (auto group : parameters.GetTargetGroups()) {
+    for (const auto& group : parameters.GetTargetGroups()) {
         RegisterTargetGroup(group.second);
     }
 
