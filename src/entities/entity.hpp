@@ -152,8 +152,7 @@ protected:
 
     /**
      * Entity's relational state
-     * contains all current partnerships including CSW and Casual
-     */
+     * contains all current partnerships including CSW and Casual  */
     std::list<SexualPartnership *> partners[(int) SexualPartnership::Type::Last];
 
     /* array of number of partners over persons history stratified by partnership type */
@@ -177,88 +176,88 @@ protected:
     /** flag to indicate whether this person has CEPAC data */
     bool wentThroughCEPAC;
 
-    /* a pointer to a CEPAC patient object which stores all post-infection health states */
+    /** a pointer to a CEPAC patient object which stores all post-infection health states */
     Patient *cepacPatient;
 
-    /* A running tally of all costs accrued through CEPAC */
+    /** A running tally of all costs accrued through CEPAC */
     double CEPACcosts;
 
-    /* Used to keep track of number of acts this month */
+    /** Used to keep track of number of acts this month */
     int numActsThisMonth;
 
-    /* Used to keep track of number of condoms used in a given month for cost purposes */
+    /** Used to keep track of number of condoms used in a given month for cost purposes */
     int condomsUsedThisMonth;
 
-    /* Used to keep track of whether or not a condom was used the last time getFOI was called */
+    /** Used to keep track of whether or not a condom was used the last time getFOI was called */
     bool condomUsedLastFOICalculation;
 
-    /* currently defaults to "LOW" and 1 */
+    /** currently defaults to "LOW" and 1 */
     RiskLevel risk;
 
-    /* statistical information from this individual */
+    /** statistical information from this individual */
     EntityStatsRecord stats;
 
-    /* True if this person should be followed in singlePersonTrace file */
+    /** True if this person should be followed in singlePersonTrace file */
     bool traceMe;
 
-    /* The indices which point to the person in their assigned FullVector */
+    /** The indices which point to the person in their assigned FullVector */
     std::map<FullVector *, std::vector<unsigned int>> FVindices;
 
     TimeSpan sexualActivityDelay;
 
 public:
 
-    // dummy constructor
+    /** dummy constructor */
     Entity();
 
-    // this constructor creates an actual person that can be simulated. It is generally called by Male and Female
-    // we pass in _eventParams because becomeInfected() needs it...
+    /** this constructor creates an actual person that can be simulated. It is generally called by Male and Female
+     * we pass in _eventParams because becomeInfected() needs it... */
     Entity(Age age, unsigned int _populationID, const PrepParameters &prepParameters);
 
-    // deconstructor
+    /** deconstructor */
     virtual ~Entity();
 
-    // age of Entity (in months)
+    /** age of Entity (in months) */
     Age age;
 
-    // age of Entity on model init (in months)
+    /** age of Entity on model init (in months) */
     Age initAge;
 
-    // age of Entity when they got infected (-1 for uninfected)
+    /** age of Entity when they got infected (-1 for uninfected) */
     Age ageInfected;
 
-    /* Age of Entity when is in care */
+    /** Age of Entity when is in care */
     Age ageInCare;
 
-    /* Age of Entity when is detected HIV */
+    /** Age of Entity when is detected HIV */
     Age ageDetected;
 
-    /* whether this Entity is already detected HIV */
+    /** whether this Entity is already detected HIV */
     bool alreadyDetected;
 
     bool newDiagnosis;
 
     bool inCareWithinThirty;
 
-    // whether this Entity is dead or not
+    /** whether this Entity is dead or not */
     bool death;
 
-    // Entity's infected status
+    /** Entity's infected status */
     HIVStatus hivStatus;
 
-    // CD4 cell count
+    /** CD4 cell count */
     double cd4;
 
-    // HIV Viral Load
+    /** HIV Viral Load */
     HVLStrata hvl;
 
-    // HIV Viral Load of person from patient object.  No primary or late stage stratas
+    /** HIV Viral Load of person from patient object.  No primary or late stage stratas */
     HVLStrata currentTrueHvl;
 
-    // Whether this person has observed HIV
+    /** Whether this person has observed HIV */
     bool isObserved;
 
-    // OI HIstory
+    /** OI HIstory */
     bool oiHistory[Constants::NumberOfOIs];
 
     DeathStatus deathStatus;
@@ -269,29 +268,23 @@ public:
 
     bool isEligibleForTreatment(const SimContext::TreatmentInputs::ARTStartPolicy &artStartPolicy);
 
-    /**
-     * This is for keeping dead people around for graph printing reasons It mimics the destructor
-     * without destroying the Entity object.
-     */
+    /** This is for keeping dead people around for graph printing reasons It mimics the destructor
+     * without destroying the Entity object.  */
     void deleteEntityWithoutDeleting();
 
     void ageOneTimeUnit();
 
-    /**
-     * call this to infect person...
+    /** call this to infect person...
      * if CEPAC bridge is in place, will call CEPAC to determine the health trajectory of this person
      * @param _generationOfInfection : if true, than this person was a prevalent infection
-     * @param _eventParams
-     */
+     * @param _eventParams */
     void becomeInfected(int _generationOfInfection, EventParams &_eventParams);
 
     void seedInfection(int _generationOfInfection, EventParams &_eventParams, bool chronicInfection);
 
-    /**
-     * Initializes cepacPatient using the persons current age, gender, and infection status.
+    /** Initializes cepacPatient using the persons current age, gender, and infection status.
      * Prevalent cases should call "becomeInfected" before calling this function; incident cases will become
-     * infected later.
-     */
+     * infected later. */
     void initializeCEPACpatient(EventParams &_eventParams);
 
     void updateCEPACpatient(EventParams &_eventParams);
@@ -301,18 +294,15 @@ public:
     virtual bool PassedCSWEndAge() const = 0;
 
     /**
-     * @return generation of infection
-     */
+     * @return generation of infection */
     int getGenerationOfInfection(bool cap_at_5 = true) const;
 
     /**
-     * @return the number of partners by partnership type
-     */
+     * @return the number of partners by partnership type */
     int getNumPartners(SexualPartnership::Type);
 
     /**
-     *	returns the number of partners by partnership type that are either the samerisk or different
-     */
+     * @return the number of partners by partnership type that are either the samerisk or different */
     int getNumPartners(SexualPartnership::Type, bool);
 
     double getQualityOfLife() const {
@@ -327,280 +317,267 @@ public:
     }
 
     /**
-    * returns the number of partners in history
-    */
+     * @return the number of partners in history */
     int getNumPartnersInHistory();
 
     /**
-    * returns number of partners in history stratified by type
-    */
+     * @return number of partners in history stratified by type */
     int getNumPartnersInHistory(SexualPartnership::Type);
 
     /**
-    * returns month of latest partnership dissolution (may be in the future) for given partner type
-    */
+     * @return month of latest partnership dissolution (may be in the future) for given partner type */
     Time getMonthOfLatestPartnershipDissolution(SexualPartnership::Type);
 
-    //gets and sets month of latest concurrent
+    /** gets and sets month of latest concurrent */
     void setTimeOfLatestConcurrent(Time time);
 
     Time getTimeOfLatestConcurrent();
 
     /**
-     * @return hvl
-     */
+     * @return hvl  */
     HVLStrata getHVL() const {
         return hvl;
     }
 
     /** this calculates the FOI towards Entity _p (this uses the Transmission coefficient) per event
-    // @param _p - partner
-    // @param _parteringType - whether this is a fling or steadyCouple */
+     * @param _p - partner
+     * @param _parteringType - whether this is a fling or steadyCouple */
     virtual double getFOI(Entity *_p,
                           const std::unordered_map<TransmissionType, std::array<double, (std::size_t) HVLStrata::Last>> &transmission_coefficients,
                           SexualPartnership::Type _partnershipType, EventParams &_eventParams) = 0;
 
-    // returns true if person is currently alive
+    /**
+     * @return true if person is currently alive */
     bool isAlive() const;
 
-    // returns true if person is currently infected
+    /**
+     * @return true if person is currently infected */
     bool isInfected() const;
 
-    // Self explanatory I'd say
+    /** Self explanatory I'd say! */
     bool isSexuallyActive();
 
+    /** Commercial Sex Worker */
     bool isCSW() const;
 
+    /** Have penis */
     bool isMale() const;
 
-    bool isWhite() const;
-
+    /** Black */
     bool isBlack() const;
 
+    /** White */
+    bool isWhite() const;
+
+    /** Hispanic is an ethnicity*/
     bool isHispanic() const;
 
-    /**
-     * see whether person dies. If they went through CEPAC, use health trace. else roll against nonAIDS death probs
-     **/
+    /** see whether person dies. If they went through CEPAC, use health trace. else roll against nonAIDS death probs */
     bool rollForDeath(RandomNumberGenerator &_randomNums);
 
-    //update health status of HIV infected people -- i.e. cd4, hvl, art, etc.
-    //  in version 1, this information is taken from CEPAC model
-    // @returns: costs (accrued in CEPAC) of updating health
+    /** update health status of HIV infected people -- i.e. cd4, hvl, art, etc.
+     *  in version 1, this information is taken from CEPAC model
+     * @return: costs (accrued in CEPAC) of updating health */
     double
     updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTracker, CostsTracker *costsTracker);
 
     void updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracker);
 
 
-    //Call this after all transmission/population dynamics are done.
-    //Runs infected through CEPAC until they die and adds their LM etc to CEPAC stats
+    /** Call this after all transmission/population dynamics are done.
+     * Runs infected through CEPAC until they die and adds their LM etc to CEPAC stats */
     void runCEPACtoDeath(RandomNumberGenerator &_randomNums);
 
-    //Sets the condom total to 0
+    /** Sets the condom total to 0 */
     void resetCondomUsage();
 
-    //Sets numacts to 0
+    /** Sets numacts to 0 */
     void resetNumActs();
 
-    //Return the number of condoms used
+    /** Return the number of condoms used */
     int getCondomsUsedThisMonth();
 
-    //Return num acts this month
+    /** Return num acts this month */
     int getNumActsThisMonth();
 
-    //Increase condoms used this month by a given number (default 1)
+    /** Increase condoms used this month by a given number (default 1) */
     void incrementCondomsUsedThisMonth(int condoms = 1);
 
-    //Increase num acts this month
+    /** Increase num acts this month */
     void incrementNumActsThisMonth(int _numActs);
 
-    //Return true if a condom was used the last time FOI was called
+    /** Return true if a condom was used the last time FOI was called */
     bool getCondomUsedLastFOICalculation();
 
-    /* @function: setFVindices
+    /**
+     * @function: setFVindices
      * @arguments: vector<int> FVind, FullVector* FV
      * @effects: if this.FVindices is currently empty and all indices correlate with members
      * of FV that point to this, sets this.FVindices to FVind
-     * @return: true if this.FVindices was set to FVind or false otherwise
-     */
+     * @return: true if this.FVindices was set to FVind or false otherwise */
     bool setFVindices(std::vector<unsigned int> FVind, FullVector *FV);
 
-    /* @function: addFVindices
+    /**
+     * @function: addFVindices
      * @arguments: int index, FullVector* FV
      * @effects: If FV[index] points to this and index is not already a member of
      * this.FVindices, adds index to this.FVindices
-     * @return: true if index was added to this.FVindices or false otherwise
-     */
+     * @return: true if index was added to this.FVindices or false otherwise */
     bool addFVindices(int index, FullVector *FV);
 
-    /* @function: removeFVindices
+    /**
+     * @function: removeFVindices
      * @arguments: int index, FullVector* FV
      * @effects: If FV[index] does not point to this, removes index from this.FVindices
-     * @return: true if index was removed from this.FVindices, false otherwise
-     */
+     * @return: true if index was removed from this.FVindices, false otherwise */
     bool removeFVindices(int index, FullVector *FV);
 
-    /* @function: memberFVindices
+    /**
+     * @function: memberFVindices
      * @arguments: int index, FullVector* FV
      * @effects: none
-     * @return: true iff this.FVindices contains index
-     */
+     * @return: true iff this.FVindices contains index */
     bool memberFVindices(int index, FullVector *FV);
 
-    /* @function: getFVindices
+    /**
+     * @function: getFVindices
      * @arguments: none
      * @effects: none
-     * @return: copy of this.FVindices
-     */
+     * @return: copy of this.FVindices */
     std::vector<unsigned int> getFVindices(FullVector *FV);
 
-    /* @function: getRiskLevel
-     * @return: this.risk
-     */
+    /**
+     * @function: getRiskLevel
+     * @return: this.risk */
     RiskLevel getRiskLevel() const;
 
-    /* @function: getHIVStatus
-     * @return: this.hivStatus
-     */
+    /**
+     * @function: getHIVStatus
+     * @return: this.hivStatus */
     HIVStatus getHIVStatus() const;
 
-    /* @function: getSexualActivity
-     * @return: this.activityLevel
-     */
+    /**
+     * @function: getSexualActivity
+     * @return: this.activityLevel */
     int getSexualActivity();
 
     virtual const std::string getEntityType() const = 0;
 
-    /*
-    changes this person to sexually active
-    and initializes the CEPAC person
-    */
+    /**changes this person to sexually active and initializes the CEPAC person */
     void becomeSexuallyActive(EventParams &_eventParams);
 
-    //returns structure that holds current DemographicProfile
+    /** returns structure that holds current DemographicProfile */
     const DemographicProfile *getDemographicProfile() const;
 
     template<typename D>
     D getDemographicProfileVal() const;
 
-    //sets and gets current BucketDemographicProfile membership
+    /** sets and gets current BucketDemographicProfile membership */
     DemographicProfile::ProfileID getCurrBucketProfileID() const;
 
     void setCurrBucketProfileID(DemographicProfile::ProfileID _profileID);
 
-    //returns true if the person's DemographicProfile matches their current BucketDemographicProfile membership
+    /** returns true if the person's DemographicProfile matches their current BucketDemographicProfile membership */
     bool inCorrectBucketDemographicProfile();
 
-    /*
-    changes isSexWorker with probability taken from population prevalence of CSW (or initial csw chance if prevalent population)
-    */
+    /** changes isSexWorker with probability taken from population prevalence of CSW (or initial csw chance
+     * if prevalent population)  */
     void rollForBecomeSexWorker(EventParams &_eventParams);
 
-    /*
-    stop being csw
-    */
+    /** Stop being csw  */
     void quitSexWork(EventParams &_eventParams);
 
-    /*
-    rerolls risk group based on if they are csw or not.  Called after rolling for becoming sex worker
-    */
+    /** rerolls risk group based on if they are csw or not.  Called after rolling for becoming sex worker */
     virtual void rerollRiskGroup(EventParams &_eventParams) = 0;
 
-    /*
-    *Sets a new SimContext for the person
-    */
+    /** Sets a new SimContext for the person  */
     void setSimContext(SimContext *newSimContext);
 
-    //stores data to indicate that this person is in a sexual partnership
-    // if this partnership is STEADY, then will change RelationshipStatus
+    /** stores data to indicate that this person is in a sexual partnership
+     * if this partnership is STEADY, then will change RelationshipStatus */
     void addPartnership(SexualPartnership *_partnership);
 
-    //returns true if this person is available for steady partnership
-    // however, this does not change the person's DemographicProfile value that corresponds to DemographicProfile::Demographic::RelationshipStatus
+    /** returns true if this person is available for steady partnership
+     * however, this does not change the person's DemographicProfile value that corresponds to
+     * DemographicProfile::Demographic::RelationshipStatus */
     bool availableForPartnership(SexualPartnership::Type _partnershipType) const;
 
-    /*
-    returns true if this person is already in some sort of REGULAR or STEADY partnership with _p
-    */
+    /**
+     * @return true if this person is already in some sort of REGULAR or STEADY partnership with _p */
     bool isPartneredWith(Entity *_p);
 
-    //Return true if the person is in a relationship of the given type
+    /**
+     * @return true if the person is in a relationship of the given type */
     bool hasPartnership(SexualPartnership::Type);
 
-    // Return true if person is in ANY partnership
+    /**
+     * @return true if person is in ANY partnership */
     bool hasPartnership();
 
-    /*******
-    These enums expose characterstics of a person for the purpose of indexing or to assist for partner selection.
-
-    It is used a data structure that has a template argument for sorting key
-
-    If we change any enums here, we should change:
-        class Entity::Sorter;
-        _KeyValType getMinPartnerSelectVal(SexualPartnership::Type _partnershipType, Gender _partnerGender) const; - for class Male, Female
-        _KeyValType getMaxPartnerSelectVal(SexualPartnership::Type _partnershipType, Gender _partnerGender) const; - for class Male, Female
-    ********/
+    /**
+     * These enums expose characterstics of a person for the purpose of indexing or to assist for partner selection.
+     *
+     * It is used a data structure that has a template argument for sorting key
+     *
+     * If we change any enums here, we should change:
+     *    class Entity::Sorter;
+     *   _KeyValType getMinPartnerSelectVal(SexualPartnership::Type _partnershipType, Gender _partnerGender) const; - for class Male, Female
+     *   _KeyValType getMaxPartnerSelectVal(SexualPartnership::Type _partnershipType, Gender _partnerGender) const; - for class Male, Female
+     */
     enum SelectingCriteria {
-        AGE,        //unsigned int
-        ID,                        //unsigned int
+        AGE,                        /** unsigned int */
+        ID,                         /** unsigned int */
         ENDSelectingCriteria
     };
 
-    // gets the upper and lower bounds for an acceptable SelectingCriteria values of a potential partner
-    //we are not allowed to have virtual templated functions... so we are forced to set return as double
-    //  @param _partnershipType - type of partnership this person is seeking
-    //	@param _partnerGender - gender of prospective partner
+    /** gets the upper and lower bounds for an acceptable SelectingCriteria values of a potential partner
+     * we are not allowed to have virtual templated functions... so we are forced to set return as double
+     * @param _partnershipType - type of partnership this person is seeking
+     * @param _partnerGender - gender of prospective partner */
     virtual double
     getMinPartnerSelectVal(Entity::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const = 0;
 
     virtual double
     getMaxPartnerSelectVal(Entity::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const = 0;
 
-    //Returns the age difference (in years) to center around
+    /** Returns the age difference (in years) to center around */
     virtual double
     rollForAgeDifference(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums) = 0;
 
-    /*
-    checks to see whether the duration limit of any SexualPartnerships have elapsed and will add them to a list to be removed
-    note: this method does not remove any partnerships from this person.
-    @param _fromDeath we are ending b/c this person has died. so will force all partnerships of this type to end
-    @param _partnershipsToEnd when method is complete, _partnershipsToEnd will contain partnerships that should end.
-    @return number of partnerships ended
-    */
+    /** checks to see whether the duration limit of any SexualPartnerships have elapsed and will add them to a list to be removed
+     * note: this method does not remove any partnerships from this person.
+     * @param _fromDeath we are ending b/c this person has died. so will force all partnerships of this type to end
+     * @param _partnershipsToEnd when method is complete, _partnershipsToEnd will contain partnerships that should end.
+     * @return number of partnerships ended */
     long getPartnershipsToEnd(Time currTime, SexualPartnership::Type _partnershipType,
                               list<SexualPartnership *> &_partnershipsToEnd, bool _fromDeath);
 
-    /*
-    have sex with all partners where the SexualPartnership has a duration. To prevent double-counting activity (iterator hits both partners)
-    sexual activity will only happen for the SexualPartnerships where this person is partner1
-    @return returns a pointer to the person who infected this person.
-    */
+    /** have sex with all partners where the SexualPartnership has a duration. To prevent double-counting activity (iterator hits both partners)
+     * sexual activity will only happen for the SexualPartnerships where this person is partner1
+     * @return returns a pointer to the person who infected this person. */
     Entity *allPartnerSexualActivity(EventParams &_eventParams, SexualPartnership::Type _partnershipType,
                                      list<Entity *> &_newlyInfected, InfectionsTracker *infTrack,
                                      const std::unordered_map<TransmissionType, std::array<double, (std::size_t) HVLStrata::Last>> &transmission_coefficients);
 
-    //returns whether this person could partner with Entity _p
-    //  split this by gender because there might be behaviour differences between them
+    /** returns whether this person could partner with Entity _p
+     * split this by gender because there might be behaviour differences between them */
     virtual bool possibleMatch(SexualPartnership::Type _partnershipType, Entity *_p) = 0;
 
-    //removes indications that this person is a particular sexual partnership
-    //  this is called when that partnership separates
-    //  will remove pointers to the SexualPartnership from both partners' partner lists
+    /** removes indications that this person is a particular sexual partnership
+     * this is called when that partnership separates
+     * will remove pointers to the SexualPartnership from both partners' partner lists */
     void removePartnership(SexualPartnership *_partnership);
 
-    //for a New partnership, roll how this person wants to be in this relationship
+    /** for a New partnership, roll how this person wants to be in this relationship */
     virtual int
     rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums,
                                   Entity *_p) = 0;
 
-    /*
-    for a particular month, choose how many partners of _partnershipType this Entity will have
-    */
+    /** for a particular month, choose how many partners of _partnershipType this Entity will have */
     virtual int
     rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType) = 0;
 
-    //for a particular partner, choose how many events this male will have
+    /** for a particular partner, choose how many events this male will have */
     virtual int rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums,
                                         SexualPartnership::Type _partnershipType) = 0;
 
@@ -610,31 +587,29 @@ public:
 
     virtual void ResetTimesSelected() = 0;
 
-    /*
-    sexual activity with person _p. This can happen within context of class SexualPartnership or just between to Entitys
-    @param _p partner for sexual activity
-    @param _numActs number of sexual acts that happened
-    @param _randomNums random number generator
-    @param _infectionsTracker tracks the number of inf
-    returns a pointer to a person who has been newly infected. nullptr if no infection occured
-    */
+    /** sexual activity with person _p. This can happen within context of class SexualPartnership or just between to Entitys
+     * @param _p partner for sexual activity
+     * @param _numActs number of sexual acts that happened
+     * @param _randomNums random number generator
+     * @param _infectionsTracker tracks the number of inf
+    *  @return a pointer to a person who has been newly infected. nullptr if no infection occured */
     Entity *
     sexualActivity(Entity *_p, int _numActs, SexualPartnership::Type _partnershipType, EventParams &_eventParams,
                    InfectionsTracker *infTrack,
                    const std::unordered_map<TransmissionType, std::array<double, (std::size_t) HVLStrata::Last>> &transmission_coefficients);
 
-    //gets the age of the person
+    /** gets the age of the person */
     Age getAge() const;
 
-    //returns the unique id number of this person
+    /** returns the unique id number of this person */
     unsigned long getID() const;
 
     unsigned int getPopulationID() const;
 
-    //returns traceMe
+    /** returns traceMe */
     bool trace() const;
 
-    //sets traceMe to true
+    /** sets traceMe to true */
     void setToBeTraced();
 
     const EntityStatsRecord *getStats();
@@ -642,7 +617,8 @@ public:
     void enableInfectionTrace(int _generationOfInfection,
                               EventParams &_eventParams) const;
 
-    //Unformed partnership tallies getters and setters -- the total should never be reset, only the "latest" (i.e. current time step)
+    /** Unformed partnership tallies getters and setters -- the total should never be reset,
+     * only the "latest" (i.e. current time step) */
     int getTotalUnformedPartnerships(SexualPartnership::Type type);
 
     int getLatestUnformedPartnerships(SexualPartnership::Type type);
@@ -651,21 +627,22 @@ public:
 
     void resetLatestUnformedPartnerships(SexualPartnership::Type type);
 
-    /**
-     * Check if the patient is on ART
-     */
+    /** Check if the patient is on ART */
     bool isOnArt() {
         return cepacPatient && cepacPatient->getARTState()->isOnART;
     }
 
+    /** If they are in the first line of ART */
     bool isOnFirstLineART() {
         return (cepacPatient && cepacPatient->getARTState()->currRegimenNum == 0);
     }
 
+    /** If they are in the second line of ART */
     bool isOnSecondLineART() {
         return (cepacPatient && cepacPatient->getARTState()->currRegimenNum == 1) ;
     }
 
+    /** If they RTC (Returned to Care) after loss to follow up */
     bool isRTC() {
         if (cepacPatient && cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_RTC) {
 //            if (cepacPatient->getARTState()->hasNextRegimenAvailable) {
@@ -684,26 +661,19 @@ public:
         }
     }
 
-    /**
-     * Check if the patient is linked to care.
+    /** Check if the patient is linked to care.
      * Important notes: 1) The patient can be linked but be HIV negative.
-     *                  2) The patient can be linked but not HIV_CARE_IN_CARE.
-     */
+     *                  2) The patient can be linked but not HIV_CARE_IN_CARE. */
     bool isLinked() const {
         return cepacPatient && cepacPatient->getMonitoringState()->isLinked;
     }
 
-    /**
-     * Check if the patient is unlinked.
-     */
+    /** Check if the patient is unlinked. */
     bool isUnLinked() const {
         return (cepacPatient && cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_UNLINKED);
     }
 
-    /**
-     * Check if the patient is Loss to Follow Up (LTFU)
-     * @return
-     */
+    /** Check if the patient is Loss to Follow Up (LTFU) */
     bool isLTFU() const {
         if (cepacPatient && cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_LTFU) {
 //            if (cepacPatient->getMonitoringState()->wasOnARTWhenLostToFollowUp) {
@@ -716,10 +686,8 @@ public:
         return false;
     }
 
-    /**
-     * This is the same as the definition of Person Living With HIV (PLWH)
-     * @return if the patient is detected HIV positive
-     */
+    /** This is the same as the definition of Person Living With HIV (PLWH)
+     * @return if the patient is detected HIV positive */
     bool isDetected() const {
         return (cepacPatient && cepacPatient->getMonitoringState()->isDetectedHIVPositive);
     }
@@ -745,15 +713,13 @@ public:
 
     }
 
-    /*
-     * Check if the patient is actually in care:
+    /** Check if the patient is actually in care:
      * Definition of Person "In Care" according to HIV Care Continuum, Miami 2014-2018 is to have at least one
      * documented VL or CD4 lab, medical visit or prescription from the first day of the year to the last day of
      * the third months of next year.
      *
      * Our definition for this is whoever has been in care is counted as one. This included any entity who is Loss to
-     * Follow up (LTFU) or just returned in care (RTC). This counts for anyone who has ever been in care.
-     */
+     * Follow up (LTFU) or just returned in care (RTC). This counts for anyone who has ever been in care. */
     bool isInCare() const {
 
         return (cepacPatient && (cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_IN_CARE
@@ -762,10 +728,11 @@ public:
     }
 
 
-    /* Check if the patient has suppressed level of VL */
+    /** Check if the patient has suppressed level of VL */
     bool isSuppressd() const {
         bool flag;
-        // Call the local function that pulls HVL status from CEPAC
+
+        /** Call the local function that pulls HVL status from CEPAC */
         HVLStrata hvl = getHvlStratum();
         if (hvl == HVLStrata::HVL_ZERO) {
             flag = true;
@@ -775,9 +742,7 @@ public:
         return (cepacPatient && flag);
     }
 
-    /**
-     * Recording Person Living with HIV to do that just check if the agent is HIV detected
-     */
+    /** Recording Person Living with HIV to do that just check if the agent is HIV detected */
     bool isPLWH() const {
         return (cepacPatient && cepacPatient->getDiseaseState()->infectedHIVState != SimContext::HIV_INF_NEG);
     }
@@ -863,16 +828,16 @@ public:
 
     virtual void SetChanceBecomeSexWorker(double chance) = 0;
 
-     /**
-      * this class has a method that compares two Entities based on the desired key
+     /** this class has a method that compares two Entities based on the desired key
       * _PSC holds the key that we search and index against.
       * _DEFAULTKEY provides a 2nd layer of ordering if people have identical _PSC
-      * true is returned if key value of _p1 >= _p2. If key values are equal, then sorts based on Entity's EntityID num
-    */
+      * true is returned if key value of _p1 >= _p2. If key values are equal, then sorts based on Entity's
+      * EntityID num */
     template<Entity::SelectingCriteria _PSC, class KeyValType>
     class Sorter {
     public :
-        //gets value associated with _p
+
+        /* gets value associated with _p */
         static inline KeyValType getSortKey(Entity *_p) {
             switch (_PSC) {
                 case AGE:
@@ -884,7 +849,7 @@ public:
             throw std::runtime_error("Invalid Sorting key");
         }
 
-        //functor associated with the < operator. Generally used for template args in in sets and maps
+        /* functor associated with the < operator. Generally used for template args in in sets and maps */
         inline bool operator()(const Entity *_p1, const Entity *_p2) const {
             return getSortKey(_p1) < getSortKey(_p2);
         }

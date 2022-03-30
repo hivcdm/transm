@@ -394,14 +394,13 @@ int Entity::getNumPartners(SexualPartnership::Type _type) {
 int Entity::getNumPartners(SexualPartnership::Type _type, bool sameRisk) {
     int numPartners = 0;
 
-    for (std::list<SexualPartnership *>::iterator partnerIter = partners[(int) _type].begin();
-         partnerIter != partners[(int) _type].end(); partnerIter++) {
+    for (auto & partnerIter : partners[(int) _type]) {
         Entity *partner;
 
-        if ((*partnerIter)->getPartner1() == this) {
-            partner = (*partnerIter)->getPartner2();
+        if (partnerIter->getPartner1() == this) {
+            partner = partnerIter->getPartner2();
         } else {
-            partner = (*partnerIter)->getPartner1();
+            partner = partnerIter->getPartner1();
         }
 
         bool isSameRisk = risk == partner->getRiskLevel();
@@ -421,8 +420,8 @@ int Entity::getNumPartnersInHistory(SexualPartnership::Type _type) {
 int Entity::getNumPartnersInHistory() {
     int total = 0;
 
-    for (int i = 0; i < (int) SexualPartnership::Type::Last; i++) {
-        total += numPartnersInHistory[i];
+    for (int i : numPartnersInHistory) {
+        total += i;
     }
 
     return total;
@@ -583,8 +582,8 @@ bool Entity::hasPartnership(SexualPartnership::Type partnershipType) {
 }
 
 bool Entity::hasPartnership() {
-    for (int partnershipType = 0; partnershipType < (int) SexualPartnership::Type::Last; ++partnershipType) {
-        if (partners[partnershipType].begin() != partners[partnershipType].end()) {
+    for (auto & partner : partners) {
+        if (partner.begin() != partner.end()) {
             return true;
         }
     }
@@ -1057,7 +1056,7 @@ void Entity::updateTestingStatus(EventParams &_eventParams,
                                        before.numAcceptTest;
     bool returnedForResults = after.numReturnForResults >
                               before.numReturnForResults;
-    SimContext::TEST_RESULT testResult = (SimContext::TEST_RESULT) 0;
+    auto testResult = (SimContext::TEST_RESULT) 0;
 
     if (returnedForResults) {
         if (after.numTestResultsHIVNegativeType[SimContext::TEST_FALSE_POS] >
@@ -1253,8 +1252,8 @@ bool Entity::setFVindices(std::vector<unsigned int> FVind, FullVector *FV) {
         //Make sure all members of FVind are indices of FV pointing to this
         bool FVmatch = true;
 
-        for (auto iter = FVind.begin(); iter != FVind.end(); iter++) {
-            if (FV->at(*iter)->getID() != id) {
+        for (unsigned int & iter : FVind) {
+            if (FV->at(iter)->getID() != id) {
                 //Set FVmatch to false if one of the members of FVind is not an index to a pointer to this in FV
                 FVmatch = false;
             }
@@ -1289,8 +1288,8 @@ bool Entity::addFVindices(int index, FullVector *FV) {
             FVindex = &(mIter->second);
 
             //Check that index is not already in this.FVindices
-            for (auto iter = FVindex->begin(); iter != FVindex->end(); iter++) {
-                if (static_cast<int>(*iter) == index) {
+            for (unsigned int & iter : *FVindex) {
+                if (static_cast<int>(iter) == index) {
                     indexAlreadyInFVindices = true;
                     break;
                 }
@@ -1362,8 +1361,8 @@ bool Entity::memberFVindices(int index, FullVector *FV) {
     if (mIter != FVindices.end()) {
         auto FVindex = mIter->second;
 
-        for (auto iter = FVindex.begin(); iter != FVindex.end(); iter++) {
-            if (static_cast<int>(*iter) == index) {
+        for (unsigned int & iter : FVindex) {
+            if (static_cast<int>(iter) == index) {
                 return true;
             }
         }
@@ -1382,7 +1381,7 @@ std::vector<unsigned int> Entity::getFVindices(FullVector *FV) {
     std::vector<unsigned int> vcopy;
     std::vector<unsigned int> personsIndices = FVindices[FV];
 
-    if (personsIndices.size() > 0) {
+    if (!personsIndices.empty()) {
         vcopy.assign(personsIndices.begin(), personsIndices.end());
     }
 
@@ -1472,9 +1471,9 @@ Entity::~Entity(void) {
     //take person out of all current relationships
     std::list<SexualPartnership *>::iterator toDelete;
 
-    for (int type = 0; type < (int) SexualPartnership::Type::Last; ++type) {
-        auto iter = partners[type].begin();
-        auto end = partners[type].end();
+    for (auto & partner : partners) {
+        auto iter = partner.begin();
+        auto end = partner.end();
 
         while (iter != end) {
             toDelete = iter;
