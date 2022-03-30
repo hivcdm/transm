@@ -39,13 +39,9 @@ class FullVector;
 class InfectionsTracker;
 class RandomNumberGenerator;
 
-/**
- * All individuals in the simulation are of this class, or something derived from this
- *
+/** All individuals in the simulation are of this class, or something derived from this
  * Fields and Methods are divided into the following categories:
- * Physical, Relational, DemographicProfile-related, other
- **/
-
+ * Physical, Relational, DemographicProfile-related, other */
 class Entity {
 
     /** used to create unique id's for each person this increments every time a New person is created */
@@ -77,11 +73,9 @@ public:
 
     bool HasOverrideChanceCondomUse() const { return GetOverrideChanceCondomUse() != -1; }
 
-    /**
-     * We have made these stats referencable by enum so that we can more easily create
+    /** We have made these stats referencable by enum so that we can more easily create
      * customizable outputs or reports we can perhaps have easier look-up of stat descriptions
-     * if we choose to write some up.
-     */
+     * if we choose to write some up. */
     enum class Stats {
         STAT_TOTAL_LM,                            /**< months lived during sim.  */
         STAT_HIV_NEG_LM,                          /**< life months lived as HIV Negative */
@@ -106,8 +100,7 @@ public:
 
     /**
      *  the CEPAC death table has stats for 0-100 years old.
-     *  people automatically die at this age in the dynamic model
-     */
+     *  people automatically die at this age in the dynamic model */
     const static int maxYrForDeathStats = 101;
 
     /* contains probabilities of nonAIDS-death, read from CEPAC .in file */
@@ -147,16 +140,14 @@ protected:
 
     /**
      * person's current demographic profile - values in here depend on person's
-     * physical, relational state, and other preferences
-     */
+     * physical, relational state, and other preferences */
     DemographicProfile dmgProfile;
 
     /**
      * person keeps track of which BucketDemographicProfile they are currently in
      * this value should stay equal to dmgProfile->getProfileID()
      * sometimes a person's dmgProfile is changed, so we have to refresh their
-     * place in the EntityPool
-     */
+     * place in the EntityPool */
     DemographicProfile::ProfileID currentBucketID;
 
     /**
@@ -176,15 +167,14 @@ protected:
 
     /**
      * Contains the number of partnerships the person tried to form over time, but didn't
-     * (usually due to no partners available or re-hooking up with a current partner)
-     */
+     * (usually due to no partners available or re-hooking up with a current partner) */
     int unformedPartnershipsTotal[(int) SexualPartnership::Type::Last];
     int unformedPartnershipsLatestTime[(int) SexualPartnership::Type::Last];
 
-    /* Which generation was the person infected in */
+    /** Which generation was the person infected in */
     int generationOfInfection;
 
-    /* flag to indicate whether this person has CEPAC data */
+    /** flag to indicate whether this person has CEPAC data */
     bool wentThroughCEPAC;
 
     /* a pointer to a CEPAC patient object which stores all post-infection health states */
@@ -760,11 +750,15 @@ public:
      * Definition of Person "In Care" according to HIV Care Continuum, Miami 2014-2018 is to have at least one
      * documented VL or CD4 lab, medical visit or prescription from the first day of the year to the last day of
      * the third months of next year.
+     *
+     * Our definition for this is whoever has been in care is counted as one. This included any entity who is Loss to
+     * Follow up (LTFU) or just returned in care (RTC). This counts for anyone who has ever been in care.
      */
     bool isInCare() const {
 
         return (cepacPatient && (cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_IN_CARE
-                                 || cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_RTC));
+                                 || cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_RTC)
+                                 || cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_LTFU);
     }
 
 
@@ -943,8 +937,8 @@ public:
 private:
     BaseEnumCls::Enum getDemographicProfileVal(DemographicProfile::Demographic _demographic) const;
 
-    //Return the current index of which SimContext should be used to update the
-    //health of a patient
+    /* Return the current index of which SimContext should be used to update the */
+    /* health of a patient */
     static int getCEPACSimContextIndex(EventParams &_eventParams) ;
 
     static int getCEPACSimContextIndex(EventParams &_eventParams, int popToApply) ;
