@@ -17,31 +17,11 @@
 					<DistClean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
-			<Target title="rebuild_cache">
+			<Target title="rana_project">
 				<Option working_dir="/home/saman/Codes/hiv-CDM/transm/cmake-build-debug"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
-					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-				</MakeCommands>
-			</Target>
-			<Target title="pugixml_project">
-				<Option working_dir="/home/saman/Codes/hiv-CDM/transm/cmake-build-debug"/>
-				<Option type="4"/>
-				<MakeCommands>
-					<Build command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 pugixml_project"/>
-					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-				</MakeCommands>
-			</Target>
-			<Target title="edit_cache">
-				<Option working_dir="/home/saman/Codes/hiv-CDM/transm/cmake-build-debug"/>
-				<Option type="4"/>
-				<MakeCommands>
-					<Build command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 rana_project"/>
 					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
 					<Clean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 					<DistClean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
@@ -57,21 +37,11 @@
 					<DistClean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
-			<Target title="clean-cmake-files">
+			<Target title="pugixml_project">
 				<Option working_dir="/home/saman/Codes/hiv-CDM/transm/cmake-build-debug"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean-cmake-files"/>
-					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-				</MakeCommands>
-			</Target>
-			<Target title="rana_project">
-				<Option working_dir="/home/saman/Codes/hiv-CDM/transm/cmake-build-debug"/>
-				<Option type="4"/>
-				<MakeCommands>
-					<Build command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 rana_project"/>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 pugixml_project"/>
 					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
 					<Clean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 					<DistClean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
@@ -82,16 +52,6 @@
 				<Option type="4"/>
 				<MakeCommands>
 					<Build command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 cepac_project"/>
-					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-				</MakeCommands>
-			</Target>
-			<Target title="create-version-header">
-				<Option working_dir="/home/saman/Codes/hiv-CDM/transm/cmake-build-debug"/>
-				<Option type="4"/>
-				<MakeCommands>
-					<Build command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 create-version-header"/>
 					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
 					<Clean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 					<DistClean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
@@ -155,11 +115,21 @@
 					<DistClean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
-			<Target title="cppcheck">
+			<Target title="create-version-header">
 				<Option working_dir="/home/saman/Codes/hiv-CDM/transm/cmake-build-debug"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 cppcheck"/>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 create-version-header"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="clean-cmake-files">
+				<Option working_dir="/home/saman/Codes/hiv-CDM/transm/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean-cmake-files"/>
 					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
 					<Clean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 					<DistClean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
@@ -170,6 +140,36 @@
 				<Option type="4"/>
 				<MakeCommands>
 					<Build command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 tags"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="cppcheck">
+				<Option working_dir="/home/saman/Codes/hiv-CDM/transm/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 cppcheck"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/saman/Codes/hiv-CDM/transm/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/saman/Codes/hiv-CDM/transm/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
 					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
 					<Clean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 					<DistClean command="/usr/bin/make -j8 -f &quot;/home/saman/Codes/hiv-CDM/transm/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>

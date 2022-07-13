@@ -131,6 +131,7 @@ void Male::SetAcquisitionRatePerMonth(RiskLevel risk, SexualPartnership::Type pa
             partnerAcqRates[(int)partnershipType] = rng.randLogNormal(dist);
         }
     }
+
 	behavior.setAcquisitionRatePerMonth(risk, dist);
 }
 
@@ -299,7 +300,12 @@ Male::Male(EventParams &_eventParams, Age _age, bool _circumcised,
 
 		auto acquisition_rate_dist = sexualBehaviorParams.getAcquisitionRatePerMonth(risk);
 		auto acquisition_rate = _eventParams.randomNums.randLogNormal(acquisition_rate_dist);
-		partnerAcqRates[(int)partnership_type] = acquisition_rate;
+        /* correction of MSM partnerships */
+        if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() ==
+                                       DemographicProfile::SexualOrientation::Msm) {
+            acquisition_rate *= 0.5*1.61;
+        }
+        partnerAcqRates[(int)partnership_type] = acquisition_rate;
 		numActsPerMonth[(int)partnership_type] = sexualBehaviorParams.getCoitalEventsPerMonth(risk);
 
 		auto chance_condom_use_dist = sexualBehaviorParams.getChanceCondomUsePerEvent(risk);
@@ -310,10 +316,7 @@ Male::Male(EventParams &_eventParams, Age _age, bool _circumcised,
 	}
 }
 
-Male::~Male()
-{
-
-}
+Male::~Male() = default;
 
 std::size_t Male::GetSexualOrientation()
 {
@@ -556,9 +559,15 @@ void Male::rerollRiskGroup(EventParams &_eventParams)
 
 			const SexualBehavior &sexualBehaviorParams = 
 				populationSpecificParams.getSexualBehavior(partnership_type);
-			auto acquisition_rate = sexualBehaviorParams.getAcquisitionRatePerMonth(risk);
-			partnerAcqRates[(int)partnership_type] = 
-				_eventParams.randomNums.randLogNormal(acquisition_rate);
+			auto acquisition_rate_dist = sexualBehaviorParams.getAcquisitionRatePerMonth(risk);
+            auto acquisition_rate = _eventParams.randomNums.randLogNormal(acquisition_rate_dist);
+            /* correction of MSM partnerships */
+            if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() ==
+                DemographicProfile::SexualOrientation::Msm) {
+                acquisition_rate *= 0.5*1.61;   // 0.5 is accounts for correcting the acquisition rate for male choosing male and 1.61 is the multiplier!
+            }
+			partnerAcqRates[(int)partnership_type] = acquisition_rate;
+
 			numActsPerMonth[(int)partnership_type] = 
 				sexualBehaviorParams.getCoitalEventsPerMonth(risk);
 			auto chance_condom_use = sexualBehaviorParams.getChanceCondomUsePerEvent(risk);

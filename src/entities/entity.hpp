@@ -935,6 +935,7 @@ private:
 
     PrepParameters prepParameters;
     PrepStatus prepStatus;
+    PrepEligibility prepEligibility;
 };
 
 } // namespace transm

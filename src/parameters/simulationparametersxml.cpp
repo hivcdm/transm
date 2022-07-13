@@ -318,6 +318,19 @@ CalibrationInputs SimulationParametersXml::GetCalibrationParameters() const
             calib.CSWPrevPopulation = Text<int>(partnerships_node.child("cswPrev").child("popOfInterest"));
             calib.CSWPrevBounds.lower = Text<double>(partnerships_node.child("cswPrev").child("lwrBound"));
             calib.CSWPrevBounds.upper = Text<double>(partnerships_node.child("cswPrev").child("uprBound"));
+
+            /* Check ranges for MSM population */
+            /* popOfInterest here does not mean anything, but it has to be 0 */
+            calib.steadyMSMPrevPopulation = Text<int>(partnerships_node.child("steadyMSMPrev").child("popOfInterest"));
+            calib.steadyMSMPrevBounds.lower = Text<double>(partnerships_node.child("steadyMSMPrev").child("lwrBound"));
+            calib.steadyMSMPrevBounds.upper = Text<double>(partnerships_node.child("steadyMSMPrev").child("uprBound"));
+            calib.regularMSMPrevPopulation = Text<int>(partnerships_node.child("regularMSMPrev").child("popOfInterest"));
+            calib.regularMSMPrevBounds.lower = Text<double>(partnerships_node.child("regularMSMPrev").child("lwrBound"));
+            calib.regularMSMPrevBounds.upper = Text<double>(partnerships_node.child("regularMSMPrev").child("uprBound"));
+            calib.casualMSMPrevPopulation = Text<int>(partnerships_node.child("casualMSMPrev").child("popOfInterest"));
+            calib.casualMSMPrevBounds.lower = Text<double>(partnerships_node.child("casualMSMPrev").child("lwrBound"));
+            calib.casualMSMPrevBounds.upper = Text<double>(partnerships_node.child("casualMSMPrev").child("uprBound"));
+
             calib.propInConcurrentPopulation = Text<int>(partnerships_node.child("propInCon").child("popOfInterest"));
             calib.propInConcurrentBounds.lower = Text<double>(partnerships_node.child("propInCon").child("lwrBound"));
             calib.propInConcurrentBounds.upper = Text<double>(partnerships_node.child("propInCon").child("uprBound"));

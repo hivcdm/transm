@@ -78,24 +78,24 @@ public:
 
     /** Applies the incident prevalence inputs to the current population
      * (this may be delayed based on delay parameter) */
-    void ApplyIncidentPrevalence(EventParams &_eventParams);
+    void ApplyIncidentPrevalence(EventParams &eventParams);
 
     /**
      * Checks to see if there is a new cepac input file to apply to certain portions of the population
      * if rollout is being used */
-    void ApplyRolloutContext(EventParams &_eventParams, Time time);
+    void ApplyRolloutContext(EventParams &eventParams, Time time);
 
     void StartTreatment(Entity *person, SimContext *treatedContext);
 
     /** Applies Treatment to certain portions of the population if ART Rollout is turned on */
-    void ApplyARTRollout(EventParams &_eventParams);
+    void ApplyARTRollout(EventParams &eventParams);
 
     /** Applies calibration procedure to determine if partnership prevalence in population lies in
      * the bounds provided */
-    bool PassesPartnershipCalibration(EventParams &_eventParams);
+    bool PassesPartnershipCalibration(EventParams &eventParams);
 
     /** everyone in population ages one year infected persons age another month in CEPAC */
-    void UpdatePhysicalState(EventParams &_eventParams, bool calculateLE, bool newLEPeriod);
+    void UpdatePhysicalState(EventParams &eventParams, bool calculateLE, bool newLEPeriod);
 
     /** counts the number of people in each age bucket used for LE */
     void UpdateAgeBucketsLE();
@@ -103,9 +103,9 @@ public:
     /** will form, dissolve partnerships and have sexual activity monthly sexual activity within population.
      * when transmissions occur, run the incident case through CEPAC to get their future life trajectory
      * returns the # of New people of each type who was infected */
-    void UpdatePartnerships(EventParams &_eventParams);
+    void UpdatePartnerships(EventParams &eventParams);
 
-    void WritePartnershipNetwork(EventParams &_eventParams);
+    void WritePartnershipNetwork(EventParams &eventParams);
 
     /** counts the total size of the population and updates internal state */
     std::size_t UpdateSize();
@@ -117,7 +117,7 @@ public:
 
     /** After all of the population dynamics have run through, run all of the remaining infected persons through
      * CEPAC until they die to get the life expectancy and such in the CEPAC output files. */
-    void UpdateFinalPhysicalState(EventParams &_eventParams);
+    void UpdateFinalPhysicalState(EventParams &eventParams);
 
     /** gets the age bucket of the person */
     AgeBucketPrevalenceInfo &GetAgeBucket(Entity *);
@@ -172,7 +172,7 @@ private:
      * correct BucketDemographicProfile if _partnershipType == STEADY, then this will remove the partner from
      * the EntityIndex (as they are now NOT_SINGLE)
      *
-     * @param _eventParams
+     * @param eventParams
      * @param _initiator person who is trying to find a STEADY REGULAR, CASUAL, or CSW partner
      * ERINSAYS: _p_Iter removed for now -- may be replaced when list of allMales and allFemales are implemented
      * @param _p_Iter an iterator that points to _initiator for fast removal from a BucketDemographicProfile.
@@ -181,18 +181,18 @@ private:
      * @param _forceNumPartnersOne if true will force _initiator to create just one partnership of type
      * _partnership type (useful for initial regular partnerships
      * @return number of partnerships formed */
-    unsigned long CreatePartnerships(EventParams &_eventParams, Male *_initiator,
+    unsigned long CreatePartnerships(EventParams &eventParams, Male *_initiator,
                                      std::list<Entity *>::iterator *_p_Iter,
                                      SexualPartnership::Type _partnershipType, bool _forceNumPartnersOne = false);
 
     /** dissolves a list of particular sexual partnerships. Removes the pointer to the SexualPartnership from
      * each member and then deletes it */
-    void DissolveSexualPartnerships(EventParams &_eventParams, Entity *_initiator,
+    void DissolveSexualPartnerships(EventParams &eventParams, Entity *_initiator,
                                     std::list<SexualPartnership *> &_partnershipsToEnd);
 
     /** create birthRate * currSize people who are age 0 and add them to the
      * DemographicProfile::SexualActivityStatus::NotActive population */
-    void Births(EventParams &_eventParams);
+    void Births(EventParams &eventParams);
 
     /** create the initial people in the population */
     void GenerateInitialEntities();
@@ -206,7 +206,7 @@ private:
      * @param _ageBucketParams	parameters that determine a prevalent person's characteristics.
      * If this is nullptr, then this method will create a newborn
      * @return a newly formed person */
-    Entity *GenerateEntity(EventParams &_eventParams, const DemographicProfile &profile,
+    Entity *GenerateEntity(EventParams &eventParams, const DemographicProfile &profile,
                            Age age, bool toTrace);
 
     /** helper funtions for ApplyIncidentPrevalence() */
@@ -222,7 +222,7 @@ private:
 
     /** processes the death of 1 person, updates statistics, removes that person from any relationships
      * @param _deceased pointer to deceased person */
-    void ProcessDeath(EventParams &_eventParams, Entity *_p, bool calculateLE);
+    void ProcessDeath(EventParams &eventParams, Entity *_p, bool calculateLE);
 
     void DetermineRankings(const RolloutEligibility &criteria);
 
@@ -249,26 +249,26 @@ private:
      *
      * @param _time the current time in the simulation
      * @param _outStream the stream to print */
-    void PrintPopulationHeaders(Time _time, std::ostream &_outStream);
+    void PrintPopulationHeaders(Time _time, std::ostream &_outStream) const;
 
     void PrintPopulation(EventParams &_eventParams, Time _time, std::ostream &_outStream);
 
     /** This is called at end of each month to print statistics about the behavior of the population to the
      * Behavior.out file */
-    void PrintPartnerships(EventParams &_eventParams, Time _time, std::ostream &_outStream);
+    void PrintPartnerships(EventParams &eventParams, Time _time, std::ostream &_outStream);
 
     /** This is called at end of each month to print statistics about the clinical status of the population to
      * the Clinical.out file */
     void PrintClinical(EventParams &_eventParams, Time _time, std::ostream &_outStream);
 
-    void PrintARTRolloutOutcomes(EventParams &_eventParams, std::ostream &_outStream);
+    void PrintARTRolloutOutcomes(EventParams &eventParams, std::ostream &_outStream);
 
-    void PrintPrepOutcomes(EventParams &_eventParams, std::ostream &_outStream);
+    void PrintPrepOutcomes(EventParams &eventParams, std::ostream &_outStream);
 
     /** This is called at specified time points to record the partner frequency */
     void RecordPartAcqFreq();
 
-    void RecordShiftedOutcomes(EventParams &_eventParams, std::ostream &_outStream);
+    void RecordShiftedOutcomes(EventParams &eventParams, std::ostream &_outStream);
 
     void ResetPartnershipTracking();
 

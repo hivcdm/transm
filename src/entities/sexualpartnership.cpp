@@ -17,8 +17,10 @@ const std::map<SexualPartnership::Type, std::string> SexualPartnership::TypeStri
 	{SexualPartnership::Type::Csw, "Csw"}
 };
 
-SexualPartnership::SexualPartnership(Entity *_person1, Entity *_person2, EventParams &_eventParams,
-                                     SexualPartnership::Type _partnershipType)
+SexualPartnership::SexualPartnership(Entity *_person1,
+                                     Entity *_person2,
+                                     EventParams &_eventParams,
+                                     SexualPartnership::Type _partnershipType):partners()
 {
 	/* save the type of partnership this is */
 	type = _partnershipType;
@@ -70,7 +72,7 @@ SexualPartnership::SexualPartnership(Entity *_person1, Entity *_person2, EventPa
 	assert(timePartnerDissolution.in_months() >= 0);
 }
 
-bool SexualPartnership::checkTimeForSplit(Time current_time)
+bool SexualPartnership::checkTimeForSplit(Time current_time) const
 {
 	return current_time >= timePartnerDissolution;
 }

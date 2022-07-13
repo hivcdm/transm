@@ -78,7 +78,7 @@ public :
 	 * @param _currTime the current time in the simulation
 	 * @returns true if _currTime >= timePartnerDissolution
 	 * @author schung5 */
-	bool checkTimeForSplit(Time current_time);
+	bool checkTimeForSplit(Time current_time) const;
 
 	/**
 	 * Gets the pointer to partner 1. Should be male if this couple is heterosexual
