@@ -20,7 +20,7 @@ const std::map<SexualPartnership::Type, std::string> SexualPartnership::TypeStri
 SexualPartnership::SexualPartnership(Entity *_person1,
                                      Entity *_person2,
                                      EventParams &_eventParams,
-                                     SexualPartnership::Type _partnershipType):partners()
+                                     SexualPartnership::Type _partnershipType)
 {
 	/* save the type of partnership this is */
 	type = _partnershipType;
