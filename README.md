@@ -13,7 +13,7 @@ A password and verification code (not the same as Harvard Key) are required to l
 
 The modules required to build and run version 4 of the model on FASRC are listed below:
 
-`module load gcc`
+` module load gcc/9.3.0-fasrc01`
 
 `module load cmake/3.5.2-fasrc01`
 
