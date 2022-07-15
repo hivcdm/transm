@@ -1697,17 +1697,19 @@ void Population::RecordShiftedOutcomes(EventParams &eventParams, std::ostream &_
 }
 
 bool Population::PassesPartnershipCalibration(EventParams &eventParams) {
-    //calculate partnership prevalence values
+
+    /* Allocating partnership prevalence arrays */
     unsigned long numInPartnership[(std::size_t) SexualPartnership::Type::Last][(std::size_t) DemographicProfile::Gender::Last];
 
-    /* MSM Stuff */
-    unsigned long numMSMInPartnership[(std::size_t) SexualPartnership::Type::Last][(std::size_t) DemographicProfile::SexualOrientation::Last];
+    /* MSM and MSMW Stuff */
+    unsigned long numInPartnershipOrientation[(std::size_t) SexualPartnership::Type::Last][(std::size_t) DemographicProfile::SexualOrientation::Last];
 
     unsigned long numInConcurrent[(std::size_t) DemographicProfile::Gender::Last];
     unsigned long numActsMonth[(std::size_t) DemographicProfile::Gender::Last];
     unsigned long numActsMonthRisk[(std::size_t) DemographicProfile::Gender::Last][(std::size_t) RiskLevel::Last];
     unsigned long numSexuallyActive[(std::size_t) DemographicProfile::Gender::Last];
     unsigned long numSexuallyActiveRisk[(std::size_t) DemographicProfile::Gender::Last][(std::size_t) RiskLevel::Last];
+    unsigned long numSexuallyActiveOrientation[(std::size_t) DemographicProfile::SexualOrientation::Last]; /* No need for gender dimension since all are male */
     bool passesCalib = true;
     bool passesSteadyPrev = true;
     bool passesCasualPrev = true;
@@ -1739,13 +1741,14 @@ bool Population::PassesPartnershipCalibration(EventParams &eventParams) {
               "Casual Partnership Prev Ratio (FtM)" << Constants::Tab << "Prop in Concurrent Ratio (FtM)" << Constants::Tab <<
               "Avg Num Acts Ratio (LR to HR Females)" << Constants::Tab;
 
+    /* Initializations of partnership prevalence arrays */
     for (auto & i : numInPartnership) {
         for (unsigned long & j : i) {
             j = 0;
         }
     }
 
-    for (auto & i : numMSMInPartnership) {
+    for (auto & i : numInPartnershipOrientation) {
         for (unsigned long & j : i) {
             j = 0;
         }
@@ -1760,8 +1763,14 @@ bool Population::PassesPartnershipCalibration(EventParams &eventParams) {
             numActsMonthRisk[i][j] = 0;
             numSexuallyActiveRisk[i][j] = 0;
         }
+
     }
 
+    for (unsigned long & i : numSexuallyActiveOrientation) {
+        i = 0;
+    }
+
+    /* Now calculate the number of partnerships based on gender, partnership type and orientation */
     for (auto gender : enum_iterator<DemographicProfile::Gender>()) {
         auto p_Iter = entities->begin(gender);
 
@@ -1772,8 +1781,10 @@ bool Population::PassesPartnershipCalibration(EventParams &eventParams) {
             }
 
             RiskLevel risk = (*p_Iter)->getRiskLevel();
+            auto sexual_orientation = (*p_Iter)->getDemographicProfile()->get(DemographicProfile::Demographic::SexualOrientation);
             numSexuallyActive[(std::size_t) gender]++;
             numSexuallyActiveRisk[(std::size_t) gender][(std::size_t) risk]++;
+            numSexuallyActiveOrientation[(std::size_t) sexual_orientation]++;
             numActsMonth[(std::size_t) gender] += (*p_Iter)->getNumActsThisMonth();
             numActsMonthRisk[(std::size_t) gender][(std::size_t) risk] += (*p_Iter)->getNumActsThisMonth();
 
@@ -1784,7 +1795,7 @@ bool Population::PassesPartnershipCalibration(EventParams &eventParams) {
                     for (auto orientation : enum_iterator<DemographicProfile::SexualOrientation>()) {
                         if((*p_Iter)->getDemographicProfile()->get(DemographicProfile::Demographic::SexualOrientation) ==
                                 (std::size_t) DemographicProfile::SexualOrientation::Msm){
-                            numMSMInPartnership[i][(std::size_t) orientation]++;
+                            numInPartnershipOrientation[i][(std::size_t) orientation]++;
                         }
                     }
 
@@ -1799,12 +1810,21 @@ bool Population::PassesPartnershipCalibration(EventParams &eventParams) {
         }
     }
 
-    //check if population meets bounds for partnership prevalance
-    int numInSteady, numInCasual, numInCSW, concurrentNum, numActs;
-    int numInMSMSteady, numInMSMRegular, numInMSMCasual; /* MSM checks */
-    int maleSA = numSexuallyActive[(std::size_t) DemographicProfile::Gender::Male];
-    int femaleSA = numSexuallyActive[(std::size_t) DemographicProfile::Gender::Female];
-    int totalSA = maleSA + femaleSA;
+    /** check if population meets bounds for partnership prevalence */
+
+    /* First allocate variables */
+    std::size_t numInSteady, numInCasual, numInCSW, concurrentNum, numActs;
+    std::size_t numInMSMSteady, numInMSMRegular, numInMSMCasual; /* MSM checks */
+
+    /* Second calculate the denominators */
+    std::size_t maleSA = numSexuallyActive[(std::size_t) DemographicProfile::Gender::Male];
+    std::size_t femaleSA = numSexuallyActive[(std::size_t) DemographicProfile::Gender::Female];
+    std::size_t msmSA = numSexuallyActiveOrientation[(std::size_t) DemographicProfile::SexualOrientation::Msm];
+    std::size_t msmwSA = numSexuallyActiveOrientation[(std::size_t) DemographicProfile::SexualOrientation::Msmw];
+    std::size_t total_msm_msmw_SA = msmSA + msmwSA;
+    std::size_t totalSA = maleSA + femaleSA;
+
+    /* Third initialize the partnership prevalence's */
     double steadyPrev = 0.0, casualPrev = 0.0, CSWPrev = 0.0, propInConcurrent = 0.0, numActsAvg = 0.0;
     double steadyMSMPrev = 0.0, regularMSMPrev = 0.0, casualMSMPrev = 0.0; /* MSM Stuff */
 
@@ -1826,7 +1846,7 @@ bool Population::PassesPartnershipCalibration(EventParams &eventParams) {
         } else {
             steadyPrev = -1;
         }
-    } else { /* popToApply != 0 (basicaly any number means Male SA Pop) */
+    } else { /* popToApply != 0 (basically any number means Male SA Pop) */
         firstRow << "Male SA Pop" << Constants::Tab;
         numInSteady = numInPartnership[(int) SexualPartnership::Type::Steady][(std::size_t) DemographicProfile::Gender::Male]; //only male SA
 
@@ -1915,10 +1935,10 @@ bool Population::PassesPartnershipCalibration(EventParams &eventParams) {
     if (eventParams.calibrationInputs.steadyMSMPrevPopulation == 0) {
         firstRow << "Entire SA Pop" << Constants::Tab;
         numInMSMSteady =
-                numMSMInPartnership[(int) SexualPartnership::Type::Steady][(std::size_t) DemographicProfile::SexualOrientation::Msm];
+                numInPartnershipOrientation[(int) SexualPartnership::Type::Steady][(std::size_t) DemographicProfile::SexualOrientation::Msm];
 
         if (totalSA != 0) {
-            steadyMSMPrev = numInMSMSteady / (double) totalSA;
+            steadyMSMPrev = numInMSMSteady / (double) total_msm_msmw_SA;
 
             if (steadyMSMPrev < eventParams.calibrationInputs.steadyMSMPrevBounds.lower
                 || steadyMSMPrev > eventParams.calibrationInputs.steadyMSMPrevBounds.upper) {
@@ -1933,10 +1953,10 @@ bool Population::PassesPartnershipCalibration(EventParams &eventParams) {
     if (eventParams.calibrationInputs.regularMSMPrevPopulation == 0) {
         firstRow << "Entire SA Pop" << Constants::Tab;
         numInMSMRegular =
-                numMSMInPartnership[(int) SexualPartnership::Type::Regular][(std::size_t) DemographicProfile::SexualOrientation::Msm];
+                numInPartnershipOrientation[(int) SexualPartnership::Type::Regular][(std::size_t) DemographicProfile::SexualOrientation::Msm];
 
         if (totalSA != 0) {
-            regularMSMPrev = numInMSMRegular / (double) totalSA;
+            regularMSMPrev = numInMSMRegular / (double) total_msm_msmw_SA;
 
             if (regularMSMPrev < eventParams.calibrationInputs.regularMSMPrevBounds.lower
                 || regularMSMPrev > eventParams.calibrationInputs.regularMSMPrevBounds.upper) {
@@ -1951,10 +1971,10 @@ bool Population::PassesPartnershipCalibration(EventParams &eventParams) {
     if (eventParams.calibrationInputs.casualMSMPrevPopulation == 0) {
         firstRow << "Entire SA Pop" << Constants::Tab;
         numInMSMCasual =
-                numMSMInPartnership[(int) SexualPartnership::Type::Casual][(std::size_t) DemographicProfile::SexualOrientation::Msm];
+                numInPartnershipOrientation[(int) SexualPartnership::Type::Casual][(std::size_t) DemographicProfile::SexualOrientation::Msm];
 
         if (totalSA != 0) {
-            casualMSMPrev = numInMSMCasual / (double) totalSA;
+            casualMSMPrev = numInMSMCasual / (double) total_msm_msmw_SA;
 
             if (casualMSMPrev < eventParams.calibrationInputs.casualMSMPrevBounds.lower
                 || casualMSMPrev > eventParams.calibrationInputs.casualMSMPrevBounds.upper) {
