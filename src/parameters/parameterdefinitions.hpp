@@ -66,6 +66,15 @@ public:
     int CSWPrevPopulation;
     Bounds<double> CSWPrevBounds;
 
+    int steadyMSMPrevPopulation;
+    Bounds<double> steadyMSMPrevBounds;
+
+    int regularMSMPrevPopulation;
+    Bounds<double> regularMSMPrevBounds;
+
+    int casualMSMPrevPopulation;
+    Bounds<double> casualMSMPrevBounds;
+
     int propInConcurrentPopulation;
     Bounds<double> propInConcurrentBounds;
 

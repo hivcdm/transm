@@ -31,7 +31,7 @@ public:
     Outputs Run();
 
     /* returns eventParams.cepacRunStats for adding to the general popstats */
-    RunStats &GetCEPACRunStats();
+    RunStats &GetCEPACRunStats() const;
 
     /* returns eventParams.cepacCostStats for adding to the general popstats */
     CostStats &GetCEPACCostStats();

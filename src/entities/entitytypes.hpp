@@ -82,7 +82,7 @@ namespace transm {
     {
         OFF_PREP,
         PREP_ADHERENT,
-        PREP_INADHERENT,
+        PREP_INADHERENT, /* for later */
         WAS_ON_PREP,
         ENDType,
 		Last = ENDType,

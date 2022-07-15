@@ -29,389 +29,372 @@ namespace transm {
  *  
  *  @param EntityPool which is further subdivided into 
  *  @param Buckets */
+class Population {
+public:
 
-    class Population {
-    public:
-        
-        /** This is the main circular buffer containing the BucketAge structures */
-        using BucketAllAges = boost::circular_buffer_space_optimized<BucketAge *>;
+    /** This is the main circular buffer containing the BucketAge structures */
+    using BucketAllAges = boost::circular_buffer_space_optimized<BucketAge *>;
 
-        using RiskArray = std::array<std::size_t, (std::size_t) RiskLevel::Last>;
+    using RiskArray = std::array<std::size_t, (std::size_t) RiskLevel::Last>;
 
-        /** Creates a new @param population object given an XML input subtree which contains the @param parameters */
-        explicit Population(EventParams &parameters);
+    /** Creates a new @param population object given an XML input subtree which contains the @param parameters */
+    explicit Population(EventParams &parameters);
 
-        /** Default destructor */
-        ~Population();
+    /** Default destructor */
+    ~Population();
 
-        void operator=(const Population &) = delete;
+    void operator=(const Population &) = delete;
 
-        unsigned int GetId() const { return populationID; }
+    unsigned int GetId() const { return populationID; }
 
-        void Initialize(const PopulationParameters &parameters);
+    void Initialize(const PopulationParameters &parameters);
 
-        void SetCondomCost(double condom_cost) { popWideParams.condomCost = condom_cost; }
+    void SetCondomCost(double condom_cost) { popWideParams.condomCost = condom_cost; }
 
-        void SetCircumcisionCost(double circumcision_cost) { popWideParams.circumcisionCost = circumcision_cost; }
+    void SetCircumcisionCost(double circumcision_cost) { popWideParams.circumcisionCost = circumcision_cost; }
 
-        void Circumcise(Entity *p);
+    void Circumcise(Entity *p);
 
-        void Circumcise(double proportion);
+    void Circumcise(double proportion);
 
-        PopulationParameters &GetParameters() { return popWideParams; }
+    PopulationParameters &GetParameters() { return popWideParams; }
 
-        const PopulationParameters &GetParameters() const { return popWideParams; }
+    const PopulationParameters &GetParameters() const { return popWideParams; }
 
-        SimContext *LoadCepacFile(const std::string &cepac_file) { return parameters_.LoadCepacContext(cepac_file); }
+    SimContext *LoadCepacFile(const std::string &cepac_file) { return parameters_.LoadCepacContext(cepac_file); }
 
-        std::vector<Entity *> Find(std::function<bool(Entity *)> predicate);
+    std::vector<Entity *> Find(std::function<bool(Entity * )> predicate);
 
-        std::vector<Entity *> FindNonCircumcised();
+    std::vector<Entity *> FindNonCircumcised();
 
-        /**
-         * determines which DemographicProfiles have the power to initiate relationships and determines which
-         * relationships they can have */
-        void InitPartnershipBuckets();
+    /** determines which DemographicProfiles have the power to initiate relationships and determines which
+     * relationships they can have */
+    void InitPartnershipBuckets();
 
-        /** initializes the counters for incident infections by age for infections tracker */
-        void InitIncidentInfectionsByAge();
+    /** initializes the counters for incident infections by age for infections tracker */
+    void InitIncidentInfectionsByAge();
 
-        int UpdateTreatmentSlots(double rolloutProportion);
+    int UpdateTreatmentSlots(double rolloutProportion);
 
-        /** 
-         * Applies the incident prevalence inputs to the current population 
-         * (this may be delayed based on delay parameter) */
-        void ApplyIncidentPrevalence(EventParams &_eventParams);
+    /** Applies the incident prevalence inputs to the current population
+     * (this may be delayed based on delay parameter) */
+    void ApplyIncidentPrevalence(EventParams &eventParams);
 
-        /**
-         * Checks to see if there is a new cepac input file to apply to certain portions of the population 
-         * if rollout is being used */
-        void ApplyRolloutContext(EventParams &_eventParams, Time time);
+    /**
+     * Checks to see if there is a new cepac input file to apply to certain portions of the population
+     * if rollout is being used */
+    void ApplyRolloutContext(EventParams &eventParams, Time time);
 
-        void StartTreatment(Entity *person, SimContext *treatedContext);
+    void StartTreatment(Entity *person, SimContext *treatedContext);
 
-        /** Applies Treatment to certain portions of the population if ART Rollout is turned on */
-        void ApplyARTRollout(EventParams &_eventParams);
+    /** Applies Treatment to certain portions of the population if ART Rollout is turned on */
+    void ApplyARTRollout(EventParams &eventParams);
 
-        /** 
-         * Applies calibration procedure to determine if partnership prevalence in population lies in 
-         * the bounds provided */
-        bool PassesPartnershipCalibration(EventParams &_eventParams);
+    /** Applies calibration procedure to determine if partnership prevalence in population lies in
+     * the bounds provided */
+    bool PassesPartnershipCalibration(EventParams &eventParams);
 
-        /** everyone in population ages one year infected persons age another month in CEPAC */
-        void UpdatePhysicalState(EventParams &_eventParams, bool calculateLE, bool newLEPeriod);
+    /** everyone in population ages one year infected persons age another month in CEPAC */
+    void UpdatePhysicalState(EventParams &eventParams, bool calculateLE, bool newLEPeriod);
 
-        /** counts the number of people in each age bucket used for LE */
-        void UpdateAgeBucketsLE();
+    /** counts the number of people in each age bucket used for LE */
+    void UpdateAgeBucketsLE();
 
-        /**
-         * will form, dissolve partnerships and have sexual activity monthly sexual activity within population.
-         * when transmissions occur, run the incident case through CEPAC to get their future life trajectory
-         * returns the # of New people of each type who was infected */
-        void UpdatePartnerships(EventParams &_eventParams);
+    /** will form, dissolve partnerships and have sexual activity monthly sexual activity within population.
+     * when transmissions occur, run the incident case through CEPAC to get their future life trajectory
+     * returns the # of New people of each type who was infected */
+    void UpdatePartnerships(EventParams &eventParams);
 
-        void WritePartnershipNetwork(EventParams &_eventParams);
-        
-        /** counts the total size of the population and updates internal state */
-        std::size_t UpdateSize();
+    void WritePartnershipNetwork(EventParams &eventParams);
 
-        std::vector<AgeRange> GetAgeRanges() const;
-        
-        /** resets the monthly statistics */
-        void ResetMonthlyStats();
+    /** counts the total size of the population and updates internal state */
+    std::size_t UpdateSize();
 
-        /**
-         * After all of the population dynamics have run through, run all of the remaining infected persons through 
-         * CEPAC until they die to get the life expectancy and such in the CEPAC output files. */
-        void UpdateFinalPhysicalState(EventParams &_eventParams);
-        
-        /** gets the age bucket of the person */
-        AgeBucketPrevalenceInfo &GetAgeBucket(Entity *);
-        
-        /** gets the index of the age bucket of the person */
-        int GetAgeBucketIndex(Entity *);
+    std::vector<AgeRange> GetAgeRanges() const;
 
-        /** returns internal count of how big the current population is */
-        std::size_t GetSize() const;
+    /** resets the monthly statistics */
+    void ResetMonthlyStats();
 
-        /** returns internal count of how big the current population is */
-        std::size_t GetNASize() const;
+    /** After all of the population dynamics have run through, run all of the remaining infected persons through
+     * CEPAC until they die to get the life expectancy and such in the CEPAC output files. */
+    void UpdateFinalPhysicalState(EventParams &eventParams);
 
-        std::size_t GetSASize();
+    /** gets the age bucket of the person */
+    AgeBucketPrevalenceInfo &GetAgeBucket(Entity *);
 
-        /** returns internal count of how big the current population is */
-        std::size_t GetSize(DemographicProfile::Gender gender);
+    /** gets the index of the age bucket of the person */
+    int GetAgeBucketIndex(Entity *);
 
-        /** returns internal count of how big the current population is */
-        std::size_t GetSize(DemographicProfile::ProfileID profileID);
+    /** returns internal count of how big the current population is */
+    std::size_t GetSize() const;
 
-        /** returns internal count of how big the current population is */
-        std::size_t GetSASize(DemographicProfile::ProfileID profileID, RiskLevel _risk);
+    /** returns internal count of how big the current population is */
+    std::size_t GetNASize() const;
 
-        /** returns internal count of how big the current population is */
-        std::size_t GetCSWSize(DemographicProfile::ProfileID profileID, RiskLevel _risk);
+    std::size_t GetSASize();
 
-        const PopulationStatisticsOld &GetPopulationStatistics() const { return populationStatistics; }
+    /** returns internal count of how big the current population is */
+    std::size_t GetSize(DemographicProfile::Gender gender);
 
-        PopulationStatisticsOld &GetPopulationStatistics() { return populationStatistics; }
+    /** returns internal count of how big the current population is */
+    std::size_t GetSize(DemographicProfile::ProfileID profileID);
 
-        const std::unordered_set<Entity *> &GetDeadPeopleThisMonth() const { return dead_people_this_month_; }
+    /** returns internal count of how big the current population is */
+    std::size_t GetSASize(DemographicProfile::ProfileID profileID, RiskLevel _risk);
 
-        int GetNumberToTrace() const { return parameters_.numToTrace; }
+    /** returns internal count of how big the current population is */
+    std::size_t GetCSWSize(DemographicProfile::ProfileID profileID, RiskLevel _risk);
 
-        void RegisterIntervention(const Intervention &intervention);
+    const PopulationStatisticsOld &GetPopulationStatistics() const { return populationStatistics; }
 
-        std::size_t GetNumberCircumcised() { return num_circumcised_sa + num_circumcised_na; }
+    PopulationStatisticsOld &GetPopulationStatistics() { return populationStatistics; }
 
-    private:
-        friend class Intervention;
+    const std::unordered_set<Entity *> &GetDeadPeopleThisMonth() const { return dead_people_this_month_; }
 
-        friend class SimulationBuilderXml;
+    int GetNumberToTrace() const { return parameters_.numToTrace; }
 
-        friend class Simulation;
+    void RegisterIntervention(const Intervention &intervention);
 
-        friend class PopulationStatistics;
+    std::size_t GetNumberCircumcised() { return num_circumcised_sa + num_circumcised_na; }
 
-        friend class InfectionsTracker;
+private:
+    friend class Intervention;
 
-        /**
-         * forms creates partnerships of a particular type for 1 person. Will make sure that each partner is in the
-         * correct BucketDemographicProfile if _partnershipType == STEADY, then this will remove the partner from
-         * the EntityIndex (as they are now NOT_SINGLE)
-         *
-         * @param _eventParams
-         * @param _initiator person who is trying to find a STEADY REGULAR, CASUAL, or CSW partner
-         * ERINSAYS: _p_Iter removed for now -- may be replaced when list of allMales and allFemales are implemented
-         * @param _p_Iter an iterator that points to _initiator for fast removal from a BucketDemographicProfile.
-         * If this is nullptr, then it's ignored
-         * @param _partnershipType particular type of partnership that _initiator is looking to form
-         * @param _forceNumPartnersOne if true will force _initiator to create just one partnership of type
-         * _partnership type (useful for initial regular partnerships
-         * @return number of partnerships formed */
-        unsigned long CreatePartnerships(EventParams &_eventParams, Male *_initiator,
-                                         std::list<Entity *>::iterator *_p_Iter,
-                                         SexualPartnership::Type _partnershipType, bool _forceNumPartnersOne = false);
+    friend class SimulationBuilderXml;
 
-        /**
-         * dissolves a list of particular sexual partnerships. Removes the pointer to the SexualPartnership from
-         * each member and then deletes it */
-        void DissolveSexualPartnerships(EventParams &_eventParams, Entity *_initiator,
-                                        std::list<SexualPartnership *> &_partnershipsToEnd);
+    friend class Simulation;
 
-        /**
-         * create birthRate * currSize people who are age 0 and add them to the
-         * DemographicProfile::SexualActivityStatus::NotActive population */
-        void Births(EventParams &_eventParams);
+    friend class PopulationStatistics;
 
-        /** create the initial people in the population */
-        void GenerateInitialEntities();
+    friend class InfectionsTracker;
 
-        /** function used by both GenerateInitialEntities and Births to create the people in the population */
-        void GenerateEntities(const DemographicProfile &profile, unsigned long numInProfileToCreate,
-                              AgeRange *ageRange);
+    /** forms creates partnerships of a particular type for 1 person. Will make sure that each partner is in the
+     * correct BucketDemographicProfile if _partnershipType == STEADY, then this will remove the partner from
+     * the EntityIndex (as they are now NOT_SINGLE)
+     *
+     * @param eventParams
+     * @param _initiator person who is trying to find a STEADY REGULAR, CASUAL, or CSW partner
+     * ERINSAYS: _p_Iter removed for now -- may be replaced when list of allMales and allFemales are implemented
+     * @param _p_Iter an iterator that points to _initiator for fast removal from a BucketDemographicProfile.
+     * If this is nullptr, then it's ignored
+     * @param _partnershipType particular type of partnership that _initiator is looking to form
+     * @param _forceNumPartnersOne if true will force _initiator to create just one partnership of type
+     * _partnership type (useful for initial regular partnerships
+     * @return number of partnerships formed */
+    unsigned long CreatePartnerships(EventParams &eventParams, Male *_initiator,
+                                     std::list<Entity *>::iterator *_p_Iter,
+                                     SexualPartnership::Type _partnershipType, bool _forceNumPartnersOne = false);
 
-        /**
-         * @param _gender gender of person we want to create
-         * @param _ageBucketParams	parameters that determine a prevalent person's characteristics.
-         * If this is nullptr, then this method will create a newborn
-         * @return a newly formed person */
-        Entity *GenerateEntity(EventParams &_eventParams, const DemographicProfile &profile,
-                               Age age, bool toTrace);
+    /** dissolves a list of particular sexual partnerships. Removes the pointer to the SexualPartnership from
+     * each member and then deletes it */
+    void DissolveSexualPartnerships(EventParams &eventParams, Entity *_initiator,
+                                    std::list<SexualPartnership *> &_partnershipsToEnd);
 
-        /** helper funtions for ApplyIncidentPrevalence() */
-        void prevalentInfectionsFromCoefficients();
+    /** create birthRate * currSize people who are age 0 and add them to the
+     * DemographicProfile::SexualActivityStatus::NotActive population */
+    void Births(EventParams &eventParams);
 
-        int infectSeedPopulation(std::vector<Entity *> seedList, std::size_t seedPopulation);
+    /** create the initial people in the population */
+    void GenerateInitialEntities();
 
-        void prevalentInfectionsFromCount();
+    /** function used by both GenerateInitialEntities and Births to create the people in the population */
+    void GenerateEntities(const DemographicProfile &profile, unsigned long numInProfileToCreate,
+                          AgeRange *ageRange);
 
-        void applyPrevalentInfection(Entity *p);
+    /**
+     * @param _gender gender of person we want to create
+     * @param _ageBucketParams	parameters that determine a prevalent person's characteristics.
+     * If this is nullptr, then this method will create a newborn
+     * @return a newly formed person */
+    Entity *GenerateEntity(EventParams &eventParams, const DemographicProfile &profile,
+                           Age age, bool toTrace);
 
-        bool rollForChronicInfection(RandomNumberGenerator &_randomNums);
+    /** helper funtions for ApplyIncidentPrevalence() */
+    void prevalentInfectionsFromCoefficients();
 
-        /**
-         *processes the death of 1 person, updates statistics, removes that person from any relationships
-         *@param _deceased pointer to deceased person */
-        void ProcessDeath(EventParams &_eventParams, Entity *_p, bool calculateLE);
+    int infectSeedPopulation(std::vector<Entity *> seedList, std::size_t seedPopulation);
 
-        void DetermineRankings(const RolloutEligibility &criteria);
+    void prevalentInfectionsFromCount();
 
-        /**
-         * calculates the number of HIV cases for each sexually active BucketDemographicProfile
-         * and stores it in _infectionsTracker */
-        std::size_t CalcPrevalentPopulation(Time time);
+    void applyPrevalentInfection(Entity *p);
 
-        /**
-         * this is called at the end of each method that affects the population members
-         * prints out trace information such as the size of each BucketDemographicProfile
-         *
-         * @param _d debug level that we should print at
-         * @param _totalAffected the number of people affected by the most recent events
-         * @param _totalAffectedLabel a label that identifies the meaning behind the value _totalAffected
-         * @param _showInfected if true, will indicate how many people are currently infected in each BucketDemographicProfile */
-        void
-        PrintMethodResults(EventParams &_eventParams, const std::string &_methodName, const std::string &_eventLabel,
-                           long _totalAffected,
-                           const std::string &_totalAffectedLabel, bool _showInfections);
+    bool rollForChronicInfection(RandomNumberGenerator &_randomNums);
 
-        /** this saves the state of the population and writes to file  */
-        void SaveState(std::ostream &_outStream, Time currTime);
+    /** processes the death of 1 person, updates statistics, removes that person from any relationships
+     * @param _deceased pointer to deceased person */
+    void ProcessDeath(EventParams &eventParams, Entity *_p, bool calculateLE);
 
-        /**
-         * this is called at the end of each month to print the statistics about each population to the Population.out file
-         *
-         * @param _time the current time in the simulation
-         * @param _outStream the stream to print */
-        void PrintPopulationHeaders(Time _time, std::ostream &_outStream);
+    void DetermineRankings(const RolloutEligibility &criteria);
 
-        void PrintPopulation(EventParams &_eventParams, Time _time, std::ostream &_outStream);
+    /** calculates the number of HIV cases for each sexually active BucketDemographicProfile
+     * and stores it in _infectionsTracker */
+    std::size_t CalcPrevalentPopulation(Time time);
 
-        /**
-         * This is called at end of each month to print statistics about the behavior of the population to the
-         * Behavior.out file */
-        void PrintPartnerships(EventParams &_eventParams, Time _time, std::ostream &_outStream);
+    /** this is called at the end of each method that affects the population members
+     * prints out trace information such as the size of each BucketDemographicProfile
+     *
+     * @param _d debug level that we should print at
+     * @param _totalAffected the number of people affected by the most recent events
+     * @param _totalAffectedLabel a label that identifies the meaning behind the value _totalAffected
+     * @param _showInfected if true, will indicate how many people are currently infected in each BucketDemographicProfile */
+    void
+    PrintMethodResults(EventParams &_eventParams, const std::string &_methodName, const std::string &_eventLabel,
+                       long _totalAffected,
+                       const std::string &_totalAffectedLabel, bool _showInfections);
 
-        /**
-         * This is called at end of each month to print statistics about the clinical status of the population to
-         * the Clinical.out file */
-        void PrintClinical(EventParams &_eventParams, Time _time, std::ostream &_outStream);
+    /** this saves the state of the population and writes to file  */
+    void SaveState(std::ostream &_outStream, Time currTime);
 
-        void PrintARTRolloutOutcomes(EventParams &_eventParams, std::ostream &_outStream);
+    /** this is called at the end of each month to print the statistics about each population to the Population.out file
+     *
+     * @param _time the current time in the simulation
+     * @param _outStream the stream to print */
+    void PrintPopulationHeaders(Time _time, std::ostream &_outStream) const;
 
-        void PrintPrepOutcomes(EventParams &_eventParams, std::ostream &_outStream);
+    void PrintPopulation(EventParams &_eventParams, Time _time, std::ostream &_outStream);
 
-        /** This is called at specified time points to record the partner frequency */
-        void RecordPartAcqFreq();
+    /** This is called at end of each month to print statistics about the behavior of the population to the
+     * Behavior.out file */
+    void PrintPartnerships(EventParams &eventParams, Time _time, std::ostream &_outStream);
 
-        void RecordShiftedOutcomes(EventParams &_eventParams, std::ostream &_outStream);
+    /** This is called at end of each month to print statistics about the clinical status of the population to
+     * the Clinical.out file */
+    void PrintClinical(EventParams &_eventParams, Time _time, std::ostream &_outStream);
 
-        void ResetPartnershipTracking();
+    void PrintARTRolloutOutcomes(EventParams &eventParams, std::ostream &_outStream);
 
-        void RecordPartnership(const Entity *initiator, const Entity *partner);
+    void PrintPrepOutcomes(EventParams &eventParams, std::ostream &_outStream);
 
-        void PrintPartnershipTracking(std::ostream &_outStream, Time currTime);
+    /** This is called at specified time points to record the partner frequency */
+    void RecordPartAcqFreq();
 
-        void RecordInfection(const Entity *infectee, const Entity *infector, Time infection_time);
+    void RecordShiftedOutcomes(EventParams &eventParams, std::ostream &_outStream);
 
-        void OnRiskGroupChanged(const Entity *entity);
+    void ResetPartnershipTracking();
 
-        using ChangedRiskGroupEventHandler = std::function<void(const Entity *)>;
-        std::vector<ChangedRiskGroupEventHandler> risk_group_changed_;
+    void RecordPartnership(const Entity *initiator, const Entity *partner);
 
-    private:
+    void PrintPartnershipTracking(std::ostream &_outStream, Time currTime);
 
-        /** This is used to assign each New population a unique id */
-        static unsigned int idCounter;
+    void RecordInfection(const Entity *infectee, const Entity *infector, Time infection_time);
 
-        /** this number is used to access the Population stratified parameters for Male and Female */
-        unsigned int populationID;
+    void OnRiskGroupChanged(const Entity *entity);
 
-        /** name of population */
-        std::string populationLabel;
+    using ChangedRiskGroupEventHandler = std::function<void(const Entity *)>;
+    std::vector<ChangedRiskGroupEventHandler> risk_group_changed_;
 
-        /** current size of the population */
-        std::size_t currSize;
+private:
 
-        /** Size of non-sexually active */
-        std::size_t currNASize;
+    /** This is used to assign each New population a unique id */
+    static unsigned int idCounter;
 
-        /** Size of CSW's */
-        std::size_t currCSWSize;
+    /** this number is used to access the Population stratified parameters for Male and Female */
+    unsigned int populationID;
 
-        /** Size by Risk */
-        RiskArray currSizeRisk;
+    /** name of population */
+    std::string populationLabel;
 
-        /** Size of CSW's by Risk */
-        RiskArray currSizeRiskCSW;
+    /** current size of the population */
+    std::size_t currSize;
 
-        /** Size of CSW's by Risk and gender */
-        std::unordered_map<DemographicProfile::ProfileID, RiskArray> currSizeProfileRiskCSW;
+    /** Size of non-sexually active */
+    std::size_t currNASize;
 
-        /** Size by gender */
-        std::size_t currSizeGender[(std::size_t) DemographicProfile::Gender::Last];
+    /** Size of CSW's */
+    std::size_t currCSWSize;
 
-        /** Size by entity type. */
-        std::unordered_map<DemographicProfile::ProfileID, std::size_t> currSizeProfile;
+    /** Size by Risk */
+    RiskArray currSizeRisk;
 
-        /** Non-sexually active by gender */
-        std::unordered_map<DemographicProfile::ProfileID, std::size_t> currNASizeByProfile;
+    /** Size of CSW's by Risk */
+    RiskArray currSizeRiskCSW;
 
-        /** Sexually active by risk and gender */
-        std::unordered_map<DemographicProfile::ProfileID, RiskArray> currSASizeProfileRisk;
+    /** Size of CSW's by Risk and gender */
+    std::unordered_map<DemographicProfile::ProfileID, RiskArray> currSizeProfileRiskCSW;
 
-        /** Births this month */
-        std::size_t currBirths;
+    /** Size by gender */
+    std::size_t currSizeGender[(std::size_t) DemographicProfile::Gender::Last];
 
-        /** Num Died this month by Death Cause */
-        std::size_t currDeathCauses[(std::size_t) DeathStatus::Last];
+    /** Size by entity type. */
+    std::unordered_map<DemographicProfile::ProfileID, std::size_t> currSizeProfile;
 
-        std::unordered_map<DemographicProfile::ProfileID, AgeRangeSizeContainer> currSizeByProfileAgeRange;
+    /** Non-sexually active by gender */
+    std::unordered_map<DemographicProfile::ProfileID, std::size_t> currNASizeByProfile;
 
-        /** The people who are infected but still untreated (Only used for rollout) */
-        std::list<Entity *> rolloutUntreatedPool;
+    /** Sexually active by risk and gender */
+    std::unordered_map<DemographicProfile::ProfileID, RiskArray> currSASizeProfileRisk;
 
-        /** The people who are currently being treated (Only used for rollout) */
-        std::list<Entity *> rolloutTreatedPool;
+    /** Births this month */
+    std::size_t currBirths;
 
-        std::size_t num_circumcised_na;
-        std::size_t num_circumcised_sa;
+    /** Num Died this month by Death Cause */
+    std::size_t currDeathCauses[(std::size_t) DeathStatus::Last];
 
-        PopulationParameters popWideParams;
+    std::unordered_map<DemographicProfile::ProfileID, AgeRangeSizeContainer> currSizeByProfileAgeRange;
 
-        /**
-         * A container for all the people. This is a compartmentalized container that lets us
-         * access different types of people based on criteria. It also has an iterator that lets
-         * us access all the through a java style iterator interface */
-        std::unique_ptr<EntityPool> entities;
+    /** The people who are infected but still untreated (Only used for rollout) */
+    std::list<Entity *> rolloutUntreatedPool;
 
-        /** List of available demographic profile generated by EntityPool */
-        std::vector<DemographicProfile::ProfileID> demographicProfileIDs;
+    /** The people who are currently being treated (Only used for rollout) */
+    std::list<Entity *> rolloutTreatedPool;
 
-        /** Sexual Partnership Types allowed by the parameters mapped to profile IDs */
-        std::map<DemographicProfile::ProfileID, std::vector<SexualPartnership::Type>> profilesToPartnershipTypes;
+    std::size_t num_circumcised_na;
+    std::size_t num_circumcised_sa;
 
-        std::array<std::vector<Entity *>, 5> rankedForTreatment;
+    PopulationParameters popWideParams;
 
-        /** tallies the statistics that the population generates throughout the simulation */
-        PopulationStatisticsOld populationStatistics;
+    /** A container for all the people. This is a compartmentalized container that lets us
+     * access different types of people based on criteria. It also has an iterator that lets
+     * us access all the through a java style iterator interface */
+    std::unique_ptr<EntityPool> entities;
 
-        EventParams &parameters_;
+    /** List of available demographic profile generated by EntityPool */
+    std::vector<DemographicProfile::ProfileID> demographicProfileIDs;
 
-        double treatmentCorrectionFactor_;
+    /** Sexual Partnership Types allowed by the parameters mapped to profile IDs */
+    std::map<DemographicProfile::ProfileID, std::vector<SexualPartnership::Type>> profilesToPartnershipTypes;
 
-        std::unordered_set<Entity *> dead_people_this_month_;
+    std::array<std::vector<Entity *>, 5> rankedForTreatment;
 
-        std::vector<Intervention> interventions_;
+    /** tallies the statistics that the population generates throughout the simulation */
+    PopulationStatisticsOld populationStatistics;
 
-    public:
-        struct EntitySummary {
-            unsigned long person_id;
-            Time time_infected;
-            int infection_number;
-            int generation_number;
-            int infected_by;
-            Age age_at_infection;
-            Time time_of_death;
-            DemographicProfile profile;
-            RiskLevel risk_group;
-        };
+    EventParams &parameters_;
 
+    double treatmentCorrectionFactor_;
 
+    std::unordered_set<Entity *> dead_people_this_month_;
 
-    private:
-        std::unordered_map<unsigned long, EntitySummary> individual_summaries_;
+    std::vector<Intervention> interventions_;
 
-        static const int NumIndividualSummaries = 10000;
-
-        void SaveIndividualSummaries(std::ostream &stream) const;
-
-        std::unordered_map<std::string, MonthlyStats> trace_files_;
-
-        std::size_t debug_num_on_prep_;
-
-        std::map<DemographicProfile::ProfileID, std::map<DemographicProfile::ProfileID, unsigned long>>
-                newPartnershipCountByProfile;
+public:
+    struct EntitySummary {
+        unsigned long person_id;
+        Time time_infected;
+        int infection_number;
+        int generation_number;
+        int infected_by;
+        Age age_at_infection;
+        Time time_of_death;
+        DemographicProfile profile;
+        RiskLevel risk_group;
     };
+
+
+private:
+    std::unordered_map<unsigned long, EntitySummary> individual_summaries_;
+
+    static const int NumIndividualSummaries = 10000;
+
+    void SaveIndividualSummaries(std::ostream &stream) const;
+
+    std::unordered_map<std::string, MonthlyStats> trace_files_;
+
+    std::size_t debug_num_on_prep_;
+
+    std::map<DemographicProfile::ProfileID, std::map<DemographicProfile::ProfileID, unsigned long>>
+            newPartnershipCountByProfile;
+};
 
 } // namespace transm
 
