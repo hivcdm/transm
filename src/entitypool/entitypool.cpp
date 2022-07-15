@@ -67,32 +67,30 @@ EntityPool::EntityPool(const PopulationParameters &parameters, unsigned int _pop
 
 	//instantiate the spaces for all our buckets. The # of buckets depends on class BucketClassifiers
 	//these people are stored in a more complicated BucketDemographicProfile b/c they are involved in sexual mixing
-	for(unsigned int i = 0; i < validBucketIDs.size(); ++i)
+	for(int validBucketID : validBucketIDs)
 	{
-		DemographicProfile::ProfileID currBucketID = validBucketIDs.at(i);
+		DemographicProfile::ProfileID currBucketID = validBucketID;
 
 		//at this index into validBucketIDs, we are still making NA buckets
         if((std::size_t)DemographicProfile::SexualActivityStatus::NotActive ==
-			DemographicProfile::get(validBucketIDs.at(i), DemographicProfile::Demographic::SexualActivityStatus))
+			DemographicProfile::get(validBucketID, DemographicProfile::Demographic::SexualActivityStatus))
 		{
 			// make a Non-Active bucket
 			entityBuckets.at(currBucketID) = new BucketDemographicProfile(currBucketID,
                 DemographicProfile::toString(currBucketID), true);
 			validProfileIDs.push_back(currBucketID);
-		}
-		else
-		{
+		} else {
 			//Special case: CSW can't be in STEADY relationships
             bool isNonSingleCSWBucket = ((std::size_t)DemographicProfile::Employment::Csw ==
-				DemographicProfile::get(validBucketIDs.at(i), DemographicProfile::Demographic::Employment)) &&
-                ((std::size_t)DemographicProfile::RelationshipStatus::NonSingle == DemographicProfile::get(validBucketIDs.at(i),
+				DemographicProfile::get(validBucketID, DemographicProfile::Demographic::Employment)) &&
+                ((std::size_t)DemographicProfile::RelationshipStatus::NonSingle == DemographicProfile::get(validBucketID,
 					DemographicProfile::Demographic::RelationshipStatus));
 
             bool isMaleMswCSWBucket = ((std::size_t)DemographicProfile::Employment::Csw ==
-				DemographicProfile::get(validBucketIDs.at(i), DemographicProfile::Demographic::Employment)) &&
-                ((std::size_t)DemographicProfile::SexualOrientation::Msw == DemographicProfile::get(validBucketIDs.at(i),
+				DemographicProfile::get(validBucketID, DemographicProfile::Demographic::Employment)) &&
+                ((std::size_t)DemographicProfile::SexualOrientation::Msw == DemographicProfile::get(validBucketID,
 					DemographicProfile::Demographic::SexualOrientation)) &&
-                ((std::size_t)DemographicProfile::Gender::Male == DemographicProfile::get(validBucketIDs.at(i),
+                ((std::size_t)DemographicProfile::Gender::Male == DemographicProfile::get(validBucketID,
 					DemographicProfile::Demographic::Gender));
 
 			if(!isNonSingleCSWBucket && !isMaleMswCSWBucket)
@@ -128,17 +126,15 @@ EntityPool::~EntityPool()
 	allFemales.clear();
 
 	//iterate through all buckets and delete them
-	for(BaseEnumCls::Enum j = 0; j < entityBuckets.size(); ++j)
+	for(auto & entityBucket : entityBuckets)
 	{
-		if(entityBuckets.at(j) != nullptr)
+		if(entityBucket != nullptr)
 		{
-            if((std::size_t)DemographicProfile::SexualActivityStatus::NotActive != DemographicProfile::get(entityBuckets.at(j)->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus))
+            if((std::size_t)DemographicProfile::SexualActivityStatus::NotActive != DemographicProfile::get(entityBucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus))
 			{
-				delete(BucketSexualMixing *)entityBuckets.at(j);
-			}
-			else
-			{
-				delete entityBuckets.at(j);
+				delete(BucketSexualMixing *)entityBucket;
+			} else {
+				delete entityBucket;
 			}
 		}
 	}
@@ -255,7 +251,7 @@ void EntityPool::printBucketSizes(std::ostream &_outStream, const std::string &,
 		}
 
 		//# people infected in current BucketDemographicProfile
-		long numInfected = bucket->getNumInfected();
+		std::size_t numInfected = bucket->getNumInfected();
 
 		//if _printPropInfected == true, print out number of infected folk in the BucketDemographicProfile
 		if(_printPropInfected)
@@ -274,7 +270,7 @@ void EntityPool::printBucketSizes(std::ostream &_outStream, const std::string &,
 		}
 
 		//print out # people in current BucketDemographicProfile
-		long bucketSize = bucket->size();
+		std::size_t bucketSize = bucket->size();
 		_outStream << bucketSize << Constants::Tab;
 
         if(DemographicProfile::get(bucket->getProfileID(), DemographicProfile::Demographic::SexualActivityStatus) == (std::size_t)DemographicProfile::SexualActivityStatus::Active)

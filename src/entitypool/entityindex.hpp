@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ENTITYINDEX_HPP
+#define ENTITYINDEX_HPP
 
 #include <iostream>
 #include <list>
@@ -11,13 +12,11 @@
 
 namespace transm {
 
-/// <summary>
-/// This class indexes Person objects based on numerical key values
-/// Internal storage is managed by the a multi_map with an underlying B+ tree.
-/// 
-/// _PSC holds the key that we search and index against.
-/// </summary>
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
+ /**
+  * This class indexes Person objects based on numerical key values
+  * Internal storage is managed by the a multi_map with an underlying B+ tree.
+  * PSC holds the key that we search and index against. */
+template <Entity::SelectingCriteria PSC, class KeyValType>
 class EntityIndex
 {
 
@@ -25,114 +24,102 @@ private:
 
 	friend class JavaStyleIterator;
 
-    using PersonMultiMap = std::multimap<_KeyValType, Entity *>;
+    using PersonMultiMap = std::multimap<KeyValType, Entity *>;
     using CPPIterator = typename PersonMultiMap::iterator;
 
 	PersonMultiMap personMultiMap;
 
-	unsigned long numPeople;		//number of people in index
+    /** number of people in index */
+	unsigned long numPeople;
+
 public :
 
 	EntityIndex();
+
 	~EntityIndex();
 
-	//clears all elements from this index
+	/** clears all elements from this index */
 	void clear();
 
-    /// <summary>
-	/// draw any member from this pool, this function has a speed optimization
-    /// </summary>
-    /// <remarks>
-	/// this function is used by class BucketSexualMixing
-	/// draw a particular key first to narrow down potentials
-	/// then choose randomly from among the potentials with that key
-	/// assumption - all keys have an equal opportunity of being picked regardless
-    ///			  of the # of Entitys with that key
-	///			- if a key is chosen where there are no entities, choose the next
-	///				key w/ members in it
-    /// </remarks>
+     /**
+	  * draw any member from this pool, this function has a speed optimization
+      *
+	  * this function is used by class BucketSexualMixing
+	  * draw a particular key first to narrow down potentials
+	  * then choose randomly from among the potentials with that key
+	  * assumption - all keys have an equal opportunity of being picked regardless of the # of Entitys with that key
+	  * if a key is chosen where there are no entities, choose the next key w/ members in it */
 	Entity *drawMember(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType, bool _remove);
 
-    /// <summary>
-	/// draw a member from this pool
-    /// </summary>
+    /** draw a member from this pool */
 	Entity *drawMember(RandomNumberGenerator &_randomNums, Entity *_chooser, SexualPartnership::Type _partnershipType, bool _remove);
 
-    /// <summary>
-	/// Erases the _person from the index. Returns true if this person was 
-    /// actually part of the index and was erased.
-    /// </summary>
+    /**
+      * Erases the _person from the index. Returns true if this person was
+      * actually part of the index and was erased. */
 	bool erase(Entity *_person);
 
-    /// <summary>
-	/// tells whether _person exists in the index
-    /// </summary>
+    /** tells whether _person exists in the index */
 	bool exists(Entity *_person);
 
-    /// </summary>
-	/// draws person at position _randomAccessIndex in this index. This is random access...slow but necessary
-    /// </summary>
+    /** draws person at position _randomAccessIndex in this index. This is random access...slow but necessary */
 	Entity *getMember(unsigned long _randomAccessIndex, bool _remove);
 
-    /// <summary>
-	/// will return how many HIV infected people are currently in the index
-    /// </summary>
+    /** will return how many HIV infected people are currently in the index */
 	unsigned long getNumInfected();
 
-    /// <summary>
-    /// will return how many HIV infected people are currently in the index in the given infection generation.
-    /// </summary>
+    /** will return how many HIV infected people are currently in the index in the given infection generation. */
 	unsigned long getNumInfected(int generation);
 
-    /// <summary>
-	/// will index a new person
-    /// </summary>
+    /** will index a new person */
 	bool insert(Entity *_person);
 
-    /// <summary>
-	/// will remove this person (if he or she exists) from the index
-	/// returns the # of entities in this index
-    /// </summary>
+    /**
+	 * will remove this person (if he or she exists) from the index
+	 * returns the # of entities in this index */
 	unsigned int size();
 
-	typename std::multimap<_KeyValType, Entity *>::iterator begin();
-	typename std::multimap<_KeyValType, Entity *>::iterator end();
+	typename std::multimap<KeyValType, Entity *>::iterator begin();
+
+	typename std::multimap<KeyValType, Entity *>::iterator end();
+
 private:
 
-	//finds the location of an entry in the index,
+	/** finds the location of an entry in the index, */
 	CPPIterator find(Entity *_person);
 public:
 
 	class JavaStyleIterator
 	{
-		EntityIndex<_PSC, _KeyValType> *index; //pool that this iterator will run through
+        /** pool that this iterator will run through */
+		EntityIndex<PSC, KeyValType> *index;
 
 		bool currRemoved;
 
-		//this are internal pointers that keep track of where the JavaStyleIterator is
+		/** this are internal pointers that keep track of where the JavaStyleIterator is */
 		CPPIterator currElement;
 		CPPIterator nextElement;
 		CPPIterator end;
 
 	public:
-		JavaStyleIterator(EntityIndex<_PSC, _KeyValType> *_index);
+		JavaStyleIterator(EntityIndex<PSC, KeyValType> *_index);
 
-		//returns true if the element that was last returned by next() has been removed using remove()
+		/** returns true if the element that was last returned by next() has been removed using remove() */
 		bool alreadyRemoved();
 
-		//returns true if there are more members to iterate through
+		/** returns true if there are more members to iterate through */
 		bool hasNext();
 
-		//get the person that was last returned
+		/** get the person that was last returned */
 		Entity *get();
 
-		//this will be used to get the next in line
+		/** this will be used to get the next in line */
 		Entity *next();
 
-		//removes from the collection the last element returned by the iterator
+		/** removes from the collection the last element returned by the iterator */
 		bool remove();
 
-		//lets us reuse an iterator, resets to beginning of current collection
+		/** lets us reuse an iterator, resets to beginning of current collection */
 		void reset();
 
 		~JavaStyleIterator();
@@ -140,108 +127,110 @@ public:
 
     using JIterator = unique_ptr<JavaStyleIterator>;
 
-	//returns a EntityIndex<_PSC,_KeyValType>::JIterator
-	typename EntityIndex<_PSC, _KeyValType>::JIterator iterator();
+	/** returns a EntityIndex<_PSC,_KeyValType>::JIterator */
+	typename EntityIndex<PSC, KeyValType>::JIterator iterator();
 
 };
 
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-EntityIndex<_PSC, _KeyValType>::JavaStyleIterator::JavaStyleIterator(EntityIndex<_PSC, _KeyValType> *_index)
+template <Entity::SelectingCriteria PSC, class KeyValType>
+EntityIndex<PSC, KeyValType>::JavaStyleIterator::JavaStyleIterator(EntityIndex<PSC, KeyValType> *_index)
 {
 	index = _index;
-	//initialize this iterator to iterate from first element
+
+	/* initialize this iterator to iterate from first element */
 	reset();
 }
 
-//returns true if the element that was last returned by next() has been removed using remove()
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-bool EntityIndex<_PSC, _KeyValType>::JavaStyleIterator::alreadyRemoved()
+/** returns true if the element that was last returned by next() has been removed using remove() */
+template <Entity::SelectingCriteria PSC, class KeyValType>
+bool EntityIndex<PSC, KeyValType>::JavaStyleIterator::alreadyRemoved()
 {
 	return currRemoved;
 }
 
-//gets the last element returned by the iterator
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-Entity *EntityIndex<_PSC, _KeyValType>::JavaStyleIterator::get()
+/** gets the last element returned by the iterator */
+template <Entity::SelectingCriteria PSC, class KeyValType>
+Entity *EntityIndex<PSC, KeyValType>::JavaStyleIterator::get()
 {
 	return (*currElement).second;
 }
 
-//returns true if there are more members to iterate through
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-bool EntityIndex<_PSC, _KeyValType>::JavaStyleIterator::hasNext()
+/** returns true if there are more members to iterate through */
+template <Entity::SelectingCriteria PSC, class KeyValType>
+bool EntityIndex<PSC, KeyValType>::JavaStyleIterator::hasNext()
 {
 	return (nextElement != end);
 }
 
-//this will be used to get the next in line
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-Entity *EntityIndex<_PSC, _KeyValType>::JavaStyleIterator::next()
+/** this will be used to get the next in line */
+template <Entity::SelectingCriteria PSC, class KeyValType>
+Entity *EntityIndex<PSC, KeyValType>::JavaStyleIterator::next()
 {
-	//return the element that was stored previously
+	/* return the element that was stored previously */
 	currElement = nextElement;
-	//store the next element to return on then next call of next()
+
+	/* store the next element to return on then next call of next() */
 	nextElement++;
-	//reset flag that indicates whether remove() has been called on current element
+
+	/* reset flag that indicates whether remove() has been called on current element */
 	currRemoved = false;
+
 	return (*currElement).second;
 }
 
-//removes from the collection the last element returned by the iterator
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-bool EntityIndex<_PSC, _KeyValType>::JavaStyleIterator::remove()
+/** removes from the collection the last element returned by the iterator */
+template <Entity::SelectingCriteria PSC, class KeyValType>
+bool EntityIndex<PSC, KeyValType>::JavaStyleIterator::remove()
 {
-	//remove the person that was most recently returned by the iterator
+	/* remove the person that was most recently returned by the iterator */
 	if(!currRemoved && (currElement != end))
 	{
-		//user is removing first element, the we have to do a special adjustment
+		/* user is removing first element, the we have to do a special adjustment */
 		if(currElement == nextElement)
 		{
 			nextElement++;
 			index->personMultiMap.erase(currElement);
 			currElement = nextElement;
-		}
-		else
-		{
+		} else
 			index->personMultiMap.erase(currElement);
-		}
 
-		//do some book keeping for the index and the current iterator
+		/* do some book keeping for the index and the current iterator */
 		currRemoved = true;
 		index->numPeople--;
+
 		return true;
 	}
 
 	return false;
 }
 
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-void EntityIndex<_PSC, _KeyValType>::JavaStyleIterator::reset()
+template <Entity::SelectingCriteria PSC, class KeyValType>
+void EntityIndex<PSC, KeyValType>::JavaStyleIterator::reset()
 {
-    //pointer to element to current element to return
+    /* pointer to element to current element to return */
 	currElement = nextElement = index->personMultiMap.begin();
 	currRemoved = false;
-    //pointer to end of set
+
+    /* pointer to end of set */
 	end = index->personMultiMap.end();
 }
 
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-EntityIndex<_PSC, _KeyValType>::JavaStyleIterator::~JavaStyleIterator()
+template <Entity::SelectingCriteria PSC, class KeyValType>
+EntityIndex<PSC, KeyValType>::JavaStyleIterator::~JavaStyleIterator()
 {
 	index = nullptr;
 }
 
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-EntityIndex<_PSC, _KeyValType>::EntityIndex()
+template <Entity::SelectingCriteria PSC, class KeyValType>
+EntityIndex<PSC, KeyValType>::EntityIndex()
 {
 	numPeople = 0;
 }
 
-
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-EntityIndex<_PSC, _KeyValType>::~EntityIndex()
+template <Entity::SelectingCriteria PSC, class KeyValType>
+EntityIndex<PSC, KeyValType>::~EntityIndex()
 {
-	//delete every Relational Person in this BucketDemographicProfile
+	/* delete every Relational Person in this BucketDemographicProfile */
 	JIterator iter = iterator();
 
 	while(iter->hasNext())
@@ -253,53 +242,54 @@ EntityIndex<_PSC, _KeyValType>::~EntityIndex()
 }
 
 
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-void EntityIndex<_PSC, _KeyValType>::clear()
+template <Entity::SelectingCriteria PSC, class KeyValType>
+void EntityIndex<PSC, KeyValType>::clear()
 {
 	personMultiMap.clear();
 	numPeople = 0;
 }
 
 
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-Entity *EntityIndex<_PSC, _KeyValType>::drawMember(RandomNumberGenerator &_randomNums,
+template <Entity::SelectingCriteria PSC, class KeyValType>
+Entity *EntityIndex<PSC, KeyValType>::drawMember(RandomNumberGenerator &_randomNums,
         SexualPartnership::Type /*_partnershipType*/, bool _remove)
 {
-	//assume that everyone in this pool has an equal shot at being chosen
+	/* assume that everyone in this pool has an equal shot at being chosen */
 	int numPotentials = size();
 
-	//return nullptr if this index is empty
+	/* return nullptr if this index is empty */
 	if(numPotentials == 0)
-	{
 		return nullptr;
-	}
 
 	return drawMember(_randomNums, nullptr, SexualPartnership::Type::Last, _remove);
 }
 
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-Entity *EntityIndex<_PSC, _KeyValType>::drawMember(RandomNumberGenerator &_randomNums, Entity *_chooser,
+template <Entity::SelectingCriteria PSC, class KeyValType>
+Entity *EntityIndex<PSC, KeyValType>::drawMember(RandomNumberGenerator &_randomNums, Entity *_chooser,
         SexualPartnership::Type _partnershipType, bool _remove)
 {
-	int numPotentials = 0; //how many potential people in this range
+    /* how many potential people in this range */
+	int numPotentials = 0;
 	cout << "EntityIndex drawMember being called for person " << _chooser->getID() << std::endl;
-	//these determine the bounds of which keys we will consider
-	_KeyValType minDesired = std::numeric_limits<_KeyValType>::min();
-	_KeyValType maxDesired = std::numeric_limits<_KeyValType>::max();
 
-	//if there is a specific choose then make sure they want a specific kind of partnership
+	/* these determine the bounds of which keys we will consider */
+	KeyValType minDesired = std::numeric_limits<KeyValType>::min();
+	KeyValType maxDesired = std::numeric_limits<KeyValType>::max();
+
+	/* if there is a specific choose then make sure they want a specific kind of partnership */
 	if(_chooser != nullptr)
 	{
 		assert(_partnershipType != SexualPartnership::Type::Last);
-		minDesired = (_KeyValType)_chooser->getMinPartnerSelectVal(_PSC, _partnershipType);
-		maxDesired = (_KeyValType)_chooser->getMaxPartnerSelectVal(_PSC, _partnershipType);
+		minDesired = (KeyValType)_chooser->getMinPartnerSelectVal(PSC, _partnershipType);
+		maxDesired = (KeyValType)_chooser->getMaxPartnerSelectVal(PSC, _partnershipType);
 		assert(minDesired <= maxDesired);
 	}
 
-	//the lower and upper bound of potential partner pool
+	/* the lower and upper bound of potential partner pool */
 	CPPIterator potentialsStart =  personMultiMap.lower_bound(minDesired);
 	CPPIterator potentialsEnd =  personMultiMap.upper_bound(maxDesired);
-	//count how many potentials there are
+
+	/* count how many potentials there are */
 	CPPIterator iter = potentialsStart;
 
 	while(iter != potentialsEnd)
@@ -308,18 +298,16 @@ Entity *EntityIndex<_PSC, _KeyValType>::drawMember(RandomNumberGenerator &_rando
 		iter++;
 	}
 
-	//if nobody is available, stop now
+	/* if nobody is available, stop now */
 	if(numPotentials == 0)
-	{
 		return nullptr;
-	}
 
-	//get an individual
+	/* get an individual */
 	int toPick = _randomNums.randInt(0, numPotentials - 1);
 	int peopleChecked = 0;
 	iter = potentialsStart;
 
-	//try for all the available potentials from youngest to oldest
+	/* try for all the available potentials from youngest to oldest */
 	while((iter != potentialsEnd) && (peopleChecked < toPick))
 	{
 		iter++;
@@ -328,10 +316,10 @@ Entity *EntityIndex<_PSC, _KeyValType>::drawMember(RandomNumberGenerator &_rando
 
 	Entity *person = iter->second;
 
-	//if we choose the potential, then return partner
+	/* if we choose the potential, then return partner */
 	if(_remove && person)
 	{
-		//do some book keeping of counts before deleting
+		/* do some book keeping of counts before deleting */
 		numPeople--;
 		personMultiMap.erase(iter);
 	}
@@ -339,18 +327,16 @@ Entity *EntityIndex<_PSC, _KeyValType>::drawMember(RandomNumberGenerator &_rando
 	return person;
 }
 
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-Entity *EntityIndex<_PSC, _KeyValType>::getMember(unsigned long _randomAccessIndex, bool _remove)
+template <Entity::SelectingCriteria PSC, class KeyValType>
+Entity *EntityIndex<PSC, KeyValType>::getMember(unsigned long _randomAccessIndex, bool _remove)
 {
 	assert(_randomAccessIndex < numPeople);
 
-	//return nullptr if there are no more people
+	/* return nullptr if there are no more people */
 	if(numPeople == 0)
-	{
 		return nullptr;
-	}
 
-	//traverse to person at _randomAccessIndex
+	/* traverse to person at _randomAccessIndex */
 	CPPIterator iter = personMultiMap.begin();
 
 	while((iter != personMultiMap.end()) && (_randomAccessIndex > 0))
@@ -361,7 +347,7 @@ Entity *EntityIndex<_PSC, _KeyValType>::getMember(unsigned long _randomAccessInd
 
 	Entity *person = iter->second;
 
-	//remove person if _remove == true
+	/* remove person if _remove == true */
 	if(_remove && person)
 	{
 		numPeople--;
@@ -371,20 +357,20 @@ Entity *EntityIndex<_PSC, _KeyValType>::getMember(unsigned long _randomAccessInd
 	return person;
 }
 
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-bool EntityIndex<_PSC, _KeyValType>::erase(Entity *_person)
+template <Entity::SelectingCriteria PSC, class KeyValType>
+bool EntityIndex<PSC, KeyValType>::erase(Entity *_person)
 {
 	std::pair<CPPIterator, CPPIterator> personsWithKey = personMultiMap.equal_range(
-	            Entity::Sorter<_PSC, _KeyValType>::getSortKey(_person));
+	            Entity::Sorter<PSC, KeyValType>::getSortKey(_person));
 	CPPIterator curr;
 
-	//if people with the same key as _person exist
+	/* if people with the same key as _person exist */
 	if(personsWithKey.first != personMultiMap.end())
 	{
-		//iterate through all entries that match this key to find _person
+		/* iterate through all entries that match this key to find _person */
 		for(curr = personsWithKey.first; curr != personsWithKey.second; ++curr)
 		{
-			//if we have found that person, erase them
+			/* if we have found that person, erase them */
 			if(curr->second == _person)
 			{
 				personMultiMap.erase(curr);
@@ -397,24 +383,22 @@ bool EntityIndex<_PSC, _KeyValType>::erase(Entity *_person)
 	return false;
 }
 
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-bool EntityIndex<_PSC, _KeyValType>::exists(Entity *_person)
+template <Entity::SelectingCriteria PSC, class KeyValType>
+bool EntityIndex<PSC, KeyValType>::exists(Entity *_person)
 {
 	std::pair<CPPIterator, CPPIterator> personsWithKey = personMultiMap.equal_range(
-	            Entity::Sorter<_PSC, _KeyValType>::getSortKey(_person));
+	            Entity::Sorter<PSC, KeyValType>::getSortKey(_person));
 	CPPIterator curr;
 
-	//if people with the same key as _person exist
+	/* if people with the same key as _person exist */
 	if(personsWithKey.first != personMultiMap.end())
 	{
-		//iterate through all entries that match this key to find _person
+		/* iterate through all entries that match this key to find _person */
 		for(curr = personsWithKey.first; curr != personsWithKey.second; ++curr)
 		{
-			//if we have found that person, erase them
+			/* if we have found that person, erase them */
 			if(curr->second == _person)
-			{
 				return true;
-			}
 		}
 	}
 
@@ -422,34 +406,33 @@ bool EntityIndex<_PSC, _KeyValType>::exists(Entity *_person)
 }
 
 
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-typename EntityIndex<_PSC, _KeyValType>::CPPIterator EntityIndex<_PSC, _KeyValType>::find(Entity *_person)
+template <Entity::SelectingCriteria PSC, class KeyValType>
+typename EntityIndex<PSC, KeyValType>::CPPIterator EntityIndex<PSC, KeyValType>::find(Entity *_person)
 {
 	std::pair<CPPIterator, CPPIterator> personsWithKey = personMultiMap.equal_range(
-	            Entity::Sorter<_PSC, _KeyValType>::getSortKey(_person));
+	            Entity::Sorter<PSC, KeyValType>::getSortKey(_person));
 	CPPIterator curr;
 
-	//if people with the same key as _person exist
+	/* if people with the same key as _person exist */
 	if(personsWithKey.first != personMultiMap.end())
 	{
-		//iterate through all entries that match this key to find _person
+		/* iterate through all entries that match this key to find _person */
 		for(curr = personsWithKey.first; curr != personsWithKey.second; ++curr)
 		{
 			if(curr->second == _person)
-			{
 				return curr;
-			}
 		}
 	}
 
 	personMultiMap.end();
 }
 
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-unsigned long EntityIndex<_PSC, _KeyValType>::getNumInfected()
+template <Entity::SelectingCriteria PSC, class KeyValType>
+unsigned long EntityIndex<PSC, KeyValType>::getNumInfected()
 {
 	unsigned long numInfected = 0;
-	//iterates through all elements
+
+	/* iterates through all elements */
 	CPPIterator iter = personMultiMap.begin();
 
 	while(iter != personMultiMap.end())
@@ -465,11 +448,12 @@ unsigned long EntityIndex<_PSC, _KeyValType>::getNumInfected()
 	return numInfected;
 }
 
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-unsigned long EntityIndex<_PSC, _KeyValType>::getNumInfected(int generation)
+template <Entity::SelectingCriteria PSC, class KeyValType>
+unsigned long EntityIndex<PSC, KeyValType>::getNumInfected(int generation)
 {
 	unsigned long numInfected = 0;
-	//iterates through all elements
+
+	/* iterates through all elements */
 	CPPIterator iter = personMultiMap.begin();
 
 	while(iter != personMultiMap.end())
@@ -485,40 +469,45 @@ unsigned long EntityIndex<_PSC, _KeyValType>::getNumInfected(int generation)
 	return numInfected;
 }
 
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-bool EntityIndex<_PSC, _KeyValType>::insert(Entity *_person)
+template <Entity::SelectingCriteria PSC, class KeyValType>
+bool EntityIndex<PSC, KeyValType>::insert(Entity *_person)
 {
-	pair<_KeyValType, Entity *> toInsert = pair<_KeyValType, Entity *>(Entity::Sorter<_PSC, _KeyValType>::getSortKey(
+	pair<KeyValType, Entity *> toInsert = pair<KeyValType, Entity *>(Entity::Sorter<PSC, KeyValType>::getSortKey(
 	        _person), _person);
 	personMultiMap.insert(toInsert);
-	//if this person was successfully inserted, then update some book-keeping
+
+	/* if this person was successfully inserted, then update some book-keeping */
 	numPeople++;
+
 	return true;
 }
 
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-unsigned int EntityIndex<_PSC, _KeyValType>::size()
+template <Entity::SelectingCriteria PSC, class KeyValType>
+unsigned int EntityIndex<PSC, KeyValType>::size()
 {
 	assert(numPeople == personMultiMap.size());
 	return numPeople;
 }
 
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-typename EntityIndex<_PSC, _KeyValType>::JIterator EntityIndex<_PSC, _KeyValType>::iterator()
+template <Entity::SelectingCriteria PSC, class KeyValType>
+typename EntityIndex<PSC, KeyValType>::JIterator EntityIndex<PSC, KeyValType>::iterator()
 {
-	return typename EntityIndex<_PSC, _KeyValType>::JIterator(new JavaStyleIterator(this));
+	return typename EntityIndex<PSC, KeyValType>::JIterator(new JavaStyleIterator(this));
 }
 
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-typename std::multimap<_KeyValType, Entity *>::iterator EntityIndex<_PSC, _KeyValType>::begin()
+template <Entity::SelectingCriteria PSC, class KeyValType>
+typename std::multimap<KeyValType, Entity *>::iterator EntityIndex<PSC, KeyValType>::begin()
 {
 	return personMultiMap.begin();
 }
 
-template <Entity::SelectingCriteria _PSC, class _KeyValType>
-typename std::multimap<_KeyValType, Entity *>::iterator EntityIndex<_PSC, _KeyValType>::end()
+template <Entity::SelectingCriteria PSC, class KeyValType>
+typename std::multimap<KeyValType, Entity *>::iterator EntityIndex<PSC, KeyValType>::end()
 {
 	return personMultiMap.end();
 }
 
 } // namespace transm
+
+
+#endif /* ENTITYINDEX_HPP */

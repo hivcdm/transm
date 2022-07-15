@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RUNTIMEPREDICTOR_HPP
+#define RUNTIMEPREDICTOR_HPP
 
 #include <numeric>
 
@@ -121,3 +122,6 @@ private:
 };
 
 } // namespace transm
+
+
+#endif /* RUNTIMEPREDICTOR_HPP */

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MALE_HPP
+#define MALE_HPP
 
 #include <map>
 
@@ -20,8 +21,8 @@ class RaceEthnicityMap {
         return raceToEthnicityMap.at(race);
     }
     void SetRaceKeysFromMap() {
-        for (RaceEthnicityMapType::iterator it = raceToEthnicityMap.begin(); it != raceToEthnicityMap.end(); ++it) {
-            raceKeys.push_back(it->first);
+        for (auto & it : raceToEthnicityMap) {
+            raceKeys.push_back(it.first);
         }
     }
     std::vector<DemographicProfile::Race> GetRaceKeysFromMap() {
@@ -33,17 +34,14 @@ class RaceEthnicityMap {
     std::vector<DemographicProfile::Race> raceKeys;
 };
 
-/// <summary>
-/// All females in the simulation are members of this class, or a class derived from this one
-/// </summary>
+/** All males in the simulation are members of this class, or a class derived from this one */
 class Male : public Entity
 {
 public :
 
-	/// <summary>
-	/// These are parameters that describe the population of males.
-	/// Each Population in the Sim will have a separate one of these references by the population's ID.
-	/// </summary>
+    /**
+	 * These are parameters that describe the population of males.
+	 * Each Population in the Sim will have a separate one of these references by the population's ID. */
 	class SubPopParams
 	{
 	public:
@@ -53,7 +51,7 @@ public :
 		double getChanceBecomeCSW() const;
 		double getPartnerAcqMultWithSteady(RiskLevel _risk) const;
 
-		//sexual behavior params for each type as specified by SexualPartnership::Type
+		/* sexual behavior params for each type as specified by SexualPartnership::Type */
 		const SexualBehavior &getSexualBehavior(SexualPartnership::Type _type) const;
 		SexualBehavior &getSexualBehavior(SexualPartnership::Type _type);
 
@@ -76,7 +74,8 @@ public :
 			double acqMult = 1 - partneringAcqDiscPerYr;
 			double actsMult = 1 - partneringActsDiscPerYr;
 
-			//generate vectors that contain discount multipliers. will cover from [partneringDiscStartAgeYrs,Entity::maxYrForDeathStats]
+			/* generate vectors that contain discount multipliers. will cover from [partneringDiscStartAgeYrs,
+			 * Entity::maxYrForDeathStats] */
 			partneringAcqDiscMult.clear();
 			partneringActsDiscMult.clear();
 			partneringAcqDiscMult.push_back(acqMult);
@@ -107,8 +106,7 @@ public :
 		void SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type type, double mean) { sexualBehaviorParams[type].setCoitalEventsPerMonth(risk, mean); }
 		void SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { sexualBehaviorParams[type].setChanceCondomUsePerEvent(risk, dist); }
 		void SetPartnershipDuration(RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { sexualBehaviorParams[type].setPartnershipDuration(risk, dist); }
-	const BetaDist GetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type type) const
-		{ return getSexualBehavior(type).getChanceCondomUsePerEvent(risk); }
+	    BetaDist GetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type type) const { return getSexualBehavior(type).getChanceCondomUsePerEvent(risk); }
 
 		int GetMaxPartnershipRejections() const { return maxPartnershipRejections; }
 		void SetMaxPartnershipRejections(int rejections) { maxPartnershipRejections = rejections; }
@@ -120,10 +118,10 @@ public :
 	    void SetProportionCircumcised(double value) { proportionCircumcised = value; }
 
         void setChanceMsmwChooseMale(double chance) { chanceMsmwChooseMale = chance; }
-        double getChanceMsmwChooseMale() { return chanceMsmwChooseMale; }
+        double getChanceMsmwChooseMale() const { return chanceMsmwChooseMale; }
 
         void setChanceMsmChooseMsmw(double chance) { chanceMsmChooseMsmw = chance; }
-        double getChanceMsmChooseMsmw() { return chanceMsmChooseMsmw; }
+        double getChanceMsmChooseMsmw() const { return chanceMsmChooseMsmw; }
 
         double getRiskAssortativeness() const { return riskAssortativeness; }
         void setRiskAssortativeness(double riskAssortativeness) {
@@ -133,7 +131,7 @@ public :
         void setBaselineRaceEthnicAssortativeness(double baselineAssortivity) {
             for (auto race : allowedRaceEthnicityMap.GetRaceKeysFromMap()) {
                 for (auto ethnicity : allowedRaceEthnicityMap.GetEthnicityForRace(race)) {
-                    raceEthnicAssortivity.push_back(std::make_tuple(race, ethnicity, baselineAssortivity));
+                    raceEthnicAssortivity.emplace_back(race, ethnicity, baselineAssortivity);
                 }
             }
         }
@@ -148,7 +146,7 @@ public :
             }
         }
 
-        const double getRaceEthnicAssortativeness(DemographicProfile::Race race,
+        double getRaceEthnicAssortativeness(DemographicProfile::Race race,
             DemographicProfile::Ethnicity ethnicity) {
             using raceEthTuple = std::tuple<DemographicProfile::Race,DemographicProfile::Ethnicity,double>;
             auto it = std::find_if(raceEthnicAssortivity.begin(), raceEthnicAssortivity.end(),
@@ -170,87 +168,94 @@ public :
     private:
         Age cswEndAge;
 
-		//chance that a male will become a CSW
+		/** chance that a male will become a CSW */
 		double chanceBecomeCSW;
 
-		//the rate multiplier for partner acquisition when a male has a Steady partner
+		/** the rate multiplier for partner acquisition when a male has a Steady partner */
 		double partnerAcqMultWithSteady[(std::size_t)RiskLevel::Last];
 
-		//sexual behavior params for each type as specified by SexualPartnership::Type
+		/** sexual behavior params for each type as specified by SexualPartnership::Type */
 		std::unordered_map<SexualPartnership::Type, SexualBehavior> sexualBehaviorParams;
 
-		//proportion of male population that is in the "high risk" lists based on csw status
+		/** proportion of male population that is in the "high risk" lists based on csw status */
 		double proportionHighRisk[(std::size_t)DemographicProfile::Employment::Last];
 
         double proportionCircumcised;
 
-		//the age that partnering discount will start
+		/** the age that partnering discount will start */
 		Age partneringDiscStartAgeYrs;
-		//partnering acquisition rates get discounted every year
+
+		/** partnering acquisition rates get discounted every year */
 		double partneringAcqDiscPerYr;
-		//coital acts/month get discounted every year
+
+		/** coital acts/month get discounted every year */
 		double partneringActsDiscPerYr;
 
-		//these contain the discount for every age between partneringDiscStartAgeYrs and Entity::maxYrForDeathStats
-		//we can calculate these once and use them over and over again.
-		//  we've actually saved these as multipliers so that for a particular age N > partneringDiscStartAgeYrs,
-		//		the acquisition rate will be multiplied by  (1 - partneringAcqDiscPerYr)^(partneringDiscStartAgeYrs - N)
-		//so a particular value when multiplied to an acquisition rate will yield the discounted rate
+		/**
+		 * these contain the discount for every age between partneringDiscStartAgeYrs and Entity::maxYrForDeathStats
+		 * we can calculate these once and use them over and over again.
+		 * we've actually saved these as multipliers so that for a particular age N > partneringDiscStartAgeYrs,
+		 * the acquisition rate will be multiplied by  (1 - partneringAcqDiscPerYr)^(partneringDiscStartAgeYrs - N)
+		 * so a particular value when multiplied to an acquisition rate will yield the discounted rate */
 		std::vector<double> partneringAcqDiscMult;
-		//the principle of these multipliers are the same as for partneringAcqDiscMult, but for #acts
+
+        /** the principle of these multipliers are the same as for partneringAcqDiscMult, but for #acts */
 		std::vector<double> partneringActsDiscMult;
 
-		//factors that determind foif
-		//transmission protection that circumcision provides (a positive multiplier <= 1)
+		/* factors that determind foif */
+		/* transmission protection that circumcision provides (a positive multiplier <= 1) */
 		double circumProtectEff;
-		//transmission protection that condoms provide  (a positive multiplier <= 1)
+
+		/** transmission protection that condoms provide  (a positive multiplier <= 1) */
 		double condomProtectEff;
 
 		double coefficientOfVariation;
 		bool useCoefficientVariation;
 
-        // The number of times the male can be rejected by a female before he
-        // decreases his number of partnerships to be formed and stops looking
-        // for the current partner.
+        /**
+         * The number of times the male can be rejected by a female before he
+         * decreases his number of partnerships to be formed and stops looking
+         * for the current partner. */
         int maxPartnershipRejections;
 
         double preExposureProphylaxisEfficacy_;
 
-        //contains all current partnerships including CSW and Casual
+        /** contains all current partnerships including CSW and Casual */
         std::list<SexualPartnership *> partners[(int)SexualPartnership::Type::Last];
 
-        // assortativeness
+        /** assortativeness */
         double chanceMsmwChooseMale;
         double chanceMsmChooseMsmw;
         double riskAssortativeness;
 
-        std::vector<std::tuple<DemographicProfile::Race, DemographicProfile::Ethnicity, double>>
-            raceEthnicAssortivity;
+        std::vector<std::tuple<DemographicProfile::Race, DemographicProfile::Ethnicity, double>> raceEthnicAssortivity;
 
         RaceEthnicityMap allowedRaceEthnicityMap;
 
 	};
 
 public:
-    /*
+    /**
 	 * This constructor creates a Male that can be simulated
-     * constructor should set the CD4, HVL, and HVLsetpoint from age and gender.
-	 */
+     * constructor should set the CD4, HVL, and HVLsetpoint from age and gender. */
     Male(EventParams &_eventParams, Age age, bool circumcised, const DemographicProfile &profile,
         unsigned int _populationID, const Male::SubPopParams &params, const PrepParameters &prepParams);
+
     ~Male();
 
-    /*virtual*/ std::string const getEntityType() const;
+    virtual const string getEntityType() const;
+
     void Circumcise();
+
     bool IsCircumcised() const { return circumcised; }
 
     void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) { populationSpecificParams.SetProportionHighRisk(employment, proportion); }
 
     std::size_t GetSexualOrientation();
 
-	/** Start: Inherited from Entity, comments found there **/
-
-	Entity *choosePartner(RandomNumberGenerator &_randomNums, EntityPool *_availableEntities,
+	/** Start: Inherited from Entity, comments found there */
+    /*@{*/
+    Entity *choosePartner(RandomNumberGenerator &_randomNums, EntityPool *_availableEntities,
 	                      SexualPartnership::Type _partnershipType, bool _remove);
 
     void SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng);
@@ -287,7 +292,7 @@ public:
 
 	double getMinPartnerSelectVal(Entity::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
 	double getMaxPartnerSelectVal(Entity::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const;
-	//Returns the age difference (in years) to center around
+	/** Returns the age difference (in years) to center around */
 	double rollForAgeDifference(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums);
 
 	bool possibleMatch(SexualPartnership::Type _partnershipType, Entity *_p);
@@ -296,25 +301,33 @@ public:
 	int rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums, Entity *_p);
     DemographicProfile::ProfileID ChoosePartnerDemographic(RandomNumberGenerator &_randomNums, SexualPartnership::Type partnershipType);
 
-
 	void rerollRiskGroup(EventParams &_eventParams);
-	//writes state of person to file
-	void saveState(ostream &_outStream, Time currTime);
-	/** End: Inherited from Entity **/
 
-	/** Start: functions for Males only **/
+	/** writes state of person to file */
+    void saveState(ostream &_outStream, Time currTime);
+
+	/** End: Inherited from Entity */
+    /*@}*/
+
+    /** Start: functions for Males only */
+    /*@{*/
     int GetMaxPartnershipRejections() const
 	{ return populationSpecificParams.GetMaxPartnershipRejections(); }
 
-	//calculates the likelihood of using a condom based on the partnering type
+	/** calculates the likelihood of using a condom based on the partnering type */
 	double getCondomUseProb(Entity *_p, SexualPartnership::Type _partnershipType);
-	//gets the efficacy of using a condom on preventing the spread of HIV
-	double getCondomProtectEff();
-	//gets the efficacy of circumcision on preventing the spread of HIV
-	double getCircumProtectEff();
-	/** End: functions for Males only **/
 
-	void SetPartnershipRejectionChance(RiskLevel, SexualPartnership::Type, double) { }
+    /** gets the efficacy of using a condom on preventing the spread of HIV */
+	double getCondomProtectEff();
+
+    /** gets the efficacy of circumcision on preventing the spread of HIV */
+	double getCircumProtectEff();
+
+	/** End: functions for Males only */
+    /*@}*/
+
+
+    void SetPartnershipRejectionChance(RiskLevel, SexualPartnership::Type, double) { }
 	double GetPartnershipRejectionChance(RiskLevel, SexualPartnership::Type) const { return 0; }
 	void SetOverrideChanceCondomUse(double) { }
 	double GetOverrideChanceCondomUse() const { return -1; }
@@ -330,22 +343,29 @@ public:
 private:
 	SubPopParams populationSpecificParams;
 
-	//whether they are circumcised
+	/** whether they are circumcised */
 	bool circumcised;
 
-	//the rate at which this male acquires various partners -- this value is drawn from lognormal, but the male's number of partners each month will be drawn from poisson
+	/**
+	 * the rate at which this male acquires various partners -- this value is drawn from lognormal, but the male's
+	 * number of partners each month will be drawn from poisson */
 	double partnerAcqRates[(int)SexualPartnership::Type::Last];
 
-	//the  acts per month (fits a poisson distribution with minimum value of 1)
+	/** the  acts per month (fits a poisson distribution with minimum value of 1) */
     double numActsPerMonth[(int)SexualPartnership::Type::Last];
 
-	//chance that this male will use condom w/ different partner types
+	/** chance that this male will use condom w/ different partner types */
 	double chanceCondomUsePerEvent[(int)SexualPartnership::Type::Last];
 
-	// The distribution the males will draw from to determine how many years younger their partner should be (resulting difference may be negative for older women)
+	/**
+	 * The distribution the males will draw from to determine how many years younger their partner should be
+	 * (resulting difference may be negative for older women) */
 	NormalDist averageYearsYounger[(int)SexualPartnership::Type::Last];
 
 	std::size_t times_selected_;
 };
 
 } // namespace transm
+
+
+#endif /* MALE_HPP */

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TRANSMISSIONTYPE_HPP
+#define TRANSMISSIONTYPE_HPP
 
 namespace transm {
 
@@ -13,9 +14,7 @@ enum class TransmissionType
 
 namespace std {
 
-/// <summary>
-/// Specialize std::hash for TransmissionType
-/// </summary>
+ /** Specialize std::hash for TransmissionType */
 template<>
 struct hash<transm::TransmissionType>
 {
@@ -29,3 +28,6 @@ struct hash<transm::TransmissionType>
 };
 
 } // namespace std
+
+
+#endif /* TRANSMISSIONTYPE_HPP */

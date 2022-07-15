@@ -1,12 +1,14 @@
 #include <sqlite3.h>
 
+#include <utility>
+
 #include "batchstatus.hpp"
 #include "utility/utility.hpp"
 
 namespace transm {
 
-BatchStatus::BatchStatus(const std::string &batch_name)
-    : batch_name_(batch_name),
+BatchStatus::BatchStatus(std::string batch_name)
+    : batch_name_(std::move(batch_name)),
     bool_query_result_(false),
     db_(nullptr),
     initialized_(false)
@@ -21,24 +23,21 @@ BatchStatus::~BatchStatus()
     }
 }
 
-
-/// <summary>
-/// Create the database if it doesn't exists and open it.
-/// Insert each given simulation as a new row in the database.
-/// After this is called, the object is "initialized".
-/// </summary>
+/** Create the database if it doesn't exists and open it.
+ * Insert each given simulation as a new row in the database.
+ * After this is called, the object is "initialized". */
 void BatchStatus::initialize(const std::vector<path> &sim_names)
 {
     throw_if_not_ok(sqlite3_initialize());
 
-    assert(sim_names.size() > 0);
+    assert(!sim_names.empty());
     auto batch_directory = sim_names.front().parent_path();
     auto db_path = batch_directory / batch_database_filename_;
 
     throw_if_not_ok(sqlite3_open(db_path.string().c_str(), &db_));
     create_sim_table();
 
-    for(auto sim : sim_names)
+    for(const auto& sim : sim_names)
     {
         insert_sim(sim.stem().string());
     }

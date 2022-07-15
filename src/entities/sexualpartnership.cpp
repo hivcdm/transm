@@ -4,7 +4,6 @@
 #include "sexualpartnership.hpp"
 #include "entity.hpp"
 #include "entitytypes.hpp"
-#include "male.hpp"
 #include "parameters/eventparams.hpp"
 #include "statistics/populationstatisticsold.hpp"
 
@@ -18,14 +17,18 @@ const std::map<SexualPartnership::Type, std::string> SexualPartnership::TypeStri
 	{SexualPartnership::Type::Csw, "Csw"}
 };
 
-SexualPartnership::SexualPartnership(Entity *_person1, Entity *_person2, EventParams &_eventParams,
+SexualPartnership::SexualPartnership(Entity *_person1,
+                                     Entity *_person2,
+                                     EventParams &_eventParams,
                                      SexualPartnership::Type _partnershipType)
 {
-	//save the type of partnership this is
+	/* save the type of partnership this is */
 	type = _partnershipType;
-	//save time of partnership formation
+
+	/* save time of partnership formation */
 	timePartnerFormation = _eventParams.currTime;
-	//calculate when this partnership will dissolve. determined by _person1
+
+	/* calculate when this partnership will dissolve. determined by _person1 */
 	auto maxDuration =  TimeSpan(0, _person1->rollForNewPartnershipDuration(_partnershipType, _eventParams.randomNums, _person2));
 
 	if(maxDuration < TimeSpan::Month)
@@ -33,7 +36,7 @@ SexualPartnership::SexualPartnership(Entity *_person1, Entity *_person2, EventPa
 		maxDuration = TimeSpan(0, 0);
 	}
 
-	//if this is true, than this Couple is part of the prevalent population.
+	/* if this is true, than this Couple is part of the prevalent population. */
 	if(_eventParams.currTime.in_months() == 0)
 	{
 		if(maxDuration >= TimeSpan::Month)
@@ -52,22 +55,24 @@ SexualPartnership::SexualPartnership(Entity *_person1, Entity *_person2, EventPa
         _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] << " of duration " << maxDuration.in_months() << std::endl;
 	}
 
-	//set time for partnership to dissolve
+	/* set time for partnership to dissolve */
 	timePartnerDissolution = _eventParams.currTime + maxDuration;
-	//save the members of this partnership
+
+	/* save the members of this partnership */
 	partners[0] = _person1;
 	partners[1] = _person2;
-	//give each person pointer to this couple so that we can simulate this partnership...
-	// all partnerships are stored within the individual Person objects
-	// We have made it this way to save on the time it takes to insert and delete objects from a large set of partnerships
-	// We give a copy to both of the partners in case one of the partners dies. That way we can end all
-	//   partnerships that person was involved in
+
+	/* give each person pointer to this couple so that we can simulate this partnership...
+	   all partnerships are stored within the individual Person objects
+	   We have made it this way to save on the time it takes to insert and delete objects from a large set of partnerships
+	   We give a copy to both of the partners in case one of the partners dies. That way we can end all
+	   partnerships that person was involved in */
 	partners[0]->addPartnership(this);
 	partners[1]->addPartnership(this);
 	assert(timePartnerDissolution.in_months() >= 0);
 }
 
-bool SexualPartnership::checkTimeForSplit(Time current_time)
+bool SexualPartnership::checkTimeForSplit(Time current_time) const
 {
 	return current_time >= timePartnerDissolution;
 }
@@ -87,13 +92,9 @@ Entity *SexualPartnership::getOtherPartner(Entity *_member)
 	assert(isMember(_member));
 
 	if(_member == getPartner1())
-	{
 		return getPartner2();
-	}
 	else
-	{
 		return getPartner1();
-	}
 }
 
 SexualPartnership::Type SexualPartnership::getType()

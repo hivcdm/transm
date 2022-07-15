@@ -6,7 +6,7 @@
 
 namespace transm {
 
-const std::string ArtRolloutTracker::RISK_GROUP_NAMES[] =
+const std::vector<std::string> ArtRolloutTracker::RISK_GROUP_NAMES =
         {
                 "Non-CSW Low-Risk Male",
                 "Non-CSW High-Risk Male",
@@ -25,7 +25,7 @@ const std::string ArtRolloutTracker::RISK_GROUP_NAMES[] =
                 "CSW High-Risk Male:Msm"
         };
 
-const std::string ArtRolloutTracker::TRACKED_OUTCOMES[] =
+const std::vector<std::string> ArtRolloutTracker::TRACKED_OUTCOMES =
         {
                 "infected",
                 "plwh", /* people living with HIV */
@@ -40,7 +40,7 @@ const std::string ArtRolloutTracker::TRACKED_OUTCOMES[] =
                 "secondlineART" */
         };
 
-const std::string ArtRolloutTracker::BUCKETS[] =
+const std::vector<std::string> ArtRolloutTracker::BUCKETS =
         {
                 "SEXUAL_ACTIVITY_STATUS",
                 "GENDER",
@@ -257,18 +257,18 @@ void ArtRolloutTracker::buildRow(Time time, Population *_population) {
     PushElement(numTestsReturnedFor);
 
     for (const auto &outcome : TRACKED_OUTCOMES) {
-        // Add the count by Gender
+        /* Add the count by Gender */
         for (auto gender : enum_iterator<DemographicProfile::Gender>()) {
             PushElement(counter.GetCount(outcome, std::make_pair("GENDER", (int) gender)));
         }
 
-        // Add the count of Males by Orienation
+        /* Add the count of Males by Orienation */
         for (auto orientation : enum_iterator<DemographicProfile::SexualOrientation>()) {
             PushElement(counter.GetCount(outcome,
                                          std::make_pair("GENDER", (int) DemographicProfile::Gender::Male),
                                          std::make_pair("SEXUAL_ORIENTATION", (int) orientation)));
         }
-        // Add the count by gender, race
+        /* Add the count by gender, race */
 //            for(auto gender : enum_iterator<DemographicProfile::Gender>())
 //            {
         for (auto race : enum_iterator<DemographicProfile::Race>()) {
@@ -279,7 +279,7 @@ void ArtRolloutTracker::buildRow(Time time, Population *_population) {
             }
         }
 //            }
-        // Add the count of by gender, sexual activity status and age
+        /* Add the count of by gender, sexual activity status and age */
 //            for(auto gender : enum_iterator<DemographicProfile::Gender>())
 //            {
 //                PushElement(counter.GetCount(outcome,
@@ -297,7 +297,7 @@ void ArtRolloutTracker::buildRow(Time time, Population *_population) {
 //                }
 //            }
 
-        // Add the count of Males by orienation, sexual activity status and age
+        /* Add the count of Males by orienation, sexual activity status and age */
 //            for(auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
 //            {
 //                PushElement(counter.GetCount(outcome,
@@ -320,7 +320,7 @@ void ArtRolloutTracker::buildRow(Time time, Population *_population) {
 //                PushElement(counter.GetCount(outcome, std::make_pair("CD4_STRATUM", (int)i)));
 //            }
 
-        // Add the count by gender, employment and risk
+        /* Add the count by gender, employment and risk */
 //            for(auto employment : enum_iterator<DemographicProfile::Employment>())
 //            {
 //                for(auto riskLevel : enum_iterator<RiskLevel>())
@@ -341,7 +341,7 @@ void ArtRolloutTracker::buildRow(Time time, Population *_population) {
 //                }
 //            }
 
-        // Add the count of Males by orientation, employment and risk
+        /* Add the count of Males by orientation, employment and risk */
 //            for(auto employment : enum_iterator<DemographicProfile::Employment>())
 //            {
 //                for(auto riskLevel : enum_iterator<RiskLevel>())

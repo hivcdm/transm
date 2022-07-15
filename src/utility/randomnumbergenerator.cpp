@@ -19,12 +19,12 @@ RandomNumberGenerator::RandomNumberGenerator(unsigned int _seed)
 
 int RandomNumberGenerator::chooseIndex(const std::vector<double> &_indexProbabilities)
 {
-	assert(_indexProbabilities.size() > 0);
-	double choice = rand();	//this is dice roll to see which pool we will draw from
-	double cumulativeProb = 0;				//this stores CDF for the current index
-	size_t currIndex;	//the index that we are currently considering
+	assert(!_indexProbabilities.empty());
+	double choice = rand();	    /* this is dice roll to see which pool we will draw from */
+	double cumulativeProb = 0;				/* this stores CDF for the current index */
+	size_t currIndex;	/* the index that we are currently considering */
 
-	//cycle through vector until the CDF is greater than than what we rolled
+	/* cycle through vector until the CDF is greater than than what we rolled */
 	for(currIndex = 0; currIndex < _indexProbabilities.size() - 1; currIndex++)
 	{
 		cumulativeProb += _indexProbabilities.at(currIndex);
@@ -35,11 +35,10 @@ int RandomNumberGenerator::chooseIndex(const std::vector<double> &_indexProbabil
 		}
 	}
 
-	//shouldn't trigger this, but include this here to avoid OutOfBounds exception just in case
+	/* shouldn't trigger this, but include this here to avoid OutOfBounds exception just in case */
 	if(currIndex == _indexProbabilities.size())
-	{
 		currIndex--;
-	}
+
 
 	return static_cast<int>(currIndex);
 }
@@ -100,7 +99,7 @@ double RandomNumberGenerator::randExponential(double _mean)
 	return (-log(rand())) / (1 / _mean);
 }
 
-//generates a random number using the Masaglia Polar Method
+/* generates a random number using the Masaglia Polar Method */
 double RandomNumberGenerator::randNorm(const NormalDist &_normDist)
 {
 	assert(_normDist.stddev >= 0);
@@ -113,8 +112,8 @@ double RandomNumberGenerator::randNorm(const NormalDist &_normDist)
 
 	do
 	{
-		x = (rand() * 2) - 1;	//a number in [-1,1]
-		y = (rand() * 2) - 1;	//a number in [-1,1]
+		x = (rand() * 2) - 1;	// a number in [-1,1]
+		y = (rand() * 2) - 1;	// a number in [-1,1]
 		sq = (x * x + y * y);
 	} while(sq >= 1);
 
@@ -192,8 +191,8 @@ unsigned int RandomNumberGenerator::randNorm_NaturalNum(const NormalDist &_normD
 
 		if(rd >= 0)
 		{
-			//Return a double as an int will always return the floor of the double.  We want to round to the nearest integer.
-			//Adding 0.5 assures that the floor of the new number will be the nearest integer of the old number
+			/* Return a double as an int will always return the floor of the double.  We want to round to the nearest integer. */
+			/* Adding 0.5 assures that the floor of the new number will be the nearest integer of the old number */
 			rd = rd + 0.5;
 			return static_cast<unsigned int>(rd);
 		}
@@ -204,12 +203,12 @@ unsigned int RandomNumberGenerator::randNorm_NaturalNum(const NormalDist &_normD
 	std::cerr <<
 		"RandomNumberGenerator::randNorm_NaturalNum: We could not get a number greater or equal to zero after 1000 tries. Check your distribution N("
 		<< _normDist.mean << "," << _normDist.stddev << ").  Function will return 0." << std::endl;
-	//Utility::exitWithPrompt(-1);
+//	Utility::exitWithPrompt(-1);
 	return 0;
 }
 
-//adapted from Charles Stanton's 'Java Demos for Probability and Statistics site'
-//http://www.math.csusb.edu/faculty/stanton/m262/
+/* adapted from Charles Stanton's 'Java Demos for Probability and Statistics site' */
+/* http://www.math.csusb.edu/faculty/stanton/m262/ */
 int RandomNumberGenerator::randPoisson(double _mu)
 {
 	assert(_mu >= 0);
@@ -232,7 +231,7 @@ int RandomNumberGenerator::randPoisson(double _mu)
 	return count;
 }
 
-unsigned int RandomNumberGenerator::getSeed()
+unsigned int RandomNumberGenerator::getSeed() const
 {
 	return seed;
 }

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BUCKETCOUNTER_HPP
+#define BUCKETCOUNTER_HPP
 
 #include <algorithm>
 #include <cassert>
@@ -7,6 +8,7 @@
 #include <initializer_list>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "bucket.hpp"
@@ -27,13 +29,13 @@ class BucketCounter
 
 	struct query_equal
 	{
-		query_equal(const std::vector<QueryField> &indices) : indices(indices) {}
+		query_equal(std::vector<QueryField> indices) : indices(std::move(indices)) {}
 
 		bool operator()(const BucketContainer::value_type &b)
 		{
-			for (size_t i = 0; i < indices.size(); i++)
+			for (auto & indice : indices)
 			{
-				if (!indices[i].wildcard && !b.first.HasKeyValue(indices[i].key, indices[i].value))
+				if (!indice.wildcard && !b.first.HasKeyValue(indice.key, indice.value))
 				{
 					return false;
 				}
@@ -48,7 +50,7 @@ class BucketCounter
 public:
 	BucketCounter() {}
 
-	BucketCounter(const std::vector<std::string> &buckets, const std::vector<std::string> &counts);
+	BucketCounter(std::vector<std::string> buckets, std::vector<std::string> counts);
 
 	void operator=(const BucketCounter &rhs)
 	{
@@ -56,7 +58,7 @@ public:
 		bucketNames_.assign(rhs.bucketNames_.begin(), rhs.bucketNames_.end());
 
 		counts_.clear();
-		for(auto pair : rhs.counts_)
+		for(const auto& pair : rhs.counts_)
 		{
 			counts_[pair.first] = pair.second;
 		}
@@ -110,7 +112,7 @@ private:
 
 		std::vector<QueryField> indices;
 
-		for(auto key : bucketNames_)
+		for(const auto& key : bucketNames_)
 		{
 			indices.push_back({"*", 0, true});
 			for(auto pair : queries)
@@ -134,3 +136,6 @@ private:
 };
 
 } // namespace transm
+
+
+#endif /* BUCKETCOUNTER_HPP */

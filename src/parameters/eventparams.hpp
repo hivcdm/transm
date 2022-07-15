@@ -1,4 +1,5 @@
-#pragma once
+#ifndef EVENTPARAMS_HPP
+#define EVENTPARAMS_HPP
 
 #include <iostream>
 #include <fstream>
@@ -16,10 +17,10 @@
 
 namespace transm {
 
-/// <summary>
-/// this data structure contains some important simulation level parameters or variables
-/// that are associated with each Population-level event
-/// <summary>
+ /**
+  * this data structure contains some important simulation level parameters or variables
+  * that are associated with each Population-level event
+  */
 class EventParams
 {
 public:
@@ -78,143 +79,140 @@ public:
 		numNewbornsToTrace = 0;
 	}
 
-    /// <summary>
-	/// current internal clock for a particular Population
-    /// </summary>
+    /** current internal clock for a particular Population */
 	Time currTime;
 
-    /// <summary>
-	/// Sim name -- primarily used for generating names of GraphViz files and CEPAC output files; will be name of input sheet minus .xml
-    /// </summary>
+    /** Sim name -- primarily used for generating names of GraphViz files and CEPAC output files; will be name of input sheet minus .xml */
 	std::string simName;
 
 	Time monthOf1990;
 
-	//CEPAC related simContext (input)
+    /** \name CEPAC information */
+    /*@{*/
+    /** CEPAC related simContext (input) */
 	std::vector<SimContext *> cepacSimContexts;
 
-	//CEPAC input files for Rollout
+	/** CEPAC input files for ART Rollout */
 	std::vector<RolloutContext *> rolloutSimContexts;
 	RolloutEligibility rolloutEligibility;
 	RolloutDenominator rolloutProportionDenominator;
 
-	//Cepac files for storing current population groups (only if using rollout)
+	/** Cepac files for storing current population groups (only if using rollout) */
 	SimContext *untreatedContext;
 	SimContext *treatedContext;
 
-	//If we are using rollout use the cepac files specified in the ART rollout section
+    /*@}*/
+
+
+    /** If we are using rollout use the cepac files specified in the ART rollout section */
 	bool useRollout;
 
-	//timesToSwitchSimContext[0] should always be 0 by default (?)
+	/** timesToSwitchSimContext[0] should always be 0 by default (?) */
 	std::vector<Time> timesToSwitchSimContext;
 
 	inline bool itIsTimeToSwitchSimContext()
 	{
-//		if(useRollout)
-//		{
-//			return false;
-//		}
-
-		for (auto time : timesToSwitchSimContext)
-		{
-			//Switching doesn't occur until 1 month later
-			if(currTime == time + TimeSpan::Month)
-			{
-				return true;
-			}
-		}
-
-		return false;
+        return std::any_of(timesToSwitchSimContext.cbegin(), timesToSwitchSimContext.cend(), [this](const Time &time){
+            return (currTime == time + TimeSpan::Month);
+        });
 	}
 
-	//CEPAC related runStats (output)
+	/** CEPAC related runStats (output) */
 	RunStats *cepacRunStats;
-        // CEPAC cost Tracer
-        CostStats *cepacCostStats;
-	//CEPAC tracing object (output)
+
+    /** CEPAC cost Tracer */
+    CostStats *cepacCostStats;
+
+	/** CEPAC tracing object (output) */
 	Tracer *cepacTracer;
 
-	//calibration inputs
+	/** calibration inputs */
 	CalibrationInputs calibrationInputs;
-	//prevalence delay time
+
+	/** prevalence delay time */
 	Time delayPrevalence;
 
     std::map<TraceFile::Type, TraceFile> trace_files;
 
-	//number of patients per initial age range to be followed
+	/** number of patients per initial age range to be followed */
 	int numToTrace;
-	//number of newborns to trace after specified month
+
+	/** number of newborns to trace after specified month */
 	int numNewbornsToTrace;
+
 	Time monthTraceNewborns;
-	//keeps track of how many newborns have been traced
+
+	/** keeps track of how many newborns have been traced */
 	int numNewbornsTraced;
 
     std::vector<int> partnerNetworkRecordTimes;
 
 	bool tracePrevalentCases;
 
-	//Concurrency Definitions
+	/** Concurrency Definitions */
 	std::array<ConcurrencyDef, Constants::NumberConcurrencyDefs> concurrencyDef;
 
 	std::map<int, double> targetYearlyRolloutProportions;
 
-	//random number generator that is used throughout the simulation
+	/** random number generator that is used throughout the simulation */
 	RandomNumberGenerator randomNums;
 
 	bool enableDynamicTreatmentScaling;
 	int dynamicFeedbackPeriod;
 
-	//closes all the trace files
+	/** closes all the trace files */
 	~EventParams()
 	{
 		delete cepacRunStats;
 
-		while(cepacSimContexts.size() > 0)
+		while(!cepacSimContexts.empty())
 		{
 			SimContext *sc = cepacSimContexts.back();
 			cepacSimContexts.pop_back();
 			delete sc;
 		}
 
-		while(rolloutSimContexts.size() > 0)
+		while(!rolloutSimContexts.empty())
 		{
 			RolloutContext *sc = rolloutSimContexts.back();
 			rolloutSimContexts.pop_back();
 			delete sc;
 		}
 
-		for (auto cf : cepac_file_context_map_)
+		for (const auto& cf : cepac_file_context_map_)
 		{
-		        delete cf.second;
+            delete cf.second;
 		}
 
 		delete cepacTracer;
 	}
   
-     SimContext *LoadCepacContext(const std::string &cepac_file)
-     {
-         if (cepac_file_context_map_.find(cepac_file)
-             == cepac_file_context_map_.end())
-         { 
-             //Set the CEPAC simContext from the specified CEPAC .in file
-             auto stem = transm::path(cepac_file).stem().string();
-             cepac_file_context_map_[cepac_file] = new SimContext(stem);
+    SimContext *LoadCepacContext(const std::string &cepac_file)
+    {
+        if (cepac_file_context_map_.find(cepac_file) == cepac_file_context_map_.end())
+        {
+            /* Set the CEPAC simContext from the specified CEPAC .in file */
+            auto stem = transm::path(cepac_file).stem().string();
+            cepac_file_context_map_[cepac_file] = new SimContext(stem);
  
-             //Read in the inputs
-             try
-             {
-                 cepac_file_context_map_[cepac_file]->readInputs();
-             }
-             catch (std::string errorString)
-             {
-                 throw std::runtime_error(errorString);
-             }
-         }
+            /* Read in the inputs */
+            try
+            {
+                cepac_file_context_map_[cepac_file]->readInputs();
+            }
+            catch (std::string &errorString)
+            {
+                throw std::runtime_error(errorString);
+            }
+        }
+
+        return cepac_file_context_map_[cepac_file];
+    }
  
-         return cepac_file_context_map_[cepac_file];
-     }
- 
-     std::unordered_map<std::string, SimContext *> cepac_file_context_map_;
+    std::unordered_map<std::string, SimContext *> cepac_file_context_map_;
 };
 
 } // namespace transm
+
+
+#endif /* EVENTPARAMS_HPP */

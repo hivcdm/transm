@@ -52,12 +52,12 @@ PrepTracker::PrepTracker() :
     numOnPrEP(0)
 {
     std::vector<std::string> tracked;
-    for(auto outcome : TRACKED_OUTCOMES)
+    for(const auto& outcome : TRACKED_OUTCOMES)
     {
         tracked.push_back(outcome);
     }
     std::vector<std::string> buckets;
-    for(auto bucket : BUCKETS)
+    for(const auto& bucket : BUCKETS)
     {
         buckets.push_back(bucket);
     }
@@ -133,7 +133,7 @@ void PrepTracker::buildHeader()
 
     int column = 5;
 
-    for (auto outcome : TRACKED_OUTCOMES)
+    for (const auto& outcome : TRACKED_OUTCOMES)
     {
         std::string section_header = "";
         if (outcome == "eligible")
@@ -229,15 +229,15 @@ void PrepTracker::buildRow(Time time, Population *_population)
     PushElement(numTreatmentSlots);
     PushElement(numOnPrEP);
 
-    for(auto outcome : TRACKED_OUTCOMES)
+    for(const auto& outcome : TRACKED_OUTCOMES)
     {
-        // Add the count by Gender
+        /* Add the count by Gender */
         for(auto gender : enum_iterator<DemographicProfile::Gender>())
         {
             PushElement(counter.GetCount(outcome, std::make_pair("GENDER", (int)gender)));
         }
 
-        // Add the count of Males by Orienation
+        /* Add the count of Males by Orienation */
         for(auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
         {
             PushElement(counter.GetCount(outcome,
@@ -245,7 +245,7 @@ void PrepTracker::buildRow(Time time, Population *_population)
                 std::make_pair("SEXUAL_ORIENTATION", (int)orientation)));
         }
 
-        // Add the count of by gender, sexual activity status and age
+        /* Add the count of by gender, sexual activity status and age */
         for(auto gender : enum_iterator<DemographicProfile::Gender>())
         {
             PushElement(counter.GetCount(outcome,
@@ -263,7 +263,7 @@ void PrepTracker::buildRow(Time time, Population *_population)
             }
         }
 
-        // Add the count of Males by orienation, sexual activity status and age
+        /* Add the count of Males by orienation, sexual activity status and age */
         for(auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
         {
             PushElement(counter.GetCount(outcome,
@@ -281,7 +281,7 @@ void PrepTracker::buildRow(Time time, Population *_population)
             }
         }
 
-        // Add the count by gender, race
+        /* Add the count by gender, race */
         for(auto gender : enum_iterator<DemographicProfile::Gender>())
         {
             for (auto race : enum_iterator<DemographicProfile::Race>())
@@ -296,7 +296,7 @@ void PrepTracker::buildRow(Time time, Population *_population)
             }
         }
 
-        // Add the count of Males by orientation, race
+        /* Add the count of Males by orientation, race */
         for(auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
         {
             for (auto race : enum_iterator<DemographicProfile::Race>())
@@ -313,7 +313,7 @@ void PrepTracker::buildRow(Time time, Population *_population)
             }
         }
 
-        // Add the count by gender, employment and risk
+        /* Add the count by gender, employment and risk */
         for(auto gender : enum_iterator<DemographicProfile::Gender>())
         {
             for(auto riskLevel : enum_iterator<RiskLevel>())
@@ -334,14 +334,14 @@ void PrepTracker::buildRow(Time time, Population *_population)
             }
         }
 
-        // Add the count of Males by orientation, employment and risk
+        /* Add the count of Males by orientation, employment and risk */
         for(auto orientation : enum_iterator<DemographicProfile::SexualOrientation>())
         {
             for(auto riskLevel : enum_iterator<RiskLevel>())
             {
                 for(auto employment : enum_iterator<DemographicProfile::Employment>())
                 {
-                    // We don't include Low-Risk CSWs
+                    /* We don't include Low-Risk CSWs */
                     if(riskLevel == RiskLevel::LOW &&
                        employment == DemographicProfile::Employment::Csw)
                     {

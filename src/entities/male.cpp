@@ -11,15 +11,11 @@
 
 namespace transm {
 
-const std::string Male::getEntityType() const
-{
-	const BaseEnumCls *currCategoryCls = dmgProfile.getEnumCls(DemographicProfile::Demographic::SexualOrientation);
+const string Male::getEntityType() const {
+	const BaseEnumCls *currCategoryCls = transm::DemographicProfile::getEnumCls(DemographicProfile::Demographic::SexualOrientation);
 	BaseEnumCls::Enum dmgProfileEnum = dmgProfile.get(DemographicProfile::Demographic::SexualOrientation);
 	return *currCategoryCls->toString(dmgProfileEnum);
 }
-
-//each index of the array contains parameters for a different population
-//(we only have 1 population for now so the size of the vector will default to 1
 
 Male::SubPopParams::SubPopParams() :
     maxPartnershipRejections(0),
@@ -27,9 +23,7 @@ Male::SubPopParams::SubPopParams() :
 {
 }
 
-Male::SubPopParams::~SubPopParams()
-{
-}
+Male::SubPopParams::~SubPopParams() = default;
 
 double Male::SubPopParams::getChanceBecomeCSW() const
 {
@@ -41,18 +35,17 @@ double Male::SubPopParams::getPartnerAcqMultWithSteady(RiskLevel _risk) const
     return partnerAcqMultWithSteady[(std::size_t)_risk];
 }
 
-//sexual behavior params for each type as specified by SexualPartnership::Type
+/* sexual behavior params for each type as specified by SexualPartnership::Type */
 const SexualBehavior &Male::SubPopParams::getSexualBehavior(SexualPartnership::Type _type) const
 {
 	return sexualBehaviorParams.at(_type);
 }
 
-//sexual behavior params for each type as specified by SexualPartnership::Type
+/* sexual behavior params for each type as specified by SexualPartnership::Type */
 SexualBehavior &Male::SubPopParams::getSexualBehavior(SexualPartnership::Type _type)
 {
 	return sexualBehaviorParams.at(_type);
 }
-
 
 double Male::SubPopParams::getProportionHighRisk(DemographicProfile::Employment _cswStatus) const
 {
@@ -138,6 +131,7 @@ void Male::SetAcquisitionRatePerMonth(RiskLevel risk, SexualPartnership::Type pa
             partnerAcqRates[(int)partnershipType] = rng.randLogNormal(dist);
         }
     }
+
 	behavior.setAcquisitionRatePerMonth(risk, dist);
 }
 
@@ -147,11 +141,11 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
     DemographicProfile::ProfileID entityProfileID;
     DemographicProfile selector;
 
-    // only sexually active partners allowed
+    /* only sexually active partners allowed */
     selector.set(DemographicProfile::Demographic::SexualActivityStatus,
         (std::size_t)DemographicProfile::SexualActivityStatus::Active);
 
-    // choose CSW status
+    /* choose CSW status */
     if (_partnershipType == SexualPartnership::Type::Csw)
     {
         selector.set(DemographicProfile::Demographic::Employment,
@@ -163,7 +157,8 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
     {
         selector.set(DemographicProfile::Demographic::Employment,
             (std::size_t)DemographicProfile::Employment::NonCsw);
-        //choose steady partner -- base on percentWithSteady
+
+        /* choose steady partner -- base on percentWithSteady */
         SexualBehavior behavior = populationSpecificParams.getSexualBehavior(_partnershipType);
         if (_randomNums.chance(behavior.getChanceChooseWithSteady()))
         {
@@ -177,7 +172,7 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
         }
     }
 
-    //choose partner gender and orientation -- based on orientation and, if msmw, percentMsmwChooseMale
+    /* choose partner gender and orientation -- based on orientation and, if MSMW, percentMsmwChooseMale */
     if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() ==
         DemographicProfile::SexualOrientation::Msw)
     {
@@ -244,18 +239,18 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
 
     if (_randomNums.chance(populationSpecificParams.getRaceEthnicAssortativeness(entityRace, entityEthnicity)))
     {
-        // if non-assortative (homogeneous), choose entities own race
+        /* if non-assortative (homogeneous), choose entities own race */
         partnerRace = entityRace;
         partnerEthnicity = entityEthnicity;
     }
     else
     {
-        // choose a race randomly from the allowed list of races
+        /* choose a race randomly from the allowed list of races */
         std::vector<DemographicProfile::Race> races = populationSpecificParams.
             allowedRaceEthnicityMap.GetRaceKeysFromMap();
         partnerRace = races[_randomNums.chooseIndex(races.size())];
 
-        // choose an ethnicity randomly from the allowed list of ethnicities for the race chosen
+        /* choose an ethnicity randomly from the allowed list of ethnicities for the race chosen */
         std::vector<DemographicProfile::Ethnicity> ethnicities =
           populationSpecificParams.allowedRaceEthnicityMap.GetEthnicityForRace(partnerRace);
         partnerEthnicity = ethnicities[_randomNums.chooseIndex(ethnicities.size())];
@@ -286,15 +281,15 @@ Male::Male(EventParams &_eventParams, Age _age, bool _circumcised,
     Entity(_age, _populationID, prepParams),
     populationSpecificParams(params)
 {
-	// Only set the gender and sexual orientation
-	// The other demographic profiles values get set in the Entity constructor -- don't overwrite the entire profile
+	/* Only set the gender and sexual orientation */
+	/* The other demographic profiles values get set in the Entity constructor -- don't overwrite the entire profile */
     assert(profile.get(DemographicProfile::Demographic::Gender) == (std::size_t)DemographicProfile::Gender::Male);
     dmgProfile = profile;
 
 	circumcised = _circumcised;
 
-    //Set this male's risk level assume everyone is low risk on creation.
-    //Risk is rerolled when they reach the age of sexual maturity
+    /* Set this male's risk level assume everyone is low risk on creation. */
+    /* Risk is rerolled when they reach the age of sexual maturity */
     risk = RiskLevel::LOW;
 
 	for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
@@ -305,7 +300,12 @@ Male::Male(EventParams &_eventParams, Age _age, bool _circumcised,
 
 		auto acquisition_rate_dist = sexualBehaviorParams.getAcquisitionRatePerMonth(risk);
 		auto acquisition_rate = _eventParams.randomNums.randLogNormal(acquisition_rate_dist);
-		partnerAcqRates[(int)partnership_type] = acquisition_rate;
+        /* correction of MSM partnerships */
+        if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() ==
+                                       DemographicProfile::SexualOrientation::Msm) {
+            acquisition_rate *= 0.5*1.61;
+        }
+        partnerAcqRates[(int)partnership_type] = acquisition_rate;
 		numActsPerMonth[(int)partnership_type] = sexualBehaviorParams.getCoitalEventsPerMonth(risk);
 
 		auto chance_condom_use_dist = sexualBehaviorParams.getChanceCondomUsePerEvent(risk);
@@ -316,9 +316,7 @@ Male::Male(EventParams &_eventParams, Age _age, bool _circumcised,
 	}
 }
 
-Male::~Male()
-{
-}
+Male::~Male() = default;
 
 std::size_t Male::GetSexualOrientation()
 {
@@ -343,16 +341,17 @@ double Male::getCondomProtectEff()
 	return populationSpecificParams.getCondomProtectEff();
 }
 
-//in this case, the male is infected and female is uninfected
+/* in this case, the male is infected and female is uninfected */
 double Male::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::array<double, (std::size_t)HVLStrata::Last>> &transmission_coefficients, SexualPartnership::Type _partnershipType, EventParams &_eventParams)
 {
-	//note: in the case of male->female transmission, circumcision makes no difference
-	//transmission coeff				1-	(condoms are used and succeed)
+	/* note: in the case of male->female transmission, circumcision makes no difference */
+	/* transmission coeff				1-	(condoms are used and succeed) */
 	assert(Utility::valid_probability(getCondomProtectEff()));
 	assert((_p != nullptr));
 	assert(_p->isAlive());
 	assert(_partnershipType < SexualPartnership::Type::Last);
-	//Determine if a condom was used and record
+
+	/* Determine if a condom was used and record */
     double chanceCondomUse = getCondomUseProb(_p, _partnershipType);
     if(_p->HasOverrideChanceCondomUse())
     {
@@ -360,7 +359,8 @@ double Male::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::
     }
     assert(Utility::valid_probability(chanceCondomUse));
 	condomUsedLastFOICalculation = _eventParams.randomNums.chance(chanceCondomUse);
-	//Determine the condom efficacy --> 0 if no condom was used
+
+	/* Determine the condom efficacy --> 0 if no condom was used */
 	double condomEff = 0;
 
 	if(condomUsedLastFOICalculation)
@@ -404,57 +404,42 @@ double Male::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::
 }
 
 
-double Male::getMinPartnerSelectVal(Entity::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const
+double Male::getMinPartnerSelectVal(Entity::SelectingCriteria PSC, SexualPartnership::Type _partnershipType) const
 {
-	switch(_PSC)
-	{
-	case Entity::AGE:
-	{
-        if(getAge().in_months() - (12 * averageYearsYounger[(int)_partnershipType].mean + 6) > 0)
-		{
-			return getAge().in_months() - (12 * averageYearsYounger[(int)_partnershipType].mean + 6);
-			break;
-		}
-		else
-		{
-			return 0;
-			break;
-		}
-	}
-	case ID:
-	{
-		return numeric_limits<double>::min();
-	}
-	case ENDSelectingCriteria:
-	    throw std::runtime_error("Invalid Sorting key");
-	}
+	switch(PSC)	{
+	    case Entity::AGE: {
+            if(getAge().in_months() - (12 * averageYearsYounger[(int)_partnershipType].mean + 6) > 0) {
+    			return getAge().in_months() - (12 * averageYearsYounger[(int)_partnershipType].mean + 6);
+	    		break;
+		    } else 	{
+			    return 0;
+			    break;
+		    }
+	    } case ID: 	{
+    		return numeric_limits<double>::min();
+    	} case ENDSelectingCriteria:
+    	    throw std::runtime_error("Invalid Sorting key");
+    }
 	throw std::runtime_error("Invalid Sorting key");
 }
 
 
-double Male::getMaxPartnerSelectVal(Entity::SelectingCriteria _PSC, SexualPartnership::Type _partnershipType) const
+double Male::getMaxPartnerSelectVal(Entity::SelectingCriteria PSC, SexualPartnership::Type _partnershipType) const
 {
-	switch(_PSC)
-	{
-	case Entity::AGE:
-	{
-		if (getAge().in_months() - (12 * averageYearsYounger[(int)_partnershipType].mean - 6) > 0)
-		{
-			return getAge().in_months() - (12 * averageYearsYounger[(int)_partnershipType].mean - 6);
-			break;
-		}
-		else
-		{
-			return 0;
-			break;
-		}
-	}
-	case ID:
-	{
-		return numeric_limits<double>::max();
-	}
-	default:
-	    throw std::runtime_error("Invalid Sorting key");
+	switch(PSC) {
+	    case Entity::AGE: {
+		    if (getAge().in_months() - (12 * averageYearsYounger[(int)_partnershipType].mean - 6) > 0) 	{
+			    return getAge().in_months() - (12 * averageYearsYounger[(int)_partnershipType].mean - 6);
+			    break;
+		    } else {
+			    return 0;
+			    break;
+		    }
+	    }
+	    case ID: {
+		    return numeric_limits<double>::max();
+	    } default:
+	        throw std::runtime_error("Invalid Sorting key");
 	}
 }
 
@@ -469,7 +454,7 @@ bool Male::possibleMatch(SexualPartnership::Type _partnershipType, Entity *_p)
 	assert((_p != nullptr));
 	assert(_p->isAlive());
 	assert(_partnershipType < SexualPartnership::Type::Last);
-	assert(false);  // check if we are using years instead of Month
+	assert(false);  /* check if we are using years instead of Month */
 	auto minAge = Age(0, static_cast<int>(getMinPartnerSelectVal(Entity::AGE, _partnershipType)));
 	auto maxAge = Age(0, static_cast<int>(getMaxPartnerSelectVal(Entity::AGE, _partnershipType)));
     return _p->getAge() >= minAge && _p->getAge() <= maxAge;
@@ -477,28 +462,28 @@ bool Male::possibleMatch(SexualPartnership::Type _partnershipType, Entity *_p)
 
 int Male::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType)
 {
-    if(!populationSpecificParams.hasSexualBehavior(_partnershipType)) return 0;
+    if(!populationSpecificParams.hasSexualBehavior(_partnershipType))
+        return 0;
 
 	assert(_partnershipType < SexualPartnership::Type::Last);
 
-	//person can only have 1 steady partner at a time so return 0 if person is already in Steady
+	/* person can only have 1 steady partner at a time so return 0 if person is already in Steady */
 	if((_partnershipType == SexualPartnership::Type::Steady) && (!partners[(int)_partnershipType].empty()))
-	{
-		return 0;
-	}
+        return 0;
 
-	//rate of acquiring partner
+	/* rate of acquiring partner */
 	double partnerRate;
-	partnerRate = partnerAcqRates[(int)_partnershipType];
 
-	//if this person has a steady partner then adjust acquisition rate
+    partnerRate = partnerAcqRates[(int)_partnershipType];
+
+	/* if this person has a steady partner then adjust acquisition rate */
 	if(!partners[(int)SexualPartnership::Type::Steady].empty())
 	{
-		//if we're thinking of getting another partner, then lower chances if we have a steady partner
+		/* if we're thinking of getting another partner, then lower chances if we have a steady partner */
 		partnerRate *= populationSpecificParams.getPartnerAcqMultWithSteady(getRiskLevel());
 	}
 
-	//if person is over the age of partnering discounting, then discount acquisition rate
+	/* if person is over the age of partnering discounting, then discount acquisition rate */
     auto ageYrs = getAge();
 
 	if(ageYrs >= populationSpecificParams.getPartneringDiscStartAgeYrs())
@@ -508,7 +493,8 @@ int Male::rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnersh
 
 	/** To get the number of partners to draw this month, draw from a Poisson distribution */
 	int numPartners = _randomNums.randPoisson(partnerRate);
-	//if we are rolling for STEADY, make sure we have max of 1
+
+	/* if we are rolling for STEADY, make sure we have max of 1 */
 	return (_partnershipType != SexualPartnership::Type::Steady) ? numPartners : std::min(1, numPartners);
 }
 
@@ -519,7 +505,7 @@ int Male::rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums
 
 	double meanCoitalEvents = numActsPerMonth[(int)_partnershipType];
 
-	//if person is over the age of partnering discounting, then discount #acts
+	/* if person is over the age of partnering discounting, then discount #acts */
     auto ageYrs = getAge();
 
 	if(ageYrs >= populationSpecificParams.getPartneringDiscStartAgeYrs())
@@ -527,14 +513,15 @@ int Male::rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums
 		meanCoitalEvents *= populationSpecificParams.getPartneringActsDiscMult(ageYrs);
 	}
 
-	//Poisson distributions range from 0 to infinity: we want to avoid 0 acts per month
-	//If meanCoitalEvents is less than 1 (happens after discounting), set to one (force a minimum)
+	/* Poisson distributions range from 0 to infinity: we want to avoid 0 acts per month */
+	/* If meanCoitalEvents is less than 1 (happens after discounting), set to one (force a minimum) */
 	if(meanCoitalEvents < 1)
 	{
 		meanCoitalEvents = 1;
 	}
 
 	int numActs = _randomNums.randPoisson(meanCoitalEvents - 1) + 1;
+
 	return numActs;
 }
 
@@ -551,7 +538,7 @@ int Male::rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType
 
 void Male::rerollRiskGroup(EventParams &_eventParams)
 {
-	DemographicProfile::Employment cswStatus = getDemographicProfileVal<DemographicProfile::Employment>();
+	auto cswStatus = getDemographicProfileVal<DemographicProfile::Employment>();
 	double chanceHighRisk = populationSpecificParams.getProportionHighRisk(cswStatus);
 	RiskLevel oldRisk = risk;
 
@@ -572,9 +559,15 @@ void Male::rerollRiskGroup(EventParams &_eventParams)
 
 			const SexualBehavior &sexualBehaviorParams = 
 				populationSpecificParams.getSexualBehavior(partnership_type);
-			auto acquisition_rate = sexualBehaviorParams.getAcquisitionRatePerMonth(risk);
-			partnerAcqRates[(int)partnership_type] = 
-				_eventParams.randomNums.randLogNormal(acquisition_rate);
+			auto acquisition_rate_dist = sexualBehaviorParams.getAcquisitionRatePerMonth(risk);
+            auto acquisition_rate = _eventParams.randomNums.randLogNormal(acquisition_rate_dist);
+            /* correction of MSM partnerships */
+            if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() ==
+                DemographicProfile::SexualOrientation::Msm) {
+                acquisition_rate *= 0.5*1.61;   // 0.5 is accounts for correcting the acquisition rate for male choosing male and 1.61 is the multiplier!
+            }
+			partnerAcqRates[(int)partnership_type] = acquisition_rate;
+
 			numActsPerMonth[(int)partnership_type] = 
 				sexualBehaviorParams.getCoitalEventsPerMonth(risk);
 			auto chance_condom_use = sexualBehaviorParams.getChanceCondomUsePerEvent(risk);

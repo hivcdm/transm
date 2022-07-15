@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BUCKET_HPP
+#define BUCKET_HPP
 
 #include <map>
 #include <string>
@@ -11,7 +12,7 @@ class Bucket
 public:
     bool HasKeyValue(std::string key, int value) const
     {
-        std::unordered_map<std::string,int>::const_iterator itr = values_.find(key);
+        auto itr = values_.find(key);
         if (itr != values_.end())
         {
             if (itr->second == value)
@@ -68,3 +69,5 @@ struct bucket_equal_to<Bucket>
 };
 
 } // namespace transm
+
+#endif /* BUCKET_HPP */

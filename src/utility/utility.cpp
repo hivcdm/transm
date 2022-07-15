@@ -236,19 +236,19 @@ void Utility::normalize(std::vector<double> &_weights)
 {
 	double total = 0;
 
-	//see what the values currently total to
-	for(unsigned int i = 0; i < _weights.size(); i++)
+	/* see what the values currently total to */
+	for(double _weight : _weights)
 	{
-		total += _weights.at(i);
+		total += _weight;
 	}
 
-	//we want to divide by the total, but division is slow. so we will multiply by the inverse
+	/* we want to divide by the total, but division is slow. so we will multiply by the inverse */
 	total = 1 / total;
 
-	//normalize each proportionate value so that the sum of them ~ 1
-	for(unsigned int i = 0; i < _weights.size(); i++)
+	/* normalize each proportionate value so that the sum of them ~ 1 */
+	for(double & _weight : _weights)
 	{
-		_weights.at(i) = _weights.at(i) * total;
+		_weight = _weight * total;
 	}
 }
 
@@ -258,9 +258,9 @@ double Utility::prob_to_rate(double _prob)
 	return -log(1 - _prob);
 }
 
+/* convert the cumulative rate back into a probability */
 double Utility::rate_to_prob(double _rate)
 {
-	//convert the cumulative rate back into a probability
 	return 1 - exp(-_rate);
 }
 
@@ -269,25 +269,28 @@ double Utility::computeCepacDiscountFactor(int month, double discount_rate)
 	return 1 / std::pow(discount_rate, month);
 }
 
-//this implementation was taken from
-// http://www.oopweb.com/CPP/Documents/CPPHOWTO/Volume/C++Programming-HOWTO-7.html
+/* this implementation was taken from */
+/* http://www.oopweb.com/CPP/Documents/CPPHOWTO/Volume/C++Programming-HOWTO-7.html */
 std::vector<std::string> Utility::tokenize(const std::string &str,
                     const std::string &delimiters = " ")
 {
     std::vector<std::string> tokens;
 
-	// Skip delimiters at beginning.
+	/* Skip delimiters at beginning. */
 	std::string::size_type lastPos = str.find_first_not_of(delimiters, 0);
-	// Find first "non-delimiter".
+
+	/* Find first "non-delimiter". */
 	std::string::size_type pos = str.find_first_of(delimiters, lastPos);
 
 	while(std::string::npos != pos || std::string::npos != lastPos)
 	{
-		// Found a token, add it to the vector.
+		/* Found a token, add it to the vector. */
 		tokens.push_back(str.substr(lastPos, pos - lastPos));
-		// Skip delimiters.  Note the "not_of"
+
+		/* Skip delimiters.  Note the "not_of" */
 		lastPos = str.find_first_not_of(delimiters, pos);
-		// Find next "non-delimiter"
+
+		/* Find next "non-delimiter" */
 		pos = str.find_first_of(delimiters, lastPos);
 	}
 

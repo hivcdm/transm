@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PARAMETERDEFINITIONS_HPP
+#define PARAMETERDEFINITIONS_HPP
 
 #include <fstream>
 #include <memory>
@@ -18,9 +19,7 @@ struct Bounds
     T lower;
     T upper;
 
-    /// <summary>
-    /// Returns true if value is within these bounds (inclusive)
-    /// </summary>
+    /** Returns true if value is within these bounds (inclusive) */
     bool Contains(T value)
     {
         return value >= lower && value <= upper;
@@ -30,18 +29,18 @@ struct Bounds
 struct TraceFileParameters
 {
     bool enabled;
-    std::string extension;
     bool toss;
+    std::string extension;
 };
 
-/**
-this structure stores the definintion fo concurrency
-*/
+/** This structure stores the definintion fo concurrency */
 class ConcurrencyDef
 {
 public:
+
     int minPartnershipsNeeded;
     bool useDefinition;
+
     ConcurrencyDef(int min = -1, bool def = false)
     {
         minPartnershipsNeeded = min;
@@ -49,44 +48,57 @@ public:
     }
 };
 
-/**
-this structure stores the Inputs for calibration
-**/
+/** this structure stores the Inputs for calibration */
 class CalibrationInputs
 {
 public:
     bool useCalibration;
     Time monthOfCalibration;
 
-    //outcomes used for the cutoff
-    //The partnership prevalence is for a year duration
+    /** outcomes used for the cutoff */
+    /* The partnership prevalence is for a year duration */
     int steadyPrevPopulation;
     Bounds<double> steadyPrevBounds;
+
     int casualPrevPopulation;
     Bounds<double> casualPrevBounds;
+
     int CSWPrevPopulation;
     Bounds<double> CSWPrevBounds;
+
+    int steadyMSMPrevPopulation;
+    Bounds<double> steadyMSMPrevBounds;
+
+    int regularMSMPrevPopulation;
+    Bounds<double> regularMSMPrevBounds;
+
+    int casualMSMPrevPopulation;
+    Bounds<double> casualMSMPrevBounds;
+
     int propInConcurrentPopulation;
     Bounds<double> propInConcurrentBounds;
+
     int numActsPopulation;
     Bounds<double> numActsBounds;
+
     double femaleCasualPrevRatio;
     double femalePropInConcurrentRatio;
     double femaleNumActsLRtoHRRatio;
 
-    // List of incidence rannge to test at each year
+    /** List of incidence rannge to test at each year */
     std::map<Time, std::pair<double,double>> yearlyIncidenceRanges;
 };
 
-/**
-this structure gives information about the rollout file to use and when to apply it if ART Rollout intervention is turned on
-*/
+/** this structure gives information about the rollout file to use and when to apply it if ART Rollout
+ * intervention is turned on */
 class RolloutContext
 {
 public:
+
     Time timeToApply;
     SimContext *rolloutSimContext;
-    //who to apply to 0=All Untreated 1=All Treated 2=Untreated Getting New ART -1=None
+
+    /** who to apply to 0=All Untreated 1=All Treated 2=Untreated Getting New ART -1=None */
     int popOfInterest;
 
     RolloutContext(Time t, SimContext *context, int pop) : rolloutSimContext(context)
@@ -94,16 +106,15 @@ public:
         timeToApply = t;
         popOfInterest = pop;
     }
-    ~RolloutContext()
-    = default;
+
+    ~RolloutContext() = default;
 };
 
-/**
-this structure stores the eligibility criter used for art rollout
-*/
+/** This structure stores the eligibility criter used for art rollout */
 class RolloutEligibility
 {
 public:
+
     bool eligibility_enabled;
 
     bool isIdentified;
@@ -144,7 +155,7 @@ struct CepacParameters
     {
         Time time;
         int target_population = 0;      /***< default target population = 0 (not on treatment) */
-        std::string filename = "";
+        std::string filename;
     };
 
     CepacParameters() :
@@ -152,6 +163,7 @@ struct CepacParameters
         dynamic_feedback_enabled(false),
         dynamic_feedback_period(0)
     {
+
     }
 
     CepacParameters(const CepacParameters &other) :
@@ -163,10 +175,12 @@ struct CepacParameters
         dynamic_feedback_period(other.dynamic_feedback_period),
         target_yearly_rollout_proportions(other.target_yearly_rollout_proportions)
     {
+
     }
 
     ~CepacParameters()
     {
+
     }
 
     CepacParameters &operator=(CepacParameters other)
@@ -187,12 +201,21 @@ struct CepacParameters
     }
 
     CepacFile default_cepac_file;
+
     std::vector<CepacFile> cepac_files;
+
     RolloutEligibility eligibility_criteria;
+
     RolloutDenominator rollout_proportion_denominator;
+
     bool dynamic_feedback_enabled;
+
     int dynamic_feedback_period;
+
     std::vector<std::pair<int, double>> target_yearly_rollout_proportions;
 };
 
 } // namespace transm
+
+
+#endif /* PARAMETERDEFINITIONS_HPP */

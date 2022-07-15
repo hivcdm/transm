@@ -1,4 +1,5 @@
-#pragma once
+#ifndef INFECTIONSTRACKER_HPP
+#define INFECTIONSTRACKER_HPP
 
 #include <deque>
 #include <list>
@@ -29,78 +30,59 @@ public:
     using DemographicArray = std::array<std::size_t, DemographicProfile::TotalNumBuckets>;
     using DemographicToDemographicArray = std::array<std::array<std::size_t, DemographicProfile::TotalNumBuckets>, DemographicProfile::TotalNumBuckets>;
 
-    /// <summary>
-    /// If this number gets changed, also change it in BucketAge.h
-    /// </summary>
+    /** If this number gets changed, also change it in BucketAge.h */
     static const int NUMBER_GENERATIONS_TO_TRACE = 6;
 
 private:
-    /// <summary>
-    /// Total number of incident infections throughout the course of the model,
-    /// stratified by HVL of the infector.
-    /// </summary>
+    /**
+     * Total number of incident infections throughout the course of the model,
+     * stratified by HVL of the infector. */
     HVLArray totalIncidentInfections;
 
-    /// <summary>
-    /// Total number of times an HIV infected person had sex with an HIV
-    /// uninfected person, stratified by HVL of the infector. This includes
-    /// exposures that resulted in an infection.
-    /// </summary>
+    /**
+     * Total number of times an HIV infected person had sex with an HIV
+     * uninfected person, stratified by HVL of the infector. This includes
+     * exposures that resulted in an infection. */
     HVLArray totalExposures;
 
-    /// <summary>
-    /// This contains prevalent infections of all buckets in an EntityPool. Should be sync'd w/ curr timestep.
-    /// </summary>
+    /** This contains prevalent infections of all buckets in an EntityPool. Should be sync'd w/ curr timestep. */
     std::array<DemographicArray, NUMBER_GENERATIONS_TO_TRACE> currPrevalentInfections;
 
     GenderArray<RiskEmploymentArray> currPrevalentInfectionsGenderRiskEmployment;
     OrientationArray<RiskEmploymentArray> currPrevalentInfectionsOrientationRiskEmployment;
 
-    /// <summary>
-    /// This contains prevalent infections of all buckets in an EntityPool
-    /// stratified by age and gender. Should be sync'd w/ curr timestep
-    /// </summary>
+    /**
+      * This contains prevalent infections of all buckets in an EntityPool
+      * stratified by age and gender. Should be sync'd w/ curr timestep */
     GenderArray<AgeRangeSizeContainer> currPrevalentInfectionsGenderAge;
     OrientationArray<AgeRangeSizeContainer> currPrevalentInfectionsOrientationAge;
 
-    /// <summary>
-    /// This contains prevalent infections of all buckets in an EntityPool
-    /// stratified by entity type. Should be sync'd w/ curr timestep
-    /// </summary>
+    /**
+     * This contains prevalent infections of all buckets in an EntityPool
+     * stratified by entity type. Should be sync'd w/ curr timestep */
     GenderArray<std::size_t> currPrevalentInfectionsGender;
     OrientationArray<std::size_t> currPrevalentInfectionsOrientation;
 
-    /// <summary>
-    /// This contains profileID's that we will include in our traces.
-    /// </summary>
+    /** This contains profileID's that we will include in our traces. */
     std::vector<DemographicProfile::ProfileID> profileIDsForDetailedTrace;
 
-    /// <summary>
-    /// This is a copy of the sim clock. We keep a copy to know when the time has advanced
-    /// and when we need to reset incidence for the timestep.
-    /// </summary>
+    /**
+     * This is a copy of the sim clock. We keep a copy to know when the time has advanced
+     * and when we need to reset incidence for the timestep. */
     Time currTimeStep;
 
-    /// <summary>
-    /// Infections in the current time step, stratified by HVL of the infector.
-    /// </summary>
+    /** Infections in the current time step, stratified by HVL of the infector. */
     HVLArray currTimeStepIncidentInfs;
 
-    /// <summary>
-    /// Infections in the current time step, stratified by risk and CSW status
-    /// </summary>
+    /** Infections in the current time step, stratified by risk and CSW status */
     GenderArray<RiskEmploymentArray> currTimeStepIncidentInfsGenderRiskEmployment;
     OrientationArray<RiskEmploymentArray> currTimeStepIncidentInfsOrientationRiskEmployment;
 
-    /// <summary>
-    /// Infections in the current time step stratified by Age and Gender
-    /// </summary>
+    /** Infections in the current time step stratified by Age and Gender  */
     GenderArray<AgeRangeSizeContainer> currTimeStepIncidentInfsGenderAge;
     OrientationArray<AgeRangeSizeContainer> currTimeStepIncidentInfsOrientationAge;
 
-    /// <summary>
-    /// sum by gender of age of infection and diagnosis for incident infections in current time step
-    /// </summary>
+    /** sum by gender of age of infection and diagnosis for incident infections in current time step */
     GenderArray<std::size_t> currTimeStepAgeInfectionSumGender;
     GenderArray<std::size_t> currTimeStepAgeInfectionSumSqGender;
     GenderArray<std::size_t> currTimeStepNumInfectedGender;
@@ -109,9 +91,7 @@ private:
     GenderArray<RiskEmploymentArray> currTimeStepAgeInfectionSumSqGenderRiskEmployment;
     GenderArray<RiskEmploymentArray> currTimeStepNumInfectedGenderRiskEmployment;
 
-    /// <summary>
-    /// sum by orientation of age of infection and diagnosis for incident infections in current time step
-    /// </summary>
+    /** sum by orientation of age of infection and diagnosis for incident infections in current time step */
     OrientationArray<std::size_t> currTimeStepAgeInfectionSumOrientation;
     OrientationArray<std::size_t> currTimeStepAgeInfectionSumSqOrientation;
     OrientationArray<std::size_t> currTimeStepNumInfectedOrientation;
@@ -120,16 +100,12 @@ private:
     OrientationArray<RiskEmploymentArray> currTimeStepAgeInfectionSumSqOrientationRiskEmployment;
     OrientationArray<RiskEmploymentArray> currTimeStepNumInfectedOrientationRiskEmployment;
 
-    /// <summary>
-    /// sum of cd4 at transmission for incident infection in current time step
-    /// </summary>
+    /** sum of cd4 at transmission for incident infection in current time step */
     double currTimeStepCD4InfectionSum;
     double currTimeStepCD4InfectionSumSq;
     std::size_t currTimeStepNumInfected;
 
-    /// <summary>
-    /// Total Infections in History
-    /// </summary>
+    /** Total Infections in History */
     AgeRangeSizeContainer totalIncidentInfsAge;
 
     GenderArray<std::size_t> totalIncidentInfsGender;
@@ -141,33 +117,27 @@ private:
     RiskArray totalIncidentInfsRiskCSW;
     RiskArray totalIncidentInfsRisk;
 
-    /// <summary>
-    /// Exposures in the current time step, stratified by HVL of the infector.
-    /// This includes exposures that resulted in an infection.
-    /// </summary>
+    /**
+     * Exposures in the current time step, stratified by HVL of the infector.
+     * This includes exposures that resulted in an infection. */
     HVLArray currTimeExposures;
     unsigned long currTimeTotalExposures;
     PartnershipArray currTimeExposuresByType;
 
-    /// <summary>
-    /// Number of times a condom was used this time step by partnership type
-    /// </summary>
+    /** Number of times a condom was used this time step by partnership type */
     unsigned long currTimeCondomUse;
     PartnershipArray currTimeCondomUseByType;
 
-    /// <summary>
-    /// A queue of the last twelve incidence rates, used to generate a yearly incidence
-    /// </summary>
+    /** A queue of the last twelve incidence rates, used to generate a yearly incidence */
     std::deque<double> lastTwelvePopIncidenceRates;
     std::deque<double> lastTwelveSAPopIncidenceRates;
 
-    /// <summary>
-    /// keeps track of infections that happened as a result of sexual activity-
-    ///  the first dimension represents type of partnerships
-    /// the second dimension represents demographic profiles of infectors
-    ///  the third dimension represents demographic profiles of people who were infected
-    /// so you can use this to track infection patterns. e.g. how many SINGLE_MALEs were infected by CSW_FEMALE
-    /// </summary>
+    /**
+     * keeps track of infections that happened as a result of sexual activity-
+     *  the first dimension represents type of partnerships
+     * the second dimension represents demographic profiles of infectors
+     *  the third dimension represents demographic profiles of people who were infected
+     * so you can use this to track infection patterns. e.g. how many SINGLE_MALEs were infected by CSW_FEMALE */
     std::array<DemographicToDemographicArray, (std::size_t)SexualPartnership::Type::Last> incidentInfectionsByDemographic;
 
     std::array<GenderArray<GenderArray<std::size_t>>, (std::size_t)SexualPartnership::Type::Last> incidentInfectionsByGender;
@@ -176,101 +146,83 @@ private:
 
 public :
 
-    /// <summary>
-    /// @param _profileIDsToPrint this determines which ProfileID's will be printed in traces. If a ProfileID is not in this vector, then no infections involving them will be printed in traces
-    /// </summary>
-    InfectionsTracker();
+     /**
+      * @param _profileIDsToPrint this determines which ProfileID's will be printed in traces. If a ProfileID is not
+      * in this vector, then no infections involving them will be printed in traces */
+     InfectionsTracker();
 
     /* This happens after we parse the active demographic profiles so the arrays can be zero-ed out*/
     void Initialize();
 
     /**
-    This will add any _profileID's that we would like to know about. any _profileID's added by this function
-    will appear on more detailed infection traces. If a _profileID is not added, it will not appear on any traces even though
-    the infection will be recorded internally
-    **/
+     * This will add any _profileID's that we would like to know about. any _profileID's added by this function
+     * will appear on more detailed infection traces. If a _profileID is not added, it will not appear on any traces even though
+     * the infection will be recorded internally */
     void addToDetailedTrace(DemographicProfile::ProfileID _profileID);
 
     /**
-    @return number of people infected in the current time step
-    **/
+     * @return number of people infected in the current time step */
     unsigned int getCurrTimeStepNumInfected();
 
-    /// <summary>
-    /// Return total number of incident infections throughout this simulation.
-    /// </summary>
+    /**
+     * @return total number of incident infections throughout this simulation. */
     std::size_t getNumIncidentInfections();
 
-    /// <summary>
-    /// See how many of 1 type of person infected another.
-    /// </summary>
+     /** See how many of 1 type of person infected another. */
     std::size_t getNumIncidentInfections(DemographicProfile::ProfileID _infectors,
         DemographicProfile::ProfileID _infecteds);
 
-    //returns the prevalence rate among sexually active pop
+    /** returns the prevalence rate among sexually active pop */
     double getSAPrev(Population &_population);
 
-    // returns the annual incidence rate for the population
+    /** returns the annual incidence rate for the population */
     double getPopAnnualIncidence();
 
-    // returns the annual incidence rate for the sexually active population
+    /** returns the annual incidence rate for the sexually active population */
     double getSAPopAnnualIncidence();
 
-    /// <summary>
-    /// Records a new exposure regardless of whether an infection happened or not.
-    /// </summary>
+    /** Records a new exposure regardless of whether an infection happened or not.  */
     void recordExposure(Time time, const Entity *_infector, SexualPartnership::Type partnershipType,
         bool condomUsed);
 
-    /**
-    records a New infection and also prints the infection out to a trace
-    **/
+    /** records a New infection and also prints the infection out to a trace */
     void recordIncidentInfection(Time time, SexualPartnership::Type _partnershipType, const Entity *_infector,
                                  const Entity *_infected);
 
-    /**
-    records the cd4 at transmission (requested by clinical out stream)
-    **/
+    /** records the cd4 at transmission (requested by clinical out stream) */
     void recordCD4AtTransmission(std::ostream &stream);
 
-    /**
-    resets counting of incident infections for time step
-    **/
+    /** resets counting of incident infections for time step */
     void resetIncidentInfections(Time time);
 
-    /**
-    initializes the counters for incident infections by age and gender
-    **/
+    /** initializes the counters for incident infections by age and gender */
     void initializeIncidentInfectionsByAge(
         const GenderArray<AgeRangeSizeContainer> &incident_by_gender_age,
         const OrientationArray<AgeRangeSizeContainer> &incident_by_orientation_age,
         const AgeRangeSizeContainer &incident_by_age);
 
-    //takes values of _prevalence and copies into internal prevalence representation BucketDemographicProfile (keyed by _classifierVal)
+    /** takes values of _prevalence and copies into internal prevalence representation BucketDemographicProfile (keyed by _classifierVal) */
     void setPrevalentInfections(std::array<DemographicArray, NUMBER_GENERATIONS_TO_TRACE> _prevalenceByBucket,
         const GenderArray<AgeRangeSizeContainer> &_prevalenceByGenderAge,
         GenderArray<RiskEmploymentArray> _prevalenceByGenderRiskEmployment,
         const OrientationArray<AgeRangeSizeContainer> &_prevalenceByOrientationAge,
         OrientationArray<RiskEmploymentArray> _prevalenceByOrientaitonRiskEmployment);
 
-    //prints both flings and couple infections (who infected whom) 1 row = 1 month
-    /**
+    /** prints both flings and couple infections (who infected whom) 1 row = 1 month
     @param _time the current time in the simulation
     @param _outStream the stream to print
-    @returns the current prevalence (for GUI purposes)
-    **/
+    @returns the current prevalence (for GUI purposes) */
     int printInfections(EventParams &_eventParams, Time time, std::ostream &_outStream, Population *_population);
 
-    /// <summary>
-    /// Returns total number of incident infections that have occurred during
-    /// current timestep.
-    /// </summary>
+    /**
+     * Returns total number of incident infections that have occurred during
+     * current timestep. */
     std::size_t getCurrTimeStepIncidentInfsTotal();
 
-    /// <summary>
-    /// Calculates the current annual incidence based on the sum of the last twelve monthly incidence rates
-    /// </summary>
+    /** Calculates the current annual incidence based on the sum of the last twelve monthly incidence rates */
     double calculateAnnualIncidence(std::deque<double> lastTwelveIncidenceRates);
 };
 
 } // namespace transm
+
+#endif /* INFECTIONSTRACKER_HPP */

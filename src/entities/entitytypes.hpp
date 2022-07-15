@@ -1,10 +1,9 @@
-#pragma once
+#ifndef ENTITYTYPES_HPP
+#define ENTITYTYPES_HPP
 
 namespace transm {
 
-    /// <summary>
-	/// every Entity's CD4 count falls in a CD4 strata - used in CEPAC
-	/// </summary>
+    /** every Entity's CD4 count falls in a CD4 strata - used in CEPAC */
 	enum class CD4Strata
 	{
 		CD4_ZERO,
@@ -18,64 +17,34 @@ namespace transm {
         First = CD4_ZERO
 	};
 
-	/// <summary>
-	/// every Entity's hvl level falls in an HVL stratum (values in copies/mL)
-	/// </summary>
+	/** every Entity's hvl level falls in an HVL stratum (values in copies/mL) */
 	enum class HVLStrata
 	{
-		/// <summary>
-		/// HIV-
-		/// </summary>
-		UNINFECTED,
-		/// <summary>
-		/// 0-20
-		/// </summary>
-		HVL_ZERO,
-		/// <summary>
-		/// 21-500
-		/// </summary>
-		HVL_ONE,
-		/// <summary>
-		/// 501-3000
-		/// </summary>
-		HVL_TWO,
-		/// <summary>
-		/// 3001-10000
-		/// </summary>
-		HVL_THREE,
-		/// <summary>
-		/// 10001-30000
-		/// </summary>
-		HVL_FOUR,
-		/// <summary>
-		/// 30001-100000
-		/// </summary>
-		HVL_FIVE,
-		/// <summary>
-		/// 100000+
-		/// </summary>
-		HVL_SIX,
-		/// <summary>
-		/// Initial stage of disease progression
-		/// </summary>
-		HVL_PRIMARY,
-		/// <summary>
-		/// Final stage of disease progression
-		/// </summary>
-		HVL_LATESTAGE,
+
+		UNINFECTED,    /***< HIV negative */
+		HVL_ZERO,      /***< 0-20 */
+		HVL_ONE,       /***< 21-500 */
+		HVL_TWO,       /***< 501-3000	*/
+		HVL_THREE,     /***< 3001-10000 */
+		HVL_FOUR,      /***< 10001-30000 */
+		HVL_FIVE,      /***< 30001-100000 */
+		HVL_SIX,       /***< 100000+ */
+		HVL_PRIMARY,   /***< Initial stage of disease progression */
+		HVL_LATESTAGE, /***< Final stage of disease progression */
         ENDType,
 		Last = ENDType,
         First = UNINFECTED
 	};
 
+    /** Tracking every Entity's HIV status in CDM */
 	enum class HIVStatus
 	{
-		NEGATIVE, //hiv negative
+		NEGATIVE, /* HIV negative */
 		OBSERVED_ACUTE,
 		UNOBSERVED_ACUTE,
 		OBSERVED_CHRONIC,
 		UNOBSERVED_CHRONIC,
-		OBSERVED_LATESTAGE,//Late stage takes precedence over chronic (acute cases are never latestage)
+		OBSERVED_LATESTAGE, /* Late stage takes precedence over chronic (acute cases are never latestage) */
 		UNOBSERVED_LATESTAGE,
 		ENDHIVStatus,
 		ANY_POSITIVE,
@@ -88,7 +57,7 @@ namespace transm {
 
 	enum class DeathStatus
 	{
-		ALIVE, //not dead
+		ALIVE, /* not dead */
 		DTH_OI,
 		DTH_CHRAIDS,
 		DTH_NONAIDS,
@@ -100,7 +69,7 @@ namespace transm {
         First = ALIVE
 	};
 
-	enum class RiskLevel   //used for assortativeness
+	enum class RiskLevel  /* used for assortativeness */
 	{
 		LOW,
 		HIGH,
@@ -113,10 +82,13 @@ namespace transm {
     {
         OFF_PREP,
         PREP_ADHERENT,
-        PREP_INADHERENT,
+        PREP_INADHERENT, /* for later */
         WAS_ON_PREP,
         ENDType,
 		Last = ENDType,
         First = OFF_PREP
     };
 }
+
+
+#endif /* ENTITYTYPES_HPP */

@@ -1,3 +1,6 @@
+#ifndef TRANSM_HPP
+#define TRANSM_HPP
+
 #include "core/batchstatus.hpp"
 #include "core/simulation.hpp"
 #include "parameters/simulationparameters.hpp"
@@ -62,7 +65,7 @@ int run_simulation(const path &batch_path, const path &cepac_directory) {
         cout << "No input files found in batch" << batch_path.string() << std::endl;
         return 1;
     }
-    // TODO: Potentially this loop can be multi-threaded with OpenMP
+
     for (const auto &input_file : input_files) {
 
         // Changing back to the input directory because over the course of Sim->run,
@@ -149,3 +152,6 @@ void print_version() {
     std::cout << "transm version " << version_string << std::endl;
 }
 
+
+
+#endif /* TRANSM_HPP */

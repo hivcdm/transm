@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TARGETGROUP_HPP
+#define TARGETGROUP_HPP
 
 #include <string>
 #include <unordered_set>
@@ -211,39 +212,39 @@ public:
                 summary.incident_cases = std::count_if(member_partitions_.begin(), member_partitions_.end(), is_incident);
                 summary.prevalent_cases = std::count_if(member_partitions_.begin(), member_partitions_.end(), is_prevalent);
 
-                summary.pop_size_sa_male = std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_sa_gender, std::placeholders::_1, DemographicProfile::Gender::Male));
-                summary.prevalent_male = std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_prev_gender, std::placeholders::_1, DemographicProfile::Gender::Male));
-                summary.incident_male = std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_incident_gender, std::placeholders::_1, DemographicProfile::Gender::Male));
-                summary.pop_size_na_male = std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_na_gender, std::placeholders::_1, DemographicProfile::Gender::Male));
+                summary.pop_size_sa_male = std::count_if(member_partitions_.begin(), member_partitions_.end(), [is_sa_gender](auto && PH1) { return is_sa_gender(std::forward<decltype(PH1)>(PH1), DemographicProfile::Gender::Male); });
+                summary.prevalent_male = std::count_if(member_partitions_.begin(), member_partitions_.end(), [is_prev_gender](auto && PH1) { return is_prev_gender(std::forward<decltype(PH1)>(PH1), DemographicProfile::Gender::Male); });
+                summary.incident_male = std::count_if(member_partitions_.begin(), member_partitions_.end(), [is_incident_gender](auto && PH1) { return is_incident_gender(std::forward<decltype(PH1)>(PH1), DemographicProfile::Gender::Male); });
+                summary.pop_size_na_male = std::count_if(member_partitions_.begin(), member_partitions_.end(), [is_na_gender](auto && PH1) { return is_na_gender(std::forward<decltype(PH1)>(PH1), DemographicProfile::Gender::Male); });
 
                 for(auto entity_type : {"MSW", "MSMW", "MSM", "female"})
                 {
-                    summary.pop_size_sa_entity_type[entity_type] = std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_sa_entity_type, std::placeholders::_1, entity_type));
-                    summary.prevalent_entity_type[entity_type] = std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_prev_entity_type, std::placeholders::_1, entity_type));
-                    summary.incident_entity_type[entity_type] = std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_incident_entity_type, std::placeholders::_1, entity_type));
-                    summary.pop_size_na_entity_type[entity_type] = std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_na_entity_type, std::placeholders::_1, entity_type));
+                    summary.pop_size_sa_entity_type[entity_type] = std::count_if(member_partitions_.begin(), member_partitions_.end(), [is_sa_entity_type, entity_type](auto && PH1) { return is_sa_entity_type(std::forward<decltype(PH1)>(PH1), entity_type); });
+                    summary.prevalent_entity_type[entity_type] = std::count_if(member_partitions_.begin(), member_partitions_.end(), [is_prev_entity_type, entity_type](auto && PH1) { return is_prev_entity_type(std::forward<decltype(PH1)>(PH1), entity_type); });
+                    summary.incident_entity_type[entity_type] = std::count_if(member_partitions_.begin(), member_partitions_.end(), [is_incident_entity_type, entity_type](auto && PH1) { return is_incident_entity_type(std::forward<decltype(PH1)>(PH1), entity_type); });
+                    summary.pop_size_na_entity_type[entity_type] = std::count_if(member_partitions_.begin(), member_partitions_.end(), [is_na_entity_type, entity_type](auto && PH1) { return is_na_entity_type(std::forward<decltype(PH1)>(PH1), entity_type); });
                 }
 
                 std::vector<std::pair<int, int>> age_ranges = {{0, 203}, {204, 239}, {240, 299}, {300, 359}, {360, 419}, {420, 479}, {480, 539}, {540, 599}, {600, 1211}};
 
                 for(auto &age_range : age_ranges)
                 {
-                    summary.sa_size_by_age_range_male.push_back(std::make_tuple(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_sa_in_age_range_gender, std::placeholders::_1, age_range.first, age_range.second, DemographicProfile::Gender::Male))));
-                    summary.prevalent_by_age_range_male.push_back(std::make_tuple(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_prev_in_age_range_gender, std::placeholders::_1, age_range.first, age_range.second, DemographicProfile::Gender::Male))));
-                    summary.incident_by_age_range_male.push_back(std::make_tuple(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_incident_in_age_range_gender, std::placeholders::_1, age_range.first, age_range.second, DemographicProfile::Gender::Male))));
+                    summary.sa_size_by_age_range_male.emplace_back(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), [is_sa_in_age_range_gender, capture0 = age_range.first, capture1 = age_range.second](auto && PH1) { return is_sa_in_age_range_gender(std::forward<decltype(PH1)>(PH1), capture0, capture1, DemographicProfile::Gender::Male); }));
+                    summary.prevalent_by_age_range_male.emplace_back(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), [is_prev_in_age_range_gender, capture0 = age_range.first, capture1 = age_range.second](auto && PH1) { return is_prev_in_age_range_gender(std::forward<decltype(PH1)>(PH1), capture0, capture1, DemographicProfile::Gender::Male); }));
+                    summary.incident_by_age_range_male.emplace_back(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), [is_incident_in_age_range_gender, capture0 = age_range.first, capture1 = age_range.second](auto && PH1) { return is_incident_in_age_range_gender(std::forward<decltype(PH1)>(PH1), capture0, capture1, DemographicProfile::Gender::Male); }));
 		    for(auto entity_type : {"MSW", "MSMW", "MSM", "female"})
                     {
-                        summary.sa_size_by_age_range_entity_type[entity_type].push_back(std::make_tuple(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_sa_in_age_range_entity_type, std::placeholders::_1, age_range.first, age_range.second, entity_type))));
-                        summary.prevalent_by_age_range_entity_type[entity_type].push_back(std::make_tuple(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_prev_in_age_range_entity_type, std::placeholders::_1, age_range.first, age_range.second, entity_type))));
-                        summary.incident_by_age_range_entity_type[entity_type].push_back(std::make_tuple(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_incident_in_age_range_entity_type, std::placeholders::_1, age_range.first, age_range.second, entity_type))));
+                        summary.sa_size_by_age_range_entity_type[entity_type].push_back(std::make_tuple(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), [is_sa_in_age_range_entity_type, capture0 = age_range.first, capture1 = age_range.second, entity_type](auto && PH1) { return is_sa_in_age_range_entity_type(std::forward<decltype(PH1)>(PH1), capture0, capture1, entity_type); })));
+                        summary.prevalent_by_age_range_entity_type[entity_type].push_back(std::make_tuple(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), [is_prev_in_age_range_entity_type, capture0 = age_range.first, capture1 = age_range.second, entity_type](auto && PH1) { return is_prev_in_age_range_entity_type(std::forward<decltype(PH1)>(PH1), capture0, capture1, entity_type); })));
+                        summary.incident_by_age_range_entity_type[entity_type].push_back(std::make_tuple(age_range.first, age_range.second, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), [is_incident_in_age_range_entity_type, capture0 = age_range.first, capture1 = age_range.second, entity_type](auto && PH1) { return is_incident_in_age_range_entity_type(std::forward<decltype(PH1)>(PH1), capture0, capture1, entity_type); })));
                     }
                 }
 
                 for(auto risk_group : {"CSW High Risk", "CSW Low Risk", "Non-CSW High Risk Male:Msw", "Non-CSW High Risk Male:Msmw", "Non-CSW High Risk Male:Msm", "Non-CSW High Risk Female", "Non-CSW Low Risk Male:Msw", "Non-CSW Low Risk Male:Msmw", "Non-CSW Low Risk Male:Msm", "Non-CSW Low Risk Female"})
                 {
-                    summary.size_risk_group.push_back({risk_group, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_in_risk_group, std::placeholders::_1, risk_group))});
-                    summary.prevalent_risk_group.push_back({risk_group, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_prev_in_risk_group, std::placeholders::_1, risk_group))});
-                    summary.incident_risk_group.push_back({risk_group, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_incident_in_risk_group, std::placeholders::_1, risk_group))});
+                    summary.size_risk_group.emplace_back(risk_group, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_in_risk_group, std::placeholders::_1, risk_group)));
+                    summary.prevalent_risk_group.emplace_back(risk_group, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_prev_in_risk_group, std::placeholders::_1, risk_group)));
+                    summary.incident_risk_group.emplace_back(risk_group, (std::size_t)std::count_if(member_partitions_.begin(), member_partitions_.end(), std::bind(is_incident_in_risk_group, std::placeholders::_1, risk_group)));
                 }
 
 				summary.life_months_undiscounted = 0;
@@ -321,3 +322,6 @@ private:
 };
 
 } // namespace transm
+
+
+#endif /* TARGETGROUP_HPP */

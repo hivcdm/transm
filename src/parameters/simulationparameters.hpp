@@ -92,8 +92,6 @@ public:
     /*virtual*/ PrepParameters GetPrepParameters() const override;
 
 private:
-
-
     template<typename T>
     static T from_string(const std::string &value_string);
 
@@ -110,7 +108,7 @@ private:
         return from_string<T>(node.attribute(name.c_str()).as_string());
     }
 
-    NormalDist GetNormalDist(pugi::xml_node node) const;
+    static NormalDist GetNormalDist(pugi::xml_node node) ;
     LogNormalDist GetLogNormalDist(pugi::xml_node node) const;
     BetaDist GetBetaDist(pugi::xml_node node) const;
     ShiftedLogNormalDist GetShiftedLogNormalDist(pugi::xml_node node) const;
@@ -119,8 +117,8 @@ private:
     static void SetProportionCircumcisedCallback(pugi::xml_node &node, Intervention &intervention) ;
     static void SetCircumciseCallback(pugi::xml_node &node, Intervention &intervention, bool individual) ;
 
-    // template function for returning different values when calculating transform
-    // values in interventions (transform meaning increase or decrease)
+    /** template function for returning different values when calculating transform */
+    /* values in interventions (transform meaning increase or decrease) */
     static double TransformInterventionValue(double target, double curr, Time time, TimeSpan duration, Time current_time);
     static NormalDist TransformInterventionValue(NormalDist target, NormalDist curr, Time time, TimeSpan duration, Time current_time);
 
@@ -147,7 +145,7 @@ private:
     static string SexPartnerType_to_String(SexualPartnership::Type type);
 };
 
-// TODO: json file format is not implemented !
+/* TODO: json file format is not implemented ! */
 class SimulationParametersJson : public SimulationParameters
 {
 public:

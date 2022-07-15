@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MAKE_UNIQUE_HPP
+#define MAKE_UNIQUE_HPP
 
 #include <memory>
 #include <utility>
@@ -12,3 +13,6 @@ auto make_unique(Args&&... args) -> std::unique_ptr<T>
 }
 }
 #endif
+
+
+#endif /* MAKE_UNIQUE_HPP */

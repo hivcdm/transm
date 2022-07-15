@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PREP_HPP
+#define PREP_HPP
 
 #include <vector>
 
@@ -8,12 +9,7 @@
 
 namespace transm {
 
-/// <summary>
-/// Contains the specified parameters for pre-Exposure Prophylaxis
-/// </summary>
-/// <remarks>
-/// </remarks>
-
+/** Contains the specified parameters for pre-Exposure Prophylaxis */
 struct PrepEligibility
 {
     int currentPartnerCount = -1;
@@ -41,7 +37,7 @@ class PrepParameters
     ProfileMap returnToCareProfiles;
 
 public:
-    bool Enabled() { return enabled; }
+    bool Enabled() const { return enabled; }
     void SetEnabled(bool value) { enabled = value; }
 
     void SetEligibility(PrepEligibility elig) { eligibility = elig; }
@@ -51,14 +47,14 @@ public:
     double GetEfficacy() const { return efficacy; }
 
     void SetDefaultAccess(double value) { access = value; }
-    void SetProfileAccess(DemographicProfile profile, double value)
+    void SetProfileAccess(const DemographicProfile& profile, double value)
     {
         accessProfiles.emplace(profile, value);
     }
-    double GetAccess(DemographicProfile profile) const
+    double GetAccess(const DemographicProfile& profile) const
     {
         double value = access;
-        for (auto pair : accessProfiles)
+        for (const auto& pair : accessProfiles)
             if (profile.match(pair.first))
                 value = pair.second;
 
@@ -66,14 +62,14 @@ public:
     }
 
     void SetDefaultAdherence(double value) { adherence = value; }
-    void SetProfileAdherence(DemographicProfile profile, double value)
+    void SetProfileAdherence(const DemographicProfile& profile, double value)
     {
         adherenceProfiles.emplace(profile, value);
     }
-    double GetAdherence(DemographicProfile profile) const
+    double GetAdherence(const DemographicProfile& profile) const
     {
         double value = adherence;
-        for (auto pair : adherenceProfiles)
+        for (const auto& pair : adherenceProfiles)
             if (profile.match(pair.first))
                 value = pair.second;
 
@@ -81,14 +77,14 @@ public:
     }
 
     void SetDefaultRetention(double value) { retention = value; }
-    void SetProfileRetention(DemographicProfile profile, double value)
+    void SetProfileRetention(const DemographicProfile& profile, double value)
     {
         retentionProfiles.emplace(profile, value);
     }
-    double GetRetention(DemographicProfile profile) const
+    double GetRetention(const DemographicProfile& profile) const
     {
         double value = retention;
-        for (auto pair : retentionProfiles)
+        for (const auto& pair : retentionProfiles)
             if (profile.match(pair.first))
                 value = pair.second;
 
@@ -96,14 +92,14 @@ public:
     }
 
     void SetDefaultReturnToCare(double value) { returnToCare = value; }
-    void SetProfileReturnToCare(DemographicProfile profile, double value)
+    void SetProfileReturnToCare(const DemographicProfile& profile, double value)
     {
         returnToCareProfiles.emplace(profile, value);
     }
-    double GetReturnToCare(DemographicProfile profile) const
+    double GetReturnToCare(const DemographicProfile& profile) const
     {
         double value = returnToCare;
-        for (auto pair : returnToCareProfiles)
+        for (const auto& pair : returnToCareProfiles)
             if (profile.match(pair.first))
                 value = pair.second;
 
@@ -112,3 +108,6 @@ public:
 };
 
 } // namespace transm
+
+
+#endif /* PREP_HPP */

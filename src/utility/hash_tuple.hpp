@@ -1,4 +1,5 @@
-#pragma once
+#ifndef HASH_TUPLE_HPP
+#define HASH_TUPLE_HPP
 
 #include <tuple>
 
@@ -12,7 +13,7 @@ inline void hash_combine(std::size_t &seed, const T &v)
     seed ^= hash<T>()(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
 
-// Recursive template code derived from Matthieu M.
+/** Recursive template code derived from Matthieu M. */
 template <class Tuple, std::size_t Index = std::tuple_size<Tuple>::value - 1>
 struct HashValueImpl
 {
@@ -46,3 +47,6 @@ struct hash<std::tuple<TT...>>
 };
 
 } // namespace stsd
+
+
+#endif /* HASH_TUPLE_HPP */
