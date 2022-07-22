@@ -549,7 +549,7 @@ public:
      * @param _fromDeath we are ending b/c this person has died. so will force all partnerships of this type to end
      * @param _partnershipsToEnd when method is complete, _partnershipsToEnd will contain partnerships that should end.
      * @return number of partnerships ended */
-    long getPartnershipsToEnd(Time currTime, SexualPartnership::Type _partnershipType,
+    long getPartnershipsToEnd(Time currTime, EventParams &_eventParams, SexualPartnership::Type _partnershipType,
                               list<SexualPartnership *> &_partnershipsToEnd, bool _fromDeath);
 
     /** have sex with all partners where the SexualPartnership has a duration. To prevent double-counting activity (iterator hits both partners)

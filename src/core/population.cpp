@@ -459,10 +459,12 @@ void Population::UpdatePartnerships(EventParams &eventParams) {
         std::list<SexualPartnership *> partnershipsToEnd;
 
         /* Decide who needs to split up */
+        /* This is the method with partnership durations */
         for (int type = 0; type < (int) SexualPartnership::Type::Last; ++type) {
-            ((Male *) person)->getPartnershipsToEnd(eventParams.currTime, SexualPartnership::Type(type),
+            ((Male *) person)->getPartnershipsToEnd(eventParams.currTime, eventParams, SexualPartnership::Type(type),
                                                     partnershipsToEnd, false);
         }
+
 
         /* Now, split them up... man, it would suck for their kids (if they had any) */
         DissolveSexualPartnerships(eventParams, person, partnershipsToEnd);
@@ -2360,7 +2362,7 @@ void Population::ProcessDeath(EventParams &eventParams, Entity *_p, bool calcula
 
     //we have to take care of what happens to any ongoing partnerships
     for (int type = 0; type < (int) SexualPartnership::Type::Last; ++type) {
-        _p->getPartnershipsToEnd(eventParams.currTime, SexualPartnership::Type(type), formerPartnerships, true);
+        _p->getPartnershipsToEnd(eventParams.currTime, eventParams, SexualPartnership::Type(type), formerPartnerships, true);
     }
 
     DissolveSexualPartnerships(eventParams, _p, formerPartnerships);

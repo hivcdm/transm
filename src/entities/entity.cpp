@@ -476,7 +476,7 @@ unsigned long Entity::getID() const {
     return id;
 }
 
-long Entity::getPartnershipsToEnd(Time _currTime, SexualPartnership::Type _partnershipType,
+long Entity::getPartnershipsToEnd(Time _currTime, EventParams & _eventParams, SexualPartnership::Type _partnershipType,
                                   std::list<SexualPartnership *> &_partnershipsToEnd, bool _fromDeath) {
     assert(_partnershipType < SexualPartnership::Type::Last);
     assert((_currTime >= Time::Zero) || _fromDeath);
@@ -490,15 +490,70 @@ long Entity::getPartnershipsToEnd(Time _currTime, SexualPartnership::Type _partn
     auto iter = partners[(int) _partnershipType].begin();
     auto iterEnd = partners[(int) _partnershipType].end();
     long numEnded = 0;
+    RandomNumberGenerator randomNum;
+
+    /* Manually assigned whether breakup rates are being used instead of partnership durations */
+    /* TODO: Reflect this flag in the input card. S. Seifi */
+    bool usingBreakupRates = true;
 
     //go through all partnerships
     while (iter != iterEnd) {
         //if it's time for that partnership to end, then put that partnership is the list for deletion
-        if ((*iter)->checkTimeForSplit(_currTime) || _fromDeath) {
-            _partnershipsToEnd.push_back(*iter);
-            numEnded++;
-        }
+        if (!usingBreakupRates) {
+            if ((*iter)->checkTimeForSplit(_currTime) || _fromDeath) {
+                _partnershipsToEnd.push_back(*iter);
+                numEnded++;
+            }
 
+        } else {
+
+            if (_fromDeath) {
+                _partnershipsToEnd.push_back(*iter);
+                numEnded++;
+            } else {
+
+                /* either MSM or MSMW */
+                bool isMsm = getDemographicProfileVal<DemographicProfile::SexualOrientation>() ==
+                             DemographicProfile::SexualOrientation::Msm;
+                bool isMsmw = getDemographicProfileVal<DemographicProfile::SexualOrientation>() ==
+                              DemographicProfile::SexualOrientation::Msmw;
+
+                /* Homosexual or bisexual in a steady partnership */
+                /* TODO: Breakup rates are coded here. Has to be added to the input card. S. Seifi*/
+                if (_partnershipType == SexualPartnership::Type::Steady) {
+                    if (isMsm || isMsmw) {
+                        /* let's see if break up happens: breakup rate calculated by Noe */
+                        /* Needed to be halved to eliminate double counting*/
+                        if (_eventParams.randomNums.chance(0.5*0.002141268142999)) {
+                            _partnershipsToEnd.push_back(*iter);
+                            numEnded++;
+                        }
+                    } else {
+                        /* let's see if break up happens: breakup rate calculated by Noe */
+                        if (_eventParams.randomNums.chance(0.001241487716449)) {
+                            _partnershipsToEnd.push_back(*iter);
+                            numEnded++;
+                        }
+                    }
+                } else if (_partnershipType == SexualPartnership::Type::Regular) {
+                    if (isMsm || isMsmw) {
+                        /* let's see if break up happens: breakup rate calculated by Noe */
+                        /* Needed to be halved to eliminate double counting*/
+                        if (_eventParams.randomNums.chance(0.5*0.01008772086468)) {
+                            _partnershipsToEnd.push_back(*iter);
+                            numEnded++;
+                        }
+                    } else {
+                        /* let's see if break up happens: breakup rate calculated by Noe */
+                        if (_eventParams.randomNums.chance(0.016500386691093)) {
+                            _partnershipsToEnd.push_back(*iter);
+                            numEnded++;
+                        }
+                    }
+                }
+            }
+
+        }
         iter++;
     }
 

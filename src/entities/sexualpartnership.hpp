@@ -54,6 +54,7 @@ protected :
 	/* this contains copies of pointers of partners */
 	Entity *partners[2];
 
+
 public :
 	SexualPartnership();
 
