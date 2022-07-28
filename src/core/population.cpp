@@ -1798,7 +1798,7 @@ bool Population::PassesPartnershipCalibration(EventParams &eventParams) {
                     numInPartnership[(int) partnership_type][(std::size_t) gender]++;
                     auto orientation = static_cast<std::size_t>((*p_Iter)->getDemographicProfile()->get(DemographicProfile::Demographic::SexualOrientation));
                     numInPartnershipOrientation[(int) partnership_type][(std::size_t) orientation]++;
-                    
+
                 }
 //                }
 

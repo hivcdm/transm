@@ -564,6 +564,25 @@ long Entity::getPartnershipsToEnd(Time _currTime, EventParams & _eventParams, Se
                             numEnded++;
                         }
                     }
+                } else if (_partnershipType == SexualPartnership::Type::Casual) {
+                    if (isMsm || isMsmw) {
+                        /* In Casual partnerships everyone breaks up */
+                        /* Needed to be halved to eliminate double counting*/
+                        if (_eventParams.randomNums.chance(0.5*1.0)) {
+                            (*iter)->hasBrokenUp = true;
+                            monthOfLatestBreakUp[(int) _partnershipType] = _currTime;
+                            _partnershipsToEnd.push_back(*iter);
+                            numEnded++;
+                        }
+                    } else {
+                        /* In Casual partnerships everyone breaks up*/
+                        if (_eventParams.randomNums.chance(1.0)) {
+                            (*iter)->hasBrokenUp = true;
+                            monthOfLatestBreakUp[(int) _partnershipType] = _currTime;
+                            _partnershipsToEnd.push_back(*iter);
+                            numEnded++;
+                        }
+                    }
                 }
             }
 
