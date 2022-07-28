@@ -161,6 +161,9 @@ protected:
     /* array of month of their farthest current partnership dissolution time for each partnership type.  initialized to zero */
     Time monthOfLatestPartnershipDissolution[(int) SexualPartnership::Type::Last];
 
+    Time monthOfLatestBreakUp[(int) SexualPartnership::Type::Last];
+
+
     /* array of month of latest concurrent relationship for each partnership type. Only updated for 12 months before calibration */
     Time monthOfLatestConcurrent;
 
@@ -327,6 +330,10 @@ public:
     /**
      * @return month of latest partnership dissolution (may be in the future) for given partner type */
     Time getMonthOfLatestPartnershipDissolution(SexualPartnership::Type);
+
+    /**
+     * @return month of latest partnership break up. This is different from partnership dissolution */
+    Time getMonthOfLatestBreakUp(SexualPartnership::Type _type);
 
     /** gets and sets month of latest concurrent */
     void setTimeOfLatestConcurrent(Time time);
@@ -936,6 +943,7 @@ private:
     PrepParameters prepParameters;
     PrepStatus prepStatus;
     PrepEligibility prepEligibility;
+
 };
 
 } // namespace transm

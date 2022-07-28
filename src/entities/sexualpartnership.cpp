@@ -28,6 +28,8 @@ SexualPartnership::SexualPartnership(Entity *_person1,
 	/* save time of partnership formation */
 	timePartnerFormation = _eventParams.currTime;
 
+    hasBrokenUp = false;
+
 	/* calculate when this partnership will dissolve. determined by _person1 */
 	auto maxDuration =  TimeSpan(0, _person1->rollForNewPartnershipDuration(_partnershipType, _eventParams.randomNums, _person2));
 

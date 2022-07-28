@@ -1790,18 +1790,18 @@ bool Population::PassesPartnershipCalibration(EventParams &eventParams) {
             numActsMonth[(std::size_t) gender] += (*p_Iter)->getNumActsThisMonth();
             numActsMonthRisk[(std::size_t) gender][(std::size_t) risk] += (*p_Iter)->getNumActsThisMonth();
 
-            for (int i = 0; i < (int) SexualPartnership::Type::Last; i++) {
-                if ((*p_Iter)->getMonthOfLatestPartnershipDissolution((SexualPartnership::Type) i) >
-                    max(eventParams.currTime - TimeSpan::Year, Time::Zero)) {
-                    numInPartnership[i][(std::size_t) gender]++;
-                    for (auto orientation : enum_iterator<DemographicProfile::SexualOrientation>()) {
-                        if((*p_Iter)->getDemographicProfile()->get(DemographicProfile::Demographic::SexualOrientation) ==
-                                (std::size_t) DemographicProfile::SexualOrientation::Msm){
-                            numInPartnershipOrientation[i][(std::size_t) orientation]++;
-                        }
-                    }
-
+            for (auto partnership_type : enum_iterator<SexualPartnership::Type>()) {
+//                if ((*p_Iter)->getMonthOfLatestPartnershipDissolution((SexualPartnership::Type) i) >
+//                    max(eventParams.currTime - TimeSpan::Year, Time::Zero)) {
+                auto num_partner_type = static_cast<std::size_t>((*p_Iter)->getNumPartners(partnership_type));
+                if (num_partner_type > 0) {
+                    numInPartnership[(int) partnership_type][(std::size_t) gender]++;
+                    auto orientation = static_cast<std::size_t>((*p_Iter)->getDemographicProfile()->get(DemographicProfile::Demographic::SexualOrientation));
+                    numInPartnershipOrientation[(int) partnership_type][(std::size_t) orientation]++;
+                    
                 }
+//                }
+
             }
 
             if ((*p_Iter)->getTimeOfLatestConcurrent() > max(eventParams.currTime - TimeSpan::Year, Time::Zero)) {
