@@ -410,7 +410,7 @@ void Population::UpdatePhysicalState(EventParams &eventParams, bool calculateLE,
     }
 }
 
-std::vector<Entity *> Population::Find(std::function<bool(Entity * )> predicate) {
+std::vector<Entity *> Population::Find(const std::function<bool(Entity * )>& predicate) {
     std::vector<Entity *> matches;
     entities->forEach([=, &matches](Entity *p) { if (predicate(p)) matches.push_back(p); });
     return matches;

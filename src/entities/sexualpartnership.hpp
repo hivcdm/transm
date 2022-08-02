@@ -43,9 +43,6 @@ public :
 	/* time that this partnership will dissolve */
 	Time timePartnerDissolution;
 
-    /* time of break up */
-    bool hasBrokenUp;
-
 protected :
 
 	/* identifies the type of sexual relationship this is */

@@ -63,7 +63,7 @@ public:
 
     SimContext *LoadCepacFile(const std::string &cepac_file) { return parameters_.LoadCepacContext(cepac_file); }
 
-    std::vector<Entity *> Find(std::function<bool(Entity * )> predicate);
+    std::vector<Entity *> Find(const std::function<bool(Entity * )>& predicate);
 
     std::vector<Entity *> FindNonCircumcised();
 

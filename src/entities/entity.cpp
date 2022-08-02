@@ -433,10 +433,6 @@ Time Entity::getMonthOfLatestPartnershipDissolution(SexualPartnership::Type _typ
     return monthOfLatestPartnershipDissolution[(int) _type];
 }
 
-Time Entity::getMonthOfLatestBreakUp(SexualPartnership::Type _type) {
-    return monthOfLatestBreakUp[(int) _type];
-}
-
 Time Entity::getTimeOfLatestConcurrent() {
     return monthOfLatestConcurrent;
 }
@@ -531,16 +527,12 @@ long Entity::getPartnershipsToEnd(Time _currTime, EventParams & _eventParams, Se
                         /* let's see if break up happens: breakup rate calculated by Noe */
                         /* Needed to be halved to eliminate double counting*/
                         if (_eventParams.randomNums.chance(0.5*0.002141268142999)) {
-                            (*iter)->hasBrokenUp = true;
-                            monthOfLatestBreakUp[(int) _partnershipType] = _currTime;
                             _partnershipsToEnd.push_back(*iter);
                             numEnded++;
                         }
                     } else {
                         /* let's see if break up happens: breakup rate calculated by Noe */
                         if (_eventParams.randomNums.chance(0.001241487716449)) {
-                            (*iter)->hasBrokenUp = true;
-                            monthOfLatestBreakUp[(int) _partnershipType] = _currTime;
                             _partnershipsToEnd.push_back(*iter);
                             numEnded++;
                         }
@@ -550,16 +542,12 @@ long Entity::getPartnershipsToEnd(Time _currTime, EventParams & _eventParams, Se
                         /* let's see if break up happens: breakup rate calculated by Noe */
                         /* Needed to be halved to eliminate double counting*/
                         if (_eventParams.randomNums.chance(0.5*0.01008772086468)) {
-                            (*iter)->hasBrokenUp = true;
-                            monthOfLatestBreakUp[(int) _partnershipType] = _currTime;
                             _partnershipsToEnd.push_back(*iter);
                             numEnded++;
                         }
                     } else {
                         /* let's see if break up happens: breakup rate calculated by Noe */
                         if (_eventParams.randomNums.chance(0.016500386691093)) {
-                            (*iter)->hasBrokenUp = true;
-                            monthOfLatestBreakUp[(int) _partnershipType] = _currTime;
                             _partnershipsToEnd.push_back(*iter);
                             numEnded++;
                         }
@@ -569,16 +557,12 @@ long Entity::getPartnershipsToEnd(Time _currTime, EventParams & _eventParams, Se
                         /* In Casual partnerships everyone breaks up */
                         /* Needed to be halved to eliminate double counting*/
                         if (_eventParams.randomNums.chance(0.5*1.0)) {
-                            (*iter)->hasBrokenUp = true;
-                            monthOfLatestBreakUp[(int) _partnershipType] = _currTime;
                             _partnershipsToEnd.push_back(*iter);
                             numEnded++;
                         }
                     } else {
                         /* In Casual partnerships everyone breaks up*/
                         if (_eventParams.randomNums.chance(1.0)) {
-                            (*iter)->hasBrokenUp = true;
-                            monthOfLatestBreakUp[(int) _partnershipType] = _currTime;
                             _partnershipsToEnd.push_back(*iter);
                             numEnded++;
                         }
@@ -1533,7 +1517,6 @@ Entity::Entity(Age _age, unsigned int _populationID, const PrepParameters &prepP
         unformedPartnershipsTotal[type] = 0;
         numPartnersInHistory[type] = 0;
         monthOfLatestPartnershipDissolution[type] = Time::Zero;
-        monthOfLatestBreakUp[type] = Time::Zero;
     }
 
     monthOfLatestConcurrent = Time::Zero;
