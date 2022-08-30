@@ -526,13 +526,13 @@ long Entity::getPartnershipsToEnd(Time _currTime, EventParams & _eventParams, Se
                     if (isMsm || isMsmw) {
                         /* let's see if break up happens: breakup rate calculated by Noe */
                         /* Needed to be halved to eliminate double counting*/
-                        if (_eventParams.randomNums.chance(0.5*0.002141268142999)) {
+                        if (_eventParams.randomNums.chance(0.5*0.003675)) {
                             _partnershipsToEnd.push_back(*iter);
                             numEnded++;
                         }
                     } else {
                         /* let's see if break up happens: breakup rate calculated by Noe */
-                        if (_eventParams.randomNums.chance(0.001241487716449)) {
+                        if (_eventParams.randomNums.chance(0.0062786)) {
                             _partnershipsToEnd.push_back(*iter);
                             numEnded++;
                         }
@@ -541,13 +541,13 @@ long Entity::getPartnershipsToEnd(Time _currTime, EventParams & _eventParams, Se
                     if (isMsm || isMsmw) {
                         /* let's see if break up happens: breakup rate calculated by Noe */
                         /* Needed to be halved to eliminate double counting*/
-                        if (_eventParams.randomNums.chance(0.5*0.01008772086468)) {
+                        if (_eventParams.randomNums.chance(0.5*0.0426667)) {
                             _partnershipsToEnd.push_back(*iter);
                             numEnded++;
                         }
                     } else {
                         /* let's see if break up happens: breakup rate calculated by Noe */
-                        if (_eventParams.randomNums.chance(0.016500386691093)) {
+                        if (_eventParams.randomNums.chance(0.027451)) {
                             _partnershipsToEnd.push_back(*iter);
                             numEnded++;
                         }
