@@ -526,13 +526,13 @@ long Entity::getPartnershipsToEnd(Time _currTime, EventParams & _eventParams, Se
                     if (isMsm || isMsmw) {
                         /* let's see if break up happens: breakup rate calculated by Noe */
                         /* Needed to be halved to eliminate double counting*/
-                        if (_eventParams.randomNums.chance(0.5*0.003675)) {
+                        if (_eventParams.randomNums.chance(0.5*0.004233)) {
                             _partnershipsToEnd.push_back(*iter);
                             numEnded++;
                         }
                     } else {
                         /* let's see if break up happens: breakup rate calculated by Noe */
-                        if (_eventParams.randomNums.chance(0.0062786)) {
+                        if (_eventParams.randomNums.chance(0.002466)) {
                             _partnershipsToEnd.push_back(*iter);
                             numEnded++;
                         }
@@ -541,13 +541,13 @@ long Entity::getPartnershipsToEnd(Time _currTime, EventParams & _eventParams, Se
                     if (isMsm || isMsmw) {
                         /* let's see if break up happens: breakup rate calculated by Noe */
                         /* Needed to be halved to eliminate double counting*/
-                        if (_eventParams.randomNums.chance(0.5*0.0426667)) {
+                        if (_eventParams.randomNums.chance(0.5*0.01917)) {
                             _partnershipsToEnd.push_back(*iter);
                             numEnded++;
                         }
                     } else {
                         /* let's see if break up happens: breakup rate calculated by Noe */
-                        if (_eventParams.randomNums.chance(0.027451)) {
+                        if (_eventParams.randomNums.chance(0.03049)) {
                             _partnershipsToEnd.push_back(*iter);
                             numEnded++;
                         }
