@@ -536,6 +536,106 @@ int Male::rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType
 	return Utility::round<int>(_randomNums.randShiftedLogNormal(duration));
 }
 
+long Male::getPartnershipsToEnd(Time _currTime, EventParams & _eventParams, SexualPartnership::Type _partnershipType,
+                                  std::list<SexualPartnership *> &_partnershipsToEnd, bool _fromDeath) {
+    assert(_partnershipType < SexualPartnership::Type::Last);
+    assert((_currTime >= Time::Zero) || _fromDeath);
+
+    if (partners[(int) _partnershipType].empty()) {
+        return 0;
+    }
+
+    //iterate through all current partnerships that had any duration to them.
+    //The iterator points to class SexualPartnership
+    auto iter = partners[(int) _partnershipType].begin();
+    auto iterEnd = partners[(int) _partnershipType].end();
+    long numEnded = 0;
+    RandomNumberGenerator randomNum;
+
+
+    /* Manually assigned whether breakup rates are being used instead of partnership durations */
+    /* TODO: Reflect this flag in the input card. S. Seifi */
+    bool usingBreakupRates = true;
+
+    //go through all partnerships
+    while (iter != iterEnd) {
+        //if it's time for that partnership to end, then put that partnership is the list for deletion
+        if (!usingBreakupRates) {
+            if ((*iter)->checkTimeForSplit(_currTime) || _fromDeath) {
+                _partnershipsToEnd.push_back(*iter);
+                numEnded++;
+            }
+
+        } else {
+
+            if (_fromDeath) {
+                _partnershipsToEnd.push_back(*iter);
+                numEnded++;
+            } else {
+
+                /* either MSM or MSMW */
+                bool isMsm = getDemographicProfileVal<DemographicProfile::SexualOrientation>() ==
+                             DemographicProfile::SexualOrientation::Msm;
+                bool isMsmw = getDemographicProfileVal<DemographicProfile::SexualOrientation>() ==
+                              DemographicProfile::SexualOrientation::Msmw;
+
+                /* Homosexual or bisexual in a steady partnership */
+                /* TODO: Breakup rates are coded here. Has to be added to the input card. S. Seifi*/
+                if (_partnershipType == SexualPartnership::Type::Steady) {
+                    if (isMsm || isMsmw) {
+                        /* let's see if break up happens: breakup rate calculated by Noe */
+                        /* Needed to be halved to eliminate double counting*/
+                        if (_eventParams.randomNums.chance(0.5*populationSpecificParams.getBreakupRateMSM(_partnershipType))) {
+                            _partnershipsToEnd.push_back(*iter);
+                            numEnded++;
+                        }
+                    } else {
+                        /* let's see if break up happens: breakup rate calculated by Noe */
+                        if (_eventParams.randomNums.chance(populationSpecificParams.getBreakupRateMSW(_partnershipType))) {
+                            _partnershipsToEnd.push_back(*iter);
+                            numEnded++;
+                        }
+                    }
+                } else if (_partnershipType == SexualPartnership::Type::Regular) {
+                    if (isMsm || isMsmw) {
+                        /* let's see if break up happens: breakup rate calculated by Noe */
+                        /* Needed to be halved to eliminate double counting*/
+                        if (_eventParams.randomNums.chance(0.5*populationSpecificParams.getBreakupRateMSM(_partnershipType))) {
+                            _partnershipsToEnd.push_back(*iter);
+                            numEnded++;
+                        }
+                    } else {
+                        /* let's see if break up happens: breakup rate calculated by Noe */
+                        if (_eventParams.randomNums.chance(populationSpecificParams.getBreakupRateMSW(_partnershipType))) {
+                            _partnershipsToEnd.push_back(*iter);
+                            numEnded++;
+                        }
+                    }
+                } else if (_partnershipType == SexualPartnership::Type::Casual) {
+                    if (isMsm || isMsmw) {
+                        /* In Casual partnerships everyone breaks up */
+                        /* Needed to be halved to eliminate double counting*/
+                        if (_eventParams.randomNums.chance(0.5*1.0)) {
+                            _partnershipsToEnd.push_back(*iter);
+                            numEnded++;
+                        }
+                    } else {
+                        /* In Casual partnerships everyone breaks up*/
+                        if (_eventParams.randomNums.chance(1.0)) {
+                            _partnershipsToEnd.push_back(*iter);
+                            numEnded++;
+                        }
+                    }
+                }
+            }
+
+        }
+        iter++;
+    }
+
+    return numEnded;
+}
+
 void Male::rerollRiskGroup(EventParams &_eventParams)
 {
 	auto cswStatus = getDemographicProfileVal<DemographicProfile::Employment>();

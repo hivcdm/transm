@@ -54,10 +54,22 @@ public :
 
     void setChanceChooseWithSteady(double chance) { chanceChooseWithSteady = chance; }
 
+    void setBreakupRateForMSW(double rate) { breakupRateForMSW = rate; }
+
+    void setBreakupRateForMSM(double rate) { breakupRateForMSW = rate; }
+
+    double getBreakupRateForMSW() const { return breakupRateForMSW; }
+
+    double getBreakupRateForMSM() const { return breakupRateForMSW; }
+
     double getChanceChooseWithSteady() const { return chanceChooseWithSteady; }
 
 private:
 	friend class SimulationBuilder;
+
+    double breakupRateForMSW;
+
+    double breakupRateForMSM;
 
     double chanceChooseWithSteady;
 

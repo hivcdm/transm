@@ -108,6 +108,9 @@ public :
 		void SetPartnershipDuration(RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { sexualBehaviorParams[type].setPartnershipDuration(risk, dist); }
 	    BetaDist GetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type type) const { return getSexualBehavior(type).getChanceCondomUsePerEvent(risk); }
 
+        double getBreakupRateMSW(SexualPartnership::Type type) { return sexualBehaviorParams[type].getBreakupRateForMSW(); }
+        double getBreakupRateMSM(SexualPartnership::Type type) { return sexualBehaviorParams[type].getBreakupRateForMSM(); }
+
 		int GetMaxPartnershipRejections() const { return maxPartnershipRejections; }
 		void SetMaxPartnershipRejections(int rejections) { maxPartnershipRejections = rejections; }
 
@@ -299,6 +302,8 @@ public:
 	int rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType);
 	int rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType);
 	int rollForNewPartnershipDuration(SexualPartnership::Type _partnershipType, RandomNumberGenerator &_randomNums, Entity *_p);
+    long getPartnershipsToEnd(Time _currTime, EventParams & _eventParams, SexualPartnership::Type _partnershipType,
+                                    std::list<SexualPartnership *> &_partnershipsToEnd, bool _fromDeath);
     DemographicProfile::ProfileID ChoosePartnerDemographic(RandomNumberGenerator &_randomNums, SexualPartnership::Type partnershipType);
 
 	void rerollRiskGroup(EventParams &_eventParams);

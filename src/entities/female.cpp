@@ -20,6 +20,39 @@ int Female::rollForNumPartners(RandomNumberGenerator &, SexualPartnership::Type)
     throw std::runtime_error("not implemented for women");
 }
 
+long Female::getPartnershipsToEnd(Time _currTime, EventParams & _eventParams, SexualPartnership::Type _partnershipType,
+                                std::list<SexualPartnership *> &_partnershipsToEnd, bool _fromDeath) {
+    assert(_partnershipType < SexualPartnership::Type::Last);
+    assert((_currTime >= Time::Zero) || _fromDeath);
+
+    if (partners[(int) _partnershipType].empty()) {
+        return 0;
+    }
+
+    //iterate through all current partnerships that had any duration to them.
+    //The iterator points to class SexualPartnership
+    auto iter = partners[(int) _partnershipType].begin();
+    auto iterEnd = partners[(int) _partnershipType].end();
+    long numEnded = 0;
+    RandomNumberGenerator randomNum;
+
+
+    /* Manually assigned whether breakup rates are being used instead of partnership durations */
+
+    //go through all partnerships
+    while (iter != iterEnd) {
+        //if it's time for that partnership to end, then put that partnership is the list for deletion
+        if (_fromDeath) {
+            _partnershipsToEnd.push_back(*iter);
+            numEnded++;
+        }
+        iter++;
+    }
+
+    return numEnded;
+}
+
+
 int Female::rollNumEventsPerPartner(Entity *, RandomNumberGenerator &, SexualPartnership::Type)
 {
     throw std::runtime_error("not implemented for women");

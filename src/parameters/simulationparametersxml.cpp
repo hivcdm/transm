@@ -703,6 +703,13 @@ SexualBehavior SimulationParametersXml::GetSexualBehavior(const std::string &ent
 
     SexualBehavior result(type);
 
+    /* Only accounts steady and regular partnerships with breakup rates since CSW and Casuals are one night stands */
+    if (type == SexualPartnership::Type::Regular || type == SexualPartnership::Type::Steady) {
+        result.setBreakupRateForMSW(Text<double>(node.child("BreakupRateForMSW")));
+
+        result.setBreakupRateForMSM(Text<double>(node.child("BreakupRateForMSM")));
+    }
+
     result.setChanceChooseWithSteady(Text<double>(node.child("selectionCriteria").child("chanceChooseWithSteady")));
 
     result.setAverageYearsYounger(GetNormalDist(node.child("selectionCriteria").child("averageYearsYounger")));

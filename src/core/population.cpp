@@ -461,9 +461,10 @@ void Population::UpdatePartnerships(EventParams &eventParams) {
         /* Decide who needs to split up */
         /* This is the method with partnership durations */
         for (int type = 0; type < (int) SexualPartnership::Type::Last; ++type) {
-            ((Male *) person)->getPartnershipsToEnd(eventParams.currTime, eventParams, SexualPartnership::Type(type),
+            ((Male *) person)->getPartnershipsToEnd( eventParams.currTime, eventParams, SexualPartnership::Type(type),
                                                     partnershipsToEnd, false);
         }
+
 
 
         /* Now, split them up... man, it would suck for their kids (if they had any) */

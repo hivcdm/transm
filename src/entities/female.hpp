@@ -133,6 +133,9 @@ public:
 
     int rollForNumPartners(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType);
 
+    long getPartnershipsToEnd(Time _currTime, EventParams & _eventParams, SexualPartnership::Type _partnershipType,
+                                      std::list<SexualPartnership *> &_partnershipsToEnd, bool _fromDeath);
+
     void Circumcise();
 
     void rerollRiskGroup(EventParams &_eventParams);
