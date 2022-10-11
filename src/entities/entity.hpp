@@ -724,8 +724,10 @@ public:
     bool isInCare() const {
 
         return (cepacPatient && (cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_IN_CARE
-                                 || cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_RTC)
-                                 || cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_LTFU);
+                                 || cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_RTC));
+
+
+//                                 || cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_LTFU);
     }
 
 
