@@ -1,0 +1,74 @@
+
+
+    A dynamic agent-based model for HIV transmission
+         _                                 
+        | |                                
+        | |_ _ __ __ _ _ __  ___ _ __ ___  
+        | __| '__/ _` | '_ \/ __| '_ ` _ \ 
+        | |_| | | (_| | | | \__ \ | | | | |
+         \__|_|  \__,_|_| |_|___/_| |_| |_|
+         
+                      v4.6
+                            
+This file provides a detailed description of how to build and install the 
+TRANSM code.
+
+The TRANSM code currently only has only serial running capability. The only 
+prerequisite for building the TRANSM is a (modern) C++ compiler, such as 
+g++. The parallel version of MFEM requires, as well as the following external 
+libraries:
+
+  - BOOST (A set of additional C++ libraries in addition to STL)
+    https://www.boost.org/
+    
+  - Google Performance Tools (A collection of a high-performance multi-threaded 
+    memory allocations implementation)
+    https://goog-perftools.sourceforge.net/
+  
+  - SQLite (A C-language library that implements an efficient SQL database engine)
+    https://www.sqlite.org/index.html
+
+Other external libraries are installed with the TRANSM:
+
+  - CPEAC v4.4a (A Monte Carlo simulation model of the progression and outcomes of 
+    HIV disease)
+    TRANSM repo: https://github.com/hsphcdm/cepac
+    Original: https://www.massgeneral.org/medicine/mpec/research/cpac-model
+  
+  - tclap (A simple C++ library that facilitates parsing command line)
+    Forked in TRANSM repo: https://github.com/hsphcdm/tclap
+    
+  - pugixml (A C++ XML processing library)
+    Forked in TRANSM repo: https://github.com/hsphcdm/pugixml
+
+Quick Start with TRANSM
+=======================
+Build in MacOS and Linux Ubuntu:
+    ./build.sh
+   
+
+Build in FASRC
+==============
+To build the code at Harvard University Faculty of Arts and Sciences Research Computing 
+(a.k.a FASRC) a password and verification code (not the same as Harvard Key) are required 
+to log in to FASRC. For example, ssh to the cluster can be done by:
+
+    ssh -X sseifi@login.rc.fas.harvard.edu
+
+The modules to build and run TRANSM requires the following versions listed below:
+
+    module load gcc/9.3.0-fasrc01
+    module load cmake/3.5.2-fasrc01
+    module load boost/1.63.0-fasrc01
+    module load gperftools
+    module load sqlite/3081101-fasrc01
+
+For linking the loaded Boost library to the compiler, the path the loaded boost library 
+has to be defined:
+
+    export BOOST_DIR=/n/helmod/apps/centos7/Core/boost/1.63.0-fasrc01/
+    export BOOST_LIBRARYDIR=/n/helmod/apps/centos7/Core/boost/1.72.0-fasrc01/lib
+
+Then simply run the build command:
+  
+    ./build.sh
