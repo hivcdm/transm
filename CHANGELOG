@@ -1,0 +1,1057 @@
+
+
+Version 4.1
+===========
+
+As we continue to modify the model and attempt new analyses, the number of
+output sheets and columns per sheet continues to increase. It seems unlikely
+that we will be able to remove any of the existing columns in the near future.
+For this reason, we have been exploring new methods for tracking outcomes that
+hopefully satisfy the following criteria:
+
+  - Fast
+  - Uncomplicated (i.e. require fewer lines of code than existing method)
+  - Easy to consume in scripts and by hand for further analysis
+  - Small file size
+  - Easy to move
+  - Fault-tolerant (e.g. if a cluster node fails during simulation, it should be
+evident)
+
+These turned out to be a difficult set of criteria to satisfy. The initial idea
+was to use an XLSX library to create an XML based spreadsheet. XLSX uses
+compression, so the file size would be smaller, it would create a single file
+that could be read on any computer with Excel. It would also allow us to freeze
+panes automatically (an action we normally have to do every time we open a
+CSV). The problem with this idea is consuming the data in scripts. Any time we
+add a new statistic, we have to change our scripts as the columns are shifted.
+The sheets are also cumbersome to explore in Excel.
+
+Next, we tried writing a table of events from which all outcomes could be
+derived. For example, entity 1 is born at time 512, becomes high risk at time
+716, and dies at time 1181. From this we can calculate the number of people
+alive at any point in time, the number of high risk alive at each month, etc.
+This idea works, but there are too many events to track all of the necessary
+statistics for a large population. With 100,000 people over 1200 months, tests
+showed that there would be around half a billion events.
+A compromise of these ideas is to write summary statistics for each month to a
+database. This database could be queried to create summary tables. SQLite
+database store data much more compactly than a plain text file (if a certain
+statistic was zero for a given month, it doesn’t need to be written, saving
+space). This was the method that was chosen for the time being. The database
+replaces all results files including the CEPAC log and batch statistics. A
+single database is created for each batch (a batch is a set of XMLs in the same
+folder). A post processing script produces summaries as needed from this
+database using queries. As an example, we can produce the number of HIV+
+females for each month starting with month 600 stratified by HVL stratum and
+export to CSV.
+
+
+Version 4.0
+===========
+
+Miscellaneous Changes:
+----------------------
+
+- Removed possibility to have CSW proportion differ in initial population and
+newborn population as these parameters were never different. These have been
+unified into one parameter called “chanceBecomeSexWorker” defined for each
+entity.
+
+- The number of sequenced CEPAC IN files or ART rollout files is now unlimited
+(originally restricted to 5 and 12 respectively).
+
+- Most outcomes stratified on gender are now stratified on entity type so that
+MSMs and MSMWs can be differentiated from heterosexual males.
+
+- New columns at the end of Partnership trace summarize how often MSMWs, MSMs,
+and women were selected for a partnership. This will be used to ensure that
+certain males (of which some can now both select and be selected for
+partnerships) are not selected an extreme number of times.
+
+
+MSM Implementation – Initial Infection Definitions:
+---------------------------------------------------
+Initial prevalent cases were originally defined by rigid age- and risk-groups.
+Now initial prevalent cases have been generalized so they can be as specific or
+vague as desired. For each “bucket”, we can define an optional demographic
+profile with wildcards, an optional open or closed age range, and an optional
+risk-group along with the number of infections in that specified bucket to be
+applied randomly among matches. 
+A demographic profile looks like 
+
+
+<sexual-activity-status>:<gender>:<sexual-orientation>:<relationship-status>:<employment>. 
+
+Each of these can be a specific value or a wildcard in the form of an asterisk
+(i.e. SA:FEMALE:HETERO:*:*). For each of these “population queries” we specify
+a target number of infections to be assigned randomly among all those matching
+the specified criteria.
+Example - on month 600, randomly infect 2 sexually-active heterosexual non-CSW
+high-risk males between the ages of 17 and 19 years disregarding
+relationship-status and 3 high-risk people of any kind:
+
+<initialInfections>
+  <delay>600</delay>
+    <profile bucket="SA:MALE:HETERO:*:NON_CSW" risk="high" age-range="17-19">2
+    </profile>
+  <profile risk="high">3</profile>
+</initialInfections>
+
+
+MSM Implementation – Sex-based transmission parameters:
+-------------------------------------------------------
+
+Transmission coefficients have been moved out of individual entity types and
+into separate section. As MSMWs and heterosexual males can both form
+partnerships with females with presumably the same transmission coefficients,
+it makes sense to separate these so that all entity types can use them based
+simply on the gender of the participants (and eventually on MSM positioning,
+not yet implemented). This new section is called “transmissionCoefficients” in
+the XML.
+
+MSM Implementation – Birth Proportions:
+---------------------------------------
+
+Instead of “proportionMale” in population parameters, the makeup of newborn
+entities each month is defined as proportion of total newborns by entity type.
+For example, a birth rate of 0.1 with a population size of 1000 yields 100 new
+entities in that month. If the birth proportions looks like “male=0.3,
+msmw=0.1, msm=0.2, female=0.4”, there will be 30 new males, 10 new MSMWs, 20
+new MSMs, and 40 new females. This same system is used in defining the initial
+state and population sizes of each age bucket. These two changes allow MSMs to
+be present in the population. 
+
+Extra care should be taken when the birth rate is low and the population size
+is small (i.e. only a few newborns per month). If the birth rate is 0.001 and
+population size is 1000, there will be one birth per month, and this birth will
+always be male due to rounding and internal event ordering.
+
+
+MSM Implementation – MSM Partnerships:
+--------------------------------------
+
+Added four new partnership types: “SteadyMSM”, “RegularMSM”, “CasualMSM”,
+“CSWMSM”. These new partnerships can only be formed between two homosexual
+males (MSMs or MSMWs). MSMWs can form any of the now eight possible partnership
+types. MSMs can form only these four new partnership types. Heterosexual males
+continue to form “Steady”, “Regular”, “Casual”, and “CSW” partnerships with
+heterosexual females as before. These existing partnership types now refer
+solely to the heterosexual partnership variant.
+In the input parameters, MSMWs should have all eight partnership types. MSMs
+should have only the four new MSM partnership types. Heterosexual males should
+continue to have only the four heterosexual partnership types. An exception
+will prevent the model from running if these conditions are not satisfied.
+
+
+MSM Implementation – MSMs & MSMWs:
+----------------------------------
+
+Two new entity types have been added: MSMW (man who has sex with men and women)
+and MSM (man who has sex with (only) men). Both entity types are defined as
+having their demographic “sexual-orientation” set to “homosexual”. Each of
+these entity classes corresponds to an entity type as follows:
+“male”=exclusively heterosexual male, “msmw”=MSMW, “msm”=MSM,
+“female”=heterosexual female. To reduce confusion between “male” the gender and
+“male” the entity type, these entity types will generally be displayed as
+“Male:Hetero”, “Male:MSMW”, “Male:MSM”, and “Female” respectively. We may wish
+to rename these to reduce the chance of confusion.
+
+For information on how MSMs and MSMWs are actually added to the population, see
+section “4.0 – MSM Implementation – Birth Proportions”.
+
+Note for programmers: For the time being, Male (heterosexual), MSM, and MSMW
+are each separately derived from Entity. They share the majority of their
+functionality, so they should be merged into a sexual-orientation-independent
+“Male” which each subtype derives from. An even better solution would be the
+component-based system discussed in Fall 2014 wherein Entity is the only entity
+type and entities in the model are a combination of behaviors such as:
+selects-partners, selected-for-partnerships, can-become-sex-worker, etc. See
+component-model.docx for more information.
+
+
+Version 3.6
+===========
+
+New Cost Discounting Method:
+----------------------------
+
+Changed the way cost discounting is handled in the model. Previously, all CEPAC
+patients were initialized with a discount factor of 1. Each month this factor
+would be reduced by a multiplicative factor defined in the CEPAC IN file. This
+has the effect of reducing the weight of costs that occur further in the future
+(relative to the start of the simulation). This works fine in CEPAC which
+ignores simulation time (all entities are born at time 0), but entities born
+after the start of the simulation in the CDM were also initialized to a
+discount factor of 1. This inflated the weight of their costs and prevented
+discounting from working as expected. Now, discount factor is defined as
+relative to the start of the model for all entities. This affects costs
+calculated in CEPAC (run within CDM) as well.
+
+Technical Changes:
+------------------
+
+- Fixed bug that disabled ShiftedOutcomes if month of 1990 was set to
+0.
+
+- Fixed bug in interventions targeting behavioural parameters. These
+interventions were     
+ignoring the male’s risk so males would take low or high risk behaviors
+randomly.
+
+- Prevented males from redrawing parameters set during interventions if they
+didn’t change the underlying distribution.
+
+- Got rid of git submodules as they were causing updates to go slowly.
+Dependencies are now stored in folder in the repository’s root directory called
+third-party. This directory is not tracked by version control. Generally it
+will contain symbolic links to the libraries needed by the CDM such as boost,
+Cepac, etc.
+
+- Add new option for target group eligibility for HIV status: positive. This
+will match any person in the population with a non-negative HIV status without
+having to match each individual HIV status (e.g. UNOBSERVED_ACUTE).
+
+- A simpler and more correct (i.e. selects uniformly from group members) method
+for assigning target group members to partitions was implemented.
+
+- Added parameters to each entity in the simulation so they can track their
+individual CEPAC and CDM costs for the month. These are recorded both
+discounted and undiscounted. These numbers along with discounted and
+undiscounted life months are displayed in the InterventionOutcomes file
+aggregated by group partition. Note: due to timing quirks, this number is
+delayed by one month.
+
+
+Version 3.5
+===========
+
+New JSON output of transmission data:
+-------------------------------------
+
+To help visualize the transmission networks, a new trace file has been added to
+the model. This file is in JSON format. It can be in one of two structures
+(hierarchical or adjacency list) or disabled. A description of each type is
+given below.
+Hierarchical: Each person holds an array of each person he or she infects who
+in turns holds an array of the same. In this way, each person is nested inside
+whoever was the first to be infected.
+
+{
+  { “id” : 1, “infected” : [
+    {“id” : 2}
+  ]}
+}
+
+Adjacency list: The transmission graph is given in two parts. The vertices are
+an array of people with their demographic characteristics. Next is an array of
+objects, edges, representing each transmission where numbers are the respective
+indices of the infectors and infectees in the “vertices” array.
+
+{
+  “vertices” : [
+    { “id” : 1 },
+    { “id” : 2 }
+  ],
+  “edges” : [
+    {“infector” : 0, “infectee” : 1}
+  ]
+}
+
+
+New Interventions:
+------------------
+
+Three new interventions have been added to the model: delaySexualActivity,
+overrideCondomUseChance, and partnershipRejectionChance. Additionally, existing
+interventions have been modified to be easier and more logical to use. The
+previous mapping of template parameters to interventions has been replaced by a
+set of interventions identified by category. They are as follows:
+
+| Intervention               | Parameter1        | Parameter2    | Value
++----------------------------+-------------------+---------------+---------------------
+| birthRate                  | (none)            |               | >=0
+| proportionMale             | (none)            |               | 0-1
+| proportionCircumcised      | (none)            |               | 0-1
+| proportionHighRisk         | gender            | employment    | 0-1
+| rolloutEligibility         | criterion         | parameter     | <depends on parameter>
+| circumcise                 | (none)            |               | (none)
+| delaySexualActivity        | (none)            |               | 0-inf. (in months)
+| chanceBecomeSexWorker      | gender            |               | 0-1
+| transmissionCoefficient    | gender            | hvl           | 0-1
+| averageYearsYounger        | partnership-type  |               | normal dist.
+| partnerAcquistionRate      | partnership-type  | risk          | normal dist.
+| coitalEventsPerMonth       | partnership-type  | risk          | poisson dist.
+| chanceCondomUse            | partnership-type  | risk          | normal dist.
+| partnershipDuration        | partnership-type  | risk          | shifted normal dist.
+| overrideChanceCondomUse    | (none)            |               | 0-1 (-1 to disable)
+| partnershipRejectionChance | Partnership-type  | risk          | 0-1 (0 to disable)
+
+Some interventions require additional parameters to be applied (columns
+Parameter1 and Parameter2), particularly those relating to sexual behavior.
+These are categorical parameters and are defined in the proceeding table:
+
+| Parameter        | Possible values (comma separated)
++------------------+------------------------------------------------
+| hvl              | -1 (or uninfected), 0, 1, 2, 3, 4, 5, 6, 7 (or 
+|                  | primary), 8 (or late-stage)                  
+| employment       | csw, non-csw
+| gender           | male, female
+| criterion        | oi-hist, cd4, cd4-oi-hist, hvl, cd4-hvl
+| parameter        | rank, oi#, numOIs, cd4Lwr, cd4Upp, hvlLwr, hvlUpp
+| partnership-type | steady, regular, casual, csw
+| risk             | high, low
+
+
+
+Target Groups:
+--------------
+The concept of “target groups” has been added to the model. These are similar
+to groups in experimental studies. If we assume we are replicating an
+observational study, this might also be called a cohort. A group is all people
+who meet a set of eligibility criteria. Criteria are similar to those
+previously used as targets for targeted interventions. They are as follows:
+| Attribute              |  Value                                |
++------------------------+---------------------------------------+
+| age                    | a particular age in months or a       |
+|                        | range of the form “lower-upper”       |
+|                        | including endpoints also in months    |
+| gender                 | male, female                          |
+| sexual-orientation     | hetero, homo                          |
+| sexual-activity-status | active, not-active                    |
+| relationship-status    | single, non-single                    |
+| employment             | csw, non-csw                          |
+| hiv-status             | negative, observed-acute,             |
+|                        | observed-chronic, observed-latestage, |
+|                        | unobserved-acute, unobserved-chronic, |
+|                        | unobserved-latestage                  |
+| treatment-status       | treated, untreated                    |
+| circumcised            | true, false                           |
+| risk-group             | high, low                             |
+
+To allow for more realistic experimental designs, target groups are further
+divided into partitions. Every member of the population who meets the group
+criteria are randomly assigned one of the partitions. Each partition receives a
+defined percentage of the newly joined people.
+
+Every partition can have zero or more interventions applied to it. For now,
+interventions are applied immediately when someone joins the partition. Once
+someone has joined a partition, they remain in that partition until death even
+if they become ineligible later.
+
+A full definition of a group with a control and treatment partition can be
+found below. The syntax for interventions is defined in the next section.
+
+<target-groups>
+  <target-group id=”group1”>
+    <enrollment-time>600</enrollment-time>
+    <eligibility>
+      <gender>male</gender>
+      <circumcised>false</circumcised>
+    </eligibility>
+    <partitions>
+      <partition id=”treatment”>
+        <proportion>0.5</proportion>
+        <trace>true</trace>
+        <interventions>
+          </circumcise>
+        </interventions>
+      </partition>
+    <partition id=”treatment”>
+      <proportion>0.5</proportion>
+      <trace>true</trace>
+    </partition>
+  </target-group>
+</target-groups>
+
+
+
+Technical Changes:
+------------------
+- Added a new component, RunTimePredictor, which dynamically fits a polynomial
+curve to the population so far to predict future population size. By comparing
+the integral of the population in the past to the integral of the predicted
+curve, we can now estimate the time until a run finishes more accurately (e.g.
+timestep 600 is often less than 33% completed in terms of time due to
+exponential population growth).
+
+- Corrected any warnings detected in GCC and Clang compilers.
+
+- Fixed bug that prevented a random seed from being used (random number
+generator would be started in an undefined state as
+RandomNumberGenerator::reset was not being called when fixedSeed was set to -1.
+This also prevented the true seed from being written to the infections
+file.
+
+- Continued improving const-correctness.
+
+- Removed default constructor for Person.
+
+- Allowed generation of infection to be recorded for generations greater than
+5.
+
+- Removed unused method, Person::fling.
+
+- Continued converting arrays for sexual behavior to maps in preparation for
+new partnership types for MSM model.
+
+- Added template method for DemographicProfile,
+DemographicProfile::getDemographicProfileVal(), to reduce the number of
+casts.
+
+- Prevent males from being circumcised twice.
+
+
+Version 3.4
+===========
+
+Discovered Bugs:
+----------------
+RandomNumberGenerator::randInt(int max) and RandomNumberGenerator::randInt(int
+min, int max) appear to have a bug that skews results away from endpoints. This
+is due to the fact that it uses rounding to force a random float into an
+integer. Numbers from min to min+0.5 are rounded down to min. Numbers from
+min+0.5 to min+1.5 are rounded to min+1. Numbers from min+1.5 to min+2.5 are
+rounded to min. Numbers from max-0.5 to max are rounded up to max. It can
+therefore be seen that the endpoints, min and max, are half as likely to be
+returned from these functions as every other intermediate number in the range.
+
+This bug appears to affect the model in the following locations (the expected
+result follows each):
+
+- BucketAge::drawMember (line 196) - First and last people in the age bucket
+are less likely to be picked
+
+- BucketSexualMixing::getRandomPerson (line 313) - First and last people in
+sexual mixing bucket are less likely to be picked, could cause boundary
+condition leading to choosing slightly younger people.
+
+- Population::GeneratePerson (line 1043) - Less likely to generate person at
+each extreme of age bucket ages
+
+- Population::ApplyARTRollout (line 1558) - First and last people that became
+eligible for ART are less likely to be picked to start treatment.
+
+- SexualPartnership::SexualPartnership (line 38) - Partnerships with duration
+greater than or equal to 1 will be less likely to be 1 month or max duration.
+
+The bug will remain for now to ensure reproducibility. It should be addressed
+in future versions.
+
+Another bug was discovered in the reading of XML files. It appears that regular
+acts, a parameter varied in calibration has been being truncated (rounded down)
+to an integer value. This means that 4.99 regular acts given in the XML would
+in fact be rounded to 4 acts. This affects all calibration runs. Graphs in the
+calibration paper have been changed to reflect this bug. Moving forward we can
+fix this bug and simply modify the calibration runs to have this same
+truncation. This bug is also not yet fixed to ensure reproducibility.
+
+
+Dynamic rollout proportion:
+---------------------------
+As a result of the multi-month testing and treatment cascade required for
+someone to move from being untreated to treated, it is difficult to predict
+exactly how many people will be treated. What we call targetRolloutProportion
+is effectively the number of people who have “access to treatment” (i.e. have
+started the testing and treatment cascade). Some people in this cascade may
+have access but may not be tested immediately. They may also be tested but
+receive a false negative result. The issue arises when these people take up
+treatment slots but never actually start treatment. 
+
+To remedy this, we have introduced a new concept called dynamic rollout
+proportion. When this feature is enabled, a correction factor is calculated as
+the number of people accessing treatment divided by the number of people on
+treatment. The number of people accessing treatment is then increased by the
+same factor. Assuming that this factor remains relatively constant, this
+ensures that the correct number of people actually receives treatment.
+
+Because the correct correction factor might change over time, there is a
+variable feedback period defined as an input parameter given in months. At the
+end of the period, the factor is adjusted up or down as needed. An appropriate
+value for this parameter depends on the duration of the testing and treatment
+cascade. If people are tested often, it might be a short period. It should
+depend on the average amount of time between someone receiving access to
+treatment and actually starting treatment (or being lost in the interim).
+
+
+Template Parameters:
+--------------------
+Glossed over in the previous section was the fact that interventions need to be
+linked with the parameter it is to change. We considered several methods for
+making this link before deciding on “template parameters”. This method seemed
+preferable to keeping a mapping of arbitrary keys and parameters and is less
+unwieldy in the Excel input sheet interface.
+
+Template parameters can be added anywhere in the XML between an opening and
+closing tag. As an example:
+
+<proportionHighRiskNonCsw>0.1</proportionHighRiskNonCsw> 
+
+becomes
+
+<proportionHighRiskNonCsw>
+  <parameter key=”$proportion_high_risk”>0.1</parameter>
+</proportionHighRiskNonCsw> 
+
+In this case 0.1 remains the default value. “$proportion_high_risk” becomes the
+key which can be used to refer to this parameter in the interventions section.
+It is an arbitrary value (i.e. we could have called it “$1”). If we wanted to
+change this value during the model execution, we could create a population
+intervention like this:
+
+<generalInterventions>
+  <intervention key=”$proportion_high_risk” time=”700” value=”0.2” />
+</generalInterventions>
+
+This would have the effect of changing proportion high risk of non-CSWs to 20%
+at month 700.
+
+
+Technical Changes:
+------------------
+
+- All relases now follow semantic versioning. This release is version 3.4.0
+while the previous was version 3.34c (i.e. 3.34.2).
+
+- Separated HighResolutionTimer class into a POSIX version and a Windows
+version with the same interface.
+
+- All instances of NULL are now nullptr.
+
+- The first step was being skipped leading to missing headers in trace files.
+This has been fixed.
+
+- Prevent the initiator of a partnership from choosing himself. This wasn't an
+issue in the past as men could only choose women. This is in preparation for
+the MSM model.
+
+- All arrays of string constants have been changed to vectors.
+
+- A selector in population initialization had been accidentally changed to
+selecting homosexual men leading to an erroneous population state. This has
+been corrected.
+
+- Ticpp has been replaced with pugixml. Ticpp is not currently being
+maintained, is somewhat verbose, and is more prone to errors. Additionally,
+pugixml allows for the use of XPath queries. It is generally more pleasant to
+use.
+
+- All existing documentation comments have been changed to XML documentation
+style. As most development is done in Visual Studio, this allows documentation
+to be displayed in the IDE. The consistent style can be parsed and translated
+to another style if need be.
+
+- Several unused functions/methods have been removed.
+
+- Some Person methods have been made pure virtual to ensure that the must be
+implemented by all child classes.
+
+- Classes have been renamed to reduce the use of abbreviations. Code is read
+more than it is written and so this should have little effect on development
+while making the code more readable.
+
+- A previous programmer preferred to use this-> unconditionally when referring
+to instance variables. This is generally regarded as bad programming style and
+has been reverted except when parameter names clash with instance variable
+names. Eventually these clashes should be resolved by renaming parameters and
+instance variable (i.e. instance variables should have underscore
+suffix).
+
+- Some c-style arrays have been changed to STL arrays. These containers are
+preferable for many reasons which will not be described here. This transition
+is not yet completed.
+
+- All enumerations are in the process of being converted to strongly-typed
+enumerations (a new feature in c++11). This transition is not yet
+completed.
+
+- Heap allocations are in the process of being converted to RAII-style stack
+allocations. This process is ongoing. Those that cannot be easily changed are
+being converted to smart pointers.
+
+- "using namespace std" has been removed from the entire codebase. All
+references to STL containers and functions have been given a std::
+prefix.
+
+- Methods that don't change the enclosing class have been marked const. There
+may remain more that can be changed.
+
+- Methods taking no arguments should not take have a void in their parameter
+list. This is a C artifact. This has been corrected.
+
+- Classes are in the process of being made more testable. This change includes
+reducing the use of friend classes, using dependency injection, and generally
+reducing coupling.
+
+- As they are discovered, for loops that iterate over a container using an
+incrementing index are being switched to range-based fors or std::algorithms
+where possible.
+
+- All include guards are now #pragma once as modern compilers now support this
+universally.
+
+- Boost libraries have been replaced by std:: equivalents whenever possible.
+Homogenous tuples have been replaced by std::arrays and lexical_cast has been
+replaced by std::stoi and related functions.
+
+- All Graphviz functionality has been removed. Eventually every person will
+keep track of any important life events (time of birth, time of death, time of
+infection, etc.). This data can be transformed into JSON to be used by any
+library for visualization.
+
+- XMLUtil was no longer being used so it has been removed.
+
+- A bug was discovered in ART rollout that made people moving from
+Population::rankedForTreatment to Population::rolloutTreatedContext to be
+double counted. This only affects trace files (not the simulation itself). This
+was caused by iterating over a copy rather than a reference to the actual
+ranking bucket.
+
+- WxWidgets is now linked statically so that DLLs do not have to be distributed
+with the executable.
+
+- The project build system is now created programatically using premake version
+5. This helps keep build environments in sync thereby ensuring that the model
+can be built on any combination of platform and compiler as needed.
+
+- All possible warnings have been enabled along with fatal warnings. The
+project will no longer build with any errors present. This required fixing a
+large number of minor problems (mostly signed/unsigned problems). The code is
+now being checked in gcc 4.8, clang5, and VS2013 compilers for
+warnings.
+
+- The project is now built with both cepac4.4a and cepac4.5b which can be
+switched as desired.
+
+Targeted Interventions:
+-----------------------
+Future investigations require changing a parameter on a particular group of
+people rather than the entire population. This can be thought of as a general
+“behavioral intervention”. An example of such an intervention would be
+increasing condom usage among males of a certain age or reducing the chance of
+becoming a sex worker for young women (and only young women).
+
+This feature was implemented as part of the larger feature to replace the old
+sequencing method (creating an XML for various time points and reloading the
+XML at those times during the execution of the simulation). This feature
+enabled a parameter to be changed at a certain time. By coopting these
+parameters and adding an optional target to them, we now have the ability to
+target not just treatment intervention but also behavioral interventions. 
+
+Here is a list of all possible interventions (the names aren’t significant
+except inasmuch as they identify the parameter in the XML file):
+
+| parameters                                  | Can affect
++---------------------------------------------+---------------------
+| BirthRate                                   | newborns
+| ProportionMale                              | newborns
+| ProportionCircumcised                       | targeted
+| AgeSexualDebutYears                         | targeted
+| AssortativenessSteady                       | population
+| AssortativenessRegular                      | population
+| AssortativenessCasual                       | population
+| AssortativenessCsw                          | population
+| MaleChanceBecomeSexWorker                   | population
+| MalePartnerAcqMultWithSteadyHigh            | targeted
+| MalePartnerAcqMultWithSteadyLow             | targeted
+| MaleSteadyAcquisitionRateHighMean           | targeted
+| MaleSteadyAcquisitionRateHighStdDev         | targeted
+| MaleSteadyAcquisitionRateLowMean            | targeted
+| MaleSteadyAcquisitionRateLowStdDev          | targeted
+| MaleSteadyAverageYearsYounger               | targeted
+| MaleSteadyCoitalEventsPerMonthHigh          | targeted
+| MaleSteadyCoitalEventsPerMonthLow           | targeted
+| MaleSteadyChanceCondomUsePerEventHighMean   | targeted
+| MaleSteadyChanceCondomUsePerEventHighStdDev | targeted
+| MaleSteadyChanceCondomUsePerEventLowMean    | targeted
+| MaleSteadyChanceCondomUsePerEventLowStdDev  | targeted
+| MaleSteadyPartnershipDurationHighMean       | targeted
+| MaleSteadyPartnershipDurationHighStdDev     | targeted
+| MaleSteadyPartnershipDurationHighShift      | targeted
+| MaleSteadyPartnershipDurationLowMean        | targeted
+| MaleSteadyPartnershipDurationLowStdDev      | targeted
+| MaleSteadyPartnershipDurationLowShift       | targeted
+| MaleRegularAcquisitionRateHighMean          | targeted
+| MaleRegularAcquisitionRateHighStdDev        | targeted
+| MaleRegularAcquisitionRateLowMean           | targeted
+| MaleRegularAcquisitionRateLowStdDev         | targeted
+| MaleRegularAverageYearsYounger              | targeted
+| MaleRegularCoitalEventsPerMonthHigh         | targeted
+| MaleRegularCoitalEventsPerMonthLow          | targeted
+| MaleRegularChanceCondomUsePerEventHighMean  | targeted
+| MaleRegularChanceCondomUsePerEventHighStdDev| targeted
+| MaleRegularChanceCondomUsePerEventLowMean   | targeted
+| MaleRegularChanceCondomUsePerEventLowStdDev | targeted
+| MaleRegularPartnershipDurationHighMean      | targeted
+| MaleRegularPartnershipDurationHighStdDev    | targeted
+| MaleRegularPartnershipDurationHighShift     | targeted
+| MaleRegularPartnershipDurationLowMean       | targeted
+| MaleRegularPartnershipDurationLowStdDev     | targeted
+| MaleRegularPartnershipDurationLowShift      | targeted
+| MaleCasualAcquisitionRateHighMean           | targeted
+| MaleCasualAcquisitionRateHighStdDev         | targeted
+| MaleCasualAcquisitionRateLowMean            | targeted
+| MaleCasualAcquisitionRateLowStdDev          | targeted
+| MaleCasualAverageYearsYounger               | targeted
+| MaleCasualCoitalEventsPerMonthHigh          | targeted
+| MaleCasualCoitalEventsPerMonthLow           | targeted
+| MaleCasualChanceCondomUsePerEventHighMean   | targeted
+| MaleCasualChanceCondomUsePerEventHighStdDev | targeted
+| MaleCasualChanceCondomUsePerEventLowMean    | targeted
+| MaleCasualChanceCondomUsePerEventLowStdDev  | targeted
+| MaleCasualPartnershipDurationHighMean       | targeted
+| MaleCasualPartnershipDurationHighStdDev     | targeted
+| MaleCasualPartnershipDurationHighShift      | targeted
+| MaleCasualPartnershipDurationLowMean        | targeted
+| MaleCasualPartnershipDurationLowStdDev      | targeted
+| MaleCasualPartnershipDurationLowShift       | targeted
+| MaleCswAcquisitionRateHighMean              | targeted
+| MaleCswAcquisitionRateHighStdDev            | targeted
+| MaleCswAcquisitionRateLowMean               | targeted
+| MaleCswAcquisitionRateLowStdDev             | targeted
+| MaleCswAverageYearsYounger                  | targeted
+| MaleCswCoitalEventsPerMonthHigh             | targeted
+| MaleCswCoitalEventsPerMonthLow              | targeted
+| MaleCswChanceCondomUsePerEventHighMean      | targeted
+| MaleCswChanceCondomUsePerEventHighStdDev    | targeted
+| MaleCswChanceCondomUsePerEventLowMean       | targeted
+| MaleCswChanceCondomUsePerEventLowStdDev     | targeted
+| MaleCswPartnershipDurationHighMean          | targeted
+| MaleCswPartnershipDurationHighStdDev        | targeted
+| MaleCswPartnershipDurationHighShift         | targeted
+| MaleCswPartnershipDurationLowMean           | targeted
+| MaleCswPartnershipDurationLowStdDev         | targeted
+| MaleCswPartnershipDurationLowShift          | targeted
+| MaleProportionHighRiskCsw                   | population
+| MaleProportionHighRiskNonCsw                | population
+| MaleTransmissionCoefficientsByHvl           | population
+| MaleTransmissionCoefficientsPrimary         | population
+| MaleTransmissionCoefficientsLate            | population
+| FemaleChanceBecomeSexWorker                 | population
+| FemaleProportionHighRiskCsw                 | population
+| FemaleProportionHighRiskNonCsw              | population
+| FemaleTransmissionCoefficientsByHvl         | population
+| FemaleTransmissionCoefficientsPrimary       | population
+| FemaleTransmissionCoefficientsLate          | population
+| CondomCost                                  | population
+| CircumcisionCost                            | population
+| ArtOIHistRank                               | population
+| ArtOIHistOI0                                | population
+| ArtOIHistOI1                                | population
+| ArtOIHistOI2                                | population
+| ArtOIHistOI3                                | population
+| ArtOIHistOI4                                | population
+| ArtOIHistOI5                                | population
+| ArtOIHistOI6                                | population
+| ArtOIHistOI7                                | population
+| ArtOIHistOI8                                | population
+| ArtOIHistOI9                                | population
+| ArtOIHistOI10                               | population
+| ArtOIHistOI11                               | population
+| ArtOIHistOI12                               | population
+| ArtOIHistOI13                               | population
+| ArtOIHistOI14                               | population
+| ArtOIHistNumOIToStart                       | population
+| ArtCD4Rank                                  | population
+| ArtCD4CD4Upp                                | population
+| ArtCD4CD4Lwr                                | population
+| ArtCD4OIHistRank                            | population
+| ArtCD4OIHistOI0                             | population
+| ArtCD4OIHistOI1                             | population
+| ArtCD4OIHistOI2                             | population
+| ArtCD4OIHistOI3                             | population
+| ArtCD4OIHistOI4                             | population
+| ArtCD4OIHistOI5                             | population
+| ArtCD4OIHistOI6                             | population
+| ArtCD4OIHistOI7                             | population
+| ArtCD4OIHistOI8                             | population
+| ArtCD4OIHistOI9                             | population
+| ArtCD4OIHistOI10                            | population
+| ArtCD4OIHistOI11                            | population
+| ArtCD4OIHistOI12                            | population
+| ArtCD4OIHistOI13                            | population
+| ArtCD4OIHistOI14                            | population
+| ArtCD4OIHistCD4Upp                          | population
+| ArtCD4OIHistCD4Lwr                          | population
+| ArtHVLRank                                  | population
+| ArtHVLHVLUpp                                | population
+| ArtHVLHVLLwr                                | population
+| ArtCD4HVLRank                               | population
+| ArtCD4HVLCD4Upp                             | population
+| ArtCD4HVLCD4Lwr                             | population
+| ArtCD4HVLHVLUpp                             | population
+| AtCD4HVLHVLLwr                              | population
+
+If a parameter can affect “population” then it cannot have a target. It will
+change that parameter for everyone in the population at the time it is changed.
+If a parameter can affect “newborns” then it will have no effect on existing
+people, but people born into the population will have be governed by this
+parameter. Finally, if a parameter can affect “targeted” then it may have a
+target specified in addition to its value.
+
+In the XML, a general intervention looks like:
+
+<chanceCondomUsePerEventHighRisk>
+  <distribution type="normal">
+    <mean><parameter key="$0">0.5</parameter></mean>
+    <stdDev><parameter key="$1">0.25<parameter></stdDev>
+  </distribution>
+</chanceCondomUsePerEventHighRisk>
+…
+<generalInterventions>
+  <intervention time="834" key="$0" value="0.75" />
+  <intervention time="834" key="$1" value="0.25" />
+</generalInterventions>
+
+This has the effect of increasing the chance of any male in the population in
+the given partnership type using a condom on or after month 834.
+
+<generalInterventions>
+  <intervention time="834" key="$0" value="0.75" target-age="17-19" />
+  <intervention time="834" key="$1" value="0.25" target-age="17-19" />
+</generalInterventions>
+
+This has the same effect as above with the added restriction only males that
+are between the ages of 17 and 19 inclusive at month 834 will be affected. Note
+that they will maintain this increased condom usage throughout their lives
+unless it is changed by another targeted intervention. Also, note that both
+values must be changed at the same time. The simulation will stop if one is set
+but not the other. This restriction may be lifted in the future but is
+currently required because the normal distribution is converted to a beta
+distribution and both parameters must be known for this calculation. This
+applies to all of the distribution-based parameters.
+
+Here is a table of the possible targets:
+
+| Attribute                      | Value                                         |
++--------------------------------+-----------------------------------------------+
+| target-age                     | age range in years in the form                |
+|                                | “lower-upper”(inclusive)                      |
+| target-gender                  | male or female                                |
+| targer-sexual-orientation      | hetero or homo                                |
+| target-sexual-activity-status  | NA (non-sexually-active) or (sexual-acrive)   |
+| target-relationship-status     | single or non-single                          |
+| target-employment              | csw or non-csw                                |
+| target-hiv-status              | uninfected, unobserved-chronic,               |
+|                                | unobserved-primary, unobserved-late-stage,    |
+|                                | observed-chronic, observed-primary,           |
+|                                | observed-late-stage                           |
+| target-treatmenr-status        | treated or unreated                           |
+
+One or more of these can be specified for any general intervention.
+
+Version 3.33b
+=============
+
+Sequence ART Rollout Eligibility
+--------------------------------
+
+Problem:
+
+During the course of several simulations, it became necessary to change ART
+rollout eligibility at a certain time point. It was determined that, although
+these criteria were changed in sequenced XML files, the eligibility was not
+changing as no significant change in the “number eligible for access to
+treatment” was visible in the ART rollout outcome file.
+
+Reviewing the code for loading sequenced XML files indicated that the XML
+parameters outside of simulation/population were simply not being read and
+couldn’t therefore be sequenced in the model at that time.
+
+Solution:
+
+The functionality already existed for loading ART rollout eligibility from the
+XML. This code was modularized into a new function in the Sim class,
+updateEligibility, which is called when the sequenced XML changes. This
+function loads the new eligibility allowing eligibility for access to treatment
+to change as desired at the correct time.
+
+
+Version 3.33a
+=============
+
+Singleperson Prevalent Trace
+----------------------------
+
+Problem:
+
+Functionality already existed to trace a number of newborns at a certain time
+and a number of people in each age group from simulation start. It would be
+interesting to see the early dynamics of the epidemic by viewing the
+singleperson trace of the initial prevalent population. This was previously
+only possible by running several simulations and being lucky.
+
+Solution:
+
+A new input was added to the XML, “tracePrevalentCases” as a child element of
+“simulation”. When this value is 0, prevalent cases will not be traced in the
+singleperson trace file. Conversely, when this is set to 1, they will be
+traced. The value of of simulation/writeTrace/singleperson supersedes this
+value. Thus, if the entire singleperson trace file is disabled, the prevalent
+cases will not be traced regardless of the value of “tracePrevalentCases”.
+
+
+Exposure Counting
+----------------- 
+
+Bug:
+
+During the simulation of a person’s sexual activity, the infection tracker
+records any exposure that occurs between serodiscordant partners. This
+recording was being done outside the per act loop and thus only counted one
+exposure for a given month even if many exposures occurred.
+
+Bug fixed:
+
+Move 
+  infTrack->recordExposure(_eventParams.currTime, infected); 
+inside 
+  for(int i = 0; i < _numActs; i++) 
+in 
+  "Person::sexualActivity" function.
+
+
+RNG Seed Parameter
+------------------
+
+Problem:
+
+On GUI simulation runs, fixed seed could be enabled or disabled using the
+“fixed seed” checkbox. On console runs (e.g. on the cluster), this could only
+be done through recompiling the entire executable with the parameter passed to
+Sim changed. It would be more convenient to be able to specify a specific fixed
+seed or disable fixed seed through the XML.
+
+Solution:
+
+A new element was added to the XML as a child of the “simulation” element
+called “fixedSeed”. It can be one of three given values:
+
+  -1 – Disable fixed seed and seed random number generator from current system clock
+   0 – Use default fixed seed (currently 36291434)
+  >0 – Use the given positive number less than 2^31-1
+
+
+Shifted Outcome Sheet
+---------------------
+
+Description:
+
+This is a new trace file which summarizes a number of important statistics
+about the population on a yearly basis shifted by the given parameter
+“monthOf1990” as calculated during phase 3 calibration. These outcomes are
+recorded:
+
+- Year relative to month of 1990
+- Sexually active population size
+- Number of incident cases
+- Number of prevalent cases at year start
+- Prevalence among sexually active population
+- Incidence
+- Number of HIV tests
+- Number of tests stratified by result (true positive, false positive, true
+  negative, false negative)
+- Number eligible for access to treatment
+- Number accessing treatment
+- Number eligible for treatment
+- Number receiving treatment
+
+
+ART Rollout Outcome Sheet
+-------------------------
+
+Definitions:
+
+- CEPAC simulation context – the CEPAC IN file which is currently applied to a
+  CDM person’s internal “CEPAC patient”
+
+- CEPAC untreated context – the IN file which is initially applied to the
+  general population and may include testing but should not generally include ARV
+  treatment
+
+- CEPAC treated context – the IN file which a person switches to when they meet
+  certain criteria and there are available treatment slots
+
+- Treatment slot – a space for a single person in CDM to move to a CEPAC
+  treated context. This is necessary but not sufficient for actually receiving
+  treatment (e.g. if the person does not also meet CEPAC ART start criteria)
+
+- Eligible for access to treatment – the person in CDM meets any of the five
+  ranked criteria specified in the CDM XML
+
+Description:
+
+Statistics about ART rollout were not being tracked in the model previously. It
+was decided that the following outcomes should be recorded at each month:
+
+- Number of HIV tests offered, accepted, returned for result
+- Number of HIV tests
+- Number of people eligible for access to treatment (in CDM)
+- Number of people accessing treatment
+- Number of people eligible for treatment (in CEPAC)
+- Number of people being treated
+
+Additionally, these tallies should be stratified by the following demographic
+profiles (except for tests offered, accepted, returned for result which are for
+the entire population):
+
+- Gender (male, female)
+
+- Gender and sexual activity and age group (male/NA/all, male/SA/0-16,
+  male/SA/17-19, male/SA/20-24, male/SA/30-34, male/SA/35-39, male/SA/40-44,
+  male/SA/45-49, male/SA/50-100, female/NA/all, female/SA/0-16, female/SA/17-19,
+  female/SA/20-24, female/SA/30-34, female/SA/35-39, female/SA/40-44,
+  female/SA/45-49, female/SA/50-100)
+
+- CD4 Stratum (very low, low, medium low, medium high, high, very high)
+
+- Risk group (Non-CSW Low-Risk Male, Non-CSW Low-Risk Female, Non-CSW High-Risk
+  Male, Non-CSW High-Risk Female, CSW Low-Risk Female, CSW High-Risk
+  Female)
+
+- (HIV tests only) Test result (true positive, false positive, true negative,
+  false negative)
+
+
+Version 3.32k
+=============
+
+ART Rollout Bug
+---------------
+
+Problem:
+
+With a fixed seed defined, the random number generator will always produce the
+same sequence of random numbers. This allows us to run multiple simulations
+with the same parameters and get the same results. Unfortunately, it became
+apparent that simulation runs with ART rollout intervention enabled differed
+(in prevalence and other important statistics) from runs without well before
+the intervention actually started. Comparing the number of random numbers
+generated every month indicated that extra random numbers were generated for
+each incident case with ART rollout enabled. As an example:
+
+| Time       | Incident | Without ART Rollout | With ART Rollout               |
++------------+----------+---------------------+--------------------------------+
+| 599        | 0        | 85, 11, 83, 74, 89  | 85, 11, 83, 74, 89             |
+| 600 (prev. | 6        | 89, 86, 19, 76, 61  | 89, 86, 19, 76, 61, 56, 91, 73 |
+| delay)     |          |                     | 69, 57, 96                     |
+| 601        | 1        | 56, 91, 73, 69, 57  | 5, 89, 42, 15, 63              |
+| 602        | 1        | 96,  5, 89, 42, 15  | 52, 75, 58, 13, 8, 13          |
+| ...        |          |                     |                                |
+
+It can be seen that the same sequence of random numbers are being generated,
+but because they are shifted and used for different calculations, different
+results must be produced.
+Tracing program execution indicated that these extra random numbers were used
+as random indices for “rolloutUntreatedPool” in Population.cpp, a list which
+tracks all of those people who have been infected but aren’t yet accessing
+treatment. The shuffling was necessary to ensure that order of insertion into
+the list didn’t bias those that were infected earlier or later.
+
+Bug Fix:
+
+Delaying the shuffling of the "rolloutUntreatedPool" until the time that people
+can actually begin receiving ART was sufficient for solving this issue. The
+original way might be compared with shuffling a deck of cards and then taking
+the top card whenever a random card is needed. The new way is more like leaving
+the cards in a possibly biased order and selecting a random card from any place
+in the deck when a random card is needed.
