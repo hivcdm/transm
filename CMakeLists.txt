@@ -34,7 +34,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 set(Boost_USE_STATIC_LIBS ON)
 
 find_package(Boost
-	1.63.0
+	1.82.0
 	COMPONENTS system
 	REQUIRED
 )
@@ -159,12 +159,12 @@ target_link_libraries(transm cepac pugixml ${SQLITE3_LIBRARIES} ${Boost_LIBRARIE
 # Building google tests
 
 # Enabaling the use of CTest
-#include(CTest)
-#enable_testing()
+include(CTest)
+enable_testing()
 
-#if(BUILD_TESTING)
-#    add_subdirectory (tests)
-#endif()
+if(BUILD_TESTING)
+   add_subdirectory (tests)
+endif()
 
 
 # If the build is successful we remind the user of the location of the binary
