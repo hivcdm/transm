@@ -15,8 +15,7 @@ TRANSM code.
 
 The TRANSM code currently only has only serial running capability. The only 
 prerequisite for building the TRANSM is a (modern) C++ compiler, such as 
-g++. The parallel version of MFEM requires, as well as the following external 
-libraries:
+g++. The TRANSM code, requires the following external libraries:
 
   - BOOST (A set of additional C++ libraries in addition to STL)
     https://www.boost.org/
@@ -27,6 +26,9 @@ libraries:
   
   - SQLite (A C-language library that implements an efficient SQL database engine)
     https://www.sqlite.org/index.html
+
+  - GoogleTest (Google Test is a unit testing library for the C++ programming language
+    https://github.com/google/googletest)
 
 Other external libraries are installed with the TRANSM:
 
@@ -47,8 +49,38 @@ Build in MacOS and Linux Ubuntu:
     ./build.sh
    
 
-Build in FASRC
-==============
+Build with Spack Libraries (Recommended)
+========================================
+To build the code using Spack package manager one should first install the Spack with:
+
+    git clone -c feature.manyFiles=true https://github.com/spack/spack.git
+
+To setup Spack run . share/spack/setup-env.sh. This will modify your environment and put 
+Spack in your path.  If you want to have spack always on you will need to update your 
+.bashrc with source <PATHTOSPACK>/share/spack/setup-env.sh
+
+then install the following packages: 
+
+    gperftools, boost, googletest, sqlite 
+    
+with the following command as an example:
+
+    spack install boost
+
+then adding the following line to .bashrc
+
+    spack load gperftools
+    spack load boost@1.82.0
+    spack load googltest
+    spack load python
+    spack load sqlite
+
+Then simply run the build command:
+  
+    ./build.sh
+
+Build in FASRC (Not available anymore)
+======================================
 To build the code at Harvard University Faculty of Arts and Sciences Research Computing 
 (a.k.a FASRC) a password and verification code (not the same as Harvard Key) are required 
 to log in to FASRC. For example, ssh to the cluster can be done by:
