@@ -611,7 +611,9 @@ long Male::getPartnershipsToEnd(Time _currTime, EventParams & _eventParams, Sexu
                             numEnded++;
                         }
                     }
-                } else if (_partnershipType == SexualPartnership::Type::Casual) {
+                // let's also include CSW partnerships
+                } else if (_partnershipType == SexualPartnership::Type::Casual ||
+                           _partnershipType == SexualPartnership::Type::Csw) {
                     if (isMsm || isMsmw) {
                         /* In Casual partnerships everyone breaks up */
                         /* Needed to be halved to eliminate double counting*/

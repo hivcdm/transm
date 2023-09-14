@@ -927,7 +927,7 @@ void Population::DissolveSexualPartnerships(EventParams &eventParams, Entity *_i
         }
 
         /* if the partnership has any duration, destructor removes the pointer from both members partner lists */
-        delete (*partnerIter);
+        delete (*partnerIter);        
 
         /* refresh BucketDemographicProfile placement if necessary */
         if (!partner->inCorrectBucketDemographicProfile()) {
@@ -2316,7 +2316,10 @@ unsigned long Population::CreatePartnerships(EventParams &eventParams, Male *_in
         }
 
         //the pointer to this partnership will be stored within initiator.
-        new SexualPartnership(_initiator, chosenPartner, eventParams, _partnershipType);
+        // check if the partnership is csw but the partner is not csw
+        if (!(_partnershipType == SexualPartnership::Type::Csw && !chosenPartner->isCSW())) {
+            new SexualPartnership(_initiator, chosenPartner, eventParams, _partnershipType);
+        }
         chosenPartner->IncrementTimesSelected();
         RecordPartnership(_initiator, chosenPartner);
 

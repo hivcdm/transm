@@ -634,7 +634,6 @@ void Entity::rollForBecomeSexWorker(EventParams &_eventParams) {
                                                                                  getID() << " becomes CSW"
                                                                                  << std::endl;
         }
-
         dmgProfile.set(DemographicProfile::Demographic::Employment,
                        (std::size_t) DemographicProfile::Employment::Csw);
     }
