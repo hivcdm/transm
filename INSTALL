@@ -61,7 +61,7 @@ Spack in your path.  If you want to have spack always on you will need to update
 
 then install the following packages using %gcc@8.5.0 
 
-    gperftools, boost, googletest, sqlite 
+    gperftools, boost, googletest, sqlite, cmake
     
 with the following command as an example:
 
@@ -74,6 +74,7 @@ then adding the following line to .bashrc
     spack load googltest
     spack load python
     spack load sqlite
+    spack load cmake
 
 Then simply run the build command:
   
