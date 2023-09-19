@@ -59,13 +59,13 @@ To setup Spack run . share/spack/setup-env.sh. This will modify your environment
 Spack in your path.  If you want to have spack always on you will need to update your 
 .bashrc with source <PATHTOSPACK>/share/spack/setup-env.sh
 
-then install the following packages: 
+then install the following packages using %gcc@8.5.0 
 
     gperftools, boost, googletest, sqlite 
     
 with the following command as an example:
 
-    spack install boost
+    spack install boost@1.82.0 %gcc@8.5.0
 
 then adding the following line to .bashrc
 
@@ -77,7 +77,11 @@ then adding the following line to .bashrc
 
 Then simply run the build command:
   
-    ./build.sh
+    ./build.sh 
+
+To avoid conflic with the local BOOST library DBOOST_ROOT=<path/to/boost>. Where <path/to/boost> can be found via:
+
+    spack location -i boost
 
 Build in FASRC (Not available anymore)
 ======================================
