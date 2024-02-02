@@ -24,15 +24,16 @@ class PrepParameters
 
     PrepEligibility eligibility;
     double access = 0.0;
-    double adherence = 0.0;
+    std::array<double, 4> adherence = {0.0, 0.0, 0.0, 0.0};
     double retention = 0.0;
     double returnToCare = 0.0;
 
     double efficacy;
 
     using ProfileMap = std::map<DemographicProfile, double>;
+    using AdherenceProfileMap = std::map<DemographicProfile, std::array<double, 4>>;
     ProfileMap accessProfiles;
-    ProfileMap adherenceProfiles;
+    AdherenceProfileMap adherenceProfiles;
     ProfileMap retentionProfiles;
     ProfileMap returnToCareProfiles;
 
@@ -44,7 +45,9 @@ public:
     PrepEligibility GetEligibility() const { return eligibility; }
 
     void SetEfficacy(double value) { efficacy = value; }
-    double GetEfficacy() const { return efficacy; }
+    double GetEfficacy() const {
+        return efficacy;
+    }
 
     void SetDefaultAccess(double value) { access = value; }
     void SetProfileAccess(const DemographicProfile& profile, double value)
@@ -61,14 +64,14 @@ public:
         return value;
     }
 
-    void SetDefaultAdherence(double value) { adherence = value; }
-    void SetProfileAdherence(const DemographicProfile& profile, double value)
+    void SetDefaultAdherence(array<double, 4> value) { adherence = value; }
+    void SetProfileAdherence(const DemographicProfile& profile, std::array<double, 4> value)
     {
         adherenceProfiles.emplace(profile, value);
     }
-    double GetAdherence(const DemographicProfile& profile) const
+    std::array<double, 4> GetAdherence(const DemographicProfile& profile) const
     {
-        double value = adherence;
+        std::array<double, 4> value = adherence;
         for (const auto& pair : adherenceProfiles)
             if (profile.match(pair.first))
                 value = pair.second;

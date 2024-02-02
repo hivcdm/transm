@@ -115,7 +115,7 @@ public:
     virtual void SetRaceEthnicAssortativeness(DemographicProfile::Race race, DemographicProfile::Ethnicity ethnicity,
                                               double assortativeness) = 0;
 
-    void UsePreExposureProphylaxis(double adherence);
+    void UsePreExposureProphylaxis(std::array<double, 4> adherence);
 
     void SetTargetedCepacContext(SimContext *context) {
         setSimContext(context);

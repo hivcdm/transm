@@ -1113,13 +1113,30 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
     // Record as having access to PREP and then select adherence
     prepTracker->recordAccess(this);
 
-    double adherence = prepParameters.GetAdherence(*getDemographicProfile());
-    if (_eventParams.randomNums.chance(adherence)) {
-        prepStatus = PrepStatus::PREP_ADHERENT;
+    std::array<double, 4> adherence = prepParameters.GetAdherence(*getDemographicProfile());
+
+    // All adherent levels are recorded
+    double adherenceRnadom = _eventParams.randomNums.rand();
+    if (adherenceRnadom < adherence[0]) {
+        prepStatus = PrepStatus::PREP_INADHERENT;
+    } else if (adherence[0] < adherenceRnadom < adherence[1]) {
+        prepStatus = PrepStatus::PREP_PARTIALLY_ADHERENT;
+        prepTracker->recordAdherence(this);
+    } else if  (adherence[1] < adherenceRnadom < adherence[2]) {
+        prepStatus = PrepStatus::PREP_SUBSTANTIALLY_ADHERENT;
         prepTracker->recordAdherence(this);
     } else {
-        prepStatus = PrepStatus::PREP_INADHERENT;
+        prepStatus = PrepStatus::PREP_ADHERENT;
+        prepTracker->recordAdherence(this);
     }
+
+
+//    if (_eventParams.randomNums.chance(adherence)) {
+//        prepStatus = PrepStatus::PREP_ADHERENT;
+//        prepTracker->recordAdherence(this);
+//    } else {
+//        prepStatus = PrepStatus::PREP_INADHERENT;
+//    }
 }
 
 void Entity::traceTreatmentChange(EventParams &_eventParams, bool after) {
@@ -1463,7 +1480,7 @@ Entity::~Entity(void) {
     }
 }
 
-void Entity::UsePreExposureProphylaxis(double adherence) {
+void Entity::UsePreExposureProphylaxis(std::array<double, 4> adherence) {
     prepParameters.SetDefaultAdherence(adherence);
 }
 

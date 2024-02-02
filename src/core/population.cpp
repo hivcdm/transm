@@ -54,6 +54,7 @@ void Population::Circumcise(double proportion) {
     }
 }
 
+
 void Population::Circumcise(Entity *p) {
     if (!p->IsCircumcised()) {
         double discount = 1.0;
