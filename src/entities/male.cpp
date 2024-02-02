@@ -383,6 +383,7 @@ double Male::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::
     }
 
     double prepEfficacy = _p->UsingPrEP() ? _p->GetPreExposureProphylaxisEfficacy() : 0;
+
     double FOI = baseFoi * (1 - condomEff) * (1 - microbicideEfficacy) * (1 - prepEfficacy);
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (trace() || _p->trace()))
