@@ -384,6 +384,10 @@ public:
 
     void updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracker);
 
+    PrepStatus getPrepStatus() {
+        return prepStatus;
+    }
+
 
     /** Call this after all transmission/population dynamics are done.
      * Runs infected through CEPAC until they die and adds their LM etc to CEPAC stats */
@@ -884,7 +888,8 @@ public:
     double get_monthly_cdm_costs_discounted() const { return monthly_cdm_costs_discounted_; }
 
     bool UsingPrEP() {
-        return (prepStatus == PrepStatus::PREP_ADHERENT);
+        return (prepStatus == PrepStatus::PREP_ADHERENT || prepStatus == PrepStatus::PREP_PARTIALLY_ADHERENT
+                || prepStatus == PrepStatus::PREP_SUBSTANTIALLY_ADHERENT);
     }
 
     std::list<SexualPartnership *> GetPartnerships() {

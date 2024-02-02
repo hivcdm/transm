@@ -384,6 +384,14 @@ double Male::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::
 
     double prepEfficacy = _p->UsingPrEP() ? _p->GetPreExposureProphylaxisEfficacy() : 0;
 
+    // corrections for efficacy based on prep adherence level
+    PrepStatus prepstatus = _p->getPrepStatus();
+    if (prepstatus == PrepStatus::PREP_SUBSTANTIALLY_ADHERENT) {
+        prepEfficacy *= 0.81;
+    } else if (prepstatus == PrepStatus::PREP_PARTIALLY_ADHERENT) {
+        prepEfficacy *= 0.31;
+    }
+
     double FOI = baseFoi * (1 - condomEff) * (1 - microbicideEfficacy) * (1 - prepEfficacy);
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (trace() || _p->trace()))
