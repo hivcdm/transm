@@ -33,11 +33,11 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 set(Boost_USE_STATIC_LIBS ON)
 
-find_package(Boost
-	1.82.0
-	COMPONENTS system
-	REQUIRED
-)
+#find_package(Boost
+#	1.82.0
+#	COMPONENTS system
+#	REQUIRED
+#)
 include_directories(${Boost_INCLUDE_DIR})
 
 add_definitions(-DUSE_GOOGLE_PERF_TOOLS=${USE_GOOGLE_PERF_TOOLS})

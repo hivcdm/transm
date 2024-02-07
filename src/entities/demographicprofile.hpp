@@ -2,7 +2,7 @@
 #define DEMOGRAPHICPROFILE_HPP
 
 #include <map>
-
+#include <memory>
 #include "core/constants.hpp"
 #include "utility/enum.hpp"
 

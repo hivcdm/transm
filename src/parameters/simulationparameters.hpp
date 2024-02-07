@@ -2,7 +2,7 @@
 #define SIMULATIONPARAMETERS_HPP
 
 #include <pugixml.hpp>
-#include <rana/rana.hpp>
+//#include <rana/rana.hpp>
 
 #include "parameterdefinitions.hpp"
 #include "populationparameters.hpp"
@@ -153,7 +153,7 @@ public:
     ~SimulationParametersJson() override;
 
 private:
-    rana::value root_;
+//    rana::value root_;
 };
 
 } // namespace transm
