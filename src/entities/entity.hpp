@@ -907,6 +907,12 @@ public:
         return partnerships;
     }
 
+
+
+    int get_month_on_prep() {
+        return monthOnPrep;
+    }
+
 private:
     BaseEnumCls::Enum getDemographicProfileVal(DemographicProfile::Demographic _demographic) const;
 
@@ -940,6 +946,8 @@ private:
     double monthly_cepac_costs_discounted_;
     double monthly_cdm_costs_undiscounted_;
     double monthly_cdm_costs_discounted_;
+
+    int monthOnPrep;
 
     PrepParameters prepParameters;
     PrepStatus prepStatus;

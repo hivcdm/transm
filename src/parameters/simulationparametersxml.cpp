@@ -63,7 +63,7 @@ std::array<double, 7> SimulationParametersXml::from_string(const std::string &va
     return values;
 }
 
-// getting from a string like 0.23,0.34,0.53,0.23
+// getting from a string like 0.23,0.34,0.53,0.23 this is for PrEP adherence 
 template<>
 std::array<double, 4> SimulationParametersXml::from_string(const std::string &input) {
     std::array<double, 4> result{};
@@ -76,14 +76,48 @@ std::array<double, 4> SimulationParametersXml::from_string(const std::string &in
             result[index] = std::stod(token);
             ++index;
         } catch (const std::invalid_argument& e) {
-            std::cerr << "Invalid number: " << token << std::endl;
+            std::cerr << "ERR: Invalid number: " << token << std::endl;
+            std::exit(EXIT_FAILURE); // Exit program on error
+
         } catch (const std::out_of_range& e) {
-            std::cerr << "Number out of range: " << token << std::endl;
+            std::cerr << "ERR: Number out of range: " << token << std::endl;
+            std::exit(EXIT_FAILURE); // Exit program on error
+
         }
     }
 
     if (index != result.size()) {
-        std::cerr << "Warning: Not enough numbers in string. Missing numbers are set to 0." << std::endl;
+        std::cerr << "ERR: Not enough numbers in PrEP adherence." << std::endl;
+        std::exit(EXIT_FAILURE); // Exit program on error
+
+    }
+
+    return result;
+}
+
+// getting from a string like 0.23,0.34,0.53,0.23,0.23,0.56,0.43 this is for PrEP retention 
+template<>
+std::array<double, 12> SimulationParametersXml::from_string(const std::string &input) {
+    std::array<double, 12> result{};
+    std::stringstream ss(input);
+    std::string token;
+    size_t index = 0;
+
+    while (std::getline(ss, token, ',') && index < result.size()) {
+        try {
+            result[index] = std::stod(token);
+            ++index;
+        } catch (const std::invalid_argument& e) {
+            std::cerr << "Invalid number: " << token << std::endl;
+            std::exit(EXIT_FAILURE); // Exit program on error
+        } catch (const std::out_of_range& e) {
+            std::cerr << "Number out of range: " << token << std::endl;
+            std::exit(EXIT_FAILURE); // Exit program on error
+        }
+    }
+
+    if (index != result.size()) {
+        std::cerr << "ERR: Not enough numbers in PrEP retention." << std::endl;
     }
 
     return result;
@@ -446,7 +480,7 @@ PrepParameters SimulationParametersXml::GetPrepParameters() const
             prepParameters.SetDefaultAdherence(Text<std::array<double, 4>>(defaults_node.child("prepAdherence")));
 
         if (defaults_node.child("prepRetention"))
-            prepParameters.SetDefaultRetention(Text<double>(defaults_node.child("prepRetention")));
+            prepParameters.SetDefaultRetention(Text<std::array<double, 12>>(defaults_node.child("prepRetention")));
 
         if (defaults_node.child("prepReturnToCare"))
             prepParameters.SetDefaultReturnToCare(Text<double>(defaults_node.child("prepReturnToCare")));
@@ -477,7 +511,7 @@ PrepParameters SimulationParametersXml::GetPrepParameters() const
                 prepParameters.SetProfileAdherence(profile, Text<std::array<double, 4>>(node.child("prepAdherence")));
 
             if (node.child("prepRetention"))
-                prepParameters.SetProfileRetention(profile, Text<double>(node.child("prepRetention")));
+                prepParameters.SetProfileRetention(profile, Text<std::array<double, 12>>(node.child("prepRetention")));
 
             if (node.child("prepReturnToCare"))
                 prepParameters.SetProfileReturnToCare(profile, Text<double>(node.child("prepReturnToCare")));

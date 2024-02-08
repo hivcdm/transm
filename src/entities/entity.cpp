@@ -1102,9 +1102,14 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
             prepTracker->recordReturnToCare(this);
         }
     } else {
-        double retention = prepParameters.GetRetention(*getDemographicProfile());
-        if (!_eventParams.randomNums.chance(retention)) {
+        std::array<double, 12> retention = prepParameters.GetRetention(*getDemographicProfile());
+        int month_on_prep = monthOnPrep;
+        if (month_on_prep > 12)
+            month_on_prep = 12;
+
+        if (!_eventParams.randomNums.chance(retention[month_on_prep])) {
             prepStatus = PrepStatus::WAS_ON_PREP;
+            monthOnPrep = 0;    // becomes off PrEP
             prepTracker->recordLossToCare(this);
             return;
         }
@@ -1129,6 +1134,11 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
         prepStatus = PrepStatus::PREP_ADHERENT;
         prepTracker->recordAdherence(this);
     }
+
+
+    // Record as having month of being to PREP
+    if (prepStatus == PrepStatus::PREP_INADHERENT || prepStatus == PrepStatus::PREP_PARTIALLY_ADHERENT || prepStatus == PrepStatus::PREP_SUBSTANTIALLY_ADHERENT)
+        monthOnPrep++;
 
 
 //    if (_eventParams.randomNums.chance(adherence)) {

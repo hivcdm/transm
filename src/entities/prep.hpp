@@ -25,16 +25,18 @@ class PrepParameters
     PrepEligibility eligibility;
     double access = 0.0;
     std::array<double, 4> adherence = {0.0, 0.0, 0.0, 0.0};
-    double retention = 0.0;
+    std::array<double, 12> retention = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                        0.0, 0.0, 0.0, 0.0, 0.0};
     double returnToCare = 0.0;
 
     double efficacy;
 
     using ProfileMap = std::map<DemographicProfile, double>;
     using AdherenceProfileMap = std::map<DemographicProfile, std::array<double, 4>>;
+    using RetentionProfileMap = std::map<DemographicProfile, std::array<double, 12>>;
     ProfileMap accessProfiles;
     AdherenceProfileMap adherenceProfiles;
-    ProfileMap retentionProfiles;
+    RetentionProfileMap retentionProfiles;
     ProfileMap returnToCareProfiles;
 
 public:
@@ -79,14 +81,14 @@ public:
         return value;
     }
 
-    void SetDefaultRetention(double value) { retention = value; }
-    void SetProfileRetention(const DemographicProfile& profile, double value)
+    void SetDefaultRetention(array<double,  12> value) { retention = value; }
+    void SetProfileRetention(const DemographicProfile& profile, std::array<double, 12> value)
     {
         retentionProfiles.emplace(profile, value);
     }
-    double GetRetention(const DemographicProfile& profile) const
+    std::array<double, 12> GetRetention(const DemographicProfile& profile) const
     {
-        double value = retention;
+        std::array<double, 12> value = retention;
         for (const auto& pair : retentionProfiles)
             if (profile.match(pair.first))
                 value = pair.second;
