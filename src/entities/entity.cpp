@@ -1120,14 +1120,25 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
 
     std::array<double, 4> adherence = prepParameters.GetAdherence(*getDemographicProfile());
 
-    // All adherent levels are recorded
-    double adherenceRnadom = _eventParams.randomNums.rand();
-    if (adherenceRnadom < adherence[0]) {
+    // Calculate the sum of adherence levels
+    double sumOfAdherence = std::accumulate(adherence.begin(), adherence.end(), 0.0);
+
+    // Check if the sum is approximately 1 (considering floating-point arithmetic)
+    const double epsilon = 1e-6; // Tolerance for floating-point comparison
+    if (std::abs(sumOfAdherence - 1.0) > epsilon) {
+        throw std::runtime_error("Error: The sum of adherence levels does not equal 1.");
+    }
+
+    // Generate a random number for adherence
+    double adherenceRandom = _eventParams.randomNums.rand();
+
+    // Adherence level assignment with corrected conditions
+    if (adherenceRandom < adherence[0]) {
         prepStatus = PrepStatus::PREP_INADHERENT;
-    } else if (adherence[0] < adherenceRnadom < adherence[1]) {
+    } else if (adherenceRandom >= adherence[0] && adherenceRandom < adherence[0] + adherence[1]) {
         prepStatus = PrepStatus::PREP_PARTIALLY_ADHERENT;
         prepTracker->recordAdherence(this);
-    } else if  (adherence[1] < adherenceRnadom < adherence[2]) {
+    } else if (adherenceRandom >= adherence[0] + adherence[1] && adherenceRandom < adherence[0] + adherence[1] + adherence[2]) {
         prepStatus = PrepStatus::PREP_SUBSTANTIALLY_ADHERENT;
         prepTracker->recordAdherence(this);
     } else {
