@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.14)
 project(transm)
 
 # maybe not needed for now but should be replaced with "transm"
@@ -158,13 +158,23 @@ target_link_libraries(transm cepac pugixml ${SQLITE3_LIBRARIES} ${Boost_LIBRARIE
 
 # Building google tests
 
-# Enabaling the use of CTest
+# Include GoogleTest
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/5376968f6948923e2411081fd9372e71a59d8e77.zip
+)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE) # For Windows
+FetchContent_MakeAvailable(googletest)
+
 include(CTest)
 enable_testing()
 
-if(BUILD_TESTING)
-   add_subdirectory (tests)
+# Only include test subdirectory if BUILD_TESTING is on
+if (BUILD_TESTING)
+    add_subdirectory(tests)
 endif()
+
 
 
 # If the build is successful we remind the user of the location of the binary

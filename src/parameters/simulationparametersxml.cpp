@@ -63,6 +63,66 @@ std::array<double, 7> SimulationParametersXml::from_string(const std::string &va
     return values;
 }
 
+// getting from a string like 0.23,0.34,0.53,0.23 this is for PrEP adherence 
+template<>
+std::array<double, 4> SimulationParametersXml::from_string(const std::string &input) {
+    std::array<double, 4> result{};
+    std::stringstream ss(input);
+    std::string token;
+    size_t index = 0;
+
+    while (std::getline(ss, token, ',') && index < result.size()) {
+        try {
+            result[index] = std::stod(token);
+            ++index;
+        } catch (const std::invalid_argument& e) {
+            std::cerr << "ERR: Invalid number: " << token << std::endl;
+            std::exit(EXIT_FAILURE); // Exit program on error
+
+        } catch (const std::out_of_range& e) {
+            std::cerr << "ERR: Number out of range: " << token << std::endl;
+            std::exit(EXIT_FAILURE); // Exit program on error
+
+        }
+    }
+
+    if (index != result.size()) {
+        std::cerr << "ERR: Not enough numbers in PrEP adherence." << std::endl;
+        std::exit(EXIT_FAILURE); // Exit program on error
+
+    }
+
+    return result;
+}
+
+// getting from a string like 0.23,0.34,0.53,0.23,0.23,0.56,0.43 this is for PrEP retention 
+template<>
+std::array<double, 12> SimulationParametersXml::from_string(const std::string &input) {
+    std::array<double, 12> result{};
+    std::stringstream ss(input);
+    std::string token;
+    size_t index = 0;
+
+    while (std::getline(ss, token, ',') && index < result.size()) {
+        try {
+            result[index] = std::stod(token);
+            ++index;
+        } catch (const std::invalid_argument& e) {
+            std::cerr << "Invalid number: " << token << std::endl;
+            std::exit(EXIT_FAILURE); // Exit program on error
+        } catch (const std::out_of_range& e) {
+            std::cerr << "Number out of range: " << token << std::endl;
+            std::exit(EXIT_FAILURE); // Exit program on error
+        }
+    }
+
+    if (index != result.size()) {
+        std::cerr << "ERR: Not enough numbers in PrEP retention." << std::endl;
+    }
+
+    return result;
+}
+
 template<>
 RiskLevel SimulationParametersXml::from_string(const std::string &risk)
 {
@@ -417,10 +477,10 @@ PrepParameters SimulationParametersXml::GetPrepParameters() const
             prepParameters.SetDefaultAccess(Text<double>(defaults_node.child("prepAccess")));
 
         if (defaults_node.child("prepAdherence"))
-            prepParameters.SetDefaultAdherence(Text<double>(defaults_node.child("prepAdherence")));
+            prepParameters.SetDefaultAdherence(Text<std::array<double, 4>>(defaults_node.child("prepAdherence")));
 
         if (defaults_node.child("prepRetention"))
-            prepParameters.SetDefaultRetention(Text<double>(defaults_node.child("prepRetention")));
+            prepParameters.SetDefaultRetention(Text<std::array<double, 12>>(defaults_node.child("prepRetention")));
 
         if (defaults_node.child("prepReturnToCare"))
             prepParameters.SetDefaultReturnToCare(Text<double>(defaults_node.child("prepReturnToCare")));
@@ -448,10 +508,10 @@ PrepParameters SimulationParametersXml::GetPrepParameters() const
                 prepParameters.SetProfileAccess(profile, Text<double>(node.child("prepAccess")));
 
             if (node.child("prepAdherence"))
-                prepParameters.SetProfileAdherence(profile, Text<double>(node.child("prepAdherence")));
+                prepParameters.SetProfileAdherence(profile, Text<std::array<double, 4>>(node.child("prepAdherence")));
 
             if (node.child("prepRetention"))
-                prepParameters.SetProfileRetention(profile, Text<double>(node.child("prepRetention")));
+                prepParameters.SetProfileRetention(profile, Text<std::array<double, 12>>(node.child("prepRetention")));
 
             if (node.child("prepReturnToCare"))
                 prepParameters.SetProfileReturnToCare(profile, Text<double>(node.child("prepReturnToCare")));
@@ -1639,7 +1699,7 @@ Intervention SimulationParametersXml::GetIntervention(pugi::xml_node &node, bool
             }
             case KnownIntervention::PreExposureProphylaxisUse:
             {
-                auto adherence = Text<double>(node);
+                auto adherence = Text<std::array<double,4>>(node);
                 intervention.SetIndividualCallback([=](Time current_time, Entity *person)
                 {
                 if (person->getHIVStatus() == HIVStatus::OBSERVED_ACUTE

@@ -115,7 +115,7 @@ public:
     virtual void SetRaceEthnicAssortativeness(DemographicProfile::Race race, DemographicProfile::Ethnicity ethnicity,
                                               double assortativeness) = 0;
 
-    void UsePreExposureProphylaxis(double adherence);
+    void UsePreExposureProphylaxis(std::array<double, 4> adherence);
 
     void SetTargetedCepacContext(SimContext *context) {
         setSimContext(context);
@@ -383,6 +383,10 @@ public:
     updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTracker, CostsTracker *costsTracker);
 
     void updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracker);
+
+    PrepStatus getPrepStatus() {
+        return prepStatus;
+    }
 
 
     /** Call this after all transmission/population dynamics are done.
@@ -884,7 +888,8 @@ public:
     double get_monthly_cdm_costs_discounted() const { return monthly_cdm_costs_discounted_; }
 
     bool UsingPrEP() {
-        return (prepStatus == PrepStatus::PREP_ADHERENT);
+        return (prepStatus == PrepStatus::PREP_ADHERENT || prepStatus == PrepStatus::PREP_PARTIALLY_ADHERENT
+                || prepStatus == PrepStatus::PREP_SUBSTANTIALLY_ADHERENT);
     }
 
     std::list<SexualPartnership *> GetPartnerships() {
@@ -900,6 +905,12 @@ public:
             }
         }
         return partnerships;
+    }
+
+
+
+    int get_month_on_prep() {
+        return monthOnPrep;
     }
 
 private:
@@ -935,6 +946,8 @@ private:
     double monthly_cepac_costs_discounted_;
     double monthly_cdm_costs_undiscounted_;
     double monthly_cdm_costs_discounted_;
+
+    int monthOnPrep;
 
     PrepParameters prepParameters;
     PrepStatus prepStatus;

@@ -82,6 +82,8 @@ namespace transm {
     {
         OFF_PREP,
         PREP_ADHERENT,
+        PREP_SUBSTANTIALLY_ADHERENT,
+        PREP_PARTIALLY_ADHERENT,
         PREP_INADHERENT, /* for later */
         WAS_ON_PREP,
         ENDType,

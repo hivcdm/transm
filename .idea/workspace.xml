@@ -1,0 +1,522 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="CMakePresetLoader">{
+  &quot;useNewFormat&quot;: true
+}</component>
+  <component name="CMakeReloadState">
+    <option name="reloaded" value="true" />
+  </component>
+  <component name="CMakeRunConfigurationManager">
+    <generated>
+      <config projectName="transm" targetName="NightlyConfigure" />
+      <config projectName="transm" targetName="ContinuousStart" />
+      <config projectName="transm" targetName="tests" />
+      <config projectName="transm" targetName="cepac_project" />
+      <config projectName="transm" targetName="ExperimentalSubmit" />
+      <config projectName="transm" targetName="NightlySubmit" />
+      <config projectName="transm" targetName="ContinuousBuild" />
+      <config projectName="transm" targetName="ContinuousUpdate" />
+      <config projectName="transm" targetName="NightlyUpdate" />
+      <config projectName="transm" targetName="pugixml_project" />
+      <config projectName="transm" targetName="ExperimentalStart" />
+      <config projectName="transm" targetName="ExperimentalUpdate" />
+      <config projectName="transm" targetName="ExperimentalBuild" />
+      <config projectName="transm" targetName="ExperimentalMemCheck" />
+      <config projectName="transm" targetName="rana_project" />
+      <config projectName="transm" targetName="ContinuousSubmit" />
+      <config projectName="transm" targetName="cppcheck" />
+      <config projectName="transm" targetName="tclap_project" />
+      <config projectName="transm" targetName="ContinuousConfigure" />
+      <config projectName="transm" targetName="Continuous" />
+      <config projectName="transm" targetName="NightlyCoverage" />
+      <config projectName="transm" targetName="create-version-header" />
+      <config projectName="transm" targetName="NightlyMemoryCheck" />
+      <config projectName="transm" targetName="NightlyStart" />
+      <config projectName="transm" targetName="clean-cmake-files" />
+      <config projectName="transm" targetName="ContinuousTest" />
+      <config projectName="transm" targetName="tags" />
+      <config projectName="transm" targetName="transm" />
+      <config projectName="transm" targetName="NightlyBuild" />
+      <config projectName="transm" targetName="ContinuousMemCheck" />
+      <config projectName="transm" targetName="ExperimentalConfigure" />
+      <config projectName="transm" targetName="ExperimentalCoverage" />
+      <config projectName="transm" targetName="NightlyMemCheck" />
+      <config projectName="transm" targetName="Nightly" />
+      <config projectName="transm" targetName="ContinuousCoverage" />
+      <config projectName="transm" targetName="Experimental" />
+      <config projectName="transm" targetName="NightlyTest" />
+      <config projectName="transm" targetName="ExperimentalTest" />
+    </generated>
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Release" ENABLED="true" GENERATION_DIR="build" CONFIG_NAME="Release" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="840dd26b-01a3-435a-9cfe-556fd3d54912" name="Changes" comment="#40 efficacy correction based on adherence level">
+      <change afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/transm.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.vscode/settings.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/query/cache-v2" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/query/client-vscode/query.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/query/cmakeFiles-v1" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/query/codemodel-v2" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/query/toolchains-v1" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/cache-v2-d1e10679cec0c8d3173b.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/cmakeFiles-v1-f66934189fc9ebf5c8c7.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/codemodel-v2-ac806a467a8ee0350b55.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-Continuous-Release-c96430d929ee2dac9a66.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-ContinuousBuild-Release-61207d267c70a46954c2.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-ContinuousConfigure-Release-03b7712e6dae0f512936.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-ContinuousCoverage-Release-51ae64bbc1bb97b5dbd5.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-ContinuousMemCheck-Release-0ff45f1f6a793b1072db.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-ContinuousStart-Release-ee74aad9c7c48159da0c.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-ContinuousSubmit-Release-6745b497a5787de0a52c.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-ContinuousTest-Release-26cb96e55b82eda29691.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-ContinuousUpdate-Release-100c053af5a151a82e02.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-Experimental-Release-0d0d974def8d4ab94ec0.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-ExperimentalBuild-Release-ece8cb6f4962869a4c0c.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-ExperimentalConfigure-Release-c28139a39adeb5e16ce9.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-ExperimentalCoverage-Release-cfc64ff37ebb935ede52.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-ExperimentalMemCheck-Release-ee3a8a03b9cf5c06701d.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-ExperimentalStart-Release-dc1913be8c1bfd6c8572.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-ExperimentalSubmit-Release-eac4e0039928d9c1eb16.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-ExperimentalTest-Release-4dae2a46ea218b4e17cf.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-ExperimentalUpdate-Release-76bf9d649b4bc0faa810.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-Nightly-Release-1fe37f440ae9bff520d6.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-NightlyBuild-Release-802a61471988e61680e0.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-NightlyConfigure-Release-05b4ad4469af85d2103a.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-NightlyCoverage-Release-0dbd9f595b0766476b00.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-NightlyMemCheck-Release-ee21cc31d5136c5c1018.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-NightlyMemoryCheck-Release-3ae2e3265d6f7d93f083.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-NightlyStart-Release-1e0fe74ce9ecaa0b35b8.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-NightlySubmit-Release-9cb8156383828dccfa67.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-NightlyTest-Release-f5f60bccad46f176cdc2.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-NightlyUpdate-Release-f8cf98bcc6dd91ef0e0e.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-cepac_project-Release-a307b8093fc471421c84.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-clean-cmake-files-Release-7e1c06854d115a2d527d.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-cppcheck-Release-ccb81cb6e2e520b96c00.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-create-version-header-Release-de0141a836b309515abc.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-pugixml_project-Release-2b7dc1b7082421cdf648.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-rana_project-Release-63c98d4275410f72c09f.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-tags-Release-1611edb15baa34e671d8.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-tclap_project-Release-2435ab0307b4c03eb760.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-tests-Release-5a6d79f68d44746d9b3f.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.cmake/api/v1/reply/target-transm-Release-d1344e52cb39922e86d1.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.ninja_deps" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/.ninja_log" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/CTestTestfile.cmake" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/DartConfiguration.tcl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/Testing/Temporary/LastTest.log" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/build.ninja" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/compile_commands.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/tests/CTestTestfile.cmake" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/tests/cmake_install.cmake" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/.~lock.Release 4.0.docx#" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Release" />
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="Issue40" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "samanseifi"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings">
+    <option name="selectedUrlAndAccountId">
+      <UrlAndAccount>
+        <option name="accountId" value="19b3b585-9f01-4e26-848c-a890d3063771" />
+        <option name="url" value="https://github.com/hsphcdm/transm" />
+      </UrlAndAccount>
+    </option>
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectApplicationVersion">
+    <option name="ide" value="CLion" />
+    <option name="majorVersion" value="2023" />
+    <option name="minorVersion" value="3.3" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
+  <component name="ProjectId" id="2bmcfDfs0N2WHYBitz7x7tK8eiT" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "ctest.advertisement.all.test.configuration.is.created": "true",
+    "git-widget-placeholder": "Issue40",
+    "last_opened_file_path": "/home/saman/Codes/hiv-CDM/transm",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.lookFeel",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RunManager" selected="CMake Application.transm">
+    <configuration name="tests" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="tests" CONFIG_NAME="Release" RUN_TARGET_PROJECT_NAME="transm" RUN_TARGET_NAME="tests" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Continuous" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="Continuous" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ContinuousBuild" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="ContinuousBuild" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ContinuousConfigure" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="ContinuousConfigure" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ContinuousCoverage" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="ContinuousCoverage" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ContinuousMemCheck" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="ContinuousMemCheck" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ContinuousStart" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="ContinuousStart" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ContinuousSubmit" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="ContinuousSubmit" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ContinuousTest" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="ContinuousTest" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ContinuousUpdate" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="ContinuousUpdate" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Experimental" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="Experimental" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ExperimentalBuild" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="ExperimentalBuild" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ExperimentalConfigure" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="ExperimentalConfigure" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ExperimentalCoverage" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="ExperimentalCoverage" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ExperimentalMemCheck" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="ExperimentalMemCheck" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ExperimentalStart" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="ExperimentalStart" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ExperimentalSubmit" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="ExperimentalSubmit" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ExperimentalTest" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="ExperimentalTest" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ExperimentalUpdate" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="ExperimentalUpdate" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Nightly" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="Nightly" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="NightlyBuild" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="NightlyBuild" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="NightlyConfigure" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="NightlyConfigure" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="NightlyCoverage" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="NightlyCoverage" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="NightlyMemCheck" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="NightlyMemCheck" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="NightlyMemoryCheck" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="NightlyMemoryCheck" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="NightlyStart" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="NightlyStart" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="NightlySubmit" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="NightlySubmit" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="NightlyTest" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="NightlyTest" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="NightlyUpdate" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="NightlyUpdate" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="cepac_project" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="cepac_project" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="clean-cmake-files" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="clean-cmake-files" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="cppcheck" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="cppcheck" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="create-version-header" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="create-version-header" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="pugixml_project" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="pugixml_project" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="rana_project" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="rana_project" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="tags" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="tags" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="tclap_project" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="tclap_project" CONFIG_NAME="Release">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="transm" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="transm" TARGET_NAME="transm" CONFIG_NAME="Release" RUN_TARGET_PROJECT_NAME="transm" RUN_TARGET_NAME="transm">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="All CTest" type="CTestRunConfiguration" factoryName="CTestRun" PROGRAM_PARAMS="--extra-verbose" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$CMakeCurrentLocalGenerationDir$" PASS_PARENT_ENVS_2="true" RUN_PATH="$CTestCurrentExecutableName$" EXPLICIT_BUILD_TARGET_NAME="all" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="CMake Application.cepac_project" />
+      <item itemvalue="CMake Application.clean-cmake-files" />
+      <item itemvalue="CMake Application.Continuous" />
+      <item itemvalue="CMake Application.ContinuousBuild" />
+      <item itemvalue="CMake Application.ContinuousConfigure" />
+      <item itemvalue="CMake Application.ContinuousCoverage" />
+      <item itemvalue="CMake Application.ContinuousMemCheck" />
+      <item itemvalue="CMake Application.ContinuousStart" />
+      <item itemvalue="CMake Application.ContinuousSubmit" />
+      <item itemvalue="CMake Application.ContinuousTest" />
+      <item itemvalue="CMake Application.ContinuousUpdate" />
+      <item itemvalue="CMake Application.cppcheck" />
+      <item itemvalue="CMake Application.create-version-header" />
+      <item itemvalue="CMake Application.Experimental" />
+      <item itemvalue="CMake Application.ExperimentalBuild" />
+      <item itemvalue="CMake Application.ExperimentalConfigure" />
+      <item itemvalue="CMake Application.ExperimentalCoverage" />
+      <item itemvalue="CMake Application.ExperimentalMemCheck" />
+      <item itemvalue="CMake Application.ExperimentalStart" />
+      <item itemvalue="CMake Application.ExperimentalSubmit" />
+      <item itemvalue="CMake Application.ExperimentalTest" />
+      <item itemvalue="CMake Application.ExperimentalUpdate" />
+      <item itemvalue="CMake Application.Nightly" />
+      <item itemvalue="CMake Application.NightlyBuild" />
+      <item itemvalue="CMake Application.NightlyConfigure" />
+      <item itemvalue="CMake Application.NightlyCoverage" />
+      <item itemvalue="CMake Application.NightlyMemCheck" />
+      <item itemvalue="CMake Application.NightlyMemoryCheck" />
+      <item itemvalue="CMake Application.NightlyStart" />
+      <item itemvalue="CMake Application.NightlySubmit" />
+      <item itemvalue="CMake Application.NightlyTest" />
+      <item itemvalue="CMake Application.NightlyUpdate" />
+      <item itemvalue="CMake Application.pugixml_project" />
+      <item itemvalue="CMake Application.rana_project" />
+      <item itemvalue="CMake Application.tags" />
+      <item itemvalue="CMake Application.tclap_project" />
+      <item itemvalue="CMake Application.transm" />
+      <item itemvalue="CTest Application.All CTest" />
+      <item itemvalue="Google Test.tests" />
+    </list>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="840dd26b-01a3-435a-9cfe-556fd3d54912" name="Changes" comment="" />
+      <created>1706823796302</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1706823796302</updated>
+      <workItem from="1706823797832" duration="488000" />
+      <workItem from="1706824306538" duration="22219000" />
+    </task>
+    <task id="LOCAL-00001" summary="#42 adherence now as an array input">
+      <option name="closed" value="true" />
+      <created>1706840492540</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1706840492540</updated>
+    </task>
+    <task id="LOCAL-00002" summary="#40 fixing the UsingPrEP() function">
+      <option name="closed" value="true" />
+      <created>1706845105029</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1706845105029</updated>
+    </task>
+    <task id="LOCAL-00003" summary="#40 efficacy correction based on adherence level">
+      <option name="closed" value="true" />
+      <created>1706845805370</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1706845805370</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VCPKGProject">
+    <isAutomaticCheckingOnLaunch value="false" />
+    <isAutomaticFoundErrors value="true" />
+    <isAutomaticReloadCMake value="true" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="origin/Issue42" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="#42 adherence now as an array input" />
+    <MESSAGE value="#40 fixing the UsingPrEP() function" />
+    <MESSAGE value="#40 efficacy correction based on adherence level" />
+    <option name="LAST_COMMIT_MESSAGE" value="#40 efficacy correction based on adherence level" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/entities/prep.hpp</url>
+          <line>20</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>
