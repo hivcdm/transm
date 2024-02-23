@@ -9,7 +9,6 @@ TEST(TimeSpanTest, ConstructorAndAccessors) {
     EXPECT_EQ(oneYearTenMonths.get_years(), 1);
     EXPECT_EQ(oneYearTenMonths.get_months(), 10);
     EXPECT_EQ(oneYearTenMonths.in_months(), 22);
-<<<<<<< HEAD
     EXPECT_NEAR(oneYearTenMonths.in_years(), 1.833, 0.001);
 
     TimeSpan twoYearsFourteenMonths(2, 14);
@@ -23,9 +22,6 @@ TEST(TimeSpanTest, ConstructorAndAccessors) {
     EXPECT_EQ(threeYearsTwelveMonth.get_months(), 0);
     EXPECT_EQ(threeYearsTwelveMonth.in_months(), 48);
     EXPECT_EQ(threeYearsTwelveMonth.in_years(), 4.0);
-=======
-    EXPECT_DOUBLE_EQ(oneYearTenMonths.in_years(), 1.8333);
->>>>>>> origin/develop
 }
 
 TEST(TimeSpanTest, ArithmeticOperations) {
@@ -53,15 +49,9 @@ TEST(TimeSpanTest, ComparisonOperations) {
 
 // Test cases for Time
 TEST(TimeTest, ConstructorAndAccessors) {
-<<<<<<< HEAD
     Time jan2021(2021, 1);
     EXPECT_EQ(jan2021.get_year(), 2021);
     EXPECT_EQ(jan2021.get_month(), 1);
-=======
-    Time jan2021(5, 2);
-    EXPECT_EQ(jan2021.get_year(), 62);
-    EXPECT_EQ(jan2021.get_month(), 2);
->>>>>>> origin/develop
     EXPECT_EQ(jan2021.in_months(), 24253); // Assuming the calculation based on the example
 }
 
