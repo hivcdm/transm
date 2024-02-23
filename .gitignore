@@ -14,6 +14,7 @@ runs/*
 bin/
 third-party/
 lib/*
+build/
 build/CMakeCache.txt
 build/CMakeFiles/
 build/Makefile

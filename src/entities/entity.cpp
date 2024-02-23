@@ -1102,9 +1102,14 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
             prepTracker->recordReturnToCare(this);
         }
     } else {
-        double retention = prepParameters.GetRetention(*getDemographicProfile());
-        if (!_eventParams.randomNums.chance(retention)) {
+        std::array<double, 12> retention = prepParameters.GetRetention(*getDemographicProfile());
+        int month_on_prep = monthOnPrep;
+        if (month_on_prep > 12)
+            month_on_prep = 12;
+
+        if (!_eventParams.randomNums.chance(retention[month_on_prep])) {
             prepStatus = PrepStatus::WAS_ON_PREP;
+            monthOnPrep = 0;    // becomes off PrEP
             prepTracker->recordLossToCare(this);
             return;
         }
@@ -1113,13 +1118,46 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
     // Record as having access to PREP and then select adherence
     prepTracker->recordAccess(this);
 
-    double adherence = prepParameters.GetAdherence(*getDemographicProfile());
-    if (_eventParams.randomNums.chance(adherence)) {
-        prepStatus = PrepStatus::PREP_ADHERENT;
+    std::array<double, 4> adherence = prepParameters.GetAdherence(*getDemographicProfile());
+
+    // Calculate the sum of adherence levels
+    double sumOfAdherence = std::accumulate(adherence.begin(), adherence.end(), 0.0);
+
+    // Check if the sum is approximately 1 (considering floating-point arithmetic)
+    const double epsilon = 1e-6; // Tolerance for floating-point comparison
+    if (std::abs(sumOfAdherence - 1.0) > epsilon) {
+        throw std::runtime_error("Error: The sum of adherence levels does not equal 1.");
+    }
+
+    // Generate a random number for adherence
+    double adherenceRandom = _eventParams.randomNums.rand();
+
+    // Adherence level assignment with corrected conditions
+    if (adherenceRandom < adherence[0]) {
+        prepStatus = PrepStatus::PREP_INADHERENT;
+    } else if (adherenceRandom >= adherence[0] && adherenceRandom < adherence[0] + adherence[1]) {
+        prepStatus = PrepStatus::PREP_PARTIALLY_ADHERENT;
+        prepTracker->recordAdherence(this);
+    } else if (adherenceRandom >= adherence[0] + adherence[1] && adherenceRandom < adherence[0] + adherence[1] + adherence[2]) {
+        prepStatus = PrepStatus::PREP_SUBSTANTIALLY_ADHERENT;
         prepTracker->recordAdherence(this);
     } else {
-        prepStatus = PrepStatus::PREP_INADHERENT;
+        prepStatus = PrepStatus::PREP_ADHERENT;
+        prepTracker->recordAdherence(this);
     }
+
+
+    // Record as having month of being to PREP
+    if (prepStatus == PrepStatus::PREP_INADHERENT || prepStatus == PrepStatus::PREP_PARTIALLY_ADHERENT || prepStatus == PrepStatus::PREP_SUBSTANTIALLY_ADHERENT)
+        monthOnPrep++;
+
+
+//    if (_eventParams.randomNums.chance(adherence)) {
+//        prepStatus = PrepStatus::PREP_ADHERENT;
+//        prepTracker->recordAdherence(this);
+//    } else {
+//        prepStatus = PrepStatus::PREP_INADHERENT;
+//    }
 }
 
 void Entity::traceTreatmentChange(EventParams &_eventParams, bool after) {
@@ -1463,7 +1501,7 @@ Entity::~Entity(void) {
     }
 }
 
-void Entity::UsePreExposureProphylaxis(double adherence) {
+void Entity::UsePreExposureProphylaxis(std::array<double, 4> adherence) {
     prepParameters.SetDefaultAdherence(adherence);
 }
 
