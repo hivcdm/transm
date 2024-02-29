@@ -32,7 +32,8 @@ const std::string PrepTracker::TRACKED_OUTCOMES[] =
     "adherent",
     "loss_to_care",
     "return_to_care",
-    "ineligible"
+    "ineligible",
+    "on_prep_and_infected"
 };
 
 const std::string BUCKETS[] =
@@ -110,6 +111,11 @@ void PrepTracker::recordIneligible(Entity *person)
     counter.Increment(PersonBucket(*person, ageRanges), "ineligible");
 }
 
+void PrepTracker::recordOnPrepAndInfected(Entity *person)
+{
+    counter.Increment(PersonBucket(*person, ageRanges), "on_prep_and_infected");
+}
+
 void PrepTracker::printPrepOutcomes(Time time, std::ostream &_outStream, Population *_population)
 {
     if(time == Time::Zero)
@@ -159,6 +165,10 @@ void PrepTracker::buildHeader()
         else if (outcome == "ineligible")
         {
             section_header = "Ineligible for Prep (infected or dead)";
+        }
+        else if (outcome == "on_prep_and_infected")
+        {
+            section_header = "Number on Prep and Infected";
         }
 
         SetHeaderCell(column, 1, section_header);
