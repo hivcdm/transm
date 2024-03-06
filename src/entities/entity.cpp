@@ -1115,6 +1115,7 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
         }
     }
 
+
     // Record as having access to PREP and then select adherence
     prepTracker->recordAccess(this);
 
@@ -1144,9 +1145,13 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
     }
 
 
-    // Record as having month of being to PREP
+    // Record as having month of being on PREP
     if (prepStatus == PrepStatus::PREP_INADHERENT || prepStatus == PrepStatus::PREP_PARTIALLY_ADHERENT || prepStatus == PrepStatus::PREP_SUBSTANTIALLY_ADHERENT) {
         monthOnPrep++;
+        if (monthOnPrep == 1 && everBeenOnPrep == false) {
+            prepTracker->recordNewOnPrep(this);
+        }    
+        everBeenOnPrep = true; // this person was on prep at some point
         prepTracker->recordAdherence(this);
         if (this->isInfected()) {
             prepTracker->recordOnPrepAndInfected(this);
@@ -1436,6 +1441,7 @@ Entity::Entity(Age _age, unsigned int _populationID, const PrepParameters &prepP
     alreadyDetected = false;
     newDiagnosis = false;
     inCareWithinThirty = false;
+    everBeenOnPrep = false;
 
     death = false;
     deathStatus = DeathStatus::ALIVE;

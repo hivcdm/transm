@@ -33,6 +33,7 @@ public:
     void recordReturnToCare(Entity *person);
     void recordIneligible(Entity *person);
     void recordOnPrepAndInfected(Entity *person);
+    void recordNewOnPrep(Entity *person);
 
     void printPrepOutcomes(Time time, std::ostream &_outStream, Population *_population);
 
