@@ -1137,27 +1137,21 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
         prepStatus = PrepStatus::PREP_INADHERENT;
     } else if (adherenceRandom >= adherence[0] && adherenceRandom < adherence[0] + adherence[1]) {
         prepStatus = PrepStatus::PREP_PARTIALLY_ADHERENT;
-        prepTracker->recordAdherence(this);
     } else if (adherenceRandom >= adherence[0] + adherence[1] && adherenceRandom < adherence[0] + adherence[1] + adherence[2]) {
         prepStatus = PrepStatus::PREP_SUBSTANTIALLY_ADHERENT;
-        prepTracker->recordAdherence(this);
     } else {
         prepStatus = PrepStatus::PREP_ADHERENT;
-        prepTracker->recordAdherence(this);
     }
 
 
     // Record as having month of being to PREP
-    if (prepStatus == PrepStatus::PREP_INADHERENT || prepStatus == PrepStatus::PREP_PARTIALLY_ADHERENT || prepStatus == PrepStatus::PREP_SUBSTANTIALLY_ADHERENT)
+    if (prepStatus == PrepStatus::PREP_INADHERENT || prepStatus == PrepStatus::PREP_PARTIALLY_ADHERENT || prepStatus == PrepStatus::PREP_SUBSTANTIALLY_ADHERENT) {
         monthOnPrep++;
-
-
-//    if (_eventParams.randomNums.chance(adherence)) {
-//        prepStatus = PrepStatus::PREP_ADHERENT;
-//        prepTracker->recordAdherence(this);
-//    } else {
-//        prepStatus = PrepStatus::PREP_INADHERENT;
-//    }
+        prepTracker->recordAdherence(this);
+        if (this->isInfected()) {
+            prepTracker->recordOnPrepAndInfected(this);
+        }
+    }
 }
 
 void Entity::traceTreatmentChange(EventParams &_eventParams, bool after) {
