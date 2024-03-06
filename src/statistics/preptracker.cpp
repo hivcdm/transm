@@ -178,7 +178,7 @@ void PrepTracker::buildHeader()
         } 
         else if (outcome == "new_on_prep")
         {
-            section_header = "Number on New Prep Users";
+            section_header = "Number of New Prep Users";
         }
 
         SetHeaderCell(column, 1, section_header);
