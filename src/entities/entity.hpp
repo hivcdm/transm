@@ -239,6 +239,8 @@ public:
 
     bool inCareWithinThirty;
 
+    bool everBeenOnPrep;
+
     /** whether this Entity is dead or not */
     bool death;
 
@@ -906,8 +908,6 @@ public:
         }
         return partnerships;
     }
-
-
 
     int get_month_on_prep() {
         return monthOnPrep;

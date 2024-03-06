@@ -33,7 +33,8 @@ const std::string PrepTracker::TRACKED_OUTCOMES[] =
     "loss_to_care",
     "return_to_care",
     "ineligible",
-    "on_prep_and_infected"
+    "on_prep_and_infected",
+    "new_on_prep"
 };
 
 const std::string BUCKETS[] =
@@ -116,6 +117,11 @@ void PrepTracker::recordOnPrepAndInfected(Entity *person)
     counter.Increment(PersonBucket(*person, ageRanges), "on_prep_and_infected");
 }
 
+void PrepTracker::recordNewOnPrep(Entity *person)
+{
+    counter.Increment(PersonBucket(*person, ageRanges), "new_on_prep");
+}
+
 void PrepTracker::printPrepOutcomes(Time time, std::ostream &_outStream, Population *_population)
 {
     if(time == Time::Zero)
@@ -169,6 +175,10 @@ void PrepTracker::buildHeader()
         else if (outcome == "on_prep_and_infected")
         {
             section_header = "Number on Prep and Infected";
+        } 
+        else if (outcome == "new_on_prep")
+        {
+            section_header = "Number on New Prep Users";
         }
 
         SetHeaderCell(column, 1, section_header);
