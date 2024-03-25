@@ -1107,7 +1107,7 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
         if (month_on_prep > 12)
             month_on_prep = 12;
 
-        if (!_eventParams.randomNums.chance(retention[month_on_prep])) {
+        if (_eventParams.randomNums.chance(retention[month_on_prep])) {
             prepStatus = PrepStatus::WAS_ON_PREP;
             monthOnPrep = 0;    // becomes off PrEP
             prepTracker->recordLossToCare(this);
@@ -1146,7 +1146,7 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
 
 
     // Record as having month of being on PREP
-    if (prepStatus == PrepStatus::PREP_INADHERENT || prepStatus == PrepStatus::PREP_PARTIALLY_ADHERENT || prepStatus == PrepStatus::PREP_SUBSTANTIALLY_ADHERENT) {
+    if (prepStatus == PrepStatus::PREP_ADHERENT || prepStatus == PrepStatus::PREP_PARTIALLY_ADHERENT || prepStatus == PrepStatus::PREP_SUBSTANTIALLY_ADHERENT) {
         monthOnPrep++;
         if (monthOnPrep == 1 && everBeenOnPrep == false) {
             prepTracker->recordNewOnPrep(this);
