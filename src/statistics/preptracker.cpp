@@ -154,23 +154,23 @@ void PrepTracker::buildHeader()
         }
         else if (outcome == "accessing")
         {
-            section_header = "Number with Access to Prep";
+            section_header = "Number of Prep Users";
         }
         else if (outcome == "adherent")
         {
-            section_header = "Number Adherent";
+            section_header = "Number of Adherent";
         }
         else if (outcome == "loss_to_care")
         {
-            section_header = "Number Lost";
+            section_header = "Number of Lost to Follow-up";
         }
         else if (outcome == "return_to_care")
         {
-            section_header = "Number Return to Care";
+            section_header = "Number of Return to Care";
         }
         else if (outcome == "ineligible")
         {
-            section_header = "Ineligible for Prep (infected or dead)";
+            section_header = "Ineligible for Prep";
         }
         else if (outcome == "on_prep_and_infected")
         {
