@@ -1146,7 +1146,7 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
 
 
     // Record as having month of being on PREP
-    if (prepStatus == PrepStatus::PREP_ADHERENT || prepStatus == PrepStatus::PREP_PARTIALLY_ADHERENT || prepStatus == PrepStatus::PREP_SUBSTANTIALLY_ADHERENT) {
+    if (prepStatus == PrepStatus::PREP_ADHERENT || prepStatus == PrepStatus::PREP_PARTIALLY_ADHERENT || prepStatus == PrepStatus::PREP_SUBSTANTIALLY_ADHERENT || prepStatus == PrepStatus::PREP_INADHERENT) {
         monthOnPrep++;
         if (monthOnPrep == 1 && everBeenOnPrep == false) {
             prepTracker->recordNewOnPrep(this);
