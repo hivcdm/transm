@@ -2,6 +2,8 @@
 #define TIME_HPP
 
 #include <string>
+#include <stdexcept>
+
 
 namespace transm {
 
@@ -14,8 +16,23 @@ public:
 	TimeSpan() : months_(0) {}
 	TimeSpan(int years, int months) : months_(years * 12 + months) {}
 
-	int get_years() const { return months_ / 12; }
-	int get_months() const { return months_ % 12; }
+	int get_years() const {
+		int years;
+		if (months_ % 12 == 0)
+			years = (months_ / 12) + 1;
+		else
+			years = months_ / 12;
+		return years; 
+	}
+
+	int get_months() const { 
+		int months;
+		if (months_ % 12 == 0)
+			months = 0;
+		else
+		    months = months_ % 12;
+		return months; 
+	}
 
 	double in_years() const { return months_ / 12.0; }
 	int in_months() const { return months_; }
@@ -53,10 +70,29 @@ public:
 	static Time from_months(int months) { return Time(months / 12, months % 12); }
 
 	Time() : month_(0) {}
-	Time(int year, int month) : month_(year * 12 + month) {}
+	Time(int year, int month) : month_(year * 12 + month) {
+		if (month < 1 || month > 12) {
+			throw std::invalid_argument("Month must be between 1 and 12");
+		}
+	}
 
-	int get_year() const { return month_ / 12; }
-	int get_month() const { return month_ % 12; }
+	int get_year() const { 
+		int year;
+		if (month_ % 12 == 0)
+			year = (month_ / 12) - 1;
+		else
+			year = month_ / 12;
+		return year; 
+	}
+	int get_month() const { 
+		int month;
+		if (month_ % 12 == 0)
+			month = 12;
+		else
+		    month = month_ % 12;
+		return month; 
+	}
+
 
 	double in_years() const { return month_ / 12.0; }
 	int in_months() const { return month_; }
