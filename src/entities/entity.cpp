@@ -1072,6 +1072,18 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
             (hivStatus == HIVStatus::UNOBSERVED_ACUTE) ||
             (hivStatus == HIVStatus::UNOBSERVED_CHRONIC) ||
             (hivStatus == HIVStatus::UNOBSERVED_LATESTAGE);
+    
+    
+
+    // if unobserved let's roll for testing HIV with 99.6% chance of accuracy and I want to update the cepac context
+
+    // if unobserved record wrongly on prep
+    if (unobserved_or_negative) {
+        if (_eventParams.randomNums.chance(0.996)) {
+            prepTracker->recordWronglyOnPrep(this);
+        }
+    }
+
 
     if (!unobserved_or_negative) {
         if (prepStatus != PrepStatus::OFF_PREP)
