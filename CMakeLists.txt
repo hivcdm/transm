@@ -102,7 +102,7 @@ ExternalProject_Add(
 	cepac_project 
 	PREFIX ${CMAKE_BINARY_DIR}/third-party
 	GIT_REPOSITORY https://github.com/hsphcdm/cepac-svn.git
-	GIT_TAG cepac-transm
+	GIT_TAG cepac-transm-develop
 	UPDATE_COMMAND ""
 	CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 	#CONFIGURE_COMMAND cmake cepac_project
