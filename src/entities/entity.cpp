@@ -1067,25 +1067,12 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
     if (!prepParameters.Enabled())
         return;
 
-    bool unobserved_or_negative =
-            (hivStatus == HIVStatus::NEGATIVE) ||
+    bool unobserved =
             (hivStatus == HIVStatus::UNOBSERVED_ACUTE) ||
             (hivStatus == HIVStatus::UNOBSERVED_CHRONIC) ||
             (hivStatus == HIVStatus::UNOBSERVED_LATESTAGE);
-    
-    
 
-    // if unobserved let's roll for testing HIV with 99.6% chance of accuracy and I want to update the cepac context
-
-    // if unobserved record wrongly on prep
-    if (unobserved_or_negative) {
-        if (_eventParams.randomNums.chance(0.996)) {
-            prepTracker->recordWronglyOnPrep(this);
-        }
-    }
-
-
-    if (!unobserved_or_negative) {
+    if (!unobserved && hivStatus != HIVStatus::NEGATIVE) {
         if (prepStatus != PrepStatus::OFF_PREP)
             // entity was on prep, but is no longer eligible (infected or died)
             prepTracker->recordIneligible(this);
@@ -1101,11 +1088,19 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
 
     prepTracker->recordEligible(this);
 
+    // if unobserved let's roll for testing HIV with 99.6% chance of accuracy
+    if (unobserved) {
+        if (_eventParams.randomNums.chance(0.996)) {
+            cepacPatient->getHIVTestingUpdater()->performPrepUpdates();
+            return;
+        } 
+    }
+
     if (prepStatus == PrepStatus::OFF_PREP) {
         double access = prepParameters.GetAccess(*getDemographicProfile());
         if (!_eventParams.randomNums.chance(access)) {
             return;
-        }
+        } 
     } else if (prepStatus == PrepStatus::WAS_ON_PREP) {
         double returnToCare = prepParameters.GetReturnToCare(*getDemographicProfile());
         if (!_eventParams.randomNums.chance(returnToCare)) {
@@ -1127,9 +1122,13 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
         }
     }
 
-
     // Record as having access to PREP and then select adherence
     prepTracker->recordAccess(this);
+
+    if (unobserved) {
+        // wrongly enrolled on PREP!!!
+        prepTracker->recordWronglyOnPrep(this);
+    }
 
     std::array<double, 4> adherence = prepParameters.GetAdherence(*getDemographicProfile());
 
