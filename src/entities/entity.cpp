@@ -1101,6 +1101,7 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
             } else if (hivStatus == HIVStatus::UNOBSERVED_LATESTAGE) {
                 hivStatus = HIVStatus::OBSERVED_LATESTAGE;
             }
+            prepTracker->recordTestedPositiveDuringPrep(this);
 
             return;
         } 
