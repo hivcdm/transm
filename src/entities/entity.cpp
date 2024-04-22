@@ -1092,6 +1092,16 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
     if (unobserved) {
         if (_eventParams.randomNums.chance(0.996)) {
             cepacPatient->getHIVTestingUpdater()->performPrepUpdates();
+
+            // Change the hive status to observed to each stage
+            if (hivStatus == HIVStatus::UNOBSERVED_ACUTE) {
+                hivStatus = HIVStatus::OBSERVED_ACUTE;
+            } else if (hivStatus == HIVStatus::UNOBSERVED_CHRONIC) {
+                hivStatus = HIVStatus::OBSERVED_CHRONIC;
+            } else if (hivStatus == HIVStatus::UNOBSERVED_LATESTAGE) {
+                hivStatus = HIVStatus::OBSERVED_LATESTAGE;
+            }
+
             return;
         } 
     }
