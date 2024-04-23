@@ -1071,18 +1071,26 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
             (hivStatus == HIVStatus::UNOBSERVED_ACUTE) ||
             (hivStatus == HIVStatus::UNOBSERVED_CHRONIC) ||
             (hivStatus == HIVStatus::UNOBSERVED_LATESTAGE);
+    
+    bool observed = 
+            (hivStatus == HIVStatus::OBSERVED_ACUTE) ||
+            (hivStatus == HIVStatus::OBSERVED_CHRONIC) ||
+            (hivStatus == HIVStatus::OBSERVED_LATESTAGE);
 
-    if (!unobserved && hivStatus != HIVStatus::NEGATIVE) {
-        if (prepStatus != PrepStatus::OFF_PREP)
+    // if observed, then prep is not for this person!
+    if (observed) {
+        if (prepStatus != PrepStatus::OFF_PREP) {
             // entity was on prep, but is no longer eligible (infected or died)
             prepTracker->recordIneligible(this);
+        }
         return;
     }
 
     /* if not sexually active nor has any partner then not eligible */
     if (!this->isSexuallyActive() || !this->hasPartnership()) {
-        if (prepStatus != PrepStatus::OFF_PREP)
+        if (prepStatus != PrepStatus::OFF_PREP) {
             prepTracker->recordIneligible(this);
+        }
         return;
     }
 
@@ -1101,6 +1109,7 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
             } else if (hivStatus == HIVStatus::UNOBSERVED_LATESTAGE) {
                 hivStatus = HIVStatus::OBSERVED_LATESTAGE;
             }
+            prepTracker->recordIneligible(this);
             prepTracker->recordTestedPositiveDuringPrep(this);
 
             return;
@@ -1165,7 +1174,6 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
     } else {
         prepStatus = PrepStatus::PREP_ADHERENT;
     }
-
 
     // Record as having month of being on PREP
     if (prepStatus == PrepStatus::PREP_ADHERENT || prepStatus == PrepStatus::PREP_PARTIALLY_ADHERENT || prepStatus == PrepStatus::PREP_SUBSTANTIALLY_ADHERENT || prepStatus == PrepStatus::PREP_INADHERENT) {
