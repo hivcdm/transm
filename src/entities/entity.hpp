@@ -913,6 +913,15 @@ public:
         return monthOnPrep;
     }
 
+    bool isTimeForPrepTest() {
+        // if HIV negative, then no need to test (because I know their status even if they don't! Lol!)
+        if (hivStatus != HIVStatus::NEGATIVE) {
+            return false; 
+        } else {
+            return ( monthOnPrep % 6 == 0);
+        }
+    }
+
 private:
     BaseEnumCls::Enum getDemographicProfileVal(DemographicProfile::Demographic _demographic) const;
 

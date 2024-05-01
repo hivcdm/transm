@@ -1067,33 +1067,63 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
     if (!prepParameters.Enabled())
         return;
 
-    bool unobserved_or_negative =
-            (hivStatus == HIVStatus::NEGATIVE) ||
+    bool unobserved =
             (hivStatus == HIVStatus::UNOBSERVED_ACUTE) ||
             (hivStatus == HIVStatus::UNOBSERVED_CHRONIC) ||
             (hivStatus == HIVStatus::UNOBSERVED_LATESTAGE);
+    
+    bool observed = 
+            (hivStatus == HIVStatus::OBSERVED_ACUTE) ||
+            (hivStatus == HIVStatus::OBSERVED_CHRONIC) ||
+            (hivStatus == HIVStatus::OBSERVED_LATESTAGE);
 
-    if (!unobserved_or_negative) {
-        if (prepStatus != PrepStatus::OFF_PREP)
+    // if observed, then prep is not for this person!
+    if (observed) {
+        if (prepStatus != PrepStatus::OFF_PREP) {
             // entity was on prep, but is no longer eligible (infected or died)
             prepTracker->recordIneligible(this);
+            monthOnPrep = 0;  // reseting the month on prep if there was a breakthrough case, it shouldn't matter anyway
+        }
         return;
     }
 
     /* if not sexually active nor has any partner then not eligible */
     if (!this->isSexuallyActive() || !this->hasPartnership()) {
-        if (prepStatus != PrepStatus::OFF_PREP)
+        if (prepStatus != PrepStatus::OFF_PREP) {
             prepTracker->recordIneligible(this);
+        }
         return;
     }
 
     prepTracker->recordEligible(this);
 
+    // if unobserved let's roll for testing HIV with 99.6% chance of accuracy every six months
+    if (this->isTimeForPrepTest()) {
+        if (unobserved) {
+            if (_eventParams.randomNums.chance(0.996)) {
+                cepacPatient->getHIVTestingUpdater()->performPrepUpdates();
+
+                // Change the hive status to observed to each stage
+                if (hivStatus == HIVStatus::UNOBSERVED_ACUTE) {
+                    hivStatus = HIVStatus::OBSERVED_ACUTE;
+                } else if (hivStatus == HIVStatus::UNOBSERVED_CHRONIC) {
+                    hivStatus = HIVStatus::OBSERVED_CHRONIC;
+                } else if (hivStatus == HIVStatus::UNOBSERVED_LATESTAGE) {
+                    hivStatus = HIVStatus::OBSERVED_LATESTAGE;
+                }
+                prepTracker->recordIneligible(this);
+                prepTracker->recordTestedPositiveDuringPrep(this);
+                monthOnPrep = 0;  // reseting the month on prep if there was a breakthrough case, it shouldn't matter anyway
+                return;
+            } 
+        }
+    }
+
     if (prepStatus == PrepStatus::OFF_PREP) {
         double access = prepParameters.GetAccess(*getDemographicProfile());
         if (!_eventParams.randomNums.chance(access)) {
             return;
-        }
+        } 
     } else if (prepStatus == PrepStatus::WAS_ON_PREP) {
         double returnToCare = prepParameters.GetReturnToCare(*getDemographicProfile());
         if (!_eventParams.randomNums.chance(returnToCare)) {
@@ -1115,9 +1145,13 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
         }
     }
 
-
     // Record as having access to PREP and then select adherence
     prepTracker->recordAccess(this);
+
+    if (unobserved) {
+        // wrongly enrolled on PREP!!!
+        prepTracker->recordWronglyOnPrep(this);
+    }
 
     std::array<double, 4> adherence = prepParameters.GetAdherence(*getDemographicProfile());
 
@@ -1143,7 +1177,6 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
     } else {
         prepStatus = PrepStatus::PREP_ADHERENT;
     }
-
 
     // Record as having month of being on PREP
     if (prepStatus == PrepStatus::PREP_ADHERENT || prepStatus == PrepStatus::PREP_PARTIALLY_ADHERENT || prepStatus == PrepStatus::PREP_SUBSTANTIALLY_ADHERENT || prepStatus == PrepStatus::PREP_INADHERENT) {
@@ -1422,6 +1455,7 @@ Entity::Entity(Age _age, unsigned int _populationID, const PrepParameters &prepP
         monthly_cdm_costs_undiscounted_(0),
         monthly_cdm_costs_discounted_(0),
         prepParameters(prepParams),
+        monthOnPrep(0),
         prepStatus(PrepStatus::OFF_PREP) {
     id = Entity::idCounter++;
     populationID = _populationID;
