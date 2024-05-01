@@ -1082,6 +1082,7 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
         if (prepStatus != PrepStatus::OFF_PREP) {
             // entity was on prep, but is no longer eligible (infected or died)
             prepTracker->recordIneligible(this);
+            monthOnPrep = 0;  // reseting the month on prep if there was a breakthrough case, it shouldn't matter anyway
         }
         return;
     }
@@ -1096,24 +1097,26 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
 
     prepTracker->recordEligible(this);
 
-    // if unobserved let's roll for testing HIV with 99.6% chance of accuracy
-    if (unobserved) {
-        if (_eventParams.randomNums.chance(0.996)) {
-            cepacPatient->getHIVTestingUpdater()->performPrepUpdates();
+    // if unobserved let's roll for testing HIV with 99.6% chance of accuracy every six months
+    if (this->isTimeForPrepTest()) {
+        if (unobserved) {
+            if (_eventParams.randomNums.chance(0.996)) {
+                cepacPatient->getHIVTestingUpdater()->performPrepUpdates();
 
-            // Change the hive status to observed to each stage
-            if (hivStatus == HIVStatus::UNOBSERVED_ACUTE) {
-                hivStatus = HIVStatus::OBSERVED_ACUTE;
-            } else if (hivStatus == HIVStatus::UNOBSERVED_CHRONIC) {
-                hivStatus = HIVStatus::OBSERVED_CHRONIC;
-            } else if (hivStatus == HIVStatus::UNOBSERVED_LATESTAGE) {
-                hivStatus = HIVStatus::OBSERVED_LATESTAGE;
-            }
-            prepTracker->recordIneligible(this);
-            prepTracker->recordTestedPositiveDuringPrep(this);
-
-            return;
-        } 
+                // Change the hive status to observed to each stage
+                if (hivStatus == HIVStatus::UNOBSERVED_ACUTE) {
+                    hivStatus = HIVStatus::OBSERVED_ACUTE;
+                } else if (hivStatus == HIVStatus::UNOBSERVED_CHRONIC) {
+                    hivStatus = HIVStatus::OBSERVED_CHRONIC;
+                } else if (hivStatus == HIVStatus::UNOBSERVED_LATESTAGE) {
+                    hivStatus = HIVStatus::OBSERVED_LATESTAGE;
+                }
+                prepTracker->recordIneligible(this);
+                prepTracker->recordTestedPositiveDuringPrep(this);
+                monthOnPrep = 0;  // reseting the month on prep if there was a breakthrough case, it shouldn't matter anyway
+                return;
+            } 
+        }
     }
 
     if (prepStatus == PrepStatus::OFF_PREP) {
@@ -1452,6 +1455,7 @@ Entity::Entity(Age _age, unsigned int _populationID, const PrepParameters &prepP
         monthly_cdm_costs_undiscounted_(0),
         monthly_cdm_costs_discounted_(0),
         prepParameters(prepParams),
+        monthOnPrep(0),
         prepStatus(PrepStatus::OFF_PREP) {
     id = Entity::idCounter++;
     populationID = _populationID;
