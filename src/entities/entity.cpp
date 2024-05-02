@@ -1145,7 +1145,7 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
             if (!_eventParams.randomNums.chance(access[access_index]))
                return;
         } else {
-            // If the current_month was not found, no one should be on PrEP!
+            // If the current_year was not found, no one should be on PrEP!
             return;
         }
         
