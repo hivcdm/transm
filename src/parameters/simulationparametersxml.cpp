@@ -124,6 +124,19 @@ std::array<double, 12> SimulationParametersXml::from_string(const std::string &i
 }
 
 template<>
+std::vector<double> SimulationParametersXml::from_string(const std::string &value_string)
+{
+    std::vector<double> values;
+    std::istringstream iss(value_string);
+    std::string token;
+    while (std::getline(iss, token, ',')) {
+        values.push_back(std::stod(token));
+    }
+    return values;
+}
+
+
+template<>
 RiskLevel SimulationParametersXml::from_string(const std::string &risk)
 {
     if(risk == "high") return RiskLevel::HIGH;
@@ -474,7 +487,7 @@ PrepParameters SimulationParametersXml::GetPrepParameters() const
         }
 
         if (defaults_node.child("prepAccess"))
-            prepParameters.SetDefaultAccess(Text<double>(defaults_node.child("prepAccess")));
+            prepParameters.SetDefaultAccess(Text<std::vector<double>>(defaults_node.child("prepAccess")));
 
         if (defaults_node.child("prepAdherence"))
             prepParameters.SetDefaultAdherence(Text<std::array<double, 4>>(defaults_node.child("prepAdherence")));
@@ -505,7 +518,7 @@ PrepParameters SimulationParametersXml::GetPrepParameters() const
             }
 
             if (node.child("prepAccess"))
-                prepParameters.SetProfileAccess(profile, Text<double>(node.child("prepAccess")));
+                prepParameters.SetProfileAccess(profile, Text<std::vector<double>>(node.child("prepAccess")));
 
             if (node.child("prepAdherence"))
                 prepParameters.SetProfileAdherence(profile, Text<std::array<double, 4>>(node.child("prepAdherence")));
