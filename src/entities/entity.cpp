@@ -1064,7 +1064,7 @@ void Entity::updateTestingStatus(EventParams &_eventParams,
 }
 
 void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracker) {
-    if (!prepParameters.Enabled())
+    if (!prepParameters.Enabled() && _eventParams.currTime.get_year() < 56) // should be after 2014
         return;
 
     bool unobserved =
@@ -1126,7 +1126,7 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
 
         // Look for the access rate for the current year
         std::vector<int> access_years = {
-                                        56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 
+                                        57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 
                                         70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 
                                         84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 
                                         98, 99, 100, 101};
