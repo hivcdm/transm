@@ -1119,44 +1119,45 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
         }
     }
 
+    std::vector<double> access = prepParameters.GetAccess(*getDemographicProfile());
+        
+    int current_year = _eventParams.currTime.get_year();  
+
+    // Look for the access rate for the current year this goes beyond the 100 years just to be safe!
+    std::vector<int> access_years = {
+                                    57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 
+                                    70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 
+                                    84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 
+                                    98, 99, 100, 101, 102};
+
+    // Find the index of current_year in access_years, if present
+    auto it = std::find(access_years.begin(), access_years.end(), current_year);
+
+    // If the current_year was found, compute the index
+    auto access_index = std::distance(access_years.begin(), it);
+    
+    // check if access[access_index] exist, if it doesn't use the last value
+    if (access_index >= access.size()) {
+        access_index = access.size() - 1;
+    }
+
+    double current_year_access_rate = access[access_index]; // this is to initialize the return to care
+    double current_year_return_to_care_rate = current_year_access_rate;
+
     if (prepStatus == PrepStatus::OFF_PREP) {
-        std::vector<double> access = prepParameters.GetAccess(*getDemographicProfile());
-        
-        int current_year = _eventParams.currTime.get_year();  
-
-        // Look for the access rate for the current year
-        std::vector<int> access_years = {
-                                        57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 
-                                        70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 
-                                        84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 
-                                        98, 99, 100, 101};
-
-        // Find the index of current_year in access_months, if present
-        auto it = std::find(access_years.begin(), access_years.end(), current_year);
-
-        if (it != access_years.end()) {
-            // If the current_year was found, compute the index
-            auto access_index = std::distance(access_years.begin(), it);
-            
-            // check if access[access_index] exist, if it doesn't use the last value
-            if (access_index >= access.size()) {
-                access_index = access.size() - 1;
-            }
-            if (!_eventParams.randomNums.chance(access[access_index]))
-               return;
-        } else {
-            // If the current_year was not found, no one should be on PrEP!
-            return;
-        }
-        
+        if (!_eventParams.randomNums.chance(access[access_index]))
+            return;   
     } else if (prepStatus == PrepStatus::WAS_ON_PREP) {
-        double returnToCare = prepParameters.GetReturnToCare(*getDemographicProfile());
+        /* TODO: This is very dangerous! This is a hack to use the access rate as the return to care rate, therefore the input
+           for the return to care in the xml file is overridden! */
+        // double returnToCare = prepParameters.GetReturnToCare(*getDemographicProfile());
+        double returnToCare = current_year_return_to_care_rate;
         if (!_eventParams.randomNums.chance(returnToCare)) {
             return;
         } else {
             prepTracker->recordReturnToCare(this);
         }
-    } else {
+    } else { // therefore the person is on prep, now check if they should be lost to care! 
         std::array<double, 12> retention = prepParameters.GetRetention(*getDemographicProfile());
         int month_on_prep = monthOnPrep;
         if (month_on_prep > 12)
