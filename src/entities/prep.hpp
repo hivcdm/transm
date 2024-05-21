@@ -23,7 +23,10 @@ class PrepParameters
     bool enabled = false;
 
     PrepEligibility eligibility;
-    double access = 0.0;
+    // make access an array of not known size
+
+    // double access = 0.0;
+    std::vector<double> access;
     std::array<double, 4> adherence = {0.0, 0.0, 0.0, 0.0};
     std::array<double, 12> retention = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                                         0.0, 0.0, 0.0, 0.0, 0.0};
@@ -34,7 +37,8 @@ class PrepParameters
     using ProfileMap = std::map<DemographicProfile, double>;
     using AdherenceProfileMap = std::map<DemographicProfile, std::array<double, 4>>;
     using RetentionProfileMap = std::map<DemographicProfile, std::array<double, 12>>;
-    ProfileMap accessProfiles;
+    using AccessProfileMap = std::map<DemographicProfile, std::vector<double>>;
+    AccessProfileMap accessProfiles;
     AdherenceProfileMap adherenceProfiles;
     RetentionProfileMap retentionProfiles;
     ProfileMap returnToCareProfiles;
@@ -51,14 +55,14 @@ public:
         return efficacy;
     }
 
-    void SetDefaultAccess(double value) { access = value; }
-    void SetProfileAccess(const DemographicProfile& profile, double value)
+    void SetDefaultAccess(vector<double> value) { access = value; }
+    void SetProfileAccess(const DemographicProfile& profile, vector<double> value)
     {
         accessProfiles.emplace(profile, value);
     }
-    double GetAccess(const DemographicProfile& profile) const
+    std::vector<double> GetAccess(const DemographicProfile& profile) const
     {
-        double value = access;
+        std::vector<double> value = access;
         for (const auto& pair : accessProfiles)
             if (profile.match(pair.first))
                 value = pair.second;
