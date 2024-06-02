@@ -1142,6 +1142,22 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
     }
 
     double current_year_access_rate = access[access_index]; // this is to initialize the return to care
+
+    // multiply the access rate by a factor for high risk groups
+    if (risk == RiskLevel::HIGH ) {
+        if (getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Female) {
+            current_year_access_rate *= 1.5;
+        }
+
+        if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() == DemographicProfile::SexualOrientation::Msm) {
+            current_year_access_rate *= 1.5;
+        }
+
+        if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() == DemographicProfile::SexualOrientation::Msw) {
+            current_year_access_rate *= 1.5;
+        }
+    }
+
     double current_year_return_to_care_rate = current_year_access_rate;
 
     if (prepStatus == PrepStatus::OFF_PREP) {
@@ -1209,7 +1225,7 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
         monthOnPrep++;
         if (monthOnPrep == 1 && everBeenOnPrep == false) {
             prepTracker->recordNewOnPrep(this);
-        }    
+        }
         everBeenOnPrep = true; // this person was on prep at some point
         prepTracker->recordAdherence(this);
         if (this->isInfected()) {
