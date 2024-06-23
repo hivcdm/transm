@@ -1064,7 +1064,7 @@ void Entity::updateTestingStatus(EventParams &_eventParams,
 }
 
 void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracker) {
-    if (!prepParameters.Enabled() && _eventParams.currTime.get_year() < 56) // should be after 2014
+    if (!prepParameters.Enabled() || _eventParams.currTime.get_year() < 56) // should be after 2014
         return;
 
     bool unobserved =
@@ -1162,10 +1162,6 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
 
     if (prepStatus == PrepStatus::OFF_PREP) {
         if (!_eventParams.randomNums.chance(access[access_index]))
-            if (everBeenOnPrep == true && monthOffPrep < 12) {
-                prepTracker->recordEverbeenOnPrepWithinTwelveMonths(this);
-            }
-            monthOffPrep++;
             return;   
     } else if (prepStatus == PrepStatus::WAS_ON_PREP) {
         /* TODO: This is very dangerous! This is a hack to use the access rate as the return to care rate, therefore the input
@@ -1173,13 +1169,8 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
         // double returnToCare = prepParameters.GetReturnToCare(*getDemographicProfile());
         double returnToCare = current_year_return_to_care_rate;
         if (!_eventParams.randomNums.chance(returnToCare)) {
-            if (everBeenOnPrep == true && monthOffPrep < 12) {
-                prepTracker->recordEverbeenOnPrepWithinTwelveMonths(this);
-            }
-            monthOffPrep++;
             return;
         } else {
-            monthOffPrep = 0;  // reseting the month off prep if the person returns to care
             prepTracker->recordReturnToCare(this);
         }
     } else { // therefore the person is on prep, now check if they should be lost to care! 
@@ -1190,17 +1181,11 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
 
         if (_eventParams.randomNums.chance(retention[month_on_prep])) {
             prepStatus = PrepStatus::WAS_ON_PREP;
-            monthOnPrep = 0;    // becomes off PrEP  
-            if (everBeenOnPrep == true && monthOffPrep < 12) {
-                prepTracker->recordEverbeenOnPrepWithinTwelveMonths(this);
-            }
-            monthOffPrep++;
+            monthOnPrep = 0;    // becomes off PrEP
             prepTracker->recordLossToCare(this);
             return;
         }
     }
-    
-    monthOffPrep = 0;  // reseting the month off prep if the person enrolled (or re-enrolled) on prep
 
     // Record as having access to PREP and then select adherence
     prepTracker->recordAccess(this);
@@ -1513,6 +1498,7 @@ Entity::Entity(Age _age, unsigned int _populationID, const PrepParameters &prepP
         monthly_cdm_costs_discounted_(0),
         prepParameters(prepParams),
         monthOnPrep(0),
+        monthOffPrep(0),
         prepStatus(PrepStatus::OFF_PREP) {
     id = Entity::idCounter++;
     populationID = _populationID;
