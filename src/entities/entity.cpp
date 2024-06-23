@@ -1064,7 +1064,7 @@ void Entity::updateTestingStatus(EventParams &_eventParams,
 }
 
 void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracker) {
-    if (!prepParameters.Enabled() && _eventParams.currTime.get_year() < 56) // should be after 2014
+    if (!prepParameters.Enabled() || _eventParams.currTime.get_year() < 56) // should be after 2014
         return;
 
     bool unobserved =
@@ -1513,6 +1513,7 @@ Entity::Entity(Age _age, unsigned int _populationID, const PrepParameters &prepP
         monthly_cdm_costs_discounted_(0),
         prepParameters(prepParams),
         monthOnPrep(0),
+        monthOffPrep(0),
         prepStatus(PrepStatus::OFF_PREP) {
     id = Entity::idCounter++;
     populationID = _populationID;
