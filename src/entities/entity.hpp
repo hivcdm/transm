@@ -241,6 +241,8 @@ public:
 
     bool everBeenOnPrep;
 
+    bool everBeenOnPrepThisYear;
+
     /** whether this Entity is dead or not */
     bool death;
 
@@ -957,6 +959,7 @@ private:
     double monthly_cdm_costs_discounted_;
 
     int monthOnPrep;
+    int monthOffPrep;
 
     PrepParameters prepParameters;
     PrepStatus prepStatus;
