@@ -1161,12 +1161,13 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
     double current_year_return_to_care_rate = current_year_access_rate;
 
     if (prepStatus == PrepStatus::OFF_PREP) {
-        if (!_eventParams.randomNums.chance(access[access_index]))
+        if (!_eventParams.randomNums.chance(access[access_index])) {
             if (everBeenOnPrep == true && monthOffPrep < 12) {
                 prepTracker->recordEverbeenOnPrepWithinTwelveMonths(this);
             }
             monthOffPrep++;
             return;   
+        }
     } else if (prepStatus == PrepStatus::WAS_ON_PREP) {
         /* TODO: This is very dangerous! This is a hack to use the access rate as the return to care rate, therefore the input
            for the return to care in the xml file is overridden! */
