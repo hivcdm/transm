@@ -1077,33 +1077,35 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
             (hivStatus == HIVStatus::OBSERVED_CHRONIC) ||
             (hivStatus == HIVStatus::OBSERVED_LATESTAGE);
 
-    // if observed, then prep is not for this person!
-    if (observed) {
-        if (prepStatus != PrepStatus::OFF_PREP) {
-            // entity was on prep, but is no longer eligible (infected or died)
-            prepTracker->recordIneligible(this);
-            monthOnPrep = 0;  // reseting the month on prep if there was a breakthrough case, it shouldn't matter anyway
-        }
+    /** 
+     You are inelegible for PrEP if: 
+        1) observed OR
+        2) not sexually active OR
+        3) has no sexual partner 
+    */
+    if (observed || !this->isSexuallyActive() || !this->hasPartnership()) {
+        prepTracker->recordIneligible(this);
+
+        // should be counted as off prep when inelegible
+        prepStatus = PrepStatus::OFF_PREP;
+
+        // reseting the month on prep if there was a breakthrough case, it shouldn't matter anyway
+        monthOnPrep = 0;  
         return;
+    
+    } else { /* Otherwise you are eligible! */
+        prepTracker->recordEligible(this);
     }
 
-    /* if not sexually active nor has any partner then not eligible */
-    if (!this->isSexuallyActive() || !this->hasPartnership()) {
-        if (prepStatus != PrepStatus::OFF_PREP) {
-            prepTracker->recordIneligible(this);
-        }
-        return;
-    }
-
-    prepTracker->recordEligible(this);
-
-    // if unobserved let's roll for testing HIV with 99.6% chance of accuracy every six months
+    // Lets test whoever is eligible for PrEP
     if (this->isTimeForPrepTest()) {
+
+        // if unobserved let's roll for testing HIV with 99.6% chance of accuracy every six months
         if (unobserved) {
             if (_eventParams.randomNums.chance(0.996)) {
                 cepacPatient->getHIVTestingUpdater()->performPrepUpdates();
 
-                // Change the hive status to observed to each stage
+                // Change the hiv status to observed to each stage
                 if (hivStatus == HIVStatus::UNOBSERVED_ACUTE) {
                     hivStatus = HIVStatus::OBSERVED_ACUTE;
                 } else if (hivStatus == HIVStatus::UNOBSERVED_CHRONIC) {
@@ -1111,16 +1113,27 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
                 } else if (hivStatus == HIVStatus::UNOBSERVED_LATESTAGE) {
                     hivStatus = HIVStatus::OBSERVED_LATESTAGE;
                 }
+
                 prepTracker->recordIneligible(this);
                 prepTracker->recordTestedPositiveDuringPrep(this);
+                prepStatus = PrepStatus::OFF_PREP;
                 monthOnPrep = 0;  // reseting the month on prep if there was a breakthrough case, it shouldn't matter anyway
                 return;
             } 
         }
     }
 
+    /** 
+     * Now the person is eligible, check whether we should enroll them on PrEP. 
+     * Let's get the access (enrollment rates) according to their demographic.
+     * This is a access vector in input file:
+     * 
+     * <prepAccess>p1,p2,p3,...,pn</prepAccess>
+     * 
+     */
     std::vector<double> access = prepParameters.GetAccess(*getDemographicProfile());
-        
+
+    // Let's first know what year we are in
     int current_year = _eventParams.currTime.get_year();  
 
     // Look for the access rate for the current year this goes beyond the 100 years just to be safe!
@@ -1133,10 +1146,10 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
     // Find the index of current_year in access_years, if present
     auto it = std::find(access_years.begin(), access_years.end(), current_year);
 
-    // If the current_year was found, compute the index
+    // If the current_year was found, compute the index = access_index
     auto access_index = std::distance(access_years.begin(), it);
     
-    // check if access[access_index] exist, if it doesn't use the last value
+    // check if access[access_index] exist in the input access vector, if it doesn't use the last value
     if (access_index >= access.size()) {
         access_index = access.size() - 1;
     }
@@ -1160,17 +1173,35 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
 
     double current_year_return_to_care_rate = current_year_access_rate;
 
+    // Now let's go through different scenarios for the person!
+
+    /* If they are off prep */
     if (prepStatus == PrepStatus::OFF_PREP) {
         if (!_eventParams.randomNums.chance(access[access_index])) {
+            // If they ever been on prep within 12 months, record it
             if (everBeenOnPrep == true && monthOffPrep < 12) {
                 prepTracker->recordEverbeenOnPrepWithinTwelveMonths(this);
             }
             monthOffPrep++;
             return;   
+        } else {
+            monthOffPrep = 0;  // reseting the month off prep if the person enrolled (or re-enrolled) on prep
+            everBeenOnPrep = true; // this person was on prep at some point
+            prepTracker->recordAccess(this);
+            if (unobserved) {
+                // wrongly enrolled on PREP!!!
+                prepTracker->recordWronglyOnPrep(this);
+            }
         }
+
+    /* if the are loss to follow up */
     } else if (prepStatus == PrepStatus::WAS_ON_PREP) {
-        /* TODO: This is very dangerous! This is a hack to use the access rate as the return to care rate, therefore the input
-           for the return to care in the xml file is overridden! */
+        /** 
+         * TODO: This is very dangerous! This is a hack to use the access rate 
+         * as the return to care rate, therefore the input
+         * for the return to care in the xml file is overridden! 
+        */
+
         // double returnToCare = prepParameters.GetReturnToCare(*getDemographicProfile());
         double returnToCare = current_year_return_to_care_rate;
         if (!_eventParams.randomNums.chance(returnToCare)) {
@@ -1182,7 +1213,13 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
         } else {
             monthOffPrep = 0;  // reseting the month off prep if the person returns to care
             prepTracker->recordReturnToCare(this);
+            prepTracker->recordAccess(this);
+            if (unobserved) {
+                // wrongly enrolled on PREP!!!
+                prepTracker->recordWronglyOnPrep(this);
+            }
         }
+    
     } else { // therefore the person is on prep, now check if they should be lost to care! 
         std::array<double, 12> retention = prepParameters.GetRetention(*getDemographicProfile());
         int month_on_prep = monthOnPrep;
@@ -1198,19 +1235,18 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
             monthOffPrep++;
             prepTracker->recordLossToCare(this);
             return;
+        } else {
+            monthOffPrep = 0;  // reseting the month off prep if the person is retained in care
+            prepTracker->recordAccess(this);
+            if (unobserved) {
+                // wrongly enrolled on PREP!!!
+                prepTracker->recordWronglyOnPrep(this);
+            }
         }
     }
-    
-    monthOffPrep = 0;  // reseting the month off prep if the person enrolled (or re-enrolled) on prep
 
-    // Record as having access to PREP and then select adherence
-    prepTracker->recordAccess(this);
-
-    if (unobserved) {
-        // wrongly enrolled on PREP!!!
-        prepTracker->recordWronglyOnPrep(this);
-    }
-
+    /** Now let's check for adherence for those who are enrolled on PrEP */
+    // Get the adherence levels for the person with respect to their demographic
     std::array<double, 4> adherence = prepParameters.GetAdherence(*getDemographicProfile());
 
     // Calculate the sum of adherence levels
