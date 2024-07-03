@@ -392,6 +392,14 @@ public:
         return prepStatus;
     }
 
+    PrepAherenceLevel getAdhereceStatus() {
+        return prepAdherenceLevel;
+    } 
+
+    bool UsingPrEP() {
+        return (prepStatus == PrepStatus::ON_PREP);
+    }
+
 
     /** Call this after all transmission/population dynamics are done.
      * Runs infected through CEPAC until they die and adds their LM etc to CEPAC stats */
@@ -891,11 +899,6 @@ public:
 
     double get_monthly_cdm_costs_discounted() const { return monthly_cdm_costs_discounted_; }
 
-    bool UsingPrEP() {
-        return (prepStatus == PrepStatus::PREP_ADHERENT || prepStatus == PrepStatus::PREP_PARTIALLY_ADHERENT
-                || prepStatus == PrepStatus::PREP_SUBSTANTIALLY_ADHERENT);
-    }
-
     std::list<SexualPartnership *> GetPartnerships() {
         std::list<SexualPartnership *> partnerships;
 
@@ -963,6 +966,7 @@ private:
 
     PrepParameters prepParameters;
     PrepStatus prepStatus;
+    PrepAherenceLevel prepAdherenceLevel;
     PrepEligibility prepEligibility;
 
 };

@@ -68,17 +68,17 @@ HVLStrata Entity::getHvlStratum() const {
         case SimContext::HVL_VLO:
             return HVLStrata::HVL_ZERO;    //0-20
         case SimContext::HVL__LO:
-            return HVLStrata::HVL_ONE;    //21-500
+            return HVLStrata::HVL_ONE;     //21-500
         case SimContext::HVL_MLO:
-            return HVLStrata::HVL_TWO;    //501-3000
+            return HVLStrata::HVL_TWO;     //501-3000
         case SimContext::HVL_MED:
-            return HVLStrata::HVL_THREE;    //3001-10000
+            return HVLStrata::HVL_THREE;   //3001-10000
         case SimContext::HVL_MHI:
             return HVLStrata::HVL_FOUR;    //10001-30000
         case SimContext::HVL__HI:
             return HVLStrata::HVL_FIVE;    //30001-100000
         case SimContext::HVL_VHI:
-            return HVLStrata::HVL_SIX;    //100000+
+            return HVLStrata::HVL_SIX;     //100000+
         default:
             throw std::runtime_error("Invalid CEPAC API infection state: " +
                                      std::string(SimContext::HVL_STRATA_STRS[HVL]));
@@ -1118,6 +1118,7 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
                 prepTracker->recordTestedPositiveDuringPrep(this);
                 prepStatus = PrepStatus::OFF_PREP;
                 monthOnPrep = 0;  // reseting the month on prep if there was a breakthrough case, it shouldn't matter anyway
+                monthOffPrep++;
                 return;
             } 
         }
@@ -1138,7 +1139,7 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
 
     // Look for the access rate for the current year this goes beyond the 100 years just to be safe!
     std::vector<int> access_years = {
-                                    57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 
+                                    58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 
                                     70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 
                                     84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 
                                     98, 99, 100, 101, 102};
@@ -1173,8 +1174,6 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
 
     double current_year_return_to_care_rate = current_year_access_rate;
 
-    // Now let's go through different scenarios for the person!
-
     /* If they are off prep */
     if (prepStatus == PrepStatus::OFF_PREP) {
         if (!_eventParams.randomNums.chance(access[access_index])) {
@@ -1184,9 +1183,17 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
             }
             monthOffPrep++;
             return;   
-        } else {
-            monthOffPrep = 0;  // reseting the month off prep if the person enrolled (or re-enrolled) on prep
-            everBeenOnPrep = true; // this person was on prep at some point
+        } else { // reseting the month off prep if the person enrolled (or re-enrolled) on prep
+            monthOffPrep = 0;
+            prepStatus = PrepStatus::ON_PREP;  
+            monthOnPrep++;
+            // Count the new users
+            if (everBeenOnPrep == false) {
+                everBeenOnPrep = true; 
+                prepTracker->recordNewOnPrep(this);
+                prepTracker->recordEverbeenOnPrepWithinTwelveMonths(this); // Technically if you are a new user you have been on prep within 12 months
+            }
+
             prepTracker->recordAccess(this);
             if (unobserved) {
                 // wrongly enrolled on PREP!!!
@@ -1201,17 +1208,22 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
          * as the return to care rate, therefore the input
          * for the return to care in the xml file is overridden! 
         */
+        
+        // This is where we count most of those who were on prep within 12 months
+        if (everBeenOnPrep == true && monthOffPrep < 12) {
+            prepTracker->recordEverbeenOnPrepWithinTwelveMonths(this);
+        }
 
         // double returnToCare = prepParameters.GetReturnToCare(*getDemographicProfile());
         double returnToCare = current_year_return_to_care_rate;
-        if (!_eventParams.randomNums.chance(returnToCare)) {
-            if (everBeenOnPrep == true && monthOffPrep < 12) {
-                prepTracker->recordEverbeenOnPrepWithinTwelveMonths(this);
-            }
+        
+        if (!_eventParams.randomNums.chance(returnToCare)) { // If not the time to return to prep, increment the month off prep
             monthOffPrep++;
             return;
-        } else {
-            monthOffPrep = 0;  // reseting the month off prep if the person returns to care
+        } else { // If it's time to return to prep reset the month off prep and change status to on prep (re-enrolled)
+            monthOffPrep = 0;  
+            monthOnPrep = 1;
+            prepStatus = PrepStatus::ON_PREP;
             prepTracker->recordReturnToCare(this);
             prepTracker->recordAccess(this);
             if (unobserved) {
@@ -1220,7 +1232,9 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
             }
         }
     
-    } else { // therefore the person is on prep, now check if they should be lost to care! 
+    /* ...the person must be on prep then */
+    } else if (prepStatus == PrepStatus::ON_PREP) { 
+        // now check if they should be lost to care! 
         std::array<double, 12> retention = prepParameters.GetRetention(*getDemographicProfile());
         int month_on_prep = monthOnPrep;
         if (month_on_prep > 12)
@@ -1236,13 +1250,17 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
             prepTracker->recordLossToCare(this);
             return;
         } else {
-            monthOffPrep = 0;  // reseting the month off prep if the person is retained in care
+            monthOffPrep = 0;  // keep the month off prep to 0
+            monthOnPrep++;
+            prepTracker->recordEverbeenOnPrepWithinTwelveMonths(this);
             prepTracker->recordAccess(this);
             if (unobserved) {
                 // wrongly enrolled on PREP!!!
                 prepTracker->recordWronglyOnPrep(this);
             }
         }
+    } else {
+        cout << "Error: Invalid PrEP status" << endl;
     }
 
     /** Now let's check for adherence for those who are enrolled on PrEP */
@@ -1263,27 +1281,22 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
 
     // Adherence level assignment with corrected conditions
     if (adherenceRandom < adherence[0]) {
-        prepStatus = PrepStatus::PREP_INADHERENT;
+        prepAdherenceLevel = PrepAherenceLevel::PREP_INADHERENT;
     } else if (adherenceRandom >= adherence[0] && adherenceRandom < adherence[0] + adherence[1]) {
-        prepStatus = PrepStatus::PREP_PARTIALLY_ADHERENT;
+        prepAdherenceLevel = PrepAherenceLevel::PREP_PARTIALLY_ADHERENT;
+        prepTracker->recordAdherence(this);
     } else if (adherenceRandom >= adherence[0] + adherence[1] && adherenceRandom < adherence[0] + adherence[1] + adherence[2]) {
-        prepStatus = PrepStatus::PREP_SUBSTANTIALLY_ADHERENT;
+        prepAdherenceLevel = PrepAherenceLevel::PREP_SUBSTANTIALLY_ADHERENT;
+        prepTracker->recordAdherence(this);
     } else {
-        prepStatus = PrepStatus::PREP_ADHERENT;
+        prepAdherenceLevel = PrepAherenceLevel::PREP_ADHERENT;
+        prepTracker->recordAdherence(this);
+    }
+    
+    if (this->isInfected()) {
+        prepTracker->recordOnPrepAndInfected(this);
     }
 
-    // Record as having month of being on PREP
-    if (prepStatus == PrepStatus::PREP_ADHERENT || prepStatus == PrepStatus::PREP_PARTIALLY_ADHERENT || prepStatus == PrepStatus::PREP_SUBSTANTIALLY_ADHERENT || prepStatus == PrepStatus::PREP_INADHERENT) {
-        monthOnPrep++;
-        if (monthOnPrep == 1 && everBeenOnPrep == false) {
-            prepTracker->recordNewOnPrep(this);
-        }
-        everBeenOnPrep = true; // this person was on prep at some point
-        prepTracker->recordAdherence(this);
-        if (this->isInfected()) {
-            prepTracker->recordOnPrepAndInfected(this);
-        }
-    }
 }
 
 void Entity::traceTreatmentChange(EventParams &_eventParams, bool after) {
@@ -1551,7 +1564,8 @@ Entity::Entity(Age _age, unsigned int _populationID, const PrepParameters &prepP
         prepParameters(prepParams),
         monthOnPrep(0),
         monthOffPrep(0),
-        prepStatus(PrepStatus::OFF_PREP) {
+        prepStatus(PrepStatus::OFF_PREP),
+        prepAdherenceLevel(PrepAherenceLevel::PREP_OFF_PREP) {
     id = Entity::idCounter++;
     populationID = _populationID;
 

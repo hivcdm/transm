@@ -385,10 +385,10 @@ double Male::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::
     double prepEfficacy = _p->UsingPrEP() ? _p->GetPreExposureProphylaxisEfficacy() : 0;
 
     // corrections for efficacy based on prep adherence level
-    PrepStatus prepstatus = _p->getPrepStatus();
-    if (prepstatus == PrepStatus::PREP_SUBSTANTIALLY_ADHERENT) {
+    PrepAherenceLevel prepadherencelevel = _p->getAdhereceStatus();
+    if (prepadherencelevel == PrepAherenceLevel::PREP_SUBSTANTIALLY_ADHERENT) {
         prepEfficacy *= 0.81;
-    } else if (prepstatus == PrepStatus::PREP_PARTIALLY_ADHERENT) {
+    } else if (prepadherencelevel == PrepAherenceLevel::PREP_PARTIALLY_ADHERENT) {
         prepEfficacy *= 0.31;
     }
 
