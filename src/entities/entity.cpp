@@ -1176,7 +1176,7 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
 
     /* If they are off prep */
     if (prepStatus == PrepStatus::OFF_PREP) {
-        if (!_eventParams.randomNums.chance(access[access_index])) {
+        if (!_eventParams.randomNums.chance(current_year_return_to_care_rate)) {
             // If they ever been on prep within 12 months, record it
             if (everBeenOnPrep == true && monthOffPrep < 12) {
                 prepTracker->recordEverbeenOnPrepWithinTwelveMonths(this);
@@ -1218,11 +1218,12 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
         double returnToCare = current_year_return_to_care_rate;
         
         if (!_eventParams.randomNums.chance(returnToCare)) { // If not the time to return to prep, increment the month off prep
+            monthOnPrep = 0;
             monthOffPrep++;
             return;
         } else { // If it's time to return to prep reset the month off prep and change status to on prep (re-enrolled)
             monthOffPrep = 0;  
-            monthOnPrep = 1;
+            monthOnPrep++;
             prepStatus = PrepStatus::ON_PREP;
             prepTracker->recordReturnToCare(this);
             prepTracker->recordAccess(this);
@@ -1234,30 +1235,34 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
     
     /* ...the person must be on prep then */
     } else if (prepStatus == PrepStatus::ON_PREP) { 
+        if (unobserved) {
+            // wrongly enrolled on PREP!!!
+            prepTracker->recordWronglyOnPrep(this);
+        }
+        prepTracker->recordAccess(this);
+
+
         // now check if they should be lost to care! 
         std::array<double, 12> retention = prepParameters.GetRetention(*getDemographicProfile());
-        int month_on_prep = monthOnPrep;
+        int month_on_prep = std::max(monthOnPrep - 1, 1);
         if (month_on_prep > 12)
             month_on_prep = 12;
 
+        // if they are lost to care put them on WAS_ON_PTEP status and increment the month off prep
         if (_eventParams.randomNums.chance(retention[month_on_prep])) {
             prepStatus = PrepStatus::WAS_ON_PREP;
             monthOnPrep = 0;    // becomes off PrEP  
-            if (everBeenOnPrep == true && monthOffPrep < 12) {
-                prepTracker->recordEverbeenOnPrepWithinTwelveMonths(this);
-            }
             monthOffPrep++;
+            prepTracker->recordEverbeenOnPrepWithinTwelveMonths(this);
             prepTracker->recordLossToCare(this);
+
+            // put them in inadherent if they are lost to care
+            prepAdherenceLevel = PrepAherenceLevel::PREP_INADHERENT;
             return;
         } else {
             monthOffPrep = 0;  // keep the month off prep to 0
             monthOnPrep++;
             prepTracker->recordEverbeenOnPrepWithinTwelveMonths(this);
-            prepTracker->recordAccess(this);
-            if (unobserved) {
-                // wrongly enrolled on PREP!!!
-                prepTracker->recordWronglyOnPrep(this);
-            }
         }
     } else {
         cout << "Error: Invalid PrEP status" << endl;
