@@ -200,11 +200,11 @@ void PrepTracker::buildHeader()
         } 
         else if (outcome == "wrongly_on_prep")
         {
-            section_header = "Number of Wrongly on Prep";
+            section_header = "Breakthrough Infections";
         }
         else if (outcome == "tested_postive_during_prep")
         {
-            section_header = "Number Tested Positive During Prep";
+            section_header = "Tested Positive at Prep Enrollment";
         }
         else if (outcome == "ever_been_on_prep_within_12_months")
         {

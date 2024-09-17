@@ -387,7 +387,7 @@ public:
     updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTracker, CostsTracker *costsTracker);
 
     void updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracker);
-
+    
     PrepStatus getPrepStatus() {
         return prepStatus;
     }
@@ -919,12 +919,7 @@ public:
     }
 
     bool isTimeForPrepTest() {
-        // if HIV negative, then no need to test (because I know their status even if they don't! Lol!)
-        if (hivStatus != HIVStatus::NEGATIVE) {
-            return false; 
-        } else {
-            return ( monthOnPrep % 6 == 0);
-        }
+        return ( monthOnPrep % 6 == 0);
     }
 
 private:
