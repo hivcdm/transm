@@ -241,6 +241,8 @@ public:
 
     bool everBeenOnPrep;
 
+    bool everBeenOnPrepThisYear;
+
     /** whether this Entity is dead or not */
     bool death;
 
@@ -385,9 +387,17 @@ public:
     updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTracker, CostsTracker *costsTracker);
 
     void updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracker);
-
+    
     PrepStatus getPrepStatus() {
         return prepStatus;
+    }
+
+    PrepAherenceLevel getAdhereceStatus() {
+        return prepAdherenceLevel;
+    } 
+
+    bool UsingPrEP() {
+        return (prepStatus == PrepStatus::ON_PREP);
     }
 
 
@@ -889,11 +899,6 @@ public:
 
     double get_monthly_cdm_costs_discounted() const { return monthly_cdm_costs_discounted_; }
 
-    bool UsingPrEP() {
-        return (prepStatus == PrepStatus::PREP_ADHERENT || prepStatus == PrepStatus::PREP_PARTIALLY_ADHERENT
-                || prepStatus == PrepStatus::PREP_SUBSTANTIALLY_ADHERENT);
-    }
-
     std::list<SexualPartnership *> GetPartnerships() {
         std::list<SexualPartnership *> partnerships;
 
@@ -914,12 +919,7 @@ public:
     }
 
     bool isTimeForPrepTest() {
-        // if HIV negative, then no need to test (because I know their status even if they don't! Lol!)
-        if (hivStatus != HIVStatus::NEGATIVE) {
-            return false; 
-        } else {
-            return ( monthOnPrep % 6 == 0);
-        }
+        return ( monthOnPrep % 6 == 0);
     }
 
 private:
@@ -957,9 +957,11 @@ private:
     double monthly_cdm_costs_discounted_;
 
     int monthOnPrep;
+    int monthOffPrep;
 
     PrepParameters prepParameters;
     PrepStatus prepStatus;
+    PrepAherenceLevel prepAdherenceLevel;
     PrepEligibility prepEligibility;
 
 };

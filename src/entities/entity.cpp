@@ -68,17 +68,17 @@ HVLStrata Entity::getHvlStratum() const {
         case SimContext::HVL_VLO:
             return HVLStrata::HVL_ZERO;    //0-20
         case SimContext::HVL__LO:
-            return HVLStrata::HVL_ONE;    //21-500
+            return HVLStrata::HVL_ONE;     //21-500
         case SimContext::HVL_MLO:
-            return HVLStrata::HVL_TWO;    //501-3000
+            return HVLStrata::HVL_TWO;     //501-3000
         case SimContext::HVL_MED:
-            return HVLStrata::HVL_THREE;    //3001-10000
+            return HVLStrata::HVL_THREE;   //3001-10000
         case SimContext::HVL_MHI:
             return HVLStrata::HVL_FOUR;    //10001-30000
         case SimContext::HVL__HI:
             return HVLStrata::HVL_FIVE;    //30001-100000
         case SimContext::HVL_VHI:
-            return HVLStrata::HVL_SIX;    //100000+
+            return HVLStrata::HVL_SIX;     //100000+
         default:
             throw std::runtime_error("Invalid CEPAC API infection state: " +
                                      std::string(SimContext::HVL_STRATA_STRS[HVL]));
@@ -1064,7 +1064,7 @@ void Entity::updateTestingStatus(EventParams &_eventParams,
 }
 
 void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracker) {
-    if (!prepParameters.Enabled() && _eventParams.currTime.get_year() < 56) // should be after 2014
+    if (!prepParameters.Enabled() || _eventParams.currTime.get_year() < 57) // should be after 2014
         return;
 
     bool unobserved =
@@ -1077,33 +1077,35 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
             (hivStatus == HIVStatus::OBSERVED_CHRONIC) ||
             (hivStatus == HIVStatus::OBSERVED_LATESTAGE);
 
-    // if observed, then prep is not for this person!
-    if (observed) {
-        if (prepStatus != PrepStatus::OFF_PREP) {
-            // entity was on prep, but is no longer eligible (infected or died)
-            prepTracker->recordIneligible(this);
-            monthOnPrep = 0;  // reseting the month on prep if there was a breakthrough case, it shouldn't matter anyway
-        }
+    /** 
+     You are inelegible for PrEP if: 
+        1) observed OR
+        2) not sexually active OR
+        3) has no sexual partner 
+    */
+    if (observed || !this->isSexuallyActive() || !this->hasPartnership()) {
+        prepTracker->recordIneligible(this);
+
+        // should be counted as off prep when inelegible
+        prepStatus = PrepStatus::OFF_PREP;
+
+        // reseting the month on prep if there was a breakthrough case, it shouldn't matter anyway
+        monthOnPrep = 0;  
         return;
+    
+    } else { /* Otherwise you are eligible! */
+        prepTracker->recordEligible(this);
     }
 
-    /* if not sexually active nor has any partner then not eligible */
-    if (!this->isSexuallyActive() || !this->hasPartnership()) {
-        if (prepStatus != PrepStatus::OFF_PREP) {
-            prepTracker->recordIneligible(this);
-        }
-        return;
-    }
-
-    prepTracker->recordEligible(this);
-
-    // if unobserved let's roll for testing HIV with 99.6% chance of accuracy every six months
+    // Lets test whoever is eligible for PrEP
     if (this->isTimeForPrepTest()) {
+
+        // if unobserved let's roll for testing HIV with 99.6% chance of accuracy every six months
         if (unobserved) {
             if (_eventParams.randomNums.chance(0.996)) {
                 cepacPatient->getHIVTestingUpdater()->performPrepUpdates();
 
-                // Change the hive status to observed to each stage
+                // Change the hiv status to observed to each stage
                 if (hivStatus == HIVStatus::UNOBSERVED_ACUTE) {
                     hivStatus = HIVStatus::OBSERVED_ACUTE;
                 } else if (hivStatus == HIVStatus::UNOBSERVED_CHRONIC) {
@@ -1111,16 +1113,31 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
                 } else if (hivStatus == HIVStatus::UNOBSERVED_LATESTAGE) {
                     hivStatus = HIVStatus::OBSERVED_LATESTAGE;
                 }
-                prepTracker->recordIneligible(this);
-                prepTracker->recordTestedPositiveDuringPrep(this);
+
+                if (prepStatus == PrepStatus::ON_PREP) {
+                    prepTracker->recordWronglyOnPrep(this); // This is breakthrough cases!
+                } else {
+                    prepTracker->recordTestedPositiveDuringPrep(this);
+                }
+                prepStatus = PrepStatus::OFF_PREP;
                 monthOnPrep = 0;  // reseting the month on prep if there was a breakthrough case, it shouldn't matter anyway
+                monthOffPrep++;
                 return;
             } 
         }
     }
 
+    /** 
+     * Now the person is eligible, check whether we should enroll them on PrEP. 
+     * Let's get the access (enrollment rates) according to their demographic.
+     * This is a access vector in input file:
+     * 
+     * <prepAccess>p1,p2,p3,...,pn</prepAccess>
+     * 
+     */
     std::vector<double> access = prepParameters.GetAccess(*getDemographicProfile());
-        
+
+    // Let's first know what year we are in
     int current_year = _eventParams.currTime.get_year();  
 
     // Look for the access rate for the current year this goes beyond the 100 years just to be safe!
@@ -1133,10 +1150,10 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
     // Find the index of current_year in access_years, if present
     auto it = std::find(access_years.begin(), access_years.end(), current_year);
 
-    // If the current_year was found, compute the index
+    // If the current_year was found, compute the index = access_index
     auto access_index = std::distance(access_years.begin(), it);
     
-    // check if access[access_index] exist, if it doesn't use the last value
+    // check if access[access_index] exist in the input access vector, if it doesn't use the last value
     if (access_index >= access.size()) {
         access_index = access.size() - 1;
     }
@@ -1146,55 +1163,116 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
     // multiply the access rate by a factor for high risk groups
     if (risk == RiskLevel::HIGH ) {
         if (getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Female) {
-            current_year_access_rate *= 1.5;
+            current_year_access_rate *= 1.47;
         }
 
         if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() == DemographicProfile::SexualOrientation::Msm) {
-            current_year_access_rate *= 1.5;
+            current_year_access_rate *= 1.47;
         }
 
         if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() == DemographicProfile::SexualOrientation::Msw) {
-            current_year_access_rate *= 1.5;
+            current_year_access_rate *= 1.47;
         }
     }
 
     double current_year_return_to_care_rate = current_year_access_rate;
 
+    /* If they are off prep */
     if (prepStatus == PrepStatus::OFF_PREP) {
-        if (!_eventParams.randomNums.chance(access[access_index]))
+        if (!_eventParams.randomNums.chance(current_year_access_rate)) {
+            // If they ever been on prep within 12 months, record it
+            if (everBeenOnPrep == true && monthOffPrep < 12) {
+                prepTracker->recordEverbeenOnPrepWithinTwelveMonths(this);
+            }
+            monthOffPrep++;
             return;   
+        } else { // reseting the month off prep if the person enrolled (or re-enrolled) on prep
+            monthOffPrep = 0;
+            prepStatus = PrepStatus::ON_PREP;  
+            monthOnPrep++;
+            // Count the new users
+            if (everBeenOnPrep == false) {
+                everBeenOnPrep = true; 
+                prepTracker->recordNewOnPrep(this);
+                prepTracker->recordEverbeenOnPrepWithinTwelveMonths(this); // Technically if you are a new user you have been on prep within 12 months
+            }
+
+            prepTracker->recordAccess(this);
+            // if (unobserved) {
+            //     // wrongly enrolled on PREP!!!
+            //     prepTracker->recordWronglyOnPrep(this);
+            // }
+        }
+
+    /* if the are loss to follow up */
     } else if (prepStatus == PrepStatus::WAS_ON_PREP) {
-        /* TODO: This is very dangerous! This is a hack to use the access rate as the return to care rate, therefore the input
-           for the return to care in the xml file is overridden! */
+        /** 
+         * TODO: This is very dangerous! This is a hack to use the access rate 
+         * as the return to care rate, therefore the input
+         * for the return to care in the xml file is overridden! 
+        */
+        
+        // This is where we count most of those who were on prep within 12 months
+        if (everBeenOnPrep == true && monthOffPrep < 12) {
+            prepTracker->recordEverbeenOnPrepWithinTwelveMonths(this);
+        }
+
         // double returnToCare = prepParameters.GetReturnToCare(*getDemographicProfile());
         double returnToCare = current_year_return_to_care_rate;
-        if (!_eventParams.randomNums.chance(returnToCare)) {
+        
+        if (!_eventParams.randomNums.chance(returnToCare)) { // If not the time to return to prep, increment the month off prep
+            monthOnPrep = 0;
+            monthOffPrep++;
             return;
-        } else {
+        } else { // If it's time to return to prep reset the month off prep and change status to on prep (re-enrolled)
+            monthOffPrep = 0;  
+            monthOnPrep++;
+            prepStatus = PrepStatus::ON_PREP;
             prepTracker->recordReturnToCare(this);
+            prepTracker->recordAccess(this);
+            // if (unobserved) {
+            //     // wrongly enrolled on PREP!!!
+            //     prepTracker->recordWronglyOnPrep(this);
+            // }
         }
-    } else { // therefore the person is on prep, now check if they should be lost to care! 
+    
+    /* ...the person must be on prep then */
+    } else if (prepStatus == PrepStatus::ON_PREP) { 
+        // if (unobserved) {
+        //     // wrongly enrolled on PREP!!!
+        //     prepTracker->recordWronglyOnPrep(this);
+        // }
+        prepTracker->recordAccess(this);
+
+
+        // now check if they should be lost to care! 
         std::array<double, 12> retention = prepParameters.GetRetention(*getDemographicProfile());
-        int month_on_prep = monthOnPrep;
+        int month_on_prep = std::max(monthOnPrep - 1, 1);
         if (month_on_prep > 12)
             month_on_prep = 12;
 
+        // if they are lost to care put them on WAS_ON_PTEP status and increment the month off prep
         if (_eventParams.randomNums.chance(retention[month_on_prep])) {
             prepStatus = PrepStatus::WAS_ON_PREP;
-            monthOnPrep = 0;    // becomes off PrEP
+            monthOnPrep = 0;    // becomes off PrEP  
+            monthOffPrep++;
+            prepTracker->recordEverbeenOnPrepWithinTwelveMonths(this);
             prepTracker->recordLossToCare(this);
+
+            // put them in inadherent if they are lost to care
+            prepAdherenceLevel = PrepAherenceLevel::PREP_OFF_PREP;
             return;
+        } else {
+            monthOffPrep = 0;  // keep the month off prep to 0
+            monthOnPrep++;
+            prepTracker->recordEverbeenOnPrepWithinTwelveMonths(this);
         }
+    } else {
+        cout << "Error: Invalid PrEP status" << endl;
     }
 
-    // Record as having access to PREP and then select adherence
-    prepTracker->recordAccess(this);
-
-    if (unobserved) {
-        // wrongly enrolled on PREP!!!
-        prepTracker->recordWronglyOnPrep(this);
-    }
-
+    /** Now let's check for adherence for those who are enrolled on PrEP */
+    // Get the adherence levels for the person with respect to their demographic
     std::array<double, 4> adherence = prepParameters.GetAdherence(*getDemographicProfile());
 
     // Calculate the sum of adherence levels
@@ -1211,27 +1289,22 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
 
     // Adherence level assignment with corrected conditions
     if (adherenceRandom < adherence[0]) {
-        prepStatus = PrepStatus::PREP_INADHERENT;
+        prepAdherenceLevel = PrepAherenceLevel::PREP_INADHERENT;
     } else if (adherenceRandom >= adherence[0] && adherenceRandom < adherence[0] + adherence[1]) {
-        prepStatus = PrepStatus::PREP_PARTIALLY_ADHERENT;
-    } else if (adherenceRandom >= adherence[0] + adherence[1] && adherenceRandom < adherence[0] + adherence[1] + adherence[2]) {
-        prepStatus = PrepStatus::PREP_SUBSTANTIALLY_ADHERENT;
-    } else {
-        prepStatus = PrepStatus::PREP_ADHERENT;
-    }
-
-    // Record as having month of being on PREP
-    if (prepStatus == PrepStatus::PREP_ADHERENT || prepStatus == PrepStatus::PREP_PARTIALLY_ADHERENT || prepStatus == PrepStatus::PREP_SUBSTANTIALLY_ADHERENT || prepStatus == PrepStatus::PREP_INADHERENT) {
-        monthOnPrep++;
-        if (monthOnPrep == 1 && everBeenOnPrep == false) {
-            prepTracker->recordNewOnPrep(this);
-        }
-        everBeenOnPrep = true; // this person was on prep at some point
+        prepAdherenceLevel = PrepAherenceLevel::PREP_PARTIALLY_ADHERENT;
         prepTracker->recordAdherence(this);
-        if (this->isInfected()) {
-            prepTracker->recordOnPrepAndInfected(this);
-        }
+    } else if (adherenceRandom >= adherence[0] + adherence[1] && adherenceRandom < adherence[0] + adherence[1] + adherence[2]) {
+        prepAdherenceLevel = PrepAherenceLevel::PREP_SUBSTANTIALLY_ADHERENT;
+        prepTracker->recordAdherence(this);
+    } else {
+        prepAdherenceLevel = PrepAherenceLevel::PREP_ADHERENT;
+        prepTracker->recordAdherence(this);
     }
+    
+    // if (this->isInfected()) {
+    //     prepTracker->recordOnPrepAndInfected(this);
+    // }
+
 }
 
 void Entity::traceTreatmentChange(EventParams &_eventParams, bool after) {
@@ -1498,7 +1571,9 @@ Entity::Entity(Age _age, unsigned int _populationID, const PrepParameters &prepP
         monthly_cdm_costs_discounted_(0),
         prepParameters(prepParams),
         monthOnPrep(0),
-        prepStatus(PrepStatus::OFF_PREP) {
+        monthOffPrep(0),
+        prepStatus(PrepStatus::OFF_PREP),
+        prepAdherenceLevel(PrepAherenceLevel::PREP_OFF_PREP) {
     id = Entity::idCounter++;
     populationID = _populationID;
 

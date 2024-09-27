@@ -1,0 +1,1481 @@
+<simulation version="4.5">
+  <debugLevel>0</debugLevel>
+  <duration>1200</duration>
+  <fixedSeed>0</fixedSeed>
+  <monthOf1990>600</monthOf1990>
+  <traceFiles>
+    <population enabled="true" tossIfCalibFail="false">
+      <extension>Population.xls</extension>
+    </population>
+    <infection enabled="true" tossIfCalibFail="false">
+      <extension>Infections.xls</extension>
+    </infection>
+    <partnership enabled="true" tossIfCalibFail="false">
+      <extension>Partnership.xls</extension>
+    </partnership>
+    <survival enabled="false" tossIfCalibFail="true">
+      <extension>Survival.xls</extension>
+    </survival>
+    <costEffectiveness enabled="false" tossIfCalibFail="true">
+      <extension>CE.xls</extension>
+      <condomCost>0.5</condomCost>
+      <circumcisionCost>500</circumcisionCost>
+      <prEPCost>1</prEPCost>
+      <vaginalMicrobicideCost>1</vaginalMicrobicideCost>
+    </costEffectiveness>
+    <clinical enabled="true" tossIfCalibFail="true">
+      <extension>Clinical.xls</extension>
+    </clinical>
+    <events enabled="false" tossIfCalibFail="true">
+      <extension>Events.xls</extension>
+    </events>
+    <singlePerson enabled="false" tossIfCalibFail="true">
+      <extension>SinglePerson.xls</extension>
+      <numberToTracePerAgeRange>15</numberToTracePerAgeRange>
+      <numberNewbornsToTrace>500</numberNewbornsToTrace>
+      <monthTraceNewborns>600</monthTraceNewborns>
+      <tracePrevalentCases>1</tracePrevalentCases>
+    </singlePerson>
+    <lifeExpectancy enabled="false" tossIfCalibFail="true">
+      <extension>LE.xls</extension>
+      <medianConfidenceInterval>0.95</medianConfidenceInterval>
+      <time>660</time>
+      <time>780</time>
+      <time>900</time>
+      <time>1020</time>
+      <time>1140</time>
+    </lifeExpectancy>
+    <prepOutcomes enabled="true" tossIfCalibFail="false">
+      <extension>PrepOutcomes.xls</extension>
+    </prepOutcomes>
+    <partnerAcquisition enabled="false" tossIfCalibFail="true">
+      <extension>PartAcq.xls</extension>
+      <time>6</time>
+      <time>60</time>
+      <time>120</time>
+      <time>599</time>
+      <time>660</time>
+    </partnerAcquisition>
+    <partnerNetwork enabled="false" tossIfCalibFail="false">
+      <time>6</time>
+      <time>60</time>
+      <time>120</time>
+      <time>599</time>
+      <time>660</time>
+      <time>1020</time>
+    </partnerNetwork>
+    <calibrationStatistics enabled="true" tossIfCalibFail="false">
+      <extension>CalibStats.xls</extension>
+    </calibrationStatistics>
+    <artRollout enabled="true" tossIfCalibFail="false">
+      <extension>ARTRollout.xls</extension>
+    </artRollout>
+    <shiftedOutcomes enabled="false" tossIfCalibFail="true">
+      <extension>ShiftedOutcomes.xls</extension>
+    </shiftedOutcomes>
+  </traceFiles>
+  <concurrencyDefinition>
+    <definition id="0">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="1">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="2">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="3">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="4">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="5">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="6">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="7">
+      <minNeeded>2</minNeeded>
+      <allow>0</allow>
+    </definition>
+    <definition id="8">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="9">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="10">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="11">
+      <minNeeded>2</minNeeded>
+      <allow>0</allow>
+    </definition>
+    <definition id="12">
+      <minNeeded>2</minNeeded>
+      <allow>0</allow>
+    </definition>
+    <definition id="13">
+      <minNeeded>2</minNeeded>
+      <allow>0</allow>
+    </definition>
+    <definition id="14">
+      <minNeeded>2</minNeeded>
+      <allow>0</allow>
+    </definition>
+    <definition id="15">
+      <minNeeded>2</minNeeded>
+      <allow>0</allow>
+    </definition>
+  </concurrencyDefinition>
+  <calibration enabled="false">
+    <monthOfCalibration>600</monthOfCalibration> 
+    <partnershipOutcomes>
+      <steadyPrev> <!-- NMR-->
+        <popOfInterest>0</popOfInterest>
+        <lwrBound>0.340</lwrBound> <!--Total Married Miami,2020,  NMR-->
+        <uprBound>0.570</uprBound> <!-- Total Married living and not living together Herbenick NMR-->
+      </steadyPrev>
+      <casualPrev><!-- NMR-->
+        <popOfInterest>0</popOfInterest>  
+        <lwrBound>0.056</lwrBound> <!-- Women Herbenick, NMR-->
+        <uprBound>0.203</uprBound> <!-- Male, Sataras at al, NMR-->
+      </casualPrev>
+      <steadyMSMPrev>
+        <popOfInterest>0</popOfInterest>  
+        <lwrBound>0.053</lwrBound> 
+        <uprBound>0.428</uprBound> 
+      </steadyMSMPrev>    
+      <regularMSMPrev>
+        <popOfInterest>0</popOfInterest>  
+        <lwrBound>0.019</lwrBound> 
+        <uprBound>0.394</uprBound> 
+      </regularMSMPrev>
+      <casualMSMPrev>
+        <popOfInterest>0</popOfInterest>  
+        <lwrBound>0.073</lwrBound> 
+        <uprBound>0.518</uprBound> 
+      </casualMSMPrev>
+      <cswPrev> <!-- Proportion of Male that had sex with a CSW, NMR-->
+        <popOfInterest>0</popOfInterest>
+        <lwrBound>0.032</lwrBound> <!-- Herbenick, NMR-->
+        <uprBound>0.087</uprBound> <!-- Decker, overall, NMR-->
+      </cswPrev>
+      <propInCon> <!-- Concurrency??? NMR-->
+        <popOfInterest>1</popOfInterest>
+        <lwrBound>0.113</lwrBound> <!-- Hamiltona, NMR-->
+        <uprBound>0.190</uprBound> <!-- Hamiltona, NMR-->
+      </propInCon> 
+      <femaleCasualPrev> 
+        <ratio>1</ratio>
+      </femaleCasualPrev>
+      <femalePropInCon> 
+        <ratio>1</ratio>
+      </femalePropInCon>
+      <femaleNumActsLRtoHR> 
+        <ratio>1</ratio>
+      </femaleNumActsLRtoHR>
+      <numActs> 
+        <popOfInterest>0</popOfInterest>
+        <lwrBound>0</lwrBound>
+        <uprBound>31</uprBound>
+      </numActs>
+    </partnershipOutcomes>
+    <yearlyIncidenceRanges> <!-- NMR --> 
+      <yearlyIncidenceRange time="648" lower="0.0001518" upper="0.0013660"/> <!-- 2011,Changed to Miami data, previously: time="816" lower="0.0066" upper="0.0224"-->
+      <!--<yearlyIncidenceRange time="696" lower="0.0003712" upper="0.0014849"/> 2004,Changed to Miami data, check notes, previoulsy: "864" lower="0.0043" upper="0.0227"-->
+    </yearlyIncidenceRanges>
+  </calibration>
+  <population id="Miami">
+    <ageOfMajority>17</ageOfMajority>
+    <initialState useCounts="false">
+      <size>10000</size>
+      <useCounts>false</useCounts>
+      <entityDistributions>
+        <ageRangeDistributions>
+          <ageRange lower="0" upper="14">0.17</ageRange> <!-- Florida Health Charts 2019 NMR-->
+          <ageRange lower="15" upper="19">0.06</ageRange>
+          <ageRange lower="20" upper="24">0.06</ageRange>
+          <ageRange lower="25" upper="34">0.14</ageRange>
+          <ageRange lower="35" upper="44">0.14</ageRange>
+          <ageRange lower="45" upper="54">0.15</ageRange>
+          <ageRange lower="55" upper="100">0.28</ageRange>
+        </ageRangeDistributions>
+        <demographicDistributions>
+          <gender MALE="0.49" FEMALE="0.51"/> <!-- Florida Health Charts 2019 NMR-->
+          <orientation MSW="0.925" MSM="0.053" MSMW="0.022"/> <!-- LIEB 2007, and NHBS NMR-->
+          <raceAndEthnicityProfiles>
+            <raceAndEthnicity type="WHITE:NON_HISPANIC">0.13</raceAndEthnicity> <!-- Florida Health Charts 2019 NMR, POPULATION TAB CDM PARAMETERS-->
+            <raceAndEthnicity type="WHITE:HISPANIC">0.69</raceAndEthnicity>
+            <raceAndEthnicity type="BLACK:NON_HISPANIC">0.16</raceAndEthnicity>
+            <raceAndEthnicity type="OTHER:NON_HISPANIC">0.02</raceAndEthnicity>
+          </raceAndEthnicityProfiles>
+        </demographicDistributions>
+      </entityDistributions>
+    </initialState>
+    <births useBirthRate="false"> <!-- I'm using the Fertility Rate, NMR-->
+      <birthRate>0.0111</birthRate>
+      <fertilityRate>
+        <rateForAgeRange lower="15" upper="44">0.00520</rateForAgeRange> <!-- monthly, MIAMI, florida health charts rate 2019-->
+      </fertilityRate>
+      <demographicDistributions>
+        <gender MALE="0.49" FEMALE="0.51"/> <!-- Florida Health Charts 2019 NMR-->
+        <orientation MSW="0.925" MSM="0.053" MSMW="0.022"/> <!-- LIEB and NHBS NMR-->
+        <raceAndEthnicityProfiles>
+          <raceAndEthnicity type="WHITE:NON_HISPANIC">0.13</raceAndEthnicity> <!-- Florida Health Charts 2019 NMR-->
+          <raceAndEthnicity type="WHITE:HISPANIC">0.69</raceAndEthnicity>
+          <raceAndEthnicity type="BLACK:NON_HISPANIC">0.16</raceAndEthnicity>
+          <raceAndEthnicity type="OTHER:NON_HISPANIC">0.02</raceAndEthnicity>
+        </raceAndEthnicityProfiles>
+      </demographicDistributions>
+    </births>
+    <initialInfections>
+      <delay>602</delay>
+      <chanceSeedChronicInfection>0.98</chanceSeedChronicInfection> <!-- no info for 1996 (prior 2014), ratio:ND/(Prev-ND) 2007, FROM Irene Hall 2010, AND FDOH, NMR -->
+      <useCoefficients>true</useCoefficients> 
+      <seedPrevalence>0.0097</seedPrevalence> <!-- FDOH, Change to 1996 Miami, NO data for 1996, for now seed at 2007, Cases:23,704, Pop: 2,455,829, NMR-->
+      <!-- FEMALE --> <!-- previous comments, NMR -->
+      <!-- male are 5x female; black 3x white and latino set = 1 (same as whites); high risk is 3x low; msm/msmw is 67x msw , DAN and NMR 02 13 2023-->
+      <profile bucket="SA:FEMALE:MSW:*:NON_CSW:WHITE:NON_HISPANIC" risk="low" age-range="17-49">1</profile>
+      <profile bucket="SA:FEMALE:MSW:*:NON_CSW:WHITE:HISPANIC" risk="low" age-range="17-49">1</profile>
+      <profile bucket="SA:FEMALE:MSW:*:NON_CSW:BLACK:NON_HISPANIC" risk="low" age-range="17-49">3</profile>
+      <profile bucket="SA:FEMALE:MSW:*:NON_CSW:OTHER:NON_HISPANIC" risk="low" age-range="17-49">1</profile>
+      <profile bucket="SA:FEMALE:MSW:*:NON_CSW:WHITE:NON_HISPANIC" risk="high" age-range="17-49">3</profile>
+      <profile bucket="SA:FEMALE:MSW:*:NON_CSW:WHITE:HISPANIC" risk="high" age-range="17-49">3</profile>
+      <profile bucket="SA:FEMALE:MSW:*:NON_CSW:BLACK:NON_HISPANIC" risk="high" age-range="17-49">9</profile>
+      <profile bucket="SA:FEMALE:MSW:*:NON_CSW:OTHER:NON_HISPANIC" risk="high" age-range="17-49">3</profile>
+      <!-- CSW are 10x more than NON_CSW -->
+      <profile bucket="SA:FEMALE:MSW:*:CSW:WHITE:NON_HISPANIC" risk="high" age-range="17-49">30</profile>
+      <profile bucket="SA:FEMALE:MSW:*:CSW:WHITE:HISPANIC" risk="high" age-range="17-49">30</profile>
+      <profile bucket="SA:FEMALE:MSW:*:CSW:BLACK:NON_HISPANIC" risk="high" age-range="17-49">90</profile>
+      <profile bucket="SA:FEMALE:MSW:*:CSW:OTHER:NON_HISPANIC" risk="high" age-range="17-49">30</profile>
+      <!-- Low Risk Male -->
+      <!-- male are 5x female; black 3x white and latino set = 1 (same as whites); high risk is 3x low; msm/msmw is 67x msw , DAN and NMR 02 13 2023-->
+      <profile bucket="SA:MALE:MSW:*:NON_CSW:WHITE:NON_HISPANIC" risk="low" age-range="17-49">5</profile>
+      <profile bucket="SA:MALE:MSW:*:NON_CSW:WHITE:HISPANIC" risk="low" age-range="17-49">5</profile>
+      <profile bucket="SA:MALE:MSW:*:NON_CSW:BLACK:NON_HISPANIC" risk="low" age-range="17-49">15</profile>
+      <profile bucket="SA:MALE:MSW:*:NON_CSW:OTHER:NON_HISPANIC" risk="low" age-range="17-49">5</profile>
+      <profile bucket="SA:MALE:MSMW:*:NON_CSW:WHITE:NON_HISPANIC" risk="low" age-range="17-49">335</profile>
+      <profile bucket="SA:MALE:MSMW:*:NON_CSW:WHITE:HISPANIC" risk="low" age-range="17-49">335</profile>
+      <profile bucket="SA:MALE:MSMW:*:NON_CSW:BLACK:NON_HISPANIC" risk="low" age-range="17-49">1005</profile>
+      <profile bucket="SA:MALE:MSMW:*:NON_CSW:OTHER:NON_HISPANIC" risk="low" age-range="17-49">335</profile>
+      <profile bucket="SA:MALE:MSM:*:NON_CSW:WHITE:NON_HISPANIC" risk="low" age-range="17-49">335</profile>
+      <profile bucket="SA:MALE:MSM:*:NON_CSW:WHITE:HISPANIC" risk="low" age-range="17-49">335</profile>
+      <profile bucket="SA:MALE:MSM:*:NON_CSW:BLACK:NON_HISPANIC" risk="low" age-range="17-49">1005</profile>
+      <profile bucket="SA:MALE:MSM:*:NON_CSW:OTHER:NON_HISPANIC" risk="low" age-range="17-49">335</profile>
+      <!-- High Risk Male -->
+      <!-- male are 5x female; black 3x white and latino set = 1 (same as whites); high risk is 3x low; msm/msmw is 67x msw , DAN and NMR 02 13 2023-->
+      <profile bucket="SA:MALE:MSW:*:NON_CSW:WHITE:NON_HISPANIC" risk="high" age-range="17-49">15</profile>
+      <profile bucket="SA:MALE:MSW:*:NON_CSW:WHITE:HISPANIC" risk="high" age-range="17-49">15</profile>
+      <profile bucket="SA:MALE:MSW:*:NON_CSW:BLACK:NON_HISPANIC" risk="high" age-range="17-49">45</profile>
+      <profile bucket="SA:MALE:MSW:*:NON_CSW:OTHER:NON_HISPANIC" risk="high" age-range="17-49">15</profile>
+      <profile bucket="SA:MALE:MSMW:*:NON_CSW:WHITE:NON_HISPANIC" risk="high" age-range="17-49">1005</profile>
+      <profile bucket="SA:MALE:MSMW:*:NON_CSW:WHITE:HISPANIC" risk="high" age-range="17-49">1005</profile>
+      <profile bucket="SA:MALE:MSMW:*:NON_CSW:BLACK:NON_HISPANIC" risk="high" age-range="17-49">3015</profile>
+      <profile bucket="SA:MALE:MSMW:*:NON_CSW:OTHER:NON_HISPANIC" risk="high" age-range="17-49">1005</profile>
+      <profile bucket="SA:MALE:MSM:*:NON_CSW:WHITE:NON_HISPANIC" risk="high" age-range="17-49">1005</profile>
+      <profile bucket="SA:MALE:MSM:*:NON_CSW:WHITE:HISPANIC" risk="high" age-range="17-49">1005</profile>
+      <profile bucket="SA:MALE:MSM:*:NON_CSW:BLACK:NON_HISPANIC" risk="high" age-range="17-49">3015</profile>
+      <profile bucket="SA:MALE:MSM:*:NON_CSW:OTHER:NON_HISPANIC" risk="high" age-range="17-49">1005</profile>
+    </initialInfections>
+    <transmissionCoefficients>
+      <maleToFemale> <!-- multiply these by 2, Dan- NMR 09 19 2023-->
+        <hvl0>0.0002</hvl0>
+        <hvl1>0.0002</hvl1>
+        <hvl2>0.0022</hvl2>
+        <hvl3>0.0024</hvl3>
+        <hvl4>0.0028</hvl4>
+        <hvl5>0.0046</hvl5>
+        <hvl6>0.0046</hvl6>
+        <primary>0.0162</primary>
+        <lateStage>0.00860</lateStage>
+      </maleToFemale> <!-- Changed to its baseline values, Dan- NMR 09 18 2023-->
+      <femaleToMale>
+        <hvl0>0.0001</hvl0>
+        <hvl1>0.0001</hvl1>
+        <hvl2>0.0011</hvl2>
+        <hvl3>0.0012</hvl3>
+        <hvl4>0.0014</hvl4>
+        <hvl5>0.0023</hvl5>
+        <hvl6>0.0023</hvl6>
+        <primary>0.00810</primary>
+        <lateStage>0.00430</lateStage>
+      </femaleToMale>
+      <maleToMale>
+        <hvl0>0.0008</hvl0>
+        <hvl1>0.0008</hvl1>
+        <hvl2>0.0088</hvl2>
+        <hvl3>0.0096</hvl3>
+        <hvl4>0.0110</hvl4>
+        <hvl5>0.0180</hvl5>
+        <hvl6>0.0180</hvl6>
+        <primary>0.0650</primary>
+        <lateStage>0.0344</lateStage>
+      </maleToMale>
+    </transmissionCoefficients>
+    <preExposureProphylaxis>
+      <prepEfficacy>1</prepEfficacy> <!-- changed to 1, 02 13 2024 -->
+      <prepDefaults>
+        <prepEligibility>
+          <!-- monthSinceLastHIVTest -->
+          <!-- HIVStatus (unknown if passed 6 months) -->
+          <partnerCount>1</partnerCount> <!-- ???? what is this. EXPLAIN THIS SECTION, NMR -->
+          <partnerStatus>any-positive</partnerStatus>
+          <partnerRiskLevel>high</partnerRiskLevel>
+          <monthsSinceUnprotectedAct>12</monthsSinceUnprotectedAct>
+        </prepEligibility>
+        <prepAccess>0.000029,0.000066,0.000083,0.000135,0.0002911,0.000847,0.001772,0.001844,0.00136</prepAccess> <!-- changed to WHITES, NMR 02 13 2024-->
+        <prepAdherence>0.0189,0.0257,0.04,0.9154</prepAdherence>
+           <prepRetention>0.020,0.020,0.020,0.010,0.010,0.010,0.010,0.011,0.011,0.015,0.015,0.015</prepRetention> <!--these values are LTFs 02 13 2024 -->      
+        <prepReturnToCare>0.000029,0.000066,0.000083,0.000135,0.0002911,0.000847,0.001772,0.001844,0.00136</prepReturnToCare>
+      </prepDefaults>
+      <prepProfiles>
+        
+		<demographic bucket="SA:MALE:MSW:*:*:WHITE:NON_HISPANIC"> <!--WHITES ADDED on 02 13 2024-->
+          <prepAccess>0.000021,0.000097,0.000133,0.000265,0.000398,0.000701,0.001036,0.001242,0.00001369</prepAccess>
+           <prepAdherence>0.0189,0.0257,0.04,0.9154</prepAdherence>
+           <prepRetention>0.020,0.020,0.020,0.010,0.010,0.010,0.010,0.011,0.011,0.015,0.015,0.015</prepRetention> 
+          <prepReturnToCare>0.000021,0.000097,0.000133,0.000265,0.000398,0.000701,0.001036,0.001242,0.001369</prepReturnToCare>
+        </demographic>
+		<demographic bucket="SA:MALE:MSW:*:*:WHITE:HISPANIC"> <!--HISPANICS ADDED on 02 13 2024-->
+          <prepAccess>0.000021,0.000097,0.000133,0.000265,0.000398,0.000701,0.001036,0.001242,0.001369</prepAccess>
+           <prepAdherence>0.0568,0.0449,0.1320,0.7663</prepAdherence>
+           <prepRetention>0.120,0.039,0.041,0.012,0.012,0.012,0.021,0.021,0.022,0.004,0.004,0.004</prepRetention>
+          <prepReturnToCare>0.000021,0.000097,0.000133,0.000265,0.000398,0.000701,0.001036,0.001242,0.001369</prepReturnToCare>
+        </demographic>
+		<demographic bucket="SA:MALE:MSW:*:*:BLACK:NON_HISPANIC"> <!--BLACKS ADDED on 02 13 2024-->
+          <prepAccess>0.000021,0.000097,0.000133,0.000265,0.000398,0.000701,0.001036,0.001242,0.001369</prepAccess>
+           <prepAdherence>0.0455,0.1317,0.2484,0.5744</prepAdherence>
+           <prepRetention>0.150,0.058,0.062,0.031,0.032,0.033,0.014,0.014,0.015,0.015,0.015,0.015</prepRetention> 
+          <prepReturnToCare>0.000021,0.000097,0.000133,0.000265,0.000398,0.000701,0.001036,0.001242,0.001369</prepReturnToCare>
+        </demographic>
+		<demographic bucket="SA:MALE:MSW:*:*:BLACK:HISPANIC"> <!--HISPANICS ADDED on 02 13 2024-->
+          <prepAccess>0.000021,0.000097,0.000133,0.000265,0.000398,0.000701,0.001036,0.001242,0.001369</prepAccess>
+           <prepAdherence>0.0568,0.0449,0.1320,0.7663</prepAdherence>
+           <prepRetention>0.120,0.039,0.041,0.012,0.012,0.012,0.021,0.021,0.022,0.004,0.004,0.004</prepRetention>
+          <prepReturnToCare>0.000021,0.000097,0.000133,0.000265,0.000398,0.000701,0.001036,0.001242,0.001369</prepReturnToCare>
+        </demographic>
+        
+		<demographic bucket="SA:MALE:MSMW:*:*:WHITE:NON_HISPANIC"> <!--WHITES-->
+          <prepAccess>0.001348,0.004203,0.008932,0.014711,0.028888,0.047683,0.074573,0.093803,0.101715</prepAccess>
+          <prepAdherence>0.0189,0.0257,0.04,0.9154</prepAdherence>
+           <prepRetention>0.020,0.020,0.020,0.010,0.010,0.010,0.010,0.011,0.011,0.015,0.015,0.015</prepRetention>
+          <prepReturnToCare>0.001348,0.004203,0.008932,0.014711,0.028888,0.047683,0.074573,0.093803,0.101715</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:MALE:MSMW:*:*:WHITE:HISPANIC"> <!--HISPANIC-->
+          <prepAccess>0.001348,0.004203,0.008932,0.014711,0.028888,0.047683,0.074573,0.093803,0.101715</prepAccess>
+          <prepAdherence>0.0568,0.0449,0.1320,0.7663</prepAdherence>
+           <prepRetention>0.120,0.039,0.041,0.012,0.012,0.012,0.021,0.021,0.022,0.004,0.004,0.004</prepRetention>
+          <prepReturnToCare>0.001348,0.004203,0.008932,0.014711,0.028888,0.047683,0.074573,0.093803,0.101715</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:MALE:MSMW:*:*:BLACK:NON_HISPANIC"> <!--BLACKS-->
+          <prepAccess>0.001348,0.004203,0.008932,0.014711,0.028888,0.047683,0.074573,0.093803,0.101715</prepAccess>
+          <prepAdherence>0.0455,0.1317,0.2484,0.5744</prepAdherence>
+           <prepRetention>0.150,0.058,0.062,0.031,0.032,0.033,0.014,0.014,0.015,0.015,0.015,0.015</prepRetention>
+          <prepReturnToCare>0.001348,0.004203,0.008932,0.014711,0.028888,0.047683,0.074573,0.093803,0.101715</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:MALE:MSMW:*:*:BLACK:HISPANIC"> <!--HISPANICS-->
+          <prepAccess>0.001348,0.004203,0.008932,0.014711,0.028888,0.047683,0.074573,0.093803,0.101715</prepAccess>
+          <prepAdherence>0.0568,0.0449,0.1320,0.7663</prepAdherence>
+           <prepRetention>0.120,0.039,0.041,0.012,0.012,0.012,0.021,0.021,0.022,0.004,0.004,0.004</prepRetention>
+          <prepReturnToCare>0.001348,0.004203,0.008932,0.014711,0.028888,0.047683,0.074573,0.093803,0.101715</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:MALE:MSM:*:*:WHITE:NON_HISPANIC"> <!--WHITES-->
+          <prepAccess>0.001348,0.004203,0.008932,0.014711,0.028888,0.047683,0.074573,0.093803,0.101715</prepAccess>
+          <prepAdherence>0.0189,0.0257,0.04,0.9154</prepAdherence>
+           <prepRetention>0.020,0.020,0.020,0.010,0.010,0.010,0.010,0.011,0.011,0.015,0.015,0.015</prepRetention>
+          <prepReturnToCare>0.001348,0.004203,0.008932,0.014711,0.028888,0.047683,0.074573,0.093803,0.101715</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:MALE:MSM:*:*:WHITE:HISPANIC"> <!--HISPANICS-->
+          <prepAccess>0.001348,0.004203,0.008932,0.014711,0.028888,0.047683,0.074573,0.093803,0.101715</prepAccess>
+          <prepAdherence>0.0568,0.0449,0.1320,0.7663</prepAdherence>
+           <prepRetention>0.120,0.039,0.041,0.012,0.012,0.012,0.021,0.021,0.022,0.004,0.004,0.004</prepRetention>
+          <prepReturnToCare>0.001348,0.004203,0.008932,0.014711,0.028888,0.047683,0.074573,0.093803,0.101715</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:MALE:MSM:*:*:BLACK:NON_HISPANIC"> <!--BLACKS-->
+          <prepAccess>0.001348,0.004203,0.008932,0.014711,0.028888,0.047683,0.074573,0.093803,0.101715</prepAccess>
+          <prepAdherence>0.0455,0.1317,0.2484,0.5744</prepAdherence>
+           <prepRetention>0.150,0.058,0.062,0.031,0.032,0.033,0.014,0.014,0.015,0.015,0.015,0.015</prepRetention>
+          <prepReturnToCare>0.001348,0.004203,0.008932,0.014711,0.028888,0.047683,0.074573,0.093803,0.101715</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:MALE:MSM:*:*:BLACK:HISPANIC"> <!--HISPANICS-->
+          <prepAccess>0.001348,0.004203,0.008932,0.014711,0.028888,0.047683,0.074573,0.093803,0.101715</prepAccess>
+          <prepAdherence>0.0568,0.0449,0.1320,0.7663</prepAdherence>
+           <prepRetention>0.120,0.039,0.041,0.012,0.012,0.012,0.021,0.021,0.022,0.004,0.004,0.004</prepRetention>
+          <prepReturnToCare>0.001348,0.004203,0.008932,0.014711,0.028888,0.047683,0.074573,0.093803,0.101715</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:FEMALE:MSW:*:NON_CSW:WHITE:NON_HISPANIC"> <!--WHITES-->
+          <prepAccess>0.000029,0.000066,0.000083,0.000135,0.0002911,0.000847,0.001772,0.001844,0.00136</prepAccess>
+          <prepAdherence>0.0189,0.0257,0.04,0.9154</prepAdherence>
+           <prepRetention>0.020,0.020,0.020,0.010,0.010,0.010,0.010,0.011,0.011,0.015,0.015,0.015</prepRetention>
+          <prepReturnToCare>0.000029,0.000066,0.000083,0.000135,0.0002911,0.000847,0.001772,0.001844,0.00136</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:FEMALE:MSW:*:NON_CSW:WHITE:HISPANIC"> <!--HISPANIC-->
+          <prepAccess>0.000029,0.000066,0.000083,0.000135,0.0002911,0.000847,0.001772,0.001844,0.00136</prepAccess>
+          <prepAdherence>0.0568,0.0449,0.1320,0.7663</prepAdherence>
+           <prepRetention>0.120,0.039,0.041,0.012,0.012,0.012,0.021,0.021,0.022,0.004,0.004,0.004</prepRetention>
+          <prepReturnToCare>0.000029,0.000066,0.000083,0.000135,0.0002911,0.000847,0.001772,0.001844,0.00136</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:FEMALE:MSW:*:NON_CSW:BLACK:NON_HISPANIC"> <!--BLACKS-->
+          <prepAccess>0.000029,0.000066,0.000083,0.000135,0.0002911,0.000847,0.001772,0.001844,0.00136</prepAccess>
+          <prepAdherence>0.0455,0.1317,0.2484,0.5744</prepAdherence>
+           <prepRetention>0.150,0.058,0.062,0.031,0.032,0.033,0.014,0.014,0.015,0.015,0.015,0.015</prepRetention>
+          <prepReturnToCare>0.000029,0.000066,0.000083,0.000135,0.0002911,0.000847,0.001772,0.001844,0.00136</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:FEMALE:MSW:*:NON_CSW:BLACK:HISPANIC"> <!--HISPANIC-->
+          <prepAccess>0.000029,0.000066,0.000083,0.000135,0.0002911,0.000847,0.001772,0.001844,0.00136</prepAccess>
+          <prepAdherence>0.0568,0.0449,0.1320,0.7663</prepAdherence>
+           <prepRetention>0.120,0.039,0.041,0.012,0.012,0.012,0.021,0.021,0.022,0.004,0.004,0.004</prepRetention>
+          <prepReturnToCare>0.000029,0.000066,0.000083,0.000135,0.0002911,0.000847,0.001772,0.001844,0.00136</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:FEMALE:MSW:*:CSW:WHITE:NON_HISPANIC"> <!--WHITES-->
+          <prepAccess>0.000029,0.000066,0.000083,0.000135,0.0002911,0.000847,0.001772,0.001844,0.00136</prepAccess>
+          <prepAdherence>0.0189,0.0257,0.04,0.9154</prepAdherence>
+           <prepRetention>0.020,0.020,0.020,0.010,0.010,0.010,0.010,0.011,0.011,0.015,0.015,0.015</prepRetention>
+          <prepReturnToCare>0.000029,0.000066,0.000083,0.000135,0.0002911,0.000847,0.001772,0.001844,0.00136</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:FEMALE:MSW:*:CSW:WHITE:HISPANIC"> <!--HISPANICS-->
+          <prepAccess>0.000029,0.000066,0.000083,0.000135,0.0002911,0.000847,0.001772,0.001844,0.00136</prepAccess>
+          <prepAdherence>0.0568,0.0449,0.1320,0.7663</prepAdherence>
+           <prepRetention>0.120,0.039,0.041,0.012,0.012,0.012,0.021,0.021,0.022,0.004,0.004,0.004</prepRetention>
+          <prepReturnToCare>0.000029,0.000066,0.000083,0.000135,0.0002911,0.000847,0.001772,0.001844,0.00136</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:FEMALE:MSW:*:CSW:BLACK:NON_HISPANIC"> <!--BLACKS-->
+          <prepAccess>0.000029,0.000066,0.000083,0.000135,0.0002911,0.000847,0.001772,0.001844,0.00136</prepAccess>
+          <prepAdherence>0.0455,0.1317,0.2484,0.5744</prepAdherence>
+           <prepRetention>0.150,0.058,0.062,0.031,0.032,0.033,0.014,0.014,0.015,0.015,0.015,0.015</prepRetention>
+          <prepReturnToCare>0.000029,0.000066,0.000083,0.000135,0.0002911,0.000847,0.001772,0.001844,0.00136</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:FEMALE:MSW:*:CSW:BLACK:HISPANIC"> <!--HISPANIC-->
+          <prepAccess>0.000029,0.000066,0.000083,0.000135,0.0002911,0.000847,0.001772,0.001844,0.00136</prepAccess>
+          <prepAdherence>0.0568,0.0449,0.1320,0.7663</prepAdherence>
+           <prepRetention>0.120,0.039,0.041,0.012,0.012,0.012,0.021,0.021,0.022,0.004,0.004,0.004</prepRetention>
+          <prepReturnToCare>0.000029,0.000066,0.000083,0.000135,0.0002911,0.000847,0.001772,0.001844,0.00136</prepReturnToCare>
+        </demographic>
+      </prepProfiles>
+    </preExposureProphylaxis>
+    <entities>
+      <entity type="male">
+        <allowedRaceAndEthnicities>
+          <allowedRace race="BLACK">
+            <allowedEthnicity ethnicity="NON_HISPANIC"/>
+          </allowedRace>
+          <allowedRace race="WHITE">
+            <allowedEthnicity ethnicity="NON_HISPANIC"/>
+            <allowedEthnicity ethnicity="HISPANIC"/>
+          </allowedRace>
+          <allowedRace race="OTHER">
+            <allowedEthnicity ethnicity="NON_HISPANIC"/>
+          </allowedRace>
+        </allowedRaceAndEthnicities>
+        <behavior>
+          <cswEndAge>50</cswEndAge>
+          <!-- chanceBecomeSexWorker can't be 0.00. Include just enough to ignore -->
+          <chanceBecomeSexWorker>0.001</chanceBecomeSexWorker> <!-- Leve it like it is, 03 21 2022 (value from Botswana, seemms ok) 03 21 2022, NMR-->
+          <partnerAcqMultWithSteadyHighRisk>1</partnerAcqMultWithSteadyHighRisk> <!-- set it equak = 1, 04 12 2022, NMR-->
+          <partnerAcqMultWithSteadyLowRisk>0.07495834462641815</partnerAcqMultWithSteadyLowRisk> <!--Use the same BM in both low and high risk, 04 07 2022 Changed on 03 21 2022, Saman,NMR-->
+          <highRiskAcqRateMultiplier enabled="true">5.0104009067645645</highRiskAcqRateMultiplier> <!-- BM 03 21 2022, NMR-->
+          <highRiskCswAcqRateMultiplier enabled="true">59.60886830742491</highRiskCswAcqRateMultiplier> <!-- BM 03 21 2022, NMR-->
+          <proportionHighRiskCsw>1</proportionHighRiskCsw>
+          <proportionHighRiskNonCsw>0.08923947933762211</proportionHighRiskNonCsw> <!-- BM, 03 21 2022, NMR-->
+          <chanceMsmwChooseMale>0.5</chanceMsmwChooseMale> <!-- Not changed, does have to change??? NMR-->
+          <chanceMsmChooseMsmw>0.29</chanceMsmChooseMsmw> <!-- Not changed, does have to change??? NMR-->
+          <ageDiscounting>
+            <startAgeYrs>50</startAgeYrs>
+            <acquisitionDiscByYr>0.10</acquisitionDiscByYr>
+            <coitalActsDiscByYr>0.10</coitalActsDiscByYr>
+          </ageDiscounting>
+          <assortivity>
+            <riskAssortivity>0.32354878511839036</riskAssortivity> <!-- BM 03 21 2022, NMR - previously : White Males, Hamiltona, I have this for white, black and other, also for females, and MSM, but here is just one line, so used White-Males NMR-->
+            <raceEthnicAssortivity baseline="1.0" useCoefficients="false"> <!-- Not changed, does have to change??? NMR-->
+              <raceAndEthnicity race="WHITE" ethnicity="NON_HISPANIC">0.8323548785118391</raceAndEthnicity><!-- based on Hamiltona 2015 and Laumann 1999-->
+              <raceAndEthnicity race="WHITE" ethnicity="HISPANIC">0.5452968299165747</raceAndEthnicity>
+              <raceAndEthnicity race="BLACK" ethnicity="NON_HISPANIC">0.7529419514047356</raceAndEthnicity>
+              <raceAndEthnicity race="OTHER" ethnicity="NON_HISPANIC">0.8323548785118391</raceAndEthnicity>
+            </raceEthnicAssortivity>
+          </assortivity>
+          <partnershipTypes>
+            <partnership type="steady">
+	      <BreakupRateForMSW>0.002466</BreakupRateForMSW>
+	      <BreakupRateForMSM>0.004233</BreakupRateForMSM>
+              <selectionCriteria>
+                <chanceChooseWithSteady>0.00</chanceChooseWithSteady>
+                <averageYearsYounger>
+                  <distribution type="normal">
+                    <mean>0.3</mean> <!-- Married, husband and wife whithin 1 yr, US Census 2009, NMR-->
+                    <stdDev>6.7</stdDev> <!-- Married, husband 2-3 yrs older, US Census 2009, NMR-->
+                  </distribution>
+                </averageYearsYounger>
+              </selectionCriteria>
+              <lowRisk>
+                <acquisitionRate>
+                  <distribution type="normal">  <!-- NOT changed, in the proposal it says CALIBRATED, NMR-->
+                    <mean>0.006645542900973625</mean> <!-- BM 03 21 2022, previously:I use the lower bound for Steady acq. usin Miami data, NMR-->
+                    <stdDev>0</stdDev> <!-- NOT CHANGED, I DIDN'T FIND IT IN THE EXCEL FILE NMR-->
+                  </distribution>
+                </acquisitionRate>
+                <coitalEventsPerMonth>
+                  <distribution type="poisson">
+                    <mean>9.5</mean>  <!-- From Married Men, Ueda 2020,  own calculation, NMR-->
+                  </distribution>
+                </coitalEventsPerMonth>
+                <chanceCondomUsePerEvent>
+                  <distribution type="normal">
+                    <mean>0.198</mean>  <!-- Married vaginal sex,Nasrullah 2017, NMR-->
+                    <stdDev>0.028</stdDev>  <!-- Married vaginal sex,Nasrullah 2017, NMR-->
+                  </distribution>
+                </chanceCondomUsePerEvent>
+                <partnershipDurationMth>
+                  <distribution type="shifted-log-normal"> 
+                    <mean>97.2</mean> <!-- Married vaginal sex,Nasrullah, needs to be checked, NMR-->
+                    <stdDev>4.3</stdDev>  <!-- Married vaginal sex,Nasrullah, own calculation, the difference betwen Hisps and Whites, needs to be checked,  NMR-->
+                    <shift>0</shift> <!-- ??? NOT changer, NMR -->
+                  </distribution>
+                </partnershipDurationMth>
+              </lowRisk>
+              <highRisk> <!-- in the Example Input file, the lorisk estimates are used in the hig risk section too, the only difference is the acquisition rate, so I'm copying the above estimates NMR-->
+                <acquisitionRate>
+                  <distribution type="normal"> <!-- NOT changed, in the proposal it says CALIBRATED, NMR-->
+                    <mean>0.033296834176981066</mean> <!-- I use the UPPER bound for Steady acq. usin Miami data, NMR-->
+                    <stdDev>0</stdDev> <!-- NOT CHANGED, I DIDN'T FIND IT IN THE EXCEL FILE NMR-->
+                  </distribution>
+                </acquisitionRate>
+                <coitalEventsPerMonth>
+                  <distribution type="poisson"> <!-- From Married Men, Ueda 2020,  own calculation, NMR-->
+                    <mean>9.5</mean>
+                  </distribution>
+                </coitalEventsPerMonth>
+                <chanceCondomUsePerEvent>
+                  <distribution type="normal">
+                    <mean>0.198</mean> <!-- Married vaginal sex,Nasrullah 2017, NMR-->
+                    <stdDev>0.028</stdDev> <!-- Married vaginal sex,Nasrullah 2017, NMR-->
+                  </distribution>
+                </chanceCondomUsePerEvent>
+                <partnershipDurationMth>
+                  <distribution type="shifted-log-normal">
+                    <mean>97.2</mean> <!-- Married vaginal sex,Nasrullah, needs to be checked, NMR-->
+                    <stdDev>4.3</stdDev> <!-- Married vaginal sex,Nasrullah, own calculation, the difference betwen Hisps and Whites, neecs to be checked,  NMR-->
+                    <shift>0</shift>  <!-- ??? NOT changer, NMR -->
+                  </distribution>
+                </partnershipDurationMth>
+              </highRisk>
+            </partnership>
+            <partnership type="regular">
+	      <BreakupRateForMSW>0.03049</BreakupRateForMSW>
+	      <BreakupRateForMSM>0.01917</BreakupRateForMSM>	
+              <selectionCriteria>
+                <chanceChooseWithSteady>0.03</chanceChooseWithSteady> <!-- NOT changed, NMR-->
+                <averageYearsYounger>
+                  <distribution type="normal">
+                    <mean>1.06</mean> <!-- Male, Oudekerk 2014, Miami CDM Parameters 2021  NMR-->
+                    <stdDev>1.63</stdDev> <!-- Male, Oudekerk 2014, Miami CDM Parameters 2021  NMR-->
+                  </distribution>
+                </averageYearsYounger>
+              </selectionCriteria>
+              <lowRisk>
+                <acquisitionRate>
+                  <distribution type="normal"> <!-- NOT changed, it the proposal it says CALIBRATED, NMR-->
+                    <mean>0.0038827042217160265</mean> <!--BM 03 21 2022, previously: I use the lower bound for Steady acq. usin Miami data, NMR-->
+                    <stdDev>0</stdDev> <!-- NOT CHANGED, I DIDN'T FIND IT IN THE EXCEL FILE NMR-->
+                  </distribution>
+                </acquisitionRate>
+                <coitalEventsPerMonth> 
+                  <distribution type="poisson"> 
+                    <mean>7.666725364977859</mean>  <!--BM 03 21 2022, previously: Men, Ueda 2016-2018,  NMR-->
+                  </distribution>
+                </coitalEventsPerMonth>
+                <chanceCondomUsePerEvent>
+                  <distribution type="normal"> 
+                    <mean>0.582</mean> <!-- Unmarried Men, Nasrullah 2017,  NMR-->
+                    <stdDev>0.1</stdDev> <!-- calculated as SD between Unmarried Men and Unmarried Women, Nasrullah 2017,  NMR-->
+                  </distribution>
+                </chanceCondomUsePerEvent>
+                <partnershipDurationMth>
+                  <distribution type="shifted-log-normal">
+                    <mean>16.8</mean> <!-- average of leangth of romatic realtionships, not married, young adolescents, Lantagne 2017,  NMR-->
+                    <stdDev>11.1</stdDev> <!-- SD of the averages, Lantagne 2017,  NMR-->
+                    <shift>0</shift> <!--??? Not changed, NMR -->
+                  </distribution>
+                </partnershipDurationMth>
+              </lowRisk>
+              <highRisk>
+                <acquisitionRate>
+                  <distribution type="normal"> <!-- NOT changed, it the proposal it says CALIBRATED, NMR-->
+                    <mean>0.01945390475318458</mean> <!-- I use the UPPER bound for Steady acq. usin Miami data, NMR-->
+                    <stdDev>0</stdDev> <!-- NOT CHANGED, I DIDN'T FIND IT IN THE EXCEL FILE NMR-->
+                  </distribution>
+                </acquisitionRate>
+                <coitalEventsPerMonth>
+                  <distribution type="poisson">
+                    <mean>6.6</mean> <!-- Men, Ueda 2016-2018,  NMR-->
+                  </distribution>
+                </coitalEventsPerMonth>
+                <chanceCondomUsePerEvent>
+                  <distribution type="normal">
+                    <mean>0.582</mean> <!-- Unmarried Men, Nasrullah 2017,  NMR-->
+                    <stdDev>0.1</stdDev> <!-- calculated as SD between Unmarried Men and Unmarried Women, Nasrullah 2017,  NMR-->
+                  </distribution>
+                </chanceCondomUsePerEvent>
+                <partnershipDurationMth>
+                  <distribution type="shifted-log-normal">
+                    <mean>16.8</mean> <!-- average of leangth of romatic realtionships, not married, young adolescents, Lantagne 2017,  NMR-->
+                    <stdDev>11.1</stdDev> <!-- SD of the averages, Lantagne 2017,  NMR-->
+                    <shift>0</shift> <!--??? Not changed, NMR -->
+                  </distribution>
+                </partnershipDurationMth>
+              </highRisk>
+            </partnership>
+            <partnership type="casual">
+              <selectionCriteria>
+                <chanceChooseWithSteady>0.03</chanceChooseWithSteady> <!-- NOT changed, NMR-->
+                <averageYearsYounger>
+                  <distribution type="normal">
+                    <mean>1.06</mean> <!-- I'm using the same as in Regular partnerships, I (still) dont have date of dration of casual partnership, Male, Oudekerk 2014, Miami CDM Parameters 2021  NMR-->
+                    <stdDev>1.63</stdDev> <!-- The same as above, NMR-->
+                  </distribution>
+                </averageYearsYounger>
+              </selectionCriteria>
+              <lowRisk>
+                <acquisitionRate>
+                  <distribution type="normal">
+                    <mean>0.1597439473171337</mean> <!--BM 03 21 2022, previously: I use the lower bound for Steady acq. usin Miami data, NMR-->
+                    <stdDev>0</stdDev> <!-- NOT CHANGED, I DIDN'T FIND IT IN THE EXCEL FILE NMR-->
+                  </distribution>
+                </acquisitionRate>
+                <coitalEventsPerMonth>
+                  <distribution type="poisson"> <!-- NOT changed, it the proposal it says 1, NMR-->
+                    <mean>1</mean>
+                  </distribution>
+                </coitalEventsPerMonth>
+                <chanceCondomUsePerEvent>
+                  <distribution type="normal"> <!-- SAMAN, individul agent: do they sample from this Dist. every time, or do they sample once and then kep it?? -->&gt;
+                    <mean>0.8</mean> <!-- young Male, Staras 2013, Chicago, Other data are similar, except NHBS, NMR-->
+                    <stdDev>0.07</stdDev> <!-- calculated using MALE and FEMALE data, Staras 2013, Chicago, NMR-->
+                  </distribution>
+                </chanceCondomUsePerEvent>
+                <partnershipDurationMth>
+                  <distribution type="shifted-log-normal"> <!-- ??? NOT changed, all section left as it was,  NMR-->
+                    <mean>-1</mean>
+                    <stdDev>0</stdDev>
+                    <shift>0</shift>
+                  </distribution>
+                </partnershipDurationMth>
+              </lowRisk>
+              <highRisk>
+                <acquisitionRate>
+                  <distribution type="normal">
+                    <mean>0.8003812184879175</mean> <!-- I use the UPPER bound for Steady acq. usin Miami data, NMR-->
+                    <stdDev>0</stdDev> <!-- NOT CHANGED, I DIDN'T FIND IT IN THE EXCEL FILE NMR-->
+                  </distribution>
+                </acquisitionRate>
+                <coitalEventsPerMonth>
+                  <distribution type="poisson">  <!-- NOT changed, it the proposal it says 1, NMR-->
+                    <mean>1</mean>
+                  </distribution>
+                </coitalEventsPerMonth>
+                <chanceCondomUsePerEvent>
+                  <distribution type="normal">
+                    <mean>0.80</mean>  <!-- young Male, Staras 2013, Chicago, Other data are similar, except NHBS, NMR-->
+                    <stdDev>0.07</stdDev> <!-- calculated using MALE and FEMALE data, Staras 2013, Chicago, NMR-->
+                  </distribution>
+                </chanceCondomUsePerEvent>
+                <partnershipDurationMth>
+                  <distribution type="shifted-log-normal"> <!-- ??? NOT changed, all section left as it was,  NMR-->
+                    <mean>-1</mean>
+                    <stdDev>0</stdDev>
+                    <shift>0</shift>
+                  </distribution>
+                </partnershipDurationMth>
+              </highRisk>
+            </partnership>
+            <partnership type="csw"> 
+              <selectionCriteria>
+                <chanceChooseWithSteady>0.00</chanceChooseWithSteady> <!-- NOT changed, NMR-->
+                <averageYearsYounger>
+                  <distribution type="normal">
+                    <mean>1.06</mean> <!-- NOT changed, I don't have info abou it, (not yet??) NMR-->
+                    <stdDev>1.63</stdDev> <!-- NOT changed, I don't have info abou it, (not yet??) NMR-->
+                  </distribution>
+                </averageYearsYounger>
+              </selectionCriteria>
+              <lowRisk>
+                <acquisitionRate>
+                  <distribution type="normal">
+                    <mean>0.0005052438020684152</mean> <!--BM 03 21 2022, previously: NOT changed, Excel File (Par_Acq_Conversion) is not clear, NMR-->
+                    <stdDev>0</stdDev>
+                  </distribution>
+                </acquisitionRate>
+                <coitalEventsPerMonth>
+                  <distribution>
+                    <type>Poisson</type> 
+                    <mean>1</mean> <!-- NOT changed, it the proposal it says 1, NMR-->
+                  </distribution>
+                </coitalEventsPerMonth>
+                <chanceCondomUsePerEvent>
+                  <distribution type="normal">
+                    <mean>0.76</mean> <!-- Men 18-35 yrs Boston, Decker 2008, I have date Of hispanic immigrants 91.7% reported condom use diffrente paper tough, NMR-->
+                    <stdDev>0.21</stdDev>  <!-- NOT changed, I don't have data to calculate a SD, NMR-->
+                  </distribution>
+                </chanceCondomUsePerEvent>
+                <partnershipDurationMth>
+                  <distribution type="shifted-log-normal"> <!-- NOT changed, it the proposal it says 0, NMR-->
+                    <mean>-1</mean>
+                    <stdDev>0</stdDev>
+                    <shift>0</shift>
+                  </distribution>
+                </partnershipDurationMth>
+              </lowRisk>
+              <highRisk>
+                <acquisitionRate>
+                  <distribution type="normal">
+                    <mean>0.030117011260638822</mean> <!-- BM NMR 04 08 2022-->
+                    <stdDev>0</stdDev>
+                  </distribution>
+                </acquisitionRate>
+                <coitalEventsPerMonth>
+                  <distribution type="poisson">
+                    <mean>1</mean> <!-- NOT changed, it the proposal it says 1, NMR-->
+                  </distribution>
+                </coitalEventsPerMonth>
+                <chanceCondomUsePerEvent>
+                  <distribution type="normal">
+                    <mean>0.76</mean> <!-- Men 18-35 yrs Boston, Decker 2008, I have date Of hispanic immigrants 91.7% reported condom use diffrente paper tough, NMR-->
+                    <stdDev>0.21</stdDev> <!-- NOT changed, I don't have data to calculate a SD, NMR-->
+                  </distribution>
+                </chanceCondomUsePerEvent>
+                <partnershipDurationMth>
+                  <distribution type="shifted-log-normal">
+                    <mean>-1</mean> <!-- NOT changed, it the proposal it says 0, NMR-->
+                    <stdDev>0</stdDev>
+                    <shift>0</shift>
+                  </distribution>
+                </partnershipDurationMth>
+              </highRisk>
+            </partnership>
+          </partnershipTypes>
+          <maxPartnershipRejections>0</maxPartnershipRejections>
+        </behavior>
+        <health>
+          <proportionMaleCircumcised>0.378</proportionMaleCircumcised> <!-- Florida Overal Rate, neonates, 2016 NMR-->
+          <circumcisionProtectEfficacy>0.56</circumcisionProtectEfficacy> <!-- NOT changed, don't have data yet, NMR-->
+          <condomProtectEfficacy>0.8</condomProtectEfficacy> <!-- NOT changed, don't have data yet (??), NMR-->
+          <preExposureProphylaxisEfficacy>0.80</preExposureProphylaxisEfficacy> <!-- NOT changed, don't have data yet (??), NMR-->
+        </health>
+      </entity>
+      <entity type="female">
+        <behavior>
+          <cswEndAge>50</cswEndAge> <!-- US referece, NMR-->
+          <chanceBecomeSexWorker>0.008288266969577783</chanceBecomeSexWorker> <!--BM 03 21 2022, NMR-->
+          <!-- Median from Botswana BM Rates -->
+          <proportionHighRiskCsw>1</proportionHighRiskCsw> <!-- ??? NOT changed, NMR-->
+          <proportionHighRiskNonCsw>0.21223881589120097</proportionHighRiskNonCsw> <!--BM 03 21 2022, NMR-->
+          <!-- Median from Botswana BM Rates -->
+        </behavior>
+        <health>
+          <preExposureProphylaxisEfficacy>0.80</preExposureProphylaxisEfficacy> <!-- NOT changed, don't have data yet, NMR-->
+          <vaginalMicrobicideEfficacy>0</vaginalMicrobicideEfficacy> <!-- NOT changed, don't have data yet, NMR-->
+        </health>
+      </entity>
+    </entities>
+  </population>
+  <interventions>
+    <cepacIntervention enabled="true">
+      <cepacTreatmentFiles>
+        <treatmentFile>
+          <time>0</time>
+          <fileName>07212021B_NoART.in</fileName> <!-- I only replaced the NON-AIDS MORTALITY IN THE .IN FILE, HERE i USE THE AVERAGE FROM 2010 TO 2019, Male and Women Separately, NMR-->
+          <fileNumber>0</fileNumber>
+        </treatmentFile>    
+      </cepacTreatmentFiles>
+    </cepacIntervention>
+    <artRolloutIntervention enabled="true"> <!-- FROM THIS LINE UNTIL THE END, I HAVEN'T AND WON'T CHANGE ANYTHIN UNTIL WE TALK WITH DAN, NMR-->
+      <dynamicTreatmentScaling enabled="true">
+        <feedbackPeriod>-1</feedbackPeriod>
+      </dynamicTreatmentScaling>
+        <rolloutTreatmentFiles>
+          <rolloutFile>
+            <time>0</time>
+            <fileName>07212021B_NoART.in</fileName>
+            <fileNumber>0</fileNumber>
+            <popToApply>0</popToApply>
+          </rolloutFile>
+                          <!-- Rollout starts in 2007, EXP4 Mortality an increase of 200% from 2007-2012, then a linear interpolation from 2012 to 2021, where 2021 has 50% of the current values, NMR 06 07 2023-->
+                          <!-- Feb 1st 2007 (time 600 is January), NMR, 200% increase of the origianl AIDS death probabilities-->
+                          <rolloutFile>
+            <time>601</time> <!-- OTHERS O-->
+            <fileName>62M_14_H44m_EXP4.in</fileName>
+            <fileNumber>1</fileNumber>
+            <popToApply>7</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- BLACKS B-->
+            <time>601</time>
+            <fileName>62M_14_B44m_EXP4.in</fileName>
+            <fileNumber>2</fileNumber>
+            <popToApply>5</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- HISPANICS H-->
+            <time>601</time>
+            <fileName>62M_14_H44m_EXP4.in</fileName>
+            <fileNumber>3</fileNumber>
+            <popToApply>6</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- WHITES W-->
+            <time>601</time>
+            <fileName>62M_14_W44n_EXP4.in</fileName>
+            <fileNumber>4</fileNumber>
+            <popToApply>4</popToApply>
+          </rolloutFile>
+  
+  <!-- New In file, for 2013, with same ART strategy than the previous file (2007), but with a 20% reduction of the currend AIDS mortality probabilities, NMR 05 23 2023.-->                  
+  <!-- Jan 1st 2013, NMR, 7% decrease AIDS death prob.-->
+                          <rolloutFile>
+            <time>672</time> <!-- OTHERS O-->
+            <fileName>62Mb_14_H44m_EXP4.in</fileName>
+            <fileNumber>5</fileNumber>
+            <popToApply>7</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- BLACKS B-->
+            <time>672</time>
+            <fileName>62Mb_14_B44m_EXP4.in</fileName>
+            <fileNumber>6</fileNumber>
+            <popToApply>5</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- HISPANICS H-->
+            <time>672</time>
+            <fileName>62Mb_14_H44m_EXP4.in</fileName>
+            <fileNumber>7</fileNumber>
+            <popToApply>6</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- WHITES W-->
+            <time>672</time>
+            <fileName>62Mb_14_W44n_EXP4.in</fileName>
+            <fileNumber>8</fileNumber>
+            <popToApply>4</popToApply>
+          </rolloutFile>
+                        
+                          <!-- we create a new set of  IN files using linear aproximations for LTC, LTF and RTC between 2013 and 2019, 2020 and 2021 were added later, NMR-->
+                          <!-- Jan 1st 2014, NMR, 7% decrease AIDS death prob.-->
+                          <rolloutFile> <!-- OTHERS O-->
+            <time>684</time>
+            <fileName>63M_14_H44m_EXP4.in</fileName>
+            <fileNumber>9</fileNumber>
+            <popToApply>7</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- BLACKS B1-->
+            <time>684</time>
+            <fileName>63M_14_B44m_EXP4.in</fileName>
+            <fileNumber>10</fileNumber>
+            <popToApply>5</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- HISPANICS H1-->
+            <time>684</time>
+            <fileName>63M_14_H44m_EXP4.in</fileName>
+            <fileNumber>11</fileNumber>
+            <popToApply>6</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- WHITES W1-->
+            <time>684</time>
+            <fileName>63M_14_W44n_EXP4.in</fileName>
+            <fileNumber>12</fileNumber>
+            <popToApply>4</popToApply>
+          </rolloutFile>
+            
+              <!-- Jan 1st 2015, NMR, 7% decrease AIDS death prob.-->
+                          <rolloutFile> <!-- OTHERS O-->
+            <time>696</time>
+            <fileName>64M_14_H44m_EXP4.in</fileName>
+            <fileNumber>13</fileNumber>
+            <popToApply>7</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- BLACKS B-->
+            <time>696</time>
+            <fileName>64M_14_B44m_EXP4.in</fileName>
+            <fileNumber>14</fileNumber>
+            <popToApply>5</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- HISPANICS H-->
+            <time>696</time>
+            <fileName>64M_14_H44m_EXP4.in</fileName>
+            <fileNumber>15</fileNumber>
+            <popToApply>6</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- WHITES W-->
+            <time>696</time>
+            <fileName>64M_14_W44n_EXP4.in</fileName>
+            <fileNumber>16</fileNumber>
+            <popToApply>4</popToApply>
+          </rolloutFile>
+                        
+                          <!-- Jan 1st 2016, NMR, 7% decrease AIDS death prob.-->
+                          <rolloutFile>
+            <time>708</time> <!-- OTHERS O-->
+            <fileName>65M_14_H44m_EXP4.in</fileName>
+            <fileNumber>17</fileNumber>
+            <popToApply>7</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- BLACKS B-->
+            <time>708</time>
+            <fileName>65M_14_B44m_EXP4.in</fileName>
+            <fileNumber>18</fileNumber>
+            <popToApply>5</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- HISPANICS H-->
+            <time>708</time>
+            <fileName>65M_14_H44m_EXP4.in</fileName>
+            <fileNumber>19</fileNumber>
+            <popToApply>6</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- WHITES W-->
+            <time>708</time>
+            <fileName>65M_14_W44n_EXP4.in</fileName>
+            <fileNumber>20</fileNumber>
+            <popToApply>4</popToApply>
+          </rolloutFile>
+                        
+                          <!-- Jan 1st 2017, NMR, 7% decrease AIDS death prob.-->
+                          <rolloutFile> <!-- OTHERS O-->
+            <time>720</time>
+            <fileName>66M_14_H44m_EXP4.in</fileName>
+            <fileNumber>21</fileNumber>
+            <popToApply>7</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- BLACKS B-->
+            <time>720</time>
+            <fileName>66M_14_B44m_EXP4.in</fileName>
+            <fileNumber>22</fileNumber>
+            <popToApply>5</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- HISPANICS H-->
+            <time>720</time>
+            <fileName>66M_14_H44m_EXP4.in</fileName>
+            <fileNumber>23</fileNumber>
+            <popToApply>6</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- WHITES W-->
+            <time>720</time>
+            <fileName>66M_14_W44n_EXP4.in</fileName>
+            <fileNumber>24</fileNumber>
+            <popToApply>4</popToApply>
+          </rolloutFile>
+                        
+                          <!-- Jan 1st 2018, NMR, 7% decrease AIDS death prob.-->
+                          <rolloutFile> <!-- OTHERS O-->
+            <time>732</time>
+            <fileName>67M_14_H44m_EXP4.in</fileName>
+            <fileNumber>25</fileNumber>
+            <popToApply>7</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- BLACKS B-->
+            <time>732</time>
+            <fileName>67M_14_B44m_EXP4.in</fileName>
+            <fileNumber>26</fileNumber>
+            <popToApply>5</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- HISPANICS H-->
+            <time>732</time>
+            <fileName>67M_14_H44m_EXP4.in</fileName>
+            <fileNumber>27</fileNumber>
+            <popToApply>6</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- WHITES W-->
+            <time>732</time>
+            <fileName>67M_14_W44n_EXP4.in</fileName>
+            <fileNumber>28</fileNumber>
+            <popToApply>4</popToApply>
+          </rolloutFile>
+                        
+                          <!-- Jan 1st 2019, NMR, 7% decrease AIDS death prob.-->
+                          <rolloutFile> <!-- OTHERS O-->
+            <time>744</time>
+            <fileName>68M_14_H44m_EXP4.in</fileName>
+            <fileNumber>29</fileNumber>
+            <popToApply>7</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- BLACKS B-->
+            <time>744</time>
+            <fileName>68M_14_B44m_EXP4.in</fileName>
+            <fileNumber>30</fileNumber>
+            <popToApply>5</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- HISPANICS H-->
+            <time>744</time>
+            <fileName>68M_14_H44m_EXP4.in</fileName>
+            <fileNumber>31</fileNumber>
+            <popToApply>6</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- WHITES W-->
+            <time>744</time>
+            <fileName>68M_14_W44n_EXP4.in</fileName>
+            <fileNumber>32</fileNumber>
+            <popToApply>4</popToApply>
+          </rolloutFile>
+                        
+                          <!-- THE NEW FILES START HERE, NMR-->
+                          <!-- BASELINE WITH 2020 AND 2021 VALUES FOR ltc AND SAME TREND FOR rtc AND ltf, NMR-->
+                          <!-- Jan 1st 2020, NMR, 7% decrease AIDS death prob.-->
+                          <rolloutFile> <!-- OTHERS O-->
+            <time>756</time>
+            <fileName>69M_14_H44m_EXP4.in</fileName>
+            <fileNumber>33</fileNumber>
+            <popToApply>7</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- BLACKS B-->
+            <time>756</time>
+            <fileName>69M_14_B44m_EXP4.in</fileName>
+            <fileNumber>34</fileNumber>
+            <popToApply>5</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- HISPANICS H-->
+            <time>756</time>
+            <fileName>69M_14_H44m_EXP4.in</fileName>
+            <fileNumber>35</fileNumber>
+            <popToApply>6</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- WHITES W-->
+            <time>756</time>
+            <fileName>69M_14_W44n_EXP4.in</fileName>
+            <fileNumber>36</fileNumber>
+            <popToApply>4</popToApply>
+          </rolloutFile>
+                        
+                          <!-- Jan 1st 2021, NMR, 7% decrease AIDS death prob.-->
+                          <rolloutFile> <!-- OTHERS O-->
+            <time>768</time>
+            <fileName>70M_14_H44m_EXP4.in</fileName>
+            <fileNumber>37</fileNumber>
+            <popToApply>7</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- BLACKS B-->
+            <time>768</time>
+            <fileName>70M_14_B44m_EXP4.in</fileName>
+            <fileNumber>38</fileNumber>
+            <popToApply>5</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- HISPANICS H-->
+            <time>768</time>
+            <fileName>70M_14_H44m_EXP4.in</fileName>
+            <fileNumber>39</fileNumber>
+            <popToApply>6</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- WHITES W-->
+            <time>768</time>
+            <fileName>70M_14_W44n_EXP4.in</fileName>
+            <fileNumber>40</fileNumber>
+            <popToApply>4</popToApply>
+          </rolloutFile>
+                        
+                          <!-- OPTIMLAL LTC MODEL, SAME TREND FOR rtc AND ltf, ASYMPTOTIC GROWHT FOR ltc WITH F(x) = 1/x, OPTIMAL VALUE = 95%, since 2022 to 2033 NMR-->
+                          <!-- Jan 1st 2022, NMR-->
+                          <rolloutFile> <!-- OTHERS O-->
+            <time>780</time>
+            <fileName>71M_14_H44m_EXP4.in</fileName>
+            <fileNumber>41</fileNumber>
+            <popToApply>7</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- BLACKS B-->
+            <time>780</time>
+            <fileName>71M_14_B44m_EXP4.in</fileName>
+            <fileNumber>42</fileNumber>
+            <popToApply>5</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- HISPANICS H-->
+            <time>780</time>
+            <fileName>71M_14_H44m_EXP4.in</fileName>
+            <fileNumber>43</fileNumber>
+            <popToApply>6</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- WHITES W-->
+            <time>780</time>
+            <fileName>71M_14_W44n_EXP4.in</fileName>
+            <fileNumber>44</fileNumber>
+            <popToApply>4</popToApply>
+          </rolloutFile>
+  
+                          <!-- Jan 1st 2023, NMR-->
+                          <rolloutFile> <!-- OTHERS O-->
+            <time>792</time>
+            <fileName>72M_14_H44m_EXP4.in</fileName>
+            <fileNumber>45</fileNumber>
+            <popToApply>7</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- BLACKS B-->
+            <time>792</time>
+            <fileName>72M_14_B44m_EXP4.in</fileName>
+            <fileNumber>46</fileNumber>
+            <popToApply>5</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- HISPANICS H-->
+            <time>792</time>
+            <fileName>72M_14_H44m_EXP4.in</fileName>
+            <fileNumber>47</fileNumber>
+            <popToApply>6</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- WHITES W-->
+            <time>792</time>
+            <fileName>72M_14_W44n_EXP4.in</fileName>
+            <fileNumber>48</fileNumber>
+            <popToApply>4</popToApply>
+          </rolloutFile>
+                        
+                          <!-- Jan 1st 2024, NMR-->
+                          <rolloutFile> <!-- OTHERS O-->
+            <time>804</time>
+            <fileName>73M_14_H44m_EXP4.in</fileName>
+            <fileNumber>49</fileNumber>
+            <popToApply>7</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- BLACKS B-->
+            <time>804</time>
+            <fileName>73M_14_B44m_EXP4.in</fileName>
+            <fileNumber>50</fileNumber>
+            <popToApply>5</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- HISPANICS H-->
+            <time>804</time>
+            <fileName>73M_14_H44m_EXP4.in</fileName>
+            <fileNumber>51</fileNumber>
+            <popToApply>6</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- WHITES W-->
+            <time>804</time>
+            <fileName>73M_14_W44n_EXP4.in</fileName>
+            <fileNumber>52</fileNumber>
+            <popToApply>4</popToApply>
+          </rolloutFile>
+                        
+                          <!-- Jan 1st 2025, NMR-->
+                          <rolloutFile> <!-- OTHERS O-->
+            <time>816</time>
+            <fileName>74M_14_H44m_EXP4.in</fileName>
+            <fileNumber>53</fileNumber>
+            <popToApply>7</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- BLACKS B-->
+            <time>816</time>
+            <fileName>74M_14_B44m_EXP4.in</fileName>
+            <fileNumber>54</fileNumber>
+            <popToApply>5</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- HISPANICS H-->
+            <time>816</time>
+            <fileName>74M_14_H44m_EXP4.in</fileName>
+            <fileNumber>55</fileNumber>
+            <popToApply>6</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- WHITES W-->
+            <time>816</time>
+            <fileName>74M_14_W44n_EXP4.in</fileName>
+            <fileNumber>56</fileNumber>
+            <popToApply>4</popToApply>
+          </rolloutFile>
+                        
+                          <!-- Jan 1st 2026, NMR-->
+                          <rolloutFile> <!-- OTHERS O-->
+            <time>828</time>
+            <fileName>75M_14_H44m_EXP4.in</fileName>
+            <fileNumber>57</fileNumber>
+            <popToApply>7</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- BLACKS B-->
+            <time>828</time>
+            <fileName>75M_14_B44m_EXP4.in</fileName>
+            <fileNumber>58</fileNumber>
+            <popToApply>5</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- HISPANICS H-->
+            <time>828</time>
+            <fileName>75M_14_H44m_EXP4.in</fileName>
+            <fileNumber>59</fileNumber>
+            <popToApply>6</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- WHITES W-->
+            <time>828</time>
+            <fileName>75M_14_W44n_EXP4.in</fileName>
+            <fileNumber>60</fileNumber>
+            <popToApply>4</popToApply>
+          </rolloutFile>
+                        
+                          <!-- Jan 1st 2027, NMR-->
+                          <rolloutFile> <!-- OTHERS O-->
+            <time>840</time>
+            <fileName>76M_14_H44m_EXP4.in</fileName>
+            <fileNumber>61</fileNumber>
+            <popToApply>7</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- BLACKS B-->
+            <time>840</time>
+            <fileName>76M_14_B44m_EXP4.in</fileName>
+            <fileNumber>62</fileNumber>
+            <popToApply>5</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- HISPANICS H-->
+            <time>840</time>
+            <fileName>76M_14_H44m_EXP4.in</fileName>
+            <fileNumber>63</fileNumber>
+            <popToApply>6</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- WHITES W-->
+            <time>840</time>
+            <fileName>76M_14_W44n_EXP4.in</fileName>
+            <fileNumber>64</fileNumber>
+            <popToApply>4</popToApply>
+          </rolloutFile>
+                        
+                          <!-- Jan 1st 2028, NMR-->
+                          <rolloutFile> <!-- OTHERS O-->
+            <time>852</time>
+            <fileName>77M_14_H44m_EXP4.in</fileName>
+            <fileNumber>65</fileNumber>
+            <popToApply>7</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- BLACKS B-->
+            <time>852</time>
+            <fileName>77M_14_B44m_EXP4.in</fileName>
+            <fileNumber>66</fileNumber>
+            <popToApply>5</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- HISPANICS H-->
+            <time>852</time>
+            <fileName>77M_14_H44m_EXP4.in</fileName>
+            <fileNumber>67</fileNumber>
+            <popToApply>6</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- WHITES W-->
+            <time>852</time>
+            <fileName>77M_14_W44n_EXP4.in</fileName>
+            <fileNumber>68</fileNumber>
+            <popToApply>4</popToApply>
+          </rolloutFile>
+                        
+                          <!-- Jan 1st 2029, NMR-->
+                          <rolloutFile> <!-- OTHERS O-->
+            <time>864</time>
+            <fileName>78M_14_H44m_EXP4.in</fileName>
+            <fileNumber>69</fileNumber>
+            <popToApply>7</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- BLACKS B-->
+            <time>864</time>
+            <fileName>78M_14_B44m_EXP4.in</fileName>
+            <fileNumber>70</fileNumber>
+            <popToApply>5</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- HISPANICS H-->
+            <time>864</time>
+            <fileName>78M_14_H44m_EXP4.in</fileName>
+            <fileNumber>71</fileNumber>
+            <popToApply>6</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- WHITES W-->
+            <time>864</time>
+            <fileName>78M_14_W44n_EXP4.in</fileName>
+            <fileNumber>72</fileNumber>
+            <popToApply>4</popToApply>
+          </rolloutFile>
+                        
+                          <!-- Jan 1st 2030, NMR-->
+                          <rolloutFile> <!-- OTHERS O-->
+            <time>876</time>
+            <fileName>79M_14_H44m_EXP4.in</fileName>
+            <fileNumber>73</fileNumber>
+            <popToApply>7</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- BLACKS B-->
+            <time>876</time>
+            <fileName>79M_14_B44m_EXP4.in</fileName>
+            <fileNumber>74</fileNumber>
+            <popToApply>5</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- HISPANICS H-->
+            <time>876</time>
+            <fileName>79M_14_H44m_EXP4.in</fileName>
+            <fileNumber>75</fileNumber>
+            <popToApply>6</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- WHITES W-->
+            <time>876</time>
+            <fileName>79M_14_W44n_EXP4.in</fileName>
+            <fileNumber>76</fileNumber>
+            <popToApply>4</popToApply>
+          </rolloutFile>
+                        
+                          <!-- Jan 1st 2031, NMR-->
+                          <rolloutFile> <!-- OTHERS O-->
+            <time>888</time>
+            <fileName>80M_14_H44m_EXP4.in</fileName>
+            <fileNumber>77</fileNumber>
+            <popToApply>7</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- BLACKS B-->
+            <time>888</time>
+            <fileName>80M_14_B44m_EXP4.in</fileName>
+            <fileNumber>78</fileNumber>
+            <popToApply>5</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- HISPANICS H-->
+            <time>888</time>
+            <fileName>80M_14_H44m_EXP4.in</fileName>
+            <fileNumber>79</fileNumber>
+            <popToApply>6</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- WHITES W-->
+            <time>888</time>
+            <fileName>80M_14_W44n_EXP4.in</fileName>
+            <fileNumber>80</fileNumber>
+            <popToApply>4</popToApply>
+          </rolloutFile>
+                        
+                          <!-- Jan 1st 2032, NMR-->
+                          <rolloutFile> <!-- OTHERS O-->
+            <time>900</time>
+            <fileName>81M_14_H44m_EXP4.in</fileName>
+            <fileNumber>81</fileNumber>
+            <popToApply>7</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- BLACKS B-->
+            <time>900</time>
+            <fileName>81M_14_B44m_EXP4.in</fileName>
+            <fileNumber>82</fileNumber>
+            <popToApply>5</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- HISPANICS H-->
+            <time>900</time>
+            <fileName>81M_14_H44m_EXP4.in</fileName>
+            <fileNumber>83</fileNumber>
+            <popToApply>6</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- WHITES W-->
+            <time>900</time>
+            <fileName>81M_14_W44n_EXP4.in</fileName>
+            <fileNumber>84</fileNumber>
+            <popToApply>4</popToApply>
+          </rolloutFile>
+                        
+                          <!-- Jan 1st 2033, NMR-->
+                          <rolloutFile> <!-- OTHERS O-->
+            <time>912</time>
+            <fileName>82M_14_H44m_EXP4.in</fileName>
+            <fileNumber>85</fileNumber>
+            <popToApply>7</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- BLACKS B-->
+            <time>912</time>
+            <fileName>82M_14_B44m_EXP4.in</fileName>
+            <fileNumber>86</fileNumber>
+            <popToApply>5</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- HISPANICS H-->
+            <time>912</time>
+            <fileName>82M_14_H44m_EXP4.in</fileName>
+            <fileNumber>87</fileNumber>
+            <popToApply>6</popToApply>
+          </rolloutFile>
+                          <rolloutFile> <!-- WHITES W-->
+            <time>912</time>
+            <fileName>82M_14_W44n_EXP4.in</fileName>
+            <fileNumber>88</fileNumber>
+            <popToApply>4</popToApply>
+          </rolloutFile>
+        </rolloutTreatmentFiles>
+      <rolloutEligibility enabled="false">
+        <criteria name="OIHist">
+          <rank>1</rank>
+          <OI0>0</OI0>
+          <OI1>0</OI1>
+          <OI2>0</OI2>
+          <OI3>0</OI3>
+          <OI4>0</OI4>
+          <OI5>0</OI5>
+          <OI6>0</OI6>
+          <OI7>0</OI7>
+          <OI8>1</OI8>
+          <OI9>1</OI9>
+          <OI10>1</OI10>
+          <OI11>1</OI11>
+          <OI12>0</OI12>
+          <OI13>1</OI13>
+          <OI14>0</OI14>
+          <numOIToStart>1</numOIToStart>
+        </criteria>
+        <criteria name="CD4">
+          <rank>2</rank>
+          <CD4Upp>-1</CD4Upp>
+          <CD4Lwr>-1</CD4Lwr>
+        </criteria>
+        <criteria name="CD4OIHist">
+          <rank>3</rank>
+          <CD4Upp>-1</CD4Upp>
+          <CD4Lwr>-1</CD4Lwr>
+          <OI0>0</OI0>
+          <OI1>0</OI1>
+          <OI2>0</OI2>
+          <OI3>0</OI3>
+          <OI4>0</OI4>
+          <OI5>0</OI5>
+          <OI6>0</OI6>
+          <OI7>0</OI7>
+          <OI8>0</OI8>
+          <OI9>0</OI9>
+          <OI10>0</OI10>
+          <OI11>0</OI11>
+          <OI12>0</OI12>
+          <OI13>0</OI13>
+          <OI14>0</OI14>
+        </criteria>
+        <criteria name="HVL">
+          <rank>4</rank>
+          <HVLUpp>-1</HVLUpp>
+          <HVLLwr>-1</HVLLwr>
+        </criteria>
+        <criteria name="CD4HVL">
+          <rank>5</rank>
+          <CD4Upp>-1</CD4Upp>
+          <CD4Lwr>-1</CD4Lwr>
+          <HVLUpp>-1</HVLUpp>
+          <HVLLwr>-1</HVLLwr>
+        </criteria>
+      </rolloutEligibility>
+      <targetRolloutProportions>
+	    <target year="1989">1</target>
+		<target year="1990">1</target>
+		<target year="1991">1</target>
+		<target year="1992">1</target>
+		<target year="1993">1</target>
+		<target year="1994">1</target>
+		<target year="1995">1</target>
+		<target year="1996">1</target>
+		<target year="1997">1</target>
+		<target year="1998">1</target>
+		<target year="1999">1</target>
+		<target year="2000">1</target>
+		<target year="2001">1</target>
+        <target year="2002">1</target>
+        <target year="2003">1</target>
+        <target year="2004">1</target>
+        <target year="2005">1</target>
+        <target year="2006">1</target>
+        <target year="2007">1</target>
+        <target year="2008">1</target>
+        <target year="2009">1</target>
+        <target year="2010">1</target>
+        <target year="2011">1</target>
+        <target year="2012">1</target>
+        <target year="2013">1</target>
+        <target year="2014">1</target>
+        <target year="2015">1</target>
+      </targetRolloutProportions>
+    </artRolloutIntervention>
+  </interventions>
+</simulation>

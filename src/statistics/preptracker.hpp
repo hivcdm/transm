@@ -36,6 +36,7 @@ public:
     void recordNewOnPrep(Entity *person);
     void recordWronglyOnPrep(Entity *person);
     void recordTestedPositiveDuringPrep(Entity *person);
+    void recordEverbeenOnPrepWithinTwelveMonths(Entity *person);
 
     void printPrepOutcomes(Time time, std::ostream &_outStream, Population *_population);
 
