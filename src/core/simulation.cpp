@@ -629,6 +629,8 @@ std::size_t Simulation::SimulateMonth() {
 
     population_.UpdatePhysicalState(parameters_, recordLE, firstMonthToRecord);
 
+    population_.UpdateForFOCUSAnalysis(parameters_);
+
     population_.Births(parameters_);
 
     if (lastMonthToRecord) {
@@ -665,7 +667,7 @@ std::size_t Simulation::SimulateMonth() {
     if (seedDelay != Time::Zero && seedDelay.in_months() == time_.in_months()) {
         population_.ApplyIncidentPrevalence(parameters_);
     }
-
+    
     /* Will confirm that population_.currSize is correct and update size of age ranges */
     return population_.UpdateSize();
 }

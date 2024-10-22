@@ -29,11 +29,14 @@ const std::vector<std::string> ArtRolloutTracker::TRACKED_OUTCOMES =
         {
                 "infected",
                 "plwh", /* people living with HIV */
+                "undiagnosed",
                 "in_care",
                 "new_diagnosis",
                 "enrolled_within_30",
                 "suppressed_vl",
-                "treated" /* people on ART */
+                "unlinked",
+                "treated", /* people on ART */
+                "focus"
                 /* "return_to_care",
                 "ltfu",
                 "firstlineART",
@@ -89,6 +92,10 @@ void ArtRolloutTracker::recordTest(Entity *person, bool accepted, bool returned,
             numTestsByResult[result]++;
         }
     }
+}
+
+void ArtRolloutTracker::recordUndiagnosed(Entity *person) {
+    counter.Increment(PersonBucket(*person, ageRanges), "undiagnosed");
 }
 
 void ArtRolloutTracker::recordTreatmentAccessEligibility(Entity *person) {
@@ -175,6 +182,10 @@ void ArtRolloutTracker::buildHeader() {
             section_header = "Second Line ART";
         } else if (outcome == "return_to_care") {
             section_header = "Return To Care";
+        } else if (outcome == "undiagnosed") {
+            section_header = "Undiagnosed";
+        } else if (outcome == "focus") {
+            section_header = "FOCUS Study";
         }
 
 
@@ -438,6 +449,12 @@ void ArtRolloutTracker::recordFirstLine(Entity *person) {
     void ArtRolloutTracker::recordSecondLine(Entity *person) {
         counter.Increment(PersonBucket(*person, ageRanges), "secondlineART");
     }
+
+void ArtRolloutTracker::recordFOCUS(Entity *person) {
+    counter.Increment(PersonBucket(*person, ageRanges), "focus");
+}
+
+
 
 // namespace transm
 }

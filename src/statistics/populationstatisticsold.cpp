@@ -1005,6 +1005,11 @@ void PopulationStatisticsOld::recordSuppressedVL(Entity *person) {
     artTracker.recordSuppressedVL(person);
 }
 
+void PopulationStatisticsOld::recordUndiagnosed(Entity *person) {
+    uniqueUndiagnosed.insert(person);
+    artTracker.recordUndiagnosed(person);
+}
+
 void PopulationStatisticsOld::recordEnrolledInThirtyDays(Entity *person) {
     uniqueYearlyEnrolledInThirtyDays.insert(person);
     artTracker.recordEnrolledInThirtyDays(person);
@@ -1050,6 +1055,12 @@ void PopulationStatisticsOld::recordRTC(Entity *person) {
     artTracker.recordRTC(person);
 }
 
+void PopulationStatisticsOld::recordFOCUS(Entity *person) {
+    uniqueYearlyFOCUS.insert(person);
+    artTracker.recordFOCUS(person);
+}
+
+
 void PopulationStatisticsOld::resetYear(Time newYear) {
     relativeTime = newYear;
 
@@ -1085,7 +1096,10 @@ void PopulationStatisticsOld::resetYear(Time newYear) {
 
     uniqueYearlyFirstLine.clear();
     uniqueYearlySecondLine.clear();
+    uniqueYearlyRTC.clear();
 
+    uniqueUndiagnosed.clear();
+    uniqueYearlyFOCUS.clear();
 }
 
 

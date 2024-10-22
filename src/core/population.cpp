@@ -226,6 +226,10 @@ void Population::UpdatePhysicalState(EventParams &eventParams, bool calculateLE,
                 populationStatistics.recordInfected(p);
             }
 
+            if (p->isInfected() && !p->isDetected()) {
+                populationStatistics.recordUndiagnosed(p);
+            }
+
             /* Counts whoever if detected HIV positive */
             /* Everything else is being counted under the condition of the entity is already being detected positive */
             if (p->isDetected()) {
@@ -418,17 +422,18 @@ std::vector<Entity *> Population::Find(const std::function<bool(Entity * )>& pre
 }
 
 std::vector<Entity *> Population::FindNonCircumcised() {
-    auto match = [&](Entity *person) {
+    return Find([](Entity *person) {
         return person->isMale() && !person->IsCircumcised();
-    };
-
-    std::vector<Entity *> matches;
-    entities->forEach([=, &matches](Entity *p) {
-        if (match(p))
-            matches.push_back(p);
     });
-    return matches;
 }
+
+std::vector<Entity *> Population::FindMalePositives() {
+    return Find([](Entity *person) {
+        return person->isMale() && person->getHIVStatus() == HIVStatus::NEGATIVE;
+    });
+}
+    
+        
 
 void Population::RegisterIntervention(const Intervention &intervention) {
     interventions_.push_back(intervention);
@@ -636,6 +641,14 @@ void Population::UpdatePartnerships(EventParams &eventParams) {
             }
         }
     }
+}
+
+void Population::UpdateForFOCUSAnalysis(EventParams &eventParams) {
+
+    /*find male negatives*/
+    std::vector<Entity *> maleNegatives = FindMalePositives();
+    cout << "Number of makes negatives: " << maleNegatives.size() << endl;
+
 }
 
 /* Write out the current partnership network */

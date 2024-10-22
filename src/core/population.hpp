@@ -67,6 +67,8 @@ public:
 
     std::vector<Entity *> FindNonCircumcised();
 
+    std::vector<Entity *> FindMalePositives();
+
     /** determines which DemographicProfiles have the power to initiate relationships and determines which
      * relationships they can have */
     void InitPartnershipBuckets();
@@ -104,6 +106,8 @@ public:
      * when transmissions occur, run the incident case through CEPAC to get their future life trajectory
      * returns the # of New people of each type who was infected */
     void UpdatePartnerships(EventParams &eventParams);
+
+    void UpdateForFOCUSAnalysis(EventParams &eventParams);
 
     void WritePartnershipNetwork(EventParams &eventParams);
 
