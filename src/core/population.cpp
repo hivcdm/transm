@@ -429,11 +429,87 @@ std::vector<Entity *> Population::FindNonCircumcised() {
 
 std::vector<Entity *> Population::FindMalePositives() {
     return Find([](Entity *person) {
-        return person->isMale() && person->getHIVStatus() == HIVStatus::NEGATIVE;
+        return person->isMale() && person->getHIVStatus() != HIVStatus::ANY_NOT_OBSERVED_POSITIVE;
     });
 }
     
-        
+std::vector<Entity *> Population::FindHispanicMalesUndiagnosed() {
+    return Find([](Entity *person) {
+        return person->isMale() && person->getHIVStatus() == HIVStatus::ANY_NOT_OBSERVED_POSITIVE &&
+               person->isHispanic();
+    });
+}    
+
+std::vector<Entity *> Population::FindHispanicFemalesUndiagnosed() {
+    return Find([](Entity *person) {
+        return !person->isMale() && person->getHIVStatus() == HIVStatus::ANY_NOT_OBSERVED_POSITIVE &&
+               person->isHispanic();
+    });
+}    
+
+std::vector<Entity *> Population::FindBlackMalesUndiagnosed() {
+    return Find([](Entity *person) {
+        return person->isMale() && person->getHIVStatus() == HIVStatus::ANY_NOT_OBSERVED_POSITIVE &&
+               person->isBlack();
+    });
+} 
+
+std::vector<Entity *> Population::FindBlackFemalesUndiagnosed() {
+    return Find([](Entity *person) {
+        return !person->isMale() && person->getHIVStatus() == HIVStatus::ANY_NOT_OBSERVED_POSITIVE &&
+               person->isBlack();
+    });
+} 
+
+std::vector<Entity *> Population::FindWhiteMalesUndiagnosed() {
+    return Find([](Entity *person) {
+        return person->isMale() && person->getHIVStatus() == HIVStatus::ANY_NOT_OBSERVED_POSITIVE &&
+               person->isWhite();
+    });
+} 
+
+std::vector<Entity *> Population::FindWhiteFemalesUndiagnosed() {
+    return Find([](Entity *person) {
+        return !person->isMale() && person->getHIVStatus() == HIVStatus::ANY_NOT_OBSERVED_POSITIVE &&
+               person->isWhite();
+    });
+} 
+
+std::vector<Entity *> Population::FindHispanicMalesLossToFollowUp() {
+    return Find([](Entity *person) {
+        return person->isMale() && person->isLTFU() && person->isHispanic();
+    });
+} 
+
+std::vector<Entity *> Population::FindHispanicFemalesLossToFollowUp() {
+    return Find([](Entity *person) {
+        return !person->isMale() && person->isLTFU() && person->isHispanic();
+    });
+} 
+
+std::vector<Entity *> Population::FindBlackMalesLossToFollowUp() {
+    return Find([](Entity *person) {
+        return person->isMale() && person->isLTFU() && person->isBlack();
+    });
+} 
+
+std::vector<Entity *> Population::FindBlackFemalesLossToFollowUp() {
+    return Find([](Entity *person) {
+        return !person->isMale() && person->isLTFU() && person->isBlack();
+    });
+} 
+
+std::vector<Entity *> Population::FindWhiteMalesLossToFollowUp() {
+    return Find([](Entity *person) {
+        return person->isMale() && person->isLTFU() && person->isWhite();
+    });
+} 
+
+std::vector<Entity *> Population::FindWhiteFemalesLossToFollowUp() {
+    return Find([](Entity *person) {
+        return !person->isMale() && person->isLTFU() && person->isWhite();
+    });
+} 
 
 void Population::RegisterIntervention(const Intervention &intervention) {
     interventions_.push_back(intervention);
@@ -644,9 +720,11 @@ void Population::UpdatePartnerships(EventParams &eventParams) {
 }
 
 void Population::UpdateForFOCUSAnalysis(EventParams &eventParams) {
-
-    /*find male negatives*/
+    /** TODO: Pull all the lists */
+    /*find male positives*/
     std::vector<Entity *> maleNegatives = FindMalePositives();
+
+
     cout << "Number of makes negatives: " << maleNegatives.size() << endl;
 
 }
