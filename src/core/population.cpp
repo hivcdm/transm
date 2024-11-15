@@ -720,7 +720,7 @@ void Population::UpdatePartnerships(EventParams &eventParams) {
 }
 
 void Population::UpdateForFOCUSAnalysis(EventParams &eventParams) {
-    /*find male positives*/
+    /* find undiagnosed or LTFUs */
     std::vector<std::vector<Entity *>> groups = {
         FindHispanicMalesUndiagnosed(),
         FindHispanicFemalesUndiagnosed(),
@@ -736,8 +736,7 @@ void Population::UpdateForFOCUSAnalysis(EventParams &eventParams) {
         FindWhiteFemalesLossToFollowUp()
     };
 
-
-        // Lambda to pick a random entity (returns nullptr if the vector is empty)
+    /* Lambda to pick a random entity (returns nullptr if the vector is empty) */
     auto pickRandomEntity = [](const std::vector<Entity*>& entities) -> Entity* {
         if (entities.empty()) return nullptr;
         std::random_device rd;
@@ -746,7 +745,8 @@ void Population::UpdateForFOCUSAnalysis(EventParams &eventParams) {
         return entities[dist(gen)];
     };
 
-    // Iterate through each group and pick a random entity
+    /* Iterate through each group and pick a random entity and set to FOCUS for cepac to 
+        pick up also record in population statistics */
     for (const auto& group : groups) {
         Entity* randomEntity = pickRandomEntity(group);
         if (randomEntity) {
@@ -754,8 +754,6 @@ void Population::UpdateForFOCUSAnalysis(EventParams &eventParams) {
             populationStatistics.recordFOCUS(randomEntity);
         } 
     }
-
-
 }
 
 /* Write out the current partnership network */
