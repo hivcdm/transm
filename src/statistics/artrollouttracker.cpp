@@ -25,11 +25,12 @@ const std::vector<std::string> ArtRolloutTracker::RISK_GROUP_NAMES =
                 "CSW High-Risk Male:Msm"
         };
 
+/* TODO: This cant's take more than 9 quantity! */
 const std::vector<std::string> ArtRolloutTracker::TRACKED_OUTCOMES =
         {
                 "infected",
                 "plwh", /* people living with HIV */
-                "undiagnosed",
+                // "undiagnosed", 
                 "in_care",
                 "new_diagnosis",
                 "enrolled_within_30",

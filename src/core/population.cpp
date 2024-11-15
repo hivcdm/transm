@@ -429,7 +429,7 @@ std::vector<Entity *> Population::FindNonCircumcised() {
 
 std::vector<Entity *> Population::FindMalePositives() {
     return Find([](Entity *person) {
-        return person->isMale() && person->getHIVStatus() != HIVStatus::ANY_NOT_OBSERVED_POSITIVE;
+        return person->isMale() && person->getHIVStatus() == HIVStatus::ANY_NOT_OBSERVED_POSITIVE;
     });
 }
     
@@ -720,12 +720,41 @@ void Population::UpdatePartnerships(EventParams &eventParams) {
 }
 
 void Population::UpdateForFOCUSAnalysis(EventParams &eventParams) {
-    /** TODO: Pull all the lists */
     /*find male positives*/
-    std::vector<Entity *> maleNegatives = FindMalePositives();
+    std::vector<std::vector<Entity *>> groups = {
+        FindHispanicMalesUndiagnosed(),
+        FindHispanicFemalesUndiagnosed(),
+        FindBlackMalesUndiagnosed(),
+        FindBlackFemalesUndiagnosed(),
+        FindWhiteMalesUndiagnosed(),
+        FindWhiteFemalesUndiagnosed(),
+        FindHispanicMalesLossToFollowUp(),
+        FindHispanicFemalesLossToFollowUp(),
+        FindBlackMalesLossToFollowUp(),
+        FindBlackFemalesLossToFollowUp(),
+        FindWhiteMalesLossToFollowUp(),
+        FindWhiteFemalesLossToFollowUp()
+    };
 
 
-    cout << "Number of makes negatives: " << maleNegatives.size() << endl;
+        // Lambda to pick a random entity (returns nullptr if the vector is empty)
+    auto pickRandomEntity = [](const std::vector<Entity*>& entities) -> Entity* {
+        if (entities.empty()) return nullptr;
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> dist(0, entities.size() - 1);
+        return entities[dist(gen)];
+    };
+
+    // Iterate through each group and pick a random entity
+    for (const auto& group : groups) {
+        Entity* randomEntity = pickRandomEntity(group);
+        if (randomEntity) {
+            randomEntity->setFOCUS();
+            populationStatistics.recordFOCUS(randomEntity);
+        } 
+    }
+
 
 }
 
