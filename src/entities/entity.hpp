@@ -683,6 +683,7 @@ public:
             std::cerr << "Error: cepacPatient is null!" << std::endl;
             return;  // Exit early if cepacPatient is null
         }
+        cout << "selected in CDM" << endl;
         cepacPatient->setFocusStatus(true);
     }
 
