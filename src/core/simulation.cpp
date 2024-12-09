@@ -627,10 +627,10 @@ std::size_t Simulation::SimulateMonth() {
 //        population_.ApplyARTRollout(parameters_);
 //    }
 
-    population_.UpdateForFOCUSAnalysis(parameters_);
-
 
     population_.UpdatePhysicalState(parameters_, recordLE, firstMonthToRecord);
+
+    population_.UpdateForFOCUSAnalysis(parameters_);
 
     population_.Births(parameters_);
 
