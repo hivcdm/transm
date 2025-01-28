@@ -30,18 +30,18 @@ const std::string ArtRolloutTracker::TRACKED_OUTCOMES[] =
         {
                 "infected",
                 "plwh", /* people living with HIV */
-                // "undiagnosed", 
+                "undiagnosed", 
                 "in_care",
                 "new_diagnosis",
                 "enrolled_within_30",
-                "suppressed_vl",
+                // "suppressed_vl",
                 "unlinked",
                 "treated", /* people on ART */
-                "focus"
-                /* "return_to_care",
-                "ltfu",
-                "firstlineART",
-                "secondlineART" */
+                "focus",
+                // "return_to_care",
+                "ltfu"
+                // "firstlineART",
+                // "secondlineART"
         };
 
 const std::string ArtRolloutTracker::BUCKETS[] =
