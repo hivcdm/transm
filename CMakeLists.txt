@@ -98,24 +98,23 @@ add_dependencies(pugixml pugixml_project)
 
 # Then there is CEPAC, we also use it as a library
 
-# Define the path to the local cepac-transm directory where it is built
-set(CEPAC_SOURCE_DIR /home/samanseifi/codes/hiv-CDM/cepac-transm)
-
-# Add a custom target to build the cepac library locally
-add_custom_target(cepac_build ALL
-    COMMAND make -C ${CEPAC_SOURCE_DIR}
-    COMMENT "Building CEPAC library from local source"
+ExternalProject_Add(
+	cepac_project 
+	PREFIX ${CMAKE_BINARY_DIR}/third-party
+	GIT_REPOSITORY https://github.com/hsphcdm/cepac-transm.git
+	GIT_TAG develop-no-focus
+	UPDATE_COMMAND ""
+	CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+	#CONFIGURE_COMMAND cmake cepac_project
+	BUILD_COMMAND make
+	INSTALL_COMMAND mv libcepac.a ${CMAKE_SOURCE_DIR}/lib/ 
 )
 
-# Set the include directory for the cepac-transm headers
-include_directories(${CEPAC_SOURCE_DIR}/src)
-
-# Define the path to the generated static library libcepac.a
+ExternalProject_Get_Property(cepac_project source_dir)
+include_directories(${source_dir}/src)
 add_library(cepac STATIC IMPORTED)
-set_property(TARGET cepac PROPERTY IMPORTED_LOCATION ${CEPAC_SOURCE_DIR}/libcepac.a)
-
-# Ensure that your target depends on cepac being built
-add_dependencies(cepac cepac_build)
+set_property(TARGET cepac PROPERTY IMPORTED_LOCATION  ${CMAKE_SOURCE_DIR}/lib/libcepac.a)
+add_dependencies(cepac cepac_project)
 
 # Now it is time to compile our own code
 
@@ -130,7 +129,7 @@ include(cmake.sources)
 
 # We add our executable
 add_executable(transm src/transm.cpp ${TRANSM_SOURCE_FILES})
-add_dependencies(transm rana_project tclap_project cepac_build)
+add_dependencies(transm rana_project tclap_project cepac_project)
 
 # Read and set up the version number
 file(READ VERSION TRANSM_VER)
