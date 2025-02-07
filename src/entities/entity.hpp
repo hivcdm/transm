@@ -678,6 +678,15 @@ public:
         }
     }
 
+    void setFOCUS() {
+        if (!cepacPatient) {
+            std::cerr << "Error: cepacPatient is null!" << std::endl;
+            return;  // Exit early if cepacPatient is null
+        }
+        // cout << "selected in CDM" << endl;
+        cepacPatient->setFocusStatus(1);
+    }
+
     /** Check if the patient is linked to care.
      * Important notes: 1) The patient can be linked but be HIV negative.
      *                  2) The patient can be linked but not HIV_CARE_IN_CARE. */
@@ -775,6 +784,7 @@ public:
         }
         return (cepacPatient && flag);
     }
+
 
     bool isInCareWithinThirty() const {
         bool flag = false;

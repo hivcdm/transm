@@ -63,9 +63,25 @@ public:
 
     SimContext *LoadCepacFile(const std::string &cepac_file) { return parameters_.LoadCepacContext(cepac_file); }
 
+    /** Pulls or finds the cohort of people with a given predicate */
     std::vector<Entity *> Find(const std::function<bool(Entity * )>& predicate);
 
+    /** Finders functions: Returning the vector of pointers pulling cohorts of people with different demographics
+     *  hiv staus. Will be used mainly of Gilead FOCUS analysis */
     std::vector<Entity *> FindNonCircumcised();
+    std::vector<Entity *> FindMalePositives();
+    std::vector<Entity *> FindHispanicMalesUndiagnosed();
+    std::vector<Entity *> FindHispanicFemalesUndiagnosed();
+    std::vector<Entity *> FindBlackMalesUndiagnosed();
+    std::vector<Entity *> FindBlackFemalesUndiagnosed();
+    std::vector<Entity *> FindWhiteMalesUndiagnosed();
+    std::vector<Entity *> FindWhiteFemalesUndiagnosed();
+    std::vector<Entity *> FindHispanicMalesLossToFollowUp();
+    std::vector<Entity *> FindHispanicFemalesLossToFollowUp();
+    std::vector<Entity *> FindBlackMalesLossToFollowUp();
+    std::vector<Entity *> FindBlackFemalesLossToFollowUp();
+    std::vector<Entity *> FindWhiteMalesLossToFollowUp();
+    std::vector<Entity *> FindWhiteFemalesLossToFollowUp();
 
     /** determines which DemographicProfiles have the power to initiate relationships and determines which
      * relationships they can have */
@@ -104,6 +120,8 @@ public:
      * when transmissions occur, run the incident case through CEPAC to get their future life trajectory
      * returns the # of New people of each type who was infected */
     void UpdatePartnerships(EventParams &eventParams);
+
+    void UpdateForFOCUSAnalysis(EventParams &eventParams);
 
     void WritePartnershipNetwork(EventParams &eventParams);
 

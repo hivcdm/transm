@@ -6,7 +6,7 @@
 
 namespace transm {
 
-const std::vector<std::string> ArtRolloutTracker::RISK_GROUP_NAMES =
+const std::string ArtRolloutTracker::RISK_GROUP_NAMES[] =
         {
                 "Non-CSW Low-Risk Male",
                 "Non-CSW High-Risk Male",
@@ -25,22 +25,26 @@ const std::vector<std::string> ArtRolloutTracker::RISK_GROUP_NAMES =
                 "CSW High-Risk Male:Msm"
         };
 
-const std::vector<std::string> ArtRolloutTracker::TRACKED_OUTCOMES =
+/* TODO: This cant's take more than 9 quantity! */
+const std::string ArtRolloutTracker::TRACKED_OUTCOMES[] =
         {
                 "infected",
                 "plwh", /* people living with HIV */
+                "undiagnosed", 
                 "in_care",
                 "new_diagnosis",
                 "enrolled_within_30",
-                "suppressed_vl",
-                "treated" /* people on ART */
-                /* "return_to_care",
-                "ltfu",
-                "firstlineART",
-                "secondlineART" */
+                // "suppressed_vl",
+                "unlinked",
+                "treated", /* people on ART */
+                // "focus",
+                // "return_to_care",
+                "ltfu"
+                // "firstlineART",
+                // "secondlineART"
         };
 
-const std::vector<std::string> ArtRolloutTracker::BUCKETS =
+const std::string ArtRolloutTracker::BUCKETS[] =
         {
                 "SEXUAL_ACTIVITY_STATUS",
                 "GENDER",
@@ -58,7 +62,8 @@ ArtRolloutTracker::ArtRolloutTracker() :
         numTestsOffered(0),
         numTestsAccepted(0),
         numTestsReturnedFor(0),
-        numTestsByResult(SimContext::TEST_RESULT_NUM) {
+        numTestsByResult(SimContext::TEST_RESULT_NUM) 
+{
     std::vector<std::string> tracked;
     for (const auto &outcome : TRACKED_OUTCOMES) {
         tracked.push_back(outcome);
@@ -89,6 +94,10 @@ void ArtRolloutTracker::recordTest(Entity *person, bool accepted, bool returned,
             numTestsByResult[result]++;
         }
     }
+}
+
+void ArtRolloutTracker::recordUndiagnosed(Entity *person) {
+    counter.Increment(PersonBucket(*person, ageRanges), "undiagnosed");
 }
 
 void ArtRolloutTracker::recordTreatmentAccessEligibility(Entity *person) {
@@ -175,6 +184,10 @@ void ArtRolloutTracker::buildHeader() {
             section_header = "Second Line ART";
         } else if (outcome == "return_to_care") {
             section_header = "Return To Care";
+        } else if (outcome == "undiagnosed") {
+            section_header = "Undiagnosed";
+        } else if (outcome == "focus") {
+            section_header = "Selected for FOCUS Study";
         }
 
 
@@ -188,18 +201,24 @@ void ArtRolloutTracker::buildHeader() {
         SetHeaderCell(column++, 3, "Males:Msm");
         SetHeaderCell(column, 2, "Race/Ethnicity Group");
         for (auto race : enum_iterator<DemographicProfile::Race>()) {
-            std::string raceStr = DemographicEnumStrs.at((std::size_t) DemographicProfile::Demographic::Race).
-                    at((std::size_t) race);
-            for (auto ethnicity : enum_iterator<DemographicProfile::Ethnicity>()) {
-                std::string ethStr = DemographicEnumStrs.at(
-                        (std::size_t) DemographicProfile::Demographic::Ethnicity).
-                        at((std::size_t) ethnicity);
+            if ((std::size_t)race >= DemographicEnumStrs.at((std::size_t)DemographicProfile::Demographic::Race).size()) {
+                throw std::runtime_error("Invalid Race index in DemographicEnumStrs.");
+            }
 
-                std::stringstream label;
-                label << raceStr << ":" << ethStr;
-                SetHeaderCell(column++, 3, label.str());
+            std::string raceStr = DemographicEnumStrs.at((std::size_t)DemographicProfile::Demographic::Race).at((std::size_t)race);
+
+            for (auto ethnicity : enum_iterator<DemographicProfile::Ethnicity>()) {
+                if ((std::size_t)ethnicity >= DemographicEnumStrs.at((std::size_t)DemographicProfile::Demographic::Ethnicity).size()) {
+                    throw std::runtime_error("Invalid Ethnicity index in DemographicEnumStrs.");
+                }
+
+                std::string ethStr = DemographicEnumStrs.at((std::size_t)DemographicProfile::Demographic::Ethnicity).at((std::size_t)ethnicity);
+
+                std::string label = raceStr + ":" + ethStr;
+                SetHeaderCell(column++, 3, label);
             }
         }
+
 //            for(auto gender : {"Males", "Females", "Males:Msw", "Males:Msmw", "Males:Msm", })
 //            {
 //                SetHeaderCell(column, 1, gender);
@@ -364,11 +383,11 @@ void ArtRolloutTracker::buildRow(Time time, Population *_population) {
 //            }
 
 
-        if (outcome == "test_result") {
-            for (int i = 0; i < SimContext::TEST_RESULT_NUM; ++i) {
-                PushElement(numTestsByResult[i]);
-            }
-        }
+        // if (outcome == "test_result") {
+        //     for (int i = 0; i < SimContext::TEST_RESULT_NUM; ++i) {
+        //         PushElement(numTestsByResult[i]);
+        //     }
+        // }
     }
 }
 
@@ -438,6 +457,12 @@ void ArtRolloutTracker::recordFirstLine(Entity *person) {
     void ArtRolloutTracker::recordSecondLine(Entity *person) {
         counter.Increment(PersonBucket(*person, ageRanges), "secondlineART");
     }
+
+void ArtRolloutTracker::recordFOCUS(Entity *person) {
+    counter.Increment(PersonBucket(*person, ageRanges), "focus");
+}
+
+
 
 // namespace transm
 }

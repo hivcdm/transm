@@ -170,7 +170,7 @@ private:
     std::set<Entity *> uniqueYearlyEligibleForTreatment;
     std::set<Entity *> uniqueYearlyTreated;
     std::set<Entity *> uniqueYearlyTreatmentDeaths;
-
+    std::set<Entity *> uniqueUndiagnosed;
     std::set<Entity *> uniqueYearlyInCare;
     std::set<Entity *> uniqueYearlySuppressed;
     std::set<Entity *> uniqueYearlyEnrolledInThirtyDays;
@@ -182,6 +182,7 @@ private:
     std::set<Entity *> uniqueYearlyFirstLine;
     std::set<Entity *> uniqueYearlySecondLine;
     std::set<Entity *> uniqueYearlyRTC;
+    std::set<Entity *> uniqueYearlyFOCUS;   
 
 
     std::vector<int> yearlyTestsByResult;
@@ -259,6 +260,8 @@ public:
 
     void resetYear(Time newYear);
 
+    void recordUndiagnosed(Entity *person);
+
     void recordYearStartStats(int popSize, int sexuallyActivePopSize, int prevalentCases);
 
     void recordTestStats(int numTests, const std::vector<int> &numTestsByResult);
@@ -298,6 +301,8 @@ public:
     void recordSecondLine(Entity *person);
 
     void recordRTC(Entity *person);
+
+    void recordFOCUS(Entity *person);
 
     /*@}*/
 
