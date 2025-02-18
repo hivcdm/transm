@@ -1191,6 +1191,7 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
             return;   
         } else { // reseting the month off prep if the person enrolled (or re-enrolled) on prep
             monthOffPrep = 0;
+            performPrepTest();
             prepStatus = PrepStatus::ON_PREP;  
             monthOnPrep++;
             // Count the new users
@@ -1201,8 +1202,6 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
             }
 
             prepTracker->recordAccess(this);
-            performPrepTest();
-
             // if (unobserved) {
             //     // wrongly enrolled on PREP!!!
             //     prepTracker->recordWronglyOnPrep(this);
@@ -1231,11 +1230,11 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
             return;
         } else { // If it's time to return to prep reset the month off prep and change status to on prep (re-enrolled)
             monthOffPrep = 0;  
+            performPrepTest();
             monthOnPrep++;
             prepStatus = PrepStatus::ON_PREP;
             prepTracker->recordReturnToCare(this);
             prepTracker->recordAccess(this);
-            performPrepTest();
 
             // if (unobserved) {
             //     // wrongly enrolled on PREP!!!
@@ -1249,8 +1248,8 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
         //     // wrongly enrolled on PREP!!!
         //     prepTracker->recordWronglyOnPrep(this);
         // }
-        prepTracker->recordAccess(this);
         performPrepTest();
+        prepTracker->recordAccess(this);
 
         // now check if they should be lost to care! 
         std::array<double, 12> retention = prepParameters.GetRetention(*getDemographicProfile());
