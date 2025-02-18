@@ -1097,35 +1097,38 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
         prepTracker->recordEligible(this);
     }
 
-    // Lets test whoever is eligible for PrEP
-    if (this->isTimeForPrepTest()) {
+    
+    // Lambda function to test whoever has access to PrEP
+    auto performPrepTest = [&]() {
+        if (this->isTimeForPrepTest()) {
+            // if unobserved let's roll for testing HIV with 99.6% chance of accuracy every six months
+            if (unobserved) {
+                if (_eventParams.randomNums.chance(0.996)) {
+                    cepacPatient->getHIVTestingUpdater()->performPrepUpdates();
 
-        // if unobserved let's roll for testing HIV with 99.6% chance of accuracy every six months
-        if (unobserved) {
-            if (_eventParams.randomNums.chance(0.996)) {
-                cepacPatient->getHIVTestingUpdater()->performPrepUpdates();
+                    // Change the hiv status to observed to each stage
+                    if (hivStatus == HIVStatus::UNOBSERVED_ACUTE) {
+                        hivStatus = HIVStatus::OBSERVED_ACUTE;
+                    } else if (hivStatus == HIVStatus::UNOBSERVED_CHRONIC) {
+                        hivStatus = HIVStatus::OBSERVED_CHRONIC;
+                    } else if (hivStatus == HIVStatus::UNOBSERVED_LATESTAGE) {
+                        hivStatus = HIVStatus::OBSERVED_LATESTAGE;
+                    }
 
-                // Change the hiv status to observed to each stage
-                if (hivStatus == HIVStatus::UNOBSERVED_ACUTE) {
-                    hivStatus = HIVStatus::OBSERVED_ACUTE;
-                } else if (hivStatus == HIVStatus::UNOBSERVED_CHRONIC) {
-                    hivStatus = HIVStatus::OBSERVED_CHRONIC;
-                } else if (hivStatus == HIVStatus::UNOBSERVED_LATESTAGE) {
-                    hivStatus = HIVStatus::OBSERVED_LATESTAGE;
+                    if (prepStatus == PrepStatus::ON_PREP) {
+                        prepTracker->recordWronglyOnPrep(this); // This is breakthrough cases!
+                    } else {
+                        prepTracker->recordTestedPositiveDuringPrep(this);
+                    }
+                    prepStatus = PrepStatus::OFF_PREP;
+                    monthOnPrep = 0;  // reseting the month on prep if there was a breakthrough case, it shouldn't matter anyway
+                    monthOffPrep++;
+                    return;
                 }
-
-                if (prepStatus == PrepStatus::ON_PREP) {
-                    prepTracker->recordWronglyOnPrep(this); // This is breakthrough cases!
-                } else {
-                    prepTracker->recordTestedPositiveDuringPrep(this);
-                }
-                prepStatus = PrepStatus::OFF_PREP;
-                monthOnPrep = 0;  // reseting the month on prep if there was a breakthrough case, it shouldn't matter anyway
-                monthOffPrep++;
-                return;
-            } 
+            }
         }
-    }
+    };
+
 
     /** 
      * Now the person is eligible, check whether we should enroll them on PrEP. 
@@ -1198,6 +1201,8 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
             }
 
             prepTracker->recordAccess(this);
+            performPrepTest();
+
             // if (unobserved) {
             //     // wrongly enrolled on PREP!!!
             //     prepTracker->recordWronglyOnPrep(this);
@@ -1230,6 +1235,8 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
             prepStatus = PrepStatus::ON_PREP;
             prepTracker->recordReturnToCare(this);
             prepTracker->recordAccess(this);
+            performPrepTest();
+
             // if (unobserved) {
             //     // wrongly enrolled on PREP!!!
             //     prepTracker->recordWronglyOnPrep(this);
@@ -1243,7 +1250,7 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
         //     prepTracker->recordWronglyOnPrep(this);
         // }
         prepTracker->recordAccess(this);
-
+        performPrepTest();
 
         // now check if they should be lost to care! 
         std::array<double, 12> retention = prepParameters.GetRetention(*getDemographicProfile());
