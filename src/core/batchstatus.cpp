@@ -34,15 +34,26 @@ void BatchStatus::initialize(const std::vector<path> &sim_names)
     auto batch_directory = sim_names.front().parent_path();
     auto db_path = batch_directory / batch_database_filename_;
 
-    throw_if_not_ok(sqlite3_open(db_path.string().c_str(), &db_));
-    create_sim_table();
-
-    for(const auto& sim : sim_names)
-    {
-        insert_sim(sim.stem().string());
+    int rc = sqlite3_open(db_path.string().c_str(), &db_);
+    if (rc != SQLITE_OK) {
+        sqlite3_close(db_);
+        throw_if_not_ok(rc);
     }
 
-    initialized_ = true;
+    try {
+        create_sim_table();
+
+        for(const auto& sim : sim_names)
+        {
+            insert_sim(sim.stem().string());
+        }
+
+        initialized_ = true;
+    } catch (...) {
+        sqlite3_close(db_);
+        db_ = nullptr;
+        throw;
+    }
 }
 
 void BatchStatus::set_process_id(const std::string &sim_name, std::size_t process_id)
