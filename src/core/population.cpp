@@ -272,7 +272,7 @@ void Population::UpdatePhysicalState(EventParams &eventParams, bool calculateLE,
                 }
 
                 /* Check if the entity is in care within a month */
-                if (p->isInCareWithinThirty()) {
+                if (p->isInCareWithinThirty() && !p->alreadyDetected) {
                     populationStatistics.recordEnrolledInThirtyDays(p);
                 }
 
@@ -291,7 +291,9 @@ void Population::UpdatePhysicalState(EventParams &eventParams, bool calculateLE,
                 if (p->isSuppressd()) {
                     populationStatistics.recordSuppressedVL(p);
                 }
-
+                
+                /* This patient is already detected */
+                p->alreadyDetected = true;
 
             }
 
