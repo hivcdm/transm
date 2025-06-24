@@ -719,65 +719,70 @@ void Population::UpdatePartnerships(EventParams &eventParams) {
     }
 }
 
-void Population::UpdateForFOCUSAnalysis(EventParams &eventParams) {
-    /* Define the groups */
-    std::vector<std::vector<Entity *>> groups = {
-        FindHispanicMalesUndiagnosed(),
-        FindHispanicFemalesUndiagnosed(),
-        FindBlackMalesUndiagnosed(),
-        FindBlackFemalesUndiagnosed(),
-        FindWhiteMalesUndiagnosed(),
-        FindWhiteFemalesUndiagnosed(),
-        FindHispanicMalesLossToFollowUp(),
-        FindHispanicFemalesLossToFollowUp(),
-        FindBlackMalesLossToFollowUp(),
-        FindBlackFemalesLossToFollowUp(),
-        FindWhiteMalesLossToFollowUp(),
-        FindWhiteFemalesLossToFollowUp()
-    };
+void Population::UpdateForFOCUSAnalysis(EventParams &eventParams, int monthlyTarget) {
+    
+    for (int i = 0; i < monthlyTarget; ++i) {
 
-    /* Define the probability (rate) for each group */
-    std::vector<double> groupProbabilities = {
-        0.05, // Hispanic Males Undiagnosed
-        0.05, // Hispanic Females Undiagnosed
-        0.10, // Black Males Undiagnosed
-        0.10, // Black Females Undiagnosed
-        0.15, // White Males Undiagnosed
-        0.15, // White Females Undiagnosed
-        0.05, // Hispanic Males LTFU
-        0.05, // Hispanic Females LTFU
-        0.10, // Black Males LTFU
-        0.05, // Black Females LTFU
-        0.10, // White Males LTFU
-        0.05  // White Females LTFU
-    };
+        /* Define the groups */
+        std::vector<std::vector<Entity *>> groups = {
+            FindHispanicMalesUndiagnosed(),
+            FindHispanicFemalesUndiagnosed(),
+            FindBlackMalesUndiagnosed(),
+            FindBlackFemalesUndiagnosed(),
+            FindWhiteMalesUndiagnosed(),
+            FindWhiteFemalesUndiagnosed(),
+            FindHispanicMalesLossToFollowUp(),
+            FindHispanicFemalesLossToFollowUp(),
+            FindBlackMalesLossToFollowUp(),
+            FindBlackFemalesLossToFollowUp(),
+            FindWhiteMalesLossToFollowUp(),
+            FindWhiteFemalesLossToFollowUp()
+        };
 
-    /* Pick one group based on probability and one entity from that group */
-    auto pickEntityFromGroups = [](const std::vector<std::vector<Entity *>>& groups, const std::vector<double>& probabilities) -> Entity* {
-        if (groups.size() != probabilities.size()) return nullptr;
+        /* Define the probability (rate) for each group */
+        std::vector<double> groupProbabilities = {
+            0.05, // Hispanic Males Undiagnosed
+            0.05, // Hispanic Females Undiagnosed
+            0.10, // Black Males Undiagnosed
+            0.10, // Black Females Undiagnosed
+            0.15, // White Males Undiagnosed
+            0.15, // White Females Undiagnosed
+            0.05, // Hispanic Males LTFU
+            0.05, // Hispanic Females LTFU
+            0.10, // Black Males LTFU
+            0.05, // Black Females LTFU
+            0.10, // White Males LTFU
+            0.05  // White Females LTFU
+        };
 
-        std::random_device rd;
-        std::mt19937 gen(rd());
+        /* Pick one group based on probability and one entity from that group */
+        auto pickEntityFromGroups = [](const std::vector<std::vector<Entity *>>& groups, const std::vector<double>& probabilities) -> Entity* {
+            if (groups.size() != probabilities.size()) return nullptr;
 
-        std::discrete_distribution<> groupDist(probabilities.begin(), probabilities.end());
-        
-        for (int attempt = 0; attempt < 10; ++attempt) {  // Try up to 10 times to find a non-empty group
-            int groupIndex = groupDist(gen);
-            const auto& selectedGroup = groups[groupIndex];
-            if (!selectedGroup.empty()) {
-                std::uniform_int_distribution<> dist(0, selectedGroup.size() - 1);
-                return selectedGroup[dist(gen)];
+            std::random_device rd;
+            std::mt19937 gen(rd());
+
+            std::discrete_distribution<> groupDist(probabilities.begin(), probabilities.end());
+            
+            for (int attempt = 0; attempt < 10; ++attempt) {  // Try up to 10 times to find a non-empty group
+                int groupIndex = groupDist(gen);
+                const auto& selectedGroup = groups[groupIndex];
+                if (!selectedGroup.empty()) {
+                    std::uniform_int_distribution<> dist(0, selectedGroup.size() - 1);
+                    return selectedGroup[dist(gen)];
+                }
             }
-        }
 
-        return nullptr; // Couldn't find a non-empty group after 10 tries
-    };
+            return nullptr; // Couldn't find a non-empty group after 10 tries
+        };
 
     /* Select and set focus */
-    Entity* selected = pickEntityFromGroups(groups, groupProbabilities);
-    if (selected) {
-        selected->setFOCUS();
-        populationStatistics.recordFOCUS(selected);
+        Entity* selected = pickEntityFromGroups(groups, groupProbabilities);
+        if (selected) {
+            selected->setFOCUS();
+            populationStatistics.recordFOCUS(selected);
+            cout << "Selected FOCUS entity: " << selected->getID() << std::endl;
+        }
     }
 }
 
