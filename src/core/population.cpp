@@ -274,6 +274,7 @@ void Population::UpdatePhysicalState(EventParams &eventParams, bool calculateLE,
                 /* Check if the entity is in care within a month */
                 if (p->isInCareWithinThirty() && !p->alreadyDetected) {
                     populationStatistics.recordEnrolledInThirtyDays(p);
+                    p->PrintLinkedState();
                 }
 
                 /* Now check if the patient is on ART put it in "treatment" bucket */
