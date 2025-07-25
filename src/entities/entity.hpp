@@ -787,35 +787,40 @@ public:
 
 
     bool isInCareWithinThirty() const {
-        bool flag = false;
-//            if (this->ageDetected != Age(0, -1) && this->ageInCare != Age(0,-1)) {
-//                int monthOfDetection = this->ageDetected.in_months();
-//                int monthOfLinkage = this->ageInCare.in_months();
-//                if (monthOfLinkage - monthOfDetection <= 1) {
-//                    flag = true;
-//                }
-//            } else {
-//                flag = false;
-//            }
-        int current_month = cepacPatient->getGeneralState()->monthNum;
+        if (!cepacPatient) {
+            return false;
+        }
+        if (this->isInCare()) {
+            bool flag = false;
+    //            if (this->ageDetected != Age(0, -1) && this->ageInCare != Age(0,-1)) {
+    //                int monthOfDetection = this->ageDetected.in_months();
+    //                int monthOfLinkage = this->ageInCare.in_months();
+    //                if (monthOfLinkage - monthOfDetection <= 1) {
+    //                    flag = true;
+    //                }
+    //            } else {
+    //                flag = false;
+    //            }
+            int current_month = cepacPatient->getGeneralState()->monthNum;
 
-        int linkage_month = cepacPatient->getMonitoringState()->monthOfLinkage;
-        int detected_month = cepacPatient->getMonitoringState()->monthOfDetection;
-//        cout << current_month << linkage_month << detected_month << endl;
-        if (current_month == detected_month + 1)  {
-            if (detected_month == linkage_month) {
+            int linkage_month = cepacPatient->getMonitoringState()->monthOfLinkage;
+            int detected_month = cepacPatient->getMonitoringState()->monthOfDetection;
+    //        cout << current_month << linkage_month << detected_month << endl;
+            if (detected_month  <= linkage_month && linkage_month <= detected_month + 1)  {
                 flag = true;
             }
-        }
+            
 
-//        if (cepacPatient->getMonitoringState()->monthOfLinkage - cepacPatient->getMonitoringState()->monthOfDetection <
-//            1) {
-//            flag = true;
-//        }
-        if (!cepacPatient) {
-            cout << "not a patient!" << endl;
+    //        if (cepacPatient->getMonitoringState()->monthOfLinkage - cepacPatient->getMonitoringState()->monthOfDetection <
+    //            1) {
+    //            flag = true;
+    //        }
+            if (!cepacPatient) {
+                cout << "not a patient!" << endl;
+            }
+            return (cepacPatient && flag);
         }
-        return (cepacPatient && flag);
+        return false;
     }
 
 

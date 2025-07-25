@@ -34,12 +34,12 @@ const std::string ArtRolloutTracker::TRACKED_OUTCOMES[] =
                 "in_care",
                 "new_diagnosis",
                 "enrolled_within_30",
-                // "suppressed_vl",
+                "suppressed_vl",
                 "unlinked",
-                "treated", /* people on ART */
+                "treated" /* people on ART */
                 // "focus",
                 // "return_to_care",
-                "ltfu"
+                // "ltfu"
                 // "firstlineART",
                 // "secondlineART"
         };
