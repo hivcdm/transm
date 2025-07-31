@@ -793,7 +793,7 @@ public:
         bool flag = false;
         int current_month = cepacPatient->getGeneralState()->monthNum;
         int detected_month = cepacPatient->getMonitoringState()->monthOfDetection;
-        if (current_month < detected_month + 2)  {
+        if (current_month == detected_month)  {
             flag = true;
         }
         return (cepacPatient && flag);
