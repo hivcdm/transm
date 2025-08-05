@@ -792,8 +792,11 @@ public:
 
         bool flag = false;
         int current_month = cepacPatient->getGeneralState()->monthNum;
+        // cout << "Current month in Cepac: " + std::to_string(current_month) + "\n" << endl;
+    
         int detected_month = cepacPatient->getMonitoringState()->monthOfDetection;
-        if (current_month == detected_month)  {
+        // cout << "Detected month in Cepac: " + std::to_string(detected_month) + "\n" << endl;
+        if (current_month == detected_month+1)  {
             flag = true;
         }
         return (cepacPatient && flag);
