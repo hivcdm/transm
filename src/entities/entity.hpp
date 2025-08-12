@@ -715,6 +715,7 @@ public:
     /** This is the same as the definition of Person Living With HIV (PLWH)
      * @return if the patient is detected HIV positive */
     bool isDetected() const {
+        // cout << cepacPatient->getMonitoringState()->timesOfDetected << endl;
         return (cepacPatient && cepacPatient->getMonitoringState()->isDetectedHIVPositive);
     }
 
@@ -794,7 +795,7 @@ public:
         int current_month = cepacPatient->getGeneralState()->monthNum;
         // cout << "Current month in Cepac: " + std::to_string(current_month) + "\n" << endl;
     
-        int detected_month = cepacPatient->getMonitoringState()->monthOfDetection;
+        int detected_month = cepacPatient->getMonitoringState()->firstMonthOfDetection;
         // cout << "Detected month in Cepac: " + std::to_string(detected_month) + "\n" << endl;
         if (current_month == detected_month+1)  {
             flag = true;
@@ -827,11 +828,12 @@ public:
         int linkage_month = cepacPatient->getMonitoringState()->monthOfLinkage;
         int detected_month = cepacPatient->getMonitoringState()->monthOfDetection;
 //        cout << current_month << linkage_month << detected_month << endl;
-        if (detected_month  <= linkage_month && linkage_month <= detected_month + 1)  {
-            flag = true;
-        }
-        
+        // if (detected_month  <= linkage_month && linkage_month <= detected_month + 1)  {
+        //     flag = true;
+        // }
 
+        flag = cepacPatient->getMonitoringState()->isInCareWithin30Days;
+        
 
         return (cepacPatient && flag);
 

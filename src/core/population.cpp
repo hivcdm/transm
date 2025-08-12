@@ -270,10 +270,8 @@ void Population::UpdatePhysicalState(EventParams &eventParams, bool calculateLE,
                 if (p->isNewDiagnosed()) {
                     populationStatistics.recordNewDiagnosis(p);//
 
-                    cout << "Current month transm: " + std::to_string(eventParams.currTime.in_months()) + "\n" << endl;
-
-                                    /* Check if the entity is in care within a month */
-                    if (p->isInCareWithinThirty() && !p->alreadyDetected) {
+                    /* Check if the entity is in care within a month */
+                    if (p->isInCareWithinThirty()) {
                         populationStatistics.recordEnrolledInThirtyDays(p);
                         p->PrintLinkedState();
                     }
