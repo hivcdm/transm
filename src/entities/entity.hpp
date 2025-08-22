@@ -825,15 +825,17 @@ public:
 //            }
         int current_month = cepacPatient->getGeneralState()->monthNum;
 
-        int linkage_month = cepacPatient->getMonitoringState()->monthOfLinkage;
-        int detected_month = cepacPatient->getMonitoringState()->monthOfDetection;
-//        cout << current_month << linkage_month << detected_month << endl;
-        // if (detected_month  <= linkage_month && linkage_month <= detected_month + 1)  {
-        //     flag = true;
-        // }
+        int detected_month = cepacPatient->getMonitoringState()->firstMonthOfDetection;
 
-        flag = cepacPatient->getMonitoringState()->isInCareWithin30Days;
-        
+        int linkage_month = cepacPatient->getMonitoringState()->firstMonthOfLinkage;
+        // cout << detected_month << " " << linkage_month << endl;
+//        cout << current_month << linkage_month << detected_month << endl;
+        if (current_month == detected_month + 1) {
+            if (detected_month == linkage_month)  {
+                flag = true;
+            }
+        }
+
 
         return (cepacPatient && flag);
 

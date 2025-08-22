@@ -269,13 +269,12 @@ void Population::UpdatePhysicalState(EventParams &eventParams, bool calculateLE,
                 /* Check if the entity just being diagnosed */
                 if (p->isNewDiagnosed()) {
                     populationStatistics.recordNewDiagnosis(p);//
+                }
 
-                    /* Check if the entity is in care within a month */
-                    if (p->isInCareWithinThirty()) {
-                        populationStatistics.recordEnrolledInThirtyDays(p);
-                        p->PrintLinkedState();
-                    }
-
+                /* Check if the entity is in care within a month */
+                if (p->isInCareWithinThirty()) {
+                    populationStatistics.recordEnrolledInThirtyDays(p);
+                    p->PrintLinkedState();
                 }
 
 
