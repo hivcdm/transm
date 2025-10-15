@@ -274,7 +274,7 @@ void Population::UpdatePhysicalState(EventParams &eventParams, bool calculateLE,
                 /* Check if the entity is in care within a month */
                 if (p->isInCareWithinThirty()) {
                     populationStatistics.recordEnrolledInThirtyDays(p);
-                    p->PrintLinkedState();
+                    // p->PrintLinkedState();
                 }
 
 
