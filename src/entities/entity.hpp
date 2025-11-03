@@ -631,8 +631,7 @@ public:
 
     const EntityStatsRecord *getStats();
 
-    void enableInfectionTrace(int _generationOfInfection,
-                              EventParams &_eventParams) const;
+    void enableInfectionTrace(int _generationOfInfection, EventParams &_eventParams) const;
 
     /** Unformed partnership tallies getters and setters -- the total should never be reset,
      * only the "latest" (i.e. current time step) */
@@ -660,16 +659,8 @@ public:
     }
 
     /** If they RTC (Returned to Care) after loss to follow up */
-    bool isRTC() {
-        if (cepacPatient && cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_RTC) {
-//            if (cepacPatient->getARTState()->hasNextRegimenAvailable) {
-//                cout << "Has next regimen" << cepacPatient->getARTState()->currRegimenNum << endl;
-//            }  else {
-//                cout << "Has NO next regimen" << cepacPatient->getARTState()->currRegimenNum << endl;
-//            }
-            return true;
-        }
-        return false;
+    bool isRTC() const {
+        return cepacPatient && cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_RTC;
     }
 
     void isSwitchedRegimen() {
@@ -683,7 +674,6 @@ public:
             std::cerr << "Error: cepacPatient is null!" << std::endl;
             return;  // Exit early if cepacPatient is null
         }
-        // cout << "selected in CDM" << endl;
         cepacPatient->setFocusStatus(1);
     }
 
@@ -701,15 +691,7 @@ public:
 
     /** Check if the patient is Loss to Follow Up (LTFU) */
     bool isLTFU() const {
-        if (cepacPatient && cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_LTFU) {
-//            if (cepacPatient->getMonitoringState()->wasOnARTWhenLostToFollowUp) {
-//                cout << "Was ON ART when LTFU" << endl;
-//            } else {
-//                cout << "Was OFF ART when LTFU" << endl;
-//            }
-            return true;
-        }
-        return false;
+        return cepacPatient && cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_LTFU;
     }
 
     /** This is the same as the definition of Person Living With HIV (PLWH)
@@ -747,89 +729,53 @@ public:
      * Our definition for this is whoever has been in care is counted as one. This included any entity who is Loss to
      * Follow up (LTFU) or just returned in care (RTC). This counts for anyone who has ever been in care. */
     bool isInCare() const {
-
-        return (cepacPatient && (cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_IN_CARE
-                                 || cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_RTC));
-
-
-//                                 || cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_LTFU);
+        return cepacPatient && (cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_IN_CARE ||
+                                cepacPatient->getMonitoringState()->careState == SimContext::HIV_CARE_RTC);
     }
 
 
     /** Check if the patient has suppressed level of VL */
     bool isSuppressd() const {
-        bool flag;
-
-        /** Call the local function that pulls HVL status from CEPAC */
-        HVLStrata hvl = getHvlStratum();
-        if (hvl == HVLStrata::HVL_ZERO) {
-            flag = true;
-        } else {
-            flag = false;
-        }
-        return (cepacPatient && flag);
+        return cepacPatient && getHvlStratum() == HVLStrata::HVL_ZERO;
     }
 
     /** Recording Person Living with HIV to do that just check if the agent is HIV detected */
     bool isPLWH() const {
-        return (cepacPatient && cepacPatient->getDiseaseState()->infectedHIVState != SimContext::HIV_INF_NEG);
+        return cepacPatient && cepacPatient->getDiseaseState()->infectedHIVState != SimContext::HIV_INF_NEG;
     }
 
     bool isNewDiagnosed() const {
-        bool flag = false;
-        int current_month = cepacPatient->getGeneralState()->monthNum;
-        int detected_month = cepacPatient->getMonitoringState()->monthOfDetection;
-        if (current_month == detected_month + 1)  {
-            flag = true;
-        }
-        return (cepacPatient && flag);
+        if (!cepacPatient) return false;
+        return cepacPatient->getGeneralState()->monthNum ==
+               cepacPatient->getMonitoringState()->firstMonthOfDetection + 1;
     }
 
+    void PrintLinkedState() {
+        cout << "Linked state: " << cepacPatient->getMonitoringState()->careState << endl;   
+    }
 
+    // Returns true if the patient linked to care within (effectively) 30 days of HIV detection.
+    // Logic:
+    // 1. Must have a CEPAC patient (else cannot evaluate).
+    // 2. Retrieve:
+    //      current  = current simulation month for the patient.
+    //      detected = month HIV was first detected ( -1 means never detected ).
+    //      linkage  = month first linked to care.
+    // 3. Conditions for success:
+    //      a) Patient was detected (detected != -1)
+    //      b) Linkage occurred in the SAME month as detection (detected == linkage)
+    //      c) We are evaluating exactly one month after detection (current == detected + 1)
+    //     (Because months are discrete, "within 30 days" is interpreted as linkage in the
+    //      detection month and checking status the following month.)
     bool isInCareWithinThirty() const {
-        bool flag = false;
-//            if (this->ageDetected != Age(0, -1) && this->ageInCare != Age(0,-1)) {
-//                int monthOfDetection = this->ageDetected.in_months();
-//                int monthOfLinkage = this->ageInCare.in_months();
-//                if (monthOfLinkage - monthOfDetection <= 1) {
-//                    flag = true;
-//                }
-//            } else {
-//                flag = false;
-//            }
-        int current_month = cepacPatient->getGeneralState()->monthNum;
-
-        int linkage_month = cepacPatient->getMonitoringState()->monthOfLinkage;
-        int detected_month = cepacPatient->getMonitoringState()->monthOfDetection;
-//        cout << current_month << linkage_month << detected_month << endl;
-        if (current_month == detected_month + 1)  {
-            if (detected_month == linkage_month) {
-                flag = true;
-            }
-        }
-
-//        if (cepacPatient->getMonitoringState()->monthOfLinkage - cepacPatient->getMonitoringState()->monthOfDetection <
-//            1) {
-//            flag = true;
-//        }
-        if (!cepacPatient) {
-            cout << "not a patient!" << endl;
-        }
-        return (cepacPatient && flag);
+        if (!cepacPatient) return false;
+        const int current  = cepacPatient->getGeneralState()->monthNum;
+        const int detected = cepacPatient->getMonitoringState()->firstMonthOfDetection;
+        const int linkage  = cepacPatient->getMonitoringState()->firstMonthOfLinkage;
+        return detected != -1 && detected == linkage && current == detected + 1;
     }
 
 
-//    void printFailure() {
-//        if (cepacPatient && cepacPatient && cepacPatient->getARTState()->hasObservedFailure) {
-//            cout << "Failed ART!" << endl;
-//        }
-//            if (cepacPatient->getARTState()->stop )
-//            if (cepacPatient && cepacPatient->getARTState()->typeCurrStop == SimContext::ART_STOP_LTFU) {
-//                cout << "Stop: LTFU" << endl;
-//            } else if (cepacPatient && cepacPatient->getARTState()->typeCurrStop == SimContext::ART_STOP_MAX_MTHS){
-//                cout << "Stop: SthElse" << endl;
-//            }
-//    }
 
     virtual void SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist,
                                             RandomNumberGenerator &rng) = 0;
