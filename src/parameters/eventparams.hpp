@@ -77,6 +77,11 @@ public:
 		cepacTracer = nullptr;
 		numNewbornsTraced = 0;
 		numNewbornsToTrace = 0;
+        untreatedContext = nullptr;
+        treatedContext = nullptr;
+        cepacRunStats = nullptr;
+        cepacCostStats = nullptr;
+        cepacTracer = nullptr;
 	}
 
     /** current internal clock for a particular Population */
@@ -161,31 +166,54 @@ public:
 	int dynamicFeedbackPeriod;
 
 	/** closes all the trace files */
-	~EventParams()
-	{
-		delete cepacRunStats;
+    ~EventParams()
+    {
+        if (cepacRunStats)
+        {
+            delete cepacRunStats;
+            cepacRunStats = nullptr;
+        }
 
-		while(!cepacSimContexts.empty())
-		{
-			SimContext *sc = cepacSimContexts.back();
-			cepacSimContexts.pop_back();
-			delete sc;
-		}
+        for (SimContext*& sc : cepacSimContexts)
+        {
+            delete sc;
+            sc = nullptr;
+        }
+        cepacSimContexts.clear();
 
-		while(!rolloutSimContexts.empty())
-		{
-			RolloutContext *sc = rolloutSimContexts.back();
-			rolloutSimContexts.pop_back();
-			delete sc;
-		}
+        for (RolloutContext*& rc : rolloutSimContexts)
+        {
+            delete rc;
+            rc = nullptr;
+        }
+        rolloutSimContexts.clear();
 
-		for (const auto& cf : cepac_file_context_map_)
-		{
+        if (untreatedContext)
+        {
+            delete untreatedContext;
+            untreatedContext = nullptr;
+        }
+
+        if (treatedContext)
+        {
+            delete treatedContext;
+            treatedContext = nullptr;
+        }
+
+        if (cepacTracer)
+        {
+            delete cepacTracer;
+            cepacTracer = nullptr;
+        }
+
+        for (auto& cf : cepac_file_context_map_)
+        {
             delete cf.second;
-		}
+            cf.second = nullptr;
+        }
+        cepac_file_context_map_.clear();
+    }
 
-		delete cepacTracer;
-	}
   
     SimContext *LoadCepacContext(const std::string &cepac_file)
     {

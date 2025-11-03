@@ -121,7 +121,7 @@ public:
      * returns the # of New people of each type who was infected */
     void UpdatePartnerships(EventParams &eventParams);
 
-    void UpdateForFOCUSAnalysis(EventParams &eventParams);
+    void UpdateForFOCUSAnalysis(EventParams &eventParams, int monthlyTarget);
 
     void WritePartnershipNetwork(EventParams &eventParams);
 
