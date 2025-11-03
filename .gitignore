@@ -1,3 +1,4 @@
+.idea
 results/
 x64/
 *.sdf
@@ -14,6 +15,7 @@ runs/*
 bin/
 third-party/
 lib/*
+build/
 build/CMakeCache.txt
 build/CMakeFiles/
 build/Makefile

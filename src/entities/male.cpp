@@ -382,7 +382,25 @@ double Male::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::
         baseFoi = transmission_coefficients.at(TransmissionType::male_to_male)[(std::size_t)getHVL()];
     }
 
-    double prepEfficacy = _p->UsingPrEP() ? _p->GetPreExposureProphylaxisEfficacy() : 0;
+    double prepEfficacy = _p->GetPreExposureProphylaxisEfficacy();
+    // cout << prepEfficacy << endl;
+
+    // corrections for efficacy based on prep adherence level
+    PrepAherenceLevel prepadherencelevel = _p->getAdhereceStatus();
+    if (prepadherencelevel == PrepAherenceLevel::PREP_SUBSTANTIALLY_ADHERENT) {
+        prepEfficacy *= 0.80;
+    } else if (prepadherencelevel == PrepAherenceLevel::PREP_PARTIALLY_ADHERENT) {
+        prepEfficacy *= 0.10;
+    } else if (prepadherencelevel == PrepAherenceLevel::PREP_INADHERENT) {
+        prepEfficacy *= 0.05;
+    } else if (prepadherencelevel == PrepAherenceLevel::PREP_ADHERENT) {
+        prepEfficacy *= 0.99;
+    } else if (prepadherencelevel == PrepAherenceLevel::PREP_OFF_PREP) {
+        prepEfficacy *= 0.0;
+    } else {
+        cout << "Invalid adherence level" << endl;
+    }
+ 
     double FOI = baseFoi * (1 - condomEff) * (1 - microbicideEfficacy) * (1 - prepEfficacy);
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (trace() || _p->trace()))
@@ -611,7 +629,9 @@ long Male::getPartnershipsToEnd(Time _currTime, EventParams & _eventParams, Sexu
                             numEnded++;
                         }
                     }
-                } else if (_partnershipType == SexualPartnership::Type::Casual) {
+                // let's also include CSW partnerships
+                } else if (_partnershipType == SexualPartnership::Type::Casual ||
+                           _partnershipType == SexualPartnership::Type::Csw) {
                     if (isMsm || isMsmw) {
                         /* In Casual partnerships everyone breaks up */
                         /* Needed to be halved to eliminate double counting*/

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.14)
 project(transm)
 
 # maybe not needed for now but should be replaced with "transm"
@@ -33,11 +33,11 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 #set(Boost_USE_STATIC_LIBS ON)
 
-find_package(Boost
-	1.63.0
-	COMPONENTS system
-	REQUIRED
-)
+#find_package(Boost
+#	1.82.0
+#	COMPONENTS system
+#	REQUIRED
+#)
 include_directories(${Boost_INCLUDE_DIR})
 
 add_definitions(-DUSE_GOOGLE_PERF_TOOLS=${USE_GOOGLE_PERF_TOOLS})
@@ -101,8 +101,8 @@ add_dependencies(pugixml pugixml_project)
 ExternalProject_Add(
 	cepac_project 
 	PREFIX ${CMAKE_BINARY_DIR}/third-party
-	GIT_REPOSITORY https://github.com/hsphcdm/cepac-svn.git
-	GIT_TAG cepac-transm
+	GIT_REPOSITORY https://github.com/hsphcdm/cepac-transm.git
+	GIT_TAG develop
 	UPDATE_COMMAND ""
 	CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 	#CONFIGURE_COMMAND cmake cepac_project
@@ -158,13 +158,23 @@ target_link_libraries(transm cepac pugixml ${SQLITE3_LIBRARIES} ${Boost_LIBRARIE
 
 # Building google tests
 
-# Enabaling the use of CTest
-#include(CTest)
-#enable_testing()
+# Include GoogleTest
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/5376968f6948923e2411081fd9372e71a59d8e77.zip
+)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE) # For Windows
+FetchContent_MakeAvailable(googletest)
 
-#if(BUILD_TESTING)
-#    add_subdirectory (tests)
-#endif()
+include(CTest)
+enable_testing()
+
+# Only include test subdirectory if BUILD_TESTING is on
+if (BUILD_TESTING)
+    add_subdirectory(tests)
+endif()
+
 
 
 # If the build is successful we remind the user of the location of the binary

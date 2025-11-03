@@ -1,0 +1,40 @@
+Problems
+========
+
+    - Disabling events keeps incidence from being recorded, this sort of dependency needs to be removed
+
+Testing
+=======
+
+    - Get rid of global state as much as possible
+    - Make methods smaller (should only do one thing)
+    - Clearer boundary between public and private interface
+    - Unit tests on all important functionality
+    - Integration tests - build a suite of runs with expected outputs to be compared to new outputs
+
+Formatting
+==========
+
+    - Prefer declaring variable as late as possible (except if it affects speed)
+    - Avoid extraneous parens except to resolve ambiguity or when using result of assignment as value
+    - Doxygen style comments everywhere
+
+Cleaning/updating
+=================
+
+    - Find and remove unreachable code
+    - Find and remove code that is never called
+
+Refactoring
+===========
+
+    - Make code more testable
+    - Avoid friend classes
+    - Keep functions shorter - they should only do one thing
+    - Keep classes smaller - extract functionality into neat testable units
+    - Better variable names, avoid abbreviations
+    - Underscore suffix on all member variables
+    - Decide when to use assertions vs exceptions
+
+-Set up a continuous integration build system (see http://en.wikipedia.org/wiki/Continuous_integration)
+-Set up a suite of test runs for integration testing (see http://en.wikipedia.org/wiki/Integration_testing)

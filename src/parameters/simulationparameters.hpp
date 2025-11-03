@@ -2,7 +2,7 @@
 #define SIMULATIONPARAMETERS_HPP
 
 #include <pugixml.hpp>
-#include <rana/rana.hpp>
+//#include <rana/rana.hpp>
 
 #include "parameterdefinitions.hpp"
 #include "populationparameters.hpp"
@@ -96,7 +96,7 @@ private:
     static T from_string(const std::string &value_string);
 
 
-        template<typename T>
+    template<typename T>
     static T Text(const pugi::xml_node &node)
     {
         return from_string<T>(node.text().as_string());
@@ -153,7 +153,7 @@ public:
     ~SimulationParametersJson() override;
 
 private:
-    rana::value root_;
+//    rana::value root_;
 };
 
 } // namespace transm

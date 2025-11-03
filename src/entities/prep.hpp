@@ -23,17 +23,24 @@ class PrepParameters
     bool enabled = false;
 
     PrepEligibility eligibility;
-    double access = 0.0;
-    double adherence = 0.0;
-    double retention = 0.0;
+    // make access an array of not known size
+
+    // double access = 0.0;
+    std::vector<double> access;
+    std::array<double, 4> adherence = {0.0, 0.0, 0.0, 0.0};
+    std::array<double, 12> retention = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                        0.0, 0.0, 0.0, 0.0, 0.0};
     double returnToCare = 0.0;
 
     double efficacy;
 
     using ProfileMap = std::map<DemographicProfile, double>;
-    ProfileMap accessProfiles;
-    ProfileMap adherenceProfiles;
-    ProfileMap retentionProfiles;
+    using AdherenceProfileMap = std::map<DemographicProfile, std::array<double, 4>>;
+    using RetentionProfileMap = std::map<DemographicProfile, std::array<double, 12>>;
+    using AccessProfileMap = std::map<DemographicProfile, std::vector<double>>;
+    AccessProfileMap accessProfiles;
+    AdherenceProfileMap adherenceProfiles;
+    RetentionProfileMap retentionProfiles;
     ProfileMap returnToCareProfiles;
 
 public:
@@ -44,16 +51,18 @@ public:
     PrepEligibility GetEligibility() const { return eligibility; }
 
     void SetEfficacy(double value) { efficacy = value; }
-    double GetEfficacy() const { return efficacy; }
+    double GetEfficacy() const {
+        return efficacy;
+    }
 
-    void SetDefaultAccess(double value) { access = value; }
-    void SetProfileAccess(const DemographicProfile& profile, double value)
+    void SetDefaultAccess(vector<double> value) { access = value; }
+    void SetProfileAccess(const DemographicProfile& profile, vector<double> value)
     {
         accessProfiles.emplace(profile, value);
     }
-    double GetAccess(const DemographicProfile& profile) const
+    std::vector<double> GetAccess(const DemographicProfile& profile) const
     {
-        double value = access;
+        std::vector<double> value = access;
         for (const auto& pair : accessProfiles)
             if (profile.match(pair.first))
                 value = pair.second;
@@ -61,14 +70,14 @@ public:
         return value;
     }
 
-    void SetDefaultAdherence(double value) { adherence = value; }
-    void SetProfileAdherence(const DemographicProfile& profile, double value)
+    void SetDefaultAdherence(array<double, 4> value) { adherence = value; }
+    void SetProfileAdherence(const DemographicProfile& profile, std::array<double, 4> value)
     {
         adherenceProfiles.emplace(profile, value);
     }
-    double GetAdherence(const DemographicProfile& profile) const
+    std::array<double, 4> GetAdherence(const DemographicProfile& profile) const
     {
-        double value = adherence;
+        std::array<double, 4> value = adherence;
         for (const auto& pair : adherenceProfiles)
             if (profile.match(pair.first))
                 value = pair.second;
@@ -76,14 +85,14 @@ public:
         return value;
     }
 
-    void SetDefaultRetention(double value) { retention = value; }
-    void SetProfileRetention(const DemographicProfile& profile, double value)
+    void SetDefaultRetention(array<double,  12> value) { retention = value; }
+    void SetProfileRetention(const DemographicProfile& profile, std::array<double, 12> value)
     {
         retentionProfiles.emplace(profile, value);
     }
-    double GetRetention(const DemographicProfile& profile) const
+    std::array<double, 12> GetRetention(const DemographicProfile& profile) const
     {
-        double value = retention;
+        std::array<double, 12> value = retention;
         for (const auto& pair : retentionProfiles)
             if (profile.match(pair.first))
                 value = pair.second;

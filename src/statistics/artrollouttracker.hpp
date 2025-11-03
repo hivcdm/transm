@@ -38,7 +38,8 @@ public:
 	void recordTreatmentDeath(Entity *person);
 	void recordTreatmentSlots(int numSlots);
 
-	/* Stuff for Miami analysis for HIC care continuum */
+	/* Stuff for Miami analysis for HIV care continuum */
+	void recordUndiagnosed(Entity *person);
 	void recordSuppressedVL(Entity *person);            /****> Record the suppressed VL = lowest level VL */
 	void recordEnrolledInThirtyDays(Entity *person);
 	void recordInCare(Entity *person);
@@ -50,14 +51,15 @@ public:
     void recordFirstLine(Entity *person);
     void recordSecondLine (Entity *person);
     void recordRTC(Entity *person);
+	void recordFOCUS(Entity *person);
     /*@}*/
 
 	void printArtRolloutOutcomes(Time time, std::ostream &_outStream, Population *_population);
 
 private:
-    static const std::vector<std::string> RISK_GROUP_NAMES;
-    static const std::vector<std::string> TRACKED_OUTCOMES;
-    static const std::vector<std::string> BUCKETS;
+    static const std::string RISK_GROUP_NAMES[];
+    static const std::string TRACKED_OUTCOMES[];
+    static const std::string BUCKETS[];
 
 	int numTestsOffered;
 	int numTestsAccepted;

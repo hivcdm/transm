@@ -32,6 +32,11 @@ public:
     void recordLossToCare(Entity *person);
     void recordReturnToCare(Entity *person);
     void recordIneligible(Entity *person);
+    void recordOnPrepAndInfected(Entity *person);
+    void recordNewOnPrep(Entity *person);
+    void recordWronglyOnPrep(Entity *person);
+    void recordTestedPositiveDuringPrep(Entity *person);
+    void recordEverbeenOnPrepWithinTwelveMonths(Entity *person);
 
     void printPrepOutcomes(Time time, std::ostream &_outStream, Population *_population);
 

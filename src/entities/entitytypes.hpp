@@ -81,13 +81,21 @@ namespace transm {
     enum class PrepStatus
     {
         OFF_PREP,
-        PREP_ADHERENT,
-        PREP_INADHERENT, /* for later */
+		ON_PREP,
         WAS_ON_PREP,
         ENDType,
 		Last = ENDType,
         First = OFF_PREP
     };
+
+	enum class PrepAherenceLevel
+	{
+		PREP_OFF_PREP,
+		PREP_ADHERENT,
+		PREP_SUBSTANTIALLY_ADHERENT,
+		PREP_PARTIALLY_ADHERENT,
+		PREP_INADHERENT, /* for later */
+	};
 }
 
 

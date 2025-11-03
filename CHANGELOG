@@ -6,7 +6,105 @@ A dynamic agent-based model for HIV transmission
     | |_| | | (_| | | | \__ \ | | | | |
      \__|_|  \__,_|_| |_|___/_| |_| |_|
      
-                  v4.6
+                  v4.7
+
+Version 4.7
+===========
+
+Major Updates:
+- A complete PrEP module implementation with vectorized access, adherence,
+  retention and return to care.
+
+Major bug fixes:
+- Return in care within 30 days is fixed. The new functions in CEPAC is also
+  implemented for that.
+- Fixing the CSW partnership
+
+Version 4.6
+===========
+
+In recent updates to the HIV infection simulation model, several improvements 
+and fixes have been implemented. Notable changes include resolving discrepancies 
+in the ART rollout structure, refreshing the simulation for improved calibration, 
+addressing bugs related to continuation in the final rollout file, and ensuring 
+alignment in clinical outputs.
+
+Moreover, enhancements have been made in calculating individuals in care within 
+30 days, adjusting the display of ART headers, and updating the care output 
+structure to include information on new diagnoses and infected counts. The 
+structure of ART outputs has been changed, and a new structure for the ART cascade 
+output has been introduced.
+
+In terms of code maintenance and documentation, updates have been made to 
+README.md and Tutorial.md. Changes in the build system, including minor 
+adjustments in CMake and resolving SQLite3-related issues, contribute to a more 
+stable and efficient simulation. Additionally, code refactoring, renaming of 
+files, and cleanup in the build directory aim to improve the overall code 
+quality and organization.
+
+On the feature side, the model now supports monthly fertility rates, parameter 
+changes, and variable assortivity. The ability for users to choose counts or 
+proportions for initializing entities has been added, providing flexibility. 
+Changes related to race and ethnicity assortivity, including the distribution 
+by available race/eth mix, have been introduced, contributing to a more nuanced 
+demographic representation. Furthermore, the simulation now pulls repositories from 
+hsphcdm forks, ensuring it stays updated with external developments.
+
+In summary, these updates collectively contribute to a more accurate, flexible, and 
+robust agent-based model for simulating dynamic networks of HIV infection.
+
+
+Version 4.5
+===========
+
+In this relaese the following changes were included:
+
+The tutorial was enhanced with updates to Tutorial.md, providing users with the 
+latest information. A notable feature was introduced, allowing users to specify 
+a monthly fertility rate and implement various parameter changes to better capture 
+dynamic network behaviors. Changes related to Pre-Exposure Prophylaxis (PREP) were 
+seamlessly integrated into the master-v4 branch through a merge operation.
+
+Another feature brought into the simulation involved the processing of fertility 
+rates as inputs, offering users more flexibility. To streamline the codebase, 
+unnecessary population outputs were removed, contributing to a cleaner and more 
+efficient implementation. Entities' initialization and birth distributions were 
+modified to enhance overall system initialization.
+
+A significant feature was introduced to capture the dynamics of race and ethnicity 
+assortivity within the network. This included distributing assortivity based on 
+available race and ethnicity mixes, allowing for more realistic population 
+interactions. The simulation gained the ability to pull repositories from relevant 
+forks within the hsphcdm organization.
+
+Refinements were made to race and ethnicity assortivity, allowing users to specify 
+allowed groups and moving assortivity functionality out of sexual behavior to 
+enhance modularity. Furthermore, the simulation now supports variable ethnicity 
+assortivity and variable race assortivity, providing a more nuanced representation 
+of demographic dynamics.
+
+Documentation received updates, particularly to the README.md file, ensuring users 
+have accurate and up-to-date information. The master-v4 changes were successfully 
+merged into the PREP branch, consolidating the latest developments. Users gained 
+the ability to choose between counts or proportions for entity initialization, offering 
+more control over the simulation setup.
+
+A fix addressed a calculation issue in race and ethnicity assortivity, ensuring more 
+accurate and reliable results. Additionally, the simulation's response to entity rolls 
+for death was updated, providing an improved representation of post-mortem status.
+
+In parallel, the model accommodated 'OTHER' as an option in the race demographic, 
+expanding the diversity of represented demographics. Network outputs were refined 
+to include race and ethnicity information, enhancing the granularity of network 
+analysis. The codebase underwent significant restructuring, moving from entity types 
+to demographic profiles for MSM and MSMW partnerships.
+
+Several fixes and improvements were made to outputs, including headers, circumcision 
+interventions, and incidence checks for calibration. Condom use information was 
+incorporated into infection outputs, offering a more comprehensive view of the 
+simulation results. Overall, these updates contribute to a more robust, flexible, 
+and accurate representation of HIV infection dynamics in a dynamic network setting.
+
 
 Version 4.1
 ===========
