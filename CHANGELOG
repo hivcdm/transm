@@ -11,8 +11,14 @@ A dynamic agent-based model for HIV transmission
 Version 4.7
 ===========
 
-To be filled...
+Major Updates:
+- A complete PrEP module implementation with vectorized access, adherence,
+  retention and return to care.
 
+Major bug fixes:
+- Return in care within 30 days is fixed. The new functions in CEPAC is also
+  implemented for that.
+- Fixing the CSW partnership
 
 Version 4.6
 ===========

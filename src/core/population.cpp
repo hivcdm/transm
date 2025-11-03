@@ -274,7 +274,9 @@ void Population::UpdatePhysicalState(EventParams &eventParams, bool calculateLE,
                 /* Check if the entity is in care within a month */
                 if (p->isInCareWithinThirty()) {
                     populationStatistics.recordEnrolledInThirtyDays(p);
+                    // p->PrintLinkedState();
                 }
+
 
                 /* Now check if the patient is on ART put it in "treatment" bucket */
                 if (p->isOnArt()) {
@@ -291,7 +293,9 @@ void Population::UpdatePhysicalState(EventParams &eventParams, bool calculateLE,
                 if (p->isSuppressd()) {
                     populationStatistics.recordSuppressedVL(p);
                 }
-
+                
+                /* This patient is already detected */
+                p->alreadyDetected = true;
 
             }
 
