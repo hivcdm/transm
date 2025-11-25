@@ -76,6 +76,7 @@ public:
 
     void RegisterPopulationIntervention(const Intervention &intervention);
 
+
     /* Default deconstructor */
     ~Simulation();
 
@@ -153,6 +154,34 @@ private:
     double start_time_;
 
     BatchStatus &batch_status_;
+
+
+    /** FOCUS module Stuff */
+    // --- Yearly Data (loaded from "database") ---
+    std::vector<int> yearlyScreeningNumbers;
+    std::vector<double> yearlyFocusProbabilities;
+
+    // --- Monthly Data (calculated from yearly) ---
+    std::vector<int> monthlyScreeningNumbers; 
+    
+    // Stores 12 calculated monthly probabilities (one for each group)
+    std::vector<double> monthlyFocusProbabilities;
+
+    std::vector<int> db_YearlyCounts_2020;
+    std::vector<double> db_YearlyProbs_2020;
+
+    std::vector<int> db_YearlyCounts_2021;
+    std::vector<double> db_YearlyProbs_2021;
+
+    std::vector<int> db_YearlyCounts_2022;
+    std::vector<double> db_YearlyProbs_2022;
+
+    std::vector<int> db_YearlyCounts_2023;
+    std::vector<double> db_YearlyProbs_2023;
+
+    std::vector<int> db_YearlyCounts_2024;
+    std::vector<double> db_YearlyProbs_2024;
+
 };
 
 } // namespace transm

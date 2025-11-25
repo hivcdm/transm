@@ -245,7 +245,35 @@ Simulation::Simulation(BatchStatus &batch_status) :
         hasPassedFirstMonthCalibPrev_(false),
         incidence_(0),
         prevalence_(0),
-        batch_status_(batch_status) {
+        batch_status_(batch_status),
+        // ==========================================================
+        // ===== ADDED: Initialize new data storage vectors =====
+        // ==========================================================
+        yearlyScreeningNumbers(12),
+        yearlyFocusProbabilities(12),
+        monthlyScreeningNumbers(12),
+        monthlyFocusProbabilities(12)        
+{
+        // --- Year 13 (2020) ---
+        db_YearlyCounts_2020 = {1, 1, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1};
+        db_YearlyProbs_2020  = {0.10, 0.12, 0.08, 0.09, 0.15, 0.16, 0.05, 0.06, 0.07, 0.08, 0.10, 0.11};
+        
+        // --- Year 14 (2021) ---
+        db_YearlyCounts_2021 = {1,2, 210, 220, 310, 315, 65, 70, 85, 90, 160, 165};
+        db_YearlyProbs_2021  = {0.11, 0.13, 0.09, 0.10, 0.16, 0.17, 0.06, 0.07, 0.08, 0.09, 0.11, 0.12};
+
+        // --- Year 15 (2022) ---
+        db_YearlyCounts_2022 = {135, 60, 220, 230, 320, 325, 70, 75, 90, 95, 170, 175};
+        db_YearlyProbs_2022  = {0.12, 0.14, 0.10, 0.11, 0.17, 0.18, 0.07, 0.08, 0.09, 0.10, 0.12, 0.13};
+
+        // --- Year 16 (2023) ---
+        db_YearlyCounts_2023 = {140, 65, 230, 240, 330, 335, 75, 80, 95, 100, 180, 185};
+        db_YearlyProbs_2023  = {0.13, 0.15, 0.11, 0.12, 0.18, 0.19, 0.08, 0.09, 0.10, 0.11, 0.13, 0.14};
+
+        // --- Year 17 (2024) ---
+        db_YearlyCounts_2024 = {145, 70, 240, 250, 340, 345, 80, 85, 100, 105, 190, 195};
+        db_YearlyProbs_2024  = {0.14, 0.16, 0.12, 0.13, 0.19, 0.20, 0.09, 0.10, 0.11, 0.12, 0.14, 0.15};
+
 }
 
 Simulation::~Simulation() = default;
@@ -297,6 +325,8 @@ void Simulation::FirstStep() {
     if (parameters_.trace_files[EventParams::TraceFile::Type::ShiftedOutcomes].enabled) {
         population_.populationStatistics.enableShiftedOutcomes(parameters_.monthOf1990);
     }
+
+
 
     UpdateInterventions(population_.GetDeadPeopleThisMonth());
 
@@ -630,7 +660,50 @@ std::size_t Simulation::SimulateMonth() {
 
     population_.UpdatePhysicalState(parameters_, recordLE, firstMonthToRecord);
 
-    population_.UpdateForFOCUSAnalysis(parameters_, 0);
+    // ====================================================================
+    // ===== MODIFIED: Call new FOCUS function with monthly data =====
+    // ====================================================================
+    
+    // Get the current month index (0-11)
+    // (time_ is 1-based, so month 1 -> index 0, month 12 -> index 11)
+    int currentMonthIndex = (time_.in_months() - 1) % 12;
+
+    // if year 2007 is 600 then year 2020 is 600 + (13*12) = 756, 2021 = 768, 2022 = 780, 2023 = 792, 2024 = 804
+    int current_month = time_.in_months();
+
+    if (current_month > 756 && current_month < 816) {
+        if (current_month >= 756 && current_month < 768) { // Year 2020
+            // Iterate over each of the 12 risk groups
+            for (int i = 0; i < 12; ++i) {
+                monthlyScreeningNumbers[i] = db_YearlyCounts_2020[i] / 12;
+                monthlyFocusProbabilities[i] = 1 - std::pow(1 - db_YearlyProbs_2020[i], 1 / 12.0);
+            }
+            cout << monthlyScreeningNumbers[0] << ", " << monthlyFocusProbabilities[0] << endl; // Debug output
+
+        } else if (current_month >= 768 && current_month < 780) { // Year 2021
+            for (int i = 0; i < 12; ++i) {
+                monthlyScreeningNumbers[i] = db_YearlyCounts_2021[i] / 12;
+                monthlyFocusProbabilities[i] = 1 - std::pow(1 - db_YearlyProbs_2021[i], 1 / 12.0);
+            }
+        } else if (current_month >= 780 && current_month < 792) { // Year 2022
+            for (int i = 0; i < 12; ++i) {
+                monthlyScreeningNumbers[i] = db_YearlyCounts_2022[i] / 12;
+                monthlyFocusProbabilities[i] = 1 - std::pow(1 - db_YearlyProbs_2022[i], 1 / 12.0);
+            }
+        } else if (current_month >= 792 && current_month < 804) { // Year 2023
+            for (int i = 0; i < 12; ++i) {
+                monthlyScreeningNumbers[i] = db_YearlyCounts_2023[i] / 12;
+                monthlyFocusProbabilities[i] = 1 - std::pow(1 - db_YearlyProbs_2023[i], 1 / 12.0);
+            }
+        } else if (current_month >= 804 && current_month < 816) { // Year 2024
+            for (int i = 0; i < 12; ++i) {
+                monthlyScreeningNumbers[i] = db_YearlyCounts_2024[i] / 12;
+                monthlyFocusProbabilities[i] = 1 - std::pow(1 - db_YearlyProbs_2024[i], 1 / 12.0);
+            }
+        }
+
+        population_.UpdateForFOCUSAnalysis(parameters_, monthlyScreeningNumbers, monthlyFocusProbabilities);
+    }
 
     population_.Births(parameters_);
 

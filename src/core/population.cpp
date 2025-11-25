@@ -6,6 +6,8 @@
 #include <string>
 #include <unordered_set>
 #include <vector>
+#include <random>
+#include <stdexcept>
 
 #include "population.hpp"
 #include "constants.hpp"
@@ -723,72 +725,109 @@ void Population::UpdatePartnerships(EventParams &eventParams) {
     }
 }
 
-void Population::UpdateForFOCUSAnalysis(EventParams &eventParams, int monthlyTarget) {
+// ==========================================================================
+// ===== MODIFIED CODE BLOCK: Replaced UpdateForFOCUSAnalysis function =====
+// ==========================================================================
+/**
+ * @brief Updates the population for FOCUS analysis based on a screening model.
+ *
+ * Iterates through each demographic group, randomly selects a specified
+ * number to "screen", and applies a probabilistic check to each.
+ *
+ * @param eventParams General event parameters.
+ * @param numToScreenPerGroup A vector<int> specifying *how many* individuals
+ * to randomly select and screen from each of the 12 groups.
+ * @param focusProbabilityPerGroup A vector<double> specifying the probability
+ * (0.0 to 1.0) that a screened individual from that group becomes a FOCUS case.
+ */
+void Population::UpdateForFOCUSAnalysis(
+    EventParams &eventParams, 
+    const std::vector<int>& numToScreenPerGroup, 
+    const std::vector<double>& focusProbabilityPerGroup) 
+{
     
-    for (int i = 0; i < monthlyTarget; ++i) {
+    /* 1. Define the groups (same as before) */
+    std::vector<std::vector<Entity *>> groups = {
+        FindHispanicMalesUndiagnosed(),
+        FindHispanicFemalesUndiagnosed(),
+        FindBlackMalesUndiagnosed(),
+        FindBlackFemalesUndiagnosed(),
+        FindWhiteMalesUndiagnosed(),
+        FindWhiteFemalesUndiagnosed(),
+        FindHispanicMalesLossToFollowUp(),
+        FindHispanicFemalesLossToFollowUp(),
+        FindBlackMalesLossToFollowUp(),
+        FindBlackFemalesLossToFollowUp(),
+        FindWhiteMalesLossToFollowUp(),
+        FindWhiteFemalesLossToFollowUp()
+    };
 
-        /* Define the groups */
-        std::vector<std::vector<Entity *>> groups = {
-            FindHispanicMalesUndiagnosed(),
-            FindHispanicFemalesUndiagnosed(),
-            FindBlackMalesUndiagnosed(),
-            FindBlackFemalesUndiagnosed(),
-            FindWhiteMalesUndiagnosed(),
-            FindWhiteFemalesUndiagnosed(),
-            FindHispanicMalesLossToFollowUp(),
-            FindHispanicFemalesLossToFollowUp(),
-            FindBlackMalesLossToFollowUp(),
-            FindBlackFemalesLossToFollowUp(),
-            FindWhiteMalesLossToFollowUp(),
-            FindWhiteFemalesLossToFollowUp()
-        };
+    /* 2. Validate input sizes */
+    if (groups.size() != numToScreenPerGroup.size() || 
+        groups.size() != focusProbabilityPerGroup.size()) {
+        
+        // Using std::cerr instead of cout for errors
+        std::cerr << "Error: Input vector sizes do not match group size (12)!" << std::endl;
+        return; // Or throw an exception
+    }
 
-        /* Define the probability (rate) for each group */
-        std::vector<double> groupProbabilities = {
-            0.05, // Hispanic Males Undiagnosed
-            0.05, // Hispanic Females Undiagnosed
-            0.10, // Black Males Undiagnosed
-            0.10, // Black Females Undiagnosed
-            0.15, // White Males Undiagnosed
-            0.15, // White Females Undiagnosed
-            0.05, // Hispanic Males LTFU
-            0.05, // Hispanic Females LTFU
-            0.10, // Black Males LTFU
-            0.05, // Black Females LTFU
-            0.10, // White Males LTFU
-            0.05  // White Females LTFU
-        };
+    /* 3. Setup random number generators */
+    // Note: It's better to initialize the generator once and pass it,
+    // but this stays true to your original code's (and our new) structure.
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    // This distribution is for the probability check (e.g., "roll a die")
+    std::uniform_real_distribution<> probDist(0.0, 1.0); 
 
-        /* Pick one group based on probability and one entity from that group */
-        auto pickEntityFromGroups = [](const std::vector<std::vector<Entity *>>& groups, const std::vector<double>& probabilities) -> Entity* {
-            if (groups.size() != probabilities.size()) return nullptr;
+    /* 4. Main Screening Logic */
+    
+    // Iterate over each of the 12 groups
+    for (size_t i = 0; i < groups.size(); ++i) {
+        
+        auto& currentGroup = groups[i];
+        int numToScreen = numToScreenPerGroup[i];
+        double focusProb = focusProbabilityPerGroup[i];
 
-            std::random_device rd;
-            std::mt19937 gen(rd());
+        // Skip if this group is empty, no one is to be screened, 
+        // or the probability is zero.
+        if (currentGroup.empty() || numToScreen == 0 || focusProb == 0.0) {
+            continue;
+        }
 
-            std::discrete_distribution<> groupDist(probabilities.begin(), probabilities.end());
+        // --- Randomly select 'numToScreen' individuals ---
+        
+        // We shuffle the group list and just pick the first 'N' individuals.
+        // This is an efficient way to sample *without replacement*.
+        std::shuffle(currentGroup.begin(), currentGroup.end(), gen);
+        
+        // Determine the actual number to screen 
+        // (can't screen more than are in the group)
+        int actualToScreen = std::min(numToScreen, (int)currentGroup.size());
+        cout << actualToScreen << " individuals to be screened in group " << i << std::endl;
+
+        // --- Apply probabilistic check to each selected individual ---
+        for (int j = 0; j < actualToScreen; ++j) {
             
-            for (int attempt = 0; attempt < 10; ++attempt) {  // Try up to 10 times to find a non-empty group
-                int groupIndex = groupDist(gen);
-                const auto& selectedGroup = groups[groupIndex];
-                if (!selectedGroup.empty()) {
-                    std::uniform_int_distribution<> dist(0, selectedGroup.size() - 1);
-                    return selectedGroup[dist(gen)];
-                }
+            Entity* candidate = currentGroup[j];
+
+            // "Roll the die": If the random number is less than the probability,
+            // they become a FOCUS individual.
+            if (probDist(gen) < focusProb) {
+                
+                // setFOCUS() is a function you must add to your Entity class
+                // candidate->setFOCUS(); 
+                populationStatistics.recordFOCUS(candidate);
+                
+                // Using std::cout (as in your original)
+                std::cout << "Selected FOCUS entity: " << candidate->getID() 
+                          << " (from group " << i << ")" << std::endl;
             }
-
-            return nullptr; // Couldn't find a non-empty group after 10 tries
-        };
-
-    /* Select and set focus */
-        Entity* selected = pickEntityFromGroups(groups, groupProbabilities);
-        if (selected) {
-            selected->setFOCUS();
-            populationStatistics.recordFOCUS(selected);
-            cout << "Selected FOCUS entity: " << selected->getID() << std::endl;
         }
     }
 }
+// ==========================================================================
+// ===== END OF MODIFIED CODE BLOCK =========================================
+// ==========================================================================
 
 /* Write out the current partnership network */
 void Population::WritePartnershipNetwork(EventParams &eventParams) {

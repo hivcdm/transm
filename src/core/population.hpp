@@ -120,8 +120,23 @@ public:
      * when transmissions occur, run the incident case through CEPAC to get their future life trajectory
      * returns the # of New people of each type who was infected */
     void UpdatePartnerships(EventParams &eventParams);
-
-    void UpdateForFOCUSAnalysis(EventParams &eventParams, int monthlyTarget);
+    
+    /**
+     * @brief Updates the population for FOCUS analysis based on a screening model.
+     *
+     * Iterates through each demographic group, randomly selects a specified
+     * number to "screen", and applies a probabilistic check to each.
+     *
+     * @param eventParams General event parameters.
+     * @param numToScreenPerGroup A vector<int> specifying *how many* individuals
+     * to randomly select and screen from each of the 12 groups.
+     * @param focusProbabilityPerGroup A vector<double> specifying the probability
+     * (0.0 to 1.0) that a screened individual from that group becomes a FOCUS case.
+     */
+    void UpdateForFOCUSAnalysis(
+        EventParams &eventParams, 
+        const std::vector<int>& numToScreenPerGroup, 
+        const std::vector<double>& focusProbabilityPerGroup);
 
     void WritePartnershipNetwork(EventParams &eventParams);
 
