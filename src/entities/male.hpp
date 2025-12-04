@@ -108,6 +108,14 @@ public :
 		void SetPartnershipDuration(RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { sexualBehaviorParams[type].setPartnershipDuration(risk, dist); }
 	    BetaDist GetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type type) const { return getSexualBehavior(type).getChanceCondomUsePerEvent(risk); }
 
+		double GetMultiplierCondomUsePerEvent() const { return multiplierCondomUseBlacks; }
+		double GetMultiplierCondomUseWhites() const { return multiplierCondomUseWhites; }
+		void SetMultiplierCondomUsePerEvent(double blackMultiplier, double whiteMultiplier)
+		{
+			multiplierCondomUseBlacks = blackMultiplier;
+			multiplierCondomUseWhites = whiteMultiplier;
+		}
+
         double getBreakupRateMSW(SexualPartnership::Type type) { return sexualBehaviorParams[type].getBreakupRateForMSW(); }
         double getBreakupRateMSM(SexualPartnership::Type type) { return sexualBehaviorParams[type].getBreakupRateForMSM(); }
 
@@ -220,6 +228,9 @@ public :
          * decreases his number of partnerships to be formed and stops looking
          * for the current partner. */
         int maxPartnershipRejections;
+
+		double multiplierCondomUseBlacks;
+		double multiplierCondomUseWhites;
 
         double preExposureProphylaxisEfficacy_;
 
