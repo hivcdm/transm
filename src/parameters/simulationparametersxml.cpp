@@ -892,7 +892,10 @@ Male::SubPopParams SimulationParametersXml::GetMaleSubPopParams() const
 	result.SetProportionHighRisk(DemographicProfile::Employment::Csw, Text<double>(behavior_node.child("proportionHighRiskCsw")));
     result.SetProportionHighRisk(DemographicProfile::Employment::NonCsw, Text<double>(behavior_node.child("proportionHighRiskNonCsw")));
 
-    result.SetMultiplierCondomUsePerEvent(Text<double>(behavior_node.child("multiplierCondomUseBlacks")), Text<double>(behavior_node.child("multiplierCondomUseWhites")));
+    // Condom multipliers are optional; default to 1.0 if not specified
+    double multiplierCondomUseBlacks = behavior_node.child("multiplierCondomUseBlacks") ? Text<double>(behavior_node.child("multiplierCondomUseBlacks")) : 1.0;
+    double multiplierCondomUseWhites = behavior_node.child("multiplierCondomUseWhites") ? Text<double>(behavior_node.child("multiplierCondomUseWhites")) : 1.0;
+    result.SetMultiplierCondomUsePerEvent(multiplierCondomUseBlacks, multiplierCondomUseWhites);
 
 	auto discountingStartAgeYrs = Text<int>(behavior_node.child("ageDiscounting").child("startAgeYrs"));
 	auto acquisitionDiscByYr = Text<double>(behavior_node.child("ageDiscounting").child("acquisitionDiscByYr"));
