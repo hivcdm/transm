@@ -108,7 +108,7 @@ public :
 		void SetPartnershipDuration(RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { sexualBehaviorParams[type].setPartnershipDuration(risk, dist); }
 	    BetaDist GetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type type) const { return getSexualBehavior(type).getChanceCondomUsePerEvent(risk); }
 
-		double GetMultiplierCondomUsePerEvent() const { return multiplierCondomUseBlacks; }
+		double GetMultiplierCondomUseBlacks() const { return multiplierCondomUseBlacks; }
 		double GetMultiplierCondomUseWhites() const { return multiplierCondomUseWhites; }
 		void SetMultiplierCondomUsePerEvent(double blackMultiplier, double whiteMultiplier)
 		{
@@ -272,6 +272,9 @@ public:
     Entity *choosePartner(RandomNumberGenerator &_randomNums, EntityPool *_availableEntities,
 	                      SexualPartnership::Type _partnershipType, bool _remove);
 
+
+	void updateBetaDistForRace(BetaDist &dist) const;
+	
     void SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng);
 
 	const BetaDist GetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type type)
