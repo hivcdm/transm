@@ -79,6 +79,7 @@ double Male::SubPopParams::getPartneringActsDiscMult(Age _ageYrs) const
 	return partneringActsDiscMult.at((_ageYrs - partneringDiscStartAgeYrs).years_as_index());
 }
 
+// TODO: Make this general for other uses beyond condom use
 void Male::updateBetaDistForRace(BetaDist &dist) const {
     double scale;
     if (this->isBlack()) {
