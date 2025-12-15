@@ -162,10 +162,14 @@ private:
     std::vector<double> yearlyFocusProbabilities;
 
     // --- Monthly Data (calculated from yearly) ---
-    std::vector<int> monthlyScreeningNumbers; 
-    
+    std::vector<int> monthlyScreeningNumbers;
+
     // Stores 12 calculated monthly probabilities (one for each group)
     std::vector<double> monthlyFocusProbabilities;
+
+    // Scaling factor for FOCUS data (1.0 = use as-is, <1.0 = scale down for smaller simulations)
+    // Set based on your simulation population size relative to real-world population
+    double focusDataScaleFactor;
 
     std::vector<int> db_YearlyCounts_2020;
     std::vector<double> db_YearlyProbs_2020;

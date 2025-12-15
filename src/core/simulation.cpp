@@ -252,14 +252,21 @@ Simulation::Simulation(BatchStatus &batch_status) :
         yearlyScreeningNumbers(12),
         yearlyFocusProbabilities(12),
         monthlyScreeningNumbers(12),
-        monthlyFocusProbabilities(12)        
+        monthlyFocusProbabilities(12)
 {
-        // --- Year 13 (2020) ---
-        db_YearlyCounts_2020 = {1, 1, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1};
+        // FOCUS Data Scale Factor
+        // - Set to 1.0 if your simulation population matches real-world scale
+        // - Set to <1.0 if running a smaller simulation (e.g., 0.1 for 1:10 scale)
+        // - This scales the screening COUNTS but NOT the probabilities
+        focusDataScaleFactor = 0.1;  // TODO: Adjust based on your simulation size
+
+        // --- Year 13 (2020) - FOCUS Study baseline data ---
+        // Real yearly counts from FOCUS study (these are yearly totals to screen)
+        db_YearlyCounts_2020 = {120, 48, 200, 210, 300, 305, 60, 65, 80, 85, 150, 155};
         db_YearlyProbs_2020  = {0.10, 0.12, 0.08, 0.09, 0.15, 0.16, 0.05, 0.06, 0.07, 0.08, 0.10, 0.11};
-        
+
         // --- Year 14 (2021) ---
-        db_YearlyCounts_2021 = {1,2, 210, 220, 310, 315, 65, 70, 85, 90, 160, 165};
+        db_YearlyCounts_2021 = {130, 55, 210, 220, 310, 315, 65, 70, 85, 90, 160, 165};
         db_YearlyProbs_2021  = {0.11, 0.13, 0.09, 0.10, 0.16, 0.17, 0.06, 0.07, 0.08, 0.09, 0.11, 0.12};
 
         // --- Year 15 (2022) ---
@@ -672,37 +679,71 @@ std::size_t Simulation::SimulateMonth() {
     int current_month = time_.in_months();
 
     if (current_month > 756 && current_month < 816) {
+        int current_year = 2007 + (current_month / 12);
+        int month_in_year = ((current_month - 1) % 12) + 1;
+
+        // Log FOCUS activation (only once per year on month 1)
+        if (month_in_year == 1) {
+            cout << "[FOCUS] ==== FOCUS Study Active for Year " << current_year
+                 << " (Scale Factor: " << focusDataScaleFactor << ") ====" << endl;
+        }
+
         if (current_month >= 756 && current_month < 768) { // Year 2020
             // Iterate over each of the 12 risk groups
             for (int i = 0; i < 12; ++i) {
-                monthlyScreeningNumbers[i] = db_YearlyCounts_2020[i] / 12;
+                // Apply scale factor and convert yearly to monthly using proper float division
+                monthlyScreeningNumbers[i] = static_cast<int>(
+                    std::ceil((db_YearlyCounts_2020[i] * focusDataScaleFactor) / 12.0)
+                );
                 monthlyFocusProbabilities[i] = 1 - std::pow(1 - db_YearlyProbs_2020[i], 1 / 12.0);
             }
-            cout << monthlyScreeningNumbers[0] << ", " << monthlyFocusProbabilities[0] << endl; // Debug output
+            cout << "[FOCUS] Year " << current_year << " Month " << month_in_year
+                 << " (sim month " << current_month << ") - Using 2020 database" << endl;
 
         } else if (current_month >= 768 && current_month < 780) { // Year 2021
             for (int i = 0; i < 12; ++i) {
-                monthlyScreeningNumbers[i] = db_YearlyCounts_2021[i] / 12;
+                monthlyScreeningNumbers[i] = static_cast<int>(
+                    std::ceil((db_YearlyCounts_2021[i] * focusDataScaleFactor) / 12.0)
+                );
                 monthlyFocusProbabilities[i] = 1 - std::pow(1 - db_YearlyProbs_2021[i], 1 / 12.0);
             }
+            cout << "[FOCUS] Year " << current_year << " Month " << month_in_year
+                 << " (sim month " << current_month << ") - Using 2021 database" << endl;
+
         } else if (current_month >= 780 && current_month < 792) { // Year 2022
             for (int i = 0; i < 12; ++i) {
-                monthlyScreeningNumbers[i] = db_YearlyCounts_2022[i] / 12;
+                monthlyScreeningNumbers[i] = static_cast<int>(
+                    std::ceil((db_YearlyCounts_2022[i] * focusDataScaleFactor) / 12.0)
+                );
                 monthlyFocusProbabilities[i] = 1 - std::pow(1 - db_YearlyProbs_2022[i], 1 / 12.0);
             }
+            cout << "[FOCUS] Year " << current_year << " Month " << month_in_year
+                 << " (sim month " << current_month << ") - Using 2022 database" << endl;
+
         } else if (current_month >= 792 && current_month < 804) { // Year 2023
             for (int i = 0; i < 12; ++i) {
-                monthlyScreeningNumbers[i] = db_YearlyCounts_2023[i] / 12;
+                monthlyScreeningNumbers[i] = static_cast<int>(
+                    std::ceil((db_YearlyCounts_2023[i] * focusDataScaleFactor) / 12.0)
+                );
                 monthlyFocusProbabilities[i] = 1 - std::pow(1 - db_YearlyProbs_2023[i], 1 / 12.0);
             }
+            cout << "[FOCUS] Year " << current_year << " Month " << month_in_year
+                 << " (sim month " << current_month << ") - Using 2023 database" << endl;
+
         } else if (current_month >= 804 && current_month < 816) { // Year 2024
             for (int i = 0; i < 12; ++i) {
-                monthlyScreeningNumbers[i] = db_YearlyCounts_2024[i] / 12;
+                monthlyScreeningNumbers[i] = static_cast<int>(
+                    std::ceil((db_YearlyCounts_2024[i] * focusDataScaleFactor) / 12.0)
+                );
                 monthlyFocusProbabilities[i] = 1 - std::pow(1 - db_YearlyProbs_2024[i], 1 / 12.0);
             }
+            cout << "[FOCUS] Year " << current_year << " Month " << month_in_year
+                 << " (sim month " << current_month << ") - Using 2024 database" << endl;
         }
 
+        cout << "[FOCUS] Starting selection process..." << endl;
         population_.UpdateForFOCUSAnalysis(parameters_, monthlyScreeningNumbers, monthlyFocusProbabilities);
+        cout << "[FOCUS] Selection process completed." << endl << endl;
     }
 
     population_.Births(parameters_);

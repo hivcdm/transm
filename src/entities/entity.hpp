@@ -675,6 +675,7 @@ public:
             return;  // Exit early if cepacPatient is null
         }
         cepacPatient->setFocusStatus(1);
+        cepacPatient->performFOCUSHealthUpade();
     }
 
     /** Check if the patient is linked to care.
