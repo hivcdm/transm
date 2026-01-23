@@ -252,13 +252,14 @@ Simulation::Simulation(BatchStatus &batch_status) :
         yearlyScreeningNumbers(12),
         yearlyFocusProbabilities(12),
         monthlyScreeningNumbers(12),
-        monthlyFocusProbabilities(12)
+        monthlyFocusProbabilities(12),
+        yearlyScreenedCount(12, 0),
+        yearlyScreeningTarget(12, 0),
+        currentFocusYear(-1)
 {
         // FOCUS Data Scale Factor
-        // - Set to 1.0 if your simulation population matches real-world scale
-        // - Set to <1.0 if running a smaller simulation (e.g., 0.1 for 1:10 scale)
-        // - This scales the screening COUNTS but NOT the probabilities
-        focusDataScaleFactor = 0.1;  // TODO: Adjust based on your simulation size
+        // Simulation is 2.5x smaller than real life, so scale = 1/2.5 = 0.4
+        focusDataScaleFactor = 0.4;
 
         // --- Year 13 (2020) - FOCUS Study baseline data ---
         // Real yearly counts from FOCUS study (these are yearly totals to screen)
@@ -682,67 +683,113 @@ std::size_t Simulation::SimulateMonth() {
         int current_year = 2007 + (current_month / 12);
         int month_in_year = ((current_month - 1) % 12) + 1;
 
-        // Log FOCUS activation (only once per year on month 1)
-        if (month_in_year == 1) {
-            cout << "[FOCUS] ==== FOCUS Study Active for Year " << current_year
-                 << " (Scale Factor: " << focusDataScaleFactor << ") ====" << endl;
+        // Detect new year - reset counters and set new targets
+        if (current_year != currentFocusYear) {
+            currentFocusYear = current_year;
+
+            // Reset yearly screened counts
+            std::fill(yearlyScreenedCount.begin(), yearlyScreenedCount.end(), 0);
+
+            // Set yearly targets based on current year (scaled)
+            const std::vector<int>* yearData = nullptr;
+            if (current_month >= 756 && current_month < 768) {
+                yearData = &db_YearlyCounts_2020;
+            } else if (current_month >= 768 && current_month < 780) {
+                yearData = &db_YearlyCounts_2021;
+            } else if (current_month >= 780 && current_month < 792) {
+                yearData = &db_YearlyCounts_2022;
+            } else if (current_month >= 792 && current_month < 804) {
+                yearData = &db_YearlyCounts_2023;
+            } else if (current_month >= 804 && current_month < 816) {
+                yearData = &db_YearlyCounts_2024;
+            }
+
+            if (yearData) {
+                for (int i = 0; i < 12; ++i) {
+                    yearlyScreeningTarget[i] = static_cast<int>(
+                        std::round((*yearData)[i] * focusDataScaleFactor)
+                    );
+                }
+            }
+
+            cout << "[FOCUS] ==== NEW FOCUS YEAR " << current_year << " ====" << endl;
+            cout << "[FOCUS] Population Scale Factor: " << focusDataScaleFactor
+                 << " (sim is " << (1.0/focusDataScaleFactor) << "x smaller than real life)" << endl;
+            cout << "[FOCUS] Yearly Targets Set (scaled): ";
+            int totalTarget = 0;
+            for (int i = 0; i < 12; ++i) {
+                totalTarget += yearlyScreeningTarget[i];
+            }
+            cout << totalTarget << " individuals across 12 groups" << endl;
         }
 
+        // Calculate how many more need to be screened this month to reach yearly goal
+        int months_remaining = 13 - month_in_year;  // Including current month
+
         if (current_month >= 756 && current_month < 768) { // Year 2020
-            // Iterate over each of the 12 risk groups
             for (int i = 0; i < 12; ++i) {
-                // Apply scale factor and convert yearly to monthly using proper float division
-                monthlyScreeningNumbers[i] = static_cast<int>(
-                    std::ceil((db_YearlyCounts_2020[i] * focusDataScaleFactor) / 12.0)
-                );
+                int remaining = std::max(0, yearlyScreeningTarget[i] - yearlyScreenedCount[i]);
+                // Distribute remaining evenly over remaining months (front-loaded for now)
+                monthlyScreeningNumbers[i] = (months_remaining > 0) ?
+                    static_cast<int>(std::ceil(static_cast<double>(remaining) / months_remaining)) : 0;
                 monthlyFocusProbabilities[i] = 1 - std::pow(1 - db_YearlyProbs_2020[i], 1 / 12.0);
             }
-            cout << "[FOCUS] Year " << current_year << " Month " << month_in_year
-                 << " (sim month " << current_month << ") - Using 2020 database" << endl;
 
         } else if (current_month >= 768 && current_month < 780) { // Year 2021
             for (int i = 0; i < 12; ++i) {
-                monthlyScreeningNumbers[i] = static_cast<int>(
-                    std::ceil((db_YearlyCounts_2021[i] * focusDataScaleFactor) / 12.0)
-                );
+                int remaining = std::max(0, yearlyScreeningTarget[i] - yearlyScreenedCount[i]);
+                monthlyScreeningNumbers[i] = (months_remaining > 0) ?
+                    static_cast<int>(std::ceil(static_cast<double>(remaining) / months_remaining)) : 0;
                 monthlyFocusProbabilities[i] = 1 - std::pow(1 - db_YearlyProbs_2021[i], 1 / 12.0);
             }
-            cout << "[FOCUS] Year " << current_year << " Month " << month_in_year
-                 << " (sim month " << current_month << ") - Using 2021 database" << endl;
 
         } else if (current_month >= 780 && current_month < 792) { // Year 2022
             for (int i = 0; i < 12; ++i) {
-                monthlyScreeningNumbers[i] = static_cast<int>(
-                    std::ceil((db_YearlyCounts_2022[i] * focusDataScaleFactor) / 12.0)
-                );
+                int remaining = std::max(0, yearlyScreeningTarget[i] - yearlyScreenedCount[i]);
+                monthlyScreeningNumbers[i] = (months_remaining > 0) ?
+                    static_cast<int>(std::ceil(static_cast<double>(remaining) / months_remaining)) : 0;
                 monthlyFocusProbabilities[i] = 1 - std::pow(1 - db_YearlyProbs_2022[i], 1 / 12.0);
             }
-            cout << "[FOCUS] Year " << current_year << " Month " << month_in_year
-                 << " (sim month " << current_month << ") - Using 2022 database" << endl;
 
         } else if (current_month >= 792 && current_month < 804) { // Year 2023
             for (int i = 0; i < 12; ++i) {
-                monthlyScreeningNumbers[i] = static_cast<int>(
-                    std::ceil((db_YearlyCounts_2023[i] * focusDataScaleFactor) / 12.0)
-                );
+                int remaining = std::max(0, yearlyScreeningTarget[i] - yearlyScreenedCount[i]);
+                monthlyScreeningNumbers[i] = (months_remaining > 0) ?
+                    static_cast<int>(std::ceil(static_cast<double>(remaining) / months_remaining)) : 0;
                 monthlyFocusProbabilities[i] = 1 - std::pow(1 - db_YearlyProbs_2023[i], 1 / 12.0);
             }
-            cout << "[FOCUS] Year " << current_year << " Month " << month_in_year
-                 << " (sim month " << current_month << ") - Using 2023 database" << endl;
 
         } else if (current_month >= 804 && current_month < 816) { // Year 2024
             for (int i = 0; i < 12; ++i) {
-                monthlyScreeningNumbers[i] = static_cast<int>(
-                    std::ceil((db_YearlyCounts_2024[i] * focusDataScaleFactor) / 12.0)
-                );
+                int remaining = std::max(0, yearlyScreeningTarget[i] - yearlyScreenedCount[i]);
+                monthlyScreeningNumbers[i] = (months_remaining > 0) ?
+                    static_cast<int>(std::ceil(static_cast<double>(remaining) / months_remaining)) : 0;
                 monthlyFocusProbabilities[i] = 1 - std::pow(1 - db_YearlyProbs_2024[i], 1 / 12.0);
             }
-            cout << "[FOCUS] Year " << current_year << " Month " << month_in_year
-                 << " (sim month " << current_month << ") - Using 2024 database" << endl;
         }
 
+        cout << "[FOCUS] Month " << month_in_year << "/" << current_year
+             << " (sim month " << current_month << ")" << endl;
         cout << "[FOCUS] Starting selection process..." << endl;
-        population_.UpdateForFOCUSAnalysis(parameters_, monthlyScreeningNumbers, monthlyFocusProbabilities);
+
+        // Run FOCUS selection and get actual screened counts
+        std::vector<int> actualScreened = population_.UpdateForFOCUSAnalysis(
+            parameters_, monthlyScreeningNumbers, monthlyFocusProbabilities);
+
+        // Update yearly tracking counters
+        for (int i = 0; i < 12; ++i) {
+            yearlyScreenedCount[i] += actualScreened[i];
+        }
+
+        // Print year-to-date progress
+        int ytdTotal = 0, targetTotal = 0;
+        for (int i = 0; i < 12; ++i) {
+            ytdTotal += yearlyScreenedCount[i];
+            targetTotal += yearlyScreeningTarget[i];
+        }
+        cout << "[FOCUS] Year-to-Date Progress: " << ytdTotal << "/" << targetTotal
+             << " screened (" << (targetTotal > 0 ? 100.0 * ytdTotal / targetTotal : 0)
+             << "% of yearly target)" << endl;
         cout << "[FOCUS] Selection process completed." << endl << endl;
     }
 

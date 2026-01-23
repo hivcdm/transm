@@ -740,7 +740,7 @@ void Population::UpdatePartnerships(EventParams &eventParams) {
  * @param focusProbabilityPerGroup A vector<double> specifying the probability
  * (0.0 to 1.0) that a screened individual from that group becomes a FOCUS case.
  */
-void Population::UpdateForFOCUSAnalysis(
+std::vector<int> Population::UpdateForFOCUSAnalysis(
     EventParams &eventParams,
     const std::vector<int>& numToScreenPerGroup,
     const std::vector<double>& focusProbabilityPerGroup)
@@ -761,6 +761,9 @@ void Population::UpdateForFOCUSAnalysis(
         "White Males LTFU",
         "White Females LTFU"
     };
+
+    // Track actual screened per group (to return for yearly tracking)
+    std::vector<int> actualScreenedPerGroup(12, 0);
 
     /* 1. Define the groups (same as before) */
     std::vector<std::vector<Entity *>> groups = {
@@ -784,7 +787,7 @@ void Population::UpdateForFOCUSAnalysis(
 
         // Using std::cerr instead of cout for errors
         std::cerr << "[FOCUS ERROR] Input vector sizes do not match group size (12)!" << std::endl;
-        return; // Or throw an exception
+        return actualScreenedPerGroup; // Return empty vector
     }
 
     /* 3. Setup random number generators */
@@ -831,6 +834,7 @@ void Population::UpdateForFOCUSAnalysis(
         // (can't screen more than are in the group)
         int actualToScreen = std::min(numToScreen, (int)currentGroup.size());
         totalScreened += actualToScreen;
+        actualScreenedPerGroup[i] = actualToScreen;  // Track for return
 
         cout << "  [Group " << i << "] Screening " << actualToScreen
              << " individuals..." << endl;
@@ -845,7 +849,7 @@ void Population::UpdateForFOCUSAnalysis(
             // they become a FOCUS individual.
             if (probDist(gen) < focusProb) {
 
-                // setFOCUS() is a function you must add to your Entity class
+                // Mark entity as FOCUS and record in statistics
                 candidate->setFOCUS();
                 populationStatistics.recordFOCUS(candidate);
                 selectedInGroup++;
@@ -867,6 +871,8 @@ void Population::UpdateForFOCUSAnalysis(
          << ", Total selected: " << totalSelected
          << " (overall rate: " << (totalScreened > 0 ? 100.0 * totalSelected / totalScreened : 0)
          << "%)" << endl;
+
+    return actualScreenedPerGroup;
 }
 // ==========================================================================
 // ===== END OF MODIFIED CODE BLOCK =========================================

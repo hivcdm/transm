@@ -132,10 +132,11 @@ public:
      * to randomly select and screen from each of the 12 groups.
      * @param focusProbabilityPerGroup A vector<double> specifying the probability
      * (0.0 to 1.0) that a screened individual from that group becomes a FOCUS case.
+     * @return A vector<int> containing the actual number screened per group (for tracking).
      */
-    void UpdateForFOCUSAnalysis(
-        EventParams &eventParams, 
-        const std::vector<int>& numToScreenPerGroup, 
+    std::vector<int> UpdateForFOCUSAnalysis(
+        EventParams &eventParams,
+        const std::vector<int>& numToScreenPerGroup,
         const std::vector<double>& focusProbabilityPerGroup);
 
     void WritePartnershipNetwork(EventParams &eventParams);
