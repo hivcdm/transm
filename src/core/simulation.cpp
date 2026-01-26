@@ -264,23 +264,23 @@ Simulation::Simulation(BatchStatus &batch_status) :
         // --- Year 13 (2020) - FOCUS Study baseline data ---
         // Real yearly counts from FOCUS study (these are yearly totals to screen)
         db_YearlyCounts_2020 = {120, 48, 200, 210, 300, 305, 60, 65, 80, 85, 150, 155};
-        db_YearlyProbs_2020  = {0.10, 0.12, 0.08, 0.09, 0.15, 0.16, 0.05, 0.06, 0.07, 0.08, 0.10, 0.11};
+        db_YearlyProbs_2020  = {0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.69, 0.69, 0.69, 0.69, 0.69, 0.69};
 
         // --- Year 14 (2021) ---
         db_YearlyCounts_2021 = {130, 55, 210, 220, 310, 315, 65, 70, 85, 90, 160, 165};
-        db_YearlyProbs_2021  = {0.11, 0.13, 0.09, 0.10, 0.16, 0.17, 0.06, 0.07, 0.08, 0.09, 0.11, 0.12};
+        db_YearlyProbs_2021  = {0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.69, 0.69, 0.69, 0.69, 0.69, 0.69};
 
         // --- Year 15 (2022) ---
         db_YearlyCounts_2022 = {135, 60, 220, 230, 320, 325, 70, 75, 90, 95, 170, 175};
-        db_YearlyProbs_2022  = {0.12, 0.14, 0.10, 0.11, 0.17, 0.18, 0.07, 0.08, 0.09, 0.10, 0.12, 0.13};
-
+        db_YearlyProbs_2022  = {0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.69, 0.69, 0.69, 0.69, 0.69, 0.69};
+        
         // --- Year 16 (2023) ---
         db_YearlyCounts_2023 = {140, 65, 230, 240, 330, 335, 75, 80, 95, 100, 180, 185};
-        db_YearlyProbs_2023  = {0.13, 0.15, 0.11, 0.12, 0.18, 0.19, 0.08, 0.09, 0.10, 0.11, 0.13, 0.14};
+        db_YearlyProbs_2023  = {0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.69, 0.69, 0.69, 0.69, 0.69, 0.69};
 
         // --- Year 17 (2024) ---
         db_YearlyCounts_2024 = {145, 70, 240, 250, 340, 345, 80, 85, 100, 105, 190, 195};
-        db_YearlyProbs_2024  = {0.14, 0.16, 0.12, 0.13, 0.19, 0.20, 0.09, 0.10, 0.11, 0.12, 0.14, 0.15};
+        db_YearlyProbs_2024  = {0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.69, 0.69, 0.69, 0.69, 0.69, 0.69};
 
 }
 
@@ -680,7 +680,7 @@ std::size_t Simulation::SimulateMonth() {
     int current_month = time_.in_months();
 
     if (current_month > 756 && current_month < 816) {
-        int current_year = 2007 + (current_month / 12);
+        int current_year = 2007 + (current_month - 600) / 12;
         int month_in_year = ((current_month - 1) % 12) + 1;
 
         // Detect new year - reset counters and set new targets
@@ -732,7 +732,7 @@ std::size_t Simulation::SimulateMonth() {
                 // Distribute remaining evenly over remaining months (front-loaded for now)
                 monthlyScreeningNumbers[i] = (months_remaining > 0) ?
                     static_cast<int>(std::ceil(static_cast<double>(remaining) / months_remaining)) : 0;
-                monthlyFocusProbabilities[i] = 1 - std::pow(1 - db_YearlyProbs_2020[i], 1 / 12.0);
+                monthlyFocusProbabilities[i] = db_YearlyProbs_2020[i];  // One-time probability at selection
             }
 
         } else if (current_month >= 768 && current_month < 780) { // Year 2021
@@ -740,7 +740,7 @@ std::size_t Simulation::SimulateMonth() {
                 int remaining = std::max(0, yearlyScreeningTarget[i] - yearlyScreenedCount[i]);
                 monthlyScreeningNumbers[i] = (months_remaining > 0) ?
                     static_cast<int>(std::ceil(static_cast<double>(remaining) / months_remaining)) : 0;
-                monthlyFocusProbabilities[i] = 1 - std::pow(1 - db_YearlyProbs_2021[i], 1 / 12.0);
+                monthlyFocusProbabilities[i] = db_YearlyProbs_2021[i];  // One-time probability at selection
             }
 
         } else if (current_month >= 780 && current_month < 792) { // Year 2022
@@ -748,7 +748,7 @@ std::size_t Simulation::SimulateMonth() {
                 int remaining = std::max(0, yearlyScreeningTarget[i] - yearlyScreenedCount[i]);
                 monthlyScreeningNumbers[i] = (months_remaining > 0) ?
                     static_cast<int>(std::ceil(static_cast<double>(remaining) / months_remaining)) : 0;
-                monthlyFocusProbabilities[i] = 1 - std::pow(1 - db_YearlyProbs_2022[i], 1 / 12.0);
+                monthlyFocusProbabilities[i] = db_YearlyProbs_2022[i];  // One-time probability at selection
             }
 
         } else if (current_month >= 792 && current_month < 804) { // Year 2023
@@ -756,7 +756,7 @@ std::size_t Simulation::SimulateMonth() {
                 int remaining = std::max(0, yearlyScreeningTarget[i] - yearlyScreenedCount[i]);
                 monthlyScreeningNumbers[i] = (months_remaining > 0) ?
                     static_cast<int>(std::ceil(static_cast<double>(remaining) / months_remaining)) : 0;
-                monthlyFocusProbabilities[i] = 1 - std::pow(1 - db_YearlyProbs_2023[i], 1 / 12.0);
+                monthlyFocusProbabilities[i] = db_YearlyProbs_2023[i];  // One-time probability at selection
             }
 
         } else if (current_month >= 804 && current_month < 816) { // Year 2024
@@ -764,7 +764,7 @@ std::size_t Simulation::SimulateMonth() {
                 int remaining = std::max(0, yearlyScreeningTarget[i] - yearlyScreenedCount[i]);
                 monthlyScreeningNumbers[i] = (months_remaining > 0) ?
                     static_cast<int>(std::ceil(static_cast<double>(remaining) / months_remaining)) : 0;
-                monthlyFocusProbabilities[i] = 1 - std::pow(1 - db_YearlyProbs_2024[i], 1 / 12.0);
+                monthlyFocusProbabilities[i] = db_YearlyProbs_2024[i];  // One-time probability at selection
             }
         }
 
