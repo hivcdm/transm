@@ -435,49 +435,43 @@ std::vector<Entity *> Population::FindNonCircumcised() {
 
 std::vector<Entity *> Population::FindMalePositives() {
     return Find([](Entity *person) {
-        return person->isMale() && person->getHIVStatus() == HIVStatus::ANY_NOT_OBSERVED_POSITIVE;
+        return person->isMale() && person->isInfected() && !person->isDetected();
     });
 }
     
 std::vector<Entity *> Population::FindHispanicMalesUndiagnosed() {
     return Find([](Entity *person) {
-        return person->isMale() && person->getHIVStatus() == HIVStatus::ANY_NOT_OBSERVED_POSITIVE &&
-               person->isHispanic();
+        return person->isMale() && person->isInfected() && !person->isDetected() && person->isHispanic();
     });
 }    
 
 std::vector<Entity *> Population::FindHispanicFemalesUndiagnosed() {
     return Find([](Entity *person) {
-        return !person->isMale() && person->getHIVStatus() == HIVStatus::ANY_NOT_OBSERVED_POSITIVE &&
-               person->isHispanic();
+        return !person->isMale() && person->isInfected() && !person->isDetected() && person->isHispanic();
     });
 }    
 
 std::vector<Entity *> Population::FindBlackMalesUndiagnosed() {
     return Find([](Entity *person) {
-        return person->isMale() && person->getHIVStatus() == HIVStatus::ANY_NOT_OBSERVED_POSITIVE &&
-               person->isBlack();
+        return person->isMale() && person->isInfected() && !person->isDetected() && person->isBlack();
     });
 } 
 
 std::vector<Entity *> Population::FindBlackFemalesUndiagnosed() {
     return Find([](Entity *person) {
-        return !person->isMale() && person->getHIVStatus() == HIVStatus::ANY_NOT_OBSERVED_POSITIVE &&
-               person->isBlack();
+        return !person->isMale() && person->isInfected() && !person->isDetected() && person->isBlack();
     });
 } 
 
 std::vector<Entity *> Population::FindWhiteMalesUndiagnosed() {
     return Find([](Entity *person) {
-        return person->isMale() && person->getHIVStatus() == HIVStatus::ANY_NOT_OBSERVED_POSITIVE &&
-               person->isWhite();
+        return person->isMale() && person->isInfected() && !person->isDetected() && person->isWhite();
     });
 } 
 
 std::vector<Entity *> Population::FindWhiteFemalesUndiagnosed() {
     return Find([](Entity *person) {
-        return !person->isMale() && person->getHIVStatus() == HIVStatus::ANY_NOT_OBSERVED_POSITIVE &&
-               person->isWhite();
+        return !person->isMale() && person->isInfected() && !person->isDetected() && person->isWhite();
     });
 } 
 
