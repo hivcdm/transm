@@ -666,12 +666,12 @@ std::size_t Simulation::SimulateMonth() {
 //    }
 
 
-    population_.UpdatePhysicalState(parameters_, recordLE, firstMonthToRecord);
+    // ====================================================================
+    // ===== FOCUS selection: runs BEFORE UpdatePhysicalState so that
+    //       newly detected/linked patients go through simulateMonth()
+    //       normally and get ART through the standard treatment path =====
+    // ====================================================================
 
-    // ====================================================================
-    // ===== MODIFIED: Call new FOCUS function with monthly data =====
-    // ====================================================================
-    
     // Get the current month index (0-11)
     // (time_ is 1-based, so month 1 -> index 0, month 12 -> index 11)
     int currentMonthIndex = (time_.in_months() - 1) % 12;
@@ -679,9 +679,10 @@ std::size_t Simulation::SimulateMonth() {
     // if year 2007 is 600 then year 2020 is 600 + (13*12) = 756, 2021 = 768, 2022 = 780, 2023 = 792, 2024 = 804
     int current_month = time_.in_months();
 
-    if (current_month > 756 && current_month < 816) {
+    // FOCUS analysis only runs if enabled via --focus on command line
+    if (parameters_.focusEnabled && current_month >= 756 && current_month < 816) {
         int current_year = 2007 + (current_month - 600) / 12;
-        int month_in_year = ((current_month - 1) % 12) + 1;
+        int month_in_year = (current_month - 600) % 12 + 1;
 
         // Detect new year - reset counters and set new targets
         if (current_year != currentFocusYear) {
@@ -792,6 +793,8 @@ std::size_t Simulation::SimulateMonth() {
              << "% of yearly target)" << endl;
         cout << "[FOCUS] Selection process completed." << endl << endl;
     }
+
+    population_.UpdatePhysicalState(parameters_, recordLE, firstMonthToRecord);
 
     population_.Births(parameters_);
 

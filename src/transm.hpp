@@ -39,7 +39,7 @@ std::vector<path> find_input_files(const path &batch_path) {
  * using --cepac. Load parameters from each XML file and run
  * the model using those parameters.
  **/
-int run_simulation(const path &batch_path, const path &cepac_directory) {
+int run_simulation(const path &batch_path, const path &cepac_directory, bool focus_enabled = false) {
     path batch_directory;
     if (filesystem::is_regular_file(batch_path)) {
         batch_directory = batch_path.parent_path();
@@ -96,6 +96,7 @@ int run_simulation(const path &batch_path, const path &cepac_directory) {
 
         //XXX: we shouldn't have to do this
         parameters.SetRandomNumberGenerator(simulation.GetEventParams().randomNums);
+        simulation.GetEventParams().focusEnabled = focus_enabled;
         simulation.Initialize(parameters);
 
         if (simulation.GetEventParams().calibrationInputs.useCalibration) {
@@ -126,7 +127,7 @@ int run_simulation(const path &batch_path, const path &cepac_directory) {
  **/
 void print_usage(const std::string &executable) {
     std::cout << "usage: " << executable;
-    std::cout << " [--version] [--help] --cepac [cepac_directory] [input(s)...]" << std::endl;
+    std::cout << " [--version] [--help] --cepac [cepac_directory] [--focus on|off] [input(s)...]" << std::endl;
 }
 
 /**
@@ -141,7 +142,9 @@ void print_help(const std::string &executable) {
     "   directory, input files will be simulated sequentially in an arbitrary order using:\n\n"
     "   <TRANSM_BINARY> --cepac <PATH_TO_INFILES> ./\n\n"
     "   If multiple inputs are specified, they will be simulated in the order they  \n"
-    "   are given."
+    "   are given.\n\n"
+    "   Options:\n"
+    "     --focus on|off    Enable or disable FOCUS module (default: off)\n"
     << std::endl;
 }
 

@@ -82,6 +82,7 @@ public:
         cepacRunStats = nullptr;
         cepacCostStats = nullptr;
         cepacTracer = nullptr;
+        focusEnabled = false;
 	}
 
     /** current internal clock for a particular Population */
@@ -164,6 +165,9 @@ public:
 
 	bool enableDynamicTreatmentScaling;
 	int dynamicFeedbackPeriod;
+
+	/** FOCUS module enabled via --focus on command line */
+	bool focusEnabled;
 
 	/** closes all the trace files */
     ~EventParams()

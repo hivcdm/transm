@@ -31,6 +31,10 @@ int main(int argc, char *argv[])
         TCLAP::ValueArg<std::string> cepac_dir_arg("d", "cepac",
 	    cepac_dir_description, false, "", "directory", nullptr);
 
+        auto focus_description = "Enable or disable FOCUS module (on/off)";
+        TCLAP::ValueArg<std::string> focus_arg("f", "focus",
+            focus_description, false, "off", "on|off", nullptr);
+
 	    auto batch_files_description = "One or more XML files or a directory"
                                        "containing XML files.";
 	    TCLAP::UnlabeledMultiArg<std::string> batch_files_arg("batch",
@@ -47,6 +51,7 @@ int main(int argc, char *argv[])
 
 	    /* cmd.add additional args */
 	    cmd.add(cepac_dir_arg);
+        cmd.add(focus_arg);
 
         cmd.parse(argc, argv);
 
@@ -75,6 +80,10 @@ int main(int argc, char *argv[])
 	        use_cmdline_cepac_directory = true;
 	    }
 
+        /* Parse --focus flag */
+        std::string focus_str = focus_arg.getValue();
+        bool focus_enabled = (focus_str == "on" || focus_str == "ON" || focus_str == "On");
+
 	    transm::path batch_path;
 	    for(const auto& batch : batch_files_arg.getValue()) {
             /* Check that the file or directory exists using the absolute path */
@@ -96,7 +105,7 @@ int main(int argc, char *argv[])
                 }
 	        }
 
-	        auto result = run_simulation(batch_path, cepac_directory);
+	        auto result = run_simulation(batch_path, cepac_directory, focus_enabled);
 
 	        /* added because sometimes we don't see all output if buffered */
 	        std::cout.flush();
