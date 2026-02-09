@@ -259,27 +259,69 @@ Simulation::Simulation(BatchStatus &batch_status) :
 {
         // FOCUS Data Scale Factor
         // Simulation is 2.5x smaller than real life, so scale = 1/2.5 = 0.4
-        focusDataScaleFactor = 0.4;
+        focusDataScaleFactor = 1.0;
 
         // --- Year 13 (2020) - FOCUS Study baseline data ---
         // Real yearly counts from FOCUS study (these are yearly totals to screen)
-        db_YearlyCounts_2020 = {120, 48, 200, 210, 300, 305, 60, 65, 80, 85, 150, 155};
+        // Schema:
+        // [ HM Undiagnosed, HF Undiagnosed, BM Undiagnosed, BF Undiagnosed, WM Undiagnosed, WF Undiagnosed,
+        //   HM LTFU,        HF LTFU,        BM LTFU,        BF LTFU,        WM LTFU,        WF LTFU ]
+
+        // db_YearlyCounts_2017 = {
+        //     4, 1,   3, 4,   4, 1,
+        //     11, 7,  25, 29, 13, 6
+        // };
+
+        // db_YearlyCounts_2018 = {
+        //     4, 2,   4, 2,   7, 1,
+        //     14, 4,  14, 12, 16, 6
+        // };
+
+        // db_YearlyCounts_2019 = {
+        //     5, 2,   6, 4,   7, 2,
+        //     26, 7,  46, 40, 33, 8
+        // };
+
+        db_YearlyCounts_2020 = {
+            5, 2,   6, 2,   5, 3,
+            26, 12, 39, 33, 32, 14
+        };
+
+        db_YearlyCounts_2021 = {
+            12, 1,  8, 8,   13, 1,
+            37, 7,  44, 53, 42, 9
+        };
+
+        db_YearlyCounts_2022 = {
+            14, 4,  15, 10, 18, 4,
+            33, 12, 54, 32, 42, 14
+        };
+
+        db_YearlyCounts_2023 = {
+            6, 3,   10, 6,  6, 2,
+            42, 11, 57, 44, 51, 13
+        };
+
+        db_YearlyCounts_2024 = {
+            12, 4,  11, 10, 11, 3,
+            75, 17, 89, 69, 93, 24
+        };
+
+        // db_YearlyProbs_2017  = {0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.69, 0.69, 0.69, 0.69, 0.69, 0.69};
+        // db_YearlyProbs_2018  = {0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.69, 0.69, 0.69, 0.69, 0.69, 0.69};
+        // db_YearlyProbs_2019  = {0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.69, 0.69, 0.69, 0.69, 0.69, 0.69};
         db_YearlyProbs_2020  = {0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.69, 0.69, 0.69, 0.69, 0.69, 0.69};
 
         // --- Year 14 (2021) ---
-        db_YearlyCounts_2021 = {130, 55, 210, 220, 310, 315, 65, 70, 85, 90, 160, 165};
         db_YearlyProbs_2021  = {0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.69, 0.69, 0.69, 0.69, 0.69, 0.69};
 
         // --- Year 15 (2022) ---
-        db_YearlyCounts_2022 = {135, 60, 220, 230, 320, 325, 70, 75, 90, 95, 170, 175};
         db_YearlyProbs_2022  = {0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.69, 0.69, 0.69, 0.69, 0.69, 0.69};
         
         // --- Year 16 (2023) ---
-        db_YearlyCounts_2023 = {140, 65, 230, 240, 330, 335, 75, 80, 95, 100, 180, 185};
         db_YearlyProbs_2023  = {0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.69, 0.69, 0.69, 0.69, 0.69, 0.69};
 
         // --- Year 17 (2024) ---
-        db_YearlyCounts_2024 = {145, 70, 240, 250, 340, 345, 80, 85, 100, 105, 190, 195};
         db_YearlyProbs_2024  = {0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.69, 0.69, 0.69, 0.69, 0.69, 0.69};
 
 }
