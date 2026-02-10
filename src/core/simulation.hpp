@@ -181,6 +181,15 @@ private:
     // Current FOCUS year being tracked (2020-2024)
     int currentFocusYear;
 
+    std::vector<int> db_YearlyCounts_2017;
+    std::vector<double> db_YearlyProbs_2017;
+
+    std::vector<int> db_YearlyCounts_2018;
+    std::vector<double> db_YearlyProbs_2018;
+
+    std::vector<int> db_YearlyCounts_2019;
+    std::vector<double> db_YearlyProbs_2019;    
+
     std::vector<int> db_YearlyCounts_2020;
     std::vector<double> db_YearlyProbs_2020;
 
