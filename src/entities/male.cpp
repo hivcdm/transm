@@ -307,6 +307,11 @@ Male::Male(EventParams &_eventParams, Age _age, bool _circumcised,
         }
         partnerAcqRates[(int)partnership_type] = acquisition_rate;
 		numActsPerMonth[(int)partnership_type] = sexualBehaviorParams.getCoitalEventsPerMonth(risk);
+        /* double acts per month for Black population in Steady and Regular partnerships */
+        if (isBlack() && (partnership_type == SexualPartnership::Type::Steady ||
+                          partnership_type == SexualPartnership::Type::Regular)) {
+            numActsPerMonth[(int)partnership_type] *= 2.0;
+        }
 
 		auto chance_condom_use_dist = sexualBehaviorParams.getChanceCondomUsePerEvent(risk);
 		auto chance_condom_use = _eventParams.randomNums.randBeta(chance_condom_use_dist);
