@@ -102,11 +102,6 @@ void Male::SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partn
         if(current_dist != meanEvents)
         {
             numActsPerMonth[(int)partnershipType] = meanEvents;
-            /* double acts per month for Black population in Steady and Regular partnerships */
-            if (isBlack() && (partnershipType == SexualPartnership::Type::Steady ||
-                              partnershipType == SexualPartnership::Type::Regular)) {
-                numActsPerMonth[(int)partnershipType] *= 2.0;
-            }
         }
     }
     behavior.setCoitalEventsPerMonth(risk, meanEvents);
@@ -312,11 +307,6 @@ Male::Male(EventParams &_eventParams, Age _age, bool _circumcised,
         }
         partnerAcqRates[(int)partnership_type] = acquisition_rate;
 		numActsPerMonth[(int)partnership_type] = sexualBehaviorParams.getCoitalEventsPerMonth(risk);
-        /* double acts per month for Black population in Steady and Regular partnerships */
-        if (isBlack() && (partnership_type == SexualPartnership::Type::Steady ||
-                          partnership_type == SexualPartnership::Type::Regular)) {
-            numActsPerMonth[(int)partnership_type] *= 2.0;
-        }
 
 		auto chance_condom_use_dist = sexualBehaviorParams.getChanceCondomUsePerEvent(risk);
 		auto chance_condom_use = _eventParams.randomNums.randBeta(chance_condom_use_dist);
@@ -533,6 +523,11 @@ int Male::rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums
 
 	double meanCoitalEvents = numActsPerMonth[(int)_partnershipType];
 
+    if (isBlack() && (_partnershipType == SexualPartnership::Type::Steady ||
+                      _partnershipType == SexualPartnership::Type::Regular)) {
+        meanCoitalEvents *= 5.0;
+    }
+
 	/* if person is over the age of partnering discounting, then discount #acts */
     auto ageYrs = getAge();
 
@@ -549,6 +544,12 @@ int Male::rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums
 	}
 
 	int numActs = _randomNums.randPoisson(meanCoitalEvents - 1) + 1;
+
+    /* double acts per month for Black population in Steady and Regular partnerships */
+    // if (isBlack() && (_partnershipType == SexualPartnership::Type::Steady ||
+    //                   _partnershipType == SexualPartnership::Type::Regular)) {
+    //     numActs *= 2.0;
+    // }
 
 	return numActs;
 }
@@ -700,11 +701,6 @@ void Male::rerollRiskGroup(EventParams &_eventParams)
 
 			numActsPerMonth[(int)partnership_type] =
 				sexualBehaviorParams.getCoitalEventsPerMonth(risk);
-        /* double acts per month for Black population in Steady and Regular partnerships */
-        if (isBlack() && (partnership_type == SexualPartnership::Type::Steady ||
-                          partnership_type == SexualPartnership::Type::Regular)) {
-            numActsPerMonth[(int)partnership_type] *= 2.0;
-        }
 			auto chance_condom_use = sexualBehaviorParams.getChanceCondomUsePerEvent(risk);
 			chanceCondomUsePerEvent[(int)partnership_type] =
 				_eventParams.randomNums.randBeta(chance_condom_use);
