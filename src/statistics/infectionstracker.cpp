@@ -319,8 +319,8 @@ void InfectionsTracker::recordIncidentInfection(Time time,
     incidentInfectionsByDemographic[(std::size_t)_partnershipType][_infector->getDemographicProfile()->getProfileID()][_infected->getDemographicProfile()->getProfileID()]++;
 
 	auto infectorGender = (std::size_t)_infector->getDemographicProfileVal<DemographicProfile::Gender>();
-	auto infectedGender = (std::size_t)_infector->getDemographicProfileVal<DemographicProfile::Gender>();
-	auto infectedEmployment = (std::size_t)_infector->getDemographicProfileVal<DemographicProfile::Employment>();
+	auto infectedGender = (std::size_t)_infected->getDemographicProfileVal<DemographicProfile::Gender>();
+	auto infectedEmployment = (std::size_t)_infected->getDemographicProfileVal<DemographicProfile::Employment>();
 
     incidentInfectionsByGender[(std::size_t)_partnershipType][infectorGender][infectedGender]++;
 
