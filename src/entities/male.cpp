@@ -523,10 +523,10 @@ int Male::rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums
 
 	double meanCoitalEvents = numActsPerMonth[(int)_partnershipType];
 
-    if (isBlack() && (_partnershipType == SexualPartnership::Type::Steady ||
-                      _partnershipType == SexualPartnership::Type::Regular)) {
-        meanCoitalEvents *= 5.0;
-    }
+    // if (isBlack() && (_partnershipType == SexualPartnership::Type::Steady ||
+    //                   _partnershipType == SexualPartnership::Type::Regular)) {
+    //     meanCoitalEvents *= 5.0;
+    // }
 
 	/* if person is over the age of partnering discounting, then discount #acts */
     auto ageYrs = getAge();
@@ -546,10 +546,10 @@ int Male::rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums
 	int numActs = _randomNums.randPoisson(meanCoitalEvents - 1) + 1;
 
     /* double acts per month for Black population in Steady and Regular partnerships */
-    // if (isBlack() && (_partnershipType == SexualPartnership::Type::Steady ||
-    //                   _partnershipType == SexualPartnership::Type::Regular)) {
-    //     numActs *= 2.0;
-    // }
+    if (isBlack() && (_partnershipType == SexualPartnership::Type::Steady ||
+                      _partnershipType == SexualPartnership::Type::Regular)) {
+        numActs *= 2.0;
+    }
 
 	return numActs;
 }
