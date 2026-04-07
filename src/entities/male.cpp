@@ -528,6 +528,11 @@ int Male::rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums
         meanCoitalEvents *= 5.0;
     }
 
+    if (isWhite() && (_partnershipType == SexualPartnership::Type::Steady ||
+                      _partnershipType == SexualPartnership::Type::Regular)) {
+        meanCoitalEvents *= 0.33;
+    }
+
 	/* if person is over the age of partnering discounting, then discount #acts */
     auto ageYrs = getAge();
 
