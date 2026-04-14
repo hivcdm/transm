@@ -530,7 +530,7 @@ int Male::rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums
 
     if (isWhite() && !isHispanic() && (_partnershipType == SexualPartnership::Type::Steady ||
                       _partnershipType == SexualPartnership::Type::Regular)) {
-        meanCoitalEvents *= 0.7;
+        meanCoitalEvents *= 0.33;
     }
 
 	/* if person is over the age of partnering discounting, then discount #acts */
