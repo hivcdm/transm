@@ -465,13 +465,13 @@ std::vector<Entity *> Population::FindBlackFemalesUndiagnosed() {
 
 std::vector<Entity *> Population::FindWhiteMalesUndiagnosed() {
     return Find([](Entity *person) {
-        return person->isMale() && person->isInfected() && !person->isDetected() && person->isWhite();
+        return person->isMale() && person->isInfected() && !person->isDetected() && person->isWhite() && !person->isHispanic();
     });
 } 
 
 std::vector<Entity *> Population::FindWhiteFemalesUndiagnosed() {
     return Find([](Entity *person) {
-        return !person->isMale() && person->isInfected() && !person->isDetected() && person->isWhite();
+        return !person->isMale() && person->isInfected() && !person->isDetected() && person->isWhite() && !person->isHispanic();
     });
 } 
 
@@ -501,13 +501,13 @@ std::vector<Entity *> Population::FindBlackFemalesLossToFollowUp() {
 
 std::vector<Entity *> Population::FindWhiteMalesLossToFollowUp() {
     return Find([](Entity *person) {
-        return person->isMale() && person->isLTFU() && person->isWhite();
+        return person->isMale() && person->isLTFU() && person->isWhite() && !person->isHispanic();
     });
 } 
 
 std::vector<Entity *> Population::FindWhiteFemalesLossToFollowUp() {
     return Find([](Entity *person) {
-        return !person->isMale() && person->isLTFU() && person->isWhite();
+        return !person->isMale() && person->isLTFU() && person->isWhite() && !person->isHispanic();
     });
 } 
 
