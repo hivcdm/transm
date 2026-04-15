@@ -523,6 +523,8 @@ int Male::rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums
 
 	double meanCoitalEvents = numActsPerMonth[(int)_partnershipType];
 
+    // Adjust mean coital events per month to match for MIAMI calibration
+    // TODO: to be added to bm parameters instead of hard coded here. S. Seifi
     if (isBlack() && (_partnershipType == SexualPartnership::Type::Steady ||
                       _partnershipType == SexualPartnership::Type::Regular)) {
         meanCoitalEvents *= 5.0;
@@ -531,6 +533,11 @@ int Male::rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums
     if (isWhite() && !isHispanic() && (_partnershipType == SexualPartnership::Type::Steady ||
                       _partnershipType == SexualPartnership::Type::Regular)) {
         meanCoitalEvents *= 0.33;
+    }
+
+    if (isHispanic() && (_partnershipType == SexualPartnership::Type::Steady ||
+                      _partnershipType == SexualPartnership::Type::Regular)) {
+        meanCoitalEvents *= 1.33;
     }
 
 	/* if person is over the age of partnering discounting, then discount #acts */
