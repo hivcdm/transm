@@ -898,20 +898,11 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 	/* Multiply by 100 and round to nearest integer for graphical output */
 	int intPrevalence = (int)(100 * currPrevalence + 0.5);
 
-    /* sum and output infections by gender */
-    GenderArray<std::size_t> totalInfectedGender = {0};
-	for(std::size_t i = 0; i < numAgeRanges; i++)
-	{
-		for(auto gender : enum_iterator<DemographicProfile::Gender>())
-		{
-			auto entity_type = (std::size_t)gender;
-            totalInfectedGender[entity_type] += currPrevalentInfectionsGenderAge[entity_type].at(i).second;
-        }
-	}
+    /* output monthly incident infections by gender (sums to New Infections) */
     for(auto gender : enum_iterator<DemographicProfile::Gender>())
     {
         auto entity_type = (std::size_t)gender;
-        _outStream << totalInfectedGender[entity_type] << Constants::Tab;
+        _outStream << currTimeStepNumInfectedGender[entity_type] << Constants::Tab;
     }
 
     /* sum and output infections by orientation */
