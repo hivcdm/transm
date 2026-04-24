@@ -834,32 +834,6 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 	std::size_t newInfections = getCurrTimeStepIncidentInfsTotal();
 	_outStream << newInfections << Constants::Tab;
 
-	/* DEBUG: sanity-check counting invariant — compare HVL sum (newInfections) against
-	 * two other counters that should equal it: flat gender counter and sum of age buckets. */
-	{
-		std::size_t genderSum = 0;
-		std::size_t ageBucketSum = 0;
-		for(auto g : enum_iterator<DemographicProfile::Gender>())
-		{
-			auto gi = (std::size_t)g;
-			genderSum += currTimeStepNumInfectedGender[gi];
-			for(const auto &ab : currTimeStepIncidentInfsGenderAge[gi])
-			{
-				ageBucketSum += ab.second;
-			}
-		}
-		if(genderSum != newInfections || ageBucketSum != newInfections)
-		{
-			std::cerr << "[InfectionsTracker] invariant violated at month "
-			          << time.in_months() << ": newInfections=" << newInfections
-			          << " genderCounter(M+F)=" << genderSum
-			          << " ageBucketSum(M+F)=" << ageBucketSum
-			          << " (gender M=" << currTimeStepNumInfectedGender[(std::size_t)DemographicProfile::Gender::Male]
-			          << " F=" << currTimeStepNumInfectedGender[(std::size_t)DemographicProfile::Gender::Female]
-			          << ")" << std::endl;
-		}
-	}
-
 	/* Total Infected in History */
 	_outStream << getNumIncidentInfections() << Constants::Tab;
 
@@ -924,17 +898,11 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 	/* Multiply by 100 and round to nearest integer for graphical output */
 	int intPrevalence = (int)(100 * currPrevalence + 0.5);
 
-    /* output monthly incident infections by gender, derived by summing the age-bucket
-     * counter so the total always matches the "Infections By Age" totals. */
+    /* output monthly incident infections by gender (sums to New Infections) */
     for(auto gender : enum_iterator<DemographicProfile::Gender>())
     {
         auto entity_type = (std::size_t)gender;
-        std::size_t monthlyIncidentForGender = 0;
-        for(const auto &ageRangeSize : currTimeStepIncidentInfsGenderAge[entity_type])
-        {
-            monthlyIncidentForGender += ageRangeSize.second;
-        }
-        _outStream << monthlyIncidentForGender << Constants::Tab;
+        _outStream << currTimeStepNumInfectedGender[entity_type] << Constants::Tab;
     }
 
     /* sum and output infections by orientation */
