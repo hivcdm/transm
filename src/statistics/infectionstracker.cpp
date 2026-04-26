@@ -834,6 +834,28 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 	std::size_t newInfections = getCurrTimeStepIncidentInfsTotal();
 	_outStream << newInfections << Constants::Tab;
 
+	/* DEBUG: print all three counters to stderr each month */
+	{
+		std::size_t genderM = currTimeStepNumInfectedGender[(std::size_t)DemographicProfile::Gender::Male];
+		std::size_t genderF = currTimeStepNumInfectedGender[(std::size_t)DemographicProfile::Gender::Female];
+		std::size_t ageBucketM = 0, ageBucketF = 0;
+		for(const auto &ab : currTimeStepIncidentInfsGenderAge[(std::size_t)DemographicProfile::Gender::Male])
+		{
+			ageBucketM += ab.second;
+		}
+		for(const auto &ab : currTimeStepIncidentInfsGenderAge[(std::size_t)DemographicProfile::Gender::Female])
+		{
+			ageBucketF += ab.second;
+		}
+		std::cerr << "[INF-DBG] month=" << time.in_months()
+		          << " new=" << newInfections
+		          << " genderM=" << genderM << " genderF=" << genderF
+		          << " gM+gF=" << (genderM + genderF)
+		          << " ageBktM=" << ageBucketM << " ageBktF=" << ageBucketF
+		          << " aM+aF=" << (ageBucketM + ageBucketF)
+		          << std::endl;
+	}
+
 	/* Total Infected in History */
 	_outStream << getNumIncidentInfections() << Constants::Tab;
 
