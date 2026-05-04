@@ -1,12 +1,51 @@
 A dynamic agent-based model for HIV transmission
-     _                                 
-    | |                                
-    | |_ _ __ __ _ _ __  ___ _ __ ___  
-    | __| '__/ _` | '_ \/ __| '_ ` _ \ 
+     _
+    | |
+    | |_ _ __ __ _ _ __  ___ _ __ ___
+    | __| '__/ _` | '_ \/ __| '_ ` _ \
     | |_| | | (_| | | | \__ \ | | | | |
      \__|_|  \__,_|_| |_|___/_| |_| |_|
-     
-                  v4.7
+
+                  v4.8
+
+Version 4.8
+===========
+
+New Features:
+- FOCUS screening module integrated with the CEPAC disease model. Undiagnosed
+  and lost-to-follow-up (LTFU) populations can now be screened with race- and
+  sex-stratified targeting probabilities. New find functions cover
+  Hispanic/Black/White males and females across both undiagnosed and LTFU
+  cohorts, and the screening loop in Population dispatches per-group with
+  per-group target counts and probabilities.
+
+Calibration (MIAMI):
+- Race-specific coital event multipliers applied at partnership-event time for
+  Steady and Regular partnerships. Black males: 5x. White (non-Hispanic)
+  males: 0.33x. Hispanic males: 1.33x. These are currently hardcoded in
+  Male::rollNumEventsPerPartner; the intent is to move them to XML
+  population parameters in a follow-up release.
+- LTFU numbers updated to match calibration targets.
+
+Bug Fixes:
+- InfectionsTracker: the local accumulator used to compute the per-gender
+  monthly incident totals (incidentInfsGender) was declared without value
+  initialization, so it began each month with whatever happened to be on the
+  stack. At small populations the leftover bytes were typically zero and the
+  bug was invisible; at 1,000,000+ populations the per-month Male+Female
+  values printed under "Incident Cases / Entity Type" diverged from the
+  "New Infections" total by a small but systematic offset. Fixed by value-
+  initializing the array.
+- InfectionsTracker::recordIncidentInfection: infectedGender and
+  infectedEmployment were being read from the infector instead of the
+  newly-infected entity, throwing off all gender-stratified incident totals
+  for heterosexual transmissions.
+- Population::FindWhiteMales/FemalesUndiagnosed and *LossToFollowUp: the
+  isWhite() check was matching white Hispanics, causing them to be counted
+  in both the white and Hispanic FOCUS-screening pools. Added !isHispanic()
+  guards.
+- Same fix applied to the white-only coital event multiplier in
+  Male::rollNumEventsPerPartner.
 
 Version 4.7
 ===========
