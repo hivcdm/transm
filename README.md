@@ -1,14 +1,14 @@
 
 
     A dynamic agent-based model for HIV transmission
-         _                                 
-        | |                                
-        | |_ _ __ __ _ _ __  ___ _ __ ___  
-        | __| '__/ _` | '_ \/ __| '_ ` _ \ 
+         _
+        | |
+        | |_ _ __ __ _ _ __  ___ _ __ ___
+        | __| '__/ _` | '_ \/ __| '_ ` _ \
         | |_| | | (_| | | | \__ \ | | | | |
          \__|_|  \__,_|_| |_|___/_| |_| |_|
-         
-                      v4.7
+
+                      v4.8
                                     
  
 The TRANSM is a stochastic, agent-based C++ model designed to simulate the sexual transmission of HIV infection, providing crucial insights for global HIV prevention leaders and policymakers.

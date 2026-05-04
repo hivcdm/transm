@@ -6,6 +6,8 @@
 #include <string>
 #include <unordered_set>
 #include <vector>
+#include <random>
+#include <stdexcept>
 
 #include "population.hpp"
 #include "constants.hpp"
@@ -433,49 +435,43 @@ std::vector<Entity *> Population::FindNonCircumcised() {
 
 std::vector<Entity *> Population::FindMalePositives() {
     return Find([](Entity *person) {
-        return person->isMale() && person->getHIVStatus() == HIVStatus::ANY_NOT_OBSERVED_POSITIVE;
+        return person->isMale() && person->isInfected() && !person->isDetected();
     });
 }
     
 std::vector<Entity *> Population::FindHispanicMalesUndiagnosed() {
     return Find([](Entity *person) {
-        return person->isMale() && person->getHIVStatus() == HIVStatus::ANY_NOT_OBSERVED_POSITIVE &&
-               person->isHispanic();
+        return person->isMale() && person->isInfected() && !person->isDetected() && person->isHispanic();
     });
 }    
 
 std::vector<Entity *> Population::FindHispanicFemalesUndiagnosed() {
     return Find([](Entity *person) {
-        return !person->isMale() && person->getHIVStatus() == HIVStatus::ANY_NOT_OBSERVED_POSITIVE &&
-               person->isHispanic();
+        return !person->isMale() && person->isInfected() && !person->isDetected() && person->isHispanic();
     });
 }    
 
 std::vector<Entity *> Population::FindBlackMalesUndiagnosed() {
     return Find([](Entity *person) {
-        return person->isMale() && person->getHIVStatus() == HIVStatus::ANY_NOT_OBSERVED_POSITIVE &&
-               person->isBlack();
+        return person->isMale() && person->isInfected() && !person->isDetected() && person->isBlack();
     });
 } 
 
 std::vector<Entity *> Population::FindBlackFemalesUndiagnosed() {
     return Find([](Entity *person) {
-        return !person->isMale() && person->getHIVStatus() == HIVStatus::ANY_NOT_OBSERVED_POSITIVE &&
-               person->isBlack();
+        return !person->isMale() && person->isInfected() && !person->isDetected() && person->isBlack();
     });
 } 
 
 std::vector<Entity *> Population::FindWhiteMalesUndiagnosed() {
     return Find([](Entity *person) {
-        return person->isMale() && person->getHIVStatus() == HIVStatus::ANY_NOT_OBSERVED_POSITIVE &&
-               person->isWhite();
+        return person->isMale() && person->isInfected() && !person->isDetected() && person->isWhite() && !person->isHispanic();
     });
 } 
 
 std::vector<Entity *> Population::FindWhiteFemalesUndiagnosed() {
     return Find([](Entity *person) {
-        return !person->isMale() && person->getHIVStatus() == HIVStatus::ANY_NOT_OBSERVED_POSITIVE &&
-               person->isWhite();
+        return !person->isMale() && person->isInfected() && !person->isDetected() && person->isWhite() && !person->isHispanic();
     });
 } 
 
@@ -505,13 +501,13 @@ std::vector<Entity *> Population::FindBlackFemalesLossToFollowUp() {
 
 std::vector<Entity *> Population::FindWhiteMalesLossToFollowUp() {
     return Find([](Entity *person) {
-        return person->isMale() && person->isLTFU() && person->isWhite();
+        return person->isMale() && person->isLTFU() && person->isWhite() && !person->isHispanic();
     });
 } 
 
 std::vector<Entity *> Population::FindWhiteFemalesLossToFollowUp() {
     return Find([](Entity *person) {
-        return !person->isMale() && person->isLTFU() && person->isWhite();
+        return !person->isMale() && person->isLTFU() && person->isWhite() && !person->isHispanic();
     });
 } 
 
@@ -723,72 +719,158 @@ void Population::UpdatePartnerships(EventParams &eventParams) {
     }
 }
 
-void Population::UpdateForFOCUSAnalysis(EventParams &eventParams, int monthlyTarget) {
-    
-    for (int i = 0; i < monthlyTarget; ++i) {
+// ==========================================================================
+// ===== MODIFIED CODE BLOCK: Replaced UpdateForFOCUSAnalysis function =====
+// ==========================================================================
+/**
+ * @brief Updates the population for FOCUS analysis based on a screening model.
+ *
+ * Iterates through each demographic group, randomly selects a specified
+ * number to "screen", and applies a probabilistic check to each.
+ *
+ * @param eventParams General event parameters.
+ * @param numToScreenPerGroup A vector<int> specifying *how many* individuals
+ * to randomly select and screen from each of the 12 groups.
+ * @param focusProbabilityPerGroup A vector<double> specifying the probability
+ * (0.0 to 1.0) that a screened individual from that group becomes a FOCUS case.
+ */
+std::vector<int> Population::UpdateForFOCUSAnalysis(
+    EventParams &eventParams,
+    const std::vector<int>& numToScreenPerGroup,
+    const std::vector<double>& focusProbabilityPerGroup)
+{
 
-        /* Define the groups */
-        std::vector<std::vector<Entity *>> groups = {
-            FindHispanicMalesUndiagnosed(),
-            FindHispanicFemalesUndiagnosed(),
-            FindBlackMalesUndiagnosed(),
-            FindBlackFemalesUndiagnosed(),
-            FindWhiteMalesUndiagnosed(),
-            FindWhiteFemalesUndiagnosed(),
-            FindHispanicMalesLossToFollowUp(),
-            FindHispanicFemalesLossToFollowUp(),
-            FindBlackMalesLossToFollowUp(),
-            FindBlackFemalesLossToFollowUp(),
-            FindWhiteMalesLossToFollowUp(),
-            FindWhiteFemalesLossToFollowUp()
-        };
+    // Group names for logging
+    const std::vector<std::string> groupNames = {
+        "Hispanic Males Undiagnosed",
+        "Hispanic Females Undiagnosed",
+        "Black Males Undiagnosed",
+        "Black Females Undiagnosed",
+        "White Males Undiagnosed",
+        "White Females Undiagnosed",
+        "Hispanic Males LTFU",
+        "Hispanic Females LTFU",
+        "Black Males LTFU",
+        "Black Females LTFU",
+        "White Males LTFU",
+        "White Females LTFU"
+    };
 
-        /* Define the probability (rate) for each group */
-        std::vector<double> groupProbabilities = {
-            0.05, // Hispanic Males Undiagnosed
-            0.05, // Hispanic Females Undiagnosed
-            0.10, // Black Males Undiagnosed
-            0.10, // Black Females Undiagnosed
-            0.15, // White Males Undiagnosed
-            0.15, // White Females Undiagnosed
-            0.05, // Hispanic Males LTFU
-            0.05, // Hispanic Females LTFU
-            0.10, // Black Males LTFU
-            0.05, // Black Females LTFU
-            0.10, // White Males LTFU
-            0.05  // White Females LTFU
-        };
+    // Track actual screened per group (to return for yearly tracking)
+    std::vector<int> actualScreenedPerGroup(12, 0);
 
-        /* Pick one group based on probability and one entity from that group */
-        auto pickEntityFromGroups = [](const std::vector<std::vector<Entity *>>& groups, const std::vector<double>& probabilities) -> Entity* {
-            if (groups.size() != probabilities.size()) return nullptr;
+    /* 1. Define the groups (same as before) */
+    std::vector<std::vector<Entity *>> groups = {
+        FindHispanicMalesUndiagnosed(),
+        FindHispanicFemalesUndiagnosed(),
+        FindBlackMalesUndiagnosed(),
+        FindBlackFemalesUndiagnosed(),
+        FindWhiteMalesUndiagnosed(),
+        FindWhiteFemalesUndiagnosed(),
+        FindHispanicMalesLossToFollowUp(),
+        FindHispanicFemalesLossToFollowUp(),
+        FindBlackMalesLossToFollowUp(),
+        FindBlackFemalesLossToFollowUp(),
+        FindWhiteMalesLossToFollowUp(),
+        FindWhiteFemalesLossToFollowUp()
+    };
 
-            std::random_device rd;
-            std::mt19937 gen(rd());
+    /* 2. Validate input sizes */
+    if (groups.size() != numToScreenPerGroup.size() ||
+        groups.size() != focusProbabilityPerGroup.size()) {
 
-            std::discrete_distribution<> groupDist(probabilities.begin(), probabilities.end());
-            
-            for (int attempt = 0; attempt < 10; ++attempt) {  // Try up to 10 times to find a non-empty group
-                int groupIndex = groupDist(gen);
-                const auto& selectedGroup = groups[groupIndex];
-                if (!selectedGroup.empty()) {
-                    std::uniform_int_distribution<> dist(0, selectedGroup.size() - 1);
-                    return selectedGroup[dist(gen)];
-                }
-            }
-
-            return nullptr; // Couldn't find a non-empty group after 10 tries
-        };
-
-    /* Select and set focus */
-        Entity* selected = pickEntityFromGroups(groups, groupProbabilities);
-        if (selected) {
-            selected->setFOCUS();
-            populationStatistics.recordFOCUS(selected);
-            cout << "Selected FOCUS entity: " << selected->getID() << std::endl;
-        }
+        // Using std::cerr instead of cout for errors
+        std::cerr << "[FOCUS ERROR] Input vector sizes do not match group size (12)!" << std::endl;
+        return actualScreenedPerGroup; // Return empty vector
     }
+
+    /* 3. Setup random number generators */
+    // Note: It's better to initialize the generator once and pass it,
+    // but this stays true to your original code's (and our new) structure.
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    // This distribution is for the probability check (e.g., "roll a die")
+    std::uniform_real_distribution<> probDist(0.0, 1.0);
+
+    /* 4. Main Screening Logic */
+
+    int totalSelected = 0;
+    int totalScreened = 0;
+
+    // Iterate over each of the 12 groups
+    for (size_t i = 0; i < groups.size(); ++i) {
+
+        auto& currentGroup = groups[i];
+        int numToScreen = numToScreenPerGroup[i];
+        double focusProb = focusProbabilityPerGroup[i];
+
+        // Log group status
+        cout << "  [Group " << i << "] " << groupNames[i]
+             << ": population=" << currentGroup.size()
+             << ", target_screen=" << numToScreen
+             << ", prob=" << focusProb << endl;
+
+        // Skip if this group is empty, no one is to be screened,
+        // or the probability is zero.
+        if (currentGroup.empty() || numToScreen == 0 || focusProb == 0.0) {
+            cout << "  [Group " << i << "] SKIPPED (empty=" << currentGroup.empty()
+                 << ", numToScreen=" << numToScreen << ", prob=" << focusProb << ")" << endl;
+            continue;
+        }
+
+        // --- Randomly select 'numToScreen' individuals ---
+
+        // We shuffle the group list and just pick the first 'N' individuals.
+        // This is an efficient way to sample *without replacement*.
+        std::shuffle(currentGroup.begin(), currentGroup.end(), gen);
+
+        // Determine the actual number to screen
+        // (can't screen more than are in the group)
+        int actualToScreen = std::min(numToScreen, (int)currentGroup.size());
+        totalScreened += actualToScreen;
+        actualScreenedPerGroup[i] = actualToScreen;  // Track for return
+
+        cout << "  [Group " << i << "] Screening " << actualToScreen
+             << " individuals..." << endl;
+
+        // --- Apply probabilistic check to each selected individual ---
+        int selectedInGroup = 0;
+        for (int j = 0; j < actualToScreen; ++j) {
+
+            Entity* candidate = currentGroup[j];
+
+            // "Roll the die": If the random number is less than the probability,
+            // they become a FOCUS individual.
+            if (probDist(gen) < focusProb) {
+
+                // Mark entity as FOCUS and record in statistics
+                candidate->setFOCUS();
+                populationStatistics.recordFOCUS(candidate);
+                selectedInGroup++;
+                totalSelected++;
+
+                // Using std::cout (as in your original)
+                std::cout << "  [Group " << i << "] ✓ Selected FOCUS entity ID="
+                          << candidate->getID() << std::endl;
+            }
+        }
+
+        cout << "  [Group " << i << "] Result: " << selectedInGroup
+             << " selected out of " << actualToScreen << " screened"
+             << " (selection rate: " << (actualToScreen > 0 ? 100.0 * selectedInGroup / actualToScreen : 0)
+             << "%)" << endl;
+    }
+
+    cout << "[FOCUS SUMMARY] Total screened: " << totalScreened
+         << ", Total selected: " << totalSelected
+         << " (overall rate: " << (totalScreened > 0 ? 100.0 * totalSelected / totalScreened : 0)
+         << "%)" << endl;
+
+    return actualScreenedPerGroup;
 }
+// ==========================================================================
+// ===== END OF MODIFIED CODE BLOCK =========================================
+// ==========================================================================
 
 /* Write out the current partnership network */
 void Population::WritePartnershipNetwork(EventParams &eventParams) {

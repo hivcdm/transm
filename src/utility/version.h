@@ -2,4 +2,4 @@
  * File created automatically by CMakeLists.txt
  * Kept in sync with VERSION file
  */
-std::string const VERSION="4.6.0";
+std::string const VERSION="4.8.0";

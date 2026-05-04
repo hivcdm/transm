@@ -78,23 +78,42 @@ struct ShiftedLogNormalDist
 
 struct BetaDist
 {
-    static BetaDist FromNormal(NormalDist dist) {
-	BetaDist result;
+	static BetaDist FromNormal(const NormalDist& dist) {
+		BetaDist result;
 
-	double limit = dist.mean * (1 - dist.mean) / (dist.stddev * dist.stddev);
-	if (limit < 1) {
-	    auto message = std::string("Normal distribution cannot be converted to beta: ") +
-		std::string("The mean and stddev will cause alpha or beta to be negative") +
-		std::string("Mean: ") + std::to_string(dist.mean) + std::string(" ") +
-		std::string("StdDev: ") + std::to_string(dist.stddev);
-	    throw std::runtime_error(message);
+		const double mu  = dist.mean;
+		const double s2  = dist.stddev * dist.stddev;
+
+		// Basic sanity checks
+		if (mu <= 0.0 || mu >= 1.0) {
+			throw std::runtime_error(
+				"Normal->Beta conversion failed: mean must be in (0,1), got " +
+				std::to_string(mu)
+			);
+		}
+		if (dist.stddev <= 0.0) {
+			throw std::runtime_error(
+				"Normal->Beta conversion failed: stddev must be > 0, got " +
+				std::to_string(dist.stddev)
+			);
+		}
+
+		const double limit = mu * (1.0 - mu) / s2; // = n + 1
+		if (limit <= 1.0) {
+			// Would give n <= 0, so alpha or beta <= 0 → invalid Beta
+			std::string message =
+				"Normal distribution cannot be converted to beta: mean/stddev "
+				"imply non-positive alpha or beta. Mean: " +
+				std::to_string(mu) + " StdDev: " + std::to_string(dist.stddev);
+			throw std::runtime_error(message);
+		}
+
+		const double n = limit - 1.0; // alpha + beta
+		result.alpha   = mu * n;
+		result.beta    = (1.0 - mu) * n;
+
+		return result;
 	}
-	double sampleSize = limit - 1;
-	result.alpha = dist.mean * sampleSize;
-	result.beta = (1 - dist.mean) * sampleSize;
-
-	return result;
-    }
 
     static NormalDist ToNormal(BetaDist dist) {
 	NormalDist result;

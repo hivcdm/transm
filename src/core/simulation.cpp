@@ -245,7 +245,78 @@ Simulation::Simulation(BatchStatus &batch_status) :
         hasPassedFirstMonthCalibPrev_(false),
         incidence_(0),
         prevalence_(0),
-        batch_status_(batch_status) {
+        batch_status_(batch_status),
+        // ==========================================================
+        // ===== ADDED: Initialize new data storage vectors =====
+        // ==========================================================
+        yearlyScreeningNumbers(12),
+        yearlyFocusProbabilities(12),
+        monthlyScreeningNumbers(12),
+        monthlyFocusProbabilities(12),
+        yearlyScreenedCount(12, 0),
+        yearlyScreeningTarget(12, 0),
+        currentFocusYear(-1)
+{
+        // FOCUS Data Scale Factor
+        // Simulation is 2.5x smaller than real life, so scale = 1/2.5 = 0.4
+        focusDataScaleFactor = 1.0;
+
+        // Real yearly counts from FOCUS study (these are yearly totals to screen)
+        // Schema:
+        // [ HM Undiagnosed, HF Undiagnosed, BM Undiagnosed, BF Undiagnosed, WM Undiagnosed, WF Undiagnosed,
+        //   HM LTFU,        HF LTFU,        BM LTFU,        BF LTFU,        WM LTFU,        WF LTFU ]
+
+        db_YearlyCounts_2017 = {
+            4, 1,   3, 4,   4, 1,
+            7, 6,   23, 26,  8, 6
+        };
+
+        db_YearlyCounts_2018 = {
+            4, 2,   4, 2,   7, 1,
+            11, 4,  10, 8,  12, 5
+        };
+
+        db_YearlyCounts_2019 = {
+            5, 2,   6, 4,   7, 2,
+            22, 6,  42, 36, 25, 7
+        };
+
+        db_YearlyCounts_2020 = {
+            5, 2,   6, 2,   5, 3,
+            21, 12, 35, 31, 27, 14
+        };
+
+        db_YearlyCounts_2021 = {
+            12, 1,  8, 8,   13, 1,
+            36, 7,  42, 52, 41, 9
+        };
+
+        db_YearlyCounts_2022 = {
+            14, 4,  15, 10, 18, 4,
+            27, 11, 52, 31, 34, 14
+        };
+
+        db_YearlyCounts_2023 = {
+            6, 3,   10, 6,  6, 2,
+            35, 10, 49, 40, 40, 11
+        };
+
+        db_YearlyCounts_2024 = {
+            12, 4,  11, 10, 11, 3,
+            62, 16, 76, 64, 76, 21
+        };
+
+
+        // All probabilities are the same at this point but in reality they can be different
+        db_YearlyProbs_2017  = {0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.69, 0.69, 0.69, 0.69, 0.69, 0.69};
+        db_YearlyProbs_2018  = {0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.69, 0.69, 0.69, 0.69, 0.69, 0.69};
+        db_YearlyProbs_2019  = {0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.69, 0.69, 0.69, 0.69, 0.69, 0.69};
+        db_YearlyProbs_2020  = {0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.69, 0.69, 0.69, 0.69, 0.69, 0.69};
+        db_YearlyProbs_2021  = {0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.69, 0.69, 0.69, 0.69, 0.69, 0.69};
+        db_YearlyProbs_2022  = {0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.69, 0.69, 0.69, 0.69, 0.69, 0.69};
+        db_YearlyProbs_2023  = {0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.69, 0.69, 0.69, 0.69, 0.69, 0.69};
+        db_YearlyProbs_2024  = {0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.69, 0.69, 0.69, 0.69, 0.69, 0.69};
+
 }
 
 Simulation::~Simulation() = default;
@@ -297,6 +368,8 @@ void Simulation::FirstStep() {
     if (parameters_.trace_files[EventParams::TraceFile::Type::ShiftedOutcomes].enabled) {
         population_.populationStatistics.enableShiftedOutcomes(parameters_.monthOf1990);
     }
+
+
 
     UpdateInterventions(population_.GetDeadPeopleThisMonth());
 
@@ -628,9 +701,167 @@ std::size_t Simulation::SimulateMonth() {
 //    }
 
 
-    population_.UpdatePhysicalState(parameters_, recordLE, firstMonthToRecord);
+    // ====================================================================
+    // ===== FOCUS selection: runs BEFORE UpdatePhysicalState so that
+    //       newly detected/linked patients go through simulateMonth()
+    //       normally and get ART through the standard treatment path =====
+    // ====================================================================
 
-    population_.UpdateForFOCUSAnalysis(parameters_, 0);
+    // Get the current month index (0-11)
+    // (time_ is 1-based, so month 1 -> index 0, month 12 -> index 11)
+    int currentMonthIndex = (time_.in_months() - 1) % 12;
+
+    // if year 2007 is 600 then year 2017 is 600 + (10*12) = 720, 2018 = 732, 2019 = 744, 2020 = 756, 2021 = 768,
+    // 2022 = 780, 2023 = 792, 2024 = 804
+    int current_month = time_.in_months();
+
+    // FOCUS analysis only runs if enabled via --focus on command line
+    if (parameters_.focusEnabled && current_month >= 720 && current_month < 816) {
+        int current_year = 2007 + (current_month - 600) / 12;
+        int month_in_year = (current_month - 600) % 12 + 1;
+
+        // Detect new year - reset counters and set new targets
+        if (current_year != currentFocusYear) {
+            currentFocusYear = current_year;
+
+            // Reset yearly screened counts
+            std::fill(yearlyScreenedCount.begin(), yearlyScreenedCount.end(), 0);
+
+            // Set yearly targets based on current year (scaled)
+            const std::vector<int>* yearData = nullptr;
+            if (current_month >= 720 && current_month < 732) {
+                yearData = &db_YearlyCounts_2017;
+            } else if (current_month >= 732 && current_month < 744) {
+                yearData = &db_YearlyCounts_2018;
+            } else if (current_month >= 744 && current_month < 756) {
+                yearData = &db_YearlyCounts_2019;
+            } else if (current_month >= 756 && current_month < 768) {
+                yearData = &db_YearlyCounts_2020;
+            } else if (current_month >= 768 && current_month < 780) {
+                yearData = &db_YearlyCounts_2021;
+            } else if (current_month >= 780 && current_month < 792) {
+                yearData = &db_YearlyCounts_2022;
+            } else if (current_month >= 792 && current_month < 804) {
+                yearData = &db_YearlyCounts_2023;
+            } else if (current_month >= 804 && current_month < 816) {
+                yearData = &db_YearlyCounts_2024;
+            }
+
+            if (yearData) {
+                for (int i = 0; i < 12; ++i) {
+                    yearlyScreeningTarget[i] = static_cast<int>(
+                        std::round((*yearData)[i] * focusDataScaleFactor)
+                    );
+                }
+            }
+
+            cout << "[FOCUS] ==== NEW FOCUS YEAR " << current_year << " ====" << endl;
+            cout << "[FOCUS] Population Scale Factor: " << focusDataScaleFactor
+                 << " (sim is " << (1.0/focusDataScaleFactor) << "x smaller than real life)" << endl;
+            cout << "[FOCUS] Yearly Targets Set (scaled): ";
+            int totalTarget = 0;
+            for (int i = 0; i < 12; ++i) {
+                totalTarget += yearlyScreeningTarget[i];
+            }
+            cout << totalTarget << " individuals across 12 groups" << endl;
+        }
+
+        // Calculate how many more need to be screened this month to reach yearly goal
+        int months_remaining = 13 - month_in_year;  // Including current month
+
+        if (current_month >= 720 && current_month < 732) { // Year 2017
+            for (int i = 0; i < 12; ++i) {
+                int remaining = std::max(0, yearlyScreeningTarget[i] - yearlyScreenedCount[i]);
+                // Distribute remaining evenly over remaining months (front-loaded for now)
+                monthlyScreeningNumbers[i] = (months_remaining > 0) ?
+                    static_cast<int>(std::ceil(static_cast<double>(remaining) / months_remaining)) : 0;
+                monthlyFocusProbabilities[i] = db_YearlyProbs_2017[i];  // One-time probability at selection
+            }
+
+        } else if (current_month >= 732 && current_month < 744) { // Year 2018
+            for (int i = 0; i < 12; ++i) {
+                int remaining = std::max(0, yearlyScreeningTarget[i] - yearlyScreenedCount[i]);
+                monthlyScreeningNumbers[i] = (months_remaining > 0) ?
+                    static_cast<int>(std::ceil(static_cast<double>(remaining) / months_remaining)) : 0;
+                monthlyFocusProbabilities[i] = db_YearlyProbs_2018[i];  // One-time probability at selection
+            }
+
+        } else if (current_month >= 744 && current_month < 756) { // Year 2019
+            for (int i = 0; i < 12; ++i) {
+                int remaining = std::max(0, yearlyScreeningTarget[i] - yearlyScreenedCount[i]);
+                monthlyScreeningNumbers[i] = (months_remaining > 0) ?
+                    static_cast<int>(std::ceil(static_cast<double>(remaining) / months_remaining)) : 0;
+                monthlyFocusProbabilities[i] = db_YearlyProbs_2019[i];  // One-time probability at selection
+            }
+
+        } else if (current_month >= 756 && current_month < 768) { // Year 2020
+            for (int i = 0; i < 12; ++i) {
+                int remaining = std::max(0, yearlyScreeningTarget[i] - yearlyScreenedCount[i]);
+                // Distribute remaining evenly over remaining months (front-loaded for now)
+                monthlyScreeningNumbers[i] = (months_remaining > 0) ?
+                    static_cast<int>(std::ceil(static_cast<double>(remaining) / months_remaining)) : 0;
+                monthlyFocusProbabilities[i] = db_YearlyProbs_2020[i];  // One-time probability at selection
+            }
+
+        } else if (current_month >= 768 && current_month < 780) { // Year 2021
+            for (int i = 0; i < 12; ++i) {
+                int remaining = std::max(0, yearlyScreeningTarget[i] - yearlyScreenedCount[i]);
+                monthlyScreeningNumbers[i] = (months_remaining > 0) ?
+                    static_cast<int>(std::ceil(static_cast<double>(remaining) / months_remaining)) : 0;
+                monthlyFocusProbabilities[i] = db_YearlyProbs_2021[i];  // One-time probability at selection
+            }
+
+        } else if (current_month >= 780 && current_month < 792) { // Year 2022
+            for (int i = 0; i < 12; ++i) {
+                int remaining = std::max(0, yearlyScreeningTarget[i] - yearlyScreenedCount[i]);
+                monthlyScreeningNumbers[i] = (months_remaining > 0) ?
+                    static_cast<int>(std::ceil(static_cast<double>(remaining) / months_remaining)) : 0;
+                monthlyFocusProbabilities[i] = db_YearlyProbs_2022[i];  // One-time probability at selection
+            }
+
+        } else if (current_month >= 792 && current_month < 804) { // Year 2023
+            for (int i = 0; i < 12; ++i) {
+                int remaining = std::max(0, yearlyScreeningTarget[i] - yearlyScreenedCount[i]);
+                monthlyScreeningNumbers[i] = (months_remaining > 0) ?
+                    static_cast<int>(std::ceil(static_cast<double>(remaining) / months_remaining)) : 0;
+                monthlyFocusProbabilities[i] = db_YearlyProbs_2023[i];  // One-time probability at selection
+            }
+
+        } else if (current_month >= 804 && current_month < 816) { // Year 2024
+            for (int i = 0; i < 12; ++i) {
+                int remaining = std::max(0, yearlyScreeningTarget[i] - yearlyScreenedCount[i]);
+                monthlyScreeningNumbers[i] = (months_remaining > 0) ?
+                    static_cast<int>(std::ceil(static_cast<double>(remaining) / months_remaining)) : 0;
+                monthlyFocusProbabilities[i] = db_YearlyProbs_2024[i];  // One-time probability at selection
+            }
+        }
+
+        cout << "[FOCUS] Month " << month_in_year << "/" << current_year
+             << " (sim month " << current_month << ")" << endl;
+        cout << "[FOCUS] Starting selection process..." << endl;
+
+        // Run FOCUS selection and get actual screened counts
+        std::vector<int> actualScreened = population_.UpdateForFOCUSAnalysis(
+            parameters_, monthlyScreeningNumbers, monthlyFocusProbabilities);
+
+        // Update yearly tracking counters
+        for (int i = 0; i < 12; ++i) {
+            yearlyScreenedCount[i] += actualScreened[i];
+        }
+
+        // Print year-to-date progress
+        int ytdTotal = 0, targetTotal = 0;
+        for (int i = 0; i < 12; ++i) {
+            ytdTotal += yearlyScreenedCount[i];
+            targetTotal += yearlyScreeningTarget[i];
+        }
+        cout << "[FOCUS] Year-to-Date Progress: " << ytdTotal << "/" << targetTotal
+             << " screened (" << (targetTotal > 0 ? 100.0 * ytdTotal / targetTotal : 0)
+             << "% of yearly target)" << endl;
+        cout << "[FOCUS] Selection process completed." << endl << endl;
+    }
+
+    population_.UpdatePhysicalState(parameters_, recordLE, firstMonthToRecord);
 
     population_.Births(parameters_);
 

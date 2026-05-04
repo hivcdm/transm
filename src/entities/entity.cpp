@@ -915,6 +915,11 @@ Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTra
     //run this person's patient info one month forward in CEPAC
     cepacPatient->simulateMonth();
 
+    // Reset FOCUS flag after simulateMonth() so debug tracing works during simulation
+    if (cepacPatient->isSelectedForFocus()) {
+        cepacPatient->setFocusStatus(0);
+    }
+
     auto treatmentAfter = isOnArt();
 
     if (treatmentBefore != treatmentAfter)

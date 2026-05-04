@@ -76,6 +76,7 @@ public:
 
     void RegisterPopulationIntervention(const Intervention &intervention);
 
+
     /* Default deconstructor */
     ~Simulation();
 
@@ -153,6 +154,57 @@ private:
     double start_time_;
 
     BatchStatus &batch_status_;
+
+
+    /** FOCUS module Stuff */
+    // --- Yearly Data (loaded from "database") ---
+    std::vector<int> yearlyScreeningNumbers;
+    std::vector<double> yearlyFocusProbabilities;
+
+    // --- Monthly Data (calculated from yearly) ---
+    std::vector<int> monthlyScreeningNumbers;
+
+    // Stores 12 calculated monthly probabilities (one for each group)
+    std::vector<double> monthlyFocusProbabilities;
+
+    // Scaling factor for FOCUS data (1.0 = use as-is, <1.0 = scale down for smaller simulations)
+    // Set based on your simulation population size relative to real-world population
+    // For your simulation: 0.4 (simulation is 2.5x smaller than real life)
+    double focusDataScaleFactor;
+
+    // Yearly tracking: how many individuals have been screened per group so far this year
+    std::vector<int> yearlyScreenedCount;  // 12 groups
+
+    // Yearly tracking: how many individuals should be screened per group by year end
+    std::vector<int> yearlyScreeningTarget;  // 12 groups
+
+    // Current FOCUS year being tracked (2020-2024)
+    int currentFocusYear;
+
+    std::vector<int> db_YearlyCounts_2017;
+    std::vector<double> db_YearlyProbs_2017;
+
+    std::vector<int> db_YearlyCounts_2018;
+    std::vector<double> db_YearlyProbs_2018;
+
+    std::vector<int> db_YearlyCounts_2019;
+    std::vector<double> db_YearlyProbs_2019;    
+
+    std::vector<int> db_YearlyCounts_2020;
+    std::vector<double> db_YearlyProbs_2020;
+
+    std::vector<int> db_YearlyCounts_2021;
+    std::vector<double> db_YearlyProbs_2021;
+
+    std::vector<int> db_YearlyCounts_2022;
+    std::vector<double> db_YearlyProbs_2022;
+
+    std::vector<int> db_YearlyCounts_2023;
+    std::vector<double> db_YearlyProbs_2023;
+
+    std::vector<int> db_YearlyCounts_2024;
+    std::vector<double> db_YearlyProbs_2024;
+
 };
 
 } // namespace transm

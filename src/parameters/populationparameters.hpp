@@ -219,6 +219,12 @@ public:
         defaultMaleParams.SetPartnershipDuration(risk, type, dist);
     }
 
+	double GetMultiplierCondomUseBlacks() const { return defaultMaleParams.GetMultiplierCondomUseBlacks(); }
+	double GetMultiplierCondomUseWhites() const { return defaultMaleParams.GetMultiplierCondomUseWhites(); }
+	void SetMultiplierCondomUsePerEvent(double blackMultiplier, double whiteMultiplier) {
+		defaultMaleParams.SetMultiplierCondomUsePerEvent(blackMultiplier, whiteMultiplier);
+	}
+
     double GetProportionCircumcised() const { return defaultMaleParams.GetProportionCircumcised(); }
     void SetProportionCircumcised(double value) { defaultMaleParams.SetProportionCircumcised(value); }
 

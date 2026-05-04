@@ -108,6 +108,14 @@ public :
 		void SetPartnershipDuration(RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { sexualBehaviorParams[type].setPartnershipDuration(risk, dist); }
 	    BetaDist GetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type type) const { return getSexualBehavior(type).getChanceCondomUsePerEvent(risk); }
 
+		double GetMultiplierCondomUseBlacks() const { return multiplierCondomUseBlacks; }
+		double GetMultiplierCondomUseWhites() const { return multiplierCondomUseWhites; }
+		void SetMultiplierCondomUsePerEvent(double blackMultiplier, double whiteMultiplier)
+		{
+			multiplierCondomUseBlacks = blackMultiplier;
+			multiplierCondomUseWhites = whiteMultiplier;
+		}
+
         double getBreakupRateMSW(SexualPartnership::Type type) { return sexualBehaviorParams[type].getBreakupRateForMSW(); }
         double getBreakupRateMSM(SexualPartnership::Type type) { return sexualBehaviorParams[type].getBreakupRateForMSM(); }
 
@@ -221,6 +229,9 @@ public :
          * for the current partner. */
         int maxPartnershipRejections;
 
+		double multiplierCondomUseBlacks;
+		double multiplierCondomUseWhites;
+
         double preExposureProphylaxisEfficacy_;
 
         /** contains all current partnerships including CSW and Casual */
@@ -261,6 +272,9 @@ public:
     Entity *choosePartner(RandomNumberGenerator &_randomNums, EntityPool *_availableEntities,
 	                      SexualPartnership::Type _partnershipType, bool _remove);
 
+
+	void updateBetaDistForRace(BetaDist &dist) const;
+	
     void SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng);
 
 	const BetaDist GetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type type)

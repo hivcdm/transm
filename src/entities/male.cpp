@@ -79,17 +79,61 @@ double Male::SubPopParams::getPartneringActsDiscMult(Age _ageYrs) const
 	return partneringActsDiscMult.at((_ageYrs - partneringDiscStartAgeYrs).years_as_index());
 }
 
-void Male::SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type partnershipType, BetaDist dist, RandomNumberGenerator &rng)
+// TODO: Make this general for other uses beyond condom use
+void Male::updateBetaDistForRace(BetaDist &dist) const {
+    double scale;
+    if (this->isBlack()) {
+        scale = populationSpecificParams.GetMultiplierCondomUseBlacks(); 
+    } else if (this->isWhite()) {
+        scale = populationSpecificParams.GetMultiplierCondomUseWhites();         
+    } else {        
+        scale = 1.0;
+    }
+
+    if (scale != 1.0) {
+        const double eps = 1e-6;
+
+        double alpha = dist.alpha;
+        double beta  = dist.beta;
+        double n     = alpha + beta;
+
+        if (n <= 0.0) {
+            throw std::runtime_error("Invalid BetaDist: alpha + beta must be > 0");
+        }
+
+        // Current mean
+        double mu = alpha / n;
+
+        // Scale mean and clamp into (0,1)
+        double mu_scaled = mu * scale;
+        if (mu_scaled <= eps)      mu_scaled = eps;
+        if (mu_scaled >= 1.0-eps)  mu_scaled = 1.0 - eps;
+
+        // Preserve concentration n, change only mean
+        dist.alpha = mu_scaled * n;
+        dist.beta  = (1.0 - mu_scaled) * n;
+    }
+}
+
+void Male::SetChanceCondomUsePerEvent(RiskLevel risk,
+                                      SexualPartnership::Type partnershipType,
+                                      BetaDist dist,
+                                      RandomNumberGenerator &rng)
 {
     auto &behavior = populationSpecificParams.getSexualBehavior(partnershipType);
-    if(risk == getRiskLevel())
+
+    if (risk == getRiskLevel())
     {
         auto current_dist = behavior.getChanceCondomUsePerEvent(risk);
-        if(current_dist.alpha != dist.beta || current_dist.alpha != dist.alpha)
+        updateBetaDistForRace(current_dist); // this is update for the condom use multipliers
+
+        // NOTE: bugfix: compare alpha-to-alpha and beta-to-beta
+        if (current_dist.alpha != dist.alpha || current_dist.beta != dist.beta)
         {
             chanceCondomUsePerEvent[(int)partnershipType] = rng.randBeta(dist);
         }
     }
+
     behavior.setChanceCondomUsePerEvent(risk, dist);
 }
 
@@ -309,6 +353,8 @@ Male::Male(EventParams &_eventParams, Age _age, bool _circumcised,
 		numActsPerMonth[(int)partnership_type] = sexualBehaviorParams.getCoitalEventsPerMonth(risk);
 
 		auto chance_condom_use_dist = sexualBehaviorParams.getChanceCondomUsePerEvent(risk);
+        updateBetaDistForRace(chance_condom_use_dist); // this is update for the condom use multipliers
+
 		auto chance_condom_use = _eventParams.randomNums.randBeta(chance_condom_use_dist);
 		chanceCondomUsePerEvent[(int)partnership_type] = chance_condom_use;
 
@@ -523,6 +569,23 @@ int Male::rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums
 
 	double meanCoitalEvents = numActsPerMonth[(int)_partnershipType];
 
+    // Adjust mean coital events per month to match for MIAMI calibration
+    // TODO: to be added to bm parameters instead of hard coded here. S. Seifi
+    if (isBlack() && (_partnershipType == SexualPartnership::Type::Steady ||
+                      _partnershipType == SexualPartnership::Type::Regular)) {
+        meanCoitalEvents *= 5.0;
+    }
+
+    if (isWhite() && !isHispanic() && (_partnershipType == SexualPartnership::Type::Steady ||
+                      _partnershipType == SexualPartnership::Type::Regular)) {
+        meanCoitalEvents *= 0.33;
+    }
+
+    if (isHispanic() && (_partnershipType == SexualPartnership::Type::Steady ||
+                      _partnershipType == SexualPartnership::Type::Regular)) {
+        meanCoitalEvents *= 1.33;
+    }
+
 	/* if person is over the age of partnering discounting, then discount #acts */
     auto ageYrs = getAge();
 
@@ -539,6 +602,12 @@ int Male::rollNumEventsPerPartner(Entity *_p, RandomNumberGenerator &_randomNums
 	}
 
 	int numActs = _randomNums.randPoisson(meanCoitalEvents - 1) + 1;
+
+    /* double acts per month for Black population in Steady and Regular partnerships */
+    // if (isBlack() && (_partnershipType == SexualPartnership::Type::Steady ||
+    //                   _partnershipType == SexualPartnership::Type::Regular)) {
+    //     numActs *= 2.0;
+    // }
 
 	return numActs;
 }
@@ -688,11 +757,11 @@ void Male::rerollRiskGroup(EventParams &_eventParams)
             }
 			partnerAcqRates[(int)partnership_type] = acquisition_rate;
 
-			numActsPerMonth[(int)partnership_type] = 
-				sexualBehaviorParams.getCoitalEventsPerMonth(risk);
+			numActsPerMonth[(int)partnership_type] = sexualBehaviorParams.getCoitalEventsPerMonth(risk);
 			auto chance_condom_use = sexualBehaviorParams.getChanceCondomUsePerEvent(risk);
-			chanceCondomUsePerEvent[(int)partnership_type] = 
-				_eventParams.randomNums.randBeta(chance_condom_use);
+            updateBetaDistForRace(chance_condom_use); // condom use race multiplier
+
+			chanceCondomUsePerEvent[(int)partnership_type] = _eventParams.randomNums.randBeta(chance_condom_use);
 		}
 	}
 

@@ -675,6 +675,10 @@ public:
             return;  // Exit early if cepacPatient is null
         }
         cepacPatient->setFocusStatus(1);
+        /** Only perform detection/linking here. The subsequent simulateMonth()
+         *  call will handle treatment updaters (CD4/HVL tests, ART initiation, etc.)
+         *  through the normal code path, now that the patient is detected and linked. */
+        cepacPatient->getHIVTestingUpdater()->performFOCUSIntervention();
     }
 
     /** Check if the patient is linked to care.

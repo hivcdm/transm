@@ -319,8 +319,8 @@ void InfectionsTracker::recordIncidentInfection(Time time,
     incidentInfectionsByDemographic[(std::size_t)_partnershipType][_infector->getDemographicProfile()->getProfileID()][_infected->getDemographicProfile()->getProfileID()]++;
 
 	auto infectorGender = (std::size_t)_infector->getDemographicProfileVal<DemographicProfile::Gender>();
-	auto infectedGender = (std::size_t)_infector->getDemographicProfileVal<DemographicProfile::Gender>();
-	auto infectedEmployment = (std::size_t)_infector->getDemographicProfileVal<DemographicProfile::Employment>();
+	auto infectedGender = (std::size_t)_infected->getDemographicProfileVal<DemographicProfile::Gender>();
+	auto infectedEmployment = (std::size_t)_infected->getDemographicProfileVal<DemographicProfile::Employment>();
 
     incidentInfectionsByGender[(std::size_t)_partnershipType][infectorGender][infectedGender]++;
 
@@ -898,16 +898,16 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 	/* Multiply by 100 and round to nearest integer for graphical output */
 	int intPrevalence = (int)(100 * currPrevalence + 0.5);
 
-    /* sum and output infections by gender */
-    GenderArray<std::size_t> totalInfectedGender = {0};
-	for(std::size_t i = 0; i < numAgeRanges; i++)
-	{
-		for(auto gender : enum_iterator<DemographicProfile::Gender>())
-		{
-			auto entity_type = (std::size_t)gender;
+    /* sum and output prevalent infections by gender (under "Prevalent Cases / By Gender") */
+    GenderArray<std::size_t> totalInfectedGender{};
+    for(std::size_t i = 0; i < numAgeRanges; i++)
+    {
+        for(auto gender : enum_iterator<DemographicProfile::Gender>())
+        {
+            auto entity_type = (std::size_t)gender;
             totalInfectedGender[entity_type] += currPrevalentInfectionsGenderAge[entity_type].at(i).second;
         }
-	}
+    }
     for(auto gender : enum_iterator<DemographicProfile::Gender>())
     {
         auto entity_type = (std::size_t)gender;
@@ -1022,7 +1022,7 @@ int InfectionsTracker::printInfections(EventParams &/*_eventParams*/, Time time,
 	}
 
 	/* Print out incident infections by age and gender and risk */
-	GenderArray<std::size_t> incidentInfsGender;
+	GenderArray<std::size_t> incidentInfsGender{};
 //    std::size_t sumIncidentInfs = 0;
 
     for(std::size_t i = 0; i < numAgeRanges; i++)
