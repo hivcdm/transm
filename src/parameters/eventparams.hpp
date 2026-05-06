@@ -192,17 +192,18 @@ public:
         }
         rolloutSimContexts.clear();
 
-        if (untreatedContext)
-        {
-            delete untreatedContext;
-            untreatedContext = nullptr;
-        }
-
-        if (treatedContext)
-        {
-            delete treatedContext;
-            treatedContext = nullptr;
-        }
+        /* Note: untreatedContext and treatedContext are NOT deleted here.
+         * In rollout mode, these are reassigned at runtime to alias a
+         * SimContext that is already owned by a RolloutContext in
+         * rolloutSimContexts, so deleting them here causes a double-free
+         * (and in many cases they hold the same pointer as each other).
+         * The originally-loaded untreatedContext from Simulation::Run is
+         * leaked at process exit; the OS reclaims it. Re-introducing
+         * proper ownership requires giving RolloutContext a real
+         * destructor that deletes its inner SimContext, plus tracking
+         * the initial untreatedContext separately. */
+        untreatedContext = nullptr;
+        treatedContext = nullptr;
 
         if (cepacTracer)
         {
