@@ -737,6 +737,8 @@ Not configured in the XML — toggled on the command line:
 
 When `--focus` is enabled, the simulation runs the FOCUS module each year: race × sex-stratified focused screening of undiagnosed and lost-to-follow-up HIV+ populations. Probabilities and per-group target counts are read from internal calibration tables — see the FOCUS source code in `population.cpp` for the current parameters.
 
+The module covers **2017 through 2035** (simulation months 720–947 under the module's internal calendar, which treats month 600 as January 2007). 2017–2024 are observed program data; 2025–2035 are projections. Make sure `<duration>` is at least 948, or the later projection years will never run.
+
 Future versions may expose these through the XML.
 
 ---

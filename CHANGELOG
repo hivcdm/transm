@@ -8,6 +8,32 @@ A dynamic agent-based model for HIV transmission
 
                   v4.8
 
+Unreleased
+==========
+
+- FOCUS screening module extended from 2024 through 2035 (issue #93). The month
+  window moves from [720, 816) to [720, 948) and eleven new per-year count and
+  probability tables are added, following the existing per-year style.
+
+  Source projections give three counts per race x gender per year: Known
+  Positives, New Positives, and Unknown Previous Result Positives. These map
+  onto the existing 12-slot schema as Undiagnosed = New + Unknown Previous
+  Result, LTFU = Known. Validated against the 2024 actuals, whose undiagnosed
+  shares match (New + Unknown) / Total rather than New / Total.
+
+  Source values are real-world scale; the tables are simulation scale (2.5x
+  smaller), so every value is the source figure divided by 2.5 and rounded.
+  This keeps the 2024/2025 boundary continuous. focusDataScaleFactor stays
+  at 1.0, unchanged.
+
+  Not modeled: the source data's race "Other" and "Other Gender" categories
+  have no slots in the 12-group schema (Race::Other has no find functions, and
+  Gender is {Male, Female} only), so they are excluded. Targets run roughly
+  3-4% below the source totals as a result.
+
+  Note: scenarios need <duration> of at least 948 for the later projection
+  years to run. focus_test.xml has 1000.
+
 Version 4.8
 ===========
 
