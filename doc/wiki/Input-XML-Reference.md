@@ -741,6 +741,28 @@ The module covers **2017 through 2035** (simulation months 720–947 under the m
 
 Future versions may expose these through the XML.
 
+### Seeing FOCUS in the network export
+
+FOCUS state is written into the partnership network GraphML as node attributes
+(`focus_selected`, `focus_status`, `focus_group_str`, …) and one edge attribute
+(`focus_edge`), for inspection in Gephi. See
+[Outputs-Reference](Outputs-Reference.md#partnershipnetwork_monthgraphml) for the
+full attribute list.
+
+The dumps are XML-driven but the FOCUS window is fixed in code, so the two have
+to be lined up by hand:
+
+```xml
+<partnerNetwork enabled="true" tossIfCalibFail="false">
+  <time>720</time>   <!-- Jan 2017, the month FOCUS starts -->
+  <time>840</time>
+  <time>947</time>   <!-- Dec 2035, the last month FOCUS runs -->
+</partnerNetwork>
+```
+
+A `<time>` outside `[720, 948)` produces a snapshot whose FOCUS columns are
+uniformly empty, and any `<time>` beyond `<duration>` never fires at all.
+
 ---
 
 ## Conventions and tips
