@@ -739,6 +739,8 @@ When `--focus` is enabled, the simulation runs the FOCUS module each year: race 
 
 The module covers **2017 through 2035** (simulation months 720–947 under the module's internal calendar, which treats month 600 as January 2007). 2017–2024 are observed program data; 2025–2035 are projections. Make sure `<duration>` is at least 948, or the later projection years will never run.
 
+The source table's race “Other” has no slot in the twelve-cohort schema and is **folded into Hispanic**, so the Hispanic targets are source Hispanic + Other. The source “Other” female counts are zero in every year, so only the male Hispanic cohorts are affected. The source “Other Gender” category is not modeled at all — `DemographicProfile::Gender` is `{Male, Female}`.
+
 Future versions may expose these through the XML.
 
 ### Seeing FOCUS in the network export

@@ -65,21 +65,19 @@ Unreleased
   window moves from [720, 816) to [720, 948) and eleven new per-year count and
   probability tables are added, following the existing per-year style.
 
-  Source projections give three counts per race x gender per year: Known
-  Positives, New Positives, and Unknown Previous Result Positives. These map
-  onto the existing 12-slot schema as Undiagnosed = New + Unknown Previous
-  Result, LTFU = Known. Validated against the 2024 actuals, whose undiagnosed
-  shares match (New + Unknown) / Total rather than New / Total.
+  All nineteen years 2017-2035 are now taken from a single source table giving
+  two counts per race x gender per year: "New Dx" and "OUT-OF-CARE". These map
+  onto the 12-slot schema as Undiagnosed = New Dx, LTFU = OUT-OF-CARE. Source
+  values are already at simulation scale and are used as given;
+  focusDataScaleFactor stays at 1.0, unchanged.
 
-  Source values are real-world scale; the tables are simulation scale (2.5x
-  smaller), so every value is the source figure divided by 2.5 and rounded.
-  This keeps the 2024/2025 boundary continuous. focusDataScaleFactor stays
-  at 1.0, unchanged.
+  Race "Other" has no slot in the 12-group schema and is folded into Hispanic,
+  so the Hispanic slots are source Hispanic + Other. The source "Other" female
+  counts are all zero across every year, so only the male Hispanic groups
+  shift. No source person is dropped: per-year totals are conserved exactly.
 
-  Not modeled: the source data's race "Other" and "Other Gender" categories
-  have no slots in the 12-group schema (Race::Other has no find functions, and
-  Gender is {Male, Female} only), so they are excluded. Targets run roughly
-  3-4% below the source totals as a result.
+  Still not modeled: the source "Other Gender" category, since
+  DemographicProfile::Gender is {Male, Female} only.
 
   Note: scenarios need <duration> of at least 948 for the later projection
   years to run. focus_test.xml has 1000.

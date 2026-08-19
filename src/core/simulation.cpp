@@ -274,105 +274,104 @@ Simulation::Simulation(BatchStatus &batch_status) :
         // Source values are already at simulation scale, so they are used as given -
         // no division by focusDataScaleFactor.
         //
-        // Race "Other" has no slot in this 12-group schema and is folded into White
-        // (see issue #93), so White here is source White + Other. The source "Other"
-        // female counts are all zero, so this only shifts the male White groups.
-
+        // Race "Other" has no slot in this 12-group schema and is folded into
+        // Hispanic (see issue #93), so Hispanic here is source Hispanic + Other. The
+        // source "Other" female counts are all zero, so this only shifts the male
+        // Hispanic groups.
         db_YearlyCounts_2017 = {
-            5, 1,   4, 4,   4, 1,
-            11, 8,  35, 33, 14, 9
+            5, 1,  4, 4,  4, 1,
+            11, 8, 35, 33, 14, 9
         };
 
         db_YearlyCounts_2018 = {
-            3, 2,   5, 3,   5, 1,
-            18, 8,  34, 27, 23, 9
+            3, 2,  5, 3,  5, 1,
+            19, 8, 34, 27, 22, 9
         };
 
         db_YearlyCounts_2019 = {
-            5, 3,   8, 7,   6, 4,
-            31, 8,  79, 78, 40, 14
+            5, 3,  8, 7,  6, 4,
+            32, 8, 79, 78, 39, 14
         };
 
         db_YearlyCounts_2020 = {
-            7, 3,   7, 4,   7, 3,
-            29, 15, 62, 45, 37, 19
+            7, 3,  7, 4,  7, 3,
+            30, 15, 62, 45, 36, 19
         };
 
         db_YearlyCounts_2021 = {
-            10, 1,  14, 11, 13, 1,
-            30, 7,  52, 45, 39, 12
+            10, 1,  14, 11,  13, 1,
+            31, 7, 52, 45, 38, 12
         };
 
         db_YearlyCounts_2022 = {
-            14, 4,  10, 8,  18, 4,
-            28, 7,  62, 35, 34, 10
+            15, 4,  10, 8,  17, 4,
+            28, 7, 62, 35, 34, 10
         };
 
         db_YearlyCounts_2023 = {
-            5, 1,   9, 6,   5, 1,
+            6, 1,  9, 6,  4, 1,
             23, 10, 45, 40, 27, 10
         };
 
         db_YearlyCounts_2024 = {
-            11, 2,  7, 3,   12, 2,
-            56, 16, 90, 74, 74, 20
+            12, 2,  7, 3,  11, 2,
+            59, 16, 90, 74, 71, 20
         };
 
         // Projected years 2025-2035 (same source and mapping as above).
-
         db_YearlyCounts_2025 = {
-            11, 2,  7, 3,   13, 1,
-            59, 17, 90, 72, 79, 20
+            12, 2,  7, 3,  12, 1,
+            63, 17, 90, 72, 75, 20
         };
 
         db_YearlyCounts_2026 = {
-            12, 1,  7, 2,   14, 1,
-            62, 18, 91, 71, 82, 20
+            14, 1,  7, 2,  12, 1,
+            66, 18, 91, 71, 78, 20
         };
 
         db_YearlyCounts_2027 = {
-            13, 1,  7, 2,   15, 0,
-            65, 18, 91, 70, 86, 20
+            15, 1,  7, 2,  13, 0,
+            69, 18, 91, 70, 82, 20
         };
 
         db_YearlyCounts_2028 = {
-            14, 1,  7, 1,   16, 0,
-            68, 19, 92, 68, 90, 20
+            16, 1,  7, 1,  13, 0,
+            72, 19, 92, 68, 86, 20
         };
 
         db_YearlyCounts_2029 = {
-            15, 1,  7, 1,   16, 0,
-            71, 20, 92, 67, 93, 20
+            17, 1,  7, 1,  14, 0,
+            75, 20, 92, 67, 89, 20
         };
 
         db_YearlyCounts_2030 = {
-            15, 0,  6, 0,   18, 0,
-            74, 21, 92, 66, 97, 20
+            18, 0,  6, 0,  15, 0,
+            78, 21, 92, 66, 93, 20
         };
 
         db_YearlyCounts_2031 = {
-            16, 0,  6, 0,   18, 0,
-            77, 21, 93, 65, 102, 20
+            19, 0,  6, 0,  15, 0,
+            82, 21, 93, 65, 97, 20
         };
 
         db_YearlyCounts_2032 = {
-            17, 0,  6, 0,   19, 0,
-            80, 22, 93, 63, 106, 20
+            20, 0,  6, 0,  16, 0,
+            85, 22, 93, 63, 101, 20
         };
 
         db_YearlyCounts_2033 = {
-            18, 0,  6, 0,   19, 0,
-            83, 23, 94, 62, 109, 20
+            21, 0,  6, 0,  16, 0,
+            88, 23, 94, 62, 104, 20
         };
 
         db_YearlyCounts_2034 = {
-            19, 0,  6, 0,   21, 0,
-            86, 23, 94, 61, 113, 21
+            23, 0,  6, 0,  17, 0,
+            91, 23, 94, 61, 108, 21
         };
 
         db_YearlyCounts_2035 = {
-            19, 0,  6, 0,   21, 0,
-            89, 24, 94, 59, 117, 21
+            23, 0,  6, 0,  17, 0,
+            94, 24, 94, 59, 112, 21
         };
 
 
