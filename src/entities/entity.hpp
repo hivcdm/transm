@@ -10,6 +10,7 @@
 
 #include "entitytypes.hpp"
 #include "demographicprofile.hpp"
+#include "focusgroup.hpp"
 #include "prep.hpp"
 #include "sexualpartnership.hpp"
 #include "transmissiontype.hpp"
@@ -669,16 +670,121 @@ public:
         }
     }
 
-    void setFOCUS() {
+    /** Mark this person as selected by the FOCUS module and run the intervention.
+     *
+     * The CEPAC-side flag (Patient::selected_for_FOCUS) only lives for the
+     * current month - it is cleared again right after simulateMonth() - so it
+     * cannot be read at reporting or network-export time. The focus* members
+     * below are the durable transm-side record of the same event, and are what
+     * the GraphML export reads.
+     *
+     * @param focusGroup the FocusGroup cohort this person was drawn from
+     * @param currentMonth the simulation month of the selection */
+    void setFOCUS(int focusGroup, int currentMonth) {
         if (!cepacPatient) {
             std::cerr << "Error: cepacPatient is null!" << std::endl;
             return;  // Exit early if cepacPatient is null
         }
+
+        /* Durable record of the selection, kept on the transm entity */
+        if (!focusEverSelected_) {
+            focusEverSelected_ = true;
+            focusMonthFirstSelected_ = currentMonth;
+        }
+        focusMonthLastSelected_ = currentMonth;
+        focusGroup_ = focusGroup;   /* cohort the selection is attributed to */
+        focusSelectCount_++;
+
         cepacPatient->setFocusStatus(1);
         /** Only perform detection/linking here. The subsequent simulateMonth()
          *  call will handle treatment updaters (CD4/HVL tests, ART initiation, etc.)
          *  through the normal code path, now that the patient is detected and linked. */
         cepacPatient->getHIVTestingUpdater()->performFOCUSIntervention();
+    }
+
+    /** Record that this person was drawn into a FOCUS screening sample, whether
+     * or not the subsequent selection roll succeeded. This is the denominator
+     * that lets the export distinguish FOCUS reach from FOCUS yield. */
+    void recordFOCUSScreening(int focusGroup) {
+        focusScreenCount_++;
+        /* Once someone has been selected, focusGroup_ stays pinned to the
+         * cohort that selected them, since that is the cohort the selection
+         * should be attributed to. Before then it tracks the most recent
+         * cohort we reached them through. Someone can be re-screened after a
+         * selection - detected and linked, then later lost to follow up - so
+         * the two can genuinely differ. */
+        if (!focusEverSelected_)
+            focusGroup_ = focusGroup;
+    }
+
+    /** @return true if FOCUS has ever selected this person */
+    bool wasSelectedForFOCUS() const { return focusEverSelected_; }
+
+    /** @return true if FOCUS has ever sampled this person for screening */
+    bool wasScreenedByFOCUS() const { return focusScreenCount_ > 0; }
+
+    /** @return month of the first FOCUS selection, or FocusGroupNone if never */
+    int getFOCUSMonthFirstSelected() const { return focusMonthFirstSelected_; }
+
+    /** @return month of the most recent FOCUS selection, or FocusGroupNone */
+    int getFOCUSMonthLastSelected() const { return focusMonthLastSelected_; }
+
+    /** @return the FocusGroup cohort of the most recent selection or, if this
+     * person was never selected, of the most recent screening. FocusGroupNone
+     * if FOCUS has never touched them. */
+    int getFOCUSGroup() const { return focusGroup_; }
+
+    /** @return number of times FOCUS has selected this person */
+    int getFOCUSSelectCount() const { return focusSelectCount_; }
+
+    /** @return number of times FOCUS has sampled this person for screening */
+    int getFOCUSScreenCount() const { return focusScreenCount_; }
+
+    /** Whether this person currently meets the FOCUS targeting criteria.
+     *
+     * This mirrors the reason-and-race conditions shared by the twelve
+     * Population::Find*Undiagnosed()/Find*LossToFollowUp() predicates: an
+     * undiagnosed infection or a loss to follow up, in one of the three
+     * targeted race/ethnicity groups. It deliberately does NOT resolve which
+     * cohort someone belongs to, because those cohorts overlap (see
+     * focusgroup.hpp) and picking one would change nothing here but would
+     * invite divergence from the Find* predicates that actually do the
+     * sampling.
+     *
+     * @return true if FOCUS could draw this person this month */
+    bool isFOCUSEligible() const {
+        const bool inTargetedRace = isHispanic() || isBlack() || isWhite();
+        const bool undiagnosed = isInfected() && !isDetected();
+        return inTargetedRace && (undiagnosed || isLTFU());
+    }
+
+    /** Composite FOCUS state for visualisation - see enum FocusStatus.
+     * @param currentMonth the simulation month the snapshot is taken in */
+    int getFOCUSStatus(int currentMonth) const {
+        if (focusEverSelected_) {
+            const int since = currentMonth - focusMonthLastSelected_;
+            return (since >= 0 && since < FocusRecentWindowMonths)
+                   ? (int)FocusStatus::SELECTED_RECENT
+                   : (int)FocusStatus::SELECTED_PAST;
+        }
+        if (focusScreenCount_ > 0)
+            return (int)FocusStatus::SCREENED;
+        return isFOCUSEligible() ? (int)FocusStatus::ELIGIBLE
+                                 : (int)FocusStatus::NOT_ELIGIBLE;
+    }
+
+    /** Months elapsed since the most recent FOCUS selection.
+     * @param currentMonth the simulation month the snapshot is taken in
+     * @return the elapsed months, or FocusGroupNone if never selected */
+    int getMonthsSinceFOCUS(int currentMonth) const {
+        if (!focusEverSelected_)
+            return FocusGroupNone;
+        return currentMonth - focusMonthLastSelected_;
+    }
+
+    /** @return CEPAC care state (SimContext::HIV_CARE_*) or -1 without a patient */
+    int getCareState() const {
+        return cepacPatient ? (int)cepacPatient->getMonitoringState()->careState : -1;
     }
 
     /** Check if the patient is linked to care.
@@ -923,6 +1029,16 @@ private:
     PrepStatus prepStatus;
     PrepAherenceLevel prepAdherenceLevel;
     PrepEligibility prepEligibility;
+
+    /* Durable FOCUS record. The CEPAC-side selected_for_FOCUS flag is cleared
+     * again within the same month, so these are the only FOCUS facts that
+     * survive long enough to be reported or exported. */
+    bool focusEverSelected_ = false;
+    int focusMonthFirstSelected_ = FocusGroupNone;
+    int focusMonthLastSelected_ = FocusGroupNone;
+    int focusGroup_ = FocusGroupNone;
+    int focusSelectCount_ = 0;
+    int focusScreenCount_ = 0;
 
 };
 

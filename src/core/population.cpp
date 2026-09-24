@@ -13,6 +13,7 @@
 #include "constants.hpp"
 #include "simulation.hpp"
 #include "entities/female.hpp"
+#include "entities/focusgroup.hpp"
 #include "entities/male.hpp"
 #include "entities/sexualbehavior.hpp"
 #include "statistics/coststracker.hpp"
@@ -740,26 +741,19 @@ std::vector<int> Population::UpdateForFOCUSAnalysis(
     const std::vector<double>& focusProbabilityPerGroup)
 {
 
-    // Group names for logging
-    const std::vector<std::string> groupNames = {
-        "Hispanic Males Undiagnosed",
-        "Hispanic Females Undiagnosed",
-        "Black Males Undiagnosed",
-        "Black Females Undiagnosed",
-        "White Males Undiagnosed",
-        "White Females Undiagnosed",
-        "Hispanic Males LTFU",
-        "Hispanic Females LTFU",
-        "Black Males LTFU",
-        "Black Females LTFU",
-        "White Males LTFU",
-        "White Females LTFU"
-    };
+    // Group names for logging. These now come from the shared FOCUS schema in
+    // focusgroup.hpp so that the log, the per-entity focusGroup_ record and the
+    // network export can never drift apart.
+    const std::vector<std::string> &groupNames = FocusGroupNames;
+
+    // Month this screening round happens in; stamped onto every entity FOCUS
+    // touches so the record can be aged at export time.
+    const int currentMonth = (int)eventParams.currTime.in_months();
 
     // Track actual screened per group (to return for yearly tracking)
-    std::vector<int> actualScreenedPerGroup(12, 0);
+    std::vector<int> actualScreenedPerGroup(FocusGroupCount, 0);
 
-    /* 1. Define the groups (same as before) */
+    /* 1. Define the groups, in FocusGroup order (see focusgroup.hpp) */
     std::vector<std::vector<Entity *>> groups = {
         FindHispanicMalesUndiagnosed(),
         FindHispanicFemalesUndiagnosed(),
@@ -775,12 +769,16 @@ std::vector<int> Population::UpdateForFOCUSAnalysis(
         FindWhiteFemalesLossToFollowUp()
     };
 
-    /* 2. Validate input sizes */
-    if (groups.size() != numToScreenPerGroup.size() ||
-        groups.size() != focusProbabilityPerGroup.size()) {
+    /* 2. Validate input sizes. groupNames is checked too: it is now the shared
+     * schema, and every entity we touch is stamped with an index into it. */
+    if (groups.size() != (std::size_t)FocusGroupCount ||
+        groups.size() != numToScreenPerGroup.size() ||
+        groups.size() != focusProbabilityPerGroup.size() ||
+        groups.size() != groupNames.size()) {
 
         // Using std::cerr instead of cout for errors
-        std::cerr << "[FOCUS ERROR] Input vector sizes do not match group size (12)!" << std::endl;
+        std::cerr << "[FOCUS ERROR] Input vector sizes do not match group size ("
+                  << FocusGroupCount << ")!" << std::endl;
         return actualScreenedPerGroup; // Return empty vector
     }
 
@@ -839,12 +837,17 @@ std::vector<int> Population::UpdateForFOCUSAnalysis(
 
             Entity* candidate = currentGroup[j];
 
+            // Everyone we sample is recorded as screened, selected or not. This
+            // is the denominator behind the focus_screened / focus_status node
+            // attributes: it separates who FOCUS reached from who it converted.
+            candidate->recordFOCUSScreening((int)i);
+
             // "Roll the die": If the random number is less than the probability,
             // they become a FOCUS individual.
             if (probDist(gen) < focusProb) {
 
                 // Mark entity as FOCUS and record in statistics
-                candidate->setFOCUS();
+                candidate->setFOCUS((int)i, currentMonth);
                 populationStatistics.recordFOCUS(candidate);
                 selectedInGroup++;
                 totalSelected++;
@@ -874,14 +877,26 @@ std::vector<int> Population::UpdateForFOCUSAnalysis(
 
 /* Write out the current partnership network */
 void Population::WritePartnershipNetwork(EventParams &eventParams) {
-    Network network;
+    Network network((int)eventParams.currTime.in_months());
+
+    if (!eventParams.simName.empty())
+        network.SetFilenamePrefix(eventParams.simName + "-");
+
+    /* Two passes on purpose. The first puts every living entity in the graph,
+     * including those with no partnerships this month - dropping them would
+     * hide precisely the undiagnosed and lost-to-follow-up people the FOCUS
+     * attributes are there to show. The second adds the partnerships. */
+    entities->forEach([&](Entity *entity) {
+        network.AddIsolatedEntity(entity);
+    });
 
     entities->forEach([&](Entity *entity) {
         for (auto partnership : entity->GetPartnerships()) {
             network.UpdatePartnership(entity, partnership->getOtherPartner(entity), partnership);
         }
     });
-    network.Write(eventParams.currTime.in_months());
+
+    network.Write();
 }
 
 void Population::SaveIndividualSummaries(std::ostream &stream) const {

@@ -8,6 +8,80 @@ A dynamic agent-based model for HIV transmission
 
                   v4.8
 
+Unreleased
+==========
+
+- FOCUS flags and care-continuum attributes added to the partnership network
+  GraphML export, so FOCUS can be inspected in Gephi.
+
+  The blocker was that FOCUS had no per-agent state to export. The only flag,
+  Patient::selected_for_FOCUS on the CEPAC side, is cleared within the same
+  month it is set, so reading it at network-dump time returned false for
+  everyone. Entity now keeps a durable record - ever selected, first and last
+  month of selection, the cohort drawn from, and selection/screening counts -
+  written by setFOCUS() and the new recordFOCUSScreening(). Screening is
+  recorded separately from selection so the export can distinguish FOCUS reach
+  from FOCUS yield.
+
+  New node attributes: focus_selected, focus_screened, focus_month,
+  focus_month_last, months_since_focus, focus_group, focus_group_str,
+  focus_reason, focus_select_count, focus_screen_count, focus_status. The
+  focus_status composite (-1 not eligible, 0 eligible, 1 screened, 2 selected
+  more than a year ago, 3 selected within the year) collapses the whole story
+  into one Gephi partition, following the existing hiv_composite idiom.
+
+  Also added the care continuum - detected, linked, in_care, ltfu, rtc,
+  care_state - since FOCUS acts by detecting and re-linking, and a selection
+  flag alone cannot show what the selection did. All getters already existed.
+
+  New edge attribute focus_edge (0/1/2 endpoints ever selected), shaped like
+  sero_pos so the two can be crossed to ask whether FOCUS is reaching the
+  serodiscordant edges.
+
+  The twelve-cohort schema, previously an unnamed positional convention spread
+  across the per-year data tables and a local string array, now has one owner
+  in src/entities/focusgroup.hpp. The cohorts are targeted rather than
+  partitioned - the Population::Find* predicates test race independently, so a
+  Black Hispanic person is reachable through both the Hispanic and the Black
+  cohort - and this is left as is; focus_group records which cohort someone was
+  drawn from, not a canonical classification.
+
+  Three fixes to the export while in there, all of which distorted the picture:
+    - Entities with no partnerships were never added to the graph, because
+      vertices were only created while walking partnerships. That dropped
+      precisely the undiagnosed and LTFU people FOCUS targets. Every living
+      entity is now a node, with is_isolate marking the ones with no edges.
+    - Every partnership was written twice, once from either endpoint, doubling
+      every degree and edge count in Gephi. Deduplicated on the partnership
+      itself, so a genuine second partnership between the same pair survives.
+    - Vertex lookup was a linear scan, making the build O(V*E). Now an id-keyed
+      hash map.
+  The filename also gains the <sim> prefix; batch runs sharing a results
+  directory were overwriting each other's snapshots.
+
+  Node and edge attributes are documented in doc/wiki/Outputs-Reference.md.
+
+- FOCUS screening module extended from 2024 through 2035 (issue #93). The month
+  window moves from [720, 816) to [720, 948) and eleven new per-year count and
+  probability tables are added, following the existing per-year style.
+
+  All nineteen years 2017-2035 are now taken from a single source table giving
+  two counts per race x gender per year: "New Dx" and "OUT-OF-CARE". These map
+  onto the 12-slot schema as Undiagnosed = New Dx, LTFU = OUT-OF-CARE. Source
+  values are already at simulation scale and are used as given;
+  focusDataScaleFactor stays at 1.0, unchanged.
+
+  Race "Other" has no slot in the 12-group schema and is folded into Hispanic,
+  so the Hispanic slots are source Hispanic + Other. The source "Other" female
+  counts are all zero across every year, so only the male Hispanic groups
+  shift. No source person is dropped: per-year totals are conserved exactly.
+
+  Still not modeled: the source "Other Gender" category, since
+  DemographicProfile::Gender is {Male, Female} only.
+
+  Note: scenarios need <duration> of at least 948 for the later projection
+  years to run. focus_test.xml has 1000.
+
 Version 4.8
 ===========
 

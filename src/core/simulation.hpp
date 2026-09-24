@@ -178,7 +178,7 @@ private:
     // Yearly tracking: how many individuals should be screened per group by year end
     std::vector<int> yearlyScreeningTarget;  // 12 groups
 
-    // Current FOCUS year being tracked (2020-2024)
+    // Current FOCUS year being tracked (2017-2035)
     int currentFocusYear;
 
     std::vector<int> db_YearlyCounts_2017;
@@ -204,6 +204,39 @@ private:
 
     std::vector<int> db_YearlyCounts_2024;
     std::vector<double> db_YearlyProbs_2024;
+
+    std::vector<int> db_YearlyCounts_2025;
+    std::vector<double> db_YearlyProbs_2025;
+
+    std::vector<int> db_YearlyCounts_2026;
+    std::vector<double> db_YearlyProbs_2026;
+
+    std::vector<int> db_YearlyCounts_2027;
+    std::vector<double> db_YearlyProbs_2027;
+
+    std::vector<int> db_YearlyCounts_2028;
+    std::vector<double> db_YearlyProbs_2028;
+
+    std::vector<int> db_YearlyCounts_2029;
+    std::vector<double> db_YearlyProbs_2029;
+
+    std::vector<int> db_YearlyCounts_2030;
+    std::vector<double> db_YearlyProbs_2030;
+
+    std::vector<int> db_YearlyCounts_2031;
+    std::vector<double> db_YearlyProbs_2031;
+
+    std::vector<int> db_YearlyCounts_2032;
+    std::vector<double> db_YearlyProbs_2032;
+
+    std::vector<int> db_YearlyCounts_2033;
+    std::vector<double> db_YearlyProbs_2033;
+
+    std::vector<int> db_YearlyCounts_2034;
+    std::vector<double> db_YearlyProbs_2034;
+
+    std::vector<int> db_YearlyCounts_2035;
+    std::vector<double> db_YearlyProbs_2035;
 
 };
 

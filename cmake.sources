@@ -8,6 +8,7 @@ src/core/targetgroup.hpp
 src/entities/demographicprofile.hpp
 src/entities/entity.hpp
 src/entities/female.hpp
+src/entities/focusgroup.hpp
 src/entities/male.hpp
 src/entities/sexualbehavior.hpp
 src/entities/sexualpartnership.hpp
