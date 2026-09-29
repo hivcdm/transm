@@ -378,6 +378,11 @@ public:
     /** Hispanic is an ethnicity*/
     bool isHispanic() const;
 
+    /** @return true if this entity's race is Race::Other. Race and ethnicity
+     * are independent axes, so this is true for both Hispanic and
+     * non-Hispanic people of Other race. */
+    bool isOtherRace() const;
+
     /** see whether person dies. If they went through CEPAC, use health trace. else roll against nonAIDS death probs */
     bool rollForDeath(RandomNumberGenerator &_randomNums);
 

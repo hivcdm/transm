@@ -440,15 +440,27 @@ std::vector<Entity *> Population::FindMalePositives() {
     });
 }
     
+/* The four "Hispanic" FOCUS cohorts also reach people of Other race.
+ * The FOCUS source table has an Other-race column with no cohort of its own, and
+ * those counts are folded into the Hispanic targets (see the db_YearlyCounts
+ * comment in simulation.cpp). The targets alone are not enough: these finders
+ * used to test isHispanic() only, so the Hispanic cohorts were asked to screen
+ * Other-race counts while no Other-race person could ever be selected. Widening
+ * the finders makes the cohort reach the same people its target counts.
+ *
+ * This adds no overlap between cohorts. Other-race people match neither the
+ * Black finders (isBlack) nor the White ones (isWhite && !isHispanic), so a
+ * non-Hispanic person of Other race now sits in exactly one cohort instead of
+ * none; an Other-race Hispanic person was already in this one. */
 std::vector<Entity *> Population::FindHispanicMalesUndiagnosed() {
     return Find([](Entity *person) {
-        return person->isMale() && person->isInfected() && !person->isDetected() && person->isHispanic();
+        return person->isMale() && person->isInfected() && !person->isDetected() && (person->isHispanic() || person->isOtherRace());
     });
 }    
 
 std::vector<Entity *> Population::FindHispanicFemalesUndiagnosed() {
     return Find([](Entity *person) {
-        return !person->isMale() && person->isInfected() && !person->isDetected() && person->isHispanic();
+        return !person->isMale() && person->isInfected() && !person->isDetected() && (person->isHispanic() || person->isOtherRace());
     });
 }    
 
@@ -478,13 +490,13 @@ std::vector<Entity *> Population::FindWhiteFemalesUndiagnosed() {
 
 std::vector<Entity *> Population::FindHispanicMalesLossToFollowUp() {
     return Find([](Entity *person) {
-        return person->isMale() && person->isLTFU() && person->isHispanic();
+        return person->isMale() && person->isLTFU() && (person->isHispanic() || person->isOtherRace());
     });
 } 
 
 std::vector<Entity *> Population::FindHispanicFemalesLossToFollowUp() {
     return Find([](Entity *person) {
-        return !person->isMale() && person->isLTFU() && person->isHispanic();
+        return !person->isMale() && person->isLTFU() && (person->isHispanic() || person->isOtherRace());
     });
 } 
 
