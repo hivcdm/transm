@@ -601,6 +601,11 @@ bool Entity::isHispanic() const {
             (std::size_t) DemographicProfile::Ethnicity::Hispanic);
 }
 
+bool Entity::isOtherRace() const {
+    return (getDemographicProfileVal(DemographicProfile::Demographic::Race) ==
+            (std::size_t) DemographicProfile::Race::Other);
+}
+
 void Entity::removePartnership(SexualPartnership *_partnership) {
     assert(_partnership != nullptr);
     partners[(int) _partnership->getType()].remove(_partnership);

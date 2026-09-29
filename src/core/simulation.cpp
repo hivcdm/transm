@@ -790,6 +790,16 @@ std::size_t Simulation::SimulateMonth() {
     // (time_ is 1-based, so month 1 -> index 0, month 12 -> index 11)
     int currentMonthIndex = (time_.in_months() - 1) % 12;
 
+    // CALENDAR CONVENTION -- read before changing any month number below.
+    // FOCUS labels simulation month 600 as January 2007. That is deliberate, and it
+    // is the convention the scenario itself was built on: focus_test.xml seeds the
+    // epidemic at <delay>602</delay> with the annotation "seed at 2007". It is NOT
+    // the convention of <monthOf1990>, which scenarios set to 600 and which the
+    // shifted-outcomes output and InterpolateProportion() read as January 1990.
+    // The two disagree by seventeen years. Kept as is on purpose: moving FOCUS onto
+    // monthOf1990 would shift the whole program to months 924-1151, into a different
+    // phase of the simulated epidemic than its targets were set against. If the
+    // calendar is ever unified, it is monthOf1990 that is the outlier here.
     // if year 2007 is 600 then year 2017 is 600 + (10*12) = 720, 2018 = 732, 2019 = 744, 2020 = 756, 2021 = 768,
     // 2022 = 780, 2023 = 792, 2024 = 804, 2025 = 816, 2026 = 828, 2027 = 840, 2028 = 852, 2029 = 864,
     // 2030 = 876, 2031 = 888, 2032 = 900, 2033 = 912, 2034 = 924, 2035 = 936 (ends at 948)

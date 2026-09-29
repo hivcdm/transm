@@ -440,15 +440,27 @@ std::vector<Entity *> Population::FindMalePositives() {
     });
 }
     
+/* The four "Hispanic" FOCUS cohorts also reach people of Other race.
+ * The FOCUS source table has an Other-race column with no cohort of its own, and
+ * those counts are folded into the Hispanic targets (see the db_YearlyCounts
+ * comment in simulation.cpp). The targets alone are not enough: these finders
+ * used to test isHispanic() only, so the Hispanic cohorts were asked to screen
+ * Other-race counts while no Other-race person could ever be selected. Widening
+ * the finders makes the cohort reach the same people its target counts.
+ *
+ * This adds no overlap between cohorts. Other-race people match neither the
+ * Black finders (isBlack) nor the White ones (isWhite && !isHispanic), so a
+ * non-Hispanic person of Other race now sits in exactly one cohort instead of
+ * none; an Other-race Hispanic person was already in this one. */
 std::vector<Entity *> Population::FindHispanicMalesUndiagnosed() {
     return Find([](Entity *person) {
-        return person->isMale() && person->isInfected() && !person->isDetected() && person->isHispanic();
+        return person->isMale() && person->isInfected() && !person->isDetected() && (person->isHispanic() || person->isOtherRace());
     });
 }    
 
 std::vector<Entity *> Population::FindHispanicFemalesUndiagnosed() {
     return Find([](Entity *person) {
-        return !person->isMale() && person->isInfected() && !person->isDetected() && person->isHispanic();
+        return !person->isMale() && person->isInfected() && !person->isDetected() && (person->isHispanic() || person->isOtherRace());
     });
 }    
 
@@ -478,13 +490,13 @@ std::vector<Entity *> Population::FindWhiteFemalesUndiagnosed() {
 
 std::vector<Entity *> Population::FindHispanicMalesLossToFollowUp() {
     return Find([](Entity *person) {
-        return person->isMale() && person->isLTFU() && person->isHispanic();
+        return person->isMale() && person->isLTFU() && (person->isHispanic() || person->isOtherRace());
     });
 } 
 
 std::vector<Entity *> Population::FindHispanicFemalesLossToFollowUp() {
     return Find([](Entity *person) {
-        return !person->isMale() && person->isLTFU() && person->isHispanic();
+        return !person->isMale() && person->isLTFU() && (person->isHispanic() || person->isOtherRace());
     });
 } 
 
@@ -782,13 +794,13 @@ std::vector<int> Population::UpdateForFOCUSAnalysis(
         return actualScreenedPerGroup; // Return empty vector
     }
 
-    /* 3. Setup random number generators */
-    // Note: It's better to initialize the generator once and pass it,
-    // but this stays true to your original code's (and our new) structure.
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    // This distribution is for the probability check (e.g., "roll a die")
-    std::uniform_real_distribution<> probDist(0.0, 1.0);
+    /* 3. Randomness comes from the simulation's seeded stream (issue #96).
+     * This used to build a local std::mt19937 seeded from std::random_device,
+     * which ignores <fixedSeed>: two runs of the same scenario then disagreed,
+     * so no FOCUS-enabled run could be reproduced or regression-tested. Every
+     * other stochastic decision in the model already draws from
+     * eventParams.randomNums; FOCUS now does too. */
+    RandomNumberGenerator &rng = eventParams.randomNums;
 
     /* 4. Main Screening Logic */
 
@@ -818,13 +830,17 @@ std::vector<int> Population::UpdateForFOCUSAnalysis(
 
         // --- Randomly select 'numToScreen' individuals ---
 
-        // We shuffle the group list and just pick the first 'N' individuals.
-        // This is an efficient way to sample *without replacement*.
-        std::shuffle(currentGroup.begin(), currentGroup.end(), gen);
-
         // Determine the actual number to screen
         // (can't screen more than are in the group)
         int actualToScreen = std::min(numToScreen, (int)currentGroup.size());
+
+        // Sample without replacement with a partial Fisher-Yates: only the
+        // first actualToScreen slots need randomising, so this draws exactly
+        // actualToScreen numbers rather than shuffling the whole cohort.
+        for (int j = 0; j < actualToScreen; ++j) {
+            std::size_t r = (std::size_t)j + rng.chooseIndex(currentGroup.size() - (std::size_t)j);
+            std::swap(currentGroup[(std::size_t)j], currentGroup[r]);
+        }
         totalScreened += actualToScreen;
         actualScreenedPerGroup[i] = actualToScreen;  // Track for return
 
@@ -844,7 +860,7 @@ std::vector<int> Population::UpdateForFOCUSAnalysis(
 
             // "Roll the die": If the random number is less than the probability,
             // they become a FOCUS individual.
-            if (probDist(gen) < focusProb) {
+            if (rng.chance(focusProb)) {
 
                 // Mark entity as FOCUS and record in statistics
                 candidate->setFOCUS((int)i, currentMonth);
