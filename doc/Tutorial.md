@@ -55,7 +55,7 @@ Each `target` in the `targetRolloutProportion` section of the XML needs to be up
 
 ## Locating the Parameters in the code base
 
-The TRANSM code reads the XML file as input in a class called `simulationparameters` which is defined in the the [parameters](https://github.com/hsphcdm/transm/tree/master-v4/source/parameters) folder. The header file for this class declares a virtual function `GetCepacParameters()` which is implemented in class definition `simulationparametersxml.cpp`. As shown below, the function reads the `artRolloutIntervention` section of the XML including the  `targetRolloutProportions` node into the `target_yearly_rollout_proportions` which is an attribute of the [`CepacParameters`](https://github.com/hsphcdm/transm/blob/master-v4/source/parameters/parameterdefinitions.hpp) strucuture.
+The TRANSM code reads the XML file as input in a class called `simulationparameters` which is defined in the the [parameters](https://github.com/hivcdm/transm/tree/master-v4/source/parameters) folder. The header file for this class declares a virtual function `GetCepacParameters()` which is implemented in class definition `simulationparametersxml.cpp`. As shown below, the function reads the `artRolloutIntervention` section of the XML including the  `targetRolloutProportions` node into the `target_yearly_rollout_proportions` which is an attribute of the [`CepacParameters`](https://github.com/hivcdm/transm/blob/master-v4/source/parameters/parameterdefinitions.hpp) strucuture.
 
 ```
 struct CepacParameters
@@ -81,7 +81,7 @@ CepacParameters SimulationParametersXml::GetCepacParameters() const
 
 ## Modifying Parameters in the code base
 
-To add demographic distributions to the ART rollout parameter, the structure and parameteer input code must be updated to read and store an Entity Distribution which is a pair of a double and a [DemographicProfile](https://github.com/hsphcdm/transm/blob/master-v4/source/entities/demographicprofile.hpp). The `target_yearly_rollout_proportions` attribute is modified to receive the EntityDistribution and the function to read the parameter is updated to use the existing funciton `GetEntityDistribution()`. 
+To add demographic distributions to the ART rollout parameter, the structure and parameteer input code must be updated to read and store an Entity Distribution which is a pair of a double and a [DemographicProfile](https://github.com/hivcdm/transm/blob/master-v4/source/entities/demographicprofile.hpp). The `target_yearly_rollout_proportions` attribute is modified to receive the EntityDistribution and the function to read the parameter is updated to use the existing funciton `GetEntityDistribution()`. 
 
 ```
 struct CepacParameters

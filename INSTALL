@@ -34,14 +34,14 @@ Other external libraries are installed with the TRANSM:
 
   - CPEAC v4.4a (A Monte Carlo simulation model of the progression and outcomes of 
     HIV disease)
-    TRANSM repo: https://github.com/hsphcdm/cepac
+    TRANSM repo: https://github.com/hivcdm/cepac
     Original: https://www.massgeneral.org/medicine/mpec/research/cpac-model
   
   - tclap (A simple C++ library that facilitates parsing command line)
-    Forked in TRANSM repo: https://github.com/hsphcdm/tclap
+    Forked in TRANSM repo: https://github.com/hivcdm/tclap
     
   - pugixml (A C++ XML processing library)
-    Forked in TRANSM repo: https://github.com/hsphcdm/pugixml
+    Forked in TRANSM repo: https://github.com/hivcdm/pugixml
 
 Quick Start with TRANSM
 =======================

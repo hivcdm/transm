@@ -8,13 +8,13 @@ A typical run produces ~10 trace files plus several summary files in the same di
 
 | File | Source | Toggle |
 |---|---|---|
-| `<sim>-Population.xls` | [`Population::PrintPopulation`](https://github.com/hsphcdm/transm/blob/develop/src/core/population.cpp) | `<traceFiles><population enabled="true">` |
-| `<sim>-Infections.xls` | [`InfectionsTracker::printInfections`](https://github.com/hsphcdm/transm/blob/develop/src/statistics/infectionstracker.cpp#L452) | `<infection enabled="true">` |
+| `<sim>-Population.xls` | [`Population::PrintPopulation`](https://github.com/hivcdm/transm/blob/develop/src/core/population.cpp) | `<traceFiles><population enabled="true">` |
+| `<sim>-Infections.xls` | [`InfectionsTracker::printInfections`](https://github.com/hivcdm/transm/blob/develop/src/statistics/infectionstracker.cpp#L452) | `<infection enabled="true">` |
 | `<sim>-Partnership.xls` | `Population::PrintPartnerships` | `<partnership enabled="true">` |
 | `<sim>-Clinical.xls` | `Population::PrintClinical` | `<clinical enabled="true">` |
 | `<sim>-CalibStats.xls` | calibration tracker | `<calibrationStatistics enabled="true">` |
-| `<sim>-ARTRollout.xls` | [`ArtRolloutTracker`](https://github.com/hsphcdm/transm/blob/develop/src/statistics/artrollouttracker.cpp) | `<artRollout enabled="true">` |
-| `<sim>-PrepOutcomes.xls` | [`PrepTracker`](https://github.com/hsphcdm/transm/blob/develop/src/statistics/preptracker.cpp) | `<prepOutcomes enabled="true">` |
+| `<sim>-ARTRollout.xls` | [`ArtRolloutTracker`](https://github.com/hivcdm/transm/blob/develop/src/statistics/artrollouttracker.cpp) | `<artRollout enabled="true">` |
+| `<sim>-PrepOutcomes.xls` | [`PrepTracker`](https://github.com/hivcdm/transm/blob/develop/src/statistics/preptracker.cpp) | `<prepOutcomes enabled="true">` |
 | `<sim>-Survival.xls` | survival stats | `<survival enabled="true">` |
 | `<sim>-CE.xls` | cost-effectiveness | `<costEffectiveness enabled="true">` |
 | `<sim>-SinglePerson.xls` | single-person trace | `<singlePerson enabled="true">` |
@@ -23,7 +23,7 @@ A typical run produces ~10 trace files plus several summary files in the same di
 
 | File | Source | Toggle |
 |---|---|---|
-| `<sim>-PartnershipNetwork_<month>.graphml` | [`Network::Write`](https://github.com/hsphcdm/transm/blob/develop/src/statistics/partnernetwork.hpp) | `<partnerNetwork enabled="true">`, one file per `<time>` listed |
+| `<sim>-PartnershipNetwork_<month>.graphml` | [`Network::Write`](https://github.com/hivcdm/transm/blob/develop/src/statistics/partnernetwork.hpp) | `<partnerNetwork enabled="true">`, one file per `<time>` listed |
 
 ## End-of-run summary files
 
@@ -39,7 +39,7 @@ A typical run produces ~10 trace files plus several summary files in the same di
 
 A snapshot of the whole population and its live partnerships, written for every
 month listed under `<traceFiles><partnerNetwork>`. GraphML, undirected, produced
-by [`src/statistics/partnernetwork.hpp`](https://github.com/hsphcdm/transm/blob/develop/src/statistics/partnernetwork.hpp)
+by [`src/statistics/partnernetwork.hpp`](https://github.com/hivcdm/transm/blob/develop/src/statistics/partnernetwork.hpp)
 via Boost.Graph. Opens directly in Gephi; every attribute below shows up as a
 column in the Data Laboratory and can be used to partition, size or filter.
 
@@ -118,7 +118,7 @@ can be coloured with a single Gephi partition:
 | `3` | selected (recent) | selected within 12 months of the dump |
 
 The twelve cohorts and these codes are defined once, in
-[`src/entities/focusgroup.hpp`](https://github.com/hsphcdm/transm/blob/develop/src/entities/focusgroup.hpp).
+[`src/entities/focusgroup.hpp`](https://github.com/hivcdm/transm/blob/develop/src/entities/focusgroup.hpp).
 Eligibility for `focus_status` is the reason-and-race condition shared by the
 twelve `Population::Find*` predicates: an undiagnosed infection or a loss to
 follow up, in one of the three targeted race/ethnicity groups. Note the cohorts
@@ -212,11 +212,11 @@ The `New Infections` column is **monthly flow**. The cumulative `Male` / `Female
 
 ## ART rollout file
 
-`<sim>-ARTRollout.xls` has columns for HIV tests offered/accepted, eligible-for-access, accessing treatment, eligible-for-treatment (per CEPAC), and receiving treatment — broken down by demographic profile. Driven by [`ArtRolloutTracker`](https://github.com/hsphcdm/transm/blob/develop/src/statistics/artrollouttracker.cpp).
+`<sim>-ARTRollout.xls` has columns for HIV tests offered/accepted, eligible-for-access, accessing treatment, eligible-for-treatment (per CEPAC), and receiving treatment — broken down by demographic profile. Driven by [`ArtRolloutTracker`](https://github.com/hivcdm/transm/blob/develop/src/statistics/artrollouttracker.cpp).
 
 ## PrEP file
 
-`<sim>-PrepOutcomes.xls` reports PrEP prevalence, adherence levels, drop-off, and effective coverage by month. See [`PrepTracker`](https://github.com/hsphcdm/transm/blob/develop/src/statistics/preptracker.cpp).
+`<sim>-PrepOutcomes.xls` reports PrEP prevalence, adherence levels, drop-off, and effective coverage by month. See [`PrepTracker`](https://github.com/hivcdm/transm/blob/develop/src/statistics/preptracker.cpp).
 
 ## CalibStats file
 

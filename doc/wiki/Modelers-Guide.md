@@ -39,7 +39,7 @@ The simulation has **demographic profiles** that combine: gender × sexual orien
 </allowedRaceAndEthnicities>
 ```
 
-A note on race × ethnicity: these are **orthogonal** in the data model. "Hispanic" is an ethnicity, not a race. Code that filters on `isWhite()` was historically careless about this and matched white Hispanics; v4.8 added `!isHispanic()` guards in the right places (see `FindWhiteMales*` in [`population.cpp`](https://github.com/hsphcdm/transm/blob/develop/src/core/population.cpp)).
+A note on race × ethnicity: these are **orthogonal** in the data model. "Hispanic" is an ethnicity, not a race. Code that filters on `isWhite()` was historically careless about this and matched white Hispanics; v4.8 added `!isHispanic()` guards in the right places (see `FindWhiteMales*` in [`population.cpp`](https://github.com/hivcdm/transm/blob/develop/src/core/population.cpp)).
 
 ## Sexual behavior
 
@@ -94,7 +94,7 @@ Three race-specific knobs currently exist:
 
 | Knob | Type | Configurable via XML? | Where |
 |---|---|---|---|
-| Coital acts × race for Steady/Regular partnerships | hardcoded multipliers (5×, 0.33×, 1.33×) | **No** — hardcoded in [`male.cpp:524-541`](https://github.com/hsphcdm/transm/blob/develop/src/entities/male.cpp#L524) | Issue #91 — TODO to parameterize |
+| Coital acts × race for Steady/Regular partnerships | hardcoded multipliers (5×, 0.33×, 1.33×) | **No** — hardcoded in [`male.cpp:524-541`](https://github.com/hivcdm/transm/blob/develop/src/entities/male.cpp#L524) | Issue #91 — TODO to parameterize |
 | Condom-use × race | parameterized | **Yes** — `<multiplierCondomUseBlacks>` and `<multiplierCondomUseWhites>` | Issue #89 |
 | Race-ethnic assortativity | parameterized | **Yes** — `<assortivity>` block | Existing |
 

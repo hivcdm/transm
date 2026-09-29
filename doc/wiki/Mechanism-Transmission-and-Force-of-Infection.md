@@ -4,7 +4,7 @@ How a coital event becomes (or doesn't become) an HIV transmission. This is the 
 
 ## Per-month entry
 
-[`SexualPartnership::monthlySexualActivity`](https://github.com/hsphcdm/transm/blob/develop/src/entities/sexualpartnership.cpp#L110) is called once per partnership per month, by the male partner (the initiator).
+[`SexualPartnership::monthlySexualActivity`](https://github.com/hivcdm/transm/blob/develop/src/entities/sexualpartnership.cpp#L110) is called once per partnership per month, by the male partner (the initiator).
 
 ```cpp
 int eventsThisMonth = partners[0]->rollNumEventsPerPartner(partners[1], rng, type);
@@ -16,7 +16,7 @@ So the flow is: **decide how many acts → run them in a loop → return whoever
 
 ## Step 1 — number of coital acts
 
-[`Male::rollNumEventsPerPartner`](https://github.com/hsphcdm/transm/blob/develop/src/entities/male.cpp#L519) draws from a Poisson distribution with these modifications:
+[`Male::rollNumEventsPerPartner`](https://github.com/hivcdm/transm/blob/develop/src/entities/male.cpp#L519) draws from a Poisson distribution with these modifications:
 
 ```cpp
 double meanCoitalEvents = numActsPerMonth[type];
@@ -37,7 +37,7 @@ These multipliers are currently **hardcoded** with a TODO to expose them as XML 
 
 ## Step 2 — concordance check
 
-Inside [`Entity::sexualActivity`](https://github.com/hsphcdm/transm/blob/develop/src/entities/entity.cpp#L721), the very first thing checked:
+Inside [`Entity::sexualActivity`](https://github.com/hivcdm/transm/blob/develop/src/entities/entity.cpp#L721), the very first thing checked:
 
 ```cpp
 if (isInfected() == _p->isInfected()) {
@@ -82,7 +82,7 @@ return uninfected;       // signals the caller that this partner just got infect
 
 ### Male-to-female (and male-to-male)
 
-[`Male::getFOI`](https://github.com/hsphcdm/transm/blob/develop/src/entities/male.cpp#L345):
+[`Male::getFOI`](https://github.com/hivcdm/transm/blob/develop/src/entities/male.cpp#L345):
 
 ```cpp
 double chanceCondomUse = getCondomUseProb(_p, type);
@@ -117,7 +117,7 @@ Note for M→F: **circumcision does NOT apply in this direction**. The base `tra
 
 ### Female-to-male
 
-[`Female::getFOI`](https://github.com/hsphcdm/transm/blob/develop/src/entities/female.cpp#L155):
+[`Female::getFOI`](https://github.com/hivcdm/transm/blob/develop/src/entities/female.cpp#L155):
 
 ```cpp
 double condomUseProb = _p->getCondomUseProb(this, type);    // read from MALE partner
@@ -152,7 +152,7 @@ Each protective mechanism is a multiplicative reducer; they don't sum.
 
 ## Step 5 — what `becomeInfected` does
 
-When transmission fires, [`Entity::becomeInfected`](https://github.com/hsphcdm/transm/blob/develop/src/entities/entity.cpp#L266):
+When transmission fires, [`Entity::becomeInfected`](https://github.com/hivcdm/transm/blob/develop/src/entities/entity.cpp#L266):
 
 - Records `timeOfInfection` and `ageAtInfection`
 - Sets `generationOfInfection = infector_gen + 1`
@@ -163,7 +163,7 @@ The new state is durable — the entity carries it into all future months.
 
 ## Step 6 — recording the infection
 
-After `monthlySexualActivity` returns, the caller in [`Entity::allPartnerSexualActivity`](https://github.com/hsphcdm/transm/blob/develop/src/entities/entity.cpp#L196) appends the newly infected entity to `_newlyInfected`. Then in [`Population::UpdatePartnerships`](https://github.com/hsphcdm/transm/blob/develop/src/core/population.cpp#L653):
+After `monthlySexualActivity` returns, the caller in [`Entity::allPartnerSexualActivity`](https://github.com/hivcdm/transm/blob/develop/src/entities/entity.cpp#L196) appends the newly infected entity to `_newlyInfected`. Then in [`Population::UpdatePartnerships`](https://github.com/hivcdm/transm/blob/develop/src/core/population.cpp#L653):
 
 ```cpp
 populationStatistics.recordIncidentInfection(eventParams, currTime, type, wasInfected, wasUninfected);
@@ -174,7 +174,7 @@ This walks through:
 1. `PopulationStatisticsOld::recordIncidentInfection` — bumps survival stats, yearly counters
 2. `InfectionsTracker::recordIncidentInfection` — bumps every per-(HVL × age × gender × risk × employment × partnership-type) incident counter
 
-There used to be a few bugs in this last layer (parameter mix-up between infector and infected, an uninitialized `incidentInfsGender` array, and a `<isWhite>` filter that matched white-Hispanics). All fixed in v4.8 — see the [`infectionstracker.cpp` history](https://github.com/hsphcdm/transm/commits/develop/src/statistics/infectionstracker.cpp) for the gory detail.
+There used to be a few bugs in this last layer (parameter mix-up between infector and infected, an uninitialized `incidentInfsGender` array, and a `<isWhite>` filter that matched white-Hispanics). All fixed in v4.8 — see the [`infectionstracker.cpp` history](https://github.com/hivcdm/transm/commits/develop/src/statistics/infectionstracker.cpp) for the gory detail.
 
 ## Sanity-check invariants
 
@@ -190,9 +190,9 @@ If any of these invariants break, something is wrong with the counting; file an 
 
 | Change | File:line |
 |---|---|
-| Tune base transmission probabilities by HVL | XML `<transmissionCoefficients>` → parsed in [`simulationparametersxml.cpp`](https://github.com/hsphcdm/transm/blob/develop/src/parameters/simulationparametersxml.cpp) |
+| Tune base transmission probabilities by HVL | XML `<transmissionCoefficients>` → parsed in [`simulationparametersxml.cpp`](https://github.com/hivcdm/transm/blob/develop/src/parameters/simulationparametersxml.cpp) |
 | Adjust circumcision efficacy | `<circumProtectEff>` → applied in `Female::getFOI` |
 | Adjust condom efficacy | `<condomProtectEff>` → applied in both directions |
-| Adjust PrEP adherence multipliers | currently **hardcoded** at [`male.cpp:389-401`](https://github.com/hsphcdm/transm/blob/develop/src/entities/male.cpp#L389) and `female.cpp:184-197` — TODO to parameterize |
-| Race-specific coital act multipliers | currently **hardcoded** at [`male.cpp:524-541`](https://github.com/hsphcdm/transm/blob/develop/src/entities/male.cpp#L524) — TODO to parameterize (see Issue #91) |
+| Adjust PrEP adherence multipliers | currently **hardcoded** at [`male.cpp:389-401`](https://github.com/hivcdm/transm/blob/develop/src/entities/male.cpp#L389) and `female.cpp:184-197` — TODO to parameterize |
+| Race-specific coital act multipliers | currently **hardcoded** at [`male.cpp:524-541`](https://github.com/hivcdm/transm/blob/develop/src/entities/male.cpp#L524) — TODO to parameterize (see Issue #91) |
 | Race-specific condom-use multipliers | live, parameterized via `<multiplierCondomUseBlacks>` / `<multiplierCondomUseWhites>` (Issue #89) |

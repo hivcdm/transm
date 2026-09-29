@@ -626,7 +626,7 @@ For the full coupling story, see [CEPAC Integration](Mechanism-CEPAC-Integration
 - `<dynamicTreatmentScaling>` with `<feedbackPeriod>` — every N months, if actual coverage is below the target, the model increases the "eligible for access" pool. `-1` disables this feedback.
 - `<rolloutTreatmentFiles>` — each `<rolloutFile>` is a CEPAC `.in` file with a `<time>` when it activates and a `<popToApply>` (0 = untreated, 1 = treated, 2 = newly treated, -1 = none). When the time arrives, matching entities switch to this `SimContext`.
 - `<rolloutEligibility>` — criteria for ART eligibility (CD4, OI history, HVL). Configured with `<criteria>` blocks each holding multiple ranked criteria (see the `KnownIntervention::rolloutEligibility` section below). Can also be changed mid-simulation via a population intervention.
-- `<targetRolloutProportions>` — for each calendar year, the target proportion of eligible HIV+ entities on treatment. The `<demographicDistributions>` block stratifies the target across gender, orientation, race/ethnicity (see [Tutorial](https://github.com/hsphcdm/transm/blob/develop/doc/Tutorial.md)).
+- `<targetRolloutProportions>` — for each calendar year, the target proportion of eligible HIV+ entities on treatment. The `<demographicDistributions>` block stratifies the target across gender, orientation, race/ethnicity (see [Tutorial](https://github.com/hivcdm/transm/blob/develop/doc/Tutorial.md)).
 
 For ART rollout details, see [CEPAC Integration → ART rollout](Mechanism-CEPAC-Integration.md#art-rollout-switching-simcontexts).
 

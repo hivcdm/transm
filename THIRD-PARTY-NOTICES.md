@@ -23,11 +23,11 @@ repository.
 
 | Component | Source | License |
 |---|---|---|
-| rana | [hsphcdm/rana](https://github.com/hsphcdm/rana), fork of tfussell/rana | MIT |
-| TCLAP | [hsphcdm/tclap](https://github.com/hsphcdm/tclap), fork of evanmoran/tclap | MIT |
-| pugixml | [hsphcdm/pugixml](https://github.com/hsphcdm/pugixml), fork of zeux/pugixml | MIT |
+| rana | [hivcdm/rana](https://github.com/hivcdm/rana), fork of tfussell/rana | MIT |
+| TCLAP | [hivcdm/tclap](https://github.com/hivcdm/tclap), fork of evanmoran/tclap | MIT |
+| pugixml | [hivcdm/pugixml](https://github.com/hivcdm/pugixml), fork of zeux/pugixml | MIT |
 | GoogleTest | [google/googletest](https://github.com/google/googletest) — tests only | BSD-3-Clause |
-| CEPAC | [hsphcdm/cepac-transm](https://github.com/hsphcdm/cepac-transm) | licensed separately; not free software |
+| CEPAC | [hivcdm/cepac-transm](https://github.com/hivcdm/cepac-transm) | licensed separately; not free software |
 
 ## System libraries
 

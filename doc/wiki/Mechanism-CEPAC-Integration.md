@@ -1,24 +1,24 @@
 # Mechanism: CEPAC Integration
 
-How `transm` couples to [CEPAC](https://github.com/hsphcdm/cepac-transm) (the disease-progression model). Understanding this boundary is essential for anyone modifying disease state, ART rollout, or mortality.
+How `transm` couples to [CEPAC](https://github.com/hivcdm/cepac-transm) (the disease-progression model). Understanding this boundary is essential for anyone modifying disease state, ART rollout, or mortality.
 
 ## The split
 
 | | What it models | Where it lives |
 |---|---|---|
 | **transm** | Sexual partnerships, transmission, demographics, interventions, screening | This repo |
-| **CEPAC** | Per-patient disease progression (CD4, HVL, OIs), ART efficacy, mortality | Sister repo `hsphcdm/cepac-transm` |
+| **CEPAC** | Per-patient disease progression (CD4, HVL, OIs), ART efficacy, mortality | Sister repo `hivcdm/cepac-transm` |
 
 `transm` is the **outer loop**: it advances simulation time, manages the population, decides who has sex with whom, and rolls transmission dice. CEPAC is the **inner clinical engine**: each Entity carries a CEPAC `Patient`, and once a month transm hands control to CEPAC to advance that patient's clinical state.
 
 ## Build-time coupling
 
-CEPAC is a separate C++ project linked statically as `libcepac.a`. From [`CMakeLists.txt`](https://github.com/hsphcdm/transm/blob/develop/CMakeLists.txt#L101-L117):
+CEPAC is a separate C++ project linked statically as `libcepac.a`. From [`CMakeLists.txt`](https://github.com/hivcdm/transm/blob/develop/CMakeLists.txt#L101-L117):
 
 ```cmake
 ExternalProject_Add(
     cepac_project
-    GIT_REPOSITORY https://github.com/hsphcdm/cepac-transm.git
+    GIT_REPOSITORY https://github.com/hivcdm/cepac-transm.git
     GIT_TAG develop
     BUILD_COMMAND make
     INSTALL_COMMAND mv libcepac.a ${CMAKE_SOURCE_DIR}/lib/
@@ -30,7 +30,7 @@ set_property(TARGET cepac PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/lib/lib
 ```
 
 So at build time:
-1. Cepac source is cloned from `develop` of `hsphcdm/cepac-transm`.
+1. Cepac source is cloned from `develop` of `hivcdm/cepac-transm`.
 2. Cepac is built into `libcepac.a` and dropped into `transm/lib/`.
 3. Cepac's headers (`SimContext.h`, `Patient.h`, `RunStats.h`, etc.) are added to transm's include path.
 4. transm links against the static archive.
@@ -41,7 +41,7 @@ Implication: **any change to cepac-transm `develop` will be picked up the next t
 
 The user provides `--cepac <directory>` on the command line, and the XML's `<cepacIntervention>` and `<artRolloutIntervention>` sections name `.in` filenames inside that directory. Each `.in` file becomes one `SimContext` object.
 
-In [`Simulation::Run`](https://github.com/hsphcdm/transm/blob/develop/src/core/simulation.cpp), the lambda `load_context`:
+In [`Simulation::Run`](https://github.com/hivcdm/transm/blob/develop/src/core/simulation.cpp), the lambda `load_context`:
 
 ```cpp
 auto load_context = [](const std::string &file_name) {
@@ -54,14 +54,14 @@ auto load_context = [](const std::string &file_name) {
 
 This is invoked for each `.in` file. Where the resulting `SimContext*` ends up depends on whether ART rollout is enabled:
 
-- **Non-rollout** ([`simulation.cpp:986-991`](https://github.com/hsphcdm/transm/blob/develop/src/core/simulation.cpp#L986)): pushed onto `EventParams::cepacSimContexts` (a `vector<SimContext*>`).
-- **Rollout** ([`simulation.cpp:962-973`](https://github.com/hsphcdm/transm/blob/develop/src/core/simulation.cpp#L962)): the default file's context goes into `EventParams::untreatedContext`. Each additional file is wrapped in a `RolloutContext(time, simContext, popOfInterest)` and pushed onto `EventParams::rolloutSimContexts`.
+- **Non-rollout** ([`simulation.cpp:986-991`](https://github.com/hivcdm/transm/blob/develop/src/core/simulation.cpp#L986)): pushed onto `EventParams::cepacSimContexts` (a `vector<SimContext*>`).
+- **Rollout** ([`simulation.cpp:962-973`](https://github.com/hivcdm/transm/blob/develop/src/core/simulation.cpp#L962)): the default file's context goes into `EventParams::untreatedContext`. Each additional file is wrapped in a `RolloutContext(time, simContext, popOfInterest)` and pushed onto `EventParams::rolloutSimContexts`.
 
-A separate path, [`EventParams::LoadCepacContext`](https://github.com/hsphcdm/transm/blob/develop/src/parameters/eventparams.hpp#L222), is used by the targeted `<cepacContext>` intervention ([`simulationparametersxml.cpp:1700`](https://github.com/hsphcdm/transm/blob/develop/src/parameters/simulationparametersxml.cpp#L1700)). It maintains a cache (`cepac_file_context_map_`) so the same file is loaded only once.
+A separate path, [`EventParams::LoadCepacContext`](https://github.com/hivcdm/transm/blob/develop/src/parameters/eventparams.hpp#L222), is used by the targeted `<cepacContext>` intervention ([`simulationparametersxml.cpp:1700`](https://github.com/hivcdm/transm/blob/develop/src/parameters/simulationparametersxml.cpp#L1700)). It maintains a cache (`cepac_file_context_map_`) so the same file is loaded only once.
 
 ## Each Entity carries a `Patient`
 
-[`Entity`](https://github.com/hsphcdm/transm/blob/develop/src/entities/entity.hpp) holds a `Patient *cepacPatient`. When an entity becomes sexually active or becomes newly infected, transm:
+[`Entity`](https://github.com/hivcdm/transm/blob/develop/src/entities/entity.hpp) holds a `Patient *cepacPatient`. When an entity becomes sexually active or becomes newly infected, transm:
 
 1. Picks the appropriate `SimContext` via `getCEPACSimContextIndex()` (matches current sim time against `timesToSwitchSimContext`, plus rollout filters by population-of-interest)
 2. Constructs a CEPAC `Patient` — passing the chosen SimContext, the global `RunStats` / `CostStats` / `Tracer`, and the entity's age-in-months and gender
@@ -71,7 +71,7 @@ For an initially-infected entity, `applyPrevalentInfection` is the entry point. 
 
 ## The monthly CEPAC step
 
-Each month, for each living entity, transm calls into CEPAC to advance disease state. Inside [`Entity::updateHealthStatus`](https://github.com/hsphcdm/transm/blob/develop/src/entities/entity.cpp):
+Each month, for each living entity, transm calls into CEPAC to advance disease state. Inside [`Entity::updateHealthStatus`](https://github.com/hivcdm/transm/blob/develop/src/entities/entity.cpp):
 
 ```cpp
 cepacPatient->simulateMonth();      // CEPAC runs its full month: BeginMonth → CD4/HVL update
@@ -89,7 +89,7 @@ This is the **only** way transm knows the patient's CD4 and HVL. The next month'
 
 ## The HVL enum mapping problem
 
-CEPAC and transm have **different HVL stratifications**. CEPAC uses `SimContext::HVL_STRATA` with 7 values (VLO through VHI). Transm uses `HVLStrata` with 10 values (UNINFECTED, ZERO through SIX, plus PRIMARY and LATESTAGE). [`HvlFromCepacHvl`](https://github.com/hsphcdm/transm/blob/develop/src/entities/entity.cpp#L825) maps between them with a switch statement:
+CEPAC and transm have **different HVL stratifications**. CEPAC uses `SimContext::HVL_STRATA` with 7 values (VLO through VHI). Transm uses `HVLStrata` with 10 values (UNINFECTED, ZERO through SIX, plus PRIMARY and LATESTAGE). [`HvlFromCepacHvl`](https://github.com/hivcdm/transm/blob/develop/src/entities/entity.cpp#L825) maps between them with a switch statement:
 
 ```cpp
 case SimContext::HVL_VLO:  return HVLStrata::HVL_ZERO;
@@ -106,10 +106,10 @@ This mapping function is duplicated — manually — in several places in transm
 
 ## ART rollout: switching `SimContext`s
 
-When an ART rollout time arrives, transm switches an entity's CEPAC `SimContext` from "untreated" to "treated" (or to a more specialized rollout context). [`Population::ApplyRolloutContext`](https://github.com/hsphcdm/transm/blob/develop/src/core/population.cpp#L1523) walks through scheduled rollouts. For each rollout that fires, it:
+When an ART rollout time arrives, transm switches an entity's CEPAC `SimContext` from "untreated" to "treated" (or to a more specialized rollout context). [`Population::ApplyRolloutContext`](https://github.com/hivcdm/transm/blob/develop/src/core/population.cpp#L1523) walks through scheduled rollouts. For each rollout that fires, it:
 
 1. Selects the right `RolloutContext` based on (current time, popOfInterest)
-2. Reassigns `eventParams.untreatedContext` and/or `eventParams.treatedContext` to alias the new `SimContext` ([`population.cpp:1553-1651`](https://github.com/hsphcdm/transm/blob/develop/src/core/population.cpp#L1553))
+2. Reassigns `eventParams.untreatedContext` and/or `eventParams.treatedContext` to alias the new `SimContext` ([`population.cpp:1553-1651`](https://github.com/hivcdm/transm/blob/develop/src/core/population.cpp#L1553))
 3. Calls `entity->setSimContext(newContext)` on every entity matching the rollout's population-of-interest, which delegates to `cepacPatient->setSimContext(...)` and resets the patient's clinical parameters
 
 > **Bug history**: the v4.8 segfault at process exit was caused by `EventParams::~EventParams` trying to `delete` both `untreatedContext` and `treatedContext`, which after `ApplyRolloutContext` reassignments often pointed to the same `SimContext` (already owned by a `RolloutContext` in `rolloutSimContexts`). Fixed by making the destructor leak those aliased pointers — see the commit on `develop` after v4.8.0.
@@ -126,7 +126,7 @@ if (!cepacPatient->isAlive()) {
 }
 ```
 
-Once `death == true`, the entity is removed from sexually-active buckets and won't appear in any future partnership draws. Its existing partnerships are dissolved via the `_fromDeath` flag in [`Male::getPartnershipsToEnd`](https://github.com/hsphcdm/transm/blob/develop/src/entities/male.cpp#L658).
+Once `death == true`, the entity is removed from sexually-active buckets and won't appear in any future partnership draws. Its existing partnerships are dissolved via the `_fromDeath` flag in [`Male::getPartnershipsToEnd`](https://github.com/hivcdm/transm/blob/develop/src/entities/male.cpp#L658).
 
 ## Outputs
 
@@ -151,7 +151,7 @@ These produce `cepacPopstats.out`, `cepacRunStats`, etc. — the files familiar 
 | Disease progression doesn't match expectation | The CEPAC `.in` file — open it in your editor, check ART regimens, mortality tables, etc. |
 | Transmission probability is wrong | The `<transmissionCoefficients>` block in the XML, or the FOI formula in `Male::getFOI` / `Female::getFOI` |
 | Mortality is wrong for HIV-positive entities | CEPAC mortality logic — debug from the CEPAC side, transm just reads `isAlive()` |
-| Mortality is wrong for HIV-negative entities | The non-AIDS death table, parsed by [`CepacInputParser`](https://github.com/hsphcdm/transm/blob/develop/src/utility/cepacinputparser.cpp) from the same CEPAC `.in` file (transm reads them, CEPAC doesn't, in this codepath) |
+| Mortality is wrong for HIV-negative entities | The non-AIDS death table, parsed by [`CepacInputParser`](https://github.com/hivcdm/transm/blob/develop/src/utility/cepacinputparser.cpp) from the same CEPAC `.in` file (transm reads them, CEPAC doesn't, in this codepath) |
 | Crash at end of simulation | Probably the v4.8 double-free, fixed on develop. If on a newer build, paste the gdb backtrace and dig from there |
 | ART rollout times don't fire | `<targetRolloutProportions>` and the rollout time-switch logic in `Simulation::Run` |
 
