@@ -74,8 +74,12 @@ public:
         auto predicate = query_equal(BuildQueryIndices(query...));
         auto bucketIterator = std::find_if(counts_.begin(), counts_.end(), predicate);
         int sum = 0;
-        int countIndex = (int)std::distance(countNames_.begin(),
-            std::find(countNames_.begin(), countNames_.end(), count));
+        /* Same guard as Increment(): an unregistered name has no slot, and the
+         * index would otherwise run one past the end of every bucket's vector. */
+        auto name = std::find(countNames_.begin(), countNames_.end(), count);
+        if (name == countNames_.end())
+            return 0;
+        int countIndex = (int)std::distance(countNames_.begin(), name);
 
         while(bucketIterator != counts_.end())
         {
