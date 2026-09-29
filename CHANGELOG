@@ -11,6 +11,11 @@ A dynamic agent-based model for HIV transmission
 Unreleased
 ==========
 
+- The GitHub organization moved from hsphcdm to hivcdm. The repository is now
+  https://github.com/hivcdm/transm, and CMake fetches rana, TCLAP, pugixml and
+  cepac-transm from github.com/hivcdm. INSTALL, THIRD-PARTY-NOTICES.md and the
+  documentation links are updated to match.
+
 - The model is called TRANSM throughout. The alternative name "CEPAC Dynamic
   Model" (CDM) is removed from NOTICE, the --help text, source comments, the
   coding tutorial and the wiki title. Two output labels change with it: the

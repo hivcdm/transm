@@ -2,7 +2,7 @@
 
 `transm` is a stochastic, agent-based C++ simulation of sexual HIV transmission, coupled to the [CEPAC](https://www.massgeneral.org/medicine/mpec/research/cpac-model) disease-progression model. This wiki is the canonical reference for both the **science** of the model and the **code** that implements it.
 
-> **Current release: [v4.8.0](https://github.com/hsphcdm/transm/releases/tag/v4.8.0)** — see the [CHANGELOG](https://github.com/hsphcdm/transm/blob/develop/CHANGELOG) for what shipped.
+> **Current release: [v4.8.0](https://github.com/hivcdm/transm/releases/tag/v4.8.0)** — see the [CHANGELOG](https://github.com/hivcdm/transm/blob/develop/CHANGELOG) for what shipped.
 
 ---
 
@@ -44,7 +44,7 @@ The MIAMI calibration uses `focus_test.xml` as a representative configuration. C
 
 ## Conventions in this wiki
 
-- File and line citations look like [`src/core/population.cpp:653`](https://github.com/hsphcdm/transm/blob/develop/src/core/population.cpp#L653) — clickable on GitHub when accessed via `develop`.
-- "Per-month time step" means one iteration of the main simulation loop in [`src/core/simulation.cpp`](https://github.com/hsphcdm/transm/blob/develop/src/core/simulation.cpp).
-- "CEPAC" means the disease-progression model in the sister repo [`hsphcdm/cepac-transm`](https://github.com/hsphcdm/cepac-transm), linked statically as `libcepac.a`.
-- When we say "Entity" we mean a simulated person — `Entity`, `Male`, or `Female` in [`src/entities/`](https://github.com/hsphcdm/transm/tree/develop/src/entities).
+- File and line citations look like [`src/core/population.cpp:653`](https://github.com/hivcdm/transm/blob/develop/src/core/population.cpp#L653) — clickable on GitHub when accessed via `develop`.
+- "Per-month time step" means one iteration of the main simulation loop in [`src/core/simulation.cpp`](https://github.com/hivcdm/transm/blob/develop/src/core/simulation.cpp).
+- "CEPAC" means the disease-progression model in the sister repo [`hivcdm/cepac-transm`](https://github.com/hivcdm/cepac-transm), linked statically as `libcepac.a`.
+- When we say "Entity" we mean a simulated person — `Entity`, `Male`, or `Female` in [`src/entities/`](https://github.com/hivcdm/transm/tree/develop/src/entities).

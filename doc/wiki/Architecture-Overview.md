@@ -54,19 +54,19 @@ transm/
 
 | Class | File | What it owns |
 |---|---|---|
-| `Simulation` | [`core/simulation.cpp`](https://github.com/hsphcdm/transm/blob/develop/src/core/simulation.cpp) | Scenario lifecycle: load XML, set up CEPAC, run the monthly loop, emit outputs |
-| `Population` | [`core/population.cpp`](https://github.com/hsphcdm/transm/blob/develop/src/core/population.cpp) | All entities, partnership formation/dissolution, FOCUS screening, applies interventions |
-| `Entity` / `Male` / `Female` | [`entities/`](https://github.com/hsphcdm/transm/tree/develop/src/entities) | One simulated person; carries a CEPAC `Patient` |
-| `SexualPartnership` | [`entities/sexualpartnership.cpp`](https://github.com/hsphcdm/transm/blob/develop/src/entities/sexualpartnership.cpp) | A pair of entities + type, formation/dissolution time |
-| `EventParams` | [`parameters/eventparams.hpp`](https://github.com/hsphcdm/transm/blob/develop/src/parameters/eventparams.hpp) | Per-month state passed everywhere: clock, RNG, CEPAC contexts, trace file streams |
-| `InfectionsTracker` | [`statistics/infectionstracker.cpp`](https://github.com/hsphcdm/transm/blob/develop/src/statistics/infectionstracker.cpp) | All incident and prevalent infection counters |
-| `BucketSexualMixing` | [`entitypool/bucketsexualmixing.cpp`](https://github.com/hsphcdm/transm/blob/develop/src/entitypool/bucketsexualmixing.cpp) | Indexes entities by demographic profile + age for fast partner draws |
+| `Simulation` | [`core/simulation.cpp`](https://github.com/hivcdm/transm/blob/develop/src/core/simulation.cpp) | Scenario lifecycle: load XML, set up CEPAC, run the monthly loop, emit outputs |
+| `Population` | [`core/population.cpp`](https://github.com/hivcdm/transm/blob/develop/src/core/population.cpp) | All entities, partnership formation/dissolution, FOCUS screening, applies interventions |
+| `Entity` / `Male` / `Female` | [`entities/`](https://github.com/hivcdm/transm/tree/develop/src/entities) | One simulated person; carries a CEPAC `Patient` |
+| `SexualPartnership` | [`entities/sexualpartnership.cpp`](https://github.com/hivcdm/transm/blob/develop/src/entities/sexualpartnership.cpp) | A pair of entities + type, formation/dissolution time |
+| `EventParams` | [`parameters/eventparams.hpp`](https://github.com/hivcdm/transm/blob/develop/src/parameters/eventparams.hpp) | Per-month state passed everywhere: clock, RNG, CEPAC contexts, trace file streams |
+| `InfectionsTracker` | [`statistics/infectionstracker.cpp`](https://github.com/hivcdm/transm/blob/develop/src/statistics/infectionstracker.cpp) | All incident and prevalent infection counters |
+| `BucketSexualMixing` | [`entitypool/bucketsexualmixing.cpp`](https://github.com/hivcdm/transm/blob/develop/src/entitypool/bucketsexualmixing.cpp) | Indexes entities by demographic profile + age for fast partner draws |
 
 ## End-to-end flow of a simulation
 
-1. **Startup**: `main()` in [`transm.cpp`](https://github.com/hsphcdm/transm/blob/develop/src/transm.cpp) parses CLI flags, calls `run_simulation(xml_path, cepac_dir, focus)`.
-2. **XML parse**: [`SimulationParametersXml`](https://github.com/hsphcdm/transm/blob/develop/src/parameters/simulationparametersxml.cpp) walks `focus_test.xml` and constructs `SimulationParameters` (population sizes, age distributions, transmission coefficients, partnership behavior, interventions, …).
-3. **CEPAC contexts loaded**: [`Simulation::Run`](https://github.com/hsphcdm/transm/blob/develop/src/core/simulation.cpp) instantiates one `SimContext` per CEPAC `.in` file referenced by the XML. Stored in `EventParams::cepacSimContexts` (non-rollout) or `EventParams::rolloutSimContexts` (rollout mode).
+1. **Startup**: `main()` in [`transm.cpp`](https://github.com/hivcdm/transm/blob/develop/src/transm.cpp) parses CLI flags, calls `run_simulation(xml_path, cepac_dir, focus)`.
+2. **XML parse**: [`SimulationParametersXml`](https://github.com/hivcdm/transm/blob/develop/src/parameters/simulationparametersxml.cpp) walks `focus_test.xml` and constructs `SimulationParameters` (population sizes, age distributions, transmission coefficients, partnership behavior, interventions, …).
+3. **CEPAC contexts loaded**: [`Simulation::Run`](https://github.com/hivcdm/transm/blob/develop/src/core/simulation.cpp) instantiates one `SimContext` per CEPAC `.in` file referenced by the XML. Stored in `EventParams::cepacSimContexts` (non-rollout) or `EventParams::rolloutSimContexts` (rollout mode).
 4. **Population built**: `Population` allocates `Entity` objects per the initial age/gender/risk distributions; each is given a CEPAC `Patient`.
 5. **Monthly loop**: For each month from 0 to `<duration>` (in months):
    - Age every entity one month

@@ -25,20 +25,20 @@ See [Build and Run](Build-and-Run.md) for the prerequisites. The first build clo
 
 | If you're touching… | Start here |
 |---|---|
-| Partnership logic | [`src/entities/male.cpp`](https://github.com/hsphcdm/transm/blob/develop/src/entities/male.cpp), [`src/core/population.cpp`](https://github.com/hsphcdm/transm/blob/develop/src/core/population.cpp) `UpdatePartnerships` & `CreatePartnerships` |
-| Transmission probability | `Male::getFOI`, `Female::getFOI`, the FOI block in [`src/entities/entity.cpp`](https://github.com/hsphcdm/transm/blob/develop/src/entities/entity.cpp#L721) |
-| Adding a new XML parameter | [`src/parameters/simulationparametersxml.cpp`](https://github.com/hsphcdm/transm/blob/develop/src/parameters/simulationparametersxml.cpp) — find the section that parses similar parameters; copy the pattern |
+| Partnership logic | [`src/entities/male.cpp`](https://github.com/hivcdm/transm/blob/develop/src/entities/male.cpp), [`src/core/population.cpp`](https://github.com/hivcdm/transm/blob/develop/src/core/population.cpp) `UpdatePartnerships` & `CreatePartnerships` |
+| Transmission probability | `Male::getFOI`, `Female::getFOI`, the FOI block in [`src/entities/entity.cpp`](https://github.com/hivcdm/transm/blob/develop/src/entities/entity.cpp#L721) |
+| Adding a new XML parameter | [`src/parameters/simulationparametersxml.cpp`](https://github.com/hivcdm/transm/blob/develop/src/parameters/simulationparametersxml.cpp) — find the section that parses similar parameters; copy the pattern |
 | Adding a new intervention | `KnownIntervention` enum + the giant switch in `simulationparametersxml.cpp` (search for `KnownIntervention::CepacContext` for an example) |
-| Adding a new output column | The relevant tracker file in [`src/statistics/`](https://github.com/hsphcdm/transm/tree/develop/src/statistics) — increment a counter in `recordIncidentInfection`, add a header line, add an output line in `printInfections` (or its sibling) |
-| CEPAC interaction | `Entity::cepacPatient` in [`src/entities/entity.hpp`](https://github.com/hsphcdm/transm/blob/develop/src/entities/entity.hpp) and the CEPAC headers in `cepac-transm/src/` |
-| Random numbers | [`src/utility/randomnumbergenerator.hpp`](https://github.com/hsphcdm/transm/blob/develop/src/utility/randomnumbergenerator.hpp) — wrappers over `std::mt19937` |
+| Adding a new output column | The relevant tracker file in [`src/statistics/`](https://github.com/hivcdm/transm/tree/develop/src/statistics) — increment a counter in `recordIncidentInfection`, add a header line, add an output line in `printInfections` (or its sibling) |
+| CEPAC interaction | `Entity::cepacPatient` in [`src/entities/entity.hpp`](https://github.com/hivcdm/transm/blob/develop/src/entities/entity.hpp) and the CEPAC headers in `cepac-transm/src/` |
+| Random numbers | [`src/utility/randomnumbergenerator.hpp`](https://github.com/hivcdm/transm/blob/develop/src/utility/randomnumbergenerator.hpp) — wrappers over `std::mt19937` |
 
 ## Worked example: adding a new parameter
 
 Suppose you want a new XML parameter `<myMultiplier>` under `<populationParameters>` that gets used somewhere in `Male::getFOI`. The 5-step recipe:
 
-1. **Declare it** as a member of [`PopulationParameters`](https://github.com/hsphcdm/transm/blob/develop/src/parameters/populationparameters.hpp).
-2. **Parse it** in [`simulationparametersxml.cpp`](https://github.com/hsphcdm/transm/blob/develop/src/parameters/simulationparametersxml.cpp) — find `GetPopulationParameters` and add `Text<double>(node.child("myMultiplier"))` next to similar-shaped params.
+1. **Declare it** as a member of [`PopulationParameters`](https://github.com/hivcdm/transm/blob/develop/src/parameters/populationparameters.hpp).
+2. **Parse it** in [`simulationparametersxml.cpp`](https://github.com/hivcdm/transm/blob/develop/src/parameters/simulationparametersxml.cpp) — find `GetPopulationParameters` and add `Text<double>(node.child("myMultiplier"))` next to similar-shaped params.
 3. **Plumb access** with a getter on `PopulationParameters` (`double getMyMultiplier() const { return myMultiplier_; }`).
 4. **Use it** in `Male::getFOI`. Multiply into the formula at the appropriate place.
 5. **Document it** — update the [Input XML Reference](Input-XML-Reference.md) page.
@@ -49,7 +49,7 @@ If you're adding it as an intervention (changeable mid-simulation), there's also
 
 Suppose you want a new "Cumulative Incident MSM" column in the `Infections.xls` trace.
 
-1. **Add a counter** to [`InfectionsTracker`](https://github.com/hsphcdm/transm/blob/develop/src/statistics/infectionstracker.hpp). Default-initialize it: `OrientationArray<std::size_t> totalIncidentInfsOrientation_msmOnly{};` (note the `{}` — see [v4.8 lessons](#v48-lessons-learned)).
+1. **Add a counter** to [`InfectionsTracker`](https://github.com/hivcdm/transm/blob/develop/src/statistics/infectionstracker.hpp). Default-initialize it: `OrientationArray<std::size_t> totalIncidentInfsOrientation_msmOnly{};` (note the `{}` — see [v4.8 lessons](#v48-lessons-learned)).
 2. **Increment it** inside `InfectionsTracker::recordIncidentInfection` when `infectedOrientation == Msm`.
 3. **Reset it** in `Initialize()` (cumulative — never reset) or `resetIncidentInfections` (monthly — reset each month). Match the lifecycle to similar counters.
 4. **Add the header** in `printInfections` for time 0 — the firstRow/secondRow/thirdRow stream additions.

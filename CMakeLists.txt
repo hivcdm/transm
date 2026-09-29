@@ -55,7 +55,7 @@ include_directories(${SQLITE3_INCLUDE_DIRS})
 ExternalProject_Add(
 	rana_project 
 	PREFIX ${CMAKE_BINARY_DIR}/third-party
-	GIT_REPOSITORY https://github.com/hsphcdm/rana.git
+	GIT_REPOSITORY https://github.com/hivcdm/rana.git
 	CONFIGURE_COMMAND ""
 	BUILD_COMMAND ""
     INSTALL_COMMAND ""
@@ -70,7 +70,7 @@ ExternalProject_Add(
 	tclap_project 
 	DEPENDS rana_project
 	PREFIX ${CMAKE_BINARY_DIR}/third-party
-	GIT_REPOSITORY https://github.com/hsphcdm/tclap.git
+	GIT_REPOSITORY https://github.com/hivcdm/tclap.git
 	CONFIGURE_COMMAND ""
 	BUILD_COMMAND ""
     INSTALL_COMMAND ""
@@ -84,7 +84,7 @@ include_directories(${source_dir}/include)
 ExternalProject_Add(
 	pugixml_project
 	PREFIX ${CMAKE_BINARY_DIR}/third-party
-	GIT_REPOSITORY https://github.com/hsphcdm/pugixml.git
+	GIT_REPOSITORY https://github.com/hivcdm/pugixml.git
 	CONFIGURE_COMMAND cmake -DCMAKE_BUILD_TYPE=Release ../pugixml_project
     BUILD_COMMAND make pugixml
     INSTALL_COMMAND mv libpugixml.a ${CMAKE_SOURCE_DIR}/lib
@@ -101,7 +101,7 @@ add_dependencies(pugixml pugixml_project)
 ExternalProject_Add(
 	cepac_project 
 	PREFIX ${CMAKE_BINARY_DIR}/third-party
-	GIT_REPOSITORY https://github.com/hsphcdm/cepac-transm.git
+	GIT_REPOSITORY https://github.com/hivcdm/cepac-transm.git
 	GIT_TAG develop
 	UPDATE_COMMAND ""
 	CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

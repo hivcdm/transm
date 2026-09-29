@@ -6,12 +6,12 @@
 - CMake ≥ 3.14
 - A C++17 compiler (GCC 9+ recommended)
 - `libsqlite3-dev`, `libboost-dev` (header-only Boost is fine)
-- Network access at first build — CMake's `ExternalProject_Add` clones [`hsphcdm/cepac-transm`](https://github.com/hsphcdm/cepac-transm), [`pugixml`](https://github.com/hsphcdm/pugixml), and a couple of other deps from GitHub.
+- Network access at first build — CMake's `ExternalProject_Add` clones [`hivcdm/cepac-transm`](https://github.com/hivcdm/cepac-transm), [`pugixml`](https://github.com/hivcdm/pugixml), and a couple of other deps from GitHub.
 
 ## First build
 
 ```bash
-git clone git@github.com:hsphcdm/transm.git
+git clone git@github.com:hivcdm/transm.git
 cd transm
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
@@ -37,18 +37,18 @@ A monthly progress bar prints. Outputs land alongside the input XML, named `<sim
 ## Common flags
 
 - `--cepac <dir>` — directory containing the CEPAC `.in` files referenced by the XML.
-- `--focus` — enable the FOCUS screening module (set in [`EventParams::focusEnabled`](https://github.com/hsphcdm/transm/blob/develop/src/parameters/eventparams.hpp#L170)).
-- See the source of [`transm.cpp`](https://github.com/hsphcdm/transm/blob/develop/src/transm.cpp) for the full CLI.
+- `--focus` — enable the FOCUS screening module (set in [`EventParams::focusEnabled`](https://github.com/hivcdm/transm/blob/develop/src/parameters/eventparams.hpp#L170)).
+- See the source of [`transm.cpp`](https://github.com/hivcdm/transm/blob/develop/src/transm.cpp) for the full CLI.
 
 ## Versioning
 
-`VERSION` is the source of truth. CMake reads it at configure time and regenerates [`src/utility/version.h`](https://github.com/hsphcdm/transm/blob/develop/src/utility/version.h) via `version_header.sh`. Bumping `VERSION` and reconfiguring is the right way to cut a new release.
+`VERSION` is the source of truth. CMake reads it at configure time and regenerates [`src/utility/version.h`](https://github.com/hivcdm/transm/blob/develop/src/utility/version.h) via `version_header.sh`. Bumping `VERSION` and reconfiguring is the right way to cut a new release.
 
 ## Troubleshooting
 
 **`fatal: could not read Username for 'https://github.com'` during build** — git's credential helper is misconfigured (often a stale `gh` path). Easiest workaround: configure the remotes (transm and cepac-transm) to use SSH:
 ```bash
-git remote set-url origin git@github.com:hsphcdm/transm.git
+git remote set-url origin git@github.com:hivcdm/transm.git
 ```
 
 **Build fails on cepac source** — the CMake `ExternalProject_Add(cepac_project)` re-clones cepac on every configure. If the clone failed (e.g. offline) but you have the cepac source locally, copy `/path/to/cepac-transm/src` into `build/third-party/src/cepac_project/src` and re-run `make`.

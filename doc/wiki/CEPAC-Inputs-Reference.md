@@ -1,6 +1,6 @@
 # CEPAC Inputs Reference
 
-> **Status: stub.** This page documents the CEPAC `.in` files from transm's perspective — what transm reads, when, and which subset matters for transmission. For complete CEPAC `.in` file documentation, see [`hsphcdm/cepac-transm`](https://github.com/hsphcdm/cepac-transm).
+> **Status: stub.** This page documents the CEPAC `.in` files from transm's perspective — what transm reads, when, and which subset matters for transmission. For complete CEPAC `.in` file documentation, see [`hivcdm/cepac-transm`](https://github.com/hivcdm/cepac-transm).
 
 ## What is a CEPAC `.in` file?
 
@@ -33,7 +33,7 @@ Naming convention is calibration-specific.
 
 For each `.in` file referenced in the XML's `<cepacIntervention>` or `<artRolloutIntervention>` blocks, transm:
 
-1. Constructs a `SimContext(filename_without_extension)` ([`simulation.cpp:945`](https://github.com/hsphcdm/transm/blob/develop/src/core/simulation.cpp#L945))
+1. Constructs a `SimContext(filename_without_extension)` ([`simulation.cpp:945`](https://github.com/hivcdm/transm/blob/develop/src/core/simulation.cpp#L945))
 2. Calls `context->readInputs()` to parse the file into the `SimContext` object
 3. Stores the resulting `SimContext*` in either `cepacSimContexts` (non-rollout) or `rolloutSimContexts` (rollout)
 
@@ -45,7 +45,7 @@ CEPAC owns most of the `.in` data — it's only consumed inside CEPAC's clinical
 
 | Section in `.in` | Consumed by | Used for |
 |---|---|---|
-| Non-AIDS death probabilities (male & female) | [`CepacInputParser`](https://github.com/hsphcdm/transm/blob/develop/src/utility/cepacinputparser.cpp) | Background mortality table for HIV-negative entities |
+| Non-AIDS death probabilities (male & female) | [`CepacInputParser`](https://github.com/hivcdm/transm/blob/develop/src/utility/cepacinputparser.cpp) | Background mortality table for HIV-negative entities |
 | Discount factor | `Utility::computeCepacDiscountFactor` | Cost discounting in CE-related outputs |
 | `runSpecsInputs->discountFactor` | rollout context | Cost calculations |
 | Everything else (CD4/HVL transitions, ART, OIs, ...) | CEPAC, internally | Per-patient disease state, mortality |
