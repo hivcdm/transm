@@ -16,6 +16,11 @@ namespace transm {
  * convention, it only gives the existing one a name. Do NOT reorder these
  * without updating every one of those tables.
  *
+ * Calendar: the module treats simulation month 600 as January 2007, which is
+ * what the scenario's epidemic seed assumes but not what <monthOf1990> says.
+ * See the CALENDAR CONVENTION note in Simulation's FOCUS block before changing
+ * any FOCUS month number.
+ *
  * Note that the cohorts are targeted, not partitioned: the Population::Find*
  * predicates test race with isHispanic()/isBlack()/isWhite() independently, so
  * a Black Hispanic person is reachable through both the Hispanic and the Black
