@@ -246,7 +246,7 @@ void Entity::seedInfection(int _generationOfInfection, EventParams &_eventParams
 
     hvl = HVLStrata::HVL_PRIMARY; // From InitHVL in cepac.in file
     cd4 = -1; // will get updated below
-    ageInfected = age; // Calc from cdm.xml file
+    ageInfected = age; // Calc from the scenario XML file
 
     generationOfInfection = _generationOfInfection;
 

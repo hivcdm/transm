@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 
     try
     {
-        std::string program_description = "CEPAC Dynamic Model is an "
+        std::string program_description = "TRANSM is an "
             "individual-based simulation of HIV transmission. For more info, "
             "see the User Guide or \"Development, Calibration and Performance "
             "of an HIV Transmission Model Incorporating Natural History and "

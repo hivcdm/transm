@@ -197,7 +197,7 @@ add_custom_target(cppcheck
     COMMAND -rm -rf CPPCHECK
     COMMAND mkdir CPPCHECK
     COMMAND cppcheck --enable=all --force -I${source_dir} --std=c++11 ${CMAKE_SOURCE_DIR}
-			 --xml-version=2 --xml -q 2>CPPCHECK/cdm_cppcheck.xml
-    COMMAND cppcheck-htmlreport --title=cdm --file=CPPCHECK/cdm_cppcheck.xml --report=CPPCHECK
+			 --xml-version=2 --xml -q 2>CPPCHECK/transm_cppcheck.xml
+    COMMAND cppcheck-htmlreport --title=transm --file=CPPCHECK/transm_cppcheck.xml --report=CPPCHECK
 )
 set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES CPPCHECK) 

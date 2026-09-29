@@ -11,6 +11,49 @@ A dynamic agent-based model for HIV transmission
 Unreleased
 ==========
 
+- The model is called TRANSM throughout. The alternative name "CEPAC Dynamic
+  Model" (CDM) is removed from NOTICE, the --help text, source comments, the
+  coding tutorial and the wiki title. Two output labels change with it: the
+  "CDM" column in <sim>-InterventionOutcomes.xls is now "TRANSM", and the
+  costs header "CDM Costs" is now "TRANSM Costs". Numbers in the output are unchanged.
+  Internal identifiers such as cdm_costs are left as they are.
+
+- Licensed under the GNU General Public License v3.0 or later. LICENSE holds
+  the unmodified GPL text. NOTICE carries the copyright lines (Vanderbilt
+  University Medical Center 2024-2026, Harvard School of Public Health
+  2014-2023), a section 7 additional permission to link with CEPAC, which is
+  licensed separately, and a section 7(b) attribution term.
+  THIRD-PARTY-NOTICES.md lists the licenses of the vendored CMake modules, the
+  dependencies fetched at build time and the system libraries.
+
+- FOCUS selection now draws from the seeded simulation RNG (issue #96).
+  UpdateForFOCUSAnalysis seeded its own generator from std::random_device,
+  which ignores <fixedSeed>, so FOCUS runs could not be reproduced. With a
+  fixed seed, FOCUS-enabled runs are now identical from run to run. This
+  changes FOCUS-enabled results relative to any earlier run; --focus off
+  output is byte-identical to before.
+
+- The Hispanic FOCUS cohorts now also reach people of Other race. Their
+  targets already included the source table's Other-race counts, but the
+  finders tested isHispanic() only, so no Other-race person could be selected.
+  Adds Entity::isOtherRace(). Changes FOCUS-enabled results only.
+
+- Documented the FOCUS calendar convention (simulation month 600 = January
+  2007), which differs from <monthOf1990>. Kept deliberately, to match how the
+  FOCUS scenarios were built. Comments only.
+
+- Fixed an out-of-bounds write in BucketCounter. Incrementing an outcome that
+  was never registered wrote one element past the end of the counts vector.
+  ArtRolloutTracker did this every month, which occasionally corrupted the
+  heap and caused an intermittent segfault at exit. Output is unchanged.
+
+- Fixed a segfault at simulation end in rollout mode: untreatedContext and
+  treatedContext could alias the same SimContext and were both deleted.
+
+- Added doc/wiki/, an in-repo wiki: build and run, architecture, modeler and
+  developer guides, input XML, CEPAC input and output references, and
+  deep dives on partnership formation, transmission and CEPAC integration.
+
 - FOCUS flags and care-continuum attributes added to the partnership network
   GraphML export, so FOCUS can be inspected in Gephi.
 

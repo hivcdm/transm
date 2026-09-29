@@ -36,7 +36,7 @@ namespace transm {
         First = UNINFECTED
 	};
 
-    /** Tracking every Entity's HIV status in CDM */
+    /** Tracking every Entity's HIV status in TRANSM */
 	enum class HIVStatus
 	{
 		NEGATIVE, /* HIV negative */

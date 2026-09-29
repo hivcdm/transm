@@ -1841,7 +1841,7 @@ double InterpolateProportion(const std::map<int, double> &yearly_proportions, Ti
  *
  * When DTS is enabled, we artificially increase the number of treatment slots
  * by a "correction factor". This correction factor is the ratio of the treatment
- * pool size in CDM over the number of people being treated in CEPAC (which will
+ * pool size in TRANSM over the number of people being treated in CEPAC (which will
  * always be greater than one). In this way we force the actual treatment proportion
  * closer to the value given as a parameter.
  *
