@@ -1,0 +1,52 @@
+TRANSM (also known as the CEPAC Dynamic Model)
+An agent-based model of HIV transmission.
+
+Copyright (C) 2024-2026 Vanderbilt University Medical Center
+Copyright (C) 2014-2023 Harvard School of Public Health
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program, in the file LICENSE.  If not, see
+    <https://www.gnu.org/licenses/>.
+
+
+Additional permission under GNU GPL version 3 section 7
+
+    If you modify this Program, or any covered work, by linking or combining
+    it with the CEPAC library (or a modified version of that library),
+    containing parts covered by the terms of the CEPAC license, the licensors
+    of this Program grant you additional permission to convey the resulting
+    work.
+
+  TRANSM links against CEPAC, which is licensed separately and is not free
+  software. Without this permission, the GPL would forbid distributing any
+  compiled copy of TRANSM, because the source of the whole program could not
+  be provided under the GPL. The wording is the Free Software Foundation's
+  template for this situation. The FSF's optional clause requiring the
+  library's source to accompany binaries is omitted, as the FSF advises when
+  not everyone can distribute that library's source.
+
+
+Additional terms under GNU GPL version 3 section 7(b)
+
+    You must preserve the copyright notices and author attributions in this
+    file, and include them in the Appropriate Legal Notices displayed by any
+    work that contains TRANSM or a modified version of it.
+
+
+Citation
+
+  If you use TRANSM in published work, please cite it. This is a request,
+  not a condition of the license.
+
+
+Third-party components keep their own licenses. See THIRD-PARTY-NOTICES.md.

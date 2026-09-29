@@ -13,9 +13,9 @@
  
 The TRANSM is a stochastic, agent-based C++ model designed to simulate the sexual transmission of HIV infection, providing crucial insights for global HIV prevention leaders and policymakers.
 
-   * For building instructions, refer to the [INSTALL](https://github.com/hsphcdm/transm/blob/Issue42/INSTALL) file. 
+   * For building instructions, refer to the [INSTALL](INSTALL) file. 
    
-   * Copyright and licensing information are available in the [LICENSE](https://github.com/hsphcdm/transm/blob/Issue42/LICENSE) file.
+   * TRANSM is free software, licensed under the [GNU General Public License v3.0 or later](LICENSE). See [NOTICE](NOTICE) for copyright and the additional permission for linking with CEPAC, and [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) for components under their own licenses.
 
 As of 2022, the TRANSM has been adapted to address key questions in MIAMI and is in preparation for adaptation to other U.S. cities (previously applied to South Africa and Botswana in 2018). This expansive and innovative model incorporates the best available data from prevention studies, HIV epidemiology, and treatment, featuring male and female agents representing individuals with varying sexual activity and HIV infection statuses.
 
