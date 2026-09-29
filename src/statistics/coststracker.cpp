@@ -139,7 +139,7 @@ void CostsTracker::BuildHeader()
 
 		SetHeaderCell(column, 2, "Costs");
 		SetHeaderCell(column++, 4, "Overall");
-		SetHeaderCell(column, 2, "CDM Costs");
+		SetHeaderCell(column, 2, "TRANSM Costs");
 		SetHeaderCell(column++, 4, "Total");
 		SetHeaderCell(column++, 4, "Circumcision");
 		SetHeaderCell(column++, 4, "Condoms");

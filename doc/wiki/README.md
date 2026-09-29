@@ -1,4 +1,4 @@
-# transm — HIV-CDM Transmission Model Wiki
+# TRANSM Wiki
 
 `transm` is a stochastic, agent-based C++ simulation of sexual HIV transmission, coupled to the [CEPAC](https://www.massgeneral.org/medicine/mpec/research/cpac-model) disease-progression model. This wiki is the canonical reference for both the **science** of the model and the **code** that implements it.
 

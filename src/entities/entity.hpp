@@ -101,7 +101,7 @@ public:
 
     /**
      *  the CEPAC death table has stats for 0-100 years old.
-     *  people automatically die at this age in the dynamic model */
+     *  people automatically die at this age in TRANSM */
     const static int maxYrForDeathStats = 101;
 
     /* contains probabilities of nonAIDS-death, read from CEPAC .in file */

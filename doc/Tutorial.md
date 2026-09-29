@@ -1,12 +1,12 @@
-# CDM Coding Tutorial
+# TRANSM Coding Tutorial
 
-In this tutorial covers basic coding practices of the CDM through an example of adding demographic distirbutions to an exisiting input. A major intervention in the fight against HIV/AIDS is anti-retroviral therapy (ART). The CDM includes an intervention for modelling the rollout of ART in the population of study. In most locations, ART resources were or are still limited and increasing access to treatment will be key to reducing incidence and prevalence of the disease.
+In this tutorial covers basic coding practices of TRANSM through an example of adding demographic distirbutions to an exisiting input. A major intervention in the fight against HIV/AIDS is anti-retroviral therapy (ART). TRANSM includes an intervention for modelling the rollout of ART in the population of study. In most locations, ART resources were or are still limited and increasing access to treatment will be key to reducing incidence and prevalence of the disease.
 
 New additions to the population demographics in the model allow us to vary ART access across age, gender, sexual orientation, race and ethnicity within the study population. This tutorial covers the inputs and code areas required to enable researchers to specify ART access across these demographics. 
 
 ## Adding Demographic Distributions to Target Rollout Proportions
 
-The CDM takes input parameters and variables from an XML file. For this tutorial we will focus on the [Interventions](https://wiki.harvard.edu/confluence/display/k95973/Input+Sheet+Walkthrough+v4.5) section of the XML. The current XML for ART access is under the ART Intervention:
+TRANSM takes input parameters and variables from an XML file. For this tutorial we will focus on the [Interventions](https://wiki.harvard.edu/confluence/display/k95973/Input+Sheet+Walkthrough+v4.5) section of the XML. The current XML for ART access is under the ART Intervention:
 
 ```
 <simulation version="4.5">
@@ -55,7 +55,7 @@ Each `target` in the `targetRolloutProportion` section of the XML needs to be up
 
 ## Locating the Parameters in the code base
 
-The CDM code reads the XML file as input in a class called `simulationparameters` which is defined in the the [parameters](https://github.com/hsphcdm/transm/tree/master-v4/source/parameters) folder. The header file for this class declares a virtual function `GetCepacParameters()` which is implemented in class definition `simulationparametersxml.cpp`. As shown below, the function reads the `artRolloutIntervention` section of the XML including the  `targetRolloutProportions` node into the `target_yearly_rollout_proportions` which is an attribute of the [`CepacParameters`](https://github.com/hsphcdm/transm/blob/master-v4/source/parameters/parameterdefinitions.hpp) strucuture.
+The TRANSM code reads the XML file as input in a class called `simulationparameters` which is defined in the the [parameters](https://github.com/hsphcdm/transm/tree/master-v4/source/parameters) folder. The header file for this class declares a virtual function `GetCepacParameters()` which is implemented in class definition `simulationparametersxml.cpp`. As shown below, the function reads the `artRolloutIntervention` section of the XML including the  `targetRolloutProportions` node into the `target_yearly_rollout_proportions` which is an attribute of the [`CepacParameters`](https://github.com/hsphcdm/transm/blob/master-v4/source/parameters/parameterdefinitions.hpp) strucuture.
 
 ```
 struct CepacParameters
