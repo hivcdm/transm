@@ -1,9 +1,12 @@
 #include <gtest/gtest.h>
+#include <cstdio>
+
+#include "statistics/partnernetwork.hpp"
 
 #include "entities/female.hpp"
 #include "entities/male.hpp"
 
-using namespace transm;
+namespace transm {
 
 namespace {
 
@@ -133,3 +136,73 @@ TEST(FemaleParametersTest, RejectionChancesAreZeroAndIndependentlyAddressable)
     EXPECT_DOUBLE_EQ(person.GetPartnershipRejectionChance(RiskLevel::HIGH, SexualPartnership::Type::Steady), 0.0);
     EXPECT_THROW(person.GetPartnershipRejectionChance(RiskLevel::Last, SexualPartnership::Type::Steady), std::out_of_range);
 }
+
+
+namespace {
+
+class NetworkTestPerson : public Female
+{
+public:
+    using Female::Female;
+
+    int rollForNewPartnershipDuration(SexualPartnership::Type, RandomNumberGenerator &, Entity *) override
+    {
+        return 12;
+    }
+};
+
+} // namespace
+
+TEST(NetworkTest, KeepsIsolatesParallelEdgesAndFocusAttributes)
+{
+    EventParams events;
+    events.currTime = Time::from_months(720);
+    Female::SubPopParams defaults;
+    PrepParameters prep;
+    DemographicProfile profile;
+    profile.parse("SA:FEMALE:MSW:SINGLE:NON_CSW:WHITE:NON_HISPANIC");
+    NetworkTestPerson first(events, Age(25, 0), profile, 0, defaults, prep);
+    NetworkTestPerson second(events, Age(25, 0), profile, 0, defaults, prep);
+    NetworkTestPerson isolate(events, Age(25, 0), profile, 0, defaults, prep);
+    first.recordFOCUSScreening(0);
+    SexualPartnership one(&first, &second, events, SexualPartnership::Type::Regular);
+    SexualPartnership two(&first, &second, events, SexualPartnership::Type::Regular);
+
+    Network network(720);
+    network.AddIsolatedEntity(&first);
+    network.AddIsolatedEntity(&second);
+    network.AddIsolatedEntity(&isolate);
+    network.UpdatePartnership(&first, &second, &one);
+    network.UpdatePartnership(&second, &first, &one);
+    network.UpdatePartnership(&first, &second, &two);
+    network.UpdatePartnership(&second, &first, &two);
+    const std::string prefix = testing::TempDir() + "transm-memory-test-";
+    const std::string filename = prefix + "PartnershipNetwork_720.graphml";
+    network.SetFilenamePrefix(prefix);
+    network.Write();
+
+    pugi::xml_document document;
+    ASSERT_TRUE(document.load_file(filename.c_str()));
+    EXPECT_EQ(document.select_nodes("/graphml/graph/node").size(), 3u);
+    EXPECT_EQ(document.select_nodes("/graphml/graph/edge").size(), 2u);
+    auto value = [&](const char *node, const char *name) {
+        std::string key_query = std::string("/graphml/key[@attr.name='") + name + "']";
+        std::string key = document.select_node(key_query.c_str()).node().attribute("id").value();
+        std::string query = std::string("/graphml/graph/node[@id='") + node + "']/data[@key='" + key + "']";
+        return std::string(document.select_node(query.c_str()).node().child_value());
+    };
+    EXPECT_EQ(value("n0", "focus_screened"), "1");
+    EXPECT_EQ(value("n0", "focus_screen_count"), "1");
+    EXPECT_EQ(value("n0", "is_isolate"), "0");
+    EXPECT_EQ(value("n2", "is_isolate"), "1");
+    EXPECT_EQ(value("n1", "focus_screened"), "0");
+
+    // A second write must refresh attributes, even when the topology is unchanged.
+    first.recordFOCUSScreening(0);
+    network.Write();
+    ASSERT_TRUE(document.load_file(filename.c_str()));
+    EXPECT_EQ(value("n0", "focus_screen_count"), "2");
+    EXPECT_EQ(std::remove(filename.c_str()), 0);
+}
+
+} // namespace transm

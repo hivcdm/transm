@@ -8,6 +8,7 @@
 
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graphml.hpp>
+#include <boost/property_map/function_property_map.hpp>
 
 #include "entities/entitytypes.hpp"
 #include "entities/entity.hpp"
@@ -74,15 +75,30 @@ class Network {
         int focus_edge; /* endpoints ever selected by FOCUS: 0, 1 or 2 */
     };
 
-    /* Adjacency List */
+    struct EntityReference
+    {
+        transm::Entity *entity;
+    };
+
+    struct PartnershipReference
+    {
+        transm::Entity *entity;
+        transm::Entity *partner;
+        transm::SexualPartnership *partnership;
+    };
+
+    /* Keep topology and references only. Attributes are read while writing,
+     * while the population and partnerships are still alive and unchanged. */
     typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS,
-                                  EntityVertex, PartnershipEdge> Graph;
+                                  EntityReference, PartnershipReference> Graph;
     typedef boost::graph_traits<Graph>::vertex_descriptor vertex_t;
     typedef boost::graph_traits<Graph>::vertex_iterator vertex_iter_t;
     typedef boost::graph_traits<Graph>::edge_descriptor edge_t;
 
-    void AddEntity(vertex_t entity_vertex, transm::Entity *entity)
+    EntityVertex ReadEntity(vertex_t vertex) const
     {
+        transm::Entity *entity = G[vertex].entity;
+        EntityVertex attributes;
         auto gender = entity->getDemographicProfileVal<transm::DemographicProfile::Gender>();
         auto orientation = entity->getDemographicProfileVal<transm::DemographicProfile::SexualOrientation>();
         auto race = entity->getDemographicProfileVal<transm::DemographicProfile::Race>();
@@ -99,47 +115,51 @@ class Network {
 
         int focus_group = entity->getFOCUSGroup();
 
-        G[entity_vertex].id = entity->getID();
-        G[entity_vertex].gender = (int)gender;
-        G[entity_vertex].orientation = (int)orientation;
-        G[entity_vertex].race = (int)race;
-        G[entity_vertex].ethnicity = (int)ethnicity;
-        G[entity_vertex].demo_profile = demo_profile;
-        G[entity_vertex].race_eth = race_eth;
-        G[entity_vertex].is_CSW = entity->isCSW();
-        G[entity_vertex].risk_level = (bool)entity->getRiskLevel();
-        G[entity_vertex].hiv_pos = hiv_pos;
-        G[entity_vertex].on_prep = on_PrEP;
-        G[entity_vertex].on_ART = on_ART;
-        G[entity_vertex].viral_load = viral_load;
-        G[entity_vertex].hiv_composite = (!on_PrEP) ? viral_load : -1;
+        attributes.id = entity->getID();
+        attributes.gender = (int)gender;
+        attributes.orientation = (int)orientation;
+        attributes.race = (int)race;
+        attributes.ethnicity = (int)ethnicity;
+        attributes.demo_profile = demo_profile;
+        attributes.race_eth = race_eth;
+        attributes.is_CSW = entity->isCSW();
+        attributes.risk_level = (bool)entity->getRiskLevel();
+        attributes.hiv_pos = hiv_pos;
+        attributes.on_prep = on_PrEP;
+        attributes.on_ART = on_ART;
+        attributes.viral_load = viral_load;
+        attributes.hiv_composite = (!on_PrEP) ? viral_load : -1;
 
-        G[entity_vertex].detected = entity->isDetected();
-        G[entity_vertex].linked = entity->isLinked();
-        G[entity_vertex].in_care = entity->isInCare();
-        G[entity_vertex].ltfu = entity->isLTFU();
-        G[entity_vertex].rtc = entity->isRTC();
-        G[entity_vertex].care_state = entity->getCareState();
+        attributes.detected = entity->isDetected();
+        attributes.linked = entity->isLinked();
+        attributes.in_care = entity->isInCare();
+        attributes.ltfu = entity->isLTFU();
+        attributes.rtc = entity->isRTC();
+        attributes.care_state = entity->getCareState();
 
-        G[entity_vertex].focus_selected = entity->wasSelectedForFOCUS();
-        G[entity_vertex].focus_screened = entity->wasScreenedByFOCUS();
-        G[entity_vertex].focus_month = entity->getFOCUSMonthFirstSelected();
-        G[entity_vertex].focus_month_last = entity->getFOCUSMonthLastSelected();
-        G[entity_vertex].months_since_focus = entity->getMonthsSinceFOCUS(month_);
-        G[entity_vertex].focus_group = focus_group;
-        G[entity_vertex].focus_group_str = transm::focusGroupStr(focus_group);
-        G[entity_vertex].focus_reason = transm::focusGroupReason(focus_group);
-        G[entity_vertex].focus_select_count = entity->getFOCUSSelectCount();
-        G[entity_vertex].focus_screen_count = entity->getFOCUSScreenCount();
-        G[entity_vertex].focus_status = entity->getFOCUSStatus(month_);
+        attributes.focus_selected = entity->wasSelectedForFOCUS();
+        attributes.focus_screened = entity->wasScreenedByFOCUS();
+        attributes.focus_month = entity->getFOCUSMonthFirstSelected();
+        attributes.focus_month_last = entity->getFOCUSMonthLastSelected();
+        attributes.months_since_focus = entity->getMonthsSinceFOCUS(month_);
+        attributes.focus_group = focus_group;
+        attributes.focus_group_str = transm::focusGroupStr(focus_group);
+        attributes.focus_reason = transm::focusGroupReason(focus_group);
+        attributes.focus_select_count = entity->getFOCUSSelectCount();
+        attributes.focus_screen_count = entity->getFOCUSScreenCount();
+        attributes.focus_status = entity->getFOCUSStatus(month_);
 
-        /* Corrected in Write() once every edge is in place */
-        G[entity_vertex].is_isolate = true;
+        attributes.is_isolate = (boost::degree(vertex, G) == 0);
+        return attributes;
     }
 
-    void AddPartnership(edge_t partnership_edge, transm::Entity *entity, transm::Entity *partner,
-        transm::SexualPartnership *partnership)
+    PartnershipEdge ReadPartnership(edge_t edge) const
     {
+        const auto &reference = G[edge];
+        auto *entity = reference.entity;
+        auto *partner = reference.partner;
+        auto *partnership = reference.partnership;
+        PartnershipEdge attributes;
         std::string entity_gender =  entity->getEntityType();
         std::string partner_gender = partner->getEntityType();
 
@@ -149,16 +169,17 @@ class Network {
         int time_of_formation = (int)partnership->getTimeOfFormation().in_months();
         int time_of_dissolution = (int)partnership->getTimeOfDissolution().in_months();
 
-        G[partnership_edge].type = (int)partnership->getType();
-        G[partnership_edge].start = time_of_formation;
-        G[partnership_edge].end = time_of_dissolution;
-        G[partnership_edge].duration = time_of_dissolution - time_of_formation;
-        G[partnership_edge].gender_to_gender = entity_gender + "+" + partner_gender;
-        G[partnership_edge].sero_pos = (int)entity_hiv_pos + (int)partner_hiv_pos;
+        attributes.type = (int)partnership->getType();
+        attributes.start = time_of_formation;
+        attributes.end = time_of_dissolution;
+        attributes.duration = time_of_dissolution - time_of_formation;
+        attributes.gender_to_gender = entity_gender + "+" + partner_gender;
+        attributes.sero_pos = (int)entity_hiv_pos + (int)partner_hiv_pos;
         /* Same shape as sero_pos, so the two can be crossed to ask whether
          * FOCUS is reaching the serodiscordant edges */
-        G[partnership_edge].focus_edge = (int)entity->wasSelectedForFOCUS() +
+        attributes.focus_edge = (int)entity->wasSelectedForFOCUS() +
                                          (int)partner->wasSelectedForFOCUS();
+        return attributes;
     }
 
     /** Find this entity's vertex, creating and populating it on first sight.
@@ -173,9 +194,35 @@ class Network {
             return it->second;
 
         vertex_t entity_vertex = add_vertex(G);
-        AddEntity(entity_vertex, entity);
+        G[entity_vertex].entity = entity;
         vertex_index_[id] = entity_vertex;
         return entity_vertex;
+    }
+
+    template<typename Value>
+    auto VertexProperty(Value EntityVertex::*member)
+    {
+        return boost::make_function_property_map<vertex_t>([this, member](vertex_t vertex) {
+            if (!have_vertex_attributes_ || vertex != cached_vertex_) {
+                vertex_attributes_ = ReadEntity(vertex);
+                cached_vertex_ = vertex;
+                have_vertex_attributes_ = true;
+            }
+            return vertex_attributes_.*member;
+        });
+    }
+
+    template<typename Value>
+    auto EdgeProperty(Value PartnershipEdge::*member)
+    {
+        return boost::make_function_property_map<edge_t>([this, member](edge_t edge) {
+            if (!have_edge_attributes_ || edge != cached_edge_) {
+                edge_attributes_ = ReadPartnership(edge);
+                cached_edge_ = edge;
+                have_edge_attributes_ = true;
+            }
+            return edge_attributes_.*member;
+        });
     }
 
 public:
@@ -214,67 +261,67 @@ public:
         bool inserted;
         boost::tie(partnership_edge, inserted) = add_edge(entity_vertex,
             partner_vertex, G);
-        AddPartnership(partnership_edge, entity, partner, partnership);
+        G[partnership_edge] = {entity, partner, partnership};
     }
 
     void Write()
     {
-        /* Now that every edge is in, mark the entities with no partnerships so
-         * they can be filtered back out in Gephi if they are in the way */
-        vertex_iter_t vi, vi_end;
-        for (boost::tie(vi, vi_end) = boost::vertices(G); vi != vi_end; ++vi)
-            G[*vi].is_isolate = (boost::degree(*vi, G) == 0);
+        /* Boost visits all properties of one row together. Cache just that
+         * row so strings are formatted once, without retaining a second copy
+         * of the population's attributes for the whole export. */
+        have_vertex_attributes_ = false;
+        have_edge_attributes_ = false;
 
         boost::dynamic_properties dp;
 
         /* node properties */
-        dp.property("id", get(&EntityVertex::id, G));
-        dp.property("gender", get(&EntityVertex::gender, G));
-        dp.property("orientation", get(&EntityVertex::orientation, G));
-        dp.property("race", get(&EntityVertex::race, G));
-        dp.property("ethnicity", get(&EntityVertex::ethnicity, G));
-        dp.property("race_eth", get(&EntityVertex::race_eth, G));
-        dp.property("demo_profile", get(&EntityVertex::demo_profile, G));
-        dp.property("is_CSW", get(&EntityVertex::is_CSW, G));
-        dp.property("hiv_pos", get(&EntityVertex::hiv_pos, G));
-        dp.property("on_prep", get(&EntityVertex::on_prep, G));
-        dp.property("on_ART", get(&EntityVertex::on_ART, G));
-        dp.property("risk_level", get(&EntityVertex::risk_level, G));
-        dp.property("viral_load", get(&EntityVertex::viral_load, G));
-        dp.property("hiv_composite", get(&EntityVertex::hiv_composite, G));
+        dp.property("id", VertexProperty(&EntityVertex::id));
+        dp.property("gender", VertexProperty(&EntityVertex::gender));
+        dp.property("orientation", VertexProperty(&EntityVertex::orientation));
+        dp.property("race", VertexProperty(&EntityVertex::race));
+        dp.property("ethnicity", VertexProperty(&EntityVertex::ethnicity));
+        dp.property("race_eth", VertexProperty(&EntityVertex::race_eth));
+        dp.property("demo_profile", VertexProperty(&EntityVertex::demo_profile));
+        dp.property("is_CSW", VertexProperty(&EntityVertex::is_CSW));
+        dp.property("hiv_pos", VertexProperty(&EntityVertex::hiv_pos));
+        dp.property("on_prep", VertexProperty(&EntityVertex::on_prep));
+        dp.property("on_ART", VertexProperty(&EntityVertex::on_ART));
+        dp.property("risk_level", VertexProperty(&EntityVertex::risk_level));
+        dp.property("viral_load", VertexProperty(&EntityVertex::viral_load));
+        dp.property("hiv_composite", VertexProperty(&EntityVertex::hiv_composite));
 
         /* node properties - care continuum */
-        dp.property("detected", get(&EntityVertex::detected, G));
-        dp.property("linked", get(&EntityVertex::linked, G));
-        dp.property("in_care", get(&EntityVertex::in_care, G));
-        dp.property("ltfu", get(&EntityVertex::ltfu, G));
-        dp.property("rtc", get(&EntityVertex::rtc, G));
-        dp.property("care_state", get(&EntityVertex::care_state, G));
+        dp.property("detected", VertexProperty(&EntityVertex::detected));
+        dp.property("linked", VertexProperty(&EntityVertex::linked));
+        dp.property("in_care", VertexProperty(&EntityVertex::in_care));
+        dp.property("ltfu", VertexProperty(&EntityVertex::ltfu));
+        dp.property("rtc", VertexProperty(&EntityVertex::rtc));
+        dp.property("care_state", VertexProperty(&EntityVertex::care_state));
 
         /* node properties - FOCUS */
-        dp.property("focus_selected", get(&EntityVertex::focus_selected, G));
-        dp.property("focus_screened", get(&EntityVertex::focus_screened, G));
-        dp.property("focus_month", get(&EntityVertex::focus_month, G));
-        dp.property("focus_month_last", get(&EntityVertex::focus_month_last, G));
-        dp.property("months_since_focus", get(&EntityVertex::months_since_focus, G));
-        dp.property("focus_group", get(&EntityVertex::focus_group, G));
-        dp.property("focus_group_str", get(&EntityVertex::focus_group_str, G));
-        dp.property("focus_reason", get(&EntityVertex::focus_reason, G));
-        dp.property("focus_select_count", get(&EntityVertex::focus_select_count, G));
-        dp.property("focus_screen_count", get(&EntityVertex::focus_screen_count, G));
-        dp.property("focus_status", get(&EntityVertex::focus_status, G));
+        dp.property("focus_selected", VertexProperty(&EntityVertex::focus_selected));
+        dp.property("focus_screened", VertexProperty(&EntityVertex::focus_screened));
+        dp.property("focus_month", VertexProperty(&EntityVertex::focus_month));
+        dp.property("focus_month_last", VertexProperty(&EntityVertex::focus_month_last));
+        dp.property("months_since_focus", VertexProperty(&EntityVertex::months_since_focus));
+        dp.property("focus_group", VertexProperty(&EntityVertex::focus_group));
+        dp.property("focus_group_str", VertexProperty(&EntityVertex::focus_group_str));
+        dp.property("focus_reason", VertexProperty(&EntityVertex::focus_reason));
+        dp.property("focus_select_count", VertexProperty(&EntityVertex::focus_select_count));
+        dp.property("focus_screen_count", VertexProperty(&EntityVertex::focus_screen_count));
+        dp.property("focus_status", VertexProperty(&EntityVertex::focus_status));
 
         /* node properties - structural */
-        dp.property("is_isolate", get(&EntityVertex::is_isolate, G));
+        dp.property("is_isolate", VertexProperty(&EntityVertex::is_isolate));
 
         /* edge properties */
-        dp.property("type", get(&PartnershipEdge::type, G));
-        dp.property("start", get(&PartnershipEdge::start, G));
-        dp.property("end", get(&PartnershipEdge::end, G));
-        dp.property("duration", get(&PartnershipEdge::duration, G));
-        dp.property("genders", get(&PartnershipEdge::gender_to_gender, G));
-        dp.property("sero_pos", get(&PartnershipEdge::sero_pos, G));
-        dp.property("focus_edge", get(&PartnershipEdge::focus_edge, G));
+        dp.property("type", EdgeProperty(&PartnershipEdge::type));
+        dp.property("start", EdgeProperty(&PartnershipEdge::start));
+        dp.property("end", EdgeProperty(&PartnershipEdge::end));
+        dp.property("duration", EdgeProperty(&PartnershipEdge::duration));
+        dp.property("genders", EdgeProperty(&PartnershipEdge::gender_to_gender));
+        dp.property("sero_pos", EdgeProperty(&PartnershipEdge::sero_pos));
+        dp.property("focus_edge", EdgeProperty(&PartnershipEdge::focus_edge));
 
         std::string filename = prefix_ + "PartnershipNetwork_" + std::to_string(month_) + ".graphml";
         std::ofstream ofs(filename);
@@ -288,6 +335,12 @@ public:
 
 private:
     Graph G;
+    EntityVertex vertex_attributes_;
+    PartnershipEdge edge_attributes_;
+    vertex_t cached_vertex_{};
+    edge_t cached_edge_{};
+    bool have_vertex_attributes_ = false;
+    bool have_edge_attributes_ = false;
 
     /** simulation month of this snapshot */
     int month_;
