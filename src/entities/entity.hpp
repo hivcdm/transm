@@ -464,10 +464,10 @@ public:
 
     /**
      * @function: getFVindices
-     * @arguments: none
+     * @arguments: FullVector* FV
      * @effects: none
-     * @return: copy of this.FVindices */
-    std::vector<unsigned int> getFVindices(FullVector *FV);
+     * @return: reference to indices for FV, valid until membership changes */
+    const std::vector<unsigned int> &getFVindices(FullVector *FV) const;
 
     /**
      * @function: getRiskLevel

@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <iostream>
 #include <list>
@@ -766,7 +767,9 @@ std::vector<int> Population::UpdateForFOCUSAnalysis(
     std::vector<int> actualScreenedPerGroup(FocusGroupCount, 0);
 
     /* 1. Define the groups, in FocusGroup order (see focusgroup.hpp) */
-    std::vector<std::vector<Entity *>> groups = {
+    /* Aggregate initialization moves each cohort vector into its slot. Keep
+     * all cohorts as a snapshot before screening changes any eligibility. */
+    std::array<std::vector<Entity *>, FocusGroupCount> groups = {{
         FindHispanicMalesUndiagnosed(),
         FindHispanicFemalesUndiagnosed(),
         FindBlackMalesUndiagnosed(),
@@ -779,7 +782,7 @@ std::vector<int> Population::UpdateForFOCUSAnalysis(
         FindBlackFemalesLossToFollowUp(),
         FindWhiteMalesLossToFollowUp(),
         FindWhiteFemalesLossToFollowUp()
-    };
+    }};
 
     /* 2. Validate input sizes. groupNames is checked too: it is now the shared
      * schema, and every entity we touch is stamped with an index into it. */

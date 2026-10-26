@@ -151,6 +151,14 @@ public:
     }
 };
 
+class MembershipTestPerson : public Female
+{
+public:
+    using Female::Female;
+
+    bool HasMemberships() const { return !FVindices.empty(); }
+};
+
 } // namespace
 
 TEST(NetworkTest, KeepsIsolatesParallelEdgesAndFocusAttributes)
@@ -203,6 +211,36 @@ TEST(NetworkTest, KeepsIsolatesParallelEdgesAndFocusAttributes)
     ASSERT_TRUE(document.load_file(filename.c_str()));
     EXPECT_EQ(value("n0", "focus_screen_count"), "2");
     EXPECT_EQ(std::remove(filename.c_str()), 0);
+}
+
+TEST(FullVectorTest, MissingLookupsDoNotInsertAndRemovalKeepsReverseIndices)
+{
+    EventParams events;
+    Female::SubPopParams defaults;
+    PrepParameters prep;
+    DemographicProfile profile;
+    profile.set(DemographicProfile::Demographic::Gender,
+                (std::size_t)DemographicProfile::Gender::Female);
+    MembershipTestPerson first(events, Age(25, 0), profile, 0, defaults, prep);
+    MembershipTestPerson second(events, Age(25, 0), profile, 0, defaults, prep);
+    FullVector members;
+    FullVector absent;
+    EXPECT_TRUE(first.getFVindices(&absent).empty());
+    EXPECT_FALSE(absent.exists(&first));
+    EXPECT_FALSE(first.HasMemberships());
+
+    members.push_back(&first);
+    members.push_back(&second);
+    members.push_back(&first);
+    EXPECT_EQ(first.getFVindices(&members), (std::vector<unsigned int>{0, 2}));
+    EXPECT_TRUE(members.remove(&first));
+    ASSERT_EQ(members.size(), 1);
+    EXPECT_EQ(members[0], &second);
+    EXPECT_EQ(second.getFVindices(&members), (std::vector<unsigned int>{0}));
+    EXPECT_TRUE(first.getFVindices(&members).empty());
+    EXPECT_FALSE(first.HasMemberships());
+    EXPECT_EQ(members.selectout(0), &second);
+    EXPECT_FALSE(second.HasMemberships());
 }
 
 } // namespace transm

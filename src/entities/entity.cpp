@@ -1540,9 +1540,9 @@ bool Entity::memberFVindices(int index, FullVector *FV) {
     auto mIter = FVindices.find(FV);
 
     if (mIter != FVindices.end()) {
-        auto FVindex = mIter->second;
+        const auto &FVindex = mIter->second;
 
-        for (unsigned int & iter : FVindex) {
+        for (unsigned int iter : FVindex) {
             if (static_cast<int>(iter) == index) {
                 return true;
             }
@@ -1552,21 +1552,12 @@ bool Entity::memberFVindices(int index, FullVector *FV) {
     return false;
 }
 
-//XXX: lots of passing vectors by value around here, check on performance!
-/* @function: getFVindices
- * @arguments: none
- * @effects: none
- * @return: copy of this.FVindices
- */
-std::vector<unsigned int> Entity::getFVindices(FullVector *FV) {
-    std::vector<unsigned int> vcopy;
-    std::vector<unsigned int> personsIndices = FVindices[FV];
-
-    if (!personsIndices.empty()) {
-        vcopy.assign(personsIndices.begin(), personsIndices.end());
-    }
-
-    return vcopy;
+/* Read-only membership lookup. The returned indices remain valid until this
+ * entity's memberships change; removal code takes its own snapshot. */
+const std::vector<unsigned int> &Entity::getFVindices(FullVector *FV) const {
+    static const std::vector<unsigned int> empty;
+    auto indices = FVindices.find(FV);
+    return indices == FVindices.end() ? empty : indices->second;
 }
 
 RiskLevel Entity::getRiskLevel() const {
