@@ -1148,7 +1148,7 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
      * <prepAccess>p1,p2,p3,...,pn</prepAccess>
      * 
      */
-    std::vector<double> access = prepParameters.GetAccess(*getDemographicProfile());
+    const auto &access = prepParameters.GetAccess(*getDemographicProfile());
 
     // Let's first know what year we are in
     int current_year = _eventParams.currTime.get_year();  

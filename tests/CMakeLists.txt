@@ -11,3 +11,8 @@ target_link_libraries(tests gtest_main)
 
 # Register the executable with CTest
 add_test(NAME tests COMMAND tests)
+
+# Memory changes must preserve configuration values and individual interventions.
+add_executable(memory_tests MemoryManagementTest.cpp)
+target_link_libraries(memory_tests transm_core gtest_main)
+add_test(NAME memory_tests COMMAND memory_tests)
