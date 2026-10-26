@@ -808,7 +808,7 @@ Male::SubPopParams SimulationParametersXml::GetMaleSubPopParams() const
 
     auto allowed_race_eth_node = node.child("allowedRaceAndEthnicities");
     std::vector<DemographicProfile::Race> races;
-    RaceEthnicityMap *raceEthMap = result.GetAllowedRaceEthnicityMap();
+    RaceEthnicityMap *raceEthMap = result.MutableAllowedRaceEthnicityMap();
     for (auto allowed_race_node : allowed_race_eth_node.children("allowedRace")) {
         auto race = Attr<DemographicProfile::Race>(allowed_race_node, "race");
         races.push_back(race);

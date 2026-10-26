@@ -77,3 +77,38 @@ TEST(PrepParametersTest, OverlappingProfilesKeepMapOrderAndFirstInsertedValue)
             expected = entry.second;
     EXPECT_DOUBLE_EQ(parameters.GetAccess(male).at(0), expected);
 }
+
+TEST(MaleParametersTest, ReadsShareTablesAndInterventionsDetach)
+{
+    using Type = SexualPartnership::Type;
+    using Race = DemographicProfile::Race;
+    using Ethnicity = DemographicProfile::Ethnicity;
+    Male::SubPopParams original;
+    original.SetCoitalEventsPerMonth(RiskLevel::LOW, Type::Steady, 2.0);
+    original.SetChanceBecomeCsw(0.1);
+    original.setAgeDiscounting(Age(40, 0), 0.1, 0.2);
+    auto *races = original.MutableAllowedRaceEthnicityMap();
+    races->insert(Race::Black, {Ethnicity::NonHispanic});
+    races->SetRaceKeysFromMap();
+    original.setBaselineRaceEthnicAssortativeness(0.3);
+    auto copy = original;
+
+    EXPECT_EQ(&original.getSexualBehavior(Type::Steady), &copy.getSexualBehavior(Type::Steady));
+    copy.SetChanceBecomeCsw(0.9);
+    EXPECT_DOUBLE_EQ(original.getChanceBecomeCSW(), 0.1);
+    EXPECT_EQ(&original.getSexualBehavior(Type::Steady), &copy.getSexualBehavior(Type::Steady));
+
+    copy.SetCoitalEventsPerMonth(RiskLevel::LOW, Type::Steady, 5.0);
+    copy.setAgeDiscounting(Age(40, 0), 0.5, 0.6);
+    copy.setRaceEthnicAssortativeness(Race::Black, Ethnicity::NonHispanic, 0.8);
+    EXPECT_DOUBLE_EQ(original.getSexualBehavior(Type::Steady).getCoitalEventsPerMonth(RiskLevel::LOW), 2.0);
+    EXPECT_DOUBLE_EQ(copy.getSexualBehavior(Type::Steady).getCoitalEventsPerMonth(RiskLevel::LOW), 5.0);
+    EXPECT_DOUBLE_EQ(original.getPartneringAcqDiscMult(Age(40, 0)), 0.9);
+    EXPECT_DOUBLE_EQ(copy.getPartneringAcqDiscMult(Age(40, 0)), 0.5);
+    EXPECT_DOUBLE_EQ(original.getRaceEthnicAssortativeness(Race::Black, Ethnicity::NonHispanic), 0.3);
+    EXPECT_DOUBLE_EQ(copy.getRaceEthnicAssortativeness(Race::Black, Ethnicity::NonHispanic), 0.8);
+
+    auto snapshot = original;
+    original.MutableSexualBehavior(Type::Steady).setCoitalEventsPerMonth(RiskLevel::LOW, 7.0);
+    EXPECT_DOUBLE_EQ(snapshot.getSexualBehavior(Type::Steady).getCoitalEventsPerMonth(RiskLevel::LOW), 2.0);
+}
