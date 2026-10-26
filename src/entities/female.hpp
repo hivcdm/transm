@@ -154,9 +154,13 @@ public:
 
     void SetAcquisitionRatePerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, LogNormalDist dist, RandomNumberGenerator &rng);
 
-    void SetPartnershipRejectionChance(RiskLevel risk, SexualPartnership::Type partnershipType, double chance) { partnershipRejectionChance_[risk][partnershipType] = chance; }
+    void SetPartnershipRejectionChance(RiskLevel risk, SexualPartnership::Type partnershipType, double chance) {
+        partnershipRejectionChance_.at((std::size_t)risk).at((std::size_t)partnershipType) = chance;
+    }
 
-    double GetPartnershipRejectionChance(RiskLevel risk, SexualPartnership::Type partnershipType) const { return partnershipRejectionChance_.at(risk).at(partnershipType); };
+    double GetPartnershipRejectionChance(RiskLevel risk, SexualPartnership::Type partnershipType) const {
+        return partnershipRejectionChance_.at((std::size_t)risk).at((std::size_t)partnershipType);
+    }
 
     void SetOverrideChanceCondomUse(double chance) { overrideChanceCondomUse_ = chance; }
 
@@ -182,7 +186,8 @@ private:
 
     bool vaginalMicrobicideUsedLastFOICalculation;
 
-    std::map<RiskLevel, std::map<SexualPartnership::Type, double>> partnershipRejectionChance_;
+    std::array<std::array<double, (std::size_t)SexualPartnership::Type::Last>,
+               (std::size_t)RiskLevel::Last> partnershipRejectionChance_{};
 
     std::size_t times_selected_;
 };

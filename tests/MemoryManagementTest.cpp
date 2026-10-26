@@ -112,3 +112,24 @@ TEST(MaleParametersTest, ReadsShareTablesAndInterventionsDetach)
     original.MutableSexualBehavior(Type::Steady).setCoitalEventsPerMonth(RiskLevel::LOW, 7.0);
     EXPECT_DOUBLE_EQ(snapshot.getSexualBehavior(Type::Steady).getCoitalEventsPerMonth(RiskLevel::LOW), 2.0);
 }
+
+TEST(FemaleParametersTest, RejectionChancesAreZeroAndIndependentlyAddressable)
+{
+    EventParams events;
+    Female::SubPopParams defaults;
+    PrepParameters prep;
+    DemographicProfile profile;
+    profile.set(DemographicProfile::Demographic::Gender,
+                (std::size_t)DemographicProfile::Gender::Female);
+    Female person(events, Age(25, 0), profile, 0, defaults, prep);
+
+    for (auto risk : enum_iterator<RiskLevel>())
+        for (auto type : enum_iterator<SexualPartnership::Type>())
+            EXPECT_DOUBLE_EQ(person.GetPartnershipRejectionChance(risk, type), 0.0);
+
+    person.SetPartnershipRejectionChance(RiskLevel::HIGH, SexualPartnership::Type::Casual, 0.7);
+    EXPECT_DOUBLE_EQ(person.GetPartnershipRejectionChance(RiskLevel::HIGH, SexualPartnership::Type::Casual), 0.7);
+    EXPECT_DOUBLE_EQ(person.GetPartnershipRejectionChance(RiskLevel::LOW, SexualPartnership::Type::Casual), 0.0);
+    EXPECT_DOUBLE_EQ(person.GetPartnershipRejectionChance(RiskLevel::HIGH, SexualPartnership::Type::Steady), 0.0);
+    EXPECT_THROW(person.GetPartnershipRejectionChance(RiskLevel::Last, SexualPartnership::Type::Steady), std::out_of_range);
+}
