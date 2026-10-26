@@ -18,7 +18,7 @@ public:
 	/** Constructor */
 	BucketAge();
 
-    BucketAge(DemographicProfile::ProfileID BinID, unsigned int popID, std::map<SexualPartnership::Type, double> _assort);
+    BucketAge(DemographicProfile::ProfileID BinID, unsigned int popID);
 
 	/** Destructor */
 	~BucketAge();
@@ -154,9 +154,6 @@ private:
 
 	/** FullVector with probability distribution for random risk (all) persons */
 	FullVector FVProbDist_random;
-
-	/** Assortativeness parameter... default to 0 (all chosen from FVProbDist_random) */
-    std::map<SexualPartnership::Type, double> assort;
 
 	bool UpdateNeeded;
 	DemographicProfile::ProfileID currentBinID;
