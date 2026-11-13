@@ -242,6 +242,7 @@ void Entity::addPartnership(SexualPartnership *_partnership) {
 }
 
 void Entity::seedInfection(int _generationOfInfection, EventParams &_eventParams, bool chronicInfection) {
+    recordMilestone(_eventParams, Milestone::Infected, _generationOfInfection);
     enableInfectionTrace(_generationOfInfection, _eventParams);
 
     hvl = HVLStrata::HVL_PRIMARY; // From InitHVL in cepac.in file
@@ -264,6 +265,7 @@ void Entity::seedInfection(int _generationOfInfection, EventParams &_eventParams
 }
 
 void Entity::becomeInfected(int _generationOfInfection, EventParams &_eventParams) {
+    recordMilestone(_eventParams, Milestone::Infected, _generationOfInfection);
     enableInfectionTrace(_generationOfInfection, _eventParams);
 
     stats.setStat(Stats::STAT_TIME_OF_INFECTION_MTH, _eventParams.currTime.in_months());
@@ -442,6 +444,7 @@ void Entity::setTimeOfLatestConcurrent(Time _month) {
 }
 
 void Entity::becomeSexuallyActive(EventParams &_eventParams) {
+    recordMilestone(_eventParams, Milestone::SexualDebut);
     dmgProfile.set(DemographicProfile::Demographic::SexualActivityStatus,
                    (std::size_t) DemographicProfile::SexualActivityStatus::Active);
 
@@ -928,11 +931,15 @@ Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTra
 
     auto treatmentAfter = isOnArt();
 
-    if (treatmentBefore != treatmentAfter)
+    if (treatmentBefore != treatmentAfter) {
         traceTreatmentChange(_eventParams, treatmentAfter);
+        recordMilestone(_eventParams, treatmentAfter ? Milestone::ARTStart : Milestone::ARTStop);
+    }
 
-    if (careStateBefore != getCareState())
+    if (careStateBefore != getCareState()) {
         traceCareStateChange(_eventParams, careStateBefore, getCareState());
+        recordMilestone(_eventParams, Milestone::CareStateChange, getCareState());
+    }
 
     const auto costsAfter = *_eventParams.cepacRunStats->getOverallCosts();
     const auto hivScreeningAfter = *_eventParams.cepacRunStats->getHIVScreening();
@@ -958,8 +965,10 @@ Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTra
 
         if (hvl != hvlBefore)
             traceHVLChange(_eventParams, hvlBefore, hvl);
-        if (hivStatus != hivStatusBefore)
+        if (hivStatus != hivStatusBefore) {
             traceHIVChange(_eventParams, hivStatusBefore, hivStatus);
+            recordMilestone(_eventParams, Milestone::HIVStatusChange, (int) hivStatus);
+        }
 
         updateTestingStatus(_eventParams, testTracker,
                             hivScreeningBefore, hivScreeningAfter);
@@ -1371,6 +1380,47 @@ void Entity::traceDeath(EventParams &_eventParams) {
                                                                              << ", care state "
                                                                              << careStateName(getCareState())
                                                                              << std::endl;
+    }
+}
+
+void Entity::tracePrepChange(EventParams &_eventParams, bool onPrep) {
+    if (_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled
+        && trace()) {
+        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
+                                                                             " !!# " << getID()
+                                                                             << (onPrep ? " starts PrEP" : " stops PrEP")
+                                                                             << std::endl;
+    }
+}
+
+void Entity::recordMilestone(EventParams &_eventParams, Milestone kind, int detail) {
+    if (!_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled)
+        return;
+    history_.push_back({(short) _eventParams.currTime.in_months(), kind, (short) detail});
+}
+
+void Entity::writeHistory(EventParams &_eventParams) {
+    if (!_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled || !trace())
+        return;
+    auto &out = _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson];
+    out << " !!# " << getID() << " history: " << history_.size() << " milestones before joining the trace" << std::endl;
+    for (const auto &m : history_) {
+        out << " !!# " << getID() << " history, month " << m.month << ": ";
+        switch (m.kind) {
+            case Milestone::Created:         out << "created at age " << m.detail << " months"; break;
+            case Milestone::SexualDebut:     out << "becomes sexually active"; break;
+            case Milestone::PrepStart:       out << "starts PrEP"; break;
+            case Milestone::PrepStop:        out << "stops PrEP"; break;
+            case Milestone::Infected:        out << (m.detail == 0 ? "seeded with prevalent HIV"
+                                                                   : "infected with HIV (generation " + std::to_string(m.detail) + ")"); break;
+            case Milestone::HIVStatusChange: out << "HIV status becomes " << to_string((HIVStatus) m.detail); break;
+            case Milestone::CareStateChange: out << "care state becomes " << careStateName(m.detail); break;
+            case Milestone::ARTStart:        out << "starts ART"; break;
+            case Milestone::ARTStop:         out << "stops ART"; break;
+            case Milestone::FOCUSScreened:   out << "screened by FOCUS (cohort " << FocusGroupStrs.at(m.detail) << ")"; break;
+            case Milestone::FOCUSSelected:   out << "selected by FOCUS (cohort " << FocusGroupStrs.at(m.detail) << ")"; break;
+        }
+        out << std::endl;
     }
 }
 

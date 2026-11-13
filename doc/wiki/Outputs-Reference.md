@@ -41,7 +41,9 @@ traced from the month of selection, so nothing before that month is recorded).
 | ` !!# N HIV status changed from X to Y` | infection, diagnosis (unobserved to observed) |
 | ` !!# N care state changed from X to Y` | CEPAC care state: `HIV_CARE_UNDETECTED`, `UNLINKED`, `IN_CARE`, `LTFU`, `RTC` |
 | ` !!# N started treatment.` / `stopped treatment.` | ART start and stop |
+| ` !!# N starts PrEP` / ` stops PrEP` | PrEP start and stop |
 | ` !!# N selected by FOCUS from cohort C (selection k, month M, care state S -> T)` | FOCUS selection, with the care state before and after FOCUS acts |
+| ` !!# N history, month M: ...` | written once when a FOCUS selection puts someone on the trace: their milestones before that month (creation and age, sexual debut, PrEP start/stop, infection, diagnosis, care-state changes, ART start/stop, earlier FOCUS screenings), back-dated by month. Everyone's milestones are kept in memory while the trace is on, so the history is complete from birth or from the start of the run |
 | ` !!# N dies at age A months, <HIV status>, care state S` | death |
 
 ## Network snapshots

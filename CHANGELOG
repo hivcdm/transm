@@ -15,8 +15,12 @@ Unreleased
   optional <numberFocusToTrace> in the <singlePerson> block puts the first N
   people FOCUS selects on the trace from the month of selection. The trace now
   stamps every month ("=== Month N ==="), and records FOCUS selections, CEPAC
-  care-state changes (undetected, unlinked, in care, LTFU, RTC) and deaths,
-  none of which it wrote before. Scenarios without the new element are
+  care-state changes (undetected, unlinked, in care, LTFU, RTC), PrEP start
+  and stop, and deaths, none of which it wrote before. While the trace is on,
+  every person keeps a compact list of milestones (a few bytes each), so a
+  person who joins the trace when FOCUS selects them is first written out
+  from birth: creation, sexual debut, PrEP, infection, diagnosis, care-state
+  changes, ART and earlier FOCUS screenings, back-dated by month. Scenarios without the new element are
   unchanged apart from the month stamps and the new event lines for people
   already being traced.
 

@@ -392,7 +392,13 @@ void Population::UpdatePhysicalState(EventParams &eventParams, bool calculateLE,
             }
 
             if (p->isSexuallyActive()) {
+                const bool onPrepBefore = p->UsingPrEP();
                 p->updatePrepStatus(eventParams, &populationStatistics.prepTracker);
+                if (onPrepBefore != p->UsingPrEP()) {
+                    p->tracePrepChange(eventParams, p->UsingPrEP());
+                    p->recordMilestone(eventParams, p->UsingPrEP() ? Entity::Milestone::PrepStart
+                                                                   : Entity::Milestone::PrepStop);
+                }
             }
 
             /* Check for age to stop becoming CSW */
@@ -860,6 +866,7 @@ std::vector<int> Population::UpdateForFOCUSAnalysis(
             // is the denominator behind the focus_screened / focus_status node
             // attributes: it separates who FOCUS reached from who it converted.
             candidate->recordFOCUSScreening((int)i);
+            candidate->recordMilestone(eventParams, Entity::Milestone::FOCUSScreened, (int)i);
 
             // "Roll the die": If the random number is less than the probability,
             // they become a FOCUS individual.
@@ -869,6 +876,9 @@ std::vector<int> Population::UpdateForFOCUSAnalysis(
                 const int careStateBeforeFOCUS = candidate->getCareState();
                 candidate->setFOCUS((int)i, currentMonth);
                 populationStatistics.recordFOCUS(candidate);
+                candidate->recordMilestone(eventParams, Entity::Milestone::FOCUSSelected, (int)i);
+                if (candidate->getCareState() != careStateBeforeFOCUS)
+                    candidate->recordMilestone(eventParams, Entity::Milestone::CareStateChange, candidate->getCareState());
 
                 /* The first numFocusToTrace people FOCUS selects join the
                  * single-person trace from this month on. */
@@ -883,6 +893,7 @@ std::vector<int> Population::UpdateForFOCUSAnalysis(
                                 << " age " << candidate->getAge().in_months() << ", "
                                 << (candidate->getRiskLevel() == RiskLevel::HIGH ? "HIGH" : "LOW")
                                 << " risk) joins the trace when FOCUS selects them" << std::endl;
+                        candidate->writeHistory(eventParams);
                     }
                     candidate->traceFOCUSSelection(eventParams, (int)i, currentMonth, careStateBeforeFOCUS);
                 }
@@ -1321,6 +1332,8 @@ Entity *Population::GenerateEntity(EventParams &eventParams, const DemographicPr
     }
 
     toReturn->SetSexualActivityDelay(popWideParams.sexualActivityDelay);
+
+    toReturn->recordMilestone(eventParams, Entity::Milestone::Created, (int) age.in_months());
 
     //Set this person to be trace if toTrace is true
     if (toTrace) {
