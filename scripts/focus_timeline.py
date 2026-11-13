@@ -137,6 +137,7 @@ def summarize(p, last_month):
     care_now = 'none'
     for e in ev:
         if e['kind'] == 'care': care_now = e['care']
+        if e['kind'] == 'selected' and e.get('care_after'): care_now = e['care_after']
         if e['kind'] == 'death': care_now = e['care']
     end = death['month'] if death else last_month
     return {
