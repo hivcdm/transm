@@ -866,8 +866,26 @@ std::vector<int> Population::UpdateForFOCUSAnalysis(
             if (rng.chance(focusProb)) {
 
                 // Mark entity as FOCUS and record in statistics
+                const int careStateBeforeFOCUS = candidate->getCareState();
                 candidate->setFOCUS((int)i, currentMonth);
                 populationStatistics.recordFOCUS(candidate);
+
+                /* The first numFocusToTrace people FOCUS selects join the
+                 * single-person trace from this month on. */
+                if (eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled) {
+                    if (!candidate->trace() && eventParams.numFocusTraced < eventParams.numFocusToTrace) {
+                        candidate->setToBeTraced();
+                        eventParams.numFocusTraced++;
+                        eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson]
+                                << "Demographic info for person:" << (candidate->isMale() ? "@ Male " : "@ Female ")
+                                << candidate->getID() << " ("
+                                << *DemographicProfile::toString(candidate->getDemographicProfile()->getProfileID())
+                                << " age " << candidate->getAge().in_months() << ", "
+                                << (candidate->getRiskLevel() == RiskLevel::HIGH ? "HIGH" : "LOW")
+                                << " risk) joins the trace when FOCUS selects them" << std::endl;
+                    }
+                    candidate->traceFOCUSSelection(eventParams, (int)i, currentMonth, careStateBeforeFOCUS);
+                }
                 selectedInGroup++;
                 totalSelected++;
 
@@ -2619,6 +2637,7 @@ void Population::ProcessDeath(EventParams &eventParams, Entity *_p, bool calcula
     assert((_p != nullptr));
     assert((!_p->isAlive()));
 
+    _p->traceDeath(eventParams);
     dead_people_this_month_.insert(_p);
 
     //Calculate life expectancy info

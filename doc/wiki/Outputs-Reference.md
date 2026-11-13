@@ -19,6 +19,31 @@ A typical run produces ~10 trace files plus several summary files in the same di
 | `<sim>-CE.xls` | cost-effectiveness | `<costEffectiveness enabled="true">` |
 | `<sim>-SinglePerson.xls` | single-person trace | `<singlePerson enabled="true">` |
 
+## `SinglePerson.xls` (per-person diary)
+
+Free text, not a table. Everything that happens to a traced person is appended
+as it happens, so one file holds the interleaved diaries of every traced person;
+filter on the person's ID to read one life. Who is traced is set in
+`<singlePerson>`: prevalent cases seeded at the start, the first N newborns
+after a month, and the first N people FOCUS selects (`<numberFocusToTrace>`,
+traced from the month of selection, so nothing before that month is recorded).
+
+| Line starts with | Meaning |
+|---|---|
+| `=== Month N ===` | every line below it happened in simulation month N |
+| `Demographic info for person:@ ...` | a person joins the trace (prevalent case, or FOCUS selection) |
+| ` % Male N becomes sexually active` | sexual debut; also risk re-rolls |
+| `+ Male N attempts to form ...` / `  + Male N (...) forms Casual with ...` | partnership formation, with both partners' profiles and ages |
+| `- Male N ends Casual partnership with M` | partnership dissolution |
+| `# MSW N engages in K acts with his Steady M` | sex acts this month |
+| ` !Transmission coefficient ...` / ` !A condom was ...` / ` !Total FOI = ...` | the per-act transmission calculation, written when either partner is traced |
+| ` !!# N CD4 changed ...` / ` HVL changed ...` | monthly clinical state (infected people only) |
+| ` !!# N HIV status changed from X to Y` | infection, diagnosis (unobserved to observed) |
+| ` !!# N care state changed from X to Y` | CEPAC care state: `HIV_CARE_UNDETECTED`, `UNLINKED`, `IN_CARE`, `LTFU`, `RTC` |
+| ` !!# N started treatment.` / `stopped treatment.` | ART start and stop |
+| ` !!# N selected by FOCUS from cohort C (selection k, month M, care state S -> T)` | FOCUS selection, with the care state before and after FOCUS acts |
+| ` !!# N dies at age A months, <HIV status>, care state S` | death |
+
 ## Network snapshots
 
 | File | Source | Toggle |

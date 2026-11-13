@@ -11,6 +11,15 @@ A dynamic agent-based model for HIV transmission
 Unreleased
 ==========
 
+- The single-person trace can follow people FOCUS selects (issue #98). A new
+  optional <numberFocusToTrace> in the <singlePerson> block puts the first N
+  people FOCUS selects on the trace from the month of selection. The trace now
+  stamps every month ("=== Month N ==="), and records FOCUS selections, CEPAC
+  care-state changes (undetected, unlinked, in care, LTFU, RTC) and deaths,
+  none of which it wrote before. Scenarios without the new element are
+  unchanged apart from the month stamps and the new event lines for people
+  already being traced.
+
 - Memory use cut by about four times (issue #97): 10,000 agents over 840
   months now peak at 152 MB instead of 318 MB, and 20,000 at 185 MB instead
   of 463 MB. PrEP and male parameter tables are shared between agents until

@@ -916,6 +916,7 @@ Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTra
     const RunStats::HIVScreening hivScreeningBefore =
             *_eventParams.cepacRunStats->getHIVScreening();
     auto treatmentBefore = isOnArt();
+    auto careStateBefore = getCareState();
 
     //run this person's patient info one month forward in CEPAC
     cepacPatient->simulateMonth();
@@ -929,6 +930,9 @@ Entity::updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTra
 
     if (treatmentBefore != treatmentAfter)
         traceTreatmentChange(_eventParams, treatmentAfter);
+
+    if (careStateBefore != getCareState())
+        traceCareStateChange(_eventParams, careStateBefore, getCareState());
 
     const auto costsAfter = *_eventParams.cepacRunStats->getOverallCosts();
     const auto hivScreeningAfter = *_eventParams.cepacRunStats->getHIVScreening();
@@ -1323,13 +1327,60 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
 
 }
 
+const char *Entity::careStateName(int careState) {
+    if (careState < 0 || careState > (int) SimContext::HIV_CARE_RTC)
+        return "none";
+    return SimContext::HIV_CARE_STRS[careState];
+}
+
+void Entity::traceCareStateChange(EventParams &_eventParams, int before, int after) {
+    if (_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled
+        && trace()) {
+        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
+                                                                             " !!# " << getID()
+                                                                             << " care state changed from "
+                                                                             << careStateName(before)
+                                                                             << " to " << careStateName(after)
+                                                                             << std::endl;
+    }
+}
+
+void Entity::traceFOCUSSelection(EventParams &_eventParams, int focusGroup, int currentMonth, int careStateBefore) {
+    if (_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled
+        && trace()) {
+        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
+                                                                             " !!# " << getID()
+                                                                             << " selected by FOCUS from cohort "
+                                                                             << FocusGroupStrs.at(focusGroup)
+                                                                             << " (selection " << getFOCUSSelectCount()
+                                                                             << ", month " << currentMonth
+                                                                             << ", care state "
+                                                                             << careStateName(careStateBefore)
+                                                                             << " -> " << careStateName(getCareState()) << ")"
+                                                                             << std::endl;
+    }
+}
+
+void Entity::traceDeath(EventParams &_eventParams) {
+    if (_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled
+        && trace()) {
+        _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
+                                                                             " !!# " << getID()
+                                                                             << " dies at age " << getAge().in_months()
+                                                                             << " months, " << to_string(hivStatus)
+                                                                             << ", care state "
+                                                                             << careStateName(getCareState())
+                                                                             << std::endl;
+    }
+}
+
 void Entity::traceTreatmentChange(EventParams &_eventParams, bool after) {
     if (_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled
         && trace()) {
         _eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson] <<
                                                                              " !!# " << getID()
                                                                              << (after ? " started treatment." :
-                                                                                 "stopped treatment.")
+                                                                                 " stopped treatment.")
                                                                              << std::endl;
     }
 }

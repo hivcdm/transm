@@ -89,6 +89,7 @@ Make this consistent across your XML and your CEPAC `.in` files or discounting w
         <numberNewbornsToTrace>500</numberNewbornsToTrace>
         <monthTraceNewborns>600</monthTraceNewborns>
         <tracePrevalentCases>1</tracePrevalentCases>
+        <numberFocusToTrace>0</numberFocusToTrace>
     </singlePerson>
 </traceFiles>
 ```
@@ -105,6 +106,7 @@ Make this consistent across your XML and your CEPAC `.in` files or discounting w
   - `<numberToTracePerAgeRange>` — pick this many entities at sim start per age bucket and follow them for life
   - `<numberNewbornsToTrace>` / `<monthTraceNewborns>` — start tracing newborns at this calendar month
   - `<tracePrevalentCases>` — 1 to include initial prevalent infections in the trace
+  - `<numberFocusToTrace>` — the first N people FOCUS selects join the trace from the month of selection (optional; 0 or absent = none). Needs `--focus on`.
 - `<partnerAcquisition>` and `<lifeExpectancy>` take `<time>` children — specific months at which a snapshot is recorded.
 
 See [Outputs Reference](Outputs-Reference.md) for what each trace file actually contains.

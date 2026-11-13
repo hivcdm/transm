@@ -639,6 +639,12 @@ public:
 
     void enableInfectionTrace(int _generationOfInfection, EventParams &_eventParams) const;
 
+    /** Trace a FOCUS selection; written for every traced person FOCUS selects. */
+    void traceFOCUSSelection(EventParams &_eventParams, int focusGroup, int currentMonth, int careStateBefore);
+
+    /** Trace this person's death. */
+    void traceDeath(EventParams &_eventParams);
+
     /** Unformed partnership tallies getters and setters -- the total should never be reset,
      * only the "latest" (i.e. current time step) */
     int getTotalUnformedPartnerships(SexualPartnership::Type type);
@@ -1013,6 +1019,12 @@ private:
                              const RunStats::HIVScreening after);
 
     void traceTreatmentChange(EventParams &_eventParams, bool after);
+
+    /** Trace a change of CEPAC care state (undetected, unlinked, in care, LTFU, RTC). */
+    void traceCareStateChange(EventParams &_eventParams, int before, int after);
+
+    /** Name of a CEPAC care state for the trace, "none" without a patient. */
+    static const char *careStateName(int careState);
 
     void traceCD4Change(EventParams &_eventParams, double before, double after);
 

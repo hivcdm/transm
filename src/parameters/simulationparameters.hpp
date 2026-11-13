@@ -29,6 +29,7 @@ public:
         bool trace_prevalent_cases = false;
         int num_to_trace = 0;
         int num_newborns_to_trace = 0;
+        int num_focus_to_trace = 0;
         Time month_trace_newborns;
         double life_expectancy_ci = 0;
         std::vector<int> life_expectancy_record_times;
