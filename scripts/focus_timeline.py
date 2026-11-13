@@ -289,8 +289,10 @@ function rowSvg(p){
 }
 function axis(){
   let s='';const y1=D.year0+Math.ceil((minMonth-D.month0)/12), y2=D.year0+Math.floor((maxMonth-D.month0)/12);
+  const step=(y2-y1)>60?10:(y2-y1)>25?5:2;   /* label spacing follows the span */
   for(let y=y1;y<=y2;y++){const m=D.month0+(y-D.year0)*12;if(m<minMonth||m>maxMonth)continue;const x=X(m);
-    s+=`<line x1="${x}" x2="${x}" y1="0" y2="18" stroke="var(--rule)"/>`+(y%2===0?`<text x="${x+3}" y="12">${y}</text>`:'');}
+    if(y%step!==0)continue;
+    s+=`<line x1="${x}" x2="${x}" y1="0" y2="18" stroke="var(--rule)"/><text x="${x+3}" y="12">${y}</text>`;}
   $('axis').innerHTML=`<svg class="axis" viewBox="0 0 ${W} 20" preserveAspectRatio="none" style="height:20px;margin-left:160px;width:calc(100% - 160px)">${s}</svg>`;
 }
 function render(){
