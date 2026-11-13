@@ -129,13 +129,7 @@ Female::Female(EventParams &_eventParams, Age _age, const DemographicProfile &pr
 
 	risk = RiskLevel::LOW;
 
-    for(auto risk : {RiskLevel::LOW, RiskLevel::HIGH})
-    {
-        for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
-        {
-            partnershipRejectionChance_[risk][partnership_type] = 0;
-        }
-    }
+
 }
 
 Female::~Female(void)= default;

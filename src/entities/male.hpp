@@ -2,6 +2,7 @@
 #define MALE_HPP
 
 #include <map>
+#include <memory>
 
 #include "entity.hpp"
 #include "sexualbehavior.hpp"
@@ -17,7 +18,7 @@ class RaceEthnicityMap {
     void insert(DemographicProfile::Race race, std::vector<DemographicProfile::Ethnicity> ethnicities) {
         raceToEthnicityMap[race] = ethnicities;
     }
-    std::vector<DemographicProfile::Ethnicity> GetEthnicityForRace(DemographicProfile::Race race) {
+    std::vector<DemographicProfile::Ethnicity> GetEthnicityForRace(DemographicProfile::Race race) const {
         return raceToEthnicityMap.at(race);
     }
     void SetRaceKeysFromMap() {
@@ -25,7 +26,7 @@ class RaceEthnicityMap {
             raceKeys.push_back(it.first);
         }
     }
-    std::vector<DemographicProfile::Race> GetRaceKeysFromMap() {
+    std::vector<DemographicProfile::Race> GetRaceKeysFromMap() const {
         return raceKeys;
     }
 
@@ -53,9 +54,9 @@ public :
 
 		/* sexual behavior params for each type as specified by SexualPartnership::Type */
 		const SexualBehavior &getSexualBehavior(SexualPartnership::Type _type) const;
-		SexualBehavior &getSexualBehavior(SexualPartnership::Type _type);
+		SexualBehavior &MutableSexualBehavior(SexualPartnership::Type _type);
 
-        bool hasSexualBehavior(SexualPartnership::Type type) const { return sexualBehaviorParams.find(type) != sexualBehaviorParams.end(); }
+        bool hasSexualBehavior(SexualPartnership::Type type) const { return tables->sexualBehaviorParams.find(type) != tables->sexualBehaviorParams.end(); }
 
 		double getProportionHighRisk(DemographicProfile::Employment _cswStatus) const;
 
@@ -74,17 +75,18 @@ public :
 			double acqMult = 1 - partneringAcqDiscPerYr;
 			double actsMult = 1 - partneringActsDiscPerYr;
 
+            auto &data = MutableTables();
 			/* generate vectors that contain discount multipliers. will cover from [partneringDiscStartAgeYrs,
 			 * Entity::maxYrForDeathStats] */
-			partneringAcqDiscMult.clear();
-			partneringActsDiscMult.clear();
-			partneringAcqDiscMult.push_back(acqMult);
-			partneringActsDiscMult.push_back(actsMult);
+			data.partneringAcqDiscMult.clear();
+			data.partneringActsDiscMult.clear();
+			data.partneringAcqDiscMult.push_back(acqMult);
+			data.partneringActsDiscMult.push_back(actsMult);
 
 			for(int i = 1; i < numMults; ++i)
 			{
-				partneringAcqDiscMult.push_back(partneringAcqDiscMult.at(i - 1)*acqMult);
-				partneringActsDiscMult.push_back(partneringActsDiscMult.at(i - 1)*actsMult);
+				data.partneringAcqDiscMult.push_back(data.partneringAcqDiscMult.at(i - 1)*acqMult);
+				data.partneringActsDiscMult.push_back(data.partneringActsDiscMult.at(i - 1)*actsMult);
 			}
 		}
 
@@ -97,15 +99,15 @@ public :
 
 		void SetCoefficientVariation(bool use, double coefficient) { useCoefficientVariation = use; coefficientOfVariation = coefficient; }
 
-		void AddSexualBehavior(SexualBehavior params) { sexualBehaviorParams[params.getPartnershipType()] = params; }
+		void AddSexualBehavior(SexualBehavior params) { MutableTables().sexualBehaviorParams[params.getPartnershipType()] = params; }
 
         void SetProportionHighRisk(DemographicProfile::Employment employment, double proportion) { proportionHighRisk[(std::size_t)employment] = proportion; }
 
-		void SetAverageYearsYounger(SexualPartnership::Type type, NormalDist dist) { sexualBehaviorParams[type].setAverageYearsYounger(dist); }
-		void SetAcquisitionRatePerMonth(RiskLevel risk, SexualPartnership::Type type, LogNormalDist dist) { sexualBehaviorParams[type].setAcquisitionRatePerMonth(risk, dist); }
-		void SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type type, double mean) { sexualBehaviorParams[type].setCoitalEventsPerMonth(risk, mean); }
-		void SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { sexualBehaviorParams[type].setChanceCondomUsePerEvent(risk, dist); }
-		void SetPartnershipDuration(RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { sexualBehaviorParams[type].setPartnershipDuration(risk, dist); }
+		void SetAverageYearsYounger(SexualPartnership::Type type, NormalDist dist) { MutableTables().sexualBehaviorParams[type].setAverageYearsYounger(dist); }
+		void SetAcquisitionRatePerMonth(RiskLevel risk, SexualPartnership::Type type, LogNormalDist dist) { MutableTables().sexualBehaviorParams[type].setAcquisitionRatePerMonth(risk, dist); }
+		void SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type type, double mean) { MutableTables().sexualBehaviorParams[type].setCoitalEventsPerMonth(risk, mean); }
+		void SetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type type, BetaDist dist) { MutableTables().sexualBehaviorParams[type].setChanceCondomUsePerEvent(risk, dist); }
+		void SetPartnershipDuration(RiskLevel risk, SexualPartnership::Type type, ShiftedLogNormalDist dist) { MutableTables().sexualBehaviorParams[type].setPartnershipDuration(risk, dist); }
 	    BetaDist GetChanceCondomUsePerEvent(RiskLevel risk, SexualPartnership::Type type) const { return getSexualBehavior(type).getChanceCondomUsePerEvent(risk); }
 
 		double GetMultiplierCondomUseBlacks() const { return multiplierCondomUseBlacks; }
@@ -116,8 +118,8 @@ public :
 			multiplierCondomUseWhites = whiteMultiplier;
 		}
 
-        double getBreakupRateMSW(SexualPartnership::Type type) { return sexualBehaviorParams[type].getBreakupRateForMSW(); }
-        double getBreakupRateMSM(SexualPartnership::Type type) { return sexualBehaviorParams[type].getBreakupRateForMSM(); }
+        double getBreakupRateMSW(SexualPartnership::Type type) const { return tables->sexualBehaviorParams.at(type).getBreakupRateForMSW(); }
+        double getBreakupRateMSM(SexualPartnership::Type type) const { return tables->sexualBehaviorParams.at(type).getBreakupRateForMSM(); }
 
 		int GetMaxPartnershipRejections() const { return maxPartnershipRejections; }
 		void SetMaxPartnershipRejections(int rejections) { maxPartnershipRejections = rejections; }
@@ -140,15 +142,17 @@ public :
         }
 
         void setBaselineRaceEthnicAssortativeness(double baselineAssortivity) {
-            for (auto race : allowedRaceEthnicityMap.GetRaceKeysFromMap()) {
-                for (auto ethnicity : allowedRaceEthnicityMap.GetEthnicityForRace(race)) {
-                    raceEthnicAssortivity.emplace_back(race, ethnicity, baselineAssortivity);
+            auto &data = MutableTables();
+            for (auto race : data.allowedRaceEthnicityMap.GetRaceKeysFromMap()) {
+                for (auto ethnicity : data.allowedRaceEthnicityMap.GetEthnicityForRace(race)) {
+                    data.raceEthnicAssortivity.emplace_back(race, ethnicity, baselineAssortivity);
                 }
             }
         }
         void setRaceEthnicAssortativeness(DemographicProfile::Race race, DemographicProfile::Ethnicity ethnicity,
             double assortivity) {
             using raceEthTuple = std::tuple<DemographicProfile::Race,DemographicProfile::Ethnicity,double>;
+            auto &raceEthnicAssortivity = MutableTables().raceEthnicAssortivity;
             auto it = std::find_if(raceEthnicAssortivity.begin(), raceEthnicAssortivity.end(),
                 [&race,&ethnicity](const raceEthTuple& e)
                     { return std::get<0>(e) == race && std::get<1>(e) == ethnicity; });
@@ -158,8 +162,9 @@ public :
         }
 
         double getRaceEthnicAssortativeness(DemographicProfile::Race race,
-            DemographicProfile::Ethnicity ethnicity) {
+            DemographicProfile::Ethnicity ethnicity) const {
             using raceEthTuple = std::tuple<DemographicProfile::Race,DemographicProfile::Ethnicity,double>;
+            const auto &raceEthnicAssortivity = tables->raceEthnicAssortivity;
             auto it = std::find_if(raceEthnicAssortivity.begin(), raceEthnicAssortivity.end(),
                 [&race,&ethnicity](const raceEthTuple& e)
                     { return std::get<0>(e) == race && std::get<1>(e) == ethnicity; });
@@ -169,8 +174,12 @@ public :
             throw std::runtime_error("Missing assortivity for race and ethnicity pair");
         }
 
-        RaceEthnicityMap* GetAllowedRaceEthnicityMap() {
-            return &allowedRaceEthnicityMap;
+        const RaceEthnicityMap *GetAllowedRaceEthnicityMap() const {
+            return &tables->allowedRaceEthnicityMap;
+        }
+
+        RaceEthnicityMap *MutableAllowedRaceEthnicityMap() {
+            return &MutableTables().allowedRaceEthnicityMap;
         }
 
     protected:
@@ -185,8 +194,6 @@ public :
 		/** the rate multiplier for partner acquisition when a male has a Steady partner */
 		double partnerAcqMultWithSteady[(std::size_t)RiskLevel::Last];
 
-		/** sexual behavior params for each type as specified by SexualPartnership::Type */
-		std::unordered_map<SexualPartnership::Type, SexualBehavior> sexualBehaviorParams;
 
 		/** proportion of male population that is in the "high risk" lists based on csw status */
 		double proportionHighRisk[(std::size_t)DemographicProfile::Employment::Last];
@@ -201,17 +208,6 @@ public :
 
 		/** coital acts/month get discounted every year */
 		double partneringActsDiscPerYr;
-
-		/**
-		 * these contain the discount for every age between partneringDiscStartAgeYrs and Entity::maxYrForDeathStats
-		 * we can calculate these once and use them over and over again.
-		 * we've actually saved these as multipliers so that for a particular age N > partneringDiscStartAgeYrs,
-		 * the acquisition rate will be multiplied by  (1 - partneringAcqDiscPerYr)^(partneringDiscStartAgeYrs - N)
-		 * so a particular value when multiplied to an acquisition rate will yield the discounted rate */
-		std::vector<double> partneringAcqDiscMult;
-
-        /** the principle of these multipliers are the same as for partneringAcqDiscMult, but for #acts */
-		std::vector<double> partneringActsDiscMult;
 
 		/* factors that determind foif */
 		/* transmission protection that circumcision provides (a positive multiplier <= 1) */
@@ -234,17 +230,30 @@ public :
 
         double preExposureProphylaxisEfficacy_;
 
-        /** contains all current partnerships including CSW and Casual */
-        std::list<SexualPartnership *> partners[(int)SexualPartnership::Type::Last];
-
         /** assortativeness */
         double chanceMsmwChooseMale;
         double chanceMsmChooseMsmw;
         double riskAssortativeness;
 
-        std::vector<std::tuple<DemographicProfile::Race, DemographicProfile::Ethnicity, double>> raceEthnicAssortivity;
+        struct ParameterTables
+        {
+            std::unordered_map<SexualPartnership::Type, SexualBehavior> sexualBehaviorParams;
+            std::vector<double> partneringAcqDiscMult;
+            std::vector<double> partneringActsDiscMult;
+            std::vector<std::tuple<DemographicProfile::Race, DemographicProfile::Ethnicity, double>> raceEthnicAssortivity;
+            RaceEthnicityMap allowedRaceEthnicityMap;
+        };
 
-        RaceEthnicityMap allowedRaceEthnicityMap;
+        /* Population defaults and individual copies share these tables until
+         * an intervention changes one copy. Scalars remain individual values. */
+        std::shared_ptr<ParameterTables> tables = std::make_shared<ParameterTables>();
+
+        ParameterTables &MutableTables()
+        {
+            if (!tables.unique())
+                tables = std::make_shared<ParameterTables>(*tables);
+            return *tables;
+        }
 
 	};
 

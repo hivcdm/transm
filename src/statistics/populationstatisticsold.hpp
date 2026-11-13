@@ -169,20 +169,6 @@ private:
     std::set<Entity *> uniqueYearlyAccessingTreatment;
     std::set<Entity *> uniqueYearlyEligibleForTreatment;
     std::set<Entity *> uniqueYearlyTreated;
-    std::set<Entity *> uniqueYearlyTreatmentDeaths;
-    std::set<Entity *> uniqueUndiagnosed;
-    std::set<Entity *> uniqueYearlyInCare;
-    std::set<Entity *> uniqueYearlySuppressed;
-    std::set<Entity *> uniqueYearlyEnrolledInThirtyDays;
-    std::set<Entity *> uniqueYearlyPLWH;
-    std::set<Entity *> uniqueYearlyNewDiagnosis;
-    std::set<Entity *> uniqueYearlyLTFU;
-    std::set<Entity *> uniqueYearlyUnlinked;
-    std::set<Entity *> uniqueYearlyInfected;
-    std::set<Entity *> uniqueYearlyFirstLine;
-    std::set<Entity *> uniqueYearlySecondLine;
-    std::set<Entity *> uniqueYearlyRTC;
-    std::set<Entity *> uniqueYearlyFOCUS;   
 
 
     std::vector<int> yearlyTestsByResult;

@@ -128,8 +128,12 @@ include_directories(src)
 include(cmake.sources)
 
 # We add our executable
-add_executable(transm src/transm.cpp ${TRANSM_SOURCE_FILES})
-add_dependencies(transm rana_project tclap_project cepac_project)
+# Share model objects with the regression tests; keep the CLI entry point separate.
+list(REMOVE_ITEM TRANSM_SOURCE_FILES src/transm.cpp)
+add_library(transm_core STATIC ${TRANSM_SOURCE_FILES})
+add_dependencies(transm_core rana_project tclap_project cepac_project)
+add_executable(transm src/transm.cpp)
+target_link_libraries(transm transm_core)
 
 # Read and set up the version number
 file(READ VERSION TRANSM_VER)
@@ -144,17 +148,17 @@ add_custom_target(create-version-header
    COMMAND ../version_header.sh ${CMAKE_SOURCE_DIR}/ ${TRANSM_VER}
    COMMENT "Creating version.h"
 )
-add_dependencies(transm create-version-header)
+add_dependencies(transm_core create-version-header)
 set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES 
 	${CMAKE_SOURCE_DIR}/src/utility/version.h)
 
 # We link our libraries and we are done
 if(GOOGLE_PERFTOOLS_FOUND)
-	target_link_libraries(transm ${TCMALLOC_LIBRARY} ${PROFILER_LIBRARY})
+	target_link_libraries(transm_core PUBLIC ${TCMALLOC_LIBRARY} ${PROFILER_LIBRARY})
 endif(GOOGLE_PERFTOOLS_FOUND)
 
 # Boost linrary was disabled here originally: issues with FASRC
-target_link_libraries(transm cepac pugixml ${SQLITE3_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(transm_core PUBLIC cepac pugixml ${SQLITE3_LIBRARIES} ${Boost_LIBRARIES})
 
 # Building google tests
 

@@ -1,7 +1,5 @@
 #include "bucketage.hpp"
 
-#include <utility>
-
 namespace transm {
 
 /** Constructors */
@@ -22,14 +20,9 @@ BucketAge::BucketAge()
 		}
 	}
 
-	for(auto partnership_type : enum_iterator<SexualPartnership::Type>())
-	{
-		assort[partnership_type] = 0;
-	}
 }
 
-BucketAge::BucketAge(DemographicProfile::ProfileID BinID, unsigned int popID, std::map<SexualPartnership::Type, double> _assort)
-: assort(std::move(_assort))
+BucketAge::BucketAge(DemographicProfile::ProfileID BinID, unsigned int popID)
 {
 	currentBinID = BinID;
 	populationID = popID;

@@ -45,7 +45,7 @@ BucketSexualMixing::BucketSexualMixing(DemographicProfile::ProfileID _id,
 
 	while(currAge <= maxAge)
 	{
-		BucketAge *pToAge = new BucketAge(_id, _popID, _assort);
+		BucketAge *pToAge = new BucketAge(_id, _popID);
 		assert(pToAge->getBinID() == _id);
 		personsByAge->push_back(pToAge);
 		currAge++;
@@ -534,7 +534,7 @@ list<Entity *> BucketSexualMixing::ageOneTimeStep()
 	}
 
 	/* Insert the new BucketAge for incoming youngest */
-	auto *pNewYoungest = new BucketAge(getProfileID(), popID, assort);
+	auto *pNewYoungest = new BucketAge(getProfileID(), popID);
 	personsByAge->push_front(pNewYoungest);
 
 	/* Delete the OldestPersons bucket */

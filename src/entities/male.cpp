@@ -38,13 +38,13 @@ double Male::SubPopParams::getPartnerAcqMultWithSteady(RiskLevel _risk) const
 /* sexual behavior params for each type as specified by SexualPartnership::Type */
 const SexualBehavior &Male::SubPopParams::getSexualBehavior(SexualPartnership::Type _type) const
 {
-	return sexualBehaviorParams.at(_type);
+	return tables->sexualBehaviorParams.at(_type);
 }
 
 /* sexual behavior params for each type as specified by SexualPartnership::Type */
-SexualBehavior &Male::SubPopParams::getSexualBehavior(SexualPartnership::Type _type)
+SexualBehavior &Male::SubPopParams::MutableSexualBehavior(SexualPartnership::Type _type)
 {
-	return sexualBehaviorParams.at(_type);
+	return MutableTables().sexualBehaviorParams.at(_type);
 }
 
 double Male::SubPopParams::getProportionHighRisk(DemographicProfile::Employment _cswStatus) const
@@ -70,13 +70,13 @@ Age Male::SubPopParams::getPartneringDiscStartAgeYrs() const
 double Male::SubPopParams::getPartneringAcqDiscMult(Age _ageYrs) const
 {
 	assert(Utility::within_range(_ageYrs, Age::Zero, Age(Entity::maxYrForDeathStats, 0)));
-	return partneringAcqDiscMult.at((_ageYrs - partneringDiscStartAgeYrs).years_as_index());
+	return tables->partneringAcqDiscMult.at((_ageYrs - partneringDiscStartAgeYrs).years_as_index());
 }
 
 double Male::SubPopParams::getPartneringActsDiscMult(Age _ageYrs) const
 {
 	assert(Utility::within_range(_ageYrs, Age::Zero, Age(Entity::maxYrForDeathStats, 0)));
-	return partneringActsDiscMult.at((_ageYrs - partneringDiscStartAgeYrs).years_as_index());
+	return tables->partneringActsDiscMult.at((_ageYrs - partneringDiscStartAgeYrs).years_as_index());
 }
 
 // TODO: Make this general for other uses beyond condom use
@@ -120,7 +120,7 @@ void Male::SetChanceCondomUsePerEvent(RiskLevel risk,
                                       BetaDist dist,
                                       RandomNumberGenerator &rng)
 {
-    auto &behavior = populationSpecificParams.getSexualBehavior(partnershipType);
+    auto &behavior = populationSpecificParams.MutableSexualBehavior(partnershipType);
 
     if (risk == getRiskLevel())
     {
@@ -139,7 +139,7 @@ void Male::SetChanceCondomUsePerEvent(RiskLevel risk,
 
 void Male::SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, double meanEvents)
 {
-    auto &behavior = populationSpecificParams.getSexualBehavior(partnershipType);
+    auto &behavior = populationSpecificParams.MutableSexualBehavior(partnershipType);
     if(risk == getRiskLevel())
     {
         auto current_dist = behavior.getCoitalEventsPerMonth(risk);
@@ -153,20 +153,20 @@ void Male::SetCoitalEventsPerMonth(RiskLevel risk, SexualPartnership::Type partn
 
 void Male::SetPartnershipDuration(RiskLevel risk, SexualPartnership::Type partnershipType, ShiftedLogNormalDist dist)
 {
-    auto &behavior = populationSpecificParams.getSexualBehavior(partnershipType);
+    auto &behavior = populationSpecificParams.MutableSexualBehavior(partnershipType);
 	behavior.setPartnershipDuration(risk, dist);
 }
 
 void Male::SetAverageYearsYounger(SexualPartnership::Type partnershipType, NormalDist dist)
 {
-    auto &behavior = populationSpecificParams.getSexualBehavior(partnershipType);
+    auto &behavior = populationSpecificParams.MutableSexualBehavior(partnershipType);
 	behavior.setAverageYearsYounger(dist);
     averageYearsYounger[(int)partnershipType] = dist;
 }
 
 void Male::SetAcquisitionRatePerMonth(RiskLevel risk, SexualPartnership::Type partnershipType, LogNormalDist dist, RandomNumberGenerator &rng)
 {
-    auto &behavior = populationSpecificParams.getSexualBehavior(partnershipType);
+    auto &behavior = populationSpecificParams.MutableSexualBehavior(partnershipType);
     if(risk == getRiskLevel())
     {
         auto current_dist = behavior.getAcquisitionRatePerMonth(risk);
@@ -291,12 +291,12 @@ DemographicProfile::ProfileID Male::ChoosePartnerDemographic(RandomNumberGenerat
     {
         /* choose a race randomly from the allowed list of races */
         std::vector<DemographicProfile::Race> races = populationSpecificParams.
-            allowedRaceEthnicityMap.GetRaceKeysFromMap();
+            GetAllowedRaceEthnicityMap()->GetRaceKeysFromMap();
         partnerRace = races[_randomNums.chooseIndex(races.size())];
 
         /* choose an ethnicity randomly from the allowed list of ethnicities for the race chosen */
         std::vector<DemographicProfile::Ethnicity> ethnicities =
-          populationSpecificParams.allowedRaceEthnicityMap.GetEthnicityForRace(partnerRace);
+          populationSpecificParams.GetAllowedRaceEthnicityMap()->GetEthnicityForRace(partnerRace);
         partnerEthnicity = ethnicities[_randomNums.chooseIndex(ethnicities.size())];
     }
     selector.set(DemographicProfile::Demographic::Race, (std::size_t)partnerRace);

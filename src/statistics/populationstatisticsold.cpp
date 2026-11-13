@@ -984,7 +984,6 @@ void PopulationStatisticsOld::recordTreatment(Entity *person) {
 }
 
 void PopulationStatisticsOld::recordTreatmentDeath(Entity *person) {
-    uniqueYearlyTreatmentDeaths.insert(person);
     artTracker.recordTreatmentDeath(person);
 }
 
@@ -995,68 +994,55 @@ void PopulationStatisticsOld::recordTreatmentSlots(int numSlots) {
 
 /* Record number of agents "In Care" which is equivalent to those that are HIV positive and "Linked" to care */
 void PopulationStatisticsOld::recordInCare(Entity *person) {
-    uniqueYearlyInCare.insert(person);
     artTracker.recordInCare(person);
 }
 
 /* Put agents in "Suppressed VL" if they have lowest level of VL */
 void PopulationStatisticsOld::recordSuppressedVL(Entity *person) {
-    uniqueYearlySuppressed.insert(person);
     artTracker.recordSuppressedVL(person);
 }
 
 void PopulationStatisticsOld::recordUndiagnosed(Entity *person) {
-    uniqueUndiagnosed.insert(person);
     artTracker.recordUndiagnosed(person);
 }
 
 void PopulationStatisticsOld::recordEnrolledInThirtyDays(Entity *person) {
-    uniqueYearlyEnrolledInThirtyDays.insert(person);
     artTracker.recordEnrolledInThirtyDays(person);
 }
 
 void PopulationStatisticsOld::recordPLWH(Entity *person) {
-    uniqueYearlyPLWH.insert(person);
     artTracker.recordPLWH(person);
 }
 
 void PopulationStatisticsOld::recordNewDiagnosis(Entity *person) {
-    uniqueYearlyLTFU.insert(person);
     artTracker.recordNewDiagnosis(person);
 }
 
 void PopulationStatisticsOld::recordLTFU(Entity *person) {
-    uniqueYearlyNewDiagnosis.insert(person);
     artTracker.recordLTFU(person);
 }
 
 void PopulationStatisticsOld::recordUnlinked(Entity *person) {
-    uniqueYearlyUnlinked.insert(person);
     artTracker.recordUnlinked(person);
 }
 
 void PopulationStatisticsOld::recordInfected(Entity *person) {
-    uniqueYearlyInfected.insert(person);
     artTracker.recordInfected(person);
 }
 
 void PopulationStatisticsOld::recordFirstLine(Entity *person) {
-    uniqueYearlyFirstLine.insert(person);
     artTracker.recordFirstLine(person);
 }
 
 void PopulationStatisticsOld::recordSecondLine(Entity *person) {
-    uniqueYearlySecondLine.insert(person);
     artTracker.recordSecondLine(person);
 }
 
 void PopulationStatisticsOld::recordRTC(Entity *person) {
-    uniqueYearlyRTC.insert(person);
     artTracker.recordRTC(person);
 }
 
 void PopulationStatisticsOld::recordFOCUS(Entity *person) {
-    uniqueYearlyFOCUS.insert(person);
     artTracker.recordFOCUS(person);
 }
 
@@ -1081,25 +1067,6 @@ void PopulationStatisticsOld::resetYear(Time newYear) {
     uniqueYearlyAccessingTreatment.clear();
     uniqueYearlyEligibleForTreatment.clear();
     uniqueYearlyTreated.clear();
-    uniqueYearlyTreatmentDeaths.clear();
-
-    uniqueYearlyInCare.clear();
-    uniqueYearlySuppressed.clear();
-    uniqueYearlyEnrolledInThirtyDays.clear();
-    uniqueYearlyPLWH.clear();
-    uniqueYearlyNewDiagnosis.clear();
-
-    uniqueYearlyLTFU.clear();
-    uniqueYearlyUnlinked.clear();
-
-    uniqueYearlyInfected.clear();
-
-    uniqueYearlyFirstLine.clear();
-    uniqueYearlySecondLine.clear();
-    uniqueYearlyRTC.clear();
-
-    uniqueUndiagnosed.clear();
-    uniqueYearlyFOCUS.clear();
 }
 
 

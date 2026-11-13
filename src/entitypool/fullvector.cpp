@@ -106,7 +106,7 @@ bool FullVector::exists(Entity *_p)
 	}
 
 	/* Use persons internal vector to test */
-	vector<unsigned int> pind = _p->getFVindices(this);
+	const auto &pind = _p->getFVindices(this);
 
 	if(!pind.empty())
 	{
@@ -176,6 +176,7 @@ int FullVector::size()
 /* \TESTED */
 bool FullVector::remove(Entity *p)
 {
+	/* Removal changes the reverse indices, so keep a stable snapshot here. */
 	vector<unsigned int> pIndices = p->getFVindices(this);
 
 	if(pIndices.empty())
