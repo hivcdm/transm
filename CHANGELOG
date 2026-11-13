@@ -11,6 +11,15 @@ A dynamic agent-based model for HIV transmission
 Unreleased
 ==========
 
+- Memory use cut by about four times (issue #97): 10,000 agents over 840
+  months now peak at 152 MB instead of 318 MB, and 20,000 at 185 MB instead
+  of 463 MB. PrEP and male parameter tables are shared between agents until
+  an intervention changes them, female rejection chances sit in a fixed
+  array, unused annual tracking sets and age-bucket assortativity copies are
+  gone, GraphML attributes are generated one row at a time, and FOCUS cohort
+  lookups no longer copy their vectors. Every TRANSM trace file is
+  byte-identical to before.
+
 - The GitHub organization moved from hsphcdm to hivcdm. The repository is now
   https://github.com/hivcdm/transm, and CMake fetches rana, TCLAP, pugixml and
   cepac-transm from github.com/hivcdm. INSTALL, THIRD-PARTY-NOTICES.md and the
