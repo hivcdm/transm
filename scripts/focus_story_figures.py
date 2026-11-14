@@ -155,7 +155,7 @@ def main():
     fig, ax = plt.subplots(figsize=(7, 2.8))
     ax.bar(range(1, mx + 1), [counts[i] for i in range(1, mx + 1)], color=COL['lost'], width=0.7)
     for i in range(1, mx + 1): ax.text(i, counts[i] + 0.6, str(counts[i]), ha='center', fontsize=8.5, color=COL['ink2'])
-    ax.set_xticks(range(1, mx + 1)); ax.set_xticklabels([f'{i} time{"s" if i > 1 else ""}' for i in range(1, mx + 1)])
+    ax.set_xticks(range(1, mx + 1)); ax.set_xlabel('times selected by FOCUS')
     ax.set_ylabel('people'); ax.set_ylim(0, max(counts.values()) * 1.25)
     for s_ in ('right', 'top'): ax.spines[s_].set_visible(False)
     atl = lambda k: sum(1 for p in P if p['summary']['selections'] >= k)
