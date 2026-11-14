@@ -77,6 +77,8 @@ public:
 		cepacTracer = nullptr;
 		numNewbornsTraced = 0;
 		numNewbornsToTrace = 0;
+		numFocusToTrace = 0;
+		numFocusTraced = 0;
         untreatedContext = nullptr;
         treatedContext = nullptr;
         cepacRunStats = nullptr;
@@ -150,6 +152,13 @@ public:
 
 	/** keeps track of how many newborns have been traced */
 	int numNewbornsTraced;
+
+	/** number of FOCUS-selected people to follow in the single-person trace, from
+	 * the month FOCUS selects them (0 = none) */
+	int numFocusToTrace;
+
+	/** how many FOCUS-selected people have been put on the trace so far */
+	int numFocusTraced;
 
     std::vector<int> partnerNetworkRecordTimes;
 

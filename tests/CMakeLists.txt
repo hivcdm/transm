@@ -16,3 +16,8 @@ add_test(NAME tests COMMAND tests)
 add_executable(memory_tests MemoryManagementTest.cpp)
 target_link_libraries(memory_tests transm_core gtest_main)
 add_test(NAME memory_tests COMMAND memory_tests)
+
+# Optional <numberFocusToTrace> must default to 0 so existing scenarios parse unchanged.
+add_executable(trace_tests TraceParametersTest.cpp)
+target_link_libraries(trace_tests transm_core gtest_main)
+add_test(NAME trace_tests COMMAND trace_tests)

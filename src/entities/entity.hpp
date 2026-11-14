@@ -198,8 +198,24 @@ protected:
     /** statistical information from this individual */
     EntityStatsRecord stats;
 
+public:
+    /** A life milestone kept in the compact history (see recordMilestone). */
+    enum class Milestone : unsigned char {
+        Created, SexualDebut, PrepStart, PrepStop, Infected, HIVStatusChange,
+        CareStateChange, ARTStart, ARTStop, FOCUSScreened, FOCUSSelected
+    };
+    struct MilestoneRecord {
+        short month;
+        Milestone kind;
+        short detail;   /* age, generation, status, care state or cohort, by kind */
+    };
+
+protected:
     /** True if this person should be followed in singlePersonTrace file */
     bool traceMe;
+
+    /** milestones so far, kept only while the single-person trace is on */
+    std::vector<MilestoneRecord> history_;
 
     /** The indices which point to the person in their assigned FullVector */
     std::map<FullVector *, std::vector<unsigned int>> FVindices;
@@ -639,6 +655,23 @@ public:
 
     void enableInfectionTrace(int _generationOfInfection, EventParams &_eventParams) const;
 
+    /** Trace a FOCUS selection; written for every traced person FOCUS selects. */
+    void traceFOCUSSelection(EventParams &_eventParams, int focusGroup, int currentMonth, int careStateBefore);
+
+    /** Trace this person's death. */
+    void traceDeath(EventParams &_eventParams);
+
+    /** Trace starting or stopping PrEP. */
+    void tracePrepChange(EventParams &_eventParams, bool onPrep);
+
+    /** Remember a milestone. Only kept while the single-person trace is on, so
+     * someone who joins the trace late (a FOCUS selection) can still be written
+     * out from birth; a few bytes per event, nothing when tracing is off. */
+    void recordMilestone(EventParams &_eventParams, Milestone kind, int detail = 0);
+
+    /** Write the milestone history to the trace, back-dated by month. */
+    void writeHistory(EventParams &_eventParams);
+
     /** Unformed partnership tallies getters and setters -- the total should never be reset,
      * only the "latest" (i.e. current time step) */
     int getTotalUnformedPartnerships(SexualPartnership::Type type);
@@ -1013,6 +1046,13 @@ private:
                              const RunStats::HIVScreening after);
 
     void traceTreatmentChange(EventParams &_eventParams, bool after);
+
+    /** Trace a change of CEPAC care state (undetected, unlinked, in care, LTFU, RTC). */
+    void traceCareStateChange(EventParams &_eventParams, int before, int after);
+
+    /** Name of a CEPAC care state for the trace, "none" without a patient. */
+    static const char *careStateName(int careState);
+
 
     void traceCD4Change(EventParams &_eventParams, double before, double after);
 

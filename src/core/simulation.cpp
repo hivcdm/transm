@@ -737,6 +737,13 @@ The ordering of events within this function determines the ordering of events in
 std::size_t Simulation::SimulateMonth() {
     parameters_.currTime = time_;
 
+    /* Stamp the single-person trace so its lines can be placed in time; nothing
+     * else in that file says which month an event happened in. */
+    if (parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled) {
+        parameters_.trace_files[EventParams::TraceFile::Type::SinglePerson]
+                << "=== Month " << time_.in_months() << " ===" << std::endl;
+    }
+
     /* change non AIDS death if it is time to switch cepac files */
     if (parameters_.itIsTimeToSwitchSimContext() && !parameters_.useRollout) {
         int simIndex = 0;
@@ -1202,6 +1209,8 @@ void Simulation::Initialize(SimulationParameters &parameters) {
     parameters_.numNewbornsTraced = 0;
     parameters_.numNewbornsToTrace = tracing_parameters.num_newborns_to_trace;
     parameters_.monthTraceNewborns = tracing_parameters.month_trace_newborns;
+    parameters_.numFocusToTrace = tracing_parameters.num_focus_to_trace;
+    parameters_.numFocusTraced = 0;
     parameters_.partnerNetworkRecordTimes = tracing_parameters.partner_network_record_times;
 
     Utility::changeDirectoryToResults();

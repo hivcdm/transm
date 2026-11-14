@@ -349,6 +349,9 @@ SimulationParameters::TracingParameters SimulationParametersXml::GetTracingParam
     parameters.num_newborns_to_trace = Text<int>(simulation_node.child("traceFiles").child("singlePerson").child("numberNewbornsToTrace"));
     parameters.month_trace_newborns = Time::from_months(Text<int>(simulation_node.child("traceFiles").child("singlePerson").child("monthTraceNewborns")));
     parameters.trace_prevalent_cases = Text<bool>(simulation_node.child("traceFiles").child("singlePerson").child("tracePrevalentCases"));
+    /* Optional: the first N people FOCUS selects are traced from the month of selection. */
+    auto focus_trace_node = simulation_node.child("traceFiles").child("singlePerson").child("numberFocusToTrace");
+    parameters.num_focus_to_trace = focus_trace_node ? Text<int>(focus_trace_node) : 0;
 
     parameters.life_expectancy_ci = Text<double>(simulation_node.child("traceFiles").child("lifeExpectancy").child("medianConfidenceInterval"));
 
