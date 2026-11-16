@@ -1,4 +1,5 @@
 #include "female.hpp"
+#include "infectionrisk.hpp"
 #include "male.hpp"
 #include "core/constants.hpp"
 #include "utility/utility.hpp"
@@ -174,24 +175,10 @@ double Female::getFOI(Entity *partner, const std::unordered_map<TransmissionType
     //Determine the condom efficacy --> 0 if no condom was used
     double condomEff = condomUsedLastFOICalculation ? condomProtectEff : 0;
 
-    // corrections for efficacy based on prep adherence level
-    PrepAherenceLevel prepadherencelevel = _p->getAdhereceStatus();
-    if (prepadherencelevel == PrepAherenceLevel::PREP_SUBSTANTIALLY_ADHERENT) {
-        prepEfficacy *= 0.80;
-    } else if (prepadherencelevel == PrepAherenceLevel::PREP_PARTIALLY_ADHERENT) {
-        prepEfficacy *= 0.10;
-    } else if (prepadherencelevel == PrepAherenceLevel::PREP_INADHERENT) {
-        prepEfficacy *= 0.05;
-    } else if (prepadherencelevel == PrepAherenceLevel::PREP_ADHERENT) {
-        prepEfficacy *= 0.99;
-    } else if (prepadherencelevel == PrepAherenceLevel::PREP_OFF_PREP) {
-        prepEfficacy *= 0.0;
-    } else {
-        cout << "Invalid adherence level" << endl;
-    }
+    prepEfficacy = PrepEfficacyForAdherence(prepEfficacy, _p->getAdhereceStatus());
 
     double base_foi = transmission_coefficients.at(TransmissionType::female_to_male)[(std::size_t)getHVL()];
-    double FOI = base_foi * (1 - condomEff) * (1 - circEff) * (1 - prepEfficacy);
+    double FOI = ForceOfInfection(base_foi, condomEff, circEff, prepEfficacy);
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (trace() || _p->trace()))
 	{

@@ -37,6 +37,12 @@ add_executable(countindex_tests CountIndexTest.cpp)
 target_link_libraries(countindex_tests gtest_main)
 add_test(NAME countindex_tests COMMAND countindex_tests)
 
+# Force of infection: each protection (condom, microbicide or circumcision, PrEP at
+# its adherence level) must lower the risk on its own.
+add_executable(infectionrisk_tests InfectionRiskTest.cpp)
+target_link_libraries(infectionrisk_tests gtest_main)
+add_test(NAME infectionrisk_tests COMMAND infectionrisk_tests)
+
 # Optional: the same scenario through a reference build and this build must give
 # identical TRANSM outputs. Configure with
 #   -DTRANSM_REGRESSION_REFERENCE=<reference transm binary>
@@ -66,6 +72,7 @@ endif()
 
 # Fast tests of single classes and functions. Run with: ctest -L unit
 set_tests_properties(tests memory_tests trace_tests mixing_tests runtime_tests countindex_tests
+                     infectionrisk_tests
                      PROPERTIES LABELS unit)
 if (TEST regression_outputs)
     set_tests_properties(regression_outputs PROPERTIES LABELS regression)
