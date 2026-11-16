@@ -26,3 +26,8 @@ add_test(NAME trace_tests COMMAND trace_tests)
 add_executable(runtime_tests RunTimePredictorTest.cpp)
 target_link_libraries(runtime_tests gtest_main)
 add_test(NAME runtime_tests COMMAND runtime_tests)
+
+# New people must start with every member set, e.g. how often they were chosen.
+add_executable(entityinit_tests EntityInitTest.cpp)
+target_link_libraries(entityinit_tests transm_core gtest_main)
+add_test(NAME entityinit_tests COMMAND entityinit_tests)
