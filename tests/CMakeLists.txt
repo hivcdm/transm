@@ -52,3 +52,21 @@ if (TRANSM_REGRESSION_REFERENCE AND TRANSM_REGRESSION_SCENARIO AND TRANSM_REGRES
     # "PASS WITH WARNING" (CEPAC summaries or an exit-time crash) also passes.
     set_tests_properties(regression_outputs PROPERTIES PASS_REGULAR_EXPRESSION "\nPASS")
 endif()
+
+# Model checks: small runs of the Miami scenario (tests/model/scenarios) judged by
+# bookkeeping rules, known answers and reference bands, not by identical outputs.
+# Twelve 2,000-person runs, about 3 minutes on 4 cores. Run with: ctest -L model
+find_package(Python3 COMPONENTS Interpreter)
+if (Python3_Interpreter_FOUND)
+    add_test(NAME model_checks
+             COMMAND ${Python3_EXECUTABLE} -I ${CMAKE_CURRENT_SOURCE_DIR}/model/model_checks.py
+                     --transm $<TARGET_FILE:transm>)
+    set_tests_properties(model_checks PROPERTIES LABELS model TIMEOUT 3600)
+endif()
+
+# Fast tests of single classes and functions. Run with: ctest -L unit
+set_tests_properties(tests memory_tests trace_tests mixing_tests runtime_tests countindex_tests
+                     PROPERTIES LABELS unit)
+if (TEST regression_outputs)
+    set_tests_properties(regression_outputs PROPERTIES LABELS regression)
+endif()

@@ -1,0 +1,2 @@
+# CEPAC reads its inputs exactly as written, with CRLF line endings; never convert them.
+tests/model/INFILES/*.in -text
