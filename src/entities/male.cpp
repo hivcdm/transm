@@ -324,7 +324,8 @@ Male::Male(EventParams &_eventParams, Age _age, bool _circumcised,
     const DemographicProfile &profile, unsigned int _populationID,
     const Male::SubPopParams &params, const PrepParameters &prepParams) :
     Entity(_age, _populationID, prepParams),
-    populationSpecificParams(params)
+    populationSpecificParams(params),
+    times_selected_(0)
 {
 	/* Only set the gender and sexual orientation */
 	/* The other demographic profiles values get set in the Entity constructor -- don't overwrite the entire profile */
