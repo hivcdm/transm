@@ -36,3 +36,19 @@ add_test(NAME runtime_tests COMMAND runtime_tests)
 add_executable(countindex_tests CountIndexTest.cpp)
 target_link_libraries(countindex_tests gtest_main)
 add_test(NAME countindex_tests COMMAND countindex_tests)
+
+# Optional: the same scenario through a reference build and this build must give
+# identical TRANSM outputs. Configure with
+#   -DTRANSM_REGRESSION_REFERENCE=<reference transm binary>
+#   -DTRANSM_REGRESSION_SCENARIO=<scenario .xml>
+#   -DTRANSM_REGRESSION_CEPAC=<CEPAC input directory>
+# and optionally TRANSM_REGRESSION_SIZE / TRANSM_REGRESSION_DURATION to shrink it.
+if (TRANSM_REGRESSION_REFERENCE AND TRANSM_REGRESSION_SCENARIO AND TRANSM_REGRESSION_CEPAC)
+    add_test(NAME regression_outputs
+             COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/regression/compare_binaries.sh
+                     ${TRANSM_REGRESSION_REFERENCE} $<TARGET_FILE:transm>
+                     ${TRANSM_REGRESSION_SCENARIO} ${TRANSM_REGRESSION_CEPAC}
+                     ${TRANSM_REGRESSION_SIZE} ${TRANSM_REGRESSION_DURATION})
+    # "PASS WITH WARNING" (CEPAC summaries or an exit-time crash) also passes.
+    set_tests_properties(regression_outputs PROPERTIES PASS_REGULAR_EXPRESSION "\nPASS")
+endif()
