@@ -50,6 +50,8 @@ BucketSexualMixing::BucketSexualMixing(DemographicProfile::ProfileID _id,
 		personsByAge->push_back(pToAge);
 		currAge++;
 	}
+
+	rebuildDrawCounts();
 }
 
 BucketSexualMixing::~BucketSexualMixing()
@@ -99,6 +101,8 @@ void BucketSexualMixing::clear()
 	{
 		(*agesIter)->clear();
 	}
+
+	rebuildDrawCounts();
 }
 
 Entity *BucketSexualMixing::drawMember(RandomNumberGenerator &_randomNums, SexualPartnership::Type _partnershipType, bool _remove)
@@ -156,6 +160,7 @@ bool BucketSexualMixing::erase(Entity *_person)
 
 //	bool removed =  entitiesByAge->at(correctIndex)->erase(_person);
 	bool removed = personsByAge->at(correctIndex)->erase(_person);
+	syncDrawCounts(correctIndex);
 
 	if(removed)
 		_person->setCurrBucketProfileID(DemographicProfile::END);
@@ -235,29 +240,22 @@ Entity *BucketSexualMixing::getRandomPerson(RandomNumberGenerator &_randomNums, 
 	if(_randomNums.chance(assort[_partnershipType]))
 		riskToDraw = _risk;
 
-	/* figure out # of eligible people */
-	auto currIndex = minIndex;
-	unsigned long numMarbles = 0;
+#ifdef TRANSM_VERIFY_MIXING_INDEX
+	if(!drawCountsMatchBuckets())
+		throw std::logic_error("BucketSexualMixing draw counts disagree with its BucketAges");
+#endif
 
-	while(currIndex <= maxIndex)
-	{
-		numMarbles += personsByAge->at((std::size_t)currIndex.in_months())->numChoices(riskToDraw);
-		currIndex++;
-	}
+	const CountIndex &choices = drawCounts[(std::size_t)riskToDraw];
+
+	/* figure out # of eligible people */
+	unsigned long numMarbles = choices.Sum(minIndex.in_months(), maxIndex.in_months());
 
 	/* If no one is within the requested age range, return nullptr. */
 	if(numMarbles == 0)
 	{
 		/* Recursively expand search with _ageLowerBound and _ageUpperBound expanding by 6 months */
 		/* Only recurse if there are partners available in this bucket to save time */
-		numMarbles = 0;
-
-		for(currIndex = TimeSpan(0, 0); currIndex.in_months() < (double)personsByAge->size(); currIndex++)
-		{
-			numMarbles += personsByAge->at((std::size_t)currIndex.in_months())->numChoices(riskToDraw);
-		}
-
-		if(numMarbles > 0)
+		if(choices.Total() > 0)
 		{
 			/* Check first that minIndex > 0 and maxIndex < personsByAge->size() - 1  */
 			if(minIndex.in_months() > 0 || maxIndex.in_months() < (int)personsByAge->size() - 1)
@@ -282,29 +280,66 @@ Entity *BucketSexualMixing::getRandomPerson(RandomNumberGenerator &_randomNums, 
 	/* use the randPick to determine which AgeBucket to draw from */
 	int randPick = _randomNums.randInt(0, numMarbles - 1);
 
-	/* keep looping through all the indexes within personsByAge until we get the one that contains the randPick'th person with age between [_ageLowerBound, _ageUpperBound] */
-	currIndex = minIndex;
+	/* the AgeBucket that holds the randPick'th person with age between [_ageLowerBound, _ageUpperBound] */
+	std::size_t bufferIndex = choices.FindByRank(choices.Sum(0, minIndex.in_months() - 1) + randPick);
+	BucketAge *ageBucket = personsByAge->at(bufferIndex);
+	Entity *p = ageBucket->drawMember(_randomNums, _risk, _partnershipType, (riskToDraw == RiskLevel::Last), _remove);
 
-	while(currIndex <= maxIndex)
+	if(_remove)
 	{
-		/* if we're at the right AgeBucket */
-		if(randPick < personsByAge->at((std::size_t)currIndex.in_months())->numChoices(riskToDraw))
-		{
-			BucketAge *ageBucket = personsByAge->at((std::size_t)currIndex.in_months());
-			Entity *p = ageBucket->drawMember(_randomNums, _risk, _partnershipType, (riskToDraw == RiskLevel::Last), _remove);
+		syncDrawCounts(bufferIndex);
 
-			/* we have to tell the person that they are not part of a bucket anymore */
-			if(_remove && p)
-				p->setCurrBucketProfileID(DemographicProfile::END);
-
-			return p;
-		}
-
-		randPick -= personsByAge->at((std::size_t)currIndex.in_months())->numChoices(riskToDraw);
-		currIndex++;
+		/* we have to tell the person that they are not part of a bucket anymore */
+		if(p)
+			p->setCurrBucketProfileID(DemographicProfile::END);
 	}
 
-	return nullptr;
+	return p;
+}
+
+void BucketSexualMixing::syncDrawCounts(std::size_t _bufferIndex)
+{
+	BucketAge *ageBucket = personsByAge->at(_bufferIndex);
+
+	for(auto risk : {RiskLevel::LOW, RiskLevel::HIGH, RiskLevel::ENDType})
+		drawCounts[(std::size_t)risk].Set(_bufferIndex, ageBucket->numChoices(risk));
+}
+
+void BucketSexualMixing::rebuildDrawCounts()
+{
+	std::vector<long> counts(personsByAge->size());
+
+	for(auto risk : {RiskLevel::LOW, RiskLevel::HIGH, RiskLevel::ENDType})
+	{
+		for(std::size_t i = 0; i < personsByAge->size(); i++)
+			counts[i] = personsByAge->at(i)->numChoices(risk);
+
+		drawCounts[(std::size_t)risk].Assign(counts);
+	}
+}
+
+bool BucketSexualMixing::drawCountsMatchBuckets()
+{
+	for(auto risk : {RiskLevel::LOW, RiskLevel::HIGH, RiskLevel::ENDType})
+	{
+		const CountIndex &choices = drawCounts[(std::size_t)risk];
+
+		if(choices.Size() != personsByAge->size())
+			return false;
+
+		long total = 0;
+
+		for(std::size_t i = 0; i < personsByAge->size(); i++)
+		{
+			long count = personsByAge->at(i)->numChoices(risk);
+			total += count;
+
+			if(choices.Get(i) != count || choices.Sum(0, (long)i) != total)
+				return false;
+		}
+	}
+
+	return true;
 }
 
 /* will index a New Person */
@@ -324,6 +359,7 @@ bool BucketSexualMixing::insert(Entity *_person)
 			return false;
 
 		bool inserted = personsByAge->at(correctIndex)->insert(_person);
+		syncDrawCounts(correctIndex);
 
 		if(inserted)
 			_person->setCurrBucketProfileID(getProfileID());
@@ -547,6 +583,9 @@ list<Entity *> BucketSexualMixing::ageOneTimeStep()
 //	personsByAge->pop_back();
 	delete oldestPersons;
 	assert(TimeSpan(0, (int)personsByAge->size()) <= maxAge - minAge + TimeSpan::Month);
+
+	/* Every BucketAge moved up a slot */
+	rebuildDrawCounts();
 
 	/* Iterate through and age everyone */
 	BucketAllAges::iterator bucketIter;

@@ -168,6 +168,11 @@ std::uint64_t RunMixingSequence(std::uint32_t seed)
                     s.people[i]->ageOneTimeUnit();
         }
 
+        if (!s.bucket->drawCountsMatchBuckets()) {
+            ADD_FAILURE() << "draw counts out of step with the age buckets after step " << step;
+            return 0;
+        }
+
         if (step % 100 == 0) {
             fingerprint.Add(s.bucket->size());
             fingerprint.Add(s.bucket->sizeRandom());

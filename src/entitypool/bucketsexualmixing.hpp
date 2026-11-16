@@ -21,12 +21,14 @@
  *
  * @author errhode 4/20/2009: The index has been replaced by BucketAge, which implements a FullVector. */
 
+#include <array>
 #include <list>
 #include <boost/circular_buffer.hpp>
 
 #include "entityindex.hpp"
 #include "bucketdemographicprofile.hpp"
 #include "bucketage.hpp"
+#include "countindex.hpp"
 #include "entities/entity.hpp"
 
 namespace transm {
@@ -63,6 +65,12 @@ private :
 
 	//Assortativeness parameter for Mark Lipsitch's assortativeness algorithm
     std::map<SexualPartnership::Type, double> assort;
+
+	/**
+	 * How many people each BucketAge offers to a draw, slot for slot with personsByAge, indexed by
+	 * RiskLevel: LOW and HIGH for assortative draws, ENDType for random ones. Kept equal to
+	 * BucketAge::numChoices by every insert, erase, removing draw, clear and monthly ageing. */
+	std::array<CountIndex, (std::size_t)RiskLevel::ENDType + 1> drawCounts;
 
 public :
 	/**
@@ -131,6 +139,9 @@ public :
 	/** returns the # of entities in this index */
 	/* \TESTED */
 	unsigned long size();
+
+	/** true when the draw counts agree with every BucketAge; for tests and verification builds */
+	bool drawCountsMatchBuckets();
 
     void forEach(std::function<void(Entity *)> callback);
 
@@ -207,6 +218,12 @@ private:
 	/* \TESTED */
 	Entity *getRandomPerson(RandomNumberGenerator &_randomNums, Age _ageLowerBound, Age _ageUpperBound,
 	                        RiskLevel _risk, SexualPartnership::Type _partnershipType, bool _remove);
+
+	/** copies the number of choices of the BucketAge at _bufferIndex into the draw counts */
+	void syncDrawCounts(std::size_t _bufferIndex);
+
+	/** recomputes all draw counts; needed when the BucketAges shift by a month */
+	void rebuildDrawCounts();
 
 	/** Returns AgeBucket of oldest persons */
 	/* \TESTED */

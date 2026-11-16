@@ -135,6 +135,12 @@ add_dependencies(transm_core rana_project tclap_project cepac_project)
 add_executable(transm src/transm.cpp)
 target_link_libraries(transm transm_core)
 
+# Slow: before every partner draw, check the draw-count index against the age buckets.
+option(TRANSM_VERIFY_MIXING_INDEX "Check the partner-draw index before every draw" OFF)
+if (TRANSM_VERIFY_MIXING_INDEX)
+	target_compile_definitions(transm_core PUBLIC TRANSM_VERIFY_MIXING_INDEX)
+endif()
+
 # Read and set up the version number
 file(READ VERSION TRANSM_VER)
 string(STRIP ${TRANSM_VER} TRANSM_VER) # remove whitespace

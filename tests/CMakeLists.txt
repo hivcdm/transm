@@ -31,3 +31,8 @@ add_test(NAME mixing_tests COMMAND mixing_tests)
 add_executable(runtime_tests RunTimePredictorTest.cpp)
 target_link_libraries(runtime_tests gtest_main)
 add_test(NAME runtime_tests COMMAND runtime_tests)
+
+# The count index behind partner draws must agree with brute-force sums and walks.
+add_executable(countindex_tests CountIndexTest.cpp)
+target_link_libraries(countindex_tests gtest_main)
+add_test(NAME countindex_tests COMMAND countindex_tests)
