@@ -22,6 +22,11 @@ add_executable(trace_tests TraceParametersTest.cpp)
 target_link_libraries(trace_tests transm_core gtest_main)
 add_test(NAME trace_tests COMMAND trace_tests)
 
+# Partner draws must pick the same people, in the same order, as the linear scan did.
+add_executable(mixing_tests BucketSexualMixingTest.cpp)
+target_link_libraries(mixing_tests transm_core gtest_main)
+add_test(NAME mixing_tests COMMAND mixing_tests)
+
 # The progress bar must not abort a run when the run-time estimate leaves [0, 1].
 add_executable(runtime_tests RunTimePredictorTest.cpp)
 target_link_libraries(runtime_tests gtest_main)

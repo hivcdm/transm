@@ -93,6 +93,16 @@ public :
     /* \TESTED */
 	Entity *drawMember(RandomNumberGenerator &_randomNums, Entity *_chooser, SexualPartnership::Type _partnershipType, bool _remove);
 
+	/**
+	 * Draws a random person aged within [_ageLowerBound, _ageUpperBound]. While nobody in the window can be
+	 * drawn, the window widens by 6 months on each side, and each widening rolls for assortativeness again.
+	 *
+	 * @param _risk risk level drawn from when the assortativeness roll succeeds; otherwise everyone is eligible
+	 * @param _remove - will remove this person from the BucketSexualMixing if this is true
+	 * @return the person drawn, or nullptr if nobody in this bucket can be drawn */
+	Entity *drawMemberInAgeRange(RandomNumberGenerator &_randomNums, Age _ageLowerBound, Age _ageUpperBound,
+	                             RiskLevel _risk, SexualPartnership::Type _partnershipType, bool _remove);
+
 	/** will remove this Person (if he or she exists) from the index */
 	/* \TESTED */
 	bool erase(Entity *_person);

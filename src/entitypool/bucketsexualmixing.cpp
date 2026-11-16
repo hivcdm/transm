@@ -135,7 +135,13 @@ Entity *BucketSexualMixing::drawMember(RandomNumberGenerator &_randomNums, Entit
 	/* min and max age of Entitys that _chooser can pick from this Person container */
 	auto minAgeDesired = max(minAge, minDesired);
 	auto maxAgeDesired = min(maxAge, maxDesired);
-	return getRandomPerson(_randomNums, minAgeDesired, maxAgeDesired, _chooser->getRiskLevel(), _partnershipType, _remove);
+	return drawMemberInAgeRange(_randomNums, minAgeDesired, maxAgeDesired, _chooser->getRiskLevel(), _partnershipType, _remove);
+}
+
+Entity *BucketSexualMixing::drawMemberInAgeRange(RandomNumberGenerator &_randomNums, Age _ageLowerBound,
+	Age _ageUpperBound, RiskLevel _risk, SexualPartnership::Type _partnershipType, bool _remove)
+{
+	return getRandomPerson(_randomNums, _ageLowerBound, _ageUpperBound, _risk, _partnershipType, _remove);
 }
 
 /* will remove this Person (if he or she exists) from the index */
