@@ -349,10 +349,10 @@ Then condom, circumcision, microbicide, and PrEP multiplicative reducers are sta
     <prepEfficacy>0.96</prepEfficacy>
     <prepDefaults>
         <prepEligibility>
-            <partnerCount>2</partnerCount>
-            <partnerStatus>POSITIVE</partnerStatus>
-            <partnerRiskLevel>HIGH</partnerRiskLevel>
-            <monthsSinceUnprotectedAct>6</monthsSinceUnprotectedAct>
+            <partnerCount>1</partnerCount>
+            <partnerStatus>any-positive</partnerStatus>
+            <partnerRiskLevel>high</partnerRiskLevel>
+            <monthsSinceUnprotectedAct>12</monthsSinceUnprotectedAct>
         </prepEligibility>
         <prepAccess>0.5</prepAccess>
         <prepAdherence> ... </prepAdherence>
@@ -373,10 +373,17 @@ Then condom, circumcision, microbicide, and PrEP multiplicative reducers are sta
 **Inner mechanism**:
 - `<prepEfficacy>` — the per-act protection level when adherent. Applied as `(1 - prepEfficacy × adherence_multiplier)` in the FOI.
 - `<prepDefaults>` apply to all eligible entities unless overridden.
-- `<prepEligibility>` — criteria an entity must meet to start PrEP (number of partners, partner HIV status, partner risk level, recent unprotected sex).
-- `<prepAccess>` — probability of accessing PrEP when eligible.
+- `<prepEligibility>` — who may start or restart PrEP. PrEP starts in simulation year 57. A person must always be undiagnosed, sexually active and in at least one partnership, must have `<partnerCount>` partnerships when it is given, and must meet **at least one** of the risk criteria given (`<partnerStatus>`, `<partnerRiskLevel>`, `<monthsSinceUnprotectedAct>`). A criterion left out is not applied:
+  - `<partnerCount>` (or `<currentPartnerCount>`) — at least this many current partnerships.
+  - `<partnerStatus>` — at least one current partner with this HIV status: `any-positive` (infected, diagnosed or not), `observed-positive` (diagnosed), `not-observed-positive` (infected, undiagnosed), or a single status such as `negative`.
+  - `<partnerRiskLevel>` — at least one current partner at this risk level (`high` or `low`). It may be a different partner from the one matching `<partnerStatus>`.
+  - `<monthsSinceUnprotectedAct>` — a condomless act within this many months. Condom use is drawn per act with the man's chance for the partnership type; acts are recorded from this many months before PrEP starts.
+
+  People already on PrEP stay on it while they remain undiagnosed and partnered, whether or not they still meet these criteria. Without `<prepEligibility>`, everyone undiagnosed, sexually active and partnered is eligible (the behaviour before these criteria were applied).
+- `<prepAccess>` — monthly probability of starting PrEP when eligible, one value per year from year 57 (the last value carries on). High-risk women, MSM and MSW get it multiplied by 1.47; women's orientation is MSW, so high-risk women get the factor twice.
 - `<prepAdherence>` — probability distribution over the four adherence levels (PREP_ADHERENT, PREP_SUBSTANTIALLY, PREP_PARTIALLY, PREP_INADHERENT, PREP_OFF_PREP).
-- `<prepRetention>` and `<prepReturnToCare>` — monthly probabilities of staying on / returning to PrEP.
+- `<prepRetention>` — monthly probability of stopping PrEP, by month on PrEP (12 values).
+- `<prepReturnToCare>` — monthly probability of restarting after stopping, one value per year like `<prepAccess>` and with the same high-risk factor. Without it, people restart at the access rate.
 - `<prepProfiles>` — demographic-specific overrides. Each `<demographic bucket=...>` defines a profile; matching entities use these values instead of the defaults.
 
 PrEP adherence is modeled with multipliers on the efficacy. See [Transmission and Force of Infection → PrEP](Mechanism-Transmission-and-Force-of-Infection.md#male-to-female-and-male-to-male).

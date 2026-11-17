@@ -115,11 +115,15 @@ class Run:
         self.directory = directory
         self.status = None
         self.seconds = None
+        self.indicators = None
         self._tables = {}
 
     @property
     def label(self):
         return f"{self.benchmark} seed {self.seed}"
+
+    def release_tables(self):
+        self._tables.clear()
 
     def table(self, name):
         if name not in self._tables:
@@ -161,12 +165,7 @@ def execute(transm, run, timeout):
 
 # Checks that fail on purpose today, with the reason. They are reported but do not
 # fail the run; once one passes, it is reported so the entry can be removed.
-KNOWN_ISSUES = {
-    "prep-needs-positive-partner":
-        "PrEP eligibility in the scenario (partnerStatus any-positive, ...) is parsed but "
-        "never used: Entity::updatePrepStatus makes anyone undiagnosed, sexually active "
-        "and partnered eligible, and the XML's <partnerCount> is read as <currentPartnerCount>",
-}
+KNOWN_ISSUES = {}
 
 
 class Checks:
@@ -305,8 +304,8 @@ def known_answers(checks, run):
     if name == "no_seeding":
         checks.expect(all(v == 0 for v in infected), f"{run.label}: nobody should be infected without seeding")
         checks.expect(all(v == 0 for v in hiv_deaths), f"{run.label}: no HIV deaths without infections")
-        checks.expect(all(v == 0 for v in users), f"{run.label}: no PrEP users without infected partners",
-                      known="prep-needs-positive-partner")
+        # PrEP users are still possible: a high-risk partner or a recent condomless
+        # act is enough to be eligible (<prepEligibility>, any one risk criterion).
     if name == "no_transmission":
         checks.expect(all(v == 0 for v in new), f"{run.label}: no new infections when transmission is zero")
         later = infected[SEED_MONTH:]
@@ -374,7 +373,7 @@ def bands(checks, benchmark, runs, reference):
     if benchmark not in reference:
         checks.expect(False, f"{benchmark}: no bands in reference.json; record them with --record")
         return
-    measured = [indicators(r) for r in runs]
+    measured = [r.indicators for r in runs]
     for name, ref_values in reference[benchmark].items():
         got = [m[name] for m in measured]
         mean_ref, mean_got = statistics.fmean(ref_values), statistics.fmean(got)
@@ -479,8 +478,12 @@ def main():
             bookkeeping(checks, run)
             if not args.record:
                 known_answers(checks, run)
+            if BENCHMARKS[run.benchmark]["seeds"]:
+                run.indicators = indicators(run)
         except (OSError, ValueError, KeyError) as e:
             checks.expect(False, f"{run.label}: could not read outputs: {e}")
+        # Parsed tables take tens of MB per run; keep only the indicators.
+        run.release_tables()
 
     reference = load_reference()
     if args.record:
@@ -488,7 +491,7 @@ def main():
         for name in names:
             runs = [r for r in finished if r.benchmark == name]
             if BENCHMARKS[name]["seeds"] and len(runs) == len(REFERENCE_SEEDS):
-                per_run = [indicators(r) for r in runs]
+                per_run = [r.indicators for r in runs]
                 reference[name] = {k: [m[k] for m in per_run] for k in per_run[0]}
                 recorded.append(name)
         if checks.failures:
