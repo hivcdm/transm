@@ -55,7 +55,9 @@ them fail.
 
 - CEPAC crashes at exit (`RunStats::finalizeSurvivalStats`) in about half the
   stress runs, after the tables are written. Valgrind traces uninitialised
-  values to the `Patient` objects CEPAC creates for each person.
+  values to the `Patient` objects CEPAC creates for each person. Fixed in
+  cepac-transm PR #10; once it is merged, remove the allowance in
+  `crashed_at_exit` so a crash fails the checks again.
 - PrEP eligibility in the scenario (`partnerStatus`, `partnerRiskLevel`, ...) is
   parsed but not used, so people start PrEP with no infected partner.
 
