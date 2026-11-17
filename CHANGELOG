@@ -11,6 +11,24 @@ A dynamic agent-based model for HIV transmission
 Unreleased
 ==========
 
+- Runs are about 1.75 times faster: on the 10,000 agent, 840 month Miami
+  PrEP scenario, CPU time fell from 207-213 s to 120-121 s, and peak memory
+  rose by 3 MB (153 to 156 MB). Partner draws no longer scan every month-of-
+  age bucket to count and pick candidates; each sexual-mixing bucket keeps a
+  running-total index instead. The same people are drawn with the same random
+  numbers, and every TRANSM trace file is byte-identical to before (checked
+  at 2,000 agents for three seeds and at 10,000).
+
+- Runs no longer abort with std::length_error when the wall clock steps back
+  (seen on WSL). The run-time estimate became NaN and the console progress
+  bar turned it into an impossible length. Outputs are unaffected.
+
+- tests/regression/compare_binaries.sh runs one fixed-seed scenario with two
+  builds and requires identical TRANSM outputs; it can also be registered as
+  a CTest test (see tests/CMakeLists.txt). CEPAC's run.out and
+  cepacPopstats.out are only compared with a warning, because two runs of the
+  same build already differ there.
+
 - The single-person trace can follow people FOCUS selects (issue #98). A new
   optional <numberFocusToTrace> in the <singlePerson> block puts the first N
   people FOCUS selects on the trace from the month of selection. The trace now

@@ -1,7 +1,11 @@
 #ifndef RUNTIMEPREDICTOR_HPP
 #define RUNTIMEPREDICTOR_HPP
 
+#include <cmath>
+#include <deque>
 #include <numeric>
+#include <string>
+#include <utility>
 
 namespace transm {
 
@@ -81,7 +85,12 @@ public:
 
     std::string MakeProgressBar(std::size_t bar_length) const
     {
-        std::size_t bars_completed = (int)(GetEstimatedPercentComplete() * bar_length);
+        /* A wall-clock step back gives a negative month time and a NaN estimate from then
+         * on, and running past the planned months puts it above 1. Either used to make the
+         * bar length wrap around and abort the run with std::length_error. */
+        double percent = GetEstimatedPercentComplete();
+        percent = percent > 0 ? (percent < 1 ? percent : 1) : 0;
+        std::size_t bars_completed = (std::size_t)(percent * bar_length);
         std::size_t bars_remaining = bar_length - bars_completed;
         std::string bar = "[" + std::string(bars_completed, '=') + "|" + std::string(bars_remaining, '=') + "]";
         return bar;
