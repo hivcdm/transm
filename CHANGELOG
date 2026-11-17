@@ -35,6 +35,19 @@ Unreleased
   them from 0 to 11, so the test failed. The test is corrected; the model is
   unchanged.
 
+- <prepEligibility> is now applied. It was parsed but never used, so anyone
+  undiagnosed, sexually active and partnered could start PrEP. Now a person
+  must also have <partnerCount> partnerships and meet at least one of the
+  risk criteria given: a partner with the <partnerStatus> HIV status
+  (any-positive = infected, diagnosed or not), a partner at
+  <partnerRiskLevel>, or a condomless act within <monthsSinceUnprotectedAct>
+  months. People already on PrEP are not taken off by it. <partnerCount> is
+  read under that name as well as <currentPartnerCount>, and restarting PrEP
+  uses <prepReturnToCare> instead of the access rate (identical lists in the
+  Miami scenarios). On the 100k Miami FOCUS scenario (before the <prepRetention> fix) the
+  eligible pool fell 3% and PrEP use was unchanged; requiring all criteria
+  at once would have cut it by 98%. Scenarios without <prepEligibility> give identical results.
+
 - The single-person trace can follow people FOCUS selects (issue #98). A new
   optional <numberFocusToTrace> in the <singlePerson> block puts the first N
   people FOCUS selects on the trace from the month of selection. The trace now

@@ -6,18 +6,10 @@
 
 #include "entity.hpp"
 #include "demographicprofile.hpp"
+#include "prepeligibility.hpp"
 #include "utility/time.hpp"
 
 namespace transm {
-
-/** Contains the specified parameters for pre-Exposure Prophylaxis */
-struct PrepEligibility
-{
-    int currentPartnerCount = -1;
-    HIVStatus partnerStatus;
-    RiskLevel partnerRiskLevel;
-    Time monthsSinceUnprotectedAct;
-};
 
 class PrepParameters
 {
@@ -27,11 +19,11 @@ class PrepParameters
     std::array<double, 4> adherence = {0.0, 0.0, 0.0, 0.0};
     std::array<double, 12> retention = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                                         0.0, 0.0, 0.0, 0.0, 0.0};
-    double returnToCare = 0.0;
+    /* Yearly rates, like access; empty means "return at the access rate". */
+    std::vector<double> returnToCare;
 
     double efficacy;
 
-    using ProfileMap = std::map<DemographicProfile, double>;
     using AdherenceProfileMap = std::map<DemographicProfile, std::array<double, 4>>;
     using RetentionProfileMap = std::map<DemographicProfile, std::array<double, 12>>;
     using AccessProfileMap = std::map<DemographicProfile, std::vector<double>>;
@@ -41,7 +33,7 @@ class PrepParameters
         AccessProfileMap accessProfiles;
         AdherenceProfileMap adherenceProfiles;
         RetentionProfileMap retentionProfiles;
-        ProfileMap returnToCareProfiles;
+        AccessProfileMap returnToCareProfiles;
     };
 
     /* Copies share the configuration tables. Individual defaults, including
@@ -112,19 +104,20 @@ public:
         return value;
     }
 
-    void SetDefaultReturnToCare(double value) { returnToCare = value; }
-    void SetProfileReturnToCare(const DemographicProfile& profile, double value)
+    void SetDefaultReturnToCare(std::vector<double> value) { returnToCare = std::move(value); }
+    void SetProfileReturnToCare(const DemographicProfile& profile, std::vector<double> value)
     {
-        MutableProfiles().returnToCareProfiles.emplace(profile, value);
+        MutableProfiles().returnToCareProfiles.emplace(profile, std::move(value));
     }
-    double GetReturnToCare(const DemographicProfile& profile) const
+    /** Yearly return-to-care rates for a profile; empty when the scenario gives none. */
+    const std::vector<double> &GetReturnToCare(const DemographicProfile& profile) const
     {
-        double value = returnToCare;
+        const std::vector<double> *value = &returnToCare;
         for (const auto& pair : profiles->returnToCareProfiles)
             if (profile.match(pair.first))
-                value = pair.second;
+                value = &pair.second;
 
-        return value;
+        return *value;
     }
 
 

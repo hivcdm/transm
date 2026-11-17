@@ -27,7 +27,7 @@ TEST(PrepParametersTest, CopiesShareTablesButKeepDefaultsAndChangesIndependent)
     auto male = MaleProfile();
     original.SetDefaultAccess({0.1, 0.2});
     original.SetDefaultAdherence({1.0, 0.0, 0.0, 0.0});
-    original.SetDefaultReturnToCare(0.3);
+    original.SetDefaultReturnToCare({0.3});
     original.SetEfficacy(0.8);
     original.SetEnabled(true);
     auto copy = original;
@@ -43,15 +43,15 @@ TEST(PrepParametersTest, CopiesShareTablesButKeepDefaultsAndChangesIndependent)
     std::array<double, 12> retention{};
     retention[0] = 0.7;
     copy.SetProfileRetention(male, retention);
-    copy.SetProfileReturnToCare(male, 0.9);
+    copy.SetProfileReturnToCare(male, {0.9});
     EXPECT_EQ(original.GetAccess(male), (std::vector<double>{0.1, 0.2}));
     EXPECT_EQ(copy.GetAccess(male), (std::vector<double>{0.5}));
     EXPECT_DOUBLE_EQ(original.GetAdherence(male)[0], 1.0);
     EXPECT_DOUBLE_EQ(copy.GetAdherence(male)[2], 1.0);
     EXPECT_DOUBLE_EQ(original.GetRetention(male)[0], 0.0);
     EXPECT_DOUBLE_EQ(copy.GetRetention(male)[0], 0.7);
-    EXPECT_DOUBLE_EQ(original.GetReturnToCare(male), 0.3);
-    EXPECT_DOUBLE_EQ(copy.GetReturnToCare(male), 0.9);
+    EXPECT_EQ(original.GetReturnToCare(male), (std::vector<double>{0.3}));
+    EXPECT_EQ(copy.GetReturnToCare(male), (std::vector<double>{0.9}));
 
     auto snapshot = original;
     original.SetDefaultAccess({0.6});
