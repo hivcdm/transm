@@ -1,6 +1,7 @@
 #include <vector>
 
 #include "male.hpp"
+#include "infectionrisk.hpp"
 #include "female.hpp"
 #include "sexualpartnership.hpp"
 #include "sexualbehavior.hpp"
@@ -323,7 +324,8 @@ Male::Male(EventParams &_eventParams, Age _age, bool _circumcised,
     const DemographicProfile &profile, unsigned int _populationID,
     const Male::SubPopParams &params, const PrepParameters &prepParams) :
     Entity(_age, _populationID, prepParams),
-    populationSpecificParams(params)
+    populationSpecificParams(params),
+    times_selected_(0)
 {
 	/* Only set the gender and sexual orientation */
 	/* The other demographic profiles values get set in the Entity constructor -- don't overwrite the entire profile */
@@ -431,23 +433,9 @@ double Male::getFOI(Entity *_p, const std::unordered_map<TransmissionType, std::
     double prepEfficacy = _p->GetPreExposureProphylaxisEfficacy();
     // cout << prepEfficacy << endl;
 
-    // corrections for efficacy based on prep adherence level
-    PrepAherenceLevel prepadherencelevel = _p->getAdhereceStatus();
-    if (prepadherencelevel == PrepAherenceLevel::PREP_SUBSTANTIALLY_ADHERENT) {
-        prepEfficacy *= 0.80;
-    } else if (prepadherencelevel == PrepAherenceLevel::PREP_PARTIALLY_ADHERENT) {
-        prepEfficacy *= 0.10;
-    } else if (prepadherencelevel == PrepAherenceLevel::PREP_INADHERENT) {
-        prepEfficacy *= 0.05;
-    } else if (prepadherencelevel == PrepAherenceLevel::PREP_ADHERENT) {
-        prepEfficacy *= 0.99;
-    } else if (prepadherencelevel == PrepAherenceLevel::PREP_OFF_PREP) {
-        prepEfficacy *= 0.0;
-    } else {
-        cout << "Invalid adherence level" << endl;
-    }
+    prepEfficacy = PrepEfficacyForAdherence(prepEfficacy, _p->getAdhereceStatus());
  
-    double FOI = baseFoi * (1 - condomEff) * (1 - microbicideEfficacy) * (1 - prepEfficacy);
+    double FOI = ForceOfInfection(baseFoi, condomEff, microbicideEfficacy, prepEfficacy);
 
     if(_eventParams.trace_files[EventParams::TraceFile::Type::SinglePerson].enabled && (trace() || _p->trace()))
 	{

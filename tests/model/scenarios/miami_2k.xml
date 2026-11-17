@@ -1,0 +1,1417 @@
+<?xml version="1.0" encoding="utf-8"?>
+<simulation version="4.5">
+  <debugLevel>0</debugLevel>
+  <duration>840</duration>
+  <fixedSeed>0</fixedSeed>
+  <monthOf1990>600</monthOf1990>
+  <traceFiles>
+    <population enabled="true" tossIfCalibFail="false">
+      <extension>Population.xls</extension>
+    </population>
+    <infection enabled="true" tossIfCalibFail="false">
+      <extension>Infections.xls</extension>
+    </infection>
+    <partnership enabled="true" tossIfCalibFail="false">
+      <extension>Partnership.xls</extension>
+    </partnership>
+    <survival enabled="false" tossIfCalibFail="true">
+      <extension>Survival.xls</extension>
+    </survival>
+    <costEffectiveness enabled="false" tossIfCalibFail="true">
+      <extension>CE.xls</extension>
+      <condomCost>0.5</condomCost>
+      <circumcisionCost>500</circumcisionCost>
+      <prEPCost>1</prEPCost>
+      <vaginalMicrobicideCost>1</vaginalMicrobicideCost>
+    </costEffectiveness>
+    <clinical enabled="true" tossIfCalibFail="true">
+      <extension>Clinical.xls</extension>
+    </clinical>
+    <events enabled="false" tossIfCalibFail="true">
+      <extension>Events.xls</extension>
+    </events>
+    <singlePerson enabled="false" tossIfCalibFail="true">
+      <extension>SinglePerson.xls</extension>
+      <numberToTracePerAgeRange>15</numberToTracePerAgeRange>
+      <numberNewbornsToTrace>500</numberNewbornsToTrace>
+      <monthTraceNewborns>600</monthTraceNewborns>
+      <tracePrevalentCases>1</tracePrevalentCases>
+    </singlePerson>
+    <lifeExpectancy enabled="false" tossIfCalibFail="true">
+      <extension>LE.xls</extension>
+      <medianConfidenceInterval>0.95</medianConfidenceInterval>
+      <time>660</time>
+      <time>780</time>
+      <time>900</time>
+      <time>1020</time>
+      <time>1140</time>
+    </lifeExpectancy>
+    <prepOutcomes enabled="true" tossIfCalibFail="false">
+      <extension>PrepOutcomes.xls</extension>
+    </prepOutcomes>
+    <partnerAcquisition enabled="false" tossIfCalibFail="true">
+      <extension>PartAcq.xls</extension>
+      <time>6</time>
+      <time>60</time>
+      <time>120</time>
+      <time>599</time>
+      <time>660</time>
+    </partnerAcquisition>
+    <partnerNetwork enabled="true" tossIfCalibFail="false">
+      <time>720</time>
+      <time>839</time>
+    </partnerNetwork>
+    <calibrationStatistics enabled="true" tossIfCalibFail="false">
+      <extension>CalibStats.xls</extension>
+    </calibrationStatistics>
+    <artRollout enabled="true" tossIfCalibFail="false">
+      <extension>ARTRollout.xls</extension>
+    </artRollout>
+    <shiftedOutcomes enabled="false" tossIfCalibFail="true">
+      <extension>ShiftedOutcomes.xls</extension>
+    </shiftedOutcomes>
+  </traceFiles>
+  <concurrencyDefinition>
+    <definition id="0">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="1">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="2">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="3">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="4">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="5">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="6">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="7">
+      <minNeeded>2</minNeeded>
+      <allow>0</allow>
+    </definition>
+    <definition id="8">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="9">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="10">
+      <minNeeded>2</minNeeded>
+      <allow>1</allow>
+    </definition>
+    <definition id="11">
+      <minNeeded>2</minNeeded>
+      <allow>0</allow>
+    </definition>
+    <definition id="12">
+      <minNeeded>2</minNeeded>
+      <allow>0</allow>
+    </definition>
+    <definition id="13">
+      <minNeeded>2</minNeeded>
+      <allow>0</allow>
+    </definition>
+    <definition id="14">
+      <minNeeded>2</minNeeded>
+      <allow>0</allow>
+    </definition>
+    <definition id="15">
+      <minNeeded>2</minNeeded>
+      <allow>0</allow>
+    </definition>
+  </concurrencyDefinition>
+  <calibration enabled="false">
+    <monthOfCalibration>600</monthOfCalibration>
+    <partnershipOutcomes>
+      <steadyPrev>
+        <popOfInterest>0</popOfInterest>
+        <lwrBound>0.340</lwrBound>
+        <uprBound>0.570</uprBound>
+      </steadyPrev>
+      <casualPrev>
+        <popOfInterest>0</popOfInterest>
+        <lwrBound>0.028</lwrBound>
+        <uprBound>0.203</uprBound>
+      </casualPrev>
+      <steadyMSMPrev>
+        <popOfInterest>0</popOfInterest>
+        <lwrBound>0.053</lwrBound>
+        <uprBound>0.428</uprBound>
+      </steadyMSMPrev>
+      <regularMSMPrev>
+        <popOfInterest>0</popOfInterest>
+        <lwrBound>0.019</lwrBound>
+        <uprBound>0.394</uprBound>
+      </regularMSMPrev>
+      <casualMSMPrev>
+        <popOfInterest>0</popOfInterest>
+        <lwrBound>0.073</lwrBound>
+        <uprBound>0.518</uprBound>
+      </casualMSMPrev>
+      <cswPrev>
+        <popOfInterest>0</popOfInterest>
+        <lwrBound>0.032</lwrBound>
+        <uprBound>0.087</uprBound>
+      </cswPrev>
+      <propInCon>
+        <popOfInterest>1</popOfInterest>
+        <lwrBound>0.113</lwrBound>
+        <uprBound>0.25</uprBound>
+      </propInCon>
+      <femaleCasualPrev>
+        <ratio>1</ratio>
+      </femaleCasualPrev>
+      <femalePropInCon>
+        <ratio>1</ratio>
+      </femalePropInCon>
+      <femaleNumActsLRtoHR>
+        <ratio>2</ratio>
+      </femaleNumActsLRtoHR>
+      <numActs>
+        <popOfInterest>0</popOfInterest>
+        <lwrBound>0</lwrBound>
+        <uprBound>31</uprBound>
+      </numActs>
+    </partnershipOutcomes>
+    <yearlyIncidenceRanges>
+      <yearlyIncidenceRange time="648" lower="0.0001518" upper="0.0013660"/>
+    </yearlyIncidenceRanges>
+  </calibration>
+  <population id="Miami">
+    <ageOfMajority>17</ageOfMajority>
+    <initialState useCounts="false">
+      <size>2000</size>
+      <useCounts>false</useCounts>
+      <entityDistributions>
+        <ageRangeDistributions>
+          <ageRange lower="0" upper="14">0.17</ageRange>
+          <ageRange lower="15" upper="19">0.06</ageRange>
+          <ageRange lower="20" upper="24">0.06</ageRange>
+          <ageRange lower="25" upper="34">0.14</ageRange>
+          <ageRange lower="35" upper="44">0.14</ageRange>
+          <ageRange lower="45" upper="54">0.15</ageRange>
+          <ageRange lower="55" upper="100">0.28</ageRange>
+        </ageRangeDistributions>
+        <demographicDistributions>
+          <gender MALE="0.49" FEMALE="0.51"/>
+          <orientation MSW="0.925" MSM="0.053" MSMW="0.022"/>
+          <raceAndEthnicityProfiles>
+            <raceAndEthnicity type="WHITE:NON_HISPANIC">0.13</raceAndEthnicity>
+            <raceAndEthnicity type="WHITE:HISPANIC">0.69</raceAndEthnicity>
+            <raceAndEthnicity type="BLACK:NON_HISPANIC">0.16</raceAndEthnicity>
+            <raceAndEthnicity type="OTHER:NON_HISPANIC">0.02</raceAndEthnicity>
+          </raceAndEthnicityProfiles>
+        </demographicDistributions>
+      </entityDistributions>
+    </initialState>
+    <births useBirthRate="false">
+      <birthRate>0.0111</birthRate>
+      <fertilityRate>
+        <rateForAgeRange lower="15" upper="44">0.00520</rateForAgeRange>
+      </fertilityRate>
+      <demographicDistributions>
+        <gender MALE="0.49" FEMALE="0.51"/>
+        <orientation MSW="0.925" MSM="0.053" MSMW="0.022"/>
+        <raceAndEthnicityProfiles>
+          <raceAndEthnicity type="WHITE:NON_HISPANIC">0.13</raceAndEthnicity>
+          <raceAndEthnicity type="WHITE:HISPANIC">0.69</raceAndEthnicity>
+          <raceAndEthnicity type="BLACK:NON_HISPANIC">0.16</raceAndEthnicity>
+          <raceAndEthnicity type="OTHER:NON_HISPANIC">0.02</raceAndEthnicity>
+        </raceAndEthnicityProfiles>
+      </demographicDistributions>
+    </births>
+    <initialInfections>
+      <delay>602</delay>
+      <chanceSeedChronicInfection>0.98</chanceSeedChronicInfection>
+      <useCoefficients>true</useCoefficients>
+      <seedPrevalence>0.0097</seedPrevalence>
+      <profile bucket="SA:FEMALE:MSW:*:NON_CSW:WHITE:NON_HISPANIC" risk="low" age-range="17-49">1</profile>
+      <profile bucket="SA:FEMALE:MSW:*:NON_CSW:WHITE:HISPANIC" risk="low" age-range="17-49">1</profile>
+      <profile bucket="SA:FEMALE:MSW:*:NON_CSW:BLACK:NON_HISPANIC" risk="low" age-range="17-49">3</profile>
+      <profile bucket="SA:FEMALE:MSW:*:NON_CSW:OTHER:NON_HISPANIC" risk="low" age-range="17-49">1</profile>
+      <profile bucket="SA:FEMALE:MSW:*:NON_CSW:WHITE:NON_HISPANIC" risk="high" age-range="17-49">3</profile>
+      <profile bucket="SA:FEMALE:MSW:*:NON_CSW:WHITE:HISPANIC" risk="high" age-range="17-49">3</profile>
+      <profile bucket="SA:FEMALE:MSW:*:NON_CSW:BLACK:NON_HISPANIC" risk="high" age-range="17-49">9</profile>
+      <profile bucket="SA:FEMALE:MSW:*:NON_CSW:OTHER:NON_HISPANIC" risk="high" age-range="17-49">3</profile>
+      <profile bucket="SA:FEMALE:MSW:*:CSW:WHITE:NON_HISPANIC" risk="high" age-range="17-49">30</profile>
+      <profile bucket="SA:FEMALE:MSW:*:CSW:WHITE:HISPANIC" risk="high" age-range="17-49">30</profile>
+      <profile bucket="SA:FEMALE:MSW:*:CSW:BLACK:NON_HISPANIC" risk="high" age-range="17-49">90</profile>
+      <profile bucket="SA:FEMALE:MSW:*:CSW:OTHER:NON_HISPANIC" risk="high" age-range="17-49">30</profile>
+      <profile bucket="SA:MALE:MSW:*:NON_CSW:WHITE:NON_HISPANIC" risk="low" age-range="17-49">5</profile>
+      <profile bucket="SA:MALE:MSW:*:NON_CSW:WHITE:HISPANIC" risk="low" age-range="17-49">5</profile>
+      <profile bucket="SA:MALE:MSW:*:NON_CSW:BLACK:NON_HISPANIC" risk="low" age-range="17-49">15</profile>
+      <profile bucket="SA:MALE:MSW:*:NON_CSW:OTHER:NON_HISPANIC" risk="low" age-range="17-49">5</profile>
+      <profile bucket="SA:MALE:MSMW:*:NON_CSW:WHITE:NON_HISPANIC" risk="low" age-range="17-49">335</profile>
+      <profile bucket="SA:MALE:MSMW:*:NON_CSW:WHITE:HISPANIC" risk="low" age-range="17-49">335</profile>
+      <profile bucket="SA:MALE:MSMW:*:NON_CSW:BLACK:NON_HISPANIC" risk="low" age-range="17-49">1005</profile>
+      <profile bucket="SA:MALE:MSMW:*:NON_CSW:OTHER:NON_HISPANIC" risk="low" age-range="17-49">335</profile>
+      <profile bucket="SA:MALE:MSM:*:NON_CSW:WHITE:NON_HISPANIC" risk="low" age-range="17-49">335</profile>
+      <profile bucket="SA:MALE:MSM:*:NON_CSW:WHITE:HISPANIC" risk="low" age-range="17-49">335</profile>
+      <profile bucket="SA:MALE:MSM:*:NON_CSW:BLACK:NON_HISPANIC" risk="low" age-range="17-49">1005</profile>
+      <profile bucket="SA:MALE:MSM:*:NON_CSW:OTHER:NON_HISPANIC" risk="low" age-range="17-49">335</profile>
+      <profile bucket="SA:MALE:MSW:*:NON_CSW:WHITE:NON_HISPANIC" risk="high" age-range="17-49">15</profile>
+      <profile bucket="SA:MALE:MSW:*:NON_CSW:WHITE:HISPANIC" risk="high" age-range="17-49">15</profile>
+      <profile bucket="SA:MALE:MSW:*:NON_CSW:BLACK:NON_HISPANIC" risk="high" age-range="17-49">45</profile>
+      <profile bucket="SA:MALE:MSW:*:NON_CSW:OTHER:NON_HISPANIC" risk="high" age-range="17-49">15</profile>
+      <profile bucket="SA:MALE:MSMW:*:NON_CSW:WHITE:NON_HISPANIC" risk="high" age-range="17-49">1005</profile>
+      <profile bucket="SA:MALE:MSMW:*:NON_CSW:WHITE:HISPANIC" risk="high" age-range="17-49">1005</profile>
+      <profile bucket="SA:MALE:MSMW:*:NON_CSW:BLACK:NON_HISPANIC" risk="high" age-range="17-49">3015</profile>
+      <profile bucket="SA:MALE:MSMW:*:NON_CSW:OTHER:NON_HISPANIC" risk="high" age-range="17-49">1005</profile>
+      <profile bucket="SA:MALE:MSM:*:NON_CSW:WHITE:NON_HISPANIC" risk="high" age-range="17-49">1005</profile>
+      <profile bucket="SA:MALE:MSM:*:NON_CSW:WHITE:HISPANIC" risk="high" age-range="17-49">1005</profile>
+      <profile bucket="SA:MALE:MSM:*:NON_CSW:BLACK:NON_HISPANIC" risk="high" age-range="17-49">3015</profile>
+      <profile bucket="SA:MALE:MSM:*:NON_CSW:OTHER:NON_HISPANIC" risk="high" age-range="17-49">1005</profile>
+    </initialInfections>
+    <transmissionCoefficients>
+      <maleToFemale>
+        <hvl0>0.0001</hvl0>
+        <hvl1>0.0001</hvl1>
+        <hvl2>0.0011</hvl2>
+        <hvl3>0.0012</hvl3>
+        <hvl4>0.0014</hvl4>
+        <hvl5>0.0023</hvl5>
+        <hvl6>0.0023</hvl6>
+        <primary>0.0081</primary>
+        <lateStage>0.0043</lateStage>
+      </maleToFemale>
+      <femaleToMale>
+        <hvl0>0.00005</hvl0>
+        <hvl1>0.00005</hvl1>
+        <hvl2>0.00055</hvl2>
+        <hvl3>0.0006</hvl3>
+        <hvl4>0.0007</hvl4>
+        <hvl5>0.00115</hvl5>
+        <hvl6>0.00115</hvl6>
+        <primary>0.00405</primary>
+        <lateStage>0.00215</lateStage>
+      </femaleToMale>
+      <maleToMale>
+        <hvl0>0.0008</hvl0>
+        <hvl1>0.0008</hvl1>
+        <hvl2>0.0088</hvl2>
+        <hvl3>0.0096</hvl3>
+        <hvl4>0.0110</hvl4>
+        <hvl5>0.0180</hvl5>
+        <hvl6>0.0180</hvl6>
+        <primary>0.0650</primary>
+        <lateStage>0.0344</lateStage>
+      </maleToMale>
+    </transmissionCoefficients>
+    <preExposureProphylaxis>
+      <prepEfficacy>0.80</prepEfficacy>
+      <prepDefaults>
+        <prepEligibility>
+          <partnerCount>1</partnerCount>
+          <partnerStatus>any-positive</partnerStatus>
+          <partnerRiskLevel>high</partnerRiskLevel>
+          <monthsSinceUnprotectedAct>12</monthsSinceUnprotectedAct>
+        </prepEligibility>
+        <prepAccess>0.00000619,0.00000321,0.00000752,0.00000564,0.000028377,0.00009029,0.00019291,0.00006637,0.00000000032,0.00000000041,0.00000000058,0.00000000077</prepAccess>
+        <prepAdherence>0.0189,0.0257,0.04,0.9154</prepAdherence>
+        <prepRetention>0.040,0.040,0.040,0.010,0.010,0.010,0.010,0.011,0.011,0.015,0.015,0.015</prepRetention>
+        <prepReturnToCare>0.00000619,0.00000321,0.00000752,0.00000564,0.000028377,0.00009029,0.00019291,0.00006637,0.00000000032,0.00000000041,0.00000000058,0.00000000077</prepReturnToCare>
+      </prepDefaults>
+      <prepProfiles>
+        <demographic bucket="SA:MALE:MSW:*:*:WHITE:NON_HISPANIC">
+          <prepAccess>0.00000515,0.0000073,0.00001356,0.0000247,0.00004163,0.00004682,0.00009434,0.00006832,0.0000403,0.00003724,0.00003406,0.00002599</prepAccess>
+          <prepAdherence>0.0189,0.0257,0.04,0.9154</prepAdherence>
+          <prepRetention>0.040,0.040,0.040,0.010,0.010,0.010,0.010,0.011,0.011,0.015,0.015,0.015</prepRetention>
+          <prepReturnToCare>0.00000515,0.0000073,0.00001356,0.0000247,0.00004163,0.00004682,0.00009434,0.00006832,0.0000403,0.00003724,0.00003406,0.00002599</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:MALE:MSW:*:*:WHITE:HISPANIC">
+          <prepAccess>0.00000515,0.0000073,0.00001356,0.0000247,0.00004163,0.00004682,0.00009434,0.00006832,0.0000403,0.00003724,0.00003406,0.00002599</prepAccess>
+          <prepAdherence>0.0568,0.0449,0.1320,0.7663</prepAdherence>
+          <prepRetention>0.140,0.059,0.061,0.012,0.012,0.012,0.021,0.021,0.022,0.004,0.004,0.004</prepRetention>
+          <prepReturnToCare>0.00000515,0.0000073,0.00001356,0.0000247,0.00004163,0.00004682,0.00009434,0.00006832,0.0000403,0.00003724,0.00003406,0.00002599</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:MALE:MSW:*:*:BLACK:NON_HISPANIC">
+          <prepAccess>0.00000515,0.0000073,0.00001356,0.0000247,0.00004163,0.00004682,0.00009434,0.00006832,0.0000403,0.00003724,0.00003406,0.00002599</prepAccess>
+          <prepAdherence>0.0455,0.1317,0.2484,0.5744</prepAdherence>
+          <prepRetention>0.170,0.078,0.082,0.031,0.032,0.033,0.014,0.014,0.015,0.015,0.015,0.015</prepRetention>
+          <prepReturnToCare>0.00000515,0.0000073,0.00001356,0.0000247,0.00004163,0.00004682,0.00009434,0.00006832,0.0000403,0.00003724,0.00003406,0.00002599</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:MALE:MSW:*:*:BLACK:HISPANIC">
+          <prepAccess>0.00000515,0.0000073,0.00001356,0.0000247,0.00004163,0.00004682,0.00009434,0.00006832,0.0000403,0.00003724,0.00003406,0.00002599</prepAccess>
+          <prepAdherence>0.0568,0.0449,0.1320,0.7663</prepAdherence>
+          <prepRetention>0.140,0.059,0.061,0.012,0.012,0.012,0.021,0.021,0.022,0.004,0.004,0.004</prepRetention>
+          <prepReturnToCare>0.00000515,0.0000073,0.00001356,0.0000247,0.00004163,0.00004682,0.00009434,0.00006832,0.0000403,0.00003724,0.00003406,0.00002599</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:MALE:MSMW:*:*:WHITE:NON_HISPANIC">
+          <prepAccess>0.00031671,0.00081424,0.00134349,0.0018723,0.00366698,0.00564485,0.00913035,0.00748419,0.00458631,0.00423758,0.00387576,0.00326806</prepAccess>
+          <prepAdherence>0.0189,0.0257,0.04,0.9154</prepAdherence>
+          <prepRetention>0.040,0.040,0.040,0.010,0.010,0.010,0.010,0.011,0.011,0.015,0.015,0.015</prepRetention>
+          <prepReturnToCare>0.00031671,0.00081424,0.00134349,0.0018723,0.00366698,0.00564485,0.00913035,0.00748419,0.00458631,0.00423758,0.00387576,0.00326806</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:MALE:MSMW:*:*:WHITE:HISPANIC">
+          <prepAccess>0.00031671,0.00081424,0.00134349,0.0018723,0.00366698,0.00564485,0.00913035,0.00748419,0.00458631,0.00423758,0.00387576,0.00326806</prepAccess>
+          <prepAdherence>0.0568,0.0449,0.1320,0.7663</prepAdherence>
+          <prepRetention>0.140,0.059,0.061,0.012,0.012,0.012,0.021,0.021,0.022,0.004,0.004,0.004</prepRetention>
+          <prepReturnToCare>0.00031671,0.00081424,0.00134349,0.0018723,0.00366698,0.00564485,0.00913035,0.00748419,0.00458631,0.00423758,0.00387576,0.00326806</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:MALE:MSMW:*:*:BLACK:NON_HISPANIC">
+          <prepAccess>0.00031671,0.00081424,0.00134349,0.0018723,0.00366698,0.00564485,0.00913035,0.00748419,0.00458631,0.00423758,0.00387576,0.00326806</prepAccess>
+          <prepAdherence>0.0455,0.1317,0.2484,0.5744</prepAdherence>
+          <prepRetention>0.170,0.078,0.082,0.031,0.032,0.033,0.014,0.014,0.015,0.015,0.015,0.015</prepRetention>
+          <prepReturnToCare>0.00031671,0.00081424,0.00134349,0.0018723,0.00366698,0.00564485,0.00913035,0.00748419,0.00458631,0.00423758,0.00387576,0.00326806</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:MALE:MSMW:*:*:BLACK:HISPANIC">
+          <prepAccess>0.00031671,0.00081424,0.00134349,0.0018723,0.00366698,0.00564485,0.00913035,0.00748419,0.00458631,0.00423758,0.00387576,0.00326806</prepAccess>
+          <prepAdherence>0.0568,0.0449,0.1320,0.7663</prepAdherence>
+          <prepRetention>0.140,0.059,0.061,0.012,0.012,0.012,0.021,0.021,0.022,0.004,0.004,0.004</prepRetention>
+          <prepReturnToCare>0.00031671,0.00081424,0.00134349,0.0018723,0.00366698,0.00564485,0.00913035,0.00748419,0.00458631,0.00423758,0.00387576,0.00326806</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:MALE:MSM:*:*:WHITE:NON_HISPANIC">
+          <prepAccess>0.00031671,0.00081424,0.00134349,0.0018723,0.00366698,0.00564485,0.00913035,0.00748419,0.00458631,0.00423758,0.00387576,0.00326806</prepAccess>
+          <prepAdherence>0.0189,0.0257,0.04,0.9154</prepAdherence>
+          <prepRetention>0.040,0.040,0.040,0.010,0.010,0.010,0.010,0.011,0.011,0.015,0.015,0.015</prepRetention>
+          <prepReturnToCare>0.00031671,0.00081424,0.00134349,0.0018723,0.00366698,0.00564485,0.00913035,0.00748419,0.00458631,0.00423758,0.00387576,0.00326806</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:MALE:MSM:*:*:WHITE:HISPANIC">
+          <prepAccess>0.00031671,0.00081424,0.00134349,0.0018723,0.00366698,0.00564485,0.00913035,0.00748419,0.00458631,0.00423758,0.00387576,0.00326806</prepAccess>
+          <prepAdherence>0.0568,0.0449,0.1320,0.7663</prepAdherence>
+          <prepRetention>0.140,0.059,0.061,0.012,0.012,0.012,0.021,0.021,0.022,0.004,0.004,0.004</prepRetention>
+          <prepReturnToCare>0.00031671,0.00081424,0.00134349,0.0018723,0.00366698,0.00564485,0.00913035,0.00748419,0.00458631,0.00423758,0.00387576,0.00326806</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:MALE:MSM:*:*:BLACK:NON_HISPANIC">
+          <prepAccess>0.00031671,0.00081424,0.00134349,0.0018723,0.00366698,0.00564485,0.00913035,0.00748419,0.00458631,0.00423758,0.00387576,0.00326806</prepAccess>
+          <prepAdherence>0.0455,0.1317,0.2484,0.5744</prepAdherence>
+          <prepRetention>0.170,0.078,0.082,0.031,0.032,0.033,0.014,0.014,0.015,0.015,0.015,0.015</prepRetention>
+          <prepReturnToCare>0.00031671,0.00081424,0.00134349,0.0018723,0.00366698,0.00564485,0.00913035,0.00748419,0.00458631,0.00423758,0.00387576,0.00326806</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:MALE:MSM:*:*:BLACK:HISPANIC">
+          <prepAccess>0.00031671,0.00081424,0.00134349,0.0018723,0.00366698,0.00564485,0.00913035,0.00748419,0.00458631,0.00423758,0.00387576,0.00326806</prepAccess>
+          <prepAdherence>0.0568,0.0449,0.1320,0.7663</prepAdherence>
+          <prepRetention>0.140,0.059,0.061,0.012,0.012,0.012,0.021,0.021,0.022,0.004,0.004,0.004</prepRetention>
+          <prepReturnToCare>0.00031671,0.00081424,0.00134349,0.0018723,0.00366698,0.00564485,0.00913035,0.00748419,0.00458631,0.00423758,0.00387576,0.00326806</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:FEMALE:MSW:*:NON_CSW:WHITE:NON_HISPANIC">
+          <prepAccess>0.00000619,0.00000321,0.00000752,0.00000564,0.000028377,0.00009029,0.00019291,0.00006637,0.00000000032,0.00000000041,0.00000000058,0.00000000077</prepAccess>
+          <prepAdherence>0.0189,0.0257,0.04,0.9154</prepAdherence>
+          <prepRetention>0.040,0.040,0.040,0.010,0.010,0.010,0.010,0.011,0.011,0.015,0.015,0.015</prepRetention>
+          <prepReturnToCare>0.00000619,0.00000321,0.00000752,0.00000564,0.000028377,0.00009029,0.00019291,0.00006637,0.00000000032,0.00000000041,0.00000000058,0.00000000077</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:FEMALE:MSW:*:NON_CSW:WHITE:HISPANIC">
+          <prepAccess>0.00000619,0.00000321,0.00000752,0.00000564,0.000028377,0.00009029,0.00019291,0.00006637,0.00000000032,0.00000000041,0.00000000058,0.00000000077</prepAccess>
+          <prepAdherence>0.0568,0.0449,0.1320,0.7663</prepAdherence>
+          <prepRetention>0.140,0.059,0.061,0.012,0.012,0.012,0.021,0.021,0.022,0.004,0.004,0.004</prepRetention>
+          <prepReturnToCare>0.00000619,0.00000321,0.00000752,0.00000564,0.000028377,0.00009029,0.00019291,0.00006637,0.00000000032,0.00000000041,0.00000000058,0.00000000077</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:FEMALE:MSW:*:NON_CSW:BLACK:NON_HISPANIC">
+          <prepAccess>0.00000619,0.00000321,0.00000752,0.00000564,0.000028377,0.00009029,0.00019291,0.00006637,0.00000000032,0.00000000041,0.00000000058,0.00000000077</prepAccess>
+          <prepAdherence>0.0455,0.1317,0.2484,0.5744</prepAdherence>
+          <prepRetention>0.170,0.078,0.082,0.031,0.032,0.033,0.014,0.014,0.015,0.015,0.015,0.015</prepRetention>
+          <prepReturnToCare>0.00000619,0.00000321,0.00000752,0.00000564,0.000028377,0.00009029,0.00019291,0.00006637,0.00000000032,0.00000000041,0.00000000058,0.00000000077</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:FEMALE:MSW:*:NON_CSW:BLACK:HISPANIC">
+          <prepAccess>0.00000619,0.00000321,0.00000752,0.00000564,0.000028377,0.00009029,0.00019291,0.00006637,0.00000000032,0.00000000041,0.00000000058,0.00000000077</prepAccess>
+          <prepAdherence>0.0568,0.0449,0.1320,0.7663</prepAdherence>
+          <prepRetention>0.140,0.059,0.061,0.012,0.012,0.012,0.021,0.021,0.022,0.004,0.004,0.004</prepRetention>
+          <prepReturnToCare>0.00000619,0.00000321,0.00000752,0.00000564,0.000028377,0.00009029,0.00019291,0.00006637,0.00000000032,0.00000000041,0.00000000058,0.00000000077</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:FEMALE:MSW:*:CSW:WHITE:NON_HISPANIC">
+          <prepAccess>0.00000619,0.00000321,0.00000752,0.00000564,0.000028377,0.00009029,0.00019291,0.00006637,0.00000000032,0.00000000041,0.00000000058,0.00000000077</prepAccess>
+          <prepAdherence>0.0189,0.0257,0.04,0.9154</prepAdherence>
+          <prepRetention>0.040,0.040,0.040,0.010,0.010,0.010,0.010,0.011,0.011,0.015,0.015,0.015</prepRetention>
+          <prepReturnToCare>0.00000619,0.00000321,0.00000752,0.00000564,0.000028377,0.00009029,0.00019291,0.00006637,0.00000000032,0.00000000041,0.00000000058,0.00000000077</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:FEMALE:MSW:*:CSW:WHITE:HISPANIC">
+          <prepAccess>0.00000619,0.00000321,0.00000752,0.00000564,0.000028377,0.00009029,0.00019291,0.00006637,0.00000000032,0.00000000041,0.00000000058,0.00000000077</prepAccess>
+          <prepAdherence>0.0568,0.0449,0.1320,0.7663</prepAdherence>
+          <prepRetention>0.140,0.059,0.061,0.012,0.012,0.012,0.021,0.021,0.022,0.004,0.004,0.004</prepRetention>
+          <prepReturnToCare>0.00000619,0.00000321,0.00000752,0.00000564,0.000028377,0.00009029,0.00019291,0.00006637,0.00000000032,0.00000000041,0.00000000058,0.00000000077</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:FEMALE:MSW:*:CSW:BLACK:NON_HISPANIC">
+          <prepAccess>0.00000619,0.00000321,0.00000752,0.00000564,0.000028377,0.00009029,0.00019291,0.00006637,0.00000000032,0.00000000041,0.00000000058,0.00000000077</prepAccess>
+          <prepAdherence>0.0455,0.1317,0.2484,0.5744</prepAdherence>
+          <prepRetention>0.170,0.078,0.082,0.031,0.032,0.033,0.014,0.014,0.015,0.015,0.015,0.015</prepRetention>
+          <prepReturnToCare>0.00000619,0.00000321,0.00000752,0.00000564,0.000028377,0.00009029,0.00019291,0.00006637,0.00000000032,0.00000000041,0.00000000058,0.00000000077</prepReturnToCare>
+        </demographic>
+        <demographic bucket="SA:FEMALE:MSW:*:CSW:BLACK:HISPANIC">
+          <prepAccess>0.00000619,0.00000321,0.00000752,0.00000564,0.000028377,0.00009029,0.00019291,0.00006637,0.00000000032,0.00000000041,0.00000000058,0.00000000077</prepAccess>
+          <prepAdherence>0.0568,0.0449,0.1320,0.7663</prepAdherence>
+          <prepRetention>0.140,0.059,0.061,0.012,0.012,0.012,0.021,0.021,0.022,0.004,0.004,0.004</prepRetention>
+          <prepReturnToCare>0.00000619,0.00000321,0.00000752,0.00000564,0.000028377,0.00009029,0.00019291,0.00006637,0.00000000032,0.00000000041,0.00000000058,0.00000000077</prepReturnToCare>
+        </demographic>
+      </prepProfiles>
+    </preExposureProphylaxis>
+    <entities>
+      <entity type="male">
+        <allowedRaceAndEthnicities>
+          <allowedRace race="BLACK">
+            <allowedEthnicity ethnicity="NON_HISPANIC"/>
+          </allowedRace>
+          <allowedRace race="WHITE">
+            <allowedEthnicity ethnicity="NON_HISPANIC"/>
+            <allowedEthnicity ethnicity="HISPANIC"/>
+          </allowedRace>
+          <allowedRace race="OTHER">
+            <allowedEthnicity ethnicity="NON_HISPANIC"/>
+          </allowedRace>
+        </allowedRaceAndEthnicities>
+        <behavior>
+          <cswEndAge>50</cswEndAge>
+          <chanceBecomeSexWorker>0.001</chanceBecomeSexWorker>
+          <partnerAcqMultWithSteadyHighRisk>1</partnerAcqMultWithSteadyHighRisk>
+          <partnerAcqMultWithSteadyLowRisk>0.150417441914267</partnerAcqMultWithSteadyLowRisk>
+          <highRiskAcqRateMultiplier enabled="true">2.0172129482216</highRiskAcqRateMultiplier>
+          <highRiskCswAcqRateMultiplier enabled="true">76.9332395148903</highRiskCswAcqRateMultiplier>
+          <proportionHighRiskCsw>1</proportionHighRiskCsw>
+          <proportionHighRiskNonCsw>0.145758957676412</proportionHighRiskNonCsw>
+          <multiplierCondomUseBlacks>0.36836623789128</multiplierCondomUseBlacks>
+          <multiplierCondomUseWhites>1.07434205994489</multiplierCondomUseWhites>
+          <chanceMsmwChooseMale>0.5</chanceMsmwChooseMale>
+          <chanceMsmChooseMsmw>0.29</chanceMsmChooseMsmw>
+          <ageDiscounting>
+            <startAgeYrs>50</startAgeYrs>
+            <acquisitionDiscByYr>0.10</acquisitionDiscByYr>
+            <coitalActsDiscByYr>0.10</coitalActsDiscByYr>
+          </ageDiscounting>
+          <assortivity>
+            <riskAssortivity>0.0829453012029608</riskAssortivity>
+            <raceEthnicAssortivity baseline="1.0" useCoefficients="false">
+              <raceAndEthnicity race="WHITE" ethnicity="NON_HISPANIC">0.829374187661633</raceAndEthnicity>
+              <raceAndEthnicity race="WHITE" ethnicity="HISPANIC">0.611448553861049</raceAndEthnicity>
+              <raceAndEthnicity race="BLACK" ethnicity="NON_HISPANIC">0.762859381810854</raceAndEthnicity>
+              <raceAndEthnicity race="OTHER" ethnicity="NON_HISPANIC">0.847731507969188</raceAndEthnicity>
+            </raceEthnicAssortivity>
+          </assortivity>
+          <partnershipTypes>
+            <partnership type="steady">
+              <BreakupRateForMSW>0.002466</BreakupRateForMSW>
+              <BreakupRateForMSM>0.004233</BreakupRateForMSM>
+              <selectionCriteria>
+                <chanceChooseWithSteady>0.00</chanceChooseWithSteady>
+                <averageYearsYounger>
+                  <distribution type="normal">
+                    <mean>0.3</mean>
+                    <stdDev>6.7</stdDev>
+                  </distribution>
+                </averageYearsYounger>
+              </selectionCriteria>
+              <lowRisk>
+                <acquisitionRate>
+                  <distribution type="normal">
+                    <mean>0.00606376638724176</mean>
+                    <stdDev>0</stdDev>
+                  </distribution>
+                </acquisitionRate>
+                <coitalEventsPerMonth>
+                  <distribution type="poisson">
+                    <mean>9.5</mean>
+                  </distribution>
+                </coitalEventsPerMonth>
+                <chanceCondomUsePerEvent>
+                  <distribution type="normal">
+                    <mean>0.198</mean>
+                    <stdDev>0.028</stdDev>
+                  </distribution>
+                </chanceCondomUsePerEvent>
+                <partnershipDurationMth>
+                  <distribution type="shifted-log-normal">
+                    <mean>97.2</mean>
+                    <stdDev>4.3</stdDev>
+                    <shift>0</shift>
+                  </distribution>
+                </partnershipDurationMth>
+              </lowRisk>
+              <highRisk>
+                <acquisitionRate>
+                  <distribution type="normal">
+                    <mean>0.012231908071334993</mean>
+                    <stdDev>0</stdDev>
+                  </distribution>
+                </acquisitionRate>
+                <coitalEventsPerMonth>
+                  <distribution type="poisson">
+                    <mean>9.5</mean>
+                  </distribution>
+                </coitalEventsPerMonth>
+                <chanceCondomUsePerEvent>
+                  <distribution type="normal">
+                    <mean>0.198</mean>
+                    <stdDev>0.028</stdDev>
+                  </distribution>
+                </chanceCondomUsePerEvent>
+                <partnershipDurationMth>
+                  <distribution type="shifted-log-normal">
+                    <mean>97.2</mean>
+                    <stdDev>4.3</stdDev>
+                    <shift>0</shift>
+                  </distribution>
+                </partnershipDurationMth>
+              </highRisk>
+            </partnership>
+            <partnership type="regular">
+              <BreakupRateForMSW>0.03049</BreakupRateForMSW>
+              <BreakupRateForMSM>0.01917</BreakupRateForMSM>
+              <selectionCriteria>
+                <chanceChooseWithSteady>0.03</chanceChooseWithSteady>
+                <averageYearsYounger>
+                  <distribution type="normal">
+                    <mean>1.06</mean>
+                    <stdDev>1.63</stdDev>
+                  </distribution>
+                </averageYearsYounger>
+              </selectionCriteria>
+              <lowRisk>
+                <acquisitionRate>
+                  <distribution type="normal">
+                    <mean>0.00469544887871173</mean>
+                    <stdDev>0</stdDev>
+                  </distribution>
+                </acquisitionRate>
+                <coitalEventsPerMonth>
+                  <distribution type="poisson">
+                    <mean>6.5108097034095</mean>
+                  </distribution>
+                </coitalEventsPerMonth>
+                <chanceCondomUsePerEvent>
+                  <distribution type="normal">
+                    <mean>0.582</mean>
+                    <stdDev>0.1</stdDev>
+                  </distribution>
+                </chanceCondomUsePerEvent>
+                <partnershipDurationMth>
+                  <distribution type="shifted-log-normal">
+                    <mean>16.8</mean>
+                    <stdDev>11.1</stdDev>
+                    <shift>0</shift>
+                  </distribution>
+                </partnershipDurationMth>
+              </lowRisk>
+              <highRisk>
+                <acquisitionRate>
+                  <distribution type="normal">
+                    <mean>0.009471720275849894</mean>
+                    <stdDev>0</stdDev>
+                  </distribution>
+                </acquisitionRate>
+                <coitalEventsPerMonth>
+                  <distribution type="poisson">
+                    <mean>6.6</mean>
+                  </distribution>
+                </coitalEventsPerMonth>
+                <chanceCondomUsePerEvent>
+                  <distribution type="normal">
+                    <mean>0.582</mean>
+                    <stdDev>0.1</stdDev>
+                  </distribution>
+                </chanceCondomUsePerEvent>
+                <partnershipDurationMth>
+                  <distribution type="shifted-log-normal">
+                    <mean>16.8</mean>
+                    <stdDev>11.1</stdDev>
+                    <shift>0</shift>
+                  </distribution>
+                </partnershipDurationMth>
+              </highRisk>
+            </partnership>
+            <partnership type="casual">
+              <selectionCriteria>
+                <chanceChooseWithSteady>0.03</chanceChooseWithSteady>
+                <averageYearsYounger>
+                  <distribution type="normal">
+                    <mean>1.06</mean>
+                    <stdDev>1.63</stdDev>
+                  </distribution>
+                </averageYearsYounger>
+              </selectionCriteria>
+              <lowRisk>
+                <acquisitionRate>
+                  <distribution type="normal">
+                    <mean>0.151018199585537</mean>
+                    <stdDev>0</stdDev>
+                  </distribution>
+                </acquisitionRate>
+                <coitalEventsPerMonth>
+                  <distribution type="poisson">
+                    <mean>1</mean>
+                  </distribution>
+                </coitalEventsPerMonth>
+                <chanceCondomUsePerEvent>
+                  <distribution type="normal">
+                    &gt;
+                    <mean>0.8</mean>
+                    <stdDev>0.07</stdDev>
+                  </distribution>
+                </chanceCondomUsePerEvent>
+                <partnershipDurationMth>
+                  <distribution type="shifted-log-normal">
+                    <mean>-1</mean>
+                    <stdDev>0</stdDev>
+                    <shift>0</shift>
+                  </distribution>
+                </partnershipDurationMth>
+              </lowRisk>
+              <highRisk>
+                <acquisitionRate>
+                  <distribution type="normal">
+                    <mean>0.3046358676210591</mean>
+                    <stdDev>0</stdDev>
+                  </distribution>
+                </acquisitionRate>
+                <coitalEventsPerMonth>
+                  <distribution type="poisson">
+                    <mean>1</mean>
+                  </distribution>
+                </coitalEventsPerMonth>
+                <chanceCondomUsePerEvent>
+                  <distribution type="normal">
+                    <mean>0.80</mean>
+                    <stdDev>0.07</stdDev>
+                  </distribution>
+                </chanceCondomUsePerEvent>
+                <partnershipDurationMth>
+                  <distribution type="shifted-log-normal">
+                    <mean>-1</mean>
+                    <stdDev>0</stdDev>
+                    <shift>0</shift>
+                  </distribution>
+                </partnershipDurationMth>
+              </highRisk>
+            </partnership>
+            <partnership type="csw">
+              <selectionCriteria>
+                <chanceChooseWithSteady>0.00</chanceChooseWithSteady>
+                <averageYearsYounger>
+                  <distribution type="normal">
+                    <mean>1.06</mean>
+                    <stdDev>1.63</stdDev>
+                  </distribution>
+                </averageYearsYounger>
+              </selectionCriteria>
+              <lowRisk>
+                <acquisitionRate>
+                  <distribution type="normal">
+                    <mean>0.0337889671535183</mean>
+                    <stdDev>0</stdDev>
+                  </distribution>
+                </acquisitionRate>
+                <coitalEventsPerMonth>
+                  <distribution>
+                    <type>Poisson</type>
+                    <mean>1</mean>
+                  </distribution>
+                </coitalEventsPerMonth>
+                <chanceCondomUsePerEvent>
+                  <distribution type="normal">
+                    <mean>0.76</mean>
+                    <stdDev>0.21</stdDev>
+                  </distribution>
+                </chanceCondomUsePerEvent>
+                <partnershipDurationMth>
+                  <distribution type="shifted-log-normal">
+                    <mean>-1</mean>
+                    <stdDev>0</stdDev>
+                    <shift>0</shift>
+                  </distribution>
+                </partnershipDurationMth>
+              </lowRisk>
+              <highRisk>
+                <acquisitionRate>
+                  <distribution type="normal">
+                    <mean>2.5994947029823843</mean>
+                    <stdDev>0</stdDev>
+                  </distribution>
+                </acquisitionRate>
+                <coitalEventsPerMonth>
+                  <distribution type="poisson">
+                    <mean>1</mean>
+                  </distribution>
+                </coitalEventsPerMonth>
+                <chanceCondomUsePerEvent>
+                  <distribution type="normal">
+                    <mean>0.76</mean>
+                    <stdDev>0.21</stdDev>
+                  </distribution>
+                </chanceCondomUsePerEvent>
+                <partnershipDurationMth>
+                  <distribution type="shifted-log-normal">
+                    <mean>-1</mean>
+                    <stdDev>0</stdDev>
+                    <shift>0</shift>
+                  </distribution>
+                </partnershipDurationMth>
+              </highRisk>
+            </partnership>
+          </partnershipTypes>
+          <maxPartnershipRejections>0</maxPartnershipRejections>
+        </behavior>
+        <health>
+          <proportionMaleCircumcised>0.378</proportionMaleCircumcised>
+          <circumcisionProtectEfficacy>0.56</circumcisionProtectEfficacy>
+          <condomProtectEfficacy>0.8</condomProtectEfficacy>
+          <preExposureProphylaxisEfficacy>0.80</preExposureProphylaxisEfficacy>
+        </health>
+      </entity>
+      <entity type="female">
+        <behavior>
+          <cswEndAge>50</cswEndAge>
+          <chanceBecomeSexWorker>0.00892014356952069</chanceBecomeSexWorker>
+          <proportionHighRiskCsw>1</proportionHighRiskCsw>
+          <proportionHighRiskNonCsw>0.172972671854026</proportionHighRiskNonCsw>
+        </behavior>
+        <health>
+          <preExposureProphylaxisEfficacy>0.80</preExposureProphylaxisEfficacy>
+          <vaginalMicrobicideEfficacy>0</vaginalMicrobicideEfficacy>
+        </health>
+      </entity>
+    </entities>
+  </population>
+  <interventions>
+    <cepacIntervention enabled="true">
+      <cepacTreatmentFiles>
+        <treatmentFile>
+          <time>0</time>
+          <fileName>07212021B_NoART.in</fileName>
+          <fileNumber>0</fileNumber>
+        </treatmentFile>
+      </cepacTreatmentFiles>
+    </cepacIntervention>
+    <artRolloutIntervention enabled="true">
+      <dynamicTreatmentScaling enabled="true">
+        <feedbackPeriod>-1</feedbackPeriod>
+      </dynamicTreatmentScaling>
+      <rolloutTreatmentFiles>
+        <rolloutFile>
+          <time>0</time>
+          <fileName>07212021B_NoART.in</fileName>
+          <fileNumber>0</fileNumber>
+          <popToApply>0</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>601</time>
+          <fileName>62M_14_H44m_EXP4.in</fileName>
+          <fileNumber>1</fileNumber>
+          <popToApply>7</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>601</time>
+          <fileName>62M_14_B44m_EXP4.in</fileName>
+          <fileNumber>2</fileNumber>
+          <popToApply>5</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>601</time>
+          <fileName>62M_14_H44m_EXP4.in</fileName>
+          <fileNumber>3</fileNumber>
+          <popToApply>6</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>601</time>
+          <fileName>62M_14_W44n_EXP4.in</fileName>
+          <fileNumber>4</fileNumber>
+          <popToApply>4</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>672</time>
+          <fileName>62Mb_14_H44m_EXP4.in</fileName>
+          <fileNumber>5</fileNumber>
+          <popToApply>7</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>672</time>
+          <fileName>62Mb_14_B44m_EXP4.in</fileName>
+          <fileNumber>6</fileNumber>
+          <popToApply>5</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>672</time>
+          <fileName>62Mb_14_H44m_EXP4.in</fileName>
+          <fileNumber>7</fileNumber>
+          <popToApply>6</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>672</time>
+          <fileName>62Mb_14_W44n_EXP4.in</fileName>
+          <fileNumber>8</fileNumber>
+          <popToApply>4</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>684</time>
+          <fileName>63M_14_H44m_EXP4.in</fileName>
+          <fileNumber>9</fileNumber>
+          <popToApply>7</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>684</time>
+          <fileName>63M_14_B44m_EXP4.in</fileName>
+          <fileNumber>10</fileNumber>
+          <popToApply>5</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>684</time>
+          <fileName>63M_14_H44m_EXP4.in</fileName>
+          <fileNumber>11</fileNumber>
+          <popToApply>6</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>684</time>
+          <fileName>63M_14_W44n_EXP4.in</fileName>
+          <fileNumber>12</fileNumber>
+          <popToApply>4</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>696</time>
+          <fileName>64M_14_H44m_EXP4.in</fileName>
+          <fileNumber>13</fileNumber>
+          <popToApply>7</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>696</time>
+          <fileName>64M_14_B44m_EXP4.in</fileName>
+          <fileNumber>14</fileNumber>
+          <popToApply>5</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>696</time>
+          <fileName>64M_14_H44m_EXP4.in</fileName>
+          <fileNumber>15</fileNumber>
+          <popToApply>6</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>696</time>
+          <fileName>64M_14_W44n_EXP4.in</fileName>
+          <fileNumber>16</fileNumber>
+          <popToApply>4</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>708</time>
+          <fileName>65M_14_H44m_EXP4.in</fileName>
+          <fileNumber>17</fileNumber>
+          <popToApply>7</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>708</time>
+          <fileName>65M_14_B44m_EXP4.in</fileName>
+          <fileNumber>18</fileNumber>
+          <popToApply>5</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>708</time>
+          <fileName>65M_14_H44m_EXP4.in</fileName>
+          <fileNumber>19</fileNumber>
+          <popToApply>6</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>708</time>
+          <fileName>65M_14_W44n_EXP4.in</fileName>
+          <fileNumber>20</fileNumber>
+          <popToApply>4</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>720</time>
+          <fileName>66M_14_H44m_EXP4.in</fileName>
+          <fileNumber>21</fileNumber>
+          <popToApply>7</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>720</time>
+          <fileName>66M_14_B44m_EXP4.in</fileName>
+          <fileNumber>22</fileNumber>
+          <popToApply>5</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>720</time>
+          <fileName>66M_14_H44m_EXP4.in</fileName>
+          <fileNumber>23</fileNumber>
+          <popToApply>6</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>720</time>
+          <fileName>66M_14_W44n_EXP4.in</fileName>
+          <fileNumber>24</fileNumber>
+          <popToApply>4</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>732</time>
+          <fileName>67M_14_H44m_EXP4.in</fileName>
+          <fileNumber>25</fileNumber>
+          <popToApply>7</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>732</time>
+          <fileName>67M_14_B44m_EXP4.in</fileName>
+          <fileNumber>26</fileNumber>
+          <popToApply>5</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>732</time>
+          <fileName>67M_14_H44m_EXP4.in</fileName>
+          <fileNumber>27</fileNumber>
+          <popToApply>6</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>732</time>
+          <fileName>67M_14_W44n_EXP4.in</fileName>
+          <fileNumber>28</fileNumber>
+          <popToApply>4</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>744</time>
+          <fileName>68M_14_H44m_EXP4.in</fileName>
+          <fileNumber>29</fileNumber>
+          <popToApply>7</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>744</time>
+          <fileName>68M_14_B44m_EXP4.in</fileName>
+          <fileNumber>30</fileNumber>
+          <popToApply>5</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>744</time>
+          <fileName>68M_14_H44m_EXP4.in</fileName>
+          <fileNumber>31</fileNumber>
+          <popToApply>6</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>744</time>
+          <fileName>68M_14_W44n_EXP4.in</fileName>
+          <fileNumber>32</fileNumber>
+          <popToApply>4</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>756</time>
+          <fileName>69M_14_H44m_EXP4.in</fileName>
+          <fileNumber>33</fileNumber>
+          <popToApply>7</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>756</time>
+          <fileName>69M_14_B44m_EXP4.in</fileName>
+          <fileNumber>34</fileNumber>
+          <popToApply>5</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>756</time>
+          <fileName>69M_14_H44m_EXP4.in</fileName>
+          <fileNumber>35</fileNumber>
+          <popToApply>6</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>756</time>
+          <fileName>69M_14_W44n_EXP4.in</fileName>
+          <fileNumber>36</fileNumber>
+          <popToApply>4</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>768</time>
+          <fileName>70M_14_H44m_EXP4.in</fileName>
+          <fileNumber>37</fileNumber>
+          <popToApply>7</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>768</time>
+          <fileName>70M_14_B44m_EXP4.in</fileName>
+          <fileNumber>38</fileNumber>
+          <popToApply>5</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>768</time>
+          <fileName>70M_14_H44m_EXP4.in</fileName>
+          <fileNumber>39</fileNumber>
+          <popToApply>6</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>768</time>
+          <fileName>70M_14_W44n_EXP4.in</fileName>
+          <fileNumber>40</fileNumber>
+          <popToApply>4</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>780</time>
+          <fileName>71M_14_H44m_EXP4.in</fileName>
+          <fileNumber>41</fileNumber>
+          <popToApply>7</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>780</time>
+          <fileName>71M_14_B44m_EXP4.in</fileName>
+          <fileNumber>42</fileNumber>
+          <popToApply>5</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>780</time>
+          <fileName>71M_14_H44m_EXP4.in</fileName>
+          <fileNumber>43</fileNumber>
+          <popToApply>6</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>780</time>
+          <fileName>71M_14_W44n_EXP4.in</fileName>
+          <fileNumber>44</fileNumber>
+          <popToApply>4</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>792</time>
+          <fileName>72M_14_H44m_EXP4.in</fileName>
+          <fileNumber>45</fileNumber>
+          <popToApply>7</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>792</time>
+          <fileName>72M_14_B44m_EXP4.in</fileName>
+          <fileNumber>46</fileNumber>
+          <popToApply>5</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>792</time>
+          <fileName>72M_14_H44m_EXP4.in</fileName>
+          <fileNumber>47</fileNumber>
+          <popToApply>6</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>792</time>
+          <fileName>72M_14_W44n_EXP4.in</fileName>
+          <fileNumber>48</fileNumber>
+          <popToApply>4</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>804</time>
+          <fileName>73M_14_H44m_EXP4.in</fileName>
+          <fileNumber>49</fileNumber>
+          <popToApply>7</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>804</time>
+          <fileName>73M_14_B44m_EXP4.in</fileName>
+          <fileNumber>50</fileNumber>
+          <popToApply>5</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>804</time>
+          <fileName>73M_14_H44m_EXP4.in</fileName>
+          <fileNumber>51</fileNumber>
+          <popToApply>6</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>804</time>
+          <fileName>73M_14_W44n_EXP4.in</fileName>
+          <fileNumber>52</fileNumber>
+          <popToApply>4</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>816</time>
+          <fileName>74M_14_H44m_EXP4.in</fileName>
+          <fileNumber>53</fileNumber>
+          <popToApply>7</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>816</time>
+          <fileName>74M_14_B44m_EXP4.in</fileName>
+          <fileNumber>54</fileNumber>
+          <popToApply>5</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>816</time>
+          <fileName>74M_14_H44m_EXP4.in</fileName>
+          <fileNumber>55</fileNumber>
+          <popToApply>6</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>816</time>
+          <fileName>74M_14_W44n_EXP4.in</fileName>
+          <fileNumber>56</fileNumber>
+          <popToApply>4</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>828</time>
+          <fileName>75M_14_H44m_EXP4.in</fileName>
+          <fileNumber>57</fileNumber>
+          <popToApply>7</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>828</time>
+          <fileName>75M_14_B44m_EXP4.in</fileName>
+          <fileNumber>58</fileNumber>
+          <popToApply>5</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>828</time>
+          <fileName>75M_14_H44m_EXP4.in</fileName>
+          <fileNumber>59</fileNumber>
+          <popToApply>6</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>828</time>
+          <fileName>75M_14_W44n_EXP4.in</fileName>
+          <fileNumber>60</fileNumber>
+          <popToApply>4</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>840</time>
+          <fileName>76M_14_H44m_EXP4.in</fileName>
+          <fileNumber>61</fileNumber>
+          <popToApply>7</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>840</time>
+          <fileName>76M_14_B44m_EXP4.in</fileName>
+          <fileNumber>62</fileNumber>
+          <popToApply>5</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>840</time>
+          <fileName>76M_14_H44m_EXP4.in</fileName>
+          <fileNumber>63</fileNumber>
+          <popToApply>6</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>840</time>
+          <fileName>76M_14_W44n_EXP4.in</fileName>
+          <fileNumber>64</fileNumber>
+          <popToApply>4</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>852</time>
+          <fileName>77M_14_H44m_EXP4.in</fileName>
+          <fileNumber>65</fileNumber>
+          <popToApply>7</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>852</time>
+          <fileName>77M_14_B44m_EXP4.in</fileName>
+          <fileNumber>66</fileNumber>
+          <popToApply>5</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>852</time>
+          <fileName>77M_14_H44m_EXP4.in</fileName>
+          <fileNumber>67</fileNumber>
+          <popToApply>6</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>852</time>
+          <fileName>77M_14_W44n_EXP4.in</fileName>
+          <fileNumber>68</fileNumber>
+          <popToApply>4</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>864</time>
+          <fileName>78M_14_H44m_EXP4.in</fileName>
+          <fileNumber>69</fileNumber>
+          <popToApply>7</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>864</time>
+          <fileName>78M_14_B44m_EXP4.in</fileName>
+          <fileNumber>70</fileNumber>
+          <popToApply>5</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>864</time>
+          <fileName>78M_14_H44m_EXP4.in</fileName>
+          <fileNumber>71</fileNumber>
+          <popToApply>6</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>864</time>
+          <fileName>78M_14_W44n_EXP4.in</fileName>
+          <fileNumber>72</fileNumber>
+          <popToApply>4</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>876</time>
+          <fileName>79M_14_H44m_EXP4.in</fileName>
+          <fileNumber>73</fileNumber>
+          <popToApply>7</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>876</time>
+          <fileName>79M_14_B44m_EXP4.in</fileName>
+          <fileNumber>74</fileNumber>
+          <popToApply>5</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>876</time>
+          <fileName>79M_14_H44m_EXP4.in</fileName>
+          <fileNumber>75</fileNumber>
+          <popToApply>6</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>876</time>
+          <fileName>79M_14_W44n_EXP4.in</fileName>
+          <fileNumber>76</fileNumber>
+          <popToApply>4</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>888</time>
+          <fileName>80M_14_H44m_EXP4.in</fileName>
+          <fileNumber>77</fileNumber>
+          <popToApply>7</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>888</time>
+          <fileName>80M_14_B44m_EXP4.in</fileName>
+          <fileNumber>78</fileNumber>
+          <popToApply>5</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>888</time>
+          <fileName>80M_14_H44m_EXP4.in</fileName>
+          <fileNumber>79</fileNumber>
+          <popToApply>6</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>888</time>
+          <fileName>80M_14_W44n_EXP4.in</fileName>
+          <fileNumber>80</fileNumber>
+          <popToApply>4</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>900</time>
+          <fileName>81M_14_H44m_EXP4.in</fileName>
+          <fileNumber>81</fileNumber>
+          <popToApply>7</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>900</time>
+          <fileName>81M_14_B44m_EXP4.in</fileName>
+          <fileNumber>82</fileNumber>
+          <popToApply>5</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>900</time>
+          <fileName>81M_14_H44m_EXP4.in</fileName>
+          <fileNumber>83</fileNumber>
+          <popToApply>6</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>900</time>
+          <fileName>81M_14_W44n_EXP4.in</fileName>
+          <fileNumber>84</fileNumber>
+          <popToApply>4</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>912</time>
+          <fileName>82M_14_H44m_EXP4.in</fileName>
+          <fileNumber>85</fileNumber>
+          <popToApply>7</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>912</time>
+          <fileName>82M_14_B44m_EXP4.in</fileName>
+          <fileNumber>86</fileNumber>
+          <popToApply>5</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>912</time>
+          <fileName>82M_14_H44m_EXP4.in</fileName>
+          <fileNumber>87</fileNumber>
+          <popToApply>6</popToApply>
+        </rolloutFile>
+        <rolloutFile>
+          <time>912</time>
+          <fileName>82M_14_W44n_EXP4.in</fileName>
+          <fileNumber>88</fileNumber>
+          <popToApply>4</popToApply>
+        </rolloutFile>
+      </rolloutTreatmentFiles>
+      <rolloutEligibility enabled="false">
+        <criteria name="OIHist">
+          <rank>1</rank>
+          <OI0>0</OI0>
+          <OI1>0</OI1>
+          <OI2>0</OI2>
+          <OI3>0</OI3>
+          <OI4>0</OI4>
+          <OI5>0</OI5>
+          <OI6>0</OI6>
+          <OI7>0</OI7>
+          <OI8>1</OI8>
+          <OI9>1</OI9>
+          <OI10>1</OI10>
+          <OI11>1</OI11>
+          <OI12>0</OI12>
+          <OI13>1</OI13>
+          <OI14>0</OI14>
+          <numOIToStart>1</numOIToStart>
+        </criteria>
+        <criteria name="CD4">
+          <rank>2</rank>
+          <CD4Upp>-1</CD4Upp>
+          <CD4Lwr>-1</CD4Lwr>
+        </criteria>
+        <criteria name="CD4OIHist">
+          <rank>3</rank>
+          <CD4Upp>-1</CD4Upp>
+          <CD4Lwr>-1</CD4Lwr>
+          <OI0>0</OI0>
+          <OI1>0</OI1>
+          <OI2>0</OI2>
+          <OI3>0</OI3>
+          <OI4>0</OI4>
+          <OI5>0</OI5>
+          <OI6>0</OI6>
+          <OI7>0</OI7>
+          <OI8>0</OI8>
+          <OI9>0</OI9>
+          <OI10>0</OI10>
+          <OI11>0</OI11>
+          <OI12>0</OI12>
+          <OI13>0</OI13>
+          <OI14>0</OI14>
+        </criteria>
+        <criteria name="HVL">
+          <rank>4</rank>
+          <HVLUpp>-1</HVLUpp>
+          <HVLLwr>-1</HVLLwr>
+        </criteria>
+        <criteria name="CD4HVL">
+          <rank>5</rank>
+          <CD4Upp>-1</CD4Upp>
+          <CD4Lwr>-1</CD4Lwr>
+          <HVLUpp>-1</HVLUpp>
+          <HVLLwr>-1</HVLLwr>
+        </criteria>
+      </rolloutEligibility>
+      <targetRolloutProportions>
+        <target year="1989">1</target>
+        <target year="1990">1</target>
+        <target year="1991">1</target>
+        <target year="1992">1</target>
+        <target year="1993">1</target>
+        <target year="1994">1</target>
+        <target year="1995">1</target>
+        <target year="1996">1</target>
+        <target year="1997">1</target>
+        <target year="1998">1</target>
+        <target year="1999">1</target>
+        <target year="2000">1</target>
+        <target year="2001">1</target>
+        <target year="2002">1</target>
+        <target year="2003">1</target>
+        <target year="2004">1</target>
+        <target year="2005">1</target>
+        <target year="2006">1</target>
+        <target year="2007">1</target>
+        <target year="2008">1</target>
+        <target year="2009">1</target>
+        <target year="2010">1</target>
+        <target year="2011">1</target>
+        <target year="2012">1</target>
+        <target year="2013">1</target>
+        <target year="2014">1</target>
+        <target year="2015">1</target>
+      </targetRolloutProportions>
+    </artRolloutIntervention>
+  </interventions>
+</simulation>

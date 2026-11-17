@@ -37,6 +37,17 @@ add_executable(countindex_tests CountIndexTest.cpp)
 target_link_libraries(countindex_tests gtest_main)
 add_test(NAME countindex_tests COMMAND countindex_tests)
 
+# Force of infection: each protection (condom, microbicide or circumcision, PrEP at
+# its adherence level) must lower the risk on its own.
+add_executable(infectionrisk_tests InfectionRiskTest.cpp)
+target_link_libraries(infectionrisk_tests gtest_main)
+add_test(NAME infectionrisk_tests COMMAND infectionrisk_tests)
+
+# New people must start with every member set, e.g. how often they were chosen.
+add_executable(entityinit_tests EntityInitTest.cpp)
+target_link_libraries(entityinit_tests transm_core gtest_main)
+add_test(NAME entityinit_tests COMMAND entityinit_tests)
+
 # Optional: the same scenario through a reference build and this build must give
 # identical TRANSM outputs. Configure with
 #   -DTRANSM_REGRESSION_REFERENCE=<reference transm binary>
@@ -51,4 +62,23 @@ if (TRANSM_REGRESSION_REFERENCE AND TRANSM_REGRESSION_SCENARIO AND TRANSM_REGRES
                      ${TRANSM_REGRESSION_SIZE} ${TRANSM_REGRESSION_DURATION})
     # "PASS WITH WARNING" (CEPAC summaries or an exit-time crash) also passes.
     set_tests_properties(regression_outputs PROPERTIES PASS_REGULAR_EXPRESSION "\nPASS")
+endif()
+
+# Model checks: small runs of the Miami scenario (tests/model/scenarios) judged by
+# bookkeeping rules, known answers and reference bands, not by identical outputs.
+# Twelve 2,000-person runs, about 3 minutes on 4 cores. Run with: ctest -L model
+find_package(Python3 COMPONENTS Interpreter)
+if (Python3_Interpreter_FOUND)
+    add_test(NAME model_checks
+             COMMAND ${Python3_EXECUTABLE} -I ${CMAKE_CURRENT_SOURCE_DIR}/model/model_checks.py
+                     --transm $<TARGET_FILE:transm>)
+    set_tests_properties(model_checks PROPERTIES LABELS model TIMEOUT 3600)
+endif()
+
+# Fast tests of single classes and functions. Run with: ctest -L unit
+set_tests_properties(tests memory_tests trace_tests mixing_tests runtime_tests countindex_tests
+                     infectionrisk_tests entityinit_tests
+                     PROPERTIES LABELS unit)
+if (TEST regression_outputs)
+    set_tests_properties(regression_outputs PROPERTIES LABELS regression)
 endif()
