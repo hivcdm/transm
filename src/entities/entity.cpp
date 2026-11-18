@@ -1311,12 +1311,9 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
 
         // now check if they should be lost to care! 
         std::array<double, 12> retention = prepParameters.GetRetention(*getDemographicProfile());
-        int month_on_prep = std::max(monthOnPrep - 1, 1);
-        if (month_on_prep > 12)
-            month_on_prep = 12;
 
         // if they are lost to care put them on WAS_ON_PTEP status and increment the month off prep
-        if (_eventParams.randomNums.chance(retention[month_on_prep])) {
+        if (_eventParams.randomNums.chance(PrepStopChance(retention, monthOnPrep))) {
             prepStatus = PrepStatus::WAS_ON_PREP;
             monthOnPrep = 0;    // becomes off PrEP  
             monthOffPrep++;

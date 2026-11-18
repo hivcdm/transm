@@ -339,7 +339,8 @@ def indicators(run):
     deaths = pop_t.column("Deaths", "Total")
     hiv_deaths = [a + b for a, b in zip(pop_t.column("Deaths", "Any OI"), pop_t.column("Deaths", "Chronic AIDS"))]
     on_art = gender_total(run.table("ARTRollout"), "On ART")
-    users = gender_total(run.table("PrepOutcomes"), "Number of Prep Users")
+    prep_t = run.table("PrepOutcomes")
+    users = gender_total(prep_t, "Number of Prep Users")
     last = len(new) - 1
     values = {
         "new infections, seeding to 1990s (months 603-720)": sum(new[SEED_MONTH + 1:721]),
@@ -351,6 +352,9 @@ def indicators(run):
         "HIV deaths (OI and chronic AIDS)": sum(hiv_deaths[1:]),
         "on ART at month 840": on_art[last],
         "PrEP users, mean of months 720-840": statistics.fmean(users[720:]),
+        "PrEP users at month 840": users[last],
+        "people ever starting PrEP": sum(gender_total(prep_t, "Number of New Prep Users")),
+        "times someone stopped PrEP": sum(gender_total(prep_t, "Number of Lost to Follow-up")),
     }
     if BENCHMARKS[run.benchmark]["focus"]:
         values["selected by FOCUS"] = sum(focus_selected(run))
