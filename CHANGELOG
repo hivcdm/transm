@@ -64,6 +64,20 @@ Unreleased
   PrEP results overstated long-term use. Access rates calibrated against
   PrEP use may need recalibrating.
 
+- The FOCUS yearly screening counts are now one table, by year and cohort, at
+  the top of simulation.cpp. They were nineteen pairs of vectors, picked by
+  two chains of nineteen month ranges. Results are unchanged: with FOCUS on
+  for 960 months (every FOCUS year) and with FOCUS off for 840, all TRANSM
+  outputs of a 2,000 agent run are byte-identical to before when the build
+  keeps the old memory layout. Without that, one column changes: "Relationship
+  Type: CSW" in Infections.xls prints a counter that is never set (a known
+  issue), so its value moves whenever the memory layout does.
+
+- scripts/analysis/unused_code.py lists the functions nothing can call, and
+  the functions and lines that the scenarios you run never reach.
+  tests/regression/compare_binaries.sh takes FOCUS=on to compare two builds
+  with the FOCUS module running.
+
 - New males now start with zero times selected as a partner; the count was
   left uninitialised and read by the MSM and MSMW selection statistics in
   Partnership.xls. Outputs are unchanged on the runs checked.
