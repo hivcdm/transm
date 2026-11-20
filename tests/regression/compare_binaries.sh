@@ -15,6 +15,9 @@
 #
 # Environment:
 #   SEED            optional override for <fixedSeed> (must be >= 0).
+#   FOCUS           on or off (default off): run both binaries with the FOCUS
+#                   module. FOCUS screens in months 720-947, so a check of FOCUS
+#                   code needs a DURATION of 948 or more to reach every year.
 #   WORK_DIR        where the two runs are written (default: a new temp dir).
 #                   It is kept after the run so differences can be inspected.
 #
@@ -54,6 +57,7 @@ without_timestamps() {
 }
 
 SEED=${SEED:-}
+FOCUS=${FOCUS:-off}
 seed=${SEED:-$(grep -o '<fixedSeed>-\?[0-9]*</fixedSeed>' "$SCENARIO" | grep -o -- '-\?[0-9]*' | head -1)}
 if [[ -z "$seed" || "$seed" -lt 0 ]]; then
     echo "Scenario has no fixed seed; outputs would not be reproducible." >&2
@@ -70,7 +74,7 @@ run_one() {
     [[ -n "$DURATION" ]] && sed -i "0,/<duration>[0-9]*<\/duration>/s//<duration>$DURATION<\/duration>/" "$dir/run.xml"
     ln -s "$CEPAC_DIR" "$dir/INFILES"
     local start=$SECONDS
-    (cd "$dir" && "$bin" --cepac INFILES --focus off run.xml > run.log 2>&1)
+    (cd "$dir" && "$bin" --cepac INFILES --focus "$FOCUS" run.xml > run.log 2>&1)
     local status=$?
     echo "$name: exit $status in $((SECONDS - start)) s"
     return $status
