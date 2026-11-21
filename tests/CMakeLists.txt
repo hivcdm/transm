@@ -31,3 +31,8 @@ add_test(NAME runtime_tests COMMAND runtime_tests)
 add_executable(entityinit_tests EntityInitTest.cpp)
 target_link_libraries(entityinit_tests transm_core gtest_main)
 add_test(NAME entityinit_tests COMMAND entityinit_tests)
+
+# <prepRetention>: each month on PrEP must read its own stopping chance.
+add_executable(prepeligibility_tests PrepEligibilityTest.cpp)
+target_link_libraries(prepeligibility_tests gtest_main)
+add_test(NAME prepeligibility_tests COMMAND prepeligibility_tests)
