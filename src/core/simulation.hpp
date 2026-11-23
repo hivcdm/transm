@@ -18,6 +18,7 @@
 #include "utility/highresolutiontimer.hpp"
 #include "utility/nullable.hpp"
 #include "utility/runtimepredictor.hpp"
+#include "utility/progressreport.hpp"
 
 namespace transm {
 
@@ -151,7 +152,13 @@ private:
 
     RunTimePredictor run_time_predictor_;
 
+    // When the month now being simulated started, on timer_'s clock
     double start_time_;
+
+    ProgressReporter progress_;
+
+    // What the progress report says after the month just finished
+    ProgressSnapshot ProgressNow();
 
     BatchStatus &batch_status_;
 

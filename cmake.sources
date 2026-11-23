@@ -50,6 +50,7 @@ src/utility/hash_tuple.hpp
 src/utility/highresolutiontimer.hpp
 src/utility/make_unique.hpp
 src/utility/nullable.hpp
+src/utility/progressreport.hpp
 src/utility/randomnumbergenerator.hpp
 src/utility/runtimepredictor.hpp
 src/utility/time.hpp
