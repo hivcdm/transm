@@ -156,87 +156,26 @@ private:
     BatchStatus &batch_status_;
 
 
-    /** FOCUS module Stuff */
-    // --- Yearly Data (loaded from "database") ---
-    std::vector<int> yearlyScreeningNumbers;
-    std::vector<double> yearlyFocusProbabilities;
+    /** FOCUS module state. The yearly screening counts and the selection
+     * probabilities are the tables at the top of simulation.cpp. */
 
-    // --- Monthly Data (calculated from yearly) ---
+    // How many people to draw from each cohort this month, to stay on course for the yearly target
     std::vector<int> monthlyScreeningNumbers;
 
-    // Stores 12 calculated monthly probabilities (one for each group)
+    // Chance, by cohort, that a person drawn this month is selected
     std::vector<double> monthlyFocusProbabilities;
 
-    // Scaling factor for FOCUS data (1.0 = use as-is, <1.0 = scale down for smaller simulations)
-    // Set based on your simulation population size relative to real-world population
-    // For your simulation: 0.4 (simulation is 2.5x smaller than real life)
+    // Scaling factor for the FOCUS counts (1.0 = use as given, <1.0 = scale down for smaller simulations)
     double focusDataScaleFactor;
 
-    // Yearly tracking: how many individuals have been screened per group so far this year
-    std::vector<int> yearlyScreenedCount;  // 12 groups
+    // Yearly tracking: how many individuals have been screened per cohort so far this year
+    std::vector<int> yearlyScreenedCount;
 
-    // Yearly tracking: how many individuals should be screened per group by year end
-    std::vector<int> yearlyScreeningTarget;  // 12 groups
+    // Yearly tracking: how many individuals should be screened per cohort by year end
+    std::vector<int> yearlyScreeningTarget;
 
     // Current FOCUS year being tracked (2017-2035)
     int currentFocusYear;
-
-    std::vector<int> db_YearlyCounts_2017;
-    std::vector<double> db_YearlyProbs_2017;
-
-    std::vector<int> db_YearlyCounts_2018;
-    std::vector<double> db_YearlyProbs_2018;
-
-    std::vector<int> db_YearlyCounts_2019;
-    std::vector<double> db_YearlyProbs_2019;    
-
-    std::vector<int> db_YearlyCounts_2020;
-    std::vector<double> db_YearlyProbs_2020;
-
-    std::vector<int> db_YearlyCounts_2021;
-    std::vector<double> db_YearlyProbs_2021;
-
-    std::vector<int> db_YearlyCounts_2022;
-    std::vector<double> db_YearlyProbs_2022;
-
-    std::vector<int> db_YearlyCounts_2023;
-    std::vector<double> db_YearlyProbs_2023;
-
-    std::vector<int> db_YearlyCounts_2024;
-    std::vector<double> db_YearlyProbs_2024;
-
-    std::vector<int> db_YearlyCounts_2025;
-    std::vector<double> db_YearlyProbs_2025;
-
-    std::vector<int> db_YearlyCounts_2026;
-    std::vector<double> db_YearlyProbs_2026;
-
-    std::vector<int> db_YearlyCounts_2027;
-    std::vector<double> db_YearlyProbs_2027;
-
-    std::vector<int> db_YearlyCounts_2028;
-    std::vector<double> db_YearlyProbs_2028;
-
-    std::vector<int> db_YearlyCounts_2029;
-    std::vector<double> db_YearlyProbs_2029;
-
-    std::vector<int> db_YearlyCounts_2030;
-    std::vector<double> db_YearlyProbs_2030;
-
-    std::vector<int> db_YearlyCounts_2031;
-    std::vector<double> db_YearlyProbs_2031;
-
-    std::vector<int> db_YearlyCounts_2032;
-    std::vector<double> db_YearlyProbs_2032;
-
-    std::vector<int> db_YearlyCounts_2033;
-    std::vector<double> db_YearlyProbs_2033;
-
-    std::vector<int> db_YearlyCounts_2034;
-    std::vector<double> db_YearlyProbs_2034;
-
-    std::vector<int> db_YearlyCounts_2035;
-    std::vector<double> db_YearlyProbs_2035;
 
 };
 

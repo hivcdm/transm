@@ -10,9 +10,9 @@ namespace transm {
  * the reason the cohort is targeted (undiagnosed HIV, or lost to follow up).
  *
  * The ordering below is the positional schema that the whole module already
- * relies on: it is the index order of Simulation::db_YearlyCounts_<year> /
- * db_YearlyProbs_<year>, and of the parallel name/finder arrays in
- * Population::UpdateForFOCUSAnalysis(). This enum does not introduce a new
+ * relies on: it is the column order of FocusYearlyCounts and
+ * FocusSelectionProbabilities in simulation.cpp, and of the parallel
+ * name/finder arrays in Population::UpdateForFOCUSAnalysis(). This enum does not introduce a new
  * convention, it only gives the existing one a name. Do NOT reorder these
  * without updating every one of those tables.
  *

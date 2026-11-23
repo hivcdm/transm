@@ -449,7 +449,7 @@ std::vector<Entity *> Population::FindMalePositives() {
     
 /* The four "Hispanic" FOCUS cohorts also reach people of Other race.
  * The FOCUS source table has an Other-race column with no cohort of its own, and
- * those counts are folded into the Hispanic targets (see the db_YearlyCounts
+ * those counts are folded into the Hispanic targets (see the FocusYearlyCounts
  * comment in simulation.cpp). The targets alone are not enough: these finders
  * used to test isHispanic() only, so the Hispanic cohorts were asked to screen
  * Other-race counts while no Other-race person could ever be selected. Widening
