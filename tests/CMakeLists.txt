@@ -21,3 +21,18 @@ add_test(NAME memory_tests COMMAND memory_tests)
 add_executable(trace_tests TraceParametersTest.cpp)
 target_link_libraries(trace_tests transm_core gtest_main)
 add_test(NAME trace_tests COMMAND trace_tests)
+
+# The progress bar must not abort a run when the run-time estimate leaves [0, 1].
+add_executable(runtime_tests RunTimePredictorTest.cpp)
+target_link_libraries(runtime_tests gtest_main)
+add_test(NAME runtime_tests COMMAND runtime_tests)
+
+# New people must start with every member set, e.g. how often they were chosen.
+add_executable(entityinit_tests EntityInitTest.cpp)
+target_link_libraries(entityinit_tests transm_core gtest_main)
+add_test(NAME entityinit_tests COMMAND entityinit_tests)
+
+# <prepRetention>: each month on PrEP must read its own stopping chance.
+add_executable(prepeligibility_tests PrepEligibilityTest.cpp)
+target_link_libraries(prepeligibility_tests gtest_main)
+add_test(NAME prepeligibility_tests COMMAND prepeligibility_tests)

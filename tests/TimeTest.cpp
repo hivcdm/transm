@@ -55,12 +55,16 @@ TEST(TimeTest, ConstructorAndAccessors) {
     EXPECT_EQ(jan2021.in_months(), 24253); // Assuming the calculation based on the example
 }
 
+/* Months within a year count from 0 to 11, so month 6 plus six months is month 0 of
+ * the next year. */
 TEST(TimeTest, ArithmeticOperationsWithTimeSpan) {
     Time start(2021, 6);
     TimeSpan sixMonths(0, 6);
     auto future = start + sixMonths;
-    EXPECT_EQ(future.get_year(), 2021);
-    EXPECT_EQ(future.get_month(), 12);
+    EXPECT_EQ(future.get_year(), 2022);
+    EXPECT_EQ(future.get_month(), 0);
+    EXPECT_EQ((start + TimeSpan(0, 5)).get_year(), 2021);
+    EXPECT_EQ((start + TimeSpan(0, 5)).get_month(), 11);
 
     future -= sixMonths;
     EXPECT_EQ(future.get_year(), 2021);

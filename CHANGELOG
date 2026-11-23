@@ -11,6 +11,30 @@ A dynamic agent-based model for HIV transmission
 Unreleased
 ==========
 
+- <prepRetention> is now read correctly. The monthly chance of stopping PrEP
+  was looked up at positions 1 to 12 of the twelve values: the first value
+  was never used (the first month on PrEP got the second), and from the 13th
+  month on PrEP the lookup read past the end of the list, in practice a
+  chance of about zero, so long-term users never stopped. Now the first
+  month uses the first value and the twelfth value carries on. PrEP use
+  falls as a result: on the 100k Miami FOCUS scenario (Top-1 parameters,
+  seed 10), 609 people on PrEP at month 880 instead of 779 (-22%), and 741
+  times someone stopped PrEP instead of 363. Earlier PrEP results overstated
+  long-term use, and access rates calibrated against PrEP use may need
+  recalibrating.
+
+- New males now start with zero times selected as a partner; the count was
+  left uninitialised and read by the MSM and MSMW selection statistics in
+  Partnership.xls. Outputs are unchanged on the runs checked.
+
+- Runs no longer abort with std::length_error when the wall clock steps back
+  (seen on WSL). The run-time estimate became NaN and the console progress
+  bar turned it into an impossible length. Outputs are unaffected.
+
+- TimeTest expected months within a year to count from 1 to 12; Time counts
+  them from 0 to 11, so the test failed. The test is corrected; the model is
+  unchanged.
+
 - The single-person trace can follow people FOCUS selects (issue #98). A new
   optional <numberFocusToTrace> in the <singlePerson> block puts the first N
   people FOCUS selects on the trace from the month of selection. The trace now
