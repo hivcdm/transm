@@ -2,132 +2,141 @@
 #define RUNTIMEPREDICTOR_HPP
 
 #include <cmath>
-#include <deque>
-#include <numeric>
+#include <cstddef>
 #include <string>
-#include <utility>
+
+#include "utility/time.hpp"
 
 namespace transm {
 
+/**
+ * Estimates how long a run has left from how long its months have taken so far.
+ *
+ * Progress is the share of months finished, which is exact. The time left is an
+ * estimate: the months left, times the recent seconds per month. "Recent" is an
+ * average in which a month's weight halves every HalfLifeMonths, so the estimate
+ * follows the run when months get slower (a growing population, an intervention
+ * starting, another job on the machine) and is not thrown by one slow month.
+ *
+ * Against the month timings of six Miami runs (2,000 to 100,000 people), half-lives
+ * from 12 to 200 months and fitted trends all came within two points of each other,
+ * so the simplest is used. What is left of the error comes from months ahead being
+ * slower or faster than any seen so far, which no estimate from the past can know.
+ */
 class RunTimePredictor
 {
 public:
-    RunTimePredictor() 
-        : a_(0),
-        b_(0),
-        estimated_percent_complete_(0),
-        elapsed_time_(0),
-        sx2y_(0),
-        sylny_(0),
-        sxy_(0),
-        sxylny_(0),
-        sy_(0),
-        observations_(0)
-    {
-    }
+    /** A month's weight in the average halves after this many months. */
+    static constexpr double HalfLifeMonths = 36.0;
+
+    /** Months to time before estimating how long is left. */
+    static constexpr int MonthsBeforeEstimate = 12;
+
+    /** Once there is an estimate, one month counts in the average as at most this many
+     * times the recent pace, so a stall (the machine swapping, another job) does not
+     * inflate the estimate for years. Longer slowdowns still raise it month by month. */
+    static constexpr double MostTimesRecentPace = 4.0;
+
+    RunTimePredictor() = default;
 
     RunTimePredictor &operator=(const RunTimePredictor &) = delete;
 
     void SetTotalMonths(TimeSpan months)
     {
-        total_months_ = months;
+        total_months_ = months.in_months();
     }
 
-    void Update(const std::pair<int, double> &observation)
+    /**
+     * Record a finished month.
+     *
+     * @param months_done months finished so far, this one included
+     * @param seconds how long this month took. Not a number, infinite or negative (a
+     *                clock that stepped back) counts as no time. */
+    void Update(int months_done, double seconds)
     {
+        if (!(seconds >= 0) || std::isinf(seconds))
+            seconds = 0;
+
+        months_done_ = months_done;
+        elapsed_seconds_ += seconds;
         observations_++;
-        elapsed_time_ += observation.second;
 
-        if(observations_ < 5)
-        {
-            pop_average(observation);
-            return;
+        double counted = seconds;
+        if (observations_ > MonthsBeforeEstimate && weighted_seconds_ > 0) {
+            double most = MostTimesRecentPace * GetSecondsPerMonth();
+            if (counted > most)
+                counted = most;
         }
 
-        auto average = pop_average(observation);
-        
-        sx2y_ += average.first * average.first * average.second;
-        sylny_ += average.second * std::log(average.second);
-        sxy_ += average.first * average.second;
-        sxylny_ += average.first * average.second * std::log(average.second);
-        sy_ += average.second;
-
-        double denominator = sy_ * sx2y_ - sxy_ * sxy_;
-
-        if(denominator == 0)
-        {
-            return;
-        }
-
-        a_ = std::exp((sx2y_ * sylny_ - sxy_ * sxylny_) / denominator);
-        b_ = 0.0022; //std::max(0.0001, std::min(0.004, (sy_ * sxylny_ - sxy_ * sylny_) / denominator));
-        auto f = [=](double x) { return a_ * std::exp(b_ * x); };
-        auto integral = [=](double a, double b) { return f(b) - f(a); };
-        double current_area = integral(1, observation.first);
-        double total_area = integral(1, total_months_.in_months());
-        estimated_percent_complete_ = current_area / total_area;
+        const double keep = std::pow(0.5, 1.0 / HalfLifeMonths);
+        weight_ = keep * weight_ + 1;
+        weighted_seconds_ = keep * weighted_seconds_ + counted;
     }
 
-    double GetEstimatedPercentComplete() const
+    int GetMonthsDone() const { return months_done_; }
+
+    int GetTotalMonths() const { return total_months_; }
+
+    /** Share of the run's months that are finished, from 0 to 1. */
+    double GetFractionComplete() const
     {
-        return estimated_percent_complete_;
+        if (total_months_ <= 0)
+            return 0;
+        double fraction = (double)months_done_ / total_months_;
+        return fraction > 0 ? (fraction < 1 ? fraction : 1) : 0;
     }
 
+    double GetElapsedSeconds() const { return elapsed_seconds_; }
+
+    /** False until enough months have been timed to say how long is left. */
+    bool HasEstimate() const
+    {
+        return observations_ >= MonthsBeforeEstimate && weighted_seconds_ > 0;
+    }
+
+    /** Recent seconds per month; 0 before any month is timed. */
+    double GetSecondsPerMonth() const
+    {
+        return weight_ > 0 ? weighted_seconds_ / weight_ : 0;
+    }
+
+    /** Recent speed in simulated months per second; 0 when unknown. */
+    double GetMonthsPerSecond() const
+    {
+        double seconds = GetSecondsPerMonth();
+        return seconds > 0 ? 1.0 / seconds : 0;
+    }
+
+    /** Estimated seconds until the last month is finished; 0 without an estimate. */
     double GetEstimatedTimeRemaining() const
     {
-        return GetEstimatedRunTime() - elapsed_time_;
+        int months_left = total_months_ - months_done_;
+        if (!HasEstimate() || months_left <= 0)
+            return 0;
+        return months_left * GetSecondsPerMonth();
     }
 
     double GetEstimatedRunTime() const
     {
-        return estimated_percent_complete_ == 0 ? 0 : elapsed_time_ / estimated_percent_complete_;
+        return elapsed_seconds_ + GetEstimatedTimeRemaining();
     }
 
+    /** "[#####...............]", filled by the share of months finished. */
     std::string MakeProgressBar(std::size_t bar_length) const
     {
-        /* A wall-clock step back gives a negative month time and a NaN estimate from then
-         * on, and running past the planned months puts it above 1. Either used to make the
-         * bar length wrap around and abort the run with std::length_error. */
-        double percent = GetEstimatedPercentComplete();
-        percent = percent > 0 ? (percent < 1 ? percent : 1) : 0;
-        std::size_t bars_completed = (std::size_t)(percent * bar_length);
-        std::size_t bars_remaining = bar_length - bars_completed;
-        std::string bar = "[" + std::string(bars_completed, '=') + "|" + std::string(bars_remaining, '=') + "]";
-        return bar;
-    }
-
-    std::pair<double, double> pop_average(const std::pair<int, double> next)
-    {
-        if(previous_.size() > 4)
-        {
-            previous_.pop_front();
-        }
-
-        previous_.push_back(next);
-
-        double sum_y = 0;
-
-        for(const auto &observation : previous_)
-        {
-            sum_y += observation.second;
-        }
-
-        return std::make_pair(next.first, sum_y / previous_.size());
+        std::size_t filled = (std::size_t)(GetFractionComplete() * bar_length);
+        if (filled > bar_length)
+            filled = bar_length;
+        return "[" + std::string(filled, '#') + std::string(bar_length - filled, '.') + "]";
     }
 
 private:
-    double a_;
-    double b_;
-    TimeSpan total_months_;
-    double estimated_percent_complete_;
-    double elapsed_time_;
-    std::deque<std::pair<int, double>> previous_;
-    double sx2y_;
-    double sylny_;
-    double sxy_;
-    double sxylny_;
-    double sy_;
-    int observations_;
+    int total_months_ = 0;
+    int months_done_ = 0;
+    int observations_ = 0;
+    double elapsed_seconds_ = 0;
+    double weight_ = 0;                 // sum of the months' weights
+    double weighted_seconds_ = 0;       // sum of weight times seconds
 };
 
 } // namespace transm

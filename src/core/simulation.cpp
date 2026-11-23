@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <iostream>
 #include <numeric>
 #include <random>
@@ -418,6 +419,13 @@ void Simulation::SetFixedSeed(int seed) {
 void Simulation::FirstStep() {
     run_time_predictor_.SetTotalMonths(duration_);
 
+    /* A bar redrawn in place on a terminal, plain lines in a log file. FOCUS prints
+     * its own lines every month, which a redrawn bar would be mixed into.
+     * TRANSM_PROGRESS=off, lines or bar overrides the choice. */
+    progress_.SetMode(ProgressReporter::ChooseMode(StandardOutputIsATerminal(), parameters_.focusEnabled,
+                                                   std::getenv("TRANSM_PROGRESS")));
+    start_time_ = timer_.GetTime();
+
     /* No longer creating a CEPAC trace file, but we still need to change over to the results folder before creating any other output files */
     Utility::changeDirectoryToResults();
 
@@ -630,26 +638,28 @@ void Simulation::Step() {
 
     population_.ResetMonthlyStats();
 
-    if (time_ > Time(0, 5)) {
-        run_time_predictor_.Update(std::make_pair((int) time_.in_months(), timer_.GetTime() - start_time_));
-        int seconds_remaining = (int) run_time_predictor_.GetEstimatedTimeRemaining();
-        int hours_remaining = seconds_remaining / 3600;
-        seconds_remaining -= hours_remaining * 3600;
-        int minutes_remaining = seconds_remaining / 60;
-        seconds_remaining -= minutes_remaining * 60;
-        auto message = run_time_predictor_.MakeProgressBar(40) + " " +
-                       std::to_string(time_.in_months()) + " " + std::to_string(hours_remaining) + ":" +
-                       std::to_string(minutes_remaining) + ":" + std::to_string(seconds_remaining);
-        std::cout << message << std::endl;
-    } else if (time_ > Time(0, 1)) {
-        run_time_predictor_.Update(std::make_pair(time_.in_months(), timer_.GetTime() - start_time_));
-    }
-
-    start_time_ = timer_.GetTime();
-
     prevalence_ = population_.GetPopulationStatistics().infectionsTracker.getSAPrev(population_);
     incidence_ = population_.GetPopulationStatistics().infectionsTracker.getCurrTimeStepIncidentInfsTotal() /
                  ((double) (population_.GetSize()) - population_.GetNASize());
+
+    /* Time the month that just finished and say how far the run is. */
+    double now = timer_.GetTime();
+    run_time_predictor_.Update(time_.in_months(), now - start_time_);
+    start_time_ = now;
+    progress_.Report(ProgressNow(), now);
+}
+
+ProgressSnapshot Simulation::ProgressNow() {
+    ProgressSnapshot snapshot;
+    snapshot.months_done = run_time_predictor_.GetMonthsDone();
+    snapshot.total_months = run_time_predictor_.GetTotalMonths();
+    snapshot.elapsed_seconds = run_time_predictor_.GetElapsedSeconds();
+    snapshot.has_estimate = run_time_predictor_.HasEstimate();
+    snapshot.seconds_remaining = run_time_predictor_.GetEstimatedTimeRemaining();
+    snapshot.months_per_second = run_time_predictor_.GetMonthsPerSecond();
+    snapshot.people_alive = population_.GetSize();
+    snapshot.hiv_prevalence = prevalence_;
+    return snapshot;
 }
 
 void Simulation::LastStep() {
@@ -1269,6 +1279,8 @@ Outputs Simulation::Run() {
         auto percent = static_cast<int>(100.0 * time_.in_months() / duration_.in_months());
         batch_status_.set_percent_complete(name_, percent);
     }
+
+    progress_.Finish(ProgressNow(), time_ >= end_time);
 
     LastStep();
     batch_status_.set_state(name_, SimState::completed);

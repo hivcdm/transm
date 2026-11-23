@@ -31,6 +31,14 @@ Unreleased
   (seen on WSL). The run-time estimate became NaN and the console progress
   bar turned it into an impossible length. Outputs are unaffected.
 
+- The progress report shows months finished (exact) and a time-left estimate
+  from the recent pace of the run, instead of a fixed growth curve that was
+  off by 28% to 106% of the run time on recorded runs (now 10% to 27% on
+  five of six). The timer no longer steps back. On a terminal it is one line
+  redrawn in place with elapsed time, speed, people alive and HIV
+  prevalence; in a log file a line per simulated year. TRANSM_PROGRESS=off,
+  lines or bar overrides. Outputs are unaffected.
+
 - TimeTest expected months within a year to count from 1 to 12; Time counts
   them from 0 to 11, so the test failed. The test is corrected; the model is
   unchanged.
