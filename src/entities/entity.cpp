@@ -1,4 +1,7 @@
 #include "entity.hpp"
+
+#include <cmath>
+
 #include "male.hpp"
 #include "female.hpp"
 #include "sexualpartnership.hpp"
@@ -756,8 +759,22 @@ Entity *Entity::sexualActivity(Entity *_p, int _numActs,
     incrementNumActsThisMonth(_numActs);
     _p->incrementNumActsThisMonth(_numActs);
 
+    /* For <monthsSinceUnprotectedAct>: when nobody can be infected, condom use is not
+     * otherwise drawn, so draw once whether any of the acts went without a condom
+     * (each act uses one with the man's chance for this partnership type). */
+    const bool trackUnprotected = _numActs > 0 && tracksUnprotectedActs(_eventParams.currTime);
+
     //people are either both already infected or both uninfected
     if (isInfected() == _p->isInfected()) {
+        if (trackUnprotected) {
+            Male *man = dynamic_cast<Male *>(isMale() ? this : _p);
+            Entity *other = man == this ? _p : this;
+            double allWithCondom = std::pow(man->getCondomUseProb(other, _partnershipType), _numActs);
+            if (!_eventParams.randomNums.chance(allWithCondom)) {
+                recordUnprotectedAct(_eventParams.currTime.in_months());
+                _p->recordUnprotectedAct(_eventParams.currTime.in_months());
+            }
+        }
         return nullptr;
     }
 
@@ -776,6 +793,9 @@ Entity *Entity::sexualActivity(Entity *_p, int _numActs,
             //If a condom was used, increase the number of condoms used for each person by numActs
             incrementCondomsUsedThisMonth(1);
             _p->incrementCondomsUsedThisMonth(1);
+        } else if (trackUnprotected) {
+            recordUnprotectedAct(_eventParams.currTime.in_months());
+            _p->recordUnprotectedAct(_eventParams.currTime.in_months());
         }
 
         /** Regardless of infection, record the exposure */
@@ -1087,6 +1107,28 @@ void Entity::updateTestingStatus(EventParams &_eventParams,
     }
 }
 
+bool Entity::tracksUnprotectedActs(Time now) const {
+    const PrepEligibility rule = prepParameters.GetEligibility();
+    return prepParameters.Enabled() && rule.TracksUnprotectedActs()
+           && now.in_months() >= PrepFirstYear * 12 - rule.monthsSinceUnprotectedAct;
+}
+
+bool Entity::meetsPrepEligibility(Time now) {
+    const PrepEligibility rule = prepParameters.GetEligibility();
+    if (rule.currentPartnerCount < 0 && !rule.checkPartnerStatus && !rule.checkPartnerRiskLevel
+        && !rule.TracksUnprotectedActs()) {
+        return true;
+    }
+
+    std::vector<PrepPartner> partnersNow;
+    for (SexualPartnership *partnership : GetPartnerships()) {
+        Entity *partner = partnership->getOtherPartner(this);
+        partnersNow.push_back({partner->getHIVStatus(), partner->getRiskLevel()});
+    }
+    int monthsSince = lastUnprotectedActMonth_ < 0 ? -1 : now.in_months() - lastUnprotectedActMonth_;
+    return MeetsPrepEligibility(rule, partnersNow, monthsSince);
+}
+
 void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracker) {
     if (!prepParameters.Enabled() || _eventParams.currTime.get_year() < 57) // should be after 2014
         return;
@@ -1114,12 +1156,26 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
         prepStatus = PrepStatus::OFF_PREP;
 
         // reseting the month on prep if there was a breakthrough case, it shouldn't matter anyway
-        monthOnPrep = 0;  
+        monthOnPrep = 0;
         return;
-    
-    } else { /* Otherwise you are eligible! */
-        prepTracker->recordEligible(this);
     }
+
+    /* <prepEligibility> decides who may start or restart PrEP; people on PrEP stay
+     * on it while they remain partnered. Someone not meeting it this month keeps
+     * their off-PrEP state and is counted as ineligible. */
+    if (prepStatus != PrepStatus::ON_PREP && !meetsPrepEligibility(_eventParams.currTime)) {
+        prepTracker->recordIneligible(this);
+        if (everBeenOnPrep == true && monthOffPrep < 12) {
+            prepTracker->recordEverbeenOnPrepWithinTwelveMonths(this);
+        }
+        if (prepStatus == PrepStatus::WAS_ON_PREP) {
+            monthOnPrep = 0;
+        }
+        monthOffPrep++;
+        return;
+    }
+
+    prepTracker->recordEligible(this);
 
     
     // Lambda function to test whoever has access to PrEP
@@ -1162,47 +1218,33 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
      * <prepAccess>p1,p2,p3,...,pn</prepAccess>
      * 
      */
-    const auto &access = prepParameters.GetAccess(*getDemographicProfile());
+    const int current_year = _eventParams.currTime.get_year();
 
-    // Let's first know what year we are in
-    int current_year = _eventParams.currTime.get_year();  
-
-    // Look for the access rate for the current year this goes beyond the 100 years just to be safe!
-    std::vector<int> access_years = {
-                                    57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 
-                                    70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 
-                                    84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 
-                                    98, 99, 100, 101, 102};
-
-    // Find the index of current_year in access_years, if present
-    auto it = std::find(access_years.begin(), access_years.end(), current_year);
-
-    // If the current_year was found, compute the index = access_index
-    auto access_index = std::distance(access_years.begin(), it);
-    
-    // check if access[access_index] exist in the input access vector, if it doesn't use the last value
-    if (access_index >= access.size()) {
-        access_index = access.size() - 1;
-    }
-
-    double current_year_access_rate = access[access_index]; // this is to initialize the return to care
-
-    // multiply the access rate by a factor for high risk groups
-    if (risk == RiskLevel::HIGH ) {
-        if (getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Female) {
-            current_year_access_rate *= 1.47;
+    /* High-risk women, MSM and MSW start and return faster. Women's orientation is
+     * MSW, so high-risk women get the factor twice; kept as calibrated. */
+    auto scaleForRisk = [&](double rate) {
+        if (risk == RiskLevel::HIGH) {
+            if (getDemographicProfileVal<DemographicProfile::Gender>() == DemographicProfile::Gender::Female) {
+                rate *= 1.47;
+            }
+            if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() == DemographicProfile::SexualOrientation::Msm) {
+                rate *= 1.47;
+            }
+            if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() == DemographicProfile::SexualOrientation::Msw) {
+                rate *= 1.47;
+            }
         }
+        return rate;
+    };
 
-        if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() == DemographicProfile::SexualOrientation::Msm) {
-            current_year_access_rate *= 1.47;
-        }
+    double current_year_access_rate =
+        scaleForRisk(PrepRateForYear(prepParameters.GetAccess(*getDemographicProfile()), current_year));
 
-        if (getDemographicProfileVal<DemographicProfile::SexualOrientation>() == DemographicProfile::SexualOrientation::Msw) {
-            current_year_access_rate *= 1.47;
-        }
-    }
-
-    double current_year_return_to_care_rate = current_year_access_rate;
+    /* <prepReturnToCare>, yearly like access; scenarios without it return at the access rate. */
+    const auto &return_rates = prepParameters.GetReturnToCare(*getDemographicProfile());
+    double current_year_return_to_care_rate = return_rates.empty()
+        ? current_year_access_rate
+        : scaleForRisk(PrepRateForYear(return_rates, current_year));
 
     /* If they are off prep */
     if (prepStatus == PrepStatus::OFF_PREP) {
@@ -1234,18 +1276,11 @@ void Entity::updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracke
 
     /* if the are loss to follow up */
     } else if (prepStatus == PrepStatus::WAS_ON_PREP) {
-        /** 
-         * TODO: This is very dangerous! This is a hack to use the access rate 
-         * as the return to care rate, therefore the input
-         * for the return to care in the xml file is overridden! 
-        */
-        
         // This is where we count most of those who were on prep within 12 months
         if (everBeenOnPrep == true && monthOffPrep < 12) {
             prepTracker->recordEverbeenOnPrepWithinTwelveMonths(this);
         }
 
-        // double returnToCare = prepParameters.GetReturnToCare(*getDemographicProfile());
         double returnToCare = current_year_return_to_care_rate;
         
         if (!_eventParams.randomNums.chance(returnToCare)) { // If not the time to return to prep, increment the month off prep

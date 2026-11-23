@@ -409,6 +409,12 @@ public:
     updateHealthStatus(EventParams &_eventParams, ArtRolloutTracker *testTracker, CostsTracker *costsTracker);
 
     void updatePrepStatus(EventParams &_eventParams, PrepTracker *prepTracker);
+
+    /** whether this person meets <prepEligibility> now, given their current partners */
+    bool meetsPrepEligibility(Time now);
+
+    /** whether condomless acts are being recorded now for <monthsSinceUnprotectedAct> */
+    bool tracksUnprotectedActs(Time now) const;
     
     PrepStatus getPrepStatus() {
         return prepStatus;
@@ -447,6 +453,10 @@ public:
 
     /** Return true if a condom was used the last time FOI was called */
     bool getCondomUsedLastFOICalculation();
+
+    /** month of the last condomless act, -1 if none on record */
+    int getLastUnprotectedActMonth() const { return lastUnprotectedActMonth_; }
+    void recordUnprotectedAct(int month) { lastUnprotectedActMonth_ = month; }
 
     /**
      * @function: setFVindices
@@ -1074,6 +1084,11 @@ private:
     PrepStatus prepStatus;
     PrepAherenceLevel prepAdherenceLevel;
     PrepEligibility prepEligibility;
+
+    /* Simulation month of this person's last condomless act, -1 if none on record.
+     * Recorded only when <monthsSinceUnprotectedAct> is used, from that many months
+     * before PrEP starts (see Entity::sexualActivity). */
+    int lastUnprotectedActMonth_ = -1;
 
     /* Durable FOCUS record. The CEPAC-side selected_for_FOCUS flag is cleared
      * again within the same month, so these are the only FOCUS facts that

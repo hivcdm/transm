@@ -467,23 +467,29 @@ PrepParameters SimulationParametersXml::GetPrepParameters() const
             PrepEligibility eligibility;
 
             auto eligibility_node = defaults_node.child("prepEligibility");
-            if (eligibility_node.child("currentPartnerCount")) {
-                eligibility.currentPartnerCount = Text<int>(eligibility_node.child("currentPartnerCount"));
+            /* Scenarios have used both names for the partner count. */
+            for (const char *name : {"currentPartnerCount", "partnerCount"}) {
+                if (eligibility_node.child(name)) {
+                    eligibility.currentPartnerCount = Text<int>(eligibility_node.child(name));
+                }
             }
 
             if (eligibility_node.child("partnerStatus")) {
                 std::string value = Text<std::string>(eligibility_node.child("partnerStatus"));
+                eligibility.checkPartnerStatus = true;
                 eligibility.partnerStatus = from_string<HIVStatus>(value);
             }
 
             if (eligibility_node.child("partnerRiskLevel")) {
                 std::string value = Text<std::string>(eligibility_node.child("partnerRiskLevel"));
+                eligibility.checkPartnerRiskLevel = true;
                 eligibility.partnerRiskLevel = from_string<RiskLevel>(value);
             }
 
             if (eligibility_node.child("monthsSinceUnprotectedAct")) {
-                eligibility.monthsSinceUnprotectedAct = Time::from_months(
-                  Text<int>(eligibility_node.child("monthsSinceUnprotectedAct")));
+                eligibility.monthsSinceUnprotectedAct = Text<int>(eligibility_node.child("monthsSinceUnprotectedAct"));
+                if (eligibility.monthsSinceUnprotectedAct < 0)
+                    throw std::runtime_error("ERROR: <monthsSinceUnprotectedAct> must not be negative");
             }
 
             prepParameters.SetEligibility(eligibility);
@@ -499,7 +505,7 @@ PrepParameters SimulationParametersXml::GetPrepParameters() const
             prepParameters.SetDefaultRetention(Text<std::array<double, 12>>(defaults_node.child("prepRetention")));
 
         if (defaults_node.child("prepReturnToCare"))
-            prepParameters.SetDefaultReturnToCare(Text<double>(defaults_node.child("prepReturnToCare")));
+            prepParameters.SetDefaultReturnToCare(Text<std::vector<double>>(defaults_node.child("prepReturnToCare")));
 
     } else {
         throw std::runtime_error("ERROR: Prep xml node found but prepDefaults are missing.");
@@ -530,7 +536,7 @@ PrepParameters SimulationParametersXml::GetPrepParameters() const
                 prepParameters.SetProfileRetention(profile, Text<std::array<double, 12>>(node.child("prepRetention")));
 
             if (node.child("prepReturnToCare"))
-                prepParameters.SetProfileReturnToCare(profile, Text<double>(node.child("prepReturnToCare")));
+                prepParameters.SetProfileReturnToCare(profile, Text<std::vector<double>>(node.child("prepReturnToCare")));
 
         }
     }
